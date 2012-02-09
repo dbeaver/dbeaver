@@ -7,24 +7,20 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorControl;
 
@@ -53,6 +49,9 @@ public abstract class BaseSQLEditorHandler extends DataSourceHandler {
             final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
             if (dataSourceRegistry.getDataSources().size() == 1) {
                 dataSourceContainer = dataSourceRegistry.getDataSources().get(0);
+            } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
+                dataSourceContainer = SelectDataSourceDialog.selectDataSource(
+                    HandlerUtil.getActiveShell(event));
             }
         }
         return dataSourceContainer;

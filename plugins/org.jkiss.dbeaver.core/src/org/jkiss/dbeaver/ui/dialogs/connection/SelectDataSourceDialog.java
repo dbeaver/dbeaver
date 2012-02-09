@@ -52,11 +52,16 @@ public class SelectDataSourceDialog extends Dialog {
         DBeaverCore core = DBeaverCore.getInstance();
         DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
 
-        ItemListControl dsList = new ItemListControl(group, SWT.BORDER, null, rootNode.getDatabases(), null);
+        ItemListControl dsList = new ItemListControl(
+            group,
+            SWT.BORDER | SWT.SHEET,
+            null,
+            rootNode.getDatabases(),
+            null);
         dsList.createProgressPanel();
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
-        gd.minimumWidth = 300;
+        gd.widthHint = 500;
         dsList.setLayoutData(gd);
         //dsList.setLoadProperties(false);
         //dsList.setBrief(true);

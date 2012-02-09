@@ -1025,10 +1025,6 @@
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
-                <separator name="sql" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
-                <command commandId="org.jkiss.dbeaver.core.object.find"/>
                 <separator name="session" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.commit"/>
                 <command commandId="org.jkiss.dbeaver.core.rollback"/>
@@ -1242,24 +1238,70 @@
             <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
         </menuContribution>
 
-        <!-- Database menu -->
+        <!-- Navigation menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="navigate">
+                <command commandId="org.jkiss.dbeaver.core.object.find"/>
+            </menu>
+        </menuContribution>
+
+        <!-- SQL editor menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
-                <visibleWhen>
-                    <with variable="activeEditor">
-                        <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
-                    </with>
-                </visibleWhen>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <separator name="execute" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
                 <separator name="query" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
                 <separator name="files" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
             </menu>
         </menuContribution>
 
