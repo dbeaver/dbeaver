@@ -29,10 +29,10 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.5.0</Program_Version>
-    <Program_Release_Month>11</Program_Release_Month>
-    <Program_Release_Day>28</Program_Release_Day>
-    <Program_Release_Year>2011</Program_Release_Year>
+    <Program_Version>1.5.1</Program_Version>
+    <Program_Release_Month>02</Program_Release_Month>
+    <Program_Release_Day>10</Program_Release_Day>
+    <Program_Release_Year>2012</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
     <Program_Release_Status>New Release</Program_Release_Status>
@@ -40,11 +40,13 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - WMI plugin
-        - Redesign of architecture to support non-relational databases
-        - ERD plugin improvements
-        - Oracle plugin additions and performance fixes
-        - A lot of bug fixes
+        - Content assistant configuration
+        - Metadata editor fixes
+        - Table data editor fix (MS SQL)
+        - Error messages and localization fixes
+        - Performance optimization
+        - Main menu updated
+        - Minor UI fixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -98,7 +100,7 @@ This software is provided "as is" without express or implied warranty.</EULA>
   </Permissions>
   <Program_Descriptions>
     <English>
-      <Keywords>sql,database manager,database client,java,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc,sqlite,ingres,linter,teradata</Keywords>
+      <Keywords>sql,database manager,database client,java,mysql,postgresql,mssql,db2,oracle,wmi,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc,sqlite,ingres,linter,teradata,wmi browser</Keywords>
       <Char_Desc_45>Universal Database Manager and SQL Client</Char_Desc_45>
       <Char_Desc_80>Free Universal Database Manager and SQL Client</Char_Desc_80>
       <Char_Desc_250>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite and any database which has JDBC driver.</Char_Desc_250>

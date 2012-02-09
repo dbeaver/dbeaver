@@ -32,6 +32,22 @@
 
     <versions>
         <version>
+            <number>1.5.1</number>
+            <type>major</type>
+            <date>10.02.2012</date>
+
+            <release-notes>
+                - Content assistant configuration
+                - Metadata editor fixes
+                - Table data editor fix (MS SQL)
+                - Error messages and localization fixes
+                - Performance optimization
+                - Main menu updated
+                - Minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.5.0</number>
             <type>major</type>
             <date>30.01.2012</date>
