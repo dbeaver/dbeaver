@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.data;
@@ -30,7 +30,12 @@ public class TextViewDialog extends ValueViewDialog {
     {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
-        Object value = DBUtils.getDefaultValueDisplayString(getValueController().getValue());
+        Object value = getValueController().getValue();
+        if (value == null) {
+            value = "";
+        } else {
+            value = DBUtils.getDefaultValueDisplayString(value);
+        }
         boolean isForeignKey = super.isForeignKey();
 
         Label label = new Label(dialogGroup, SWT.NONE);

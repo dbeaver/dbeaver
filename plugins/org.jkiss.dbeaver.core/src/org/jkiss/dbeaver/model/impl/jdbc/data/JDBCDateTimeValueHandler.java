@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -76,7 +76,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                                  int paramIndex, Object value) throws SQLException
     {
         if (value == null) {
-            statement.setNull(paramIndex + 1, paramType.getTypeID());
+            statement.setNull(paramIndex, paramType.getTypeID());
         } else {
             switch (paramType.getTypeID()) {
             case java.sql.Types.TIME:

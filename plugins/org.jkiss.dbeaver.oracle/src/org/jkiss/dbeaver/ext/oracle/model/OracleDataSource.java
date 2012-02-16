@@ -390,6 +390,11 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
+        SchemaCache()
+        {
+            setListOrderComparator(DBUtils.<OracleSchema>nameComparator());
+        }
+
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
