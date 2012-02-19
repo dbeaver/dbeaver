@@ -57,13 +57,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
-        Composite group = new Composite(composite, SWT.NONE);
-        GridLayout layout = new GridLayout(1, true);
-        group.setLayout(layout);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        group.setLayoutData(gd);
-
-        TabFolder tabFolder = new TabFolder(group, SWT.NONE);
+        TabFolder tabFolder = new TabFolder(composite, SWT.NONE);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         TableColumn criteriaColumn;
@@ -74,7 +68,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             columnsViewer.setContentProvider(new ListContentProvider());
             columnsViewer.setLabelProvider(new ColumnLabelProvider());
             final Table columnsTable = columnsViewer.getTable();
-            gd = new GridData(GridData.FILL_BOTH);
+            GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             //gd.heightHint = 300;
             columnsTable.setLayoutData(gd);
@@ -141,7 +135,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         }
 
         if (!resultSetViewer.supportsDataFilter()) {
-            Label warnLabel = new Label(group, SWT.NONE);
+            Label warnLabel = new Label(composite, SWT.NONE);
             warnLabel.setText(CoreMessages.controls_resultset_filter_warning_custom_order_disabled);
             warnLabel.setForeground(parent.getDisplay().getSystemColor(SWT.COLOR_RED));
         }
