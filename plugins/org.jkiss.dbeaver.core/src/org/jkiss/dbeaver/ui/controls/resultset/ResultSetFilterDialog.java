@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.resultset;
@@ -59,18 +59,18 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
 
         Composite group = new Composite(composite, SWT.NONE);
         GridLayout layout = new GridLayout(1, true);
-        //layout.
         group.setLayout(layout);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        //gd.verticalIndent = 0;
-        //gd.widthHint = getParentShell().getBounds().width - 200;
         group.setLayoutData(gd);
+
+        TabFolder tabFolder = new TabFolder(group, SWT.NONE);
+        tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         TableColumn criteriaColumn;
         {
-            Group columnsGroup = UIUtils.createControlGroup(group, CoreMessages.controls_resultset_filter_group_columns, 1, GridData.FILL_BOTH, 0);
+            Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
 
-            columnsViewer = new TableViewer(columnsGroup, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
+            columnsViewer = new TableViewer(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION);
             columnsViewer.setContentProvider(new ListContentProvider());
             columnsViewer.setLabelProvider(new ColumnLabelProvider());
             final Table columnsTable = columnsViewer.getTable();
@@ -92,18 +92,41 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             tableEditor.minimumWidth = 50;
 
             columnsTable.addMouseListener(new ColumnsMouseListener(tableEditor, columnsTable));
+
+            TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
+            libsTab.setText(CoreMessages.controls_resultset_filter_group_columns);
+            libsTab.setToolTipText("Set criteria and order for individual column(s)");
+            libsTab.setControl(columnsGroup);
         }
 
         {
-            Group filterGroup = UIUtils.createControlGroup(group, CoreMessages.controls_resultset_filter_group_custom, 2, GridData.FILL_BOTH, 0);
+            Composite filterGroup = new Composite(tabFolder, SWT.NONE);
+            filterGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            filterGroup.setLayout(new GridLayout(1, false));
 
-            orderText = UIUtils.createLabelText(filterGroup, CoreMessages.controls_resultset_filter_label_orderby, dataFilter.getOrder());
-            whereText = UIUtils.createLabelText(filterGroup, CoreMessages.controls_resultset_filter_label_where, dataFilter.getWhere());
+            UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_orderby);
+            orderText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+            orderText.setLayoutData(new GridData(GridData.FILL_BOTH));
+            if (dataFilter.getOrder() != null) {
+                orderText.setText(dataFilter.getOrder());
+            }
+
+            UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_where);
+            whereText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+            whereText.setLayoutData(new GridData(GridData.FILL_BOTH));
+            if (dataFilter.getWhere() != null) {
+                whereText.setText(dataFilter.getWhere());
+            }
 
             if (!resultSetViewer.supportsDataFilter()) {
                 filterGroup.setEnabled(false);
                 ControlEnableState.disable(filterGroup);
             }
+
+            TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
+            libsTab.setText(CoreMessages.controls_resultset_filter_group_custom);
+            libsTab.setToolTipText("Set custom criteria and order for whole query");
+            libsTab.setControl(filterGroup);
         }
 
         // Fill columns
