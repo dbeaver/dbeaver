@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
@@ -116,6 +116,12 @@ public class DataExportJob extends AbstractJob {
         public DBPNamedObject getSource()
         {
             return dataProvider.getDataContainer();
+        }
+
+        @Override
+        public String getExportFormat()
+        {
+            return settings.getDataExporter().getName();
         }
 
         public Map<Object, Object> getProperties()

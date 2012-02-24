@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data;
@@ -20,6 +20,8 @@ import java.util.Map;
 public interface IDataExporterSite {
 
     DBPNamedObject getSource();
+
+    String getExportFormat();
 
     Map<Object, Object> getProperties();
 

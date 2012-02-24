@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model;
@@ -23,6 +23,9 @@ public class DBConstants {
     public static final String PROP_ID_NOT_NULL = "notNull"; //NON-NLS-1
 
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
+
+    public static final String FORMAT_CSV = "csv"; //NON-NLS-1
+    public static final String FORMAT_SQL = "sql"; //NON-NLS-1
 
     public static final String[] DEFAULT_DATATYPE_NAMES = {
         "varchar", //NON-NLS-1
