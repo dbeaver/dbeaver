@@ -34,6 +34,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button csAutoActivationCheck;
     private Spinner csAutoActivationDelaySpinner;
     private Button csAutoInsertCheck;
+    private Combo csInsertCase;
 
     public PrefPageSQLEditor()
     {
@@ -117,8 +118,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             Composite assistGroup = UIUtils.createControlGroup(composite, "Content assistant", 2, GridData.FILL_HORIZONTAL, 0);
 
-            csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", false);
-            csAutoActivationCheck.setToolTipText("Enables the content assistant's auto activation");
+            csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", "Enables the content assistant's auto activation", false);
             UIUtils.createControlLabel(assistGroup, "Auto activation delay");
             csAutoActivationDelaySpinner = new Spinner(assistGroup, SWT.BORDER);
             csAutoActivationDelaySpinner.setSelection(0);
@@ -126,8 +126,16 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csAutoActivationDelaySpinner.setIncrement(50);
             csAutoActivationDelaySpinner.setMinimum(0);
             csAutoActivationDelaySpinner.setMaximum(1000000);
-            csAutoInsertCheck = UIUtils.createLabelCheckbox(assistGroup, "Auto-insert proposal", false);
-            csAutoInsertCheck.setToolTipText("Enables the content assistant's auto insertion mode.\nIf enabled, the content assistant inserts a proposal automatically if it is the only proposal.\nIn the case of ambiguities, the user must make the choice.");
+            csAutoInsertCheck = UIUtils.createLabelCheckbox(
+                assistGroup,
+                "Auto-insert proposal",
+                "Enables the content assistant's auto insertion mode.\nIf enabled, the content assistant inserts a proposal automatically if it is the only proposal.\nIn the case of ambiguities, the user must make the choice.",
+                false);
+            UIUtils.createControlLabel(assistGroup, "Insert case");
+            csInsertCase = new Combo(assistGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            csInsertCase.add("Default");
+            csInsertCase.add("Upper case");
+            csInsertCase.add("Lower case");
         }
 
         // Scripts
@@ -152,6 +160,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
+            csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -165,6 +174,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
 
             store.setValue(PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
             store.setValue(PrefConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
@@ -180,6 +190,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void clearPreferences(IPreferenceStore store)
     {
         store.setToDefault(PrefConstants.STATEMENT_TIMEOUT);
+
+        store.setToDefault(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
+        store.setToDefault(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY);
+        store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
+        store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
 
         store.setToDefault(PrefConstants.SCRIPT_COMMIT_TYPE);
         store.setToDefault(PrefConstants.SCRIPT_COMMIT_LINES);

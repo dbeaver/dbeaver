@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui;
@@ -525,10 +525,15 @@ public class UIUtils {
 
     public static Button createLabelCheckbox(Composite parent, String label, boolean checked)
     {
-        return createLabelCheckbox(parent, label, checked, SWT.NONE);
+        return createLabelCheckbox(parent, label, null, checked, SWT.NONE);
     }
 
-    public static Button createLabelCheckbox(Composite parent, String label, boolean checked, int style)
+    public static Button createLabelCheckbox(Composite parent, String label, String tooltip, boolean checked)
+    {
+        return createLabelCheckbox(parent, label, tooltip, checked, SWT.NONE);
+    }
+
+    public static Button createLabelCheckbox(Composite parent, String label, String tooltip, boolean checked, int style)
     {
         Label labelControl = createControlLabel(parent, label);
         //labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -546,6 +551,10 @@ public class UIUtils {
             }
         });
 
+        if (tooltip != null) {
+            labelControl.setToolTipText(tooltip);
+            button.setToolTipText(tooltip);
+        }
         return button;
     }
 

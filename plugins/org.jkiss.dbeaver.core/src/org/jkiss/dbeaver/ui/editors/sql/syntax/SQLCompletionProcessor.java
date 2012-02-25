@@ -4,8 +4,10 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -457,9 +459,22 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         Image image,
         boolean isObject)
     {
+        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        if (editor.getDataSource() != null) {
+            store = editor.getDataSource().getContainer().getPreferenceStore();
+        }
         if (isObject) {
             // Escape replace string if required
             replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
+        }
+        final int proposalCase = store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
+        switch (proposalCase) {
+            case SQLPreferenceConstants.PROPOSAL_CASE_UPPER:
+                replaceString = replaceString.toUpperCase(); break;
+            case SQLPreferenceConstants.PROPOSAL_CASE_LOWER:
+                replaceString = replaceString.toLowerCase(); break;
+            default:
+                break;
         }
         return new SQLCompletionProposal(
             editor.getSyntaxManager(),
