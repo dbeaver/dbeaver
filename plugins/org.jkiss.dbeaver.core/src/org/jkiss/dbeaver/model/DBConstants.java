@@ -24,8 +24,8 @@ public class DBConstants {
 
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
 
-    public static final String FORMAT_CSV = "csv"; //NON-NLS-1
-    public static final String FORMAT_SQL = "sql"; //NON-NLS-1
+    public static final String FORMAT_CSV = "CSV"; //NON-NLS-1
+    public static final String FORMAT_SQL = "SQL"; //NON-NLS-1
 
     public static final String[] DEFAULT_DATATYPE_NAMES = {
         "varchar", //NON-NLS-1

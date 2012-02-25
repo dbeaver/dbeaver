@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.impl;
@@ -118,7 +118,7 @@ public class DataExporterCSV extends DataExporterAbstract {
                     content.release();
                 }
             } else {
-                String stringValue = column.getValueHandler().getValueDisplayString(column.getColumn(), row[i]);
+                String stringValue = super.getValueDisplayString(column, row[i]);
                 boolean quote = false;
                 if (!stringValue.isEmpty() && !(row[i] instanceof Number) && !(row[i] instanceof Date) && Character.isDigit(stringValue.charAt(0))) {
                     // Quote string values which starts from number
@@ -144,7 +144,7 @@ public class DataExporterCSV extends DataExporterAbstract {
     {
         // check for needed quote
         if (!quote && !value.isEmpty()) {
-            if (value.indexOf(delimiter) != -1 || value.indexOf(rowDelimiter) != -1) {
+            if (value.indexOf(delimiter) != -1 || value.contains(rowDelimiter)) {
                 quote = true;
             }
         }

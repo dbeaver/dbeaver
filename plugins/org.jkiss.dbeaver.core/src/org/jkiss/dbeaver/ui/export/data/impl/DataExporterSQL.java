@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.impl;
@@ -147,8 +147,7 @@ public class DataExporterSQL extends DataExporterAbstract {
             } else if (value instanceof Number) {
                 out.write(value.toString());
             } else {
-                String stringValue = column.getValueHandler().getValueDisplayString(column.getColumn(), row[i]);
-                out.write(stringValue);
+                out.write(super.getValueDisplayString(column, row[i]));
             }
         }
         out.write(rowDelimiter);
