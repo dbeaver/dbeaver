@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  ~ Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
   -->
 
 <product-descriptor>
@@ -31,6 +31,17 @@
     </company>
 
     <versions>
+        <version>
+            <number>1.5.2</number>
+            <type>major</type>
+            <date>01.03.2012</date>
+
+            <release-notes>
+
+                - Minor UI fixes
+            </release-notes>
+        </version>
+
         <version>
             <number>1.5.1</number>
             <type>major</type>
