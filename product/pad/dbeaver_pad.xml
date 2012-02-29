@@ -30,8 +30,8 @@
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>1.5.2</Program_Version>
-    <Program_Release_Month>03</Program_Release_Month>
-    <Program_Release_Day>01</Program_Release_Day>
+    <Program_Release_Month>02</Program_Release_Month>
+    <Program_Release_Day>29</Program_Release_Day>
     <Program_Release_Year>2012</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -40,13 +40,11 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Content assistant configuration
-        - Metadata editor fixes
-        - Table data editor fix (MS SQL)
-        - Error messages and localization fixes
-        - Performance optimization
-        - Main menu updated
-        - Minor UI fixes
+        - Auto-completion configuration
+        - Date/Time format fixed in table export
+        - ResultSet filter dialog redesign
+        - ResultSet cell editor fixes
+        - Oracle schema loading fix
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
