@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
@@ -82,13 +83,13 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         } else {
             switch (paramType.getTypeID()) {
             case java.sql.Types.TIME:
-                statement.setTime(paramIndex, (java.sql.Time)value);
+                statement.setTime(paramIndex, getTimeValue(value));
                 break;
             case java.sql.Types.DATE:
-                statement.setDate(paramIndex, (java.sql.Date)value);
+                statement.setDate(paramIndex, getDateValue(value));
                 break;
             default:
-                statement.setTimestamp(paramIndex, (Timestamp)value);
+                statement.setTimestamp(paramIndex, getTimestampValue(value));
                 break;
             }
         }
@@ -259,6 +260,45 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             }
         } else {
             return getValueDisplayString(column, value);
+        }
+    }
+
+    private static java.sql.Time getTimeValue(Object value)
+    {
+        if (value instanceof java.sql.Time) {
+            return (java.sql.Time)value;
+        } else if (value instanceof Date) {
+            return new java.sql.Time(((Date) value).getTime());
+        } else if (value != null) {
+            return Time.valueOf(value.toString());
+        } else {
+            return null;
+        }
+    }
+
+    private static java.sql.Date getDateValue(Object value)
+    {
+        if (value instanceof java.sql.Date) {
+            return (java.sql.Date)value;
+        } else if (value instanceof Date) {
+            return new java.sql.Date(((Date) value).getTime());
+        } else if (value != null) {
+            return java.sql.Date.valueOf(value.toString());
+        } else {
+            return null;
+        }
+    }
+
+    private static java.sql.Timestamp getTimestampValue(Object value)
+    {
+        if (value instanceof java.sql.Timestamp) {
+            return (java.sql.Timestamp)value;
+        } else if (value instanceof Date) {
+            return new java.sql.Timestamp(((Date) value).getTime());
+        } else if (value != null) {
+            return java.sql.Timestamp.valueOf(value.toString());
+        } else {
+            return null;
         }
     }
 
