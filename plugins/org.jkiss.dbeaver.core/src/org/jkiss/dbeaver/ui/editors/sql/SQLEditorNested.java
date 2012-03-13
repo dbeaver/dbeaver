@@ -69,11 +69,19 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     public T getSourceObject()
     {
-        return (T)getEditorInput().getDatabaseObject();
+        IDatabaseEditorInput editorInput = getEditorInput();
+        if (editorInput == null) {
+            return null;
+        }
+        return (T) editorInput.getDatabaseObject();
     }
 
     public DBPDataSource getDataSource() {
-        return getSourceObject().getDataSource();
+        IDatabaseEditorInput editorInput = getEditorInput();
+        if (editorInput == null) {
+            return null;
+        }
+        return editorInput.getDataSource();
     }
 
     @Override
