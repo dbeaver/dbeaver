@@ -3,7 +3,7 @@
 
 
 <!--
-  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  ~ Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
   -->
 
 <plugin>
@@ -1468,6 +1468,19 @@
                 id="org.jkiss.dbeaver.ui.editors.content.ContentEditor">
         </editor>
     </extension>
+
+    <extension point="org.eclipse.ui.workbench.texteditor.rulerColumns">
+        <column class="org.jkiss.dbeaver.ui.editors.text.LineNumberColumn"
+            enabled="false"
+            global="true"
+            id="org.eclipse.ui.editors.columns.linenumbers"
+            includeInMenu="true"
+            name="Line numbers">
+            <placement gravity="0.9"/>
+            <targetClass class="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor"/>
+        </column>
+    </extension>
+
 
     <extension id="product" point="org.eclipse.core.runtime.products">
         <product application="org.jkiss.dbeaver.core.application" description="%productSubTitle" name="DBeaver">
