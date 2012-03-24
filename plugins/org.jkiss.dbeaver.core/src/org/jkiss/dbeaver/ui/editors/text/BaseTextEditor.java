@@ -118,7 +118,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
             if (!descriptor.isIncludedInMenu() || !support.isColumnSupported(descriptor))
                 continue;
             final boolean isVisible= support.isColumnVisible(descriptor);
-            IAction action= new Action("Show column ruler " + descriptor.getName(), IAction.AS_CHECK_BOX) {
+            IAction action= new Action("Show " + descriptor.getName(), IAction.AS_CHECK_BOX) {
                 public void run() {
                     if (descriptor.isGlobal())
                         // column state is modified via preference listener of AbstractTextEditor
