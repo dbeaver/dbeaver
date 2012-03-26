@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -10,7 +10,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.WorkbenchPage;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.ui.dialogs.SearchObjectsDialog;
+import org.jkiss.dbeaver.ui.search.SearchObjectsDialog;
 
 @SuppressWarnings("restriction")
 public class NavigatorHandlerObjectFind extends DataSourceHandler {
@@ -23,8 +23,8 @@ public class NavigatorHandlerObjectFind extends DataSourceHandler {
 
         final Shell activeShell = HandlerUtil.getActiveShell(event);
         SearchObjectsDialog.open(
-            activeShell,
-            getDataSourceContainer(event, true, false));
+                activeShell,
+                getDataSourceContainer(event, true, false));
 
         return null;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.utils;
@@ -29,21 +29,17 @@ public class SecurityUtils {
 	*/
     public static String generateGUID(boolean secure)
     {
-		MessageDigest md5 = null;
-
-		try {
-		    md5 = MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
-		} catch (NoSuchAlgorithmException e) {
-		    return null;
-		}
-
-	    java.net.InetAddress id;
-	    try {
-	    	id = java.net.InetAddress.getLocalHost();
-		}
-		catch (java.net.UnknownHostException e) {
-		    return null;
-		}
+        String localHostAddr;
+        {
+            java.net.InetAddress id;
+            try {
+                id = java.net.InetAddress.getLocalHost();
+                localHostAddr = id.toString();
+            }
+            catch (java.net.UnknownHostException e) {
+                localHostAddr = "localhost";
+            }
+        }
 
 	    long time = System.currentTimeMillis();
 	    long rand;
@@ -61,23 +57,31 @@ public class SecurityUtils {
 	    // the odds of guessing it at least as great as that
 	    // of guessing the contents of the file!
 	    StringBuilder sb = new StringBuilder(32);
-	    sb.append(id.toString())
+	    sb.append(localHostAddr)
 	    	.append(":")
 	    	.append(Long.toString(time))
 	    	.append(":")
 	    	.append(Long.toString(rand));
 
-	    md5.update(sb.toString().getBytes());
 
-	    byte [] array =  md5.digest();
-	    sb.setLength(0);
-	    for(int j=0; j < array.length; ++j) {
-			int b = array[j] & 0xFF;
-			if (b < 0x10) {
-				sb.append('0');
-			}
-			sb.append(Integer.toHexString(b));
-	    }
+        byte[] array;
+        try {
+            MessageDigest md5 = MessageDigest.getInstance(ECRYPTION_ALGORYTHM);
+            md5.update(sb.toString().getBytes());
+            array =  md5.digest();
+        } catch (NoSuchAlgorithmException e) {
+            // Too bad. Lets get simple random numbers
+            array = new byte[16];
+            random.nextBytes(array);
+        }
+        sb.setLength(0);
+        for(int j=0; j < array.length; ++j) {
+            int b = array[j] & 0xFF;
+            if (b < 0x10) {
+                sb.append('0');
+            }
+            sb.append(Integer.toHexString(b));
+        }
 
 		String raw = sb.toString().toUpperCase();
 		sb.setLength(0);
