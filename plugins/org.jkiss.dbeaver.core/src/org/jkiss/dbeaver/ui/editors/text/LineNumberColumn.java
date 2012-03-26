@@ -9,8 +9,6 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.jface.text.revisions.IRevisionRulerColumnExtension;
-import org.eclipse.jface.text.revisions.IRevisionRulerColumnExtension.RenderingMode;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -18,8 +16,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.texteditor.*;
-import org.eclipse.ui.texteditor.quickdiff.QuickDiff;
+import org.eclipse.ui.texteditor.AnnotationPreference;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -51,10 +49,10 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
      */
     public static final String ID = "org.eclipse.ui.editors.columns.linenumbers"; //$NON-NLS-1$
 
-    private static final String FG_COLOR_KEY = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER_COLOR;
-    private static final String BG_COLOR_KEY = AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND;
-    private static final String USE_DEFAULT_BG_KEY = AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND_SYSTEM_DEFAULT;
-    private final static String LINE_NUMBER_KEY = AbstractDecoratedTextEditorPreferenceConstants.EDITOR_LINE_NUMBER_RULER;
+    private static final String FG_COLOR_KEY = "lineNumberForeground";
+    private static final String BG_COLOR_KEY = "lineNumberBackground";
+    private static final String USE_DEFAULT_BG_KEY = "lineNumberBackgroundDefault";
+    private final static String LINE_NUMBER_KEY = "lineNumberRuler";
 
     /**
      * The contribution descriptor.
@@ -170,8 +168,8 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
       * @see org.eclipse.jface.text.source.IVerticalRulerColumn#setModel(org.eclipse.jface.text.source.IAnnotationModel)
       */
     public void setModel(IAnnotationModel model) {
-        if (getQuickDiffPreference())
-            fDelegate.setModel(model);
+//        if (getQuickDiffPreference())
+//            fDelegate.setModel(model);
     }
 
     /*
@@ -247,11 +245,6 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
         updateBackgroundColor(store, fDelegate);
 
         updateLineNumbersVisibility(fDelegate);
-        updateQuickDiffVisibility(fDelegate);
-        updateCharacterMode(store, fDelegate);
-        updateRevisionRenderingMode(store, fDelegate);
-        updateRevisionAuthorVisibility(store, fDelegate);
-        updateRevisionIdVisibility(store, fDelegate);
 
         fDelegate.redraw();
 
@@ -277,36 +270,6 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
             public void propertyChange(PropertyChangeEvent event) {
                 // only handle quick diff on/off information, but not ruler visibility (handled by AbstractDecoratedTextEditor)
                 updateLineNumbersVisibility(fDelegate);
-            }
-        });
-
-        fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.QUICK_DIFF_CHARACTER_MODE, new IPropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                updateCharacterMode(store, fDelegate);
-            }
-        });
-
-        fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_RENDERING_MODE, new IPropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                updateRevisionRenderingMode(store, fDelegate);
-            }
-        });
-
-        fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_SHOW_AUTHOR, new IPropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                updateRevisionAuthorVisibility(store, fDelegate);
-            }
-        });
-
-        fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_SHOW_REVISION, new IPropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                updateRevisionIdVisibility(store, fDelegate);
-            }
-        });
-
-        fDispatcher.addPropertyChangeListener(AbstractDecoratedTextEditorPreferenceConstants.QUICK_DIFF_ALWAYS_ON, new IPropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-                updateQuickDiffVisibility(fDelegate);
             }
         });
     }
@@ -346,61 +309,9 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
         }
     }
 
-    private void updateDeletedColor(AnnotationPreference pref, IPreferenceStore store, IVerticalRulerColumn column) {
-        if (pref != null && column instanceof IChangeRulerColumn) {
-            RGB rgb = getColorFromAnnotationPreference(store, pref);
-            ((IChangeRulerColumn) column).setDeletedColor(getSharedColors().getColor(rgb));
-        }
-    }
-
-    private void updateCharacterMode(IPreferenceStore store, IVerticalRulerColumn column) {
-        if (column instanceof LineNumberChangeRulerColumn) {
-            LineNumberChangeRulerColumn lncrc = (LineNumberChangeRulerColumn) column;
-            lncrc.setDisplayMode(store.getBoolean(AbstractDecoratedTextEditorPreferenceConstants.QUICK_DIFF_CHARACTER_MODE));
-        }
-    }
-
     private void updateLineNumbersVisibility(IVerticalRulerColumn column) {
         if (column instanceof LineNumberChangeRulerColumn)
             ((LineNumberChangeRulerColumn) column).showLineNumbers(getLineNumberPreference());
-    }
-
-    private void updateRevisionRenderingMode(IPreferenceStore store, IVerticalRulerColumn column) {
-        if (column instanceof IRevisionRulerColumnExtension) {
-            String option = store.getString(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_RENDERING_MODE);
-            RenderingMode[] modes = {IRevisionRulerColumnExtension.AUTHOR, IRevisionRulerColumnExtension.AGE, IRevisionRulerColumnExtension.AUTHOR_SHADED_BY_AGE};
-            for (int i = 0; i < modes.length; i++) {
-                if (modes[i].name().equals(option)) {
-                    ((IRevisionRulerColumnExtension) column).setRevisionRenderingMode(modes[i]);
-                    return;
-                }
-            }
-        }
-    }
-
-    private void updateRevisionAuthorVisibility(IPreferenceStore store, IVerticalRulerColumn column) {
-        if (column instanceof IRevisionRulerColumnExtension) {
-            boolean show = store.getBoolean(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_SHOW_AUTHOR);
-            ((IRevisionRulerColumnExtension) column).showRevisionAuthor(show);
-        }
-    }
-
-    private void updateRevisionIdVisibility(IPreferenceStore store, IVerticalRulerColumn column) {
-        if (column instanceof IRevisionRulerColumnExtension) {
-            boolean show = store.getBoolean(AbstractDecoratedTextEditorPreferenceConstants.REVISION_RULER_SHOW_REVISION);
-            ((IRevisionRulerColumnExtension) column).showRevisionId(show);
-        }
-    }
-
-    private void updateQuickDiffVisibility(IVerticalRulerColumn column) {
-        boolean show = getQuickDiffPreference();
-        if (show == isShowingChangeInformation())
-            return;
-
-        if (show)
-            installChangeRulerModel(column);
-        else
-            uninstallChangeRulerModel(column);
     }
 
     /**
@@ -415,36 +326,6 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
             return fForwarder.isLineNumberRulerVisible();
         IPreferenceStore store = getPreferenceStore();
         return store != null ? store.getBoolean(LINE_NUMBER_KEY) : false;
-    }
-
-    /**
-     * Returns whether quick diff info should be visible upon opening an editor
-     * according to the preference store settings.
-     *
-     * @return <code>true</code> if the line numbers should be visible
-     */
-    private boolean getQuickDiffPreference() {
-        if (fForwarder != null)
-            return fForwarder.isQuickDiffEnabled();
-        IPreferenceStore store = getPreferenceStore();
-        boolean setting = store != null ? store.getBoolean(AbstractDecoratedTextEditorPreferenceConstants.QUICK_DIFF_ALWAYS_ON) : false;
-        if (!setting)
-            return false;
-
-        boolean modifiable;
-        ITextEditor editor = getEditor();
-        if (editor instanceof ITextEditorExtension2) {
-            ITextEditorExtension2 ext = (ITextEditorExtension2) editor;
-            modifiable = ext.isEditorInputModifiable();
-        } else if (editor instanceof ITextEditorExtension) {
-            ITextEditorExtension ext = (ITextEditorExtension) editor;
-            modifiable = ext.isEditorInputReadOnly();
-        } else if (editor != null) {
-            modifiable = editor.isEditable();
-        } else {
-            modifiable = true;
-        }
-        return modifiable;
     }
 
     /**
@@ -487,118 +368,6 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     }
 
     /**
-     * Installs the differ annotation model with the current quick diff display.
-     *
-     * @param column the column to install the model on
-     */
-    private void installChangeRulerModel(IVerticalRulerColumn column) {
-        if (column instanceof IChangeRulerColumn) {
-            IAnnotationModel model = getAnnotationModelWithDiffer();
-            ((IChangeRulerColumn) column).setModel(model);
-            if (model != null) {
-                ISourceViewer viewer = fViewer;
-                if (viewer != null && viewer.getAnnotationModel() == null && column.getControl() != null)
-                    viewer.showAnnotations(true);
-            }
-        }
-    }
-
-    /**
-     * Uninstalls the differ annotation model from the current quick diff display.
-     *
-     * @param column the column to remove the model from
-     */
-    private void uninstallChangeRulerModel(IVerticalRulerColumn column) {
-        if (column instanceof IChangeRulerColumn)
-            ((IChangeRulerColumn) column).setModel(null);
-        IAnnotationModel model = getDiffer();
-        if (model instanceof ILineDifferExtension)
-            ((ILineDifferExtension) model).suspend();
-
-        ISourceViewer viewer = fViewer;
-        if (viewer != null && viewer.getAnnotationModel() == null)
-            viewer.showAnnotations(false);
-    }
-
-    /**
-     * Returns the annotation model that contains the quick diff annotation model.
-     * <p>
-     * Extracts the line differ from the displayed document's annotation model. If none can be found,
-     * a new differ is created and attached to the annotation model.</p>
-     *
-     * @return the annotation model that contains the line differ, or <code>null</code> if none could be found or created
-     * @see org.eclipse.jface.text.source.IChangeRulerColumn#QUICK_DIFF_MODEL_ID
-     */
-    private IAnnotationModel getAnnotationModelWithDiffer() {
-        ISourceViewer viewer = fViewer;
-        if (viewer == null)
-            return null;
-
-        IAnnotationModel m = viewer.getAnnotationModel();
-        IAnnotationModelExtension model = null;
-        if (m instanceof IAnnotationModelExtension)
-            model = (IAnnotationModelExtension) m;
-
-        IAnnotationModel differ = getDiffer();
-        // create diff model if it doesn't
-        if (differ == null) {
-            IPreferenceStore store = getPreferenceStore();
-            if (store != null) {
-                String defaultId = store.getString(AbstractDecoratedTextEditorPreferenceConstants.QUICK_DIFF_DEFAULT_PROVIDER);
-                differ = new QuickDiff().createQuickDiffAnnotationModel(getEditor(), defaultId);
-                if (differ != null) {
-                    if (model == null)
-                        model = new AnnotationModel();
-                    model.addAnnotationModel(IChangeRulerColumn.QUICK_DIFF_MODEL_ID, differ);
-                }
-            }
-        } else if (differ instanceof ILineDifferExtension2) {
-            if (((ILineDifferExtension2) differ).isSuspended())
-                ((ILineDifferExtension) differ).resume();
-        } else if (differ instanceof ILineDifferExtension) {
-            ((ILineDifferExtension) differ).resume();
-        }
-
-        return (IAnnotationModel) model;
-    }
-
-    /**
-     * Extracts the line differ from the displayed document's annotation model. If none can be found,
-     * <code>null</code> is returned.
-     *
-     * @return the line differ, or <code>null</code> if none could be found
-     */
-    private IAnnotationModel getDiffer() {
-        // get annotation model extension
-        ISourceViewer viewer = fViewer;
-        if (viewer == null)
-            return null;
-
-        IAnnotationModel m = viewer.getAnnotationModel();
-        if (m == null && fDelegate instanceof IChangeRulerColumn)
-            m = ((IChangeRulerColumn) fDelegate).getModel();
-
-        if (!(m instanceof IAnnotationModelExtension))
-            return null;
-
-        IAnnotationModelExtension model = (IAnnotationModelExtension) m;
-
-        // get diff model if it exists already
-        return model.getAnnotationModel(IChangeRulerColumn.QUICK_DIFF_MODEL_ID);
-    }
-
-    /**
-     * Sets the forwarder. Used by {@link org.eclipse.ui.texteditor.AbstractDecoratedTextEditor} to maintain the contract of
-     * its {@link org.eclipse.ui.texteditor.AbstractDecoratedTextEditor#createLineNumberRulerColumn} method.
-     *
-     * @param forwarder the forwarder
-     */
-    public void setForwarder(ICompatibilityForwarder forwarder) {
-        fForwarder = forwarder;
-        fDelegate = forwarder.createLineNumberRulerColumn();
-    }
-
-    /**
      * Initializes the given line number ruler column from the preference store.
      *
      * @param rulerColumn the ruler column to be initialized
@@ -631,6 +400,11 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
      */
     public boolean isShowingChangeInformation() {
         return fDelegate instanceof LineNumberChangeRulerColumn && ((LineNumberChangeRulerColumn) fDelegate).isShowingChangeInformation();
+    }
+
+    public void setForwarder(ICompatibilityForwarder forwarder) {
+        fForwarder= forwarder;
+        fDelegate= forwarder.createLineNumberRulerColumn();
     }
 
 }

@@ -155,7 +155,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
 
         // only handle visibility of the combined column, but not the number/change only state
         if (show && fLineColumn == null) {
-            RulerColumnDescriptor lineNumberColumnDescriptor = RulerColumnRegistry.getDefault().getColumnDescriptor(org.eclipse.ui.internal.texteditor.LineNumberColumn.ID);
+            RulerColumnDescriptor lineNumberColumnDescriptor = RulerColumnRegistry.getDefault().getColumnDescriptor(LineNumberColumn.ID);
             if (lineNumberColumnDescriptor != null)
                 columnSupport.setColumnVisible(lineNumberColumnDescriptor, true);
         } else if (!show && fLineColumn != null && !isLineNumberRulerVisible()) {
@@ -212,7 +212,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                 RulerColumnDescriptor descriptor= column.getDescriptor();
                 IVerticalRuler ruler = getVerticalRuler();
                 if (ruler instanceof CompositeRuler) {
-                    if (org.eclipse.ui.internal.texteditor.LineNumberColumn.ID.equals(descriptor.getId())) {
+                    if (LineNumberColumn.ID.equals(descriptor.getId())) {
                         fLineColumn= ((LineNumberColumn) column);
                         fLineColumn.setForwarder(new LineNumberColumn.ICompatibilityForwarder() {
                             public IVerticalRulerColumn createLineNumberRulerColumn() {
@@ -249,7 +249,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                 // only handle visibility of the combined column, but not the number/change only state
                 IColumnSupport columnSupport= (IColumnSupport)getAdapter(IColumnSupport.class);
                 if (isLineNumberRulerVisible() && fLineColumn == null) {
-                    RulerColumnDescriptor lineNumberColumnDescriptor= RulerColumnRegistry.getDefault().getColumnDescriptor(org.eclipse.ui.internal.texteditor.LineNumberColumn.ID);
+                    RulerColumnDescriptor lineNumberColumnDescriptor= RulerColumnRegistry.getDefault().getColumnDescriptor(LineNumberColumn.ID);
                     if (lineNumberColumnDescriptor != null)
                         columnSupport.setColumnVisible(lineNumberColumnDescriptor, true);
                 } else if (!isLineNumberRulerVisible() && fLineColumn != null && !fLineColumn.isShowingChangeInformation()) {
