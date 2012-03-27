@@ -125,6 +125,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         return false;
     }
 
+    @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {
         return remarks;
