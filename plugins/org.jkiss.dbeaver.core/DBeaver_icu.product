@@ -47,6 +47,7 @@ This software is provided “as is” without express or implied warranty.
 
    <plugins>
       <plugin id="com.ibm.icu"/>
+      <plugin id="com.jcraft.jsch"/>
       <plugin id="javax.servlet"/>
       <plugin id="javax.servlet.jsp"/>
       <plugin id="org.apache.commons.el"/>

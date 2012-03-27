@@ -119,6 +119,7 @@ Export-Package: org.apache.commons.logging,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: lib/commons-logging-1.0.4.jar,
  lib/commons-jexl-2.0.1.jar,
+ lib/jsch-20120328.jar,
  .
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.eclipse.core.resources;bundle-version="3.5.0",
@@ -135,6 +136,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.5.0",
  org.mortbay.jetty.server;bundle-version="6.1.23",
  org.mortbay.jetty.util;bundle-version="6.1.23",
  org.eclipse.equinox.http.jetty;bundle-version="2.0.0",
- org.jkiss.utils;bundle-version="1.0.0";visibility:=reexport
+ org.jkiss.utils;bundle-version="1.0.0";visibility:=reexport,
+ com.jcraft.jsch
 Bundle-Vendor: Serge Rieder
 Bundle-Localization: plugin

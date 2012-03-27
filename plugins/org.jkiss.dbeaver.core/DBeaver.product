@@ -130,6 +130,7 @@ This software is provided &quot;as is&quot; without express or implied warranty.
       <plugin id="org.jkiss.wmi"/>
       <plugin id="org.mortbay.jetty.server"/>
       <plugin id="org.mortbay.jetty.util"/>
+      <plugin id="com.jcraft.jsch"/>
    </plugins>
 
 
