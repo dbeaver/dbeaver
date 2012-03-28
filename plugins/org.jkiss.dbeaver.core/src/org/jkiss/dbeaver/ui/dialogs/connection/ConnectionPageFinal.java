@@ -11,6 +11,7 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -35,8 +36,7 @@ import java.util.StringTokenizer;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageFinal extends ActiveWizardPage
-{
+class ConnectionPageFinal extends ActiveWizardPage {
     static final Log log = LogFactory.getLog(ConnectionPageFinal.class);
 
     private ConnectionWizard wizard;
@@ -45,9 +45,9 @@ class ConnectionPageFinal extends ActiveWizardPage
     private Button savePasswordCheck;
     private Button showSystemObjects;
     private Button testButton;
-    private Button eventsButton;
     private Text catFilterText;
     private Text schemaFilterText;
+    private Font boldFont;
 
     private boolean connectionNameChanged = false;
 
@@ -63,6 +63,13 @@ class ConnectionPageFinal extends ActiveWizardPage
     {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
+    }
+
+    @Override
+    public void dispose()
+    {
+        UIUtils.dispose(boldFont);
+        super.dispose();
     }
 
     public void activatePage()
@@ -115,11 +122,13 @@ class ConnectionPageFinal extends ActiveWizardPage
         UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
     }
 
-    public void deactivatePage() {
+    public void deactivatePage()
+    {
     }
 
     public void createControl(Composite parent)
     {
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite group = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
         //gl.marginHeight = 20;
@@ -147,7 +156,7 @@ class ConnectionPageFinal extends ActiveWizardPage
             gd.horizontalSpan = 2;
             gd.widthHint = 400;
             securityGroup.setLayoutData(gd);
-         
+
             savePasswordCheck = UIUtils.createCheckbox(securityGroup, CoreMessages.dialog_connection_wizard_final_checkbox_save_password_locally, dataSourceDescriptor == null || dataSourceDescriptor.isSavePassword());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             //gd.horizontalSpan = 2;
@@ -159,7 +168,7 @@ class ConnectionPageFinal extends ActiveWizardPage
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             filterGroup.setLayoutData(gd);
-            
+
             showSystemObjects = UIUtils.createCheckbox(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects, dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
@@ -173,23 +182,37 @@ class ConnectionPageFinal extends ActiveWizardPage
         }
 
         {
-            Composite buttonsGroup = UIUtils.createPlaceholder(group, 2);
-            buttonsGroup.setLayout(new GridLayout(2, true));
+            Composite buttonsGroup = UIUtils.createPlaceholder(group, 3);
+            //buttonsGroup.setLayout(new GridLayout(3, false));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
 
-            eventsButton = new Button(buttonsGroup, SWT.PUSH);
+            Button eventsButton = new Button(buttonsGroup, SWT.PUSH);
             eventsButton.setText(CoreMessages.dialog_connection_wizard_final_button_events);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.grabExcessHorizontalSpace = true;
-            gd.grabExcessVerticalSpace = true;
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             eventsButton.setLayoutData(gd);
             eventsButton.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e)
-            {
+                public void widgetSelected(SelectionEvent e)
+                {
                     configureEvents();
+                }
+            });
+            if (!CommonUtils.isEmpty(wizard.getPageSettings().getConnectionInfo().getDeclaredEvents())) {
+                eventsButton.setFont(boldFont);
             }
+
+            Button tunnelButton = new Button(buttonsGroup, SWT.PUSH);
+            tunnelButton.setText("Tunneling ...");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            tunnelButton.setLayoutData(gd);
+            tunnelButton.addSelectionListener(new SelectionAdapter() {
+                public void widgetSelected(SelectionEvent e)
+                {
+                    configureTunnels();
+                }
             });
 
             testButton = new Button(buttonsGroup, SWT.PUSH);
@@ -201,10 +224,10 @@ class ConnectionPageFinal extends ActiveWizardPage
 
             testButton.addSelectionListener(new SelectionAdapter() {
                 public void widgetSelected(SelectionEvent e)
-            {
+                {
                     testConnection();
-            }
-        });
+                }
+            });
 
         }
 
@@ -242,7 +265,14 @@ class ConnectionPageFinal extends ActiveWizardPage
             getShell(),
             wizard.getPageSettings().getConnectionInfo());
         dialog.open();
+    }
 
-}
+    private void configureTunnels()
+    {
+        EditTunnelDialog dialog = new EditTunnelDialog(
+            getShell(),
+            wizard.getPageSettings().getConnectionInfo());
+        dialog.open();
+    }
 
 }

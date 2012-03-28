@@ -104,59 +104,10 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         log.debug("Initializing DBeaver");
         log.debug("Host plugin: " + plugin.getBundle().getSymbolicName() + " " + plugin.getBundle().getVersion());
 
-/*
-        try {
-            JSch jsch = new JSch();
-            Session session = jsch.getSession("jurgen", "jkiss.org", 22);
-            session.setConfig("StrictHostKeyChecking", "no");
-            UserInfo ui=new MyUserInfo();
-            session.setUserInfo(ui);
-            session.connect();
-            session.setPortForwardingL("127.0.0.1", 7777, "localhost", 3306);
-        } catch (JSchException e) {
-            e.printStackTrace();
-        }
-*/
-
         instance = new DBeaverCore(plugin);
         instance.initialize();
         return instance;
     }
-
-/*
-    public static class MyUserInfo implements UserInfo {
-
-        @Override
-        public String getPassphrase() {
-            return null;
-        }
-
-        @Override
-        public String getPassword() {
-            return "password";
-        }
-
-        @Override
-        public boolean promptPassword(String message) {
-            return true;
-        }
-
-        @Override
-        public boolean promptPassphrase(String message) {
-            return true;
-        }
-
-        @Override
-        public boolean promptYesNo(String message) {
-            return false;  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        @Override
-        public void showMessage(String message) {
-            //To change body of implemented methods use File | Settings | File Templates.
-        }
-    }
-*/
 
     DBeaverCore(DBeaverActivator plugin) {
         this.plugin = plugin;
