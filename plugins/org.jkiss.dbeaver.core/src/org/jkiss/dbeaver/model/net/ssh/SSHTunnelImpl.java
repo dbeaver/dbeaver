@@ -2,40 +2,39 @@
  * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.dbeaver.model.net;
+package org.jkiss.dbeaver.model.net.ssh;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 
 /**
  * SSH tunnel
  */
-public class DBWTunnelSSH implements DBWTunnel {
+public class SSHTunnelImpl implements DBWTunnel {
 
-    public static enum AuthType {
-        PASSWORD,
-        PUBLIC_KEY
-    }
-
+    private DBWHandlerConfiguration configuration;
     private String host;
     private int port;
     private String user;
-    private AuthType authType;
+    private SSHConstants.AuthType authType;
     private String privateKeyPath;
-    private String password;
-    private boolean savePassword;
 
     private static transient JSch jsch;
     private transient Session session;
@@ -70,12 +69,12 @@ public class DBWTunnelSSH implements DBWTunnel {
         this.user = user;
     }
 
-    public AuthType getAuthType()
+    public SSHConstants.AuthType getAuthType()
     {
         return authType;
     }
 
-    public void setAuthType(AuthType authType)
+    public void setAuthType(SSHConstants.AuthType authType)
     {
         this.authType = authType;
     }
@@ -90,37 +89,19 @@ public class DBWTunnelSSH implements DBWTunnel {
         this.privateKeyPath = privateKeyPath;
     }
 
-    public String getPassword()
-    {
-        return password;
-    }
-
-    public void setPassword(String password)
-    {
-        this.password = password;
-    }
-
-    public boolean isSavePassword()
-    {
-        return savePassword;
-    }
-
-    public void setSavePassword(boolean savePassword)
-    {
-        this.savePassword = savePassword;
-    }
-
     @Override
-    public void initializeTunnel(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionInfo connectionInfo, Shell windowShell) throws DBException, IOException
+    public DBPConnectionInfo initializeTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionInfo connectionInfo)
+        throws DBException, IOException
     {
+        this.configuration = configuration;
         String dbPortString = connectionInfo.getHostPort();
         if (CommonUtils.isEmpty(dbPortString)) {
-            dbPortString = driver.getDefaultPort();
+            dbPortString = configuration.getDriver().getDefaultPort();
             if (CommonUtils.isEmpty(dbPortString)) {
-                throw new DBException("Database port not specified and no default port number for driver '" + driver.getName() + "'");
+                throw new DBException("Database port not specified and no default port number for driver '" + configuration.getDriver().getName() + "'");
             }
         }
-        UserInfo ui = new UIUserInfo(windowShell);
+        UserInfo ui = new UIUserInfo();
         int dbPort;
         try {
             dbPort = Integer.parseInt(dbPortString);
@@ -140,15 +121,35 @@ public class DBWTunnelSSH implements DBWTunnel {
         } catch (JSchException e) {
             throw new DBException("Cannot establish tunnel", e);
         }
+        connectionInfo = new DBPConnectionInfo(connectionInfo);
+        connectionInfo.setHostPort(String.valueOf(localPort));
+        return connectionInfo;
     }
 
     private int findFreePort()
     {
-        return 0;
+        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        int minPort = store.getInt(PrefConstants.NET_TUNNEL_PORT_MIN);
+        int maxPort = store.getInt(PrefConstants.NET_TUNNEL_PORT_MAX);
+        int portRange = Math.abs(maxPort - minPort);
+        while (true) {
+            int portNum = minPort + SecurityUtils.getRandom().nextInt(portRange);
+            try {
+                ServerSocket socket = new ServerSocket(portNum);
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    // just skip
+                }
+                return portNum;
+            } catch (IOException e) {
+                // Port is busy
+            }
+        }
     }
 
     @Override
-    public void closeTunnel(DBPConnectionInfo connectionInfo, DBRProgressMonitor monitor) throws DBException, IOException
+    public void closeTunnel(DBRProgressMonitor monitor, DBPConnectionInfo connectionInfo) throws DBException, IOException
     {
         if (session != null) {
             session.disconnect();
@@ -157,11 +158,9 @@ public class DBWTunnelSSH implements DBWTunnel {
     }
 
     private class UIUserInfo implements UserInfo {
-        private Shell windowShell;
 
-        private UIUserInfo(Shell windowShell)
+        private UIUserInfo()
         {
-            this.windowShell = windowShell;
         }
 
         @Override
@@ -173,7 +172,7 @@ public class DBWTunnelSSH implements DBWTunnel {
         @Override
         public String getPassword()
         {
-            return password;
+            return configuration.getPassword();
         }
 
         @Override
@@ -197,7 +196,7 @@ public class DBWTunnelSSH implements DBWTunnel {
         @Override
         public void showMessage(String message)
         {
-            UIUtils.showMessageBox(windowShell, "SSH Tunnel", message, SWT.ICON_INFORMATION);
+            UIUtils.showMessageBox(null, "SSH Tunnel", message, SWT.ICON_INFORMATION);
         }
     }
 }

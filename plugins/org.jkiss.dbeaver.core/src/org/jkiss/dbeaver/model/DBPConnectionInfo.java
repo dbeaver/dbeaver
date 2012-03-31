@@ -1,9 +1,11 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 
 import java.util.*;
@@ -14,8 +16,6 @@ import java.util.*;
 public class DBPConnectionInfo implements DBPObject
 {
 
-    //private DBPDriver driver;
-    private String clientHomeId;
     private String hostName;
     private String hostPort;
     private String serverName;
@@ -23,13 +23,16 @@ public class DBPConnectionInfo implements DBPObject
     private String userName;
     private String userPassword;
     private String url;
+    private String clientHomeId;
     private final Map<Object, Object> properties;
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
+    private final List<DBWHandlerConfiguration> handlers;
 
     public DBPConnectionInfo()
     {
         this.properties = new HashMap<Object, Object>();
         this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>();
+        this.handlers = new ArrayList<DBWHandlerConfiguration>();
     }
 
     public DBPConnectionInfo(DBPConnectionInfo info)
@@ -43,7 +46,14 @@ public class DBPConnectionInfo implements DBPObject
         this.url = info.url;
         this.clientHomeId = info.clientHomeId;
         this.properties = new HashMap<Object, Object>(info.properties);
-        this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>(info.events);
+        this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>(info.events.size());
+        for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
+            this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
+        }
+        this.handlers = new ArrayList<DBWHandlerConfiguration>(info.handlers.size());
+        for (DBWHandlerConfiguration handler : info.handlers) {
+            this.handlers.add(new DBWHandlerConfiguration(handler));
+        }
     }
 
 /*
@@ -168,4 +178,20 @@ public class DBPConnectionInfo implements DBPObject
         Set<DBPConnectionEventType> eventTypes = events.keySet();
         return eventTypes.toArray(new DBPConnectionEventType[eventTypes.size()]);
     }
+
+    public List<DBWHandlerConfiguration> getDeclaredHandlers()
+    {
+        return handlers;
+    }
+
+    public DBWHandlerConfiguration getHandler(DBWHandlerType handlerType)
+    {
+        for (DBWHandlerConfiguration handler : handlers) {
+            if (handler.getType() == handlerType) {
+                return handler;
+            }
+        }
+        return null;
+    }
+
 }

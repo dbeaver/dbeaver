@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
@@ -57,5 +57,9 @@ public final class PrefConstants
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
     public static final String UI_PROXY_HOST = "ui.proxy.host"; //$NON-NLS-1$
     public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
+
+    // Network
+    public static final String NET_TUNNEL_PORT_MIN = "net.tunnel.port.min"; //$NON-NLS-1$
+    public static final String NET_TUNNEL_PORT_MAX = "net.tunnel.port.max"; //$NON-NLS-1$
 
 }

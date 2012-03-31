@@ -13,6 +13,7 @@
     <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider" schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data Formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.networkHandler" name="Network Handlers" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -1804,6 +1805,17 @@
         <handler type="databases" class="org.jkiss.dbeaver.model.impl.project.DatabasesHandlerImpl"/>
         <handler type="scripts" extensions="sql" class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl"/>
         <handler type="bookmarks" extensions="bm" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+            type="tunnel"
+            id="ssh_tunnel"
+            label="SSH"
+            description="SSH tunnel"
+            secured="true"
+            uiClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelConfiguratorUI"
+            handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl"/>
     </extension>
 
     <extension point="org.eclipse.ui.exportWizards">

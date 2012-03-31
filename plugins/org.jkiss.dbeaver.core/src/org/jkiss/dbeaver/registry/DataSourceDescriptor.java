@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.net.DBWHandlerType;
+import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -90,6 +93,7 @@ public class DataSourceDescriptor
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<DBRProcessDescriptor>();
+    private DBWTunnel tunnel;
 
     public DataSourceDescriptor(
         DataSourceRegistry registry,
@@ -311,6 +315,24 @@ public class DataSourceDescriptor
             return;
         }
 
+        // Handle tunnel
+        // Open tunnel and replace connection info with new one
+        this.tunnel = null;
+        DBPConnectionInfo tunnelConnectionInfo = null, savedConnectionInfo = null;
+        DBWHandlerConfiguration handlerConfiguration = connectionInfo.getHandler(DBWHandlerType.TUNNEL);
+        if (handlerConfiguration != null) {
+            tunnel = handlerConfiguration.createHandler(DBWTunnel.class);
+            try {
+                tunnelConnectionInfo = tunnel.initializeTunnel(monitor, handlerConfiguration, connectionInfo);
+            } catch (Exception e) {
+                throw new DBCException("Can't initialize tunnel", e);
+            }
+        }
+        if (tunnelConnectionInfo != null) {
+            savedConnectionInfo = connectionInfo;
+            connectionInfo = tunnelConnectionInfo;
+        }
+
         try {
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
 
@@ -357,6 +379,10 @@ public class DataSourceDescriptor
                 throw (DBException)e;
             } else {
                 throw new DBException("Internal error connecting to " + getName(), e);
+            }
+        } finally {
+            if (savedConnectionInfo != null) {
+                connectionInfo = savedConnectionInfo;
             }
         }
     }
@@ -416,7 +442,7 @@ public class DataSourceDescriptor
             }
         }
 
-        monitor.beginTask("Disconnect from '" + getName() + "'", 3);
+        monitor.beginTask("Disconnect from '" + getName() + "'", 4);
 
         // First rollback active transaction
         monitor.subTask("Rollback active transaction");
@@ -460,6 +486,19 @@ public class DataSourceDescriptor
         // Close datasource
         monitor.subTask("Close connection");
         getDataSource().close();
+        monitor.worked(1);
+
+        // Close tunnel
+        if (tunnel != null) {
+            monitor.subTask("Close tunnel");
+            try {
+                tunnel.closeTunnel(monitor, connectionInfo);
+            } catch (Exception e) {
+                log.warn("Error closing tunnel", e);
+            } finally {
+                this.tunnel = null;
+            }
+        }
         monitor.worked(1);
 
         monitor.done();

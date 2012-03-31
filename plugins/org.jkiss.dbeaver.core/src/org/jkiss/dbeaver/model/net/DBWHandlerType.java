@@ -5,9 +5,8 @@
 package org.jkiss.dbeaver.model.net;
 
 /**
- * Tunnel type
+ * Network handler type
  */
-public enum DBWTunnelType {
-    SSH,
-    HTTP
+public enum DBWHandlerType {
+    TUNNEL
 }

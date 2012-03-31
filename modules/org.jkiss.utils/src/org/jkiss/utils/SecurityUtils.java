@@ -7,6 +7,7 @@ package org.jkiss.utils;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Random;
 
 /**
  * Come security-related functions.
@@ -19,7 +20,7 @@ public class SecurityUtils {
     private static java.util.Random	secureRand;
 
     static {
-		secureRand = new java.util.Random();
+		secureRand = new java.util.Random(System.currentTimeMillis());
 		long secureInitializer = secureRand.nextLong();
 		random = new java.util.Random(secureInitializer);
     }
@@ -183,7 +184,12 @@ public class SecurityUtils {
 		return generatePassword(DEFAULT_PASSWORD_LENGTH);
 	}
 
-	/** 
+    public static Random getRandom()
+    {
+        return random;
+    }
+
+    /**
 	 * Default length for passwords
 	 */
 	public static final int DEFAULT_PASSWORD_LENGTH = 8;

@@ -4,44 +4,49 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPConnectionEventType;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.registry.NetworkHandlerDescriptor;
+import org.jkiss.dbeaver.registry.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Events edit dialog
+ * Network handlers edit dialog
  */
 public class EditTunnelDialog extends HelpEnabledDialog {
 
-    private DBPConnectionInfo connectionInfo;
+    static final Log log = LogFactory.getLog(EditTunnelDialog.class);
 
-    protected EditTunnelDialog(Shell shell, DBPConnectionInfo connectionInfo)
+    private DBPDriver driver;
+    private DBPConnectionInfo connectionInfo;
+    private Map<NetworkHandlerDescriptor, DBWHandlerConfiguration> configurations = new HashMap<NetworkHandlerDescriptor, DBWHandlerConfiguration>();
+
+    protected EditTunnelDialog(Shell shell, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         super(shell, IHelpContextIds.CTX_EDIT_CONNECTION_TUNNELS);
+        this.driver = driver;
         this.connectionInfo = connectionInfo;
     }
 
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Edit connection tunneling");
+        getShell().setText("Configure connection handlers");
         //getShell().setImage(DBIcon.EVENT.getImage());
 
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -49,23 +54,39 @@ public class EditTunnelDialog extends HelpEnabledDialog {
         TabFolder tunnelTypeFolder = new TabFolder(composite, SWT.TOP);
         tunnelTypeFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        createTabSSH(tunnelTypeFolder);
+        NetworkHandlerRegistry registry = DBeaverCore.getInstance().getNetworkHandlerRegistry();
+        for (NetworkHandlerDescriptor descriptor : registry.getDescriptors()) {
+            try {
+                createHandlerTab(tunnelTypeFolder, descriptor);
+            } catch (DBException e) {
+                log.warn(e);
+            }
+        }
         
         return composite;
     }
 
-    private void createTabSSH(TabFolder folder)
+    private void createHandlerTab(TabFolder tabFolder, NetworkHandlerDescriptor descriptor) throws DBException
     {
-        TabItem tabItem = new TabItem(folder, SWT.NONE);
-        tabItem.setText("SSH");
-        tabItem.setToolTipText("SSH tunnel");
+        IObjectPropertyConfigurator configurator = descriptor.createConfigurator();
 
-        Composite composite = new Composite(folder, SWT.NONE);
+        TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
+        tabItem.setText(descriptor.getLabel());
+        tabItem.setToolTipText(descriptor.getDescription());
+
+        Composite composite = new Composite(tabFolder, SWT.NONE);
         tabItem.setControl(composite);
+        composite.setLayout(new GridLayout(1, false));
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         
-        UIUtils.createCheckbox(composite, "Use SSH Tunnel", false);
-    }
+        UIUtils.createCheckbox(composite, "Use " + descriptor.getLabel(), false);
+        Composite handlerComposite = UIUtils.createPlaceholder(composite, 1);
+        handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        configurator.createControl(handlerComposite);
+        DBWHandlerConfiguration configuration = new DBWHandlerConfiguration(descriptor, driver);
+        configurations.put(descriptor, configuration);
+    }
 
     @Override
     protected void okPressed()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -180,6 +180,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
             connectionEditor.dispose();
             connectionEditor = null;
         }
-        super.dispose();    //To change body of overridden methods use File | Settings | File Templates.
+        super.dispose();
     }
+
 }

@@ -271,6 +271,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     {
         EditTunnelDialog dialog = new EditTunnelDialog(
             getShell(),
+            wizard.getPageSettings().getDriver(),
             wizard.getPageSettings().getConnectionInfo());
         dialog.open();
     }

@@ -4,10 +4,6 @@
 
 package org.jkiss.dbeaver.core;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
@@ -42,7 +38,6 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.osgi.framework.Version;
 
 import java.io.ByteArrayInputStream;
@@ -50,7 +45,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * DBeaverCore
@@ -77,6 +74,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private EntityEditorsRegistry editorsRegistry;
     private DataExportersRegistry dataExportersRegistry;
     private DataFormatterRegistry dataFormatterRegistry;
+    private NetworkHandlerRegistry networkHandlerRegistry;
 
     private DBNModel navigatorModel;
     private QMControllerImpl queryManager;
@@ -86,7 +84,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private boolean standalone = false;
     private boolean isClosing;
 
-    public static DBeaverCore getInstance() {
+    public static DBeaverCore getInstance()
+    {
         if (instance == null) {
             synchronized (DBeaverCore.class) {
                 if (instance == null) {
@@ -100,7 +99,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return instance;
     }
 
-    static DBeaverCore createInstance(DBeaverActivator plugin) {
+    static DBeaverCore createInstance(DBeaverActivator plugin)
+    {
         log.debug("Initializing DBeaver");
         log.debug("Host plugin: " + plugin.getBundle().getSymbolicName() + " " + plugin.getBundle().getVersion());
 
@@ -109,31 +109,38 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return instance;
     }
 
-    DBeaverCore(DBeaverActivator plugin) {
+    DBeaverCore(DBeaverActivator plugin)
+    {
         this.plugin = plugin;
     }
 
-    public boolean isClosing() {
+    public boolean isClosing()
+    {
         return isClosing;
     }
 
-    void setClosing(boolean closing) {
+    void setClosing(boolean closing)
+    {
         isClosing = closing;
     }
 
-    public boolean isStandalone() {
+    public boolean isStandalone()
+    {
         return standalone;
     }
 
-    void setStandalone(boolean standalone) {
+    void setStandalone(boolean standalone)
+    {
         this.standalone = standalone;
     }
 
-    public Version getVersion() {
+    public Version getVersion()
+    {
         return Platform.getProduct().getDefiningBundle().getVersion();
     }
 
-    private void initialize() {
+    private void initialize()
+    {
         //progressProvider = new DBeaverProgressProvider();
         this.sharedTextColors = new SharedTextColors();
 
@@ -158,6 +165,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.editorsRegistry = new EntityEditorsRegistry(extensionRegistry);
         this.dataExportersRegistry = new DataExportersRegistry(extensionRegistry);
         this.dataFormatterRegistry = new DataFormatterRegistry(extensionRegistry);
+        this.networkHandlerRegistry = new NetworkHandlerRegistry(extensionRegistry);
 
         this.queryManager = new QMControllerImpl(dataSourceProviderRegistry);
 
@@ -168,7 +176,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         try {
             PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException {
+                    throws InvocationTargetException, InterruptedException
+                {
                     try {
                         try {
 // Temp project
@@ -203,7 +212,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.navigatorModel.initialize();
     }
 
-    public IProject getProject(String projectId) {
+    public IProject getProject(String projectId)
+    {
         IProject[] projects = this.workspace.getRoot().getProjects();
         for (IProject project : projects) {
             if (!project.isOpen()) {
@@ -221,7 +231,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return null;
     }
 
-    public synchronized void dispose() {
+    public synchronized void dispose()
+    {
         IProgressMonitor monitor = new NullProgressMonitor();
         if (workspace != null) {
             for (IProject project : workspace.getRoot().getProjects()) {
@@ -247,6 +258,10 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         if (navigatorModel != null) {
             navigatorModel.dispose();
             //navigatorModel = null;
+        }
+        if (this.networkHandlerRegistry != null) {
+            networkHandlerRegistry.dispose();
+            networkHandlerRegistry = null;
         }
         if (this.dataExportersRegistry != null) {
             this.dataExportersRegistry.dispose();
@@ -285,74 +300,96 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         instance = null;
     }
 
-    public Plugin getPlugin() {
+    public Plugin getPlugin()
+    {
         return plugin;
     }
 
-    public String getPluginID() {
+    public String getPluginID()
+    {
         return plugin.getBundle().getSymbolicName();
     }
 
-    public ILog getPluginLog() {
+    public ILog getPluginLog()
+    {
         return plugin.getLog();
     }
 
-    public IWorkspace getWorkspace() {
+    public IWorkspace getWorkspace()
+    {
         return workspace;
     }
 
-    public IPath getRootPath() {
+    public IPath getRootPath()
+    {
         return rootPath;
     }
 
-    public ISharedTextColors getSharedTextColors() {
+    public ISharedTextColors getSharedTextColors()
+    {
         return sharedTextColors;
     }
 
-    public OSDescriptor getLocalSystem() {
+    public OSDescriptor getLocalSystem()
+    {
         return localSystem;
     }
 
-    public DBNModel getNavigatorModel() {
+    public DBNModel getNavigatorModel()
+    {
         return navigatorModel;
     }
 
-    public QMController getQueryManager() {
+    public QMController getQueryManager()
+    {
         return queryManager;
     }
 
-    public DataSourceProviderRegistry getDataSourceProviderRegistry() {
+    public DataSourceProviderRegistry getDataSourceProviderRegistry()
+    {
         return this.dataSourceProviderRegistry;
     }
 
-    public EntityEditorsRegistry getEditorsRegistry() {
+    public EntityEditorsRegistry getEditorsRegistry()
+    {
         return editorsRegistry;
     }
 
-    public DataExportersRegistry getDataExportersRegistry() {
+    public DataExportersRegistry getDataExportersRegistry()
+    {
         return dataExportersRegistry;
     }
 
-    public DataFormatterRegistry getDataFormatterRegistry() {
+    public DataFormatterRegistry getDataFormatterRegistry()
+    {
         return dataFormatterRegistry;
     }
 
-    public ProjectRegistry getProjectRegistry() {
+    public NetworkHandlerRegistry getNetworkHandlerRegistry()
+    {
+        return networkHandlerRegistry;
+    }
+
+    public ProjectRegistry getProjectRegistry()
+    {
         return projectRegistry;
     }
 
-    public IWorkbench getWorkbench() {
+    public IWorkbench getWorkbench()
+    {
         if (this.workbench == null) {
             this.workbench = PlatformUI.getWorkbench();
         }
         return this.workbench;
     }
 
-    public IPreferenceStore getGlobalPreferenceStore() {
+    public IPreferenceStore getGlobalPreferenceStore()
+    {
         return plugin.getPreferenceStore();
     }
 
-    public void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InterruptedException, InvocationTargetException {
+    public void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InterruptedException, InvocationTargetException
+    {
         try {
             IRunnableContext runnableContext;
             IWorkbenchWindow workbenchWindow = getWorkbench().getActiveWorkbenchWindow();
@@ -363,7 +400,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             }
             runnableContext.run(true, true, new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException {
+                    throws InvocationTargetException, InterruptedException
+                {
                     runnable.run(RuntimeUtils.makeMonitor(monitor));
                 }
             });
@@ -373,18 +411,22 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     }
 
     public void runInProgressService(final DBRRunnableWithProgress runnable)
-            throws InvocationTargetException, InterruptedException {
+        throws InvocationTargetException, InterruptedException
+    {
         this.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {
             public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
+                throws InvocationTargetException, InterruptedException
+            {
                 runnable.run(RuntimeUtils.makeMonitor(monitor));
             }
         });
     }
 
-    public static void runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress) {
+    public static void runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
+    {
         new AbstractUIJob(jobName) {
-            public IStatus runInUIThread(DBRProgressMonitor monitor) {
+            public IStatus runInUIThread(DBRProgressMonitor monitor)
+            {
                 try {
                     runnableWithProgress.run(monitor);
                 } catch (InvocationTargetException e) {
@@ -397,11 +439,13 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         }.schedule();
     }
 
-    public void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable) {
+    public void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable)
+    {
         try {
             this.getWorkbench().getProgressService().runInUI(context, new IRunnableWithProgress() {
                 public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException {
+                    throws InvocationTargetException, InterruptedException
+                {
                     runnable.run(RuntimeUtils.makeMonitor(monitor));
                 }
             }, DBeaverActivator.getWorkspace().getRoot());
@@ -421,12 +465,14 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 */
 
     public IFolder getLobFolder(IProgressMonitor monitor)
-            throws IOException {
+        throws IOException
+    {
         return getTempFolder(monitor, LOB_DIR);
     }
 
     private IFolder getTempFolder(IProgressMonitor monitor, String name)
-            throws IOException {
+        throws IOException
+    {
         IPath tempPath = tempProject.getProjectRelativePath().append(name);
         IFolder tempFolder = tempProject.getFolder(tempPath);
         if (!tempFolder.exists()) {
@@ -441,7 +487,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     }
 
     public IFile makeTempFile(DBRProgressMonitor monitor, IFolder folder, String name, String extension)
-            throws IOException {
+        throws IOException
+    {
         IFile tempFile = folder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
         try {
             InputStream contents = new ByteArrayInputStream(new byte[0]);
@@ -452,7 +499,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return tempFile;
     }
 
-    private void initDefaultPreferences() {
+    private void initDefaultPreferences()
+    {
         IPreferenceStore store = getGlobalPreferenceStore();
 
         // Common
@@ -502,6 +550,10 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_HOST, "");
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_PORT, 0);
 
+        // Network
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NET_TUNNEL_PORT_MIN, 10000);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NET_TUNNEL_PORT_MAX, 60000);
+
         // QM
         queryManager.initDefaultPreferences(store);
 
@@ -509,7 +561,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
     }
 
-    public static IWorkbenchWindow getActiveWorkbenchWindow() {
+    public static IWorkbenchWindow getActiveWorkbenchWindow()
+    {
         IWorkbenchWindow window = instance.plugin.getWorkbench().getActiveWorkbenchWindow();
         if (window != null) {
             return window;
@@ -521,7 +574,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return null;
     }
 
-    public static Shell getActiveWorkbenchShell() {
+    public static Shell getActiveWorkbenchShell()
+    {
         IWorkbenchWindow window = getActiveWorkbenchWindow();
         if (window != null) {
             return window.getShell();
@@ -532,7 +586,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return null;
     }
 
-    public static Display getDisplay() {
+    public static Display getDisplay()
+    {
         Shell shell = getActiveWorkbenchShell();
         if (shell != null)
             return shell.getDisplay();
@@ -540,7 +595,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             return Display.getDefault();
     }
 
-    public List<IProject> getLiveProjects() {
+    public List<IProject> getLiveProjects()
+    {
         List<IProject> result = new ArrayList<IProject>();
         for (IProject project : workspace.getRoot().getProjects()) {
             if (project.exists() && !project.isHidden()) {
@@ -550,7 +606,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return result;
     }
 
-    private void cleanupLobFiles(IProgressMonitor monitor) {
+    private void cleanupLobFiles(IProgressMonitor monitor)
+    {
         IFolder tempFolder;
         try {
             tempFolder = getLobFolder(monitor);
