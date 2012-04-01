@@ -10,10 +10,15 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * SSH tunnel configuration
@@ -28,6 +33,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Text passwordText;
     private Button savePasswordCheckbox;
     private Label privateKeyLabel;
+    private Composite pkControlGroup;
 
     @Override
     public void createControl(Composite parent)
@@ -44,12 +50,38 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         userNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         authMethodCombo = UIUtils.createLabelCombo(composite, "Authentication Method", SWT.DROP_DOWN | SWT.READ_ONLY);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = 130;
+        authMethodCombo.setLayoutData(gd);
         authMethodCombo.add("Password");
         authMethodCombo.add("Public Key");
+
         privateKeyLabel = UIUtils.createControlLabel(composite, "Private Key");
-        privateKeyLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        privateKeyText = new Text(composite, SWT.BORDER);
+        privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        pkControlGroup = UIUtils.createPlaceholder(composite, 2);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = 130;
+        pkControlGroup.setLayoutData(gd);
+        privateKeyText = new Text(pkControlGroup, SWT.BORDER);
         privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        Button openFolder = new Button(pkControlGroup, SWT.PUSH);
+        openFolder.setImage(DBIcon.TREE_FOLDER.getImage());
+        openFolder.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                FileDialog fd = new FileDialog(composite.getShell(), SWT.OPEN | SWT.SINGLE);
+                fd.setText("Choose private key file");
+                String[] filterExt = {"*.*", "*.ssh"}; //$NON-NLS-1$ //$NON-NLS-2$
+                fd.setFilterExtensions(filterExt);
+                String selected = ContentUtils.openFileDialog(fd);
+                if (selected != null) {
+                    privateKeyText.setText(selected);
+                }
+            }
+        });
+
         passwordText = UIUtils.createLabelText(composite, "Password", "", SWT.BORDER | SWT.PASSWORD);
 
         authMethodCombo.addSelectionListener(new SelectionAdapter() {
@@ -90,17 +122,28 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     @Override
     public void saveSettings(DBWHandlerConfiguration configuration)
     {
-
+        Map<String,String> properties = configuration.getProperties();
+        properties.clear();
+        properties.put(SSHConstants.PROP_HOST, hostText.getText());
+        properties.put(SSHConstants.PROP_PORT, portText.getText());
+        properties.put(SSHConstants.PROP_USER_NAME, userNameText.getText());
+        properties.put(SSHConstants.PROP_AUTH_TYPE,
+            authMethodCombo.getSelectionIndex() == 0 ?
+                SSHConstants.AuthType.PASSWORD.name() :
+                SSHConstants.AuthType.PUBLIC_KEY.name());
+        properties.put(SSHConstants.PROP_KEY_PATH, privateKeyText.getText());
+        configuration.setPassword(passwordText.getText());
+        configuration.setSavePassword(savePasswordCheckbox.getSelection());
     }
 
     private void updatePrivateKeyVisibility()
     {
         boolean isPassword = authMethodCombo.getSelectionIndex() == 0;
-        GridData gd = (GridData)privateKeyText.getLayoutData();
+        GridData gd = (GridData)pkControlGroup.getLayoutData();
         gd.exclude = isPassword;
         gd = (GridData)privateKeyLabel.getLayoutData();
         gd.exclude = isPassword;
-        privateKeyText.setVisible(!isPassword);
+        pkControlGroup.setVisible(!isPassword);
         privateKeyLabel.setVisible(!isPassword);
     }
 
