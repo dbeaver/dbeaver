@@ -125,7 +125,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
     public static boolean askForPassword(final DataSourceDescriptor dataSourceContainer, final DBWHandlerConfiguration handler)
     {
         final boolean[] authResult = new boolean[] { false };
-        Display.getCurrent().syncExec(new Runnable() {
+        Display.getDefault().syncExec(new Runnable() {
             public void run()
             {
                 ConnectionAuthDialog auth = new ConnectionAuthDialog(UIUtils.getActiveShell(), dataSourceContainer, handler);
