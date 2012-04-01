@@ -13,6 +13,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -50,12 +51,17 @@ public class DataSourceConnectHandler extends DataSourceHandler
             final String oldPassword = dataSourceDescriptor.getConnectionInfo().getUserPassword();
             if (!dataSourceDescriptor.isSavePassword()) {
                 // Ask for password
-                if (!askForPassword(dataSourceDescriptor)) {
-                    dataSourceDescriptor.getRegistry().fireDataSourceEvent(
-                        DBPEvent.Action.OBJECT_UPDATE,
-                        dataSourceContainer,
-                        false);
+                if (!askForPassword(dataSourceDescriptor, null)) {
+                    updateDataSourceObject(dataSourceDescriptor);
                     return;
+                }
+            }
+            for (DBWHandlerConfiguration handler : dataSourceDescriptor.getConnectionInfo().getDeclaredHandlers()) {
+                if (handler.isEnabled() && handler.isSecured() && !handler.isSavePassword()) {
+                    if (!askForPassword(dataSourceDescriptor, handler)) {
+                        updateDataSourceObject(dataSourceDescriptor);
+                        return;
+                    }
                 }
             }
 
@@ -108,13 +114,21 @@ public class DataSourceConnectHandler extends DataSourceHandler
         }
     }
 
-    public static boolean askForPassword(final DataSourceDescriptor dataSourceContainer)
+    private static void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor)
+    {
+        dataSourceDescriptor.getRegistry().fireDataSourceEvent(
+            DBPEvent.Action.OBJECT_UPDATE,
+            dataSourceDescriptor,
+            false);
+    }
+
+    public static boolean askForPassword(final DataSourceDescriptor dataSourceContainer, final DBWHandlerConfiguration handler)
     {
         final boolean[] authResult = new boolean[] { false };
         Display.getCurrent().syncExec(new Runnable() {
             public void run()
             {
-                ConnectionAuthDialog auth = new ConnectionAuthDialog(UIUtils.getActiveShell(), dataSourceContainer);
+                ConnectionAuthDialog auth = new ConnectionAuthDialog(UIUtils.getActiveShell(), dataSourceContainer, handler);
                 int result = auth.open();
                 if (result == IDialogConstants.OK_ID) {
                     if (dataSourceContainer.isSavePassword()) {

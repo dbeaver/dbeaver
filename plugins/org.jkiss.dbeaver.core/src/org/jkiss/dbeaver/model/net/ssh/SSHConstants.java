@@ -13,7 +13,6 @@ public class SSHConstants {
 
     public static final String PROP_HOST = "host";
     public static final String PROP_PORT = "port";
-    public static final String PROP_USER_NAME = "user";
     public static final String PROP_AUTH_TYPE = "authType";
     public static final String PROP_KEY_PATH = "keyPath";
 

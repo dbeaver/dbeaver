@@ -430,8 +430,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
                 xml.startElement("network-handler");
                 xml.addAttribute("type", configuration.getType().name());
-                xml.addAttribute("id", configuration.getId());
+                xml.addAttribute("id", CommonUtils.getString(configuration.getId()));
                 xml.addAttribute("enabled", configuration.isEnabled());
+                xml.addAttribute("user", CommonUtils.getString(configuration.getUserName()));
                 xml.addAttribute("save-password", configuration.isSavePassword());
                 if (configuration.isSavePassword() && !CommonUtils.isEmpty(configuration.getPassword())) {
                     String encPassword = configuration.getPassword();
@@ -448,7 +449,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 for (Map.Entry<String, String> entry : configuration.getProperties().entrySet()) {
                     xml.startElement("property");
                     xml.addAttribute("name", entry.getKey());
-                    xml.addAttribute("value", entry.getValue());
+                    xml.addAttribute("value", CommonUtils.getString(entry.getValue()));
                     xml.endElement();
                 }
                 xml.endElement();
@@ -591,6 +592,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     }
                     curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
                     curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue("enabled")));
+                    curNetworkHandler.setUserName(CommonUtils.getString(atts.getValue("user")));
                     curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue("save-password")));
                     curNetworkHandler.setPassword(decryptPassword(atts.getValue("password")));
                     curDataSource.getConnectionInfo().addHandler(curNetworkHandler);

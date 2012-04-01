@@ -35,7 +35,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.type = DBWHandlerType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase());
-        this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLASS), false);
+        this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SECURED), false);
         this.handlerClassName = config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS);
         this.uiClassName = config.getAttribute(RegistryConstants.ATTR_UI_CLASS);
     }

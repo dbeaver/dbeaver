@@ -20,6 +20,7 @@ public class DBWHandlerConfiguration implements IObjectPropertyConfiguration {
     private final NetworkHandlerDescriptor descriptor;
     private final DBPDriver driver;
     private boolean enabled;
+    private String userName;
     private String password;
     private boolean savePassword;
     private final Map<String, String> properties;
@@ -60,9 +61,19 @@ public class DBWHandlerConfiguration implements IObjectPropertyConfiguration {
         return descriptor.getType();
     }
 
+    public boolean isSecured()
+    {
+        return descriptor.isSecured();
+    }
+
     public String getId()
     {
         return descriptor.getId();
+    }
+
+    public String getTitle()
+    {
+        return descriptor.getLabel();
     }
 
     public boolean isEnabled()
@@ -73,6 +84,16 @@ public class DBWHandlerConfiguration implements IObjectPropertyConfiguration {
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
+    }
+
+    public String getUserName()
+    {
+        return userName;
+    }
+
+    public void setUserName(String userName)
+    {
+        this.userName = userName;
     }
 
     public String getPassword()

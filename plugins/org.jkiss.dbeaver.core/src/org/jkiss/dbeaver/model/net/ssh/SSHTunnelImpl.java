@@ -48,7 +48,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         Map<String,String> properties = configuration.getProperties();
         String sshHost = properties.get(SSHConstants.PROP_HOST);
         String sshPort = properties.get(SSHConstants.PROP_PORT);
-        String sshUser = properties.get(SSHConstants.PROP_USER_NAME);
+        String sshUser = configuration.getUserName();
         if (CommonUtils.isEmpty(sshHost)) {
             throw new DBException("SSH host not specified");
         }

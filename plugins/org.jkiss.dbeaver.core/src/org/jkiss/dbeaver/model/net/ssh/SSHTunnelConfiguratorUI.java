@@ -45,7 +45,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         composite.setLayout(new GridLayout(2, false));
         hostText = UIUtils.createLabelText(composite, "Host/IP", "");
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        portText = UIUtils.createLabelSpinner(composite, "Port", 22, 0, 65535);
+        portText = UIUtils.createLabelSpinner(composite, "Port", SSHConstants.DEFAULT_SSH_PORT, 0, 65535);
         userNameText = UIUtils.createLabelText(composite, "User Name", "");
         userNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -105,7 +105,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         if (!CommonUtils.isEmpty(portString)) {
             portText.setSelection(CommonUtils.toInt(portString));
         }
-        userNameText.setText(CommonUtils.getString(configuration.getProperties().get(SSHConstants.PROP_USER_NAME)));
+        userNameText.setText(CommonUtils.getString(configuration.getUserName()));
         SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
         String authTypeName = configuration.getProperties().get(SSHConstants.PROP_AUTH_TYPE);
         if (!CommonUtils.isEmpty(authTypeName)) {
@@ -126,12 +126,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         properties.clear();
         properties.put(SSHConstants.PROP_HOST, hostText.getText());
         properties.put(SSHConstants.PROP_PORT, portText.getText());
-        properties.put(SSHConstants.PROP_USER_NAME, userNameText.getText());
         properties.put(SSHConstants.PROP_AUTH_TYPE,
             authMethodCombo.getSelectionIndex() == 0 ?
                 SSHConstants.AuthType.PASSWORD.name() :
                 SSHConstants.AuthType.PUBLIC_KEY.name());
         properties.put(SSHConstants.PROP_KEY_PATH, privateKeyText.getText());
+        configuration.setUserName(userNameText.getText());
         configuration.setPassword(passwordText.getText());
         configuration.setSavePassword(savePasswordCheckbox.getSelection());
     }
