@@ -315,25 +315,25 @@ public class DataSourceDescriptor
             return;
         }
 
-        // Handle tunnel
-        // Open tunnel and replace connection info with new one
-        this.tunnel = null;
         DBPConnectionInfo tunnelConnectionInfo = null, savedConnectionInfo = null;
-        DBWHandlerConfiguration handlerConfiguration = connectionInfo.getHandler(DBWHandlerType.TUNNEL);
-        if (handlerConfiguration != null) {
-            tunnel = handlerConfiguration.createHandler(DBWTunnel.class);
-            try {
-                tunnelConnectionInfo = tunnel.initializeTunnel(monitor, handlerConfiguration, connectionInfo);
-            } catch (Exception e) {
-                throw new DBCException("Can't initialize tunnel", e);
-            }
-        }
-        if (tunnelConnectionInfo != null) {
-            savedConnectionInfo = connectionInfo;
-            connectionInfo = tunnelConnectionInfo;
-        }
-
         try {
+            // Handle tunnel
+            // Open tunnel and replace connection info with new one
+            this.tunnel = null;
+            DBWHandlerConfiguration handlerConfiguration = connectionInfo.getHandler(DBWHandlerType.TUNNEL);
+            if (handlerConfiguration != null) {
+                tunnel = handlerConfiguration.createHandler(DBWTunnel.class);
+                try {
+                    tunnelConnectionInfo = tunnel.initializeTunnel(monitor, handlerConfiguration, connectionInfo);
+                } catch (Exception e) {
+                    throw new DBCException("Can't initialize tunnel", e);
+                }
+            }
+            if (tunnelConnectionInfo != null) {
+                savedConnectionInfo = connectionInfo;
+                connectionInfo = tunnelConnectionInfo;
+            }
+
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
 
             dataSource.initialize(monitor);
@@ -393,7 +393,7 @@ public class DataSourceDescriptor
         return disconnect(monitor, true);
     }
 
-    boolean disconnect(final DBRProgressMonitor monitor, boolean reflect)
+    public boolean disconnect(final DBRProgressMonitor monitor, boolean reflect)
         throws DBException
     {
         if (dataSource == null) {

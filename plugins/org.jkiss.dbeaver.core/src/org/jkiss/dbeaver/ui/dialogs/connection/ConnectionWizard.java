@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -29,6 +31,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public abstract class ConnectionWizard extends Wizard implements INewWizard
 {
+    static final Log log = LogFactory.getLog(ConnectionWizard.class);
 
     //protected final IProject project;
     protected final DataSourceRegistry dataSourceRegistry;
@@ -76,8 +79,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 DataSourceDescriptor container = new DataSourceDescriptor(dataSourceRegistry, "test", driver, connectionInfo);
                 try {
                     monitor.worked(1);
-                    DBPDataSource dataSource = provider.openDataSource(monitor, container);
+                    container.connect(monitor, false);
                     monitor.worked(1);
+                    DBPDataSource dataSource = container.getDataSource();
                     if (dataSource == null) {
                         throw new InvocationTargetException(
                             new DBException("Internal error: null datasource returned from provider " + provider));
@@ -89,8 +93,13 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                             monitor.done();
                         }
                         finally {
-                            monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
-                            dataSource.close();
+                            try {
+                                monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
+                                container.disconnect(monitor, false);
+                            } catch (DBException e) {
+                                // ignore it
+                                log.error(e);
+                            }
                         }
                     }
                     monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);

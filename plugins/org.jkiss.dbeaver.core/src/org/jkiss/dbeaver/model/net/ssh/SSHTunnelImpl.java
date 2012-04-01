@@ -23,77 +23,20 @@ import org.jkiss.utils.SecurityUtils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Map;
 
 /**
  * SSH tunnel
  */
 public class SSHTunnelImpl implements DBWTunnel {
 
-    private DBWHandlerConfiguration configuration;
-    private String host;
-    private int port;
-    private String user;
-    private SSHConstants.AuthType authType;
-    private String privateKeyPath;
-
     private static transient JSch jsch;
     private transient Session session;
-
-    public String getHost()
-    {
-        return host;
-    }
-
-    public void setHost(String host)
-    {
-        this.host = host;
-    }
-
-    public int getPort()
-    {
-        return port;
-    }
-
-    public void setPort(int port)
-    {
-        this.port = port;
-    }
-
-    public String getUser()
-    {
-        return user;
-    }
-
-    public void setUser(String user)
-    {
-        this.user = user;
-    }
-
-    public SSHConstants.AuthType getAuthType()
-    {
-        return authType;
-    }
-
-    public void setAuthType(SSHConstants.AuthType authType)
-    {
-        this.authType = authType;
-    }
-
-    public String getPrivateKeyPath()
-    {
-        return privateKeyPath;
-    }
-
-    public void setPrivateKeyPath(String privateKeyPath)
-    {
-        this.privateKeyPath = privateKeyPath;
-    }
 
     @Override
     public DBPConnectionInfo initializeTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionInfo connectionInfo)
         throws DBException, IOException
     {
-        this.configuration = configuration;
         String dbPortString = connectionInfo.getHostPort();
         if (CommonUtils.isEmpty(dbPortString)) {
             dbPortString = configuration.getDriver().getDefaultPort();
@@ -101,7 +44,28 @@ public class SSHTunnelImpl implements DBWTunnel {
                 throw new DBException("Database port not specified and no default port number for driver '" + configuration.getDriver().getName() + "'");
             }
         }
-        UserInfo ui = new UIUserInfo();
+
+        Map<String,String> properties = configuration.getProperties();
+        String sshHost = properties.get(SSHConstants.PROP_HOST);
+        String sshPort = properties.get(SSHConstants.PROP_PORT);
+        String sshUser = properties.get(SSHConstants.PROP_USER_NAME);
+        if (CommonUtils.isEmpty(sshHost)) {
+            throw new DBException("SSH host not specified");
+        }
+        if (CommonUtils.isEmpty(sshPort)) {
+            throw new DBException("SSH port not specified");
+        }
+        if (CommonUtils.isEmpty(sshUser)) {
+            throw new DBException("SSH user not specified");
+        }
+        int sshPortNum;
+        try {
+            sshPortNum = Integer.parseInt(sshPort);
+        }
+        catch (NumberFormatException e) {
+            throw new DBException("Invalid SSH port: " + sshPort);
+        }
+        UserInfo ui = new UIUserInfo(configuration);
         int dbPort;
         try {
             dbPort = Integer.parseInt(dbPortString);
@@ -113,7 +77,7 @@ public class SSHTunnelImpl implements DBWTunnel {
             if (jsch == null) {
                 jsch = new JSch();
             }
-            session = jsch.getSession(user, host, port);
+            session = jsch.getSession(sshUser, sshHost, sshPortNum);
             session.setConfig("StrictHostKeyChecking", "no");
             session.setUserInfo(ui);
             session.connect();
@@ -158,9 +122,10 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     private class UIUserInfo implements UserInfo {
-
-        private UIUserInfo()
+        DBWHandlerConfiguration configuration;
+        private UIUserInfo(DBWHandlerConfiguration configuration)
         {
+            this.configuration = configuration;
         }
 
         @Override
