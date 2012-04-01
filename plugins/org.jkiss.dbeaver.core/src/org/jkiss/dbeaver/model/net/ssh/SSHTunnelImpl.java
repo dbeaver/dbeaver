@@ -65,6 +65,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         catch (NumberFormatException e) {
             throw new DBException("Invalid SSH port: " + sshPort);
         }
+        monitor.subTask("Initiating tunnel at '" + sshHost + "'");
         UserInfo ui = new UIUserInfo(configuration);
         int dbPort;
         try {
@@ -86,8 +87,36 @@ public class SSHTunnelImpl implements DBWTunnel {
             throw new DBException("Cannot establish tunnel", e);
         }
         connectionInfo = new DBPConnectionInfo(connectionInfo);
-        connectionInfo.setHostPort(String.valueOf(localPort));
+        String newPortValue = String.valueOf(localPort);
+        connectionInfo.setHostPort(newPortValue);
+        connectionInfo.setUrl(replacePort(connectionInfo.getUrl(), dbPortString, newPortValue));
         return connectionInfo;
+    }
+
+    private String replacePort(String url, String oldValue, String newValue)
+    {
+        int fistIndex = 0;
+        while (true) {
+            int divPos = url.indexOf(oldValue, fistIndex);
+            if (divPos == -1) {
+                break;
+            }
+            if (divPos > 0) {
+                char prevChar = url.charAt(divPos - 1);
+                if (Character.isDigit(prevChar)) {
+                    continue;
+                }
+            }
+            if (url.length() > divPos + oldValue.length()) {
+                char nextChar = url.charAt(divPos + oldValue.length());
+                if (Character.isDigit(nextChar)) {
+                    continue;
+                }
+            }
+            url = url.substring(0, divPos) + newValue + url.substring(divPos + oldValue.length());
+            fistIndex = divPos + newValue.length();
+        }
+        return url;
     }
 
     private int findFreePort()
@@ -143,7 +172,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         @Override
         public boolean promptPassword(String message)
         {
-            return false;
+            return true;
         }
 
         @Override
