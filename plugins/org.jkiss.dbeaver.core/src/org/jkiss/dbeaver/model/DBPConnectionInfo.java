@@ -187,7 +187,7 @@ public class DBPConnectionInfo implements DBPObject
     public DBWHandlerConfiguration getHandler(DBWHandlerType handlerType)
     {
         for (DBWHandlerConfiguration handler : handlers) {
-            if (handler.getType() == handlerType) {
+            if (handler.getType() == handlerType && handler.isEnabled()) {
                 return handler;
             }
         }

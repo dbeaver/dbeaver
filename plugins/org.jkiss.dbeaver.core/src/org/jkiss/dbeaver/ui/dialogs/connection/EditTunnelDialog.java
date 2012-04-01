@@ -6,7 +6,10 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -32,9 +35,22 @@ public class EditTunnelDialog extends HelpEnabledDialog {
 
     static final Log log = LogFactory.getLog(EditTunnelDialog.class);
 
+    private static class HandlerBlock {
+        DBWHandlerConfiguration configuration;
+        Composite blockControl;
+        ControlEnableState blockEnableState;
+
+        private HandlerBlock(DBWHandlerConfiguration configuration, Composite blockControl)
+        {
+            this.configuration = configuration;
+            this.blockControl = blockControl;
+        }
+    }
+
+
     private DBPDriver driver;
     private DBPConnectionInfo connectionInfo;
-    private Map<NetworkHandlerDescriptor, DBWHandlerConfiguration> configurations = new HashMap<NetworkHandlerDescriptor, DBWHandlerConfiguration>();
+    private Map<NetworkHandlerDescriptor, HandlerBlock> configurations = new HashMap<NetworkHandlerDescriptor, HandlerBlock>();
 
     protected EditTunnelDialog(Shell shell, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
@@ -66,10 +82,15 @@ public class EditTunnelDialog extends HelpEnabledDialog {
         return composite;
     }
 
-    private void createHandlerTab(TabFolder tabFolder, NetworkHandlerDescriptor descriptor) throws DBException
+    private void createHandlerTab(TabFolder tabFolder, final NetworkHandlerDescriptor descriptor) throws DBException
     {
-        IObjectPropertyConfigurator configurator = descriptor.createConfigurator();
-
+        IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator = descriptor.createConfigurator();
+        DBWHandlerConfiguration configuration = connectionInfo.getHandler(descriptor.getType());
+        if (configuration == null) {
+            configuration = new DBWHandlerConfiguration(descriptor, driver);
+        }
+        final DBWHandlerConfiguration config = configuration;
+        
         TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
         tabItem.setText(descriptor.getLabel());
         tabItem.setToolTipText(descriptor.getDescription());
@@ -78,14 +99,41 @@ public class EditTunnelDialog extends HelpEnabledDialog {
         tabItem.setControl(composite);
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        
-        UIUtils.createCheckbox(composite, "Use " + descriptor.getLabel(), false);
+
+        final Button useHandlerCheck = UIUtils.createCheckbox(composite, "Use " + descriptor.getLabel(), false);
+        useHandlerCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                config.setEnabled(useHandlerCheck.getSelection());
+                enableHandlerContent(descriptor);
+            }
+        });
         Composite handlerComposite = UIUtils.createPlaceholder(composite, 1);
+        configurations.put(descriptor, new HandlerBlock(configuration, handlerComposite));
+
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         configurator.createControl(handlerComposite);
-        DBWHandlerConfiguration configuration = new DBWHandlerConfiguration(descriptor, driver);
-        configurations.put(descriptor, configuration);
+
+        useHandlerCheck.setSelection(configuration.isEnabled());
+
+        enableHandlerContent(descriptor);
+
+        configurator.loadSettings(configuration);
+    }
+
+    protected void enableHandlerContent(NetworkHandlerDescriptor descriptor)
+    {
+        HandlerBlock handlerBlock = configurations.get(descriptor);
+        if (handlerBlock.configuration.isEnabled()) {
+            if (handlerBlock.blockEnableState != null) {
+                handlerBlock.blockEnableState.restore();
+                handlerBlock.blockEnableState = null;
+            }
+        } else if (handlerBlock.blockEnableState == null) {
+            handlerBlock.blockEnableState = ControlEnableState.disable(handlerBlock.blockControl);
+        }
     }
 
     @Override

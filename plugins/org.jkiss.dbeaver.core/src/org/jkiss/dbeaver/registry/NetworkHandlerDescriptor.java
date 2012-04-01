@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.utils.CommonUtils;
@@ -76,7 +77,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor
         }
     }
 
-    public IObjectPropertyConfigurator createConfigurator()
+    public IObjectPropertyConfigurator<DBWHandlerConfiguration> createConfigurator()
         throws DBException
     {
         try {
