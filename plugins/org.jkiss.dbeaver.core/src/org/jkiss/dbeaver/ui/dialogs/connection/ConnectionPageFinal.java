@@ -190,40 +190,45 @@ class ConnectionPageFinal extends ActiveWizardPage {
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
 
-            Button eventsButton = new Button(buttonsGroup, SWT.PUSH);
-            eventsButton.setText(CoreMessages.dialog_connection_wizard_final_button_events);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            eventsButton.setLayoutData(gd);
-            eventsButton.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    configureEvents();
-                }
-            });
             DBPConnectionInfo connectionInfo = wizard.getPageSettings().getConnectionInfo();
-            for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
-                if (connectionInfo.getEvent(eventType).isEnabled()) {
-                    eventsButton.setFont(boldFont);
-                    break;
+
+            {
+                Button tunnelButton = new Button(buttonsGroup, SWT.PUSH);
+                tunnelButton.setText("Tunneling ...");
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.grabExcessVerticalSpace = true;
+                tunnelButton.setLayoutData(gd);
+                tunnelButton.addSelectionListener(new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        configureTunnels();
+                    }
+                });
+                for (DBWHandlerConfiguration config : connectionInfo.getDeclaredHandlers()) {
+                    if (config.isEnabled()) {
+                        tunnelButton.setFont(boldFont);
+                        break;
+                    }
                 }
             }
 
-            Button tunnelButton = new Button(buttonsGroup, SWT.PUSH);
-            tunnelButton.setText("Tunneling ...");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.grabExcessHorizontalSpace = true;
-            gd.grabExcessVerticalSpace = true;
-            tunnelButton.setLayoutData(gd);
-            tunnelButton.addSelectionListener(new SelectionAdapter() {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    configureTunnels();
-                }
-            });
-            for (DBWHandlerConfiguration config : connectionInfo.getDeclaredHandlers()) {
-                if (config.isEnabled()) {
-                    tunnelButton.setFont(boldFont);
-                    break;
+            {
+                Button eventsButton = new Button(buttonsGroup, SWT.PUSH);
+                eventsButton.setText(CoreMessages.dialog_connection_wizard_final_button_events);
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.grabExcessHorizontalSpace = true;
+                eventsButton.setLayoutData(gd);
+                eventsButton.addSelectionListener(new SelectionAdapter() {
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        configureEvents();
+                    }
+                });
+                for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
+                    if (connectionInfo.getEvent(eventType).isEnabled()) {
+                        eventsButton.setFont(boldFont);
+                        break;
+                    }
                 }
             }
 
