@@ -20,8 +20,10 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -198,8 +200,12 @@ class ConnectionPageFinal extends ActiveWizardPage {
                     configureEvents();
                 }
             });
-            if (!CommonUtils.isEmpty(wizard.getPageSettings().getConnectionInfo().getDeclaredEvents())) {
-                eventsButton.setFont(boldFont);
+            DBPConnectionInfo connectionInfo = wizard.getPageSettings().getConnectionInfo();
+            for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
+                if (connectionInfo.getEvent(eventType).isEnabled()) {
+                    eventsButton.setFont(boldFont);
+                    break;
+                }
             }
 
             Button tunnelButton = new Button(buttonsGroup, SWT.PUSH);
@@ -214,6 +220,12 @@ class ConnectionPageFinal extends ActiveWizardPage {
                     configureTunnels();
                 }
             });
+            for (DBWHandlerConfiguration config : connectionInfo.getDeclaredHandlers()) {
+                if (config.isEnabled()) {
+                    tunnelButton.setFont(boldFont);
+                    break;
+                }
+            }
 
             testButton = new Button(buttonsGroup, SWT.PUSH);
             testButton.setText(CoreMessages.dialog_connection_wizard_final_button_test);

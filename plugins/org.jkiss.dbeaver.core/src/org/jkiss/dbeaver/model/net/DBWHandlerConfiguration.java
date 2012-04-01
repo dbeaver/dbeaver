@@ -60,6 +60,11 @@ public class DBWHandlerConfiguration implements IObjectPropertyConfiguration {
         return descriptor.getType();
     }
 
+    public String getId()
+    {
+        return descriptor.getId();
+    }
+
     public boolean isEnabled()
     {
         return enabled;

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -413,6 +414,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     xml.endElement();
                 }
             }
+            // Save events
             for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
                 DBRShellCommand command = connectionInfo.getEvent(eventType);
                 xml.startElement("event");
@@ -422,6 +424,33 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute("wait-process", command.isWaitProcessFinish());
                 xml.addAttribute("terminate-at-disconnect", command.isTerminateAtDisconnect());
                 xml.addText(command.getCommand());
+                xml.endElement();
+            }
+            // Save network handlers' configurations
+            for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
+                xml.startElement("network-handler");
+                xml.addAttribute("type", configuration.getType().name());
+                xml.addAttribute("id", configuration.getId());
+                xml.addAttribute("enabled", configuration.isEnabled());
+                xml.addAttribute("save-password", configuration.isSavePassword());
+                if (configuration.isSavePassword() && !CommonUtils.isEmpty(configuration.getPassword())) {
+                    String encPassword = configuration.getPassword();
+                    if (!CommonUtils.isEmpty(encPassword)) {
+                        try {
+                            encPassword = encrypter.encrypt(encPassword);
+                        }
+                        catch (EncryptionException e) {
+                            log.error("Could not encrypt password. Save it as is", e);
+                        }
+                    }
+                    xml.addAttribute("password", encPassword);
+                }
+                for (Map.Entry<String, String> entry : configuration.getProperties().entrySet()) {
+                    xml.startElement("property");
+                    xml.addAttribute("name", entry.getKey());
+                    xml.addAttribute("value", entry.getValue());
+                    xml.endElement();
+                }
                 xml.endElement();
             }
             xml.endElement();
@@ -459,6 +488,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         PasswordEncrypter encrypter;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
+        private DBWHandlerConfiguration curNetworkHandler;
 
         private DataSourcesParser(PasswordEncrypter encrypter)
         {
@@ -500,7 +530,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 if (!CommonUtils.isEmpty(createDate)) {
                     curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
                 }
-                String udateDate = atts.getValue("udate-date");
+                String udateDate = atts.getValue("update-date");
                 if (!CommonUtils.isEmpty(udateDate)) {
                     curDataSource.setUpdateDate(new Date(Long.parseLong(udateDate)));
                 }
@@ -522,21 +552,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curDataSource.getConnectionInfo().setDatabaseName(atts.getValue("database"));
                     curDataSource.getConnectionInfo().setUrl(atts.getValue("url"));
                     curDataSource.getConnectionInfo().setUserName(atts.getValue("user"));
-                    String encPassword = atts.getValue("password");
-                    if (!CommonUtils.isEmpty(encPassword)) {
-                        try {
-                            encPassword = encrypter.decrypt(encPassword);
-                        }
-                        catch (Throwable e) {
-                            // could not decrypt - use as is
-                            encPassword = null;
-                        }
-                    }
-                    curDataSource.getConnectionInfo().setUserPassword(encPassword);
+                    curDataSource.getConnectionInfo().setUserPassword(decryptPassword(atts.getValue("password")));
                     curDataSource.getConnectionInfo().setClientHomeId(atts.getValue("home"));
                 }
             } else if (localName.equals("property")) {
-                if (curDataSource != null) {
+                if (curNetworkHandler != null) {
+                    curNetworkHandler.getProperties().put(
+                        atts.getValue("name"),
+                        atts.getValue("value"));
+                } else if (curDataSource != null) {
                     curDataSource.getConnectionInfo().getProperties().put(
                         atts.getValue("name"),
                         atts.getValue("value"));
@@ -557,6 +581,20 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         atts.getValue("name"),
                         atts.getValue("value"));
                 }
+            } else if (localName.equals("network-handler")) {
+                if (curDataSource != null) {
+                    String handlerId = atts.getValue("id");
+                    NetworkHandlerDescriptor handlerDescriptor = DBeaverCore.getInstance().getNetworkHandlerRegistry().getDescriptor(handlerId);
+                    if (handlerDescriptor == null) {
+                        log.warn("Can't find network handler '" + handlerId + "'");
+                        return;
+                    }
+                    curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
+                    curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue("enabled")));
+                    curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue("save-password")));
+                    curNetworkHandler.setPassword(decryptPassword(atts.getValue("password")));
+                    curDataSource.getConnectionInfo().addHandler(curNetworkHandler);
+                }
             } else if (localName.equals("description")) {
                 isDescription = true;
             }
@@ -576,8 +614,28 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
             throws XMLException
         {
+            if (localName.equals("data-source")) {
+                curDataSource = null;
+            } else if (localName.equals("network-handler")) {
+                curNetworkHandler = null;
+            }
             isDescription = false;
         }
+
+        private String decryptPassword(String encPassword)
+        {
+            if (!CommonUtils.isEmpty(encPassword)) {
+                try {
+                    encPassword = encrypter.decrypt(encPassword);
+                }
+                catch (Throwable e) {
+                    // could not decrypt - use as is
+                    encPassword = null;
+                }
+            }
+            return encPassword;
+        }
+
     }
 
     private class DisconnectTask implements DBRRunnableWithProgress {

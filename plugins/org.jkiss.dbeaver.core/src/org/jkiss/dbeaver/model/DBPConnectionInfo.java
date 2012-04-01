@@ -184,6 +184,17 @@ public class DBPConnectionInfo implements DBPObject
         return handlers;
     }
 
+    public void setHandlers(List<DBWHandlerConfiguration> handlers)
+    {
+        this.handlers.clear();
+        this.handlers.addAll(handlers);
+    }
+
+    public void addHandler(DBWHandlerConfiguration handler)
+    {
+        this.handlers.add(handler);
+    }
+
     public DBWHandlerConfiguration getHandler(DBWHandlerType handlerType)
     {
         for (DBWHandlerConfiguration handler : handlers) {

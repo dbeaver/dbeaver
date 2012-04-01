@@ -35,4 +35,15 @@ public class NetworkHandlerRegistry
     {
         return descriptors;
     }
+    
+    public NetworkHandlerDescriptor getDescriptor(String id)
+    {
+        for (NetworkHandlerDescriptor descriptor : descriptors) {
+            if (descriptor.getId().equals(id)) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
+    
 }

@@ -25,8 +25,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Network handlers edit dialog
@@ -36,12 +35,14 @@ public class EditTunnelDialog extends HelpEnabledDialog {
     static final Log log = LogFactory.getLog(EditTunnelDialog.class);
 
     private static class HandlerBlock {
+        IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
         DBWHandlerConfiguration configuration;
         Composite blockControl;
         ControlEnableState blockEnableState;
 
-        private HandlerBlock(DBWHandlerConfiguration configuration, Composite blockControl)
+        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, DBWHandlerConfiguration configuration, Composite blockControl)
         {
+            this.configurator = configurator;
             this.configuration = configuration;
             this.blockControl = blockControl;
         }
@@ -110,7 +111,7 @@ public class EditTunnelDialog extends HelpEnabledDialog {
             }
         });
         Composite handlerComposite = UIUtils.createPlaceholder(composite, 1);
-        configurations.put(descriptor, new HandlerBlock(configuration, handlerComposite));
+        configurations.put(descriptor, new HandlerBlock(configurator, configuration, handlerComposite));
 
         handlerComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -136,9 +137,20 @@ public class EditTunnelDialog extends HelpEnabledDialog {
         }
     }
 
+    private void saveConfigurations()
+    {
+        java.util.List<DBWHandlerConfiguration> handlers = new ArrayList<DBWHandlerConfiguration>();
+        for (HandlerBlock handlerBlock : configurations.values()) {
+            handlerBlock.configurator.saveSettings(handlerBlock.configuration);
+            handlers.add(handlerBlock.configuration);
+        }
+        connectionInfo.setHandlers(handlers);
+    }
+
     @Override
     protected void okPressed()
     {
+        saveConfigurations();
         super.okPressed();
     }
 
