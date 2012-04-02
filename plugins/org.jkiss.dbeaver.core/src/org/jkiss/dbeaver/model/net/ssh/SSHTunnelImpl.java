@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Map;
@@ -46,6 +47,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         }
 
         Map<String,String> properties = configuration.getProperties();
+        String sshAuthType = properties.get(SSHConstants.PROP_AUTH_TYPE);
         String sshHost = properties.get(SSHConstants.PROP_HOST);
         String sshPort = properties.get(SSHConstants.PROP_PORT);
         String sshUser = configuration.getUserName();
@@ -65,6 +67,22 @@ public class SSHTunnelImpl implements DBWTunnel {
         catch (NumberFormatException e) {
             throw new DBException("Invalid SSH port: " + sshPort);
         }
+        SSHConstants.AuthType authType = SSHConstants.AuthType.PASSWORD;
+        if (sshAuthType != null) {
+            authType = SSHConstants.AuthType.valueOf(sshAuthType); 
+        }
+        File privKeyFile = null;
+        String privKeyPath = properties.get(SSHConstants.PROP_KEY_PATH);
+        if (authType == SSHConstants.AuthType.PUBLIC_KEY) {
+            if (CommonUtils.isEmpty(privKeyPath)) {
+                throw new DBException("Private key path is empty");
+            }
+            privKeyFile = new File(privKeyPath);
+            if (!privKeyFile.exists()) {
+                throw new DBException("Private key file '" + privKeyFile.getAbsolutePath() + "' doesn't exist");
+            }
+        }
+
         monitor.subTask("Initiating tunnel at '" + sshHost + "'");
         UserInfo ui = new UIUserInfo(configuration);
         int dbPort;
@@ -78,6 +96,10 @@ public class SSHTunnelImpl implements DBWTunnel {
             if (jsch == null) {
                 jsch = new JSch();
             }
+            if (privKeyFile != null) {
+                jsch.addIdentity(privKeyFile.getAbsolutePath());
+            }
+
             session = jsch.getSession(sshUser, sshHost, sshPortNum);
             session.setConfig("StrictHostKeyChecking", "no");
             session.setUserInfo(ui);
@@ -160,7 +182,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         @Override
         public String getPassphrase()
         {
-            return null;
+            return configuration.getPassword();
         }
 
         @Override

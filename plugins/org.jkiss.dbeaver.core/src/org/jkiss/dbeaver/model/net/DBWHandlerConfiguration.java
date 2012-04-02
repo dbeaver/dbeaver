@@ -37,6 +37,7 @@ public class DBWHandlerConfiguration implements IObjectPropertyConfiguration {
         this.descriptor = configuration.descriptor;
         this.driver = configuration.driver;
         this.enabled = configuration.enabled;
+        this.userName = configuration.userName;
         this.password = configuration.password;
         this.savePassword = configuration.savePassword;
         this.properties = new HashMap<String, String>(configuration.properties);
