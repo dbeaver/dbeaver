@@ -32,6 +32,28 @@
 
     <versions>
         <version>
+            <number>1.5.4</number>
+            <type>major</type>
+            <date>04.04.2012</date>
+
+            <release-notes>
+                - SSH tunnels support
+                - Column descriptions in metadata
+                - Miscellaneous UI fixes and typo corrections
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.3</number>
+            <type>ea</type>
+            <date>25.03.2012</date>
+
+            <release-notes>
+                - EA version with hotfixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.5.2</number>
             <type>major</type>
             <date>29.02.2012</date>
