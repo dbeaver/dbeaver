@@ -29,9 +29,9 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.5.2</Program_Version>
-    <Program_Release_Month>02</Program_Release_Month>
-    <Program_Release_Day>29</Program_Release_Day>
+    <Program_Version>1.5.4</Program_Version>
+    <Program_Release_Month>04</Program_Release_Month>
+    <Program_Release_Day>04</Program_Release_Day>
     <Program_Release_Year>2012</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -40,11 +40,9 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Auto-completion configuration
-        - Date/Time format fixed in table export
-        - ResultSet filter dialog redesign
-        - ResultSet cell editor fixes
-        - Oracle schema loading fix
+        - SSH tunnels support
+        - Column descriptions in metadata
+        - Miscellaneous UI fixes and typo corrections
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -85,8 +83,8 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.5.2-x86-setup.exe</Primary_Download_URL>
-      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.5.2-x86_64-setup.exe</Secondary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.5.4-x86-setup.exe</Primary_Download_URL>
+      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.5.4-x86_64-setup.exe</Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
     </Download_URLs>
