@@ -144,7 +144,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             } else {
                 // Persisted object - confirm delete
                 // Show "View script" only if we are not in some editor (because it have its own "View script" button)
-                confirmResult = confirmObjectDelete(workbenchWindow, node, commandTarget.getEditor() == null);
+                confirmResult = confirmObjectDelete(workbenchWindow, node, commandTarget.getContext() != null && commandTarget.getEditor() == null );
                 if (confirmResult == ConfirmResult.NO) {
                     return false;
                 }
