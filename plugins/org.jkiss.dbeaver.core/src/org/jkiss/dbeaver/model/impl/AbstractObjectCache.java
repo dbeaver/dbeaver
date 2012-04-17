@@ -62,7 +62,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     public OBJECT getCachedObject(String name)
     {
         synchronized (this) {
-            return objectList == null ? null : getObjectMap().get(caseSensitive ? name : name.toUpperCase());
+            return objectList == null || name == null ? null : getObjectMap().get(caseSensitive ? name : name.toUpperCase());
         }
     }
 
