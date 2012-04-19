@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc;
@@ -532,10 +532,15 @@ public class JDBCUtils {
         }
     }
 
-    public static String queryString(JDBCExecutionContext context, String sql) throws SQLException
+    public static String queryString(JDBCExecutionContext context, String sql, Object ... args) throws SQLException
     {
         final JDBCPreparedStatement dbStat = context.prepareStatement(sql);
         try {
+            if (args != null) {
+                for (int i = 0; i < args.length; i++) {
+                    dbStat.setObject(i + 1, args[i]);
+                }
+            }
             JDBCResultSet resultSet = dbStat.executeQuery();
             try {
                 if (resultSet.next()) {

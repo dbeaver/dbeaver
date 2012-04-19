@@ -11,16 +11,20 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
@@ -45,6 +49,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         }
     }
 
+    public static class CommentsValidator implements IPropertyCacheValidator<OracleTableBase> {
+        public boolean isPropertyCached(OracleTableBase object, Object propertyId)
+        {
+            return object.comment != null;
+        }
+    }
+
     public abstract TableAdditionalInfo getAdditionalInfo();
 
     protected abstract String getTableTypeName();
@@ -64,7 +75,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         super(oracleSchema, true);
         setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
-        this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
+        //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
     public OracleSchema getSchema()
@@ -78,10 +89,9 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return super.getName();
     }
 
-    @Property(name = "Comments", viewable = true, editable = true, order = 100)
     public String getDescription()
     {
-        return comment;
+        return null;
     }
 
     public String getFullQualifiedName()
@@ -89,6 +99,32 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return DBUtils.getFullQualifiedName(getDataSource(),
             getContainer(),
             this);
+    }
+
+    @Property(name = "Comments", viewable = true, editable = true, order = 100)
+    @LazyProperty(cacheValidator = CommentsValidator.class)
+    public String getComment(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        if (comment == null) {
+            final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load table comments");
+            try {
+                comment = JDBCUtils.queryString(
+                    context,
+                    "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND TABLE_NAME=? AND TABLE_TYPE=?",
+                    getSchema().getName(),
+                    getName(),
+                    getTableTypeName());
+                if (comment == null) {
+                    comment = "";
+                }
+            } catch (SQLException e) {
+                log.warn("Can't fetch table '" + getName() + "' comment", e);
+            } finally {
+                context.close();
+            }
+        }
+        return comment;
     }
 
     public Collection<OracleTableColumn> getColumns(DBRProgressMonitor monitor)
