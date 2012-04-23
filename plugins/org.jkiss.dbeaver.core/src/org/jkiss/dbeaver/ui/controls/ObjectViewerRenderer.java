@@ -37,6 +37,7 @@ public abstract class ObjectViewerRenderer {
     private final Color linkColor;
     private final Cursor linkCursor;
     private final Cursor arrowCursor;
+    private final Color selectionBackgroundColor;
 
     public ObjectViewerRenderer(
         ColumnViewer viewer)
@@ -45,7 +46,8 @@ public abstract class ObjectViewerRenderer {
         this.isTree = (itemsViewer instanceof AbstractTreeViewer);
         Display display = itemsViewer.getControl().getDisplay();
         this.linkLayout = new TextLayout(display);
-        this.linkColor = display.getSystemColor(SWT.COLOR_LIST_SELECTION);
+        this.selectionBackgroundColor = display.getSystemColor(SWT.COLOR_LIST_SELECTION);
+        this.linkColor = display.getSystemColor(SWT.COLOR_BLUE);
         this.linkCursor = display.getSystemCursor(SWT.CURSOR_HAND);
         this.arrowCursor = display.getSystemCursor(SWT.CURSOR_ARROW);
 
@@ -164,8 +166,8 @@ public abstract class ObjectViewerRenderer {
                 event.doit = false;
 //                            System.out.println("PAINT " + cellValue + " " + System.currentTimeMillis());
             } else if (isHyperlink(cellValue)) {
-                boolean isSelected = linkColor.equals(gc.getBackground());
                 // Print link
+                boolean isSelected = gc.getBackground().equals(selectionBackgroundColor);
                 prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : linkColor);
                 Rectangle textBounds;
                 if (event.item instanceof TreeItem) {
