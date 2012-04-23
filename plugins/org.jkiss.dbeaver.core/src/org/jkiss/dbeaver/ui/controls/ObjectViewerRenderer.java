@@ -45,7 +45,7 @@ public abstract class ObjectViewerRenderer {
         this.isTree = (itemsViewer instanceof AbstractTreeViewer);
         Display display = itemsViewer.getControl().getDisplay();
         this.linkLayout = new TextLayout(display);
-        this.linkColor = display.getSystemColor(SWT.COLOR_LIST_SELECTION);
+        this.linkColor = display.getSystemColor(SWT.COLOR_BLUE);
         this.linkCursor = display.getSystemCursor(SWT.CURSOR_HAND);
         this.arrowCursor = display.getSystemCursor(SWT.CURSOR_ARROW);
 
