@@ -136,9 +136,13 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         usernameText = new Text(addrGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(textListener);
+        Composite ph = UIUtils.createPlaceholder(addrGroup, 1);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalSpan = 2;
+        ph.setLayoutData(gd);
 
         Label passwordLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -146,9 +150,13 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
+        ph = UIUtils.createPlaceholder(addrGroup, 1);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.grabExcessHorizontalSpace = true;
+        gd.horizontalSpan = 2;
+        ph.setLayoutData(gd);
 
         homesSelector = new ClientHomesSelector(addrGroup, SWT.NONE, "Local Server");
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
