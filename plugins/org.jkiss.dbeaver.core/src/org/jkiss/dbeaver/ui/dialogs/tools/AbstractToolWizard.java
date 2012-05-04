@@ -81,7 +81,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         WizardPage currentPage = (WizardPage) getStartingPage();
 
         DBSDataSourceContainer container = getDatabaseObject().getDataSource().getContainer();
-        connectionInfo = container.getConnectionInfo();
+        connectionInfo = container.getActualConnectionInfo();
         String clientHomeId = connectionInfo.getClientHomeId();
         if (clientHomeId == null) {
             currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);

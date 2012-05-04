@@ -69,6 +69,7 @@ public class DataSourceDescriptor
     private DataSourceRegistry registry;
     private DriverDescriptor driver;
     private DBPConnectionInfo connectionInfo;
+    private DBPConnectionInfo tunnelConnectionInfo;
 
     private String id;
     private String name;
@@ -155,6 +156,11 @@ public class DataSourceDescriptor
     public void setConnectionInfo(DBPConnectionInfo connectionInfo)
     {
         this.connectionInfo = connectionInfo;
+    }
+
+    public DBPConnectionInfo getActualConnectionInfo()
+    {
+        return tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo;
     }
 
     @Property(name = "Name", viewable = true, order = 1)
@@ -315,7 +321,8 @@ public class DataSourceDescriptor
             return;
         }
 
-        DBPConnectionInfo tunnelConnectionInfo = null, savedConnectionInfo = null;
+        DBPConnectionInfo savedConnectionInfo = null;
+        tunnelConnectionInfo = null;
         try {
             // Handle tunnel
             // Open tunnel and replace connection info with new one

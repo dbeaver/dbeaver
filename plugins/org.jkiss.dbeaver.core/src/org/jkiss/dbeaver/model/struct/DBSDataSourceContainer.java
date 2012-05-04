@@ -36,6 +36,13 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
     DBPConnectionInfo getConnectionInfo();
 
     /**
+     * Actual connection info. Contains actual parameters used to connect to this datasource.
+     * Differs from getConnectionInfo() in case if tunnel or proxy was used.
+     * @return actual connection info.
+     */
+    DBPConnectionInfo getActualConnectionInfo();
+
+    /**
      * Retrieves datasource instance
      * @return datasource or null (if not connected)
      */
