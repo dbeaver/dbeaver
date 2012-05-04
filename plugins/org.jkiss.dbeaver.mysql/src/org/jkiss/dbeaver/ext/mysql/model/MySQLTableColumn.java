@@ -157,7 +157,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return autoIncrement;
     }
 
-    public void setAutoIncrement(boolean autoIncrement)
+    public void setSequence(boolean autoIncrement)
     {
         this.autoIncrement = autoIncrement;
     }
