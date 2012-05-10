@@ -23,6 +23,8 @@ public class EntityFigure extends Figure {
 
     public static Color primaryTableColor = new Color(null, 255, 226, 255);
     public static Color associationTableColor = new Color(null, 255, 255, 255);
+    public static Color commonTableColor = new Color(null, 0xff, 0xff, 0xe1);
+    public static Color tableNameColor = new Color(null, 0, 0, 0);
 
     private AttributeFigure attributeFigure;
     private EditableLabel nameLabel;
@@ -48,9 +50,9 @@ public class EntityFigure extends Figure {
         } else if (entity.getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
             setBackgroundColor(associationTableColor);
         } else {
-            setBackgroundColor(ColorConstants.tooltipBackground);
+            setBackgroundColor(commonTableColor);
         }
-        setForegroundColor(ColorConstants.tooltipForeground);
+        setForegroundColor(tableNameColor);
         setOpaque(true);
 
         add(nameLabel);
