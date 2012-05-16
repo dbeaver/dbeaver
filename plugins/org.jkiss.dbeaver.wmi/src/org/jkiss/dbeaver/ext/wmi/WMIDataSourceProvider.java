@@ -34,6 +34,15 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
         return null;
     }
 
+    @Override
+    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    {
+        return
+            "wmi://" + connectionInfo.getServerName() +
+                "/" + connectionInfo.getHostName() +
+                "/" + connectionInfo.getDatabaseName();
+    }
+
     public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
     {
         if (!libLoaded) {

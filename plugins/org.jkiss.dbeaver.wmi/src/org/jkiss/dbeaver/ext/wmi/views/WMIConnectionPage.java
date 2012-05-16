@@ -231,10 +231,6 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
-            connectionInfo.setUrl(
-                "wmi://" + connectionInfo.getServerName() +
-                    "/" + connectionInfo.getHostName() +
-                    "/" + connectionInfo.getDatabaseName());
             super.saveSettings(connectionInfo);
         }
     }

@@ -246,10 +246,6 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
             if (homesSelector != null) {
                 connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
             }
-            connectionInfo.setUrl(
-                "jdbc:mysql://" + connectionInfo.getHostName() +
-                    ":" + connectionInfo.getHostPort() +
-                    "/" + connectionInfo.getDatabaseName());
             super.saveSettings(connectionInfo);
         }
     }

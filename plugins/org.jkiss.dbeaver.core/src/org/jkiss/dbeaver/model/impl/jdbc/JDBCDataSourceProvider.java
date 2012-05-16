@@ -21,7 +21,7 @@ import java.util.*;
  */
 public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
 {
-    static final Log log = LogFactory.getLog(JDBCDataSourceProvider.class);
+    static final protected Log log = LogFactory.getLog(JDBCDataSourceProvider.class);
 
     public void close()
     {

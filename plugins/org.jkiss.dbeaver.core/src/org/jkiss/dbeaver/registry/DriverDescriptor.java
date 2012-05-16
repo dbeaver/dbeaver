@@ -60,6 +60,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public static final char URL_GROUP_END = '}';
     public static final char URL_OPTIONAL_START = '[';
     public static final char URL_OPTIONAL_END = ']';
+    public static final String PROP_HOST = "host"; //$NON-NLS-1$
+    public static final String PROP_PORT = "port"; //$NON-NLS-1$
+    public static final String PROP_DATABASE = "database"; //$NON-NLS-1$
+    public static final String PROP_SERVER = "server"; //$NON-NLS-1$
+    public static final String PROP_FOLDER = "folder"; //$NON-NLS-1$
+    public static final String PROP_FILE = "file"; //$NON-NLS-1$
 
     private DataSourceProviderDescriptor providerDescriptor;
     private String id;

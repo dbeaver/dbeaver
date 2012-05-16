@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -35,6 +36,11 @@ public abstract class ConnectionPageAdvanced extends DialogPage implements IData
     public void setSite(IDataSourceConnectionEditorSite site)
     {
         this.site = site;
+    }
+
+    protected boolean isCustomURL()
+    {
+        return false;
     }
 
     public void loadSettings()
@@ -70,6 +76,21 @@ public abstract class ConnectionPageAdvanced extends DialogPage implements IData
         if (connectionInfo != null) {
             if (propertySource != null) {
                 connectionInfo.setProperties(propertySource.getProperties());
+            }
+            saveConnectionURL(connectionInfo);
+        }
+    }
+
+    private void saveConnectionURL(DBPConnectionInfo connectionInfo)
+    {
+        if (!isCustomURL()) {
+            try {
+                connectionInfo.setUrl(
+                    site.getDriver().getDataSourceProvider().getConnectionURL(
+                        site.getDriver(),
+                        connectionInfo));
+            } catch (DBException e) {
+                setErrorMessage(e.getMessage());
             }
         }
     }

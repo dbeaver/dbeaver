@@ -78,6 +78,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 }
                 DataSourceDescriptor container = new DataSourceDescriptor(dataSourceRegistry, "test", driver, connectionInfo);
                 try {
+                    container.setName(connectionInfo.getUrl());
                     monitor.worked(1);
                     container.connect(monitor, false);
                     monitor.worked(1);

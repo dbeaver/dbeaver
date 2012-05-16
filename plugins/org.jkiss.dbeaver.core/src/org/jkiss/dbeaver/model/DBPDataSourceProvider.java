@@ -44,6 +44,14 @@ public interface DBPDataSourceProvider
         throws DBException;
 
     /**
+     * Constructs connection URL
+     * @param driver driver descriptor
+     * @param connectionInfo connection info
+     * @return valid connection URL or null (if URLs not supported by driver)
+     */
+    String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo);
+
+    /**
      * Opens new data source
      * @param monitor progress monitor
      * @param container data source container

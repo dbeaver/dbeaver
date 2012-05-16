@@ -45,6 +45,7 @@ public class SSHTunnelImpl implements DBWTunnel {
                 throw new DBException("Database port not specified and no default port number for driver '" + configuration.getDriver().getName() + "'");
             }
         }
+        String dbHost = connectionInfo.getHostName();
 
         Map<String,String> properties = configuration.getProperties();
         String sshAuthType = properties.get(SSHConstants.PROP_AUTH_TYPE);
@@ -104,41 +105,25 @@ public class SSHTunnelImpl implements DBWTunnel {
             session.setConfig("StrictHostKeyChecking", "no");
             session.setUserInfo(ui);
             session.connect();
-            session.setPortForwardingL(connectionInfo.getHostName(), localPort, "localhost", dbPort);
+            try {
+                session.setPortForwardingL(localPort, dbHost, dbPort);
+            } catch (JSchException e) {
+                closeTunnel(monitor, connectionInfo);
+                throw e;
+            }
         } catch (JSchException e) {
             throw new DBException("Cannot establish tunnel", e);
         }
         connectionInfo = new DBPConnectionInfo(connectionInfo);
         String newPortValue = String.valueOf(localPort);
+        // Replace database host/port and URL - let's use localhost
+        connectionInfo.setHostName("localhost");
         connectionInfo.setHostPort(newPortValue);
-        connectionInfo.setUrl(replacePort(connectionInfo.getUrl(), dbPortString, newPortValue));
+        String newURL = configuration.getDriver().getDataSourceProvider().getConnectionURL(
+            configuration.getDriver(),
+            connectionInfo);
+        connectionInfo.setUrl(newURL);
         return connectionInfo;
-    }
-
-    private String replacePort(String url, String oldValue, String newValue)
-    {
-        int fistIndex = 0;
-        while (true) {
-            int divPos = url.indexOf(oldValue, fistIndex);
-            if (divPos == -1) {
-                break;
-            }
-            if (divPos > 0) {
-                char prevChar = url.charAt(divPos - 1);
-                if (Character.isDigit(prevChar)) {
-                    continue;
-                }
-            }
-            if (url.length() > divPos + oldValue.length()) {
-                char nextChar = url.charAt(divPos + oldValue.length());
-                if (Character.isDigit(nextChar)) {
-                    continue;
-                }
-            }
-            url = url.substring(0, divPos) + newValue + url.substring(divPos + oldValue.length());
-            fistIndex = divPos + newValue.length();
-        }
-        return url;
     }
 
     private int findFreePort()

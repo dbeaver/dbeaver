@@ -417,6 +417,12 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         }
     }
 
+    @Override
+    protected boolean isCustomURL()
+    {
+        return this.connectionType == OracleConstants.ConnectionType.CUSTOM;
+    }
+
     public void loadSettings()
     {
         isOCI = OCIUtils.isOciDriver(site.getDriver());
@@ -537,11 +543,9 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
                 connectionInfo.setHostName(hostText.getText());
                 connectionInfo.setHostPort(portText.getText());
                 connectionInfo.setDatabaseName(serviceNameCombo.getText());
-                generateConnectionURL(connectionInfo);
                 break;
             case TNS:
                 connectionInfo.setDatabaseName(tnsNameCombo.getText());
-                generateConnectionURL(connectionInfo);
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText());
@@ -582,43 +586,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
                 OracleConstants.PROP_ALWAYS_SHOW_DBA,
                 String.valueOf(showDBAAlwaysCheckbox.getSelection()));
         }
-    }
-
-    private void generateConnectionURL(DBPConnectionInfo connectionInfo)
-    {
-        StringBuilder url = new StringBuilder(100);
-        url.append("jdbc:oracle:"); //$NON-NLS-1$
-        if (isOCI) {
-            url.append("oci"); //$NON-NLS-1$
-        } else {
-            url.append("thin"); //$NON-NLS-1$
-        }
-        url.append(":@"); //$NON-NLS-1$
-        if ((connectionType == OracleConstants.ConnectionType.TNS || CommonUtils.isEmpty(connectionInfo.getHostName())) && !CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-            // TNS name specified
-            url.append(connectionInfo.getDatabaseName());
-        } else {
-            // Basic connection info specified
-            if (!isOCI) {
-                url.append("//"); //$NON-NLS-1$
-            }
-            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                url.append(connectionInfo.getHostName());
-            }
-            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                url.append(":"); //$NON-NLS-1$
-                url.append(connectionInfo.getHostPort());
-            }
-            if (isOCI) {
-                url.append(":"); //$NON-NLS-1$
-            } else {
-                url.append("/"); //$NON-NLS-1$
-            }
-            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                url.append(connectionInfo.getDatabaseName());
-            }
-        }
-        connectionInfo.setUrl(url.toString());
+        super.saveSettings(connectionInfo);
     }
 
     private void updateUI()

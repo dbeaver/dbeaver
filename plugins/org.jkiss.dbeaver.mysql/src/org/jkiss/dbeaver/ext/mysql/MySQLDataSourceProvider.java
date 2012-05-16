@@ -9,9 +9,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.DBPClientHome;
-import org.jkiss.dbeaver.model.DBPClientManager;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -61,6 +59,14 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     public long getFeatures()
     {
         return FEATURE_CATALOGS;
+    }
+
+    @Override
+    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    {
+        return "jdbc:mysql://" + connectionInfo.getHostName() +
+                ":" + connectionInfo.getHostPort() +
+                "/" + connectionInfo.getDatabaseName();
     }
 
     public DBPDataSource openDataSource(

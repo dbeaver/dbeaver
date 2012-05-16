@@ -27,13 +27,6 @@ import java.util.List;
  */
 public class GenericConnectionPage extends ConnectionPageAdvanced
 {
-    private static final String PROP_HOST = "host"; //$NON-NLS-1$
-    private static final String PROP_PORT = "port"; //$NON-NLS-1$
-    private static final String PROP_DATABASE = "database"; //$NON-NLS-1$
-    private static final String PROP_SERVER = "server"; //$NON-NLS-1$
-    private static final String PROP_FOLDER = "folder"; //$NON-NLS-1$
-    private static final String PROP_FILE = "file"; //$NON-NLS-1$
-
     // Host/port
     private Text hostText;
     private Text portText;
@@ -62,6 +55,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
     private static final String GROUP_DB = "db"; //$NON-NLS-1$
     private static final String GROUP_PATH = "path"; //$NON-NLS-1$
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
+    private boolean activated;
 
     public void createControl(Composite composite)
     {
@@ -106,7 +100,9 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
         {
             public void modifyText(ModifyEvent e)
             {
-                evaluateURL();
+                if (activated) {
+                    saveAndUpdate();
+                }
             }
         };
 
@@ -230,7 +226,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (metaURL.getAvailableProperties().contains(PROP_FILE)) {
+                    if (metaURL.getAvailableProperties().contains(DriverDescriptor.PROP_FILE)) {
                         FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
                         dialog.setFileName(pathText.getText());
                         dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
@@ -313,7 +309,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
                 {
                     if (site.openDriverEditor()) {
                         parseSampleURL(site.getDriver());
-                        evaluateURL();
+                        saveAndUpdate();
                     }
                 }
 
@@ -365,14 +361,19 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
             }
             for (String prop : metaURL.getRequiredProperties()) {
                 if (
-                    (prop.equals(PROP_HOST) && CommonUtils.isEmpty(hostText.getText())) ||
-                        (prop.equals(PROP_PORT) && CommonUtils.isEmpty(portText.getText())) ||
-                        (prop.equals(PROP_DATABASE) && CommonUtils.isEmpty(dbText.getText()))) {
+                    (prop.equals(DriverDescriptor.PROP_HOST) && CommonUtils.isEmpty(hostText.getText())) ||
+                        (prop.equals(DriverDescriptor.PROP_PORT) && CommonUtils.isEmpty(portText.getText())) ||
+                        (prop.equals(DriverDescriptor.PROP_DATABASE) && CommonUtils.isEmpty(dbText.getText()))) {
                     return false;
                 }
             }
             return true;
         }
+    }
+
+    protected boolean isCustomURL()
+    {
+        return isCustom;
     }
 
     public void loadSettings()
@@ -425,16 +426,14 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
                 if (connectionInfo.getUrl() != null) {
                     urlText.setText(CommonUtils.getString(connectionInfo.getUrl()));
                 } else {
-                    if (!isCustom) {
-                        evaluateURL();
-                    } else {
-                        urlText.setText(""); //$NON-NLS-1$
-                    }
+                    urlText.setText(""); //$NON-NLS-1$
                 }
             }
         }
 
         super.loadSettings();
+
+        activated = true;
     }
 
     protected void saveSettings(DBPConnectionInfo connectionInfo)
@@ -442,19 +441,19 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
         if (connectionInfo != null) {
             final Set<String> properties = metaURL == null ? Collections.<String>emptySet() : metaURL.getAvailableProperties();
 
-            if (hostText != null && properties.contains(PROP_HOST)) {
+            if (hostText != null && properties.contains(DriverDescriptor.PROP_HOST)) {
                 connectionInfo.setHostName(hostText.getText());
             }
-            if (portText != null && properties.contains(PROP_PORT)) {
+            if (portText != null && properties.contains(DriverDescriptor.PROP_PORT)) {
                 connectionInfo.setHostPort(portText.getText());
             }
-            if (serverText != null && properties.contains(PROP_SERVER)) {
+            if (serverText != null && properties.contains(DriverDescriptor.PROP_SERVER)) {
                 connectionInfo.setServerName(serverText.getText());
             }
-            if (dbText != null && properties.contains(PROP_DATABASE)) {
+            if (dbText != null && properties.contains(DriverDescriptor.PROP_DATABASE)) {
                 connectionInfo.setDatabaseName(dbText.getText());
             }
-            if (pathText != null && (properties.contains(PROP_FOLDER) || properties.contains(PROP_FILE))) {
+            if (pathText != null && (properties.contains(DriverDescriptor.PROP_FOLDER) || properties.contains(DriverDescriptor.PROP_FILE))) {
                 connectionInfo.setDatabaseName(pathText.getText());
             }
             if (userNameText != null) {
@@ -463,10 +462,10 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
             if (passwordText != null) {
                 connectionInfo.setUserPassword(passwordText.getText());
             }
-            if (urlText != null) {
-                connectionInfo.setUrl(urlText.getText());
-            }
             super.saveSettings(connectionInfo);
+            if (urlText != null && connectionInfo.getUrl() != null) {
+                urlText.setText(connectionInfo.getUrl());
+            }
         }
     }
 
@@ -481,39 +480,16 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
             } catch (DBException e) {
                 setErrorMessage(e.getMessage());
             }
-/*
-            // Check for required parts
-            for (String component : urlComponents) {
-                boolean isRequired = !component.startsWith("[");
-                int divPos = component.indexOf('{');
-                if (divPos != -1) {
-                    int divPos2 = component.indexOf('}', divPos);
-                    if (divPos2 != -1) {
-                        String propName = component.substring(divPos + 1, divPos2);
-                        availableProperties.add(propName);
-                        if (isRequired) {
-                            requiredProperties.add(propName);
-                        }
-                    }
-                }
-            }
-*/
             final Set<String> properties = metaURL.getAvailableProperties();
-            //hostText.setEditable(properties.contains(PROP_HOST));
-            //portText.setEditable(properties.contains(PROP_PORT));
-            //dbText.setEditable(properties.contains(PROP_DATABASE));
             urlText.setEditable(false);
             urlText.setBackground(urlText.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
-            showControlGroup(GROUP_HOST, properties.contains(PROP_HOST));
-            showControlGroup(GROUP_SERVER, properties.contains(PROP_SERVER));
-            showControlGroup(GROUP_DB, properties.contains(PROP_DATABASE));
-            showControlGroup(GROUP_PATH, properties.contains(PROP_FOLDER) || properties.contains(PROP_FILE));
+            showControlGroup(GROUP_HOST, properties.contains(DriverDescriptor.PROP_HOST));
+            showControlGroup(GROUP_SERVER, properties.contains(DriverDescriptor.PROP_SERVER));
+            showControlGroup(GROUP_DB, properties.contains(DriverDescriptor.PROP_DATABASE));
+            showControlGroup(GROUP_PATH, properties.contains(DriverDescriptor.PROP_FOLDER) || properties.contains(DriverDescriptor.PROP_FILE));
         } else {
             isCustom = true;
-//            hostText.setEditable(false);
-//            portText.setEditable(false);
-//            dbText.setEditable(false);
             showControlGroup(GROUP_HOST, false);
             showControlGroup(GROUP_SERVER, false);
             showControlGroup(GROUP_DB, false);
@@ -526,38 +502,9 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
         settingsGroup.layout();
     }
 
-    private void evaluateURL()
+    private void saveAndUpdate()
     {
-        if (!isCustom && metaURL != null) {
-            StringBuilder url = new StringBuilder();
-            for (String component : metaURL.getUrlComponents()) {
-                String newComponent = component;
-                if (!CommonUtils.isEmpty(hostText.getText())) {
-                    newComponent = newComponent.replace(makePropPattern(PROP_HOST), hostText.getText());
-                }
-                if (!CommonUtils.isEmpty(portText.getText())) {
-                    newComponent = newComponent.replace(makePropPattern(PROP_PORT), portText.getText());
-                }
-                if (!CommonUtils.isEmpty(serverText.getText())) {
-                    newComponent = newComponent.replace(makePropPattern(PROP_SERVER), serverText.getText());
-                }
-                if (!CommonUtils.isEmpty(dbText.getText())) {
-                    newComponent = newComponent.replace(makePropPattern(PROP_DATABASE), dbText.getText());
-                }
-                if (!CommonUtils.isEmpty(pathText.getText())) {
-                    newComponent = newComponent.replace(makePropPattern(PROP_FOLDER), pathText.getText());
-                    newComponent = newComponent.replace(makePropPattern(PROP_FILE), pathText.getText());
-                }
-                if (newComponent.startsWith("[")) { //$NON-NLS-1$
-                    if (!newComponent.equals(component)) {
-                        url.append(newComponent.substring(1, newComponent.length() - 1));
-                    }
-                } else {
-                    url.append(newComponent);
-                }
-            }
-            urlText.setText(url.toString());
-        }
+        saveSettings(site.getConnectionInfo());
         site.updateButtons();
         testButton.setEnabled(this.isComplete());
     }
