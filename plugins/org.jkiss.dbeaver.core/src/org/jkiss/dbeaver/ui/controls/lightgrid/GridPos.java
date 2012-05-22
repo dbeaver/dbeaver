@@ -28,6 +28,11 @@ public class GridPos
         return object instanceof GridPos && equalsTo((GridPos) object);
     }
 
+    public boolean equals(int col, int row)
+    {
+        return this.col == col && this.row == row;
+    }
+
     public boolean equalsTo(GridPos pos)
     {
         return this.col == pos.col && this.row == pos.row;

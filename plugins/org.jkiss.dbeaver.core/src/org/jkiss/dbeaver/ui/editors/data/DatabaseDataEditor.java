@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -93,7 +94,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     public void doSave(IProgressMonitor monitor)
     {
         if (resultSetView != null && resultSetView.isDirty()) {
-            resultSetView.applyChanges();
+            resultSetView.applyChanges(RuntimeUtils.makeMonitor(monitor));
         }
     }
 

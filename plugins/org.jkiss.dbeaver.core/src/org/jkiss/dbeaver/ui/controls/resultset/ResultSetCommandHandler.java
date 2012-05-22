@@ -61,7 +61,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         } else if (actionId.equals(CMD_ROW_DELETE) || actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE)) {
             resultSet.deleteCurrentRow();
         } else if (actionId.equals(CMD_APPLY_CHANGES)) {
-            resultSet.applyChanges();
+            resultSet.applyChanges(null);
         } else if (actionId.equals(CMD_REJECT_CHANGES)) {
             resultSet.rejectChanges();
         }

@@ -4,14 +4,6 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
-import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
-import org.jkiss.dbeaver.ui.help.IHelpContextIds;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -29,6 +21,7 @@ import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -49,21 +42,34 @@ import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSManipulationType;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.ThemeConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
+import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
+import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -115,7 +121,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     // Edited rows and cells
     private Set<RowInfo> addedRows = new TreeSet<RowInfo>();
     private Set<RowInfo> removedRows = new TreeSet<RowInfo>();
-    private Map<CellInfo, Object> editedValues = new HashMap<CellInfo, Object>();
+    private Map<GridPos, Object> editedValues = new HashMap<GridPos, Object>();
 
     private Text statusLabel;
 
@@ -749,7 +755,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     public void doSave(IProgressMonitor monitor)
     {
-        applyChanges();
+        applyChanges(RuntimeUtils.makeMonitor(monitor));
     }
 
     public void doSaveAs()
@@ -788,6 +794,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!isEditable()) {
             return false;
         }
+        pos = translateGridPos(pos);
         boolean validPosition;
         if (mode == ResultSetMode.GRID) {
             validPosition = (pos.col >= 0 && pos.row >= 0);
@@ -798,10 +805,17 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return validPosition;
     }
 
-    public boolean isCellModified(int col, int row) {
-        return 
-            !editedValues.isEmpty() &&
-                editedValues.containsKey(new CellInfo(col, row));
+    GridPos translateGridPos(GridPos pos)
+    {
+        if (mode == ResultSetMode.GRID) {
+            return pos;
+        } else {
+            return new GridPos(pos.row, curRowNum);
+        }
+    }
+
+    public boolean isCellModified(GridPos pos) {
+        return !editedValues.isEmpty() && editedValues.containsKey(pos);
     }
 
     public boolean isInsertable()
@@ -813,28 +827,26 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     }
 
     public boolean showCellEditor(
-        final GridPos cell,
+        GridPos cell,
         final boolean inline,
         final Composite inlinePlaceholder)
     {
-        final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
-        final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
-        if (rowIndex < 0 || rowIndex >= curRows.size() || columnIndex < 0 || columnIndex >= metaColumns.length) {
+        cell = translateGridPos(cell);
+        if (cell.row < 0 || cell.row >= curRows.size() || cell.col < 0 || cell.col >= metaColumns.length) {
             // Out of bounds
-            log.debug("Editor position is out of bounds (" + columnIndex + ":" + rowIndex + ")");
+            log.debug("Editor position is out of bounds (" + cell.col + ":" + cell.row + ")");
             return false;
         }
         if (!inline) {
-            GridPos testCell = new GridPos(columnIndex, rowIndex);
             for (ResultSetValueController valueController : openEditors.keySet()) {
                 GridPos cellPos = valueController.getCellPos();
-                if (cellPos != null && cellPos.equalsTo(testCell)) {
+                if (cellPos != null && cellPos.equalsTo(cell)) {
                     openEditors.get(valueController).showValueEditor();
                     return true;
                 }
             }
         }
-        DBDColumnBinding metaColumn = metaColumns[columnIndex];
+        DBDColumnBinding metaColumn = metaColumns[cell.col];
         if (isColumnReadOnly(metaColumn) && inline) {
             // No inline editors for readonly columns
             return false;
@@ -844,8 +856,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return false;
         }
         ResultSetValueController valueController = new ResultSetValueController(
-            curRows.get(rowIndex),
-            columnIndex,
+            curRows.get(cell.row),
+            cell.col,
             inline ? inlinePlaceholder : null);
         try {
             return metaColumn.getValueHandler().editValue(valueController);
@@ -856,16 +868,28 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    public void fillContextMenu(final GridPos cell, IMenuManager manager) {
+    @Override
+    public void resetCellValue(GridPos cell, boolean delete)
+    {
+        cell = translateGridPos(cell);
+        if (editedValues != null && editedValues.containsKey(cell)) {
+            Object[] row = this.curRows.get(cell.row);
+            resetValue(row[cell.col]);
+            row[cell.col] = this.editedValues.get(cell);
+            this.editedValues.remove(cell);
+        }
+        spreadsheet.redrawGrid();
+    }
+
+    public void fillContextMenu(GridPos curCell, IMenuManager manager) {
 
         // Custom oldValue items
-        final int columnIndex = (mode == ResultSetMode.GRID ? cell.col : cell.row);
-        final int rowIndex = (mode == ResultSetMode.GRID ? cell.row : curRowNum);
-        boolean noCellSelected = (rowIndex < 0 || curRows.size() <= rowIndex || columnIndex < 0 || columnIndex >= metaColumns.length);
+        final GridPos cell = translateGridPos(curCell);
+        boolean noCellSelected = (cell.row < 0 || curRows.size() <= cell.row || cell.col < 0 || cell.col >= metaColumns.length);
         if (!noCellSelected) {
             final ResultSetValueController valueController = new ResultSetValueController(
-                curRows.get(rowIndex),
-                columnIndex,
+                curRows.get(cell.row),
+                cell.col,
                 null);
             final Object value = valueController.getValue();
 
@@ -888,12 +912,24 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         }
                     });
                 }
+                if (isCellModified(cell)) {
+                    Action resetValueAction = new Action(CoreMessages.controls_resultset_viewer_action_reset_value)
+                    {
+                        @Override
+                        public void run()
+                        {
+                            resetCellValue(cell, false);
+                        }
+                    };
+                    resetValueAction.setAccelerator(SWT.ESC);
+                    manager.add(resetValueAction);
+                }
             }
 
             // Menus from value handler
             try {
                 manager.add(new Separator());
-                metaColumns[columnIndex].getValueHandler().fillContextMenu(manager, valueController);
+                metaColumns[cell.col].getValueHandler().fillContextMenu(manager, valueController);
             }
             catch (Exception e) {
                 log.error(e);
@@ -1024,7 +1060,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     return;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    applyChanges(new DBDValueListener() {
+                    applyChanges(null, new DBDValueListener() {
                         public void onUpdate(boolean success) {
                             if (success) {
                                 getControl().getDisplay().asyncExec(new Runnable() {
@@ -1232,7 +1268,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void clearEditedData()
     {
-        this.editedValues = new HashMap<CellInfo, Object>();
+        this.editedValues = new HashMap<GridPos, Object>();
         this.addedRows = new TreeSet<RowInfo>();
         this.removedRows = new TreeSet<RowInfo>();
     }
@@ -1242,15 +1278,20 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
     }
 
-    public void applyChanges()
+    public void applyChanges(DBRProgressMonitor monitor)
     {
-        applyChanges(null);
+        applyChanges(monitor, null);
     }
 
-    public void applyChanges(DBDValueListener listener)
+    /**
+     * Saves changes to database
+     * @param monitor monitor. If null then save will be executed in async job
+     * @param listener finish listener
+     */
+    public void applyChanges(DBRProgressMonitor monitor, DBDValueListener listener)
     {
         try {
-            new DataUpdater().applyChanges(listener);
+            new DataUpdater().applyChanges(monitor, listener);
         } catch (DBException e) {
             log.error("Could not obtain result set meta data", e);
         }
@@ -1342,7 +1383,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private void shiftRows(int rowNum, int delta)
     {
         // Slide all existing edited rows/cells down
-        for (CellInfo cell : editedValues.keySet()) {
+        for (GridPos cell : editedValues.keySet()) {
             if (cell.row >= rowNum) cell.row += delta;
         }
         for (RowInfo row : addedRows) {
@@ -1566,7 +1607,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     // Do not add edited cell for new/deleted rows
                     if (!isRowAdded(rowIndex) && !isRowDeleted(rowIndex)) {
                         // Save old value
-                        CellInfo cell = new CellInfo(columnIndex, rowIndex);
+                        GridPos cell = new GridPos(columnIndex, rowIndex);
                         Object oldOldValue = editedValues.get(cell);
                         if (oldOldValue != null && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
                             // Value rewrite - release previous stored old value
@@ -1732,37 +1773,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
-    private static class CellInfo {
-        int col;
-        int row;
-
-        private CellInfo(int col, int row) {
-            this.col = col;
-            this.row = row;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return col ^ row;
-        }
-
-        public boolean equals (Object cell)
-        {
-            return cell instanceof CellInfo &&
-                this.col == ((CellInfo)cell).col &&
-                this.row == ((CellInfo)cell).row;
-        }
-        boolean equals (int col, int row)
-        {
-            return this.col == col && this.row == row;
-        }
-    }
-
     static class TableRowInfo {
         DBSEntity table;
         DBCEntityIdentifier id;
-        List<CellInfo> tableCells = new ArrayList<CellInfo>();
+        List<GridPos> tableCells = new ArrayList<GridPos>();
 
         TableRowInfo(DBSEntity table, DBCEntityIdentifier id) {
             this.table = table;
@@ -1811,15 +1825,16 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         /**
          * Applies changes.
          * @throws DBException
+         * @param monitor
          * @param listener
          */
-        void applyChanges(DBDValueListener listener)
+        void applyChanges(DBRProgressMonitor monitor, DBDValueListener listener)
             throws DBException
         {
             prepareDeleteStatements();
             prepareInsertStatements();
             prepareUpdateStatements();
-            execute(listener);
+            execute(monitor, listener);
         }
 
         private void prepareUpdateRows()
@@ -1829,7 +1844,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 return;
             }
             // Prepare rows
-            for (CellInfo cell : editedValues.keySet()) {
+            for (GridPos cell : editedValues.keySet()) {
                 Map<DBSEntity, TableRowInfo> tableMap = updatedRows.get(cell.row);
                 if (tableMap == null) {
                     tableMap = new HashMap<DBSEntity, TableRowInfo>();
@@ -1905,7 +1920,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, new RowInfo(rowNum), table);
                     // Updated columns
                     for (int i = 0; i < rowInfo.tableCells.size(); i++) {
-                        CellInfo cell = rowInfo.tableCells.get(i);
+                        GridPos cell = rowInfo.tableCells.get(i);
                         DBDColumnBinding metaColumn = metaColumns[cell.col];
                         statement.updateColumns.add(new DBDColumnValue(metaColumn.getTableColumn(), curRows.get(rowNum)[cell.col]));
                     }
@@ -1920,7 +1935,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                         DBDColumnBinding metaColumn = metaColumns[columnIndex];
                         Object keyValue = curRows.get(rowNum)[columnIndex];
                         // Try to find old key oldValue
-                        for (CellInfo cell : editedValues.keySet()) {
+                        for (GridPos cell : editedValues.keySet()) {
                             if (cell.equals(columnIndex, rowNum)) {
                                 keyValue = editedValues.get(cell);
                             }
@@ -1932,17 +1947,21 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
-        private void execute(final DBDValueListener listener)
+        private void execute(DBRProgressMonitor monitor, final DBDValueListener listener)
             throws DBException
         {
             DataUpdaterJob job = new DataUpdaterJob(listener);
-            job.schedule();
+            if (monitor == null) {
+                job.schedule();
+            } else {
+                job.run(monitor);
+            }
         }
 
         public void rejectChanges()
         {
             if (editedValues != null) {
-                for (CellInfo cell : editedValues.keySet()) {
+                for (GridPos cell : editedValues.keySet()) {
                     Object[] row = ResultSetViewer.this.curRows.get(cell.row);
                     resetValue(row[cell.col]);
                     row[cell.col] = editedValues.get(cell);
@@ -1965,8 +1984,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             boolean rowsChanged = false;
             if (editedValues != null) {
-                for (Iterator<Map.Entry<CellInfo, Object>> iter = editedValues.entrySet().iterator(); iter.hasNext(); ) {
-                    Map.Entry<CellInfo, Object> entry = iter.next();
+                for (Iterator<Map.Entry<GridPos, Object>> iter = editedValues.entrySet().iterator(); iter.hasNext(); ) {
+                    Map.Entry<GridPos, Object> entry = iter.next();
                     for (DataStatementInfo stat : updateStatements) {
                         if (stat.executed && stat.row.row == entry.getKey().row && stat.hasUpdateColumn(metaColumns[entry.getKey().col])) {
                             reflectKeysUpdate(stat);
@@ -2387,20 +2406,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         public Color getBackground(Object element)
         {
-            GridPos cell = (GridPos)element;
-            int col = cell.col;
-            int row = cell.row;
-            if (mode == ResultSetMode.RECORD) {
-                col = row;
-                row = curRowNum;
-            }
-            if (isRowAdded(row)) {
+            GridPos cell = translateGridPos((GridPos)element);
+            if (isRowAdded(cell.row)) {
                 return backgroundAdded;
             }
-            if (isRowDeleted(row)) {
+            if (isRowDeleted(cell.row)) {
                 return backgroundDeleted;
             }
-            if (isCellModified(col, row)) {
+            if (isCellModified(cell)) {
                 return backgroundModified;
             }
             return null;

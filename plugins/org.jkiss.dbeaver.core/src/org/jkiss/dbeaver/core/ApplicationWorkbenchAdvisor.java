@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
@@ -155,7 +156,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     private boolean saveAndCleanup()
     {
         final IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-        IProgressMonitor nullMonitor = new NullProgressMonitor();
+        //IProgressMonitor nullMonitor = new NullProgressMonitor();
+        DBRProgressMonitor nullMonitor = VoidProgressMonitor.INSTANCE;
         //final List<File> openFiles = new ArrayList<File>();
         for (IWorkbenchPage workbenchPage : workbenchWindow.getPages()) {
             for (IEditorReference editorRef : workbenchPage.getEditorReferences()) {
@@ -164,8 +166,10 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
                     if (editorInput instanceof IAutoSaveEditorInput && ((IAutoSaveEditorInput) editorInput).isAutoSaveEnabled()) {
                         IEditorPart editor = editorRef.getEditor(false);
-                        if (editor != null && editor.isDirty()) {
-                            editor.doSave(nullMonitor);
+                        if (editor != null) {
+                            if (!RuntimeUtils.validateAndSave(nullMonitor, editor)) {
+                                return false;
+                            }
                         }
                     }
 

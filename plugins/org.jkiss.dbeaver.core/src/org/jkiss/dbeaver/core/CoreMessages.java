@@ -307,6 +307,8 @@ public class CoreMessages extends NLS {
 
 	public static String controls_resultset_viewer_action_set_to_null;
 
+    public static String controls_resultset_viewer_action_reset_value;
+
 	public static String controls_resultset_viewer_add_new_row_context_name;
 
 	public static String controls_resultset_viewer_dialog_status_title;

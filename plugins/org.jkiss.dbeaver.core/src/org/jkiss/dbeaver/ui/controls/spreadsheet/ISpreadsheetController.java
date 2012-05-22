@@ -25,6 +25,8 @@ public interface ISpreadsheetController {
         boolean inline,
         Composite inlinePlaceholder);
 
+    void resetCellValue(GridPos cell, boolean delete);
+
     void fillContextMenu(
         GridPos cell,
         IMenuManager manager);

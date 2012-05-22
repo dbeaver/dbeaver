@@ -390,6 +390,11 @@ public class Spreadsheet extends Composite implements Listener {
                     (event.keyCode >= '0' && event.keyCode <= '9'))
                 {
                     openCellViewer(true);
+                } else if (event.keyCode == SWT.ESC) {
+                    // Reset cell value
+                    if (spreadsheetController != null) {
+                        spreadsheetController.resetCellValue(grid.getFocusCell(), false);
+                    }
                 }
                 break;
             case SWT.MouseDoubleClick:
