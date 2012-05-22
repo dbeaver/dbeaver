@@ -36,9 +36,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -52,6 +50,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private List<DBSDataType> validDataTypes = new ArrayList<DBSDataType>();
     private TableEditor tableEditor;
     private Table paramTable;
+
+    private static Map<String, Object> savedParamValues = new HashMap<String, Object>();
 
     protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBPDataSource dataSource, List<SQLStatementParameter> parameters)
     {
@@ -86,6 +86,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             if (dataType != null) {
                 param.setParamType(dataType);
                 param.resolve();
+            }
+            Object value = savedParamValues.get(param.getName());
+            if (value != null) {
+                param.setValue(value);
             }
         }
     }
@@ -271,6 +275,18 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         {
             parameter.setValue(value);
             item.setText(3, getValueHandler().getValueDisplayString(parameter, value));
+            String paramName = parameter.getName().trim();
+            boolean isNumber = true;
+            try {
+                Integer.parseInt(paramName);
+            } catch (NumberFormatException e) {
+                isNumber = false;
+            }
+            if (!isNumber && !paramName.equals("?")) {
+                savedParamValues.put(paramName, value);
+            }
+            //parameter.getIndex()
+
             updateStatus(Status.OK_STATUS);
         }
 
