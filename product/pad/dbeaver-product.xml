@@ -32,6 +32,31 @@
 
     <versions>
         <version>
+            <number>1.5.6</number>
+            <type>minor</type>
+            <date>22.05.2012</date>
+
+            <release-notes>
+                - SSH tunnels settings fix
+                - External tools fix (support of SSH tunnels)
+                - ERD color schema fix
+                - Hyperlinks fix
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.5</number>
+            <type>minor</type>
+            <date>23.04.2012</date>
+
+            <release-notes>
+                - MySQL problem when no default database is set
+                - Oracle performance problems
+                - Minor UI fixes (hyperlinks rendering)
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.5.4</number>
             <type>major</type>
             <date>04.04.2012</date>
