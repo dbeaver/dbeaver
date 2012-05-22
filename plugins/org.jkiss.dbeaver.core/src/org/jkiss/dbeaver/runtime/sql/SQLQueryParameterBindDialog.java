@@ -122,7 +122,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         nameColumn.setWidth(100);
         final TableColumn typeColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Type");
         typeColumn.setWidth(70);
-        final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.RIGHT, "Value");
+        final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Value");
         valueColumn.setWidth(200);
 
         for (SQLStatementParameter param : parameters) {
