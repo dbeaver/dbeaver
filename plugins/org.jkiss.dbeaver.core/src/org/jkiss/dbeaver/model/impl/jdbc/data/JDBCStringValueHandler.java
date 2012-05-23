@@ -55,17 +55,17 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
             Object value = controller.getValue();
             Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
-            editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
-            editor.setEditable(!controller.isReadOnly());
-            editor.setTextLimit(MAX_STRING_LENGTH);
-            editor.selectAll();
-            editor.setFocus();
             initInlineControl(controller, editor, new ValueExtractor<Text>() {
                 public Object getValueFromControl(Text control)
                 {
                     return control.getText();
                 }
             });
+            editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
+            editor.setEditable(!controller.isReadOnly());
+            editor.setTextLimit(MAX_STRING_LENGTH);
+            editor.selectAll();
+            editor.setFocus();
             return true;
         } else {
             TextViewDialog dialog = new TextViewDialog(controller);

@@ -8,12 +8,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -35,6 +33,7 @@ import java.sql.SQLException;
 public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
+    private static final String CELL_VALUE_INLINE_EDITOR = "org.jkiss.dbeaver.CellValueInlineEditor";
 
     public final Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column, int columnIndex)
         throws DBCException
@@ -104,7 +103,8 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         final ValueExtractor<T> extractor)
     {
         control.setFont(controller.getInlinePlaceholder().getFont());
-        control.addTraverseListener(new TraverseListener() {
+        control.addTraverseListener(new TraverseListener()
+        {
             public void keyTraversed(TraverseEvent e)
             {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
@@ -124,12 +124,25 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                 }
             }
         });
+        final IFocusService focusService = (IFocusService) controller.getValueSite().getService(IFocusService.class);
+        if (focusService != null) {
+            focusService.addFocusTracker(control, CELL_VALUE_INLINE_EDITOR);
+        }
         control.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e)
             {
                 controller.updateValue(extractor.getValueFromControl(control));
                 controller.closeInlineEditor();
+            }
+        });
+        control.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e)
+            {
+                if (focusService != null) {
+                    focusService.removeFocusTracker(control);
+                }
             }
         });
     }
