@@ -453,13 +453,13 @@ public class DataSourceDescriptor
 
         // First rollback active transaction
         monitor.subTask("Rollback active transaction");
-        DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
+        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
         try {
             if (context.isConnected() && !context.getTransactionManager().isAutoCommit()) {
                 // Check current transaction
                 // If there are some executions in last savepoint then ask user about commit/rollback
                 QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
-                QMMSessionInfo qmmSession = qmm.getSession(getDataSource());
+                QMMSessionInfo qmmSession = qmm.getSession(dataSource);
                 QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
                 QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
                 if (sp != null && (sp.getPrevious() != null || sp.hasUserExecutions())) {
@@ -492,7 +492,9 @@ public class DataSourceDescriptor
 
         // Close datasource
         monitor.subTask("Close connection");
-        getDataSource().close();
+        if (dataSource != null) {
+            dataSource.close();
+        }
         monitor.worked(1);
 
         // Close tunnel

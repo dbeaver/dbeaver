@@ -879,6 +879,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             this.editedValues.remove(cell);
         }
         spreadsheet.redrawGrid();
+        updateEditControls();
     }
 
     public void fillContextMenu(GridPos curCell, IMenuManager manager) {
@@ -1616,7 +1617,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         public void updateValue(Object value)
         {
             Object oldValue = curRow[columnIndex];
-            if (value instanceof DBDValue || !CommonUtils.equalObjects(oldValue, value)) {
+            if ((value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {
+                // If DBDValue was updated (kind of LOB?) or actual value was changed
                 int rowIndex = getRowIndex(curRow);
                 if (rowIndex >= 0) {
                     if (DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {

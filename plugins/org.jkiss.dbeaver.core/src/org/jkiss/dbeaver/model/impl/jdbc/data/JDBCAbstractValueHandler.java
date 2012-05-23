@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -131,8 +131,25 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             @Override
             public void focusLost(FocusEvent e)
             {
-                controller.updateValue(extractor.getValueFromControl(control));
-                controller.closeInlineEditor();
+                // Check new focus control in async mode
+                // (because right now focus is still on edit control)
+                control.getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        Control newFocus = control.getDisplay().getFocusControl();
+                        if (newFocus != null) {
+                            for (Control fc = newFocus.getParent(); fc != null; fc = fc.getParent()) {
+                                if (fc == controller.getInlinePlaceholder()) {
+                                    // New focus is still a child of inline placeholder - do not close it
+                                    return;
+                                }
+                            }
+                        }
+                        controller.updateValue(extractor.getValueFromControl(control));
+                        controller.closeInlineEditor();
+                    }
+                });
             }
         });
         control.addDisposeListener(new DisposeListener() {

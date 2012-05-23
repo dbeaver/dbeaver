@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -78,6 +79,7 @@ public class DBNModel implements IResourceChangeListener {
         IAdapterManager mgr = Platform.getAdapterManager();
         mgr.registerAdapters(nodesAdapter, DBNNode.class);
         mgr.registerAdapters(nodesAdapter, DBPObject.class);
+        mgr.registerAdapters(nodesAdapter, DBPQualifiedObject.class);
     }
 
     public void dispose()
