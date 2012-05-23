@@ -126,6 +126,11 @@ public class Spreadsheet extends Composite implements Listener {
         return spreadsheetController;
     }
 
+    public Clipboard getClipboard()
+    {
+        return clipboard;
+    }
+
     public Color getForegroundNormal()
     {
         return foregroundNormal;

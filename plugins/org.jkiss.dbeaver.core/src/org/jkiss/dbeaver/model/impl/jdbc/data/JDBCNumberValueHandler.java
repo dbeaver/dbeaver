@@ -244,7 +244,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             controller.getColumnMetaData().getScale());
     }
 
-
     public static Number convertStringToNumber(String text, Object originalValue, DBSTypedObject type)
     {
         if (text == null || text.length() == 0) {

@@ -29,8 +29,11 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_STRING_LENGTH = 0xffff;
 
-    protected Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
-                                    int columnIndex)
+    protected Object getColumnValue(
+        DBCExecutionContext context,
+        JDBCResultSet resultSet,
+        DBSTypedObject column,
+        int columnIndex)
         throws SQLException
     {
         return resultSet.getString(columnIndex);

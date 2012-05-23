@@ -6,9 +6,11 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
 
@@ -64,6 +66,10 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
             resultSet.applyChanges(null);
         } else if (actionId.equals(CMD_REJECT_CHANGES)) {
             resultSet.rejectChanges();
+        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE)) {
+            resultSet.pasteCellValue();
+        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT)) {
+            resultSet.getSpreadsheet().copySelectionToClipboard(false);
         }
 
 

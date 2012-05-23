@@ -1302,6 +1302,25 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         new DataUpdater().rejectChanges();
     }
 
+    public void pasteCellValue()
+    {
+        GridPos cell = getCurrentPosition();
+        if (cell == null) {
+            return;
+        }
+        DBDColumnBinding metaColumn = metaColumns[cell.col];
+        if (isColumnReadOnly(metaColumn)) {
+            // No inline editors for readonly columns
+            return;
+        }
+//        try {
+//            metaColumn.getValueHandler().createValueObject();
+//        }
+//        catch (Exception e) {
+//            UIUtils.showErrorDialog(site.getShell(), "Cannot replace cell value", null, e);
+//        }
+    }
+
     private boolean isRowAdded(int row)
     {
         return addedRows.contains(new RowInfo(row));
