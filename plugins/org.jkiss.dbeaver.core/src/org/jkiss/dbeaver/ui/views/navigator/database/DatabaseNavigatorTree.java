@@ -244,7 +244,9 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                         getDisplay().asyncExec(new Runnable() {
                             public void run()
                             {
-                                renameItem(curSelection);
+                                if (curSelection != null) {
+                                    renameItem(curSelection);
+                                }
                             }
                         });
                     }
