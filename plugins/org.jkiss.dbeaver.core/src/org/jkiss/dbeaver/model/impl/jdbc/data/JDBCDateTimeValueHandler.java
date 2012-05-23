@@ -111,30 +111,30 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
 
             if (dateEditor != null) {
-                if (value instanceof Date) {
-                    Calendar cl = Calendar.getInstance();
-                    cl.setTime((Date)value);
-                    dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
-                }
                 initInlineControl(controller, dateEditor, new ValueExtractor<DateTime>() {
                     public Object getValueFromControl(DateTime control)
                     {
                         return getDate(dateEditor, timeEditor);
                     }
                 });
-            }
-            if (timeEditor != null) {
                 if (value instanceof Date) {
                     Calendar cl = Calendar.getInstance();
                     cl.setTime((Date)value);
-                    timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+                    dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
                 }
+            }
+            if (timeEditor != null) {
                 initInlineControl(controller, timeEditor, new ValueExtractor<DateTime>() {
                     public Object getValueFromControl(DateTime control)
                     {
                         return getDate(dateEditor, timeEditor);
                     }
                 });
+                if (value instanceof Date) {
+                    Calendar cl = Calendar.getInstance();
+                    cl.setTime((Date)value);
+                    timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+                }
             }
 
 /*

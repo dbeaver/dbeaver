@@ -27,9 +27,6 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
             final MySQLTypeEnum value = (MySQLTypeEnum)controller.getValue();
 
             org.eclipse.swt.widgets.List editor = new org.eclipse.swt.widgets.List(controller.getInlinePlaceholder(), SWT.BORDER | SWT.MULTI);
-            fillSetList(editor, value);
-
-            editor.setFocus();
             initInlineControl(controller, editor, new ValueExtractor<org.eclipse.swt.widgets.List>() {
                 public Object getValueFromControl(org.eclipse.swt.widgets.List control)
                 {
@@ -45,6 +42,9 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
                     return new MySQLTypeEnum(value.getColumn(), resultString.toString());
                 }
             });
+            fillSetList(editor, value);
+
+            editor.setFocus();
             return true;
         } else {
             EnumViewDialog dialog = new EnumViewDialog(controller);

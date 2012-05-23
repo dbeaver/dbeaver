@@ -163,10 +163,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
             if (controller.getColumnMetaData().getTypeID() == java.sql.Types.BIT) {
                 CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
-                editor.add("0"); //$NON-NLS-1$
-                editor.add("1"); //$NON-NLS-1$
-                editor.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
-                editor.setFocus();
                 initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
                     public Object getValueFromControl(CCombo control)
                     {
@@ -177,8 +173,22 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         }
                     }
                 });
+                editor.add("0"); //$NON-NLS-1$
+                editor.add("1"); //$NON-NLS-1$
+                editor.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
+                editor.setFocus();
             } else {
                 Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
+                initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                    public Object getValueFromControl(Text control)
+                    {
+                        String text = control.getText();
+                        if (CommonUtils.isEmpty(text)) {
+                            return null;
+                        }
+                        return convertStringToNumber(text, value, controller.getColumnMetaData());
+                    }
+                });
                 editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
                 editor.setEditable(!controller.isReadOnly());
                 editor.setTextLimit(MAX_NUMBER_LENGTH);
@@ -196,17 +206,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     editor.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
                     break;
                 }
-
-                initInlineControl(controller, editor, new ValueExtractor<Text>() {
-                    public Object getValueFromControl(Text control)
-                    {
-                        String text = control.getText();
-                        if (CommonUtils.isEmpty(text)) {
-                            return null;
-                        }
-                        return convertStringToNumber(text, value, controller.getColumnMetaData());
-                    }
-                });
             }
             return true;
         } else {

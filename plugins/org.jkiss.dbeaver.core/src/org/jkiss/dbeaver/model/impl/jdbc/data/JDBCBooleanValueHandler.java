@@ -71,10 +71,6 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
             Object value = controller.getValue();
 
             CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
-            editor.add("FALSE");
-            editor.add("TRUE");
-            editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
-            editor.setFocus();
             initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
                 public Object getValueFromControl(CCombo control)
                 {
@@ -85,6 +81,10 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                     }
                 }
             });
+            editor.add("FALSE");
+            editor.add("TRUE");
+            editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
+            editor.setFocus();
             return true;
         } else {
             NumberViewDialog dialog = new NumberViewDialog(controller);

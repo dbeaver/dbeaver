@@ -238,6 +238,13 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 JDBCContentChars value = (JDBCContentChars)controller.getValue();
 
                 Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
+                initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                    public Object getValueFromControl(Text control)
+                    {
+                        String newValue = control.getText();
+                        return new JDBCContentChars(newValue);
+                    }
+                });
                 editor.setText(value.getData() == null ? "" : value.getData()); //$NON-NLS-1$
                 editor.setEditable(!controller.isReadOnly());
                 long maxLength = controller.getColumnMetaData().getMaxLength();
@@ -249,13 +256,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 editor.setTextLimit((int)maxLength);
                 editor.selectAll();
                 editor.setFocus();
-                initInlineControl(controller, editor, new ValueExtractor<Text>() {
-                    public Object getValueFromControl(Text control)
-                    {
-                        String newValue = control.getText();
-                        return new JDBCContentChars(newValue);
-                    }
-                });
                 return true;
             } else {
                 controller.showMessage(CoreMessages.model_jdbc_lob_and_binary_data_cant_be_edited_inline, true);
