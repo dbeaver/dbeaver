@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
@@ -24,10 +26,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.text.ParseException;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -198,6 +202,32 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             // Not supported
             return null;
         }
+    }
+
+    @Override
+    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard) throws DBException
+    {
+        String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
+        if (CommonUtils.isEmpty(strValue)) {
+            return null;
+        }
+        Object dateValue;
+        try {
+            switch (column.getTypeID()) {
+            case java.sql.Types.TIME:
+                dateValue = getFormatter(TYPE_NAME_TIME).parseValue(strValue);
+                break;
+            case java.sql.Types.DATE:
+                dateValue = getFormatter(TYPE_NAME_DATE).parseValue(strValue);
+                break;
+            default:
+                dateValue = getFormatter(TYPE_NAME_TIMESTAMP).parseValue(strValue);
+                break;
+            }
+        } catch (ParseException e) {
+            return null;
+        }
+        return dateValue;
     }
 
     @Override

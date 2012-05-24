@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class DefaultDataFormatter implements DBDDataFormatter {
 
     public Object parseValue(String value) throws ParseException
     {
-        return null;
+        return DateFormat.getInstance().parse(value);
     }
 
 }
