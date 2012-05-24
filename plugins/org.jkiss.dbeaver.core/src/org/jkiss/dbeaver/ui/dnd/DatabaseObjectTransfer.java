@@ -51,7 +51,11 @@ public final class DatabaseObjectTransfer extends LocalObjectTransfer<Collection
     public static Collection<DBPNamedObject> getFromClipboard()
     {
         Clipboard clipboard = new Clipboard(Display.getDefault());
-        return (Collection<DBPNamedObject>) clipboard.getContents(DatabaseObjectTransfer.getInstance());
+        try {
+            return (Collection<DBPNamedObject>) clipboard.getContents(DatabaseObjectTransfer.getInstance());
+        } finally {
+            clipboard.dispose();
+        }
     }
 
 }

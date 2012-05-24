@@ -49,7 +49,11 @@ public final class TreeNodeTransfer extends LocalObjectTransfer<Collection<DBNNo
     public static Collection<DBNNode> getFromClipboard()
     {
         Clipboard clipboard = new Clipboard(Display.getDefault());
-        return (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
+        try {
+            return (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
+        } finally {
+            clipboard.dispose();
+        }
     }
 
 }

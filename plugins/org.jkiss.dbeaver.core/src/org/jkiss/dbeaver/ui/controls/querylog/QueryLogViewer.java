@@ -682,11 +682,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         }
 
         if (tdt.length() > 0) {
-            TextTransfer textTransfer = TextTransfer.getInstance();
-            Clipboard clipboard = new Clipboard(logTable.getDisplay());
-            clipboard.setContents(
-                new Object[]{tdt},
-                new Transfer[]{textTransfer});
+            UIUtils.setClipboardContents(logTable.getDisplay(), TextTransfer.getInstance(), tdt);
         }
     }
 

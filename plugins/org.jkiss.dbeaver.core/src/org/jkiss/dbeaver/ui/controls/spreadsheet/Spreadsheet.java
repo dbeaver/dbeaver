@@ -373,6 +373,9 @@ public class Spreadsheet extends Composite implements Listener {
     public void dispose()
     {
         this.clearGrid();
+        if (clipboard != null && !clipboard.isDisposed()) {
+            clipboard.dispose();
+        }
         super.dispose();
     }
 

@@ -83,7 +83,6 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                         buf.append(objectValue);
                     }
                     {
-                        Clipboard clipboard = new Clipboard(workbenchWindow.getShell().getDisplay());
                         List<Object> dataList = new ArrayList<Object>();
                         List<Transfer> dataTypeList = new ArrayList<Transfer>();
                         if (buf.length() > 0) {
@@ -103,9 +102,11 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                             dataTypeList.add(FileTransfer.getInstance());
                         }
                         if (!dataList.isEmpty()) {
+                            Clipboard clipboard = new Clipboard(workbenchWindow.getShell().getDisplay());
                             clipboard.setContents(
                                 dataList.toArray(),
                                 dataTypeList.toArray(new Transfer[dataTypeList.size()]));
+                            clipboard.dispose();
                             ObjectPropertyTester.firePropertyChange(ObjectPropertyTester.PROP_CAN_PASTE);
                         }
                     }

@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 
@@ -52,11 +53,7 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
                     {
                         String text = getRenderer().getSelectedText();
                         if (text != null) {
-                            TextTransfer textTransfer = TextTransfer.getInstance();
-                            Clipboard clipboard = new Clipboard(getDisplay());
-                            clipboard.setContents(
-                                new Object[]{text},
-                                new Transfer[]{textTransfer});
+                            UIUtils.setClipboardContents(getDisplay(), TextTransfer.getInstance(), text);
                         }
                     }
                 };

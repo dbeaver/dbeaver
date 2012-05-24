@@ -183,11 +183,10 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
             tdt.append(item.getText())
                 .append(ContentUtils.getDefaultLineSeparator());
         }
-        TextTransfer textTransfer = TextTransfer.getInstance();
-        Clipboard clipboard = new Clipboard(infoTable.getDisplay());
-        clipboard.setContents(
-            new Object[]{tdt.toString()},
-            new Transfer[]{textTransfer});
+        UIUtils.setClipboardContents(
+            infoTable.getDisplay(),
+            TextTransfer.getInstance(),
+            tdt.toString());
     }
 
 }

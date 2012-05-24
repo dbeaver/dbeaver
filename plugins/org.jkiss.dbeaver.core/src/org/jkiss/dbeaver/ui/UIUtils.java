@@ -17,6 +17,8 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -1033,4 +1035,14 @@ public class UIUtils {
         }
         return null;
     }
+
+    public static void setClipboardContents(Display display, Transfer transfer, Object contents)
+    {
+        Clipboard clipboard = new Clipboard(display);
+        clipboard.setContents(
+            new Object[]{contents},
+            new Transfer[]{transfer});
+        clipboard.dispose();
+    }
+
 }

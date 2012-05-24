@@ -120,11 +120,7 @@ public class ViewSQLDialog extends Dialog {
     protected void buttonPressed(int buttonId)
     {
         if (buttonId == IDialogConstants.DETAILS_ID) {
-            Clipboard clipboard = new Clipboard(getShell().getDisplay());
-            TextTransfer textTransfer = TextTransfer.getInstance();
-            clipboard.setContents(
-                new Object[]{text},
-                new Transfer[]{textTransfer});
+            UIUtils.setClipboardContents(getShell().getDisplay(), TextTransfer.getInstance(), text);
         } else if (buttonId == IDialogConstants.PROCEED_ID) {
             setReturnCode(IDialogConstants.PROCEED_ID);
             close();

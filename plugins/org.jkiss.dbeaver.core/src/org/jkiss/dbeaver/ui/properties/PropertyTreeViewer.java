@@ -46,7 +46,6 @@ public class PropertyTreeViewer extends TreeViewer {
 
     private Font boldFont;
     //private Color colorBlue;
-    private Clipboard clipboard;
     private int selectedColumn = -1;
     private CellEditor curCellEditor;
     private IPropertyDescriptor selectedProperty;
@@ -60,8 +59,6 @@ public class PropertyTreeViewer extends TreeViewer {
         super(parent, style | SWT.SINGLE | SWT.FULL_SELECTION);
 
         //colorBlue = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_DARK_BLUE);
-        clipboard = new Clipboard(parent.getDisplay());
-
         //this.setLayout(new GridLayout(1, false));
         //GridData gd = new GridData(GridData.FILL_BOTH);
         //this.setLayoutData(gd);
@@ -407,10 +404,10 @@ public class PropertyTreeViewer extends TreeViewer {
                             manager.add(new Action(CoreMessages.ui_properties_tree_viewer_action_copy_value) {
                                 @Override
                                 public void run() {
-                                    TextTransfer textTransfer = TextTransfer.getInstance();
-                                    clipboard.setContents(
-                                        new Object[]{CommonUtils.toString(getPropertyValue(prop))},
-                                        new Transfer[]{textTransfer});
+                                    UIUtils.setClipboardContents(
+                                        Display.getDefault(),
+                                        TextTransfer.getInstance(),
+                                        CommonUtils.toString(getPropertyValue(prop)));
                                 }
                             });
                             if (isPropertyChanged(prop) && prop.isEditable()) {

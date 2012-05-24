@@ -13,6 +13,7 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
@@ -90,10 +91,10 @@ public class CopyUnformattedTextAction extends Action {
             e.printStackTrace();
         }
 
-        Clipboard clipboard = new Clipboard(Display.getCurrent());
-        clipboard.setContents(
-            new Object[]{result.toString().trim()},
-            new Transfer[]{TextTransfer.getInstance()});
+        UIUtils.setClipboardContents(
+            Display.getCurrent(),
+            TextTransfer.getInstance(),
+            result.toString().trim());
     }
 
     public void setEditor(SQLEditorBase textEditor)
