@@ -137,6 +137,7 @@ public class DiagramObjectCollector {
 
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     DiagramObjectCollector collector = new DiagramObjectCollector(diagram);

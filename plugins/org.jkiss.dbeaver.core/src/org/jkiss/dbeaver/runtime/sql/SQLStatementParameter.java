@@ -64,6 +64,7 @@ public class SQLStatementParameter implements DBSColumnBase {
         return index;
     }
 
+    @Override
     public String getName()
     {
         return name;
@@ -74,6 +75,7 @@ public class SQLStatementParameter implements DBSColumnBase {
         return false;
     }
 
+    @Override
     public long getMaxLength()
     {
         return 0;
@@ -104,21 +106,25 @@ public class SQLStatementParameter implements DBSColumnBase {
         }
     }
 
+    @Override
     public String getTypeName()
     {
         return paramType == null ? "" : paramType.getName();
     }
 
+    @Override
     public int getTypeID()
     {
         return paramType == null ? -1 : paramType.getValueType();
     }
 
+    @Override
     public int getScale()
     {
         return paramType == null ? 0 : paramType.getMinScale();
     }
 
+    @Override
     public int getPrecision()
     {
         return paramType == null ? 0 : paramType.getPrecision();

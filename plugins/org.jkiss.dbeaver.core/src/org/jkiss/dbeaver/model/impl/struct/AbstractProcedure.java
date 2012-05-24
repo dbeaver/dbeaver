@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.struct;
@@ -37,11 +37,13 @@ public abstract class AbstractProcedure<
         this.description = description;
     }
 
+    @Override
     public CONTAINER getContainer()
     {
         return container;
     }
 
+    @Override
     @Property(name = "Procedure Name", viewable = true, order = 1)
     public String getName()
     {
@@ -53,6 +55,7 @@ public abstract class AbstractProcedure<
         this.name = tableName;
     }
 
+    @Override
     @Property(name = "Procedure Description", viewable = true, order = 100)
     public String getDescription()
     {
@@ -64,21 +67,25 @@ public abstract class AbstractProcedure<
         this.description = description;
     }
 
+    @Override
     public DATASOURCE getDataSource()
     {
         return (DATASOURCE) container.getDataSource();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return container;

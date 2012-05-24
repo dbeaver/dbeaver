@@ -9,6 +9,7 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSEntityElement extends DBSObject
 {
+    @Override
     DBSEntity getParentObject();
 
     //boolean isInherited();

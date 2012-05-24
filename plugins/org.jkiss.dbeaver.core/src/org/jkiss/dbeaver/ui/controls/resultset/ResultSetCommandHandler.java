@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.resultset;
@@ -30,6 +30,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         Spreadsheet spreadsheet = getActiveSpreadsheet(event);

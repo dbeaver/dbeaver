@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -135,6 +135,7 @@ public class CImageCombo extends Composite {
         setEnabled(true, true);
 
         this.listener = new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 if (CImageCombo.this.popup == event.widget) {
@@ -163,6 +164,7 @@ public class CImageCombo extends Composite {
             }
         };
         this.filter = new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 Shell shell = ((Control) event.widget).getShell();
@@ -205,6 +207,7 @@ public class CImageCombo extends Composite {
         setEnabled(enabled, false);
     }
 
+    @Override
     public void setForeground(Color foreground)
     {
         super.setForeground(foreground);
@@ -214,6 +217,7 @@ public class CImageCombo extends Composite {
         this.arrow.setForeground(foreground);
     }
 
+    @Override
     public void setBackground(Color background)
     {
         super.setBackground(background);
@@ -281,6 +285,7 @@ public class CImageCombo extends Composite {
     {
         checkWidget();
         addListener(SWT.Modify, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 listener.modifyText(new ModifyEvent(event));
@@ -314,12 +319,14 @@ public class CImageCombo extends Composite {
     {
         checkWidget();
         addListener(SWT.Selection, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 listener.widgetSelected(new SelectionEvent(event));
             }
         });
         addListener(SWT.DefaultSelection, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 listener.widgetDefaultSelected(new SelectionEvent(event));
@@ -348,6 +355,7 @@ public class CImageCombo extends Composite {
     {
         checkWidget();
         addListener(SWT.Verify, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 listener.verifyText(new VerifyEvent(event));
@@ -361,6 +369,7 @@ public class CImageCombo extends Composite {
         return style & mask;
     }
 
+    @Override
     public Point computeSize(int wHint, int hHint, boolean changed)
     {
         checkWidget();
@@ -720,6 +729,7 @@ public class CImageCombo extends Composite {
         }
     }
 
+    @Override
     public void setFont(Font font)
     {
         checkWidget();
@@ -774,6 +784,7 @@ public class CImageCombo extends Composite {
         this.table.showSelection();
     }
 
+    @Override
     public void setToolTipText(String string)
     {
         checkWidget();
@@ -1207,6 +1218,7 @@ public class CImageCombo extends Composite {
     void initAccessible()
     {
         AccessibleAdapter accessibleAdapter = new AccessibleAdapter() {
+            @Override
             public void getName(AccessibleEvent e)
             {
                 String name = null;
@@ -1217,6 +1229,7 @@ public class CImageCombo extends Composite {
                 e.result = name;
             }
 
+            @Override
             public void getKeyboardShortcut(AccessibleEvent e)
             {
                 String shortcut = null;
@@ -1233,6 +1246,7 @@ public class CImageCombo extends Composite {
                 e.result = shortcut;
             }
 
+            @Override
             public void getHelp(AccessibleEvent e)
             {
                 e.result = getToolTipText();
@@ -1243,16 +1257,19 @@ public class CImageCombo extends Composite {
         this.table.getAccessible().addAccessibleListener(accessibleAdapter);
 
         this.arrow.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            @Override
             public void getName(AccessibleEvent e)
             {
                 e.result = isDropped() ? SWT.getMessage("SWT_Close") : SWT.getMessage("SWT_Open"); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
+            @Override
             public void getKeyboardShortcut(AccessibleEvent e)
             {
                 e.result = "Alt+Down Arrow"; //$NON-NLS-1$
             }
 
+            @Override
             public void getHelp(AccessibleEvent e)
             {
                 e.result = getToolTipText();
@@ -1260,6 +1277,7 @@ public class CImageCombo extends Composite {
         });
 
         getAccessible().addAccessibleTextListener(new AccessibleTextAdapter() {
+            @Override
             public void getCaretOffset(AccessibleTextEvent e)
             {
                 e.offset = CImageCombo.this.text.getCaretPosition();
@@ -1267,6 +1285,7 @@ public class CImageCombo extends Composite {
         });
 
         getAccessible().addAccessibleControlListener(new AccessibleControlAdapter() {
+            @Override
             public void getChildAtPoint(AccessibleControlEvent e)
             {
                 Point testPoint = toControl(e.x, e.y);
@@ -1275,6 +1294,7 @@ public class CImageCombo extends Composite {
                 }
             }
 
+            @Override
             public void getLocation(AccessibleControlEvent e)
             {
                 Rectangle location = getBounds();
@@ -1285,21 +1305,25 @@ public class CImageCombo extends Composite {
                 e.height = location.height;
             }
 
+            @Override
             public void getChildCount(AccessibleControlEvent e)
             {
                 e.detail = 0;
             }
 
+            @Override
             public void getRole(AccessibleControlEvent e)
             {
                 e.detail = ACC.ROLE_COMBOBOX;
             }
 
+            @Override
             public void getState(AccessibleControlEvent e)
             {
                 e.detail = ACC.STATE_NORMAL;
             }
 
+            @Override
             public void getValue(AccessibleControlEvent e)
             {
                 e.result = getText();
@@ -1307,6 +1331,7 @@ public class CImageCombo extends Composite {
         });
 
         this.text.getAccessible().addAccessibleControlListener(new AccessibleControlAdapter() {
+            @Override
             public void getRole(AccessibleControlEvent e)
             {
                 e.detail = ACC.ROLE_LABEL;
@@ -1314,6 +1339,7 @@ public class CImageCombo extends Composite {
         });
 
         this.arrow.getAccessible().addAccessibleControlListener(new AccessibleControlAdapter() {
+            @Override
             public void getDefaultAction(AccessibleControlEvent e)
             {
                 e.result = isDropped() ? SWT.getMessage("SWT_Close") : SWT.getMessage("SWT_Open"); //$NON-NLS-1$ //$NON-NLS-2$

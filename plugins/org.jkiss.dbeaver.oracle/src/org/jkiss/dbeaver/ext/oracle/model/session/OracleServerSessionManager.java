@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model.session;
@@ -34,11 +34,13 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
         this.dataSource = dataSource;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @Override
     public Collection<OracleServerSession> getSessions(DBCExecutionContext context, Map<String, Object> options) throws DBException
     {
         try {
@@ -65,6 +67,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
         }
     }
 
+    @Override
     public void alterSession(DBCExecutionContext context, OracleServerSession session, Map<String, Object> options) throws DBException
     {
         final boolean toKill = Boolean.TRUE.equals(options.get(PROP_KILL_SESSION));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.load.jobs;
@@ -32,6 +32,7 @@ class LoadingUIJob<RESULT> extends AbstractUIJob {
         setRule(new NonConflictingRule());
     }
 
+    @Override
     public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
 /*
@@ -54,6 +55,7 @@ class LoadingUIJob<RESULT> extends AbstractUIJob {
         return Status.OK_STATUS;
     }
 
+    @Override
     public boolean belongsTo(Object family)
     {
         return family == LoadingJob.LOADING_FAMILY;

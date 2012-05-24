@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -32,6 +32,7 @@ public class ERDEditorContributor extends EditorActionBarContributor
     {
     }
 
+    @Override
     public void dispose()
     {
         setActiveEditor(null);
@@ -39,6 +40,7 @@ public class ERDEditorContributor extends EditorActionBarContributor
         super.dispose();
     }
 
+    @Override
     public void setActiveEditor(IEditorPart targetEditor)
     {
         super.setActiveEditor(targetEditor);
@@ -56,11 +58,13 @@ public class ERDEditorContributor extends EditorActionBarContributor
         EntityEditorContributor.registerSearchActions(activeEditorPart);
     }
 
+    @Override
     public void init(IActionBars bars)
     {
         super.init(bars);
     }
 
+    @Override
     public void contributeToMenu(IMenuManager manager)
     {
         super.contributeToMenu(manager);
@@ -74,11 +78,13 @@ public class ERDEditorContributor extends EditorActionBarContributor
         }
     }
 
+    @Override
     public void contributeToCoolBar(ICoolBarManager manager)
     {
         super.contributeToCoolBar(manager);
     }
 
+    @Override
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
     {
         super.contributeToStatusLine(statusLineManager);

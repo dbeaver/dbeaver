@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
@@ -27,6 +27,7 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
     private Text proxyHostText;
     private Spinner proxyPortSpinner;
 
+    @Override
     public void init(IWorkbench workbench)
     {
 
@@ -73,11 +74,13 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
         return super.performOk();
     }
 
+    @Override
     public IAdaptable getElement()
     {
         return null;
     }
 
+    @Override
     public void setElement(IAdaptable element)
     {
 

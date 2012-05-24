@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.views;
@@ -57,6 +57,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
     private boolean activated;
 
+    @Override
     public void createControl(Composite composite)
     {
         //Composite group = new Composite(composite, SWT.NONE);
@@ -79,6 +80,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
         optionsFolder.addSelectionListener(
             new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (e.item == propsTab) {
@@ -86,6 +88,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
                     }
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -98,6 +101,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
     {
         ModifyListener textListener = new ModifyListener()
         {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 if (activated) {
@@ -127,6 +131,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
             gd.widthHint = 355;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     site.updateButtons();
@@ -305,6 +310,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
             driverButton.setLayoutData(gd);
             driverButton.addSelectionListener(new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (site.openDriverEditor()) {
@@ -313,6 +319,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
                     }
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -326,11 +333,13 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
             testButton.setLayoutData(gd);
             testButton.addSelectionListener(new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     site.testConnection();
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -351,6 +360,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
         return emptyLabel;
     }
 
+    @Override
     public boolean isComplete()
     {
         if (isCustom) {
@@ -371,11 +381,13 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
         }
     }
 
+    @Override
     protected boolean isCustomURL()
     {
         return isCustom;
     }
 
+    @Override
     public void loadSettings()
     {
         // Load values from new connection info
@@ -436,6 +448,7 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
         activated = true;
     }
 
+    @Override
     protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql;
@@ -114,6 +114,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         return annotationModel;
     }
 
+    @Override
     public void createPartControl(Composite parent)
     {
         setRangeIndicator(new DefaultRangeIndicator());
@@ -126,6 +127,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             final IFocusService focusService = (IFocusService) getSite().getService(IFocusService.class);
             focusService.addFocusTracker(textControl, SQL_EDITOR_CONTROL_ID);
             textControl.addDisposeListener(new DisposeListener() {
+                @Override
                 public void widgetDisposed(DisposeEvent e)
                 {
                     focusService.removeFocusTracker(textControl);
@@ -167,6 +169,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     }
 
+    @Override
     public void updatePartControl(IEditorInput input) {
         super.updatePartControl(input);
     }
@@ -198,6 +201,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         return DBeaverCore.getInstance().getSharedTextColors();
     }
 
+    @Override
     protected ISourceViewer createSourceViewer(Composite parent,
         IVerticalRuler ruler, int styles)
     {
@@ -233,6 +237,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     }
 */
 
+    @Override
     public Object getAdapter(Class required)
     {
         if (projectionSupport != null) {
@@ -245,6 +250,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         return super.getAdapter(required);
     }
 
+    @Override
     public void dispose()
     {
         if (syntaxManager != null) {
@@ -255,6 +261,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         super.dispose();
     }
 
+    @Override
     protected void createActions()
     {
         super.createActions();
@@ -294,6 +301,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 */
     }
 
+    @Override
     public void editorContextMenuAboutToShow(IMenuManager menu)
     {
         super.editorContextMenuAboutToShow(menu);
@@ -569,9 +577,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
         try {
             DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
+                @Override
                 public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     getSite().getShell().getDisplay().syncExec(new Runnable() {
+                        @Override
                         public void run()
                         {
                             doSave(monitor.getNestedMonitor());

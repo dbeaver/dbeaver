@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 public class ExplainPlanHandler extends AbstractHandler
 {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);

@@ -15,11 +15,13 @@ import org.jkiss.dbeaver.model.struct.DBSTriggerColumn;
 public abstract class AbstractTriggerColumn implements DBSTriggerColumn, IObjectImageProvider
 {
 
+    @Override
     public boolean isPersisted()
     {
         return true;
     }
 
+    @Override
     public Image getObjectImage()
     {
         DBSTableColumn tableColumn = getTableColumn();

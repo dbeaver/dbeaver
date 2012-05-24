@@ -108,6 +108,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         itemsViewer.setContentProvider(contentProvider);
         //itemsViewer.setLabelProvider(new ItemLabelProvider());
         itemsViewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
             public void doubleClick(DoubleClickEvent event)
             {
                 if (doubleClickHandler != null) {
@@ -118,6 +119,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         });
         itemsViewer.getControl().addListener(SWT.PaintItem, new PaintListener());
         itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event)
             {
                 IStructuredSelection selection = (IStructuredSelection)event.getSelection();
@@ -134,6 +136,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         // Add selection listener
         itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event)
             {
                 String status;
@@ -171,6 +174,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return new ObjectColumnLabelProvider(columnIndex);
     }
 
+    @Override
     protected boolean cancelProgress()
     {
         synchronized (this) {
@@ -718,16 +722,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             super(ObjectListControl.this, ObjectListControl.this, true);
         }
 
+        @Override
         public Object getSourceObject()
         {
             return getCurrentListObject();
         }
 
+        @Override
         public Object getEditableValue()
         {
             return getObjectValue(getCurrentListObject());
         }
 
+        @Override
         public IPropertyDescriptor[] getPropertyDescriptors()
         {
             Set<IPropertyDescriptor> props = getAllProperties();
@@ -773,6 +780,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             this.columnIndex = columnIndex;
         }
 
+        @Override
         public Image getImage(Object element)
         {
             if (columnIndex == 0) {
@@ -781,6 +789,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return null;
         }
 
+        @Override
         public String getText(Object element)
         {
             Object cellValue = getCellValue(element, columnIndex);
@@ -801,6 +810,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         {
         }
 
+        @Override
         public void completeLoading(Collection<OBJECT_TYPE> items)
         {
             super.completeLoading(items);
@@ -815,6 +825,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         {
         }
 
+        @Override
         public void completeLoading(Void v)
         {
             super.completeLoading(v);
@@ -838,7 +849,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
 	class PaintListener implements Listener {
 
-		public void handleEvent(Event event) {
+		@Override
+        public void handleEvent(Event event) {
             if (isDisposed()) {
                 return;
             }
@@ -930,6 +942,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 monitor.worked(1);
                 if (!isDisposed()) {
                     getDisplay().asyncExec(new Runnable() {
+                        @Override
                         public void run()
                         {
                             if (!isDisposed()) {

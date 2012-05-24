@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
@@ -34,6 +34,7 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
         setPageComplete(false);
     }
 
+    @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
@@ -45,10 +46,13 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
         exporterTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         exporterTable.getTable().setLinesVisible(true);
         exporterTable.setContentProvider(new IStructuredContentProvider() {
+            @Override
             public void dispose() {
             }
+            @Override
             public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             }
+            @Override
             public Object[] getElements(Object inputElement) {
                 if (inputElement instanceof Collection) {
                     return ((Collection<?>)inputElement).toArray();
@@ -81,6 +85,7 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
         loadExporters();
 
         exporterTable.getTable().addSelectionListener(new SelectionListener() {
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 final IStructuredSelection selection = (IStructuredSelection)exporterTable.getSelection();
                 DataExporterDescriptor exporter;
@@ -92,6 +97,7 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
                 getWizard().getSettings().setDataExporter(exporter);
                 updatePageCompletion();
             }
+            @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
                 if (isPageComplete()) {

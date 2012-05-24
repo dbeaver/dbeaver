@@ -71,6 +71,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLView> {
+        @Override
         public boolean isPropertyCached(MySQLView object, Object propertyId)
         {
             return object.additionalInfo.loaded;
@@ -98,6 +99,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
         return super.getName();
     }
 
+    @Override
     public boolean isView()
     {
         return true;
@@ -120,21 +122,25 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
         }
     }
 
+    @Override
     public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Override
     public List<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Override
     public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Override
     public List<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
@@ -148,6 +154,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
         return true;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
@@ -198,12 +205,14 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
         }
     }
 
+    @Override
     @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getAdditionalInfo(monitor).getDefinition();
     }
 
+    @Override
     public void setSourceText(String sourceText) throws DBException
     {
         getAdditionalInfo().setDefinition(sourceText);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -79,16 +79,19 @@ public abstract class AbstractDescriptor {
         private JexlContext makeContext(final DBPObject object)
         {
             return new JexlContext() {
+                @Override
                 public Object get(String name)
                 {
                     return name.equals("object") ? object : null; //$NON-NLS-1$
                 }
 
+                @Override
                 public void set(String name, Object value)
                 {
                     log.warn("Set is not implemented"); //$NON-NLS-1$
                 }
 
+                @Override
                 public boolean has(String name)
                 {
                     return name.equals("object") && object != null; //$NON-NLS-1$

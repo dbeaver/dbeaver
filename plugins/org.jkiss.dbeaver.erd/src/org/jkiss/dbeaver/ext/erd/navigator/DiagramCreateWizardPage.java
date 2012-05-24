@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.navigator;
@@ -52,6 +52,7 @@ class DiagramCreateWizardPage extends WizardPage {
         return !CommonUtils.isEmpty(diagram.getName());
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
@@ -59,6 +60,7 @@ class DiagramCreateWizardPage extends WizardPage {
 
         final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", ""); //$NON-NLS-1$ //$NON-NLS-2$
         projectNameText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 diagram.setName(projectNameText.getText());
@@ -79,11 +81,13 @@ class DiagramCreateWizardPage extends WizardPage {
 
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) contentTree.getViewer();
         viewer.setCheckStateProvider(new ICheckStateProvider() {
+            @Override
             public boolean isChecked(Object element)
             {
                 return false;
             }
 
+            @Override
             public boolean isGrayed(Object element)
             {
                 if (element instanceof DBNDatabaseNode && !(element instanceof DBNDataSource)) {

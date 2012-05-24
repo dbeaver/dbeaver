@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.navigator.project;
@@ -30,6 +30,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
+    @Override
     public DBNNode getRootNode()
     {
         return getModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
@@ -58,6 +59,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         super.dispose();
     }
 
+    @Override
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
         getNavigatorTree().reloadTree(getRootNode());

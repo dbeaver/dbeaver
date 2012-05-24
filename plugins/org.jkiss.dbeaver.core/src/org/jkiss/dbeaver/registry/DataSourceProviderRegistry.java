@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -47,6 +47,7 @@ public class DataSourceProviderRegistry
                 dataSourceProviders.add(provider);
             }
             Collections.sort(dataSourceProviders, new Comparator<DataSourceProviderDescriptor>() {
+                @Override
                 public int compare(DataSourceProviderDescriptor o1, DataSourceProviderDescriptor o2)
                 {
                     if (o1.isDriversManagable() && !o2.isDriversManagable()) {

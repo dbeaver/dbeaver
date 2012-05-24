@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.struct;
@@ -45,6 +45,7 @@ public class CreateEntityDialog extends TrayDialog {
 
         final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_entity_group_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 name = nameText.getText();

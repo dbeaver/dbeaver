@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary.dialogs;
@@ -48,6 +48,7 @@ public class GoToDialog extends Dialog {
     private long tempResult = -1L;
 
     private final SelectionAdapter defaultSelectionAdapter = new SelectionAdapter() {
+        @Override
         public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
         {
             text.setFocus();
@@ -75,6 +76,7 @@ public class GoToDialog extends Dialog {
         composite.setLayout(rowLayout1);
 
         SelectionAdapter hexTextSelectionAdapter = new SelectionAdapter() {
+            @Override
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
                 text.setText(text.getText());  // generate event
@@ -133,6 +135,7 @@ public class GoToDialog extends Dialog {
         showButton.setText(CoreMessages.dialog_go_to_button_show_location);
         showButton.addSelectionListener(defaultSelectionAdapter);
         showButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+            @Override
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
                 buttonPressed = 1;
@@ -144,6 +147,7 @@ public class GoToDialog extends Dialog {
         gotoButton.setText(CoreMessages.dialog_go_to_button_go_to_location);
         gotoButton.addSelectionListener(defaultSelectionAdapter);
         gotoButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+            @Override
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
                 buttonPressed = 2;
@@ -154,6 +158,7 @@ public class GoToDialog extends Dialog {
         Button closeButton = new Button(composite2, SWT.NONE);
         closeButton.setText(CoreMessages.dialog_go_to_button_close);
         closeButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+            @Override
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
                 dialogShell.close();
@@ -183,6 +188,7 @@ public class GoToDialog extends Dialog {
         gc.dispose();
         text.setLayoutData(new GridData(width, SWT.DEFAULT));
         text.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 String newText = text.getText();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -42,44 +42,53 @@ public class DBeaverLogger implements Log, Serializable
         return name;
     }
 
+    @Override
     public boolean isDebugEnabled()
     {
         return true;
     }
 
+    @Override
     public boolean isErrorEnabled()
     {
         return true;
     }
 
+    @Override
     public boolean isFatalEnabled()
     {
         return true;
     }
 
+    @Override
     public boolean isInfoEnabled()
     {
         return true;
     }
 
+    @Override
     public boolean isTraceEnabled()
     {
         return false;
     }
 
+    @Override
     public boolean isWarnEnabled()
     {
         return true;
     }
 
+    @Override
     public void trace(Object message)
     {
     }
 
+    @Override
     public void trace(Object message, Throwable t)
     {
     }
 
+    @Override
     public void debug(Object message)
     {
         if (message instanceof Throwable) {
@@ -89,6 +98,7 @@ public class DBeaverLogger implements Log, Serializable
         }
     }
 
+    @Override
     public void debug(Object message, Throwable t)
     {
         PrintStream debugWriter = DBeaverActivator.getInstance().getDebugWriter();
@@ -106,6 +116,7 @@ public class DBeaverLogger implements Log, Serializable
         }
     }
 
+    @Override
     public void info(Object message)
     {
         if (message instanceof Throwable) {
@@ -118,11 +129,13 @@ public class DBeaverLogger implements Log, Serializable
             message == null ? null : message.toString()));
     }
 
+    @Override
     public void info(Object message, Throwable t)
     {
         writeExceptionStatus(Status.INFO, message, t);
     }
 
+    @Override
     public void warn(Object message)
     {
         if (message instanceof Throwable) {
@@ -135,11 +148,13 @@ public class DBeaverLogger implements Log, Serializable
             message == null ? null : message.toString()));
     }
 
+    @Override
     public void warn(Object message, Throwable t)
     {
         writeExceptionStatus(Status.WARNING, message, t);
     }
 
+    @Override
     public void error(Object message)
     {
         if (message instanceof Throwable) {
@@ -152,16 +167,19 @@ public class DBeaverLogger implements Log, Serializable
             message == null ? null : message.toString()));
     }
 
+    @Override
     public void error(Object message, Throwable t)
     {
         writeExceptionStatus(Status.ERROR, message, t);
     }
 
+    @Override
     public void fatal(Object message)
     {
         error(message);
     }
 
+    @Override
     public void fatal(Object message, Throwable t)
     {
         error(message, t);

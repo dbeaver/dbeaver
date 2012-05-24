@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry.tree;
@@ -68,6 +68,7 @@ public class DBXTreeItem extends DBXTreeNode
         return virtual;
     }
 
+    @Override
     public String getChildrenType(DBPDataSource dataSource)
     {
         final String term = getNodeTerm(dataSource, label, true);
@@ -77,6 +78,7 @@ public class DBXTreeItem extends DBXTreeNode
         return label;
     }
 
+    @Override
     public String getNodeType(DBPDataSource dataSource)
     {
         final String term = getNodeTerm(dataSource, itemLabel, false);

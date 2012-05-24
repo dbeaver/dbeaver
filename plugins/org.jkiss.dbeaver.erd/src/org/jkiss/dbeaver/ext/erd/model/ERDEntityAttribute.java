@@ -52,6 +52,7 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
         this.inForeignKey = inForeignKey;
     }
 
+    @Override
     public String getName()
     {
         return getObject().getName();

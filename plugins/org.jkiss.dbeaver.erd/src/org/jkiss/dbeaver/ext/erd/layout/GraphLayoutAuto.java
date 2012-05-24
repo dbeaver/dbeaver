@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -33,7 +33,8 @@ public class GraphLayoutAuto extends AbstractLayout
 	}
 
 	
-	protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint)
+	@Override
+    protected Dimension calculatePreferredSize(IFigure container, int wHint, int hHint)
 	{		
 		container.validate();
 		List<?> children = container.getChildren();
@@ -45,7 +46,8 @@ public class GraphLayoutAuto extends AbstractLayout
 	}
 
 	
-	public void layout(IFigure container)
+	@Override
+    public void layout(IFigure container)
 	{
         Animation.markBegin();
 /*

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -48,6 +48,7 @@ public class DelegatingLayoutManager implements LayoutManager {
         xyLayoutManager.cleanupConstraints();
     }
 
+    @Override
     public void layout(IFigure container)
     {
         EntityDiagram entityDiagram = diagram.getDiagram();
@@ -98,31 +99,37 @@ public class DelegatingLayoutManager implements LayoutManager {
         }
     }
 
+    @Override
     public Object getConstraint(IFigure child)
     {
         return activeLayoutManager.getConstraint(child);
     }
 
+    @Override
     public Dimension getMinimumSize(IFigure container, int wHint, int hHint)
     {
         return activeLayoutManager.getMinimumSize(container, wHint, hHint);
     }
 
+    @Override
     public Dimension getPreferredSize(IFigure container, int wHint, int hHint)
     {
         return activeLayoutManager.getPreferredSize(container, wHint, hHint);
     }
 
+    @Override
     public void invalidate()
     {
         activeLayoutManager.invalidate();
     }
 
+    @Override
     public void remove(IFigure child)
     {
         activeLayoutManager.remove(child);
     }
 
+    @Override
     public void setConstraint(IFigure child, Object constraint)
     {
         activeLayoutManager.setConstraint(child, constraint);

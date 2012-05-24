@@ -37,11 +37,13 @@ public class ConnectionAuthDialog extends Dialog
         this.networkHandler = networkHandler;
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         String title = networkHandler != null ?
@@ -109,6 +111,7 @@ public class ConnectionAuthDialog extends Dialog
         return addrGroup;
     }
 
+    @Override
     protected void okPressed() {
         if (networkHandler != null) {
             networkHandler.setUserName(usernameText.getText());

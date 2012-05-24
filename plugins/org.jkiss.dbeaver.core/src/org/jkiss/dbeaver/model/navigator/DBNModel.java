@@ -355,6 +355,7 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event)
     {
         if (event.getType() == IResourceChangeEvent.POST_CHANGE) {

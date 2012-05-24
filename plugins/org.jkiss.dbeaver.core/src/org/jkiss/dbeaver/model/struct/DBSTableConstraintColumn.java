@@ -9,8 +9,10 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSTableConstraintColumn extends DBSObject, DBSEntityAttributeRef
 {
+    @Override
     DBSTableConstraint getParentObject();
 
+    @Override
     DBSTableColumn getAttribute();
 
     int getOrdinalPosition();

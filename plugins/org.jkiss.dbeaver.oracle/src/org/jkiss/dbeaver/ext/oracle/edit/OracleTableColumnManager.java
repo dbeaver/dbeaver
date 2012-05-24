@@ -27,6 +27,7 @@ import java.sql.Types;
  */
 public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTableColumn, OracleTableBase> {
 
+    @Override
     public StringBuilder getNestedDeclaration(OracleTableBase owner, DBECommandComposite<OracleTableColumn, PropertyHandler> command)
     {
         StringBuilder decl = super.getNestedDeclaration(owner, command);
@@ -43,6 +44,7 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
         return decl;
     }
 
+    @Override
     protected OracleTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$

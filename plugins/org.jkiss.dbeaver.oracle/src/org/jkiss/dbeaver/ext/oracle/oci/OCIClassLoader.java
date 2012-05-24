@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.oci;
@@ -31,6 +31,7 @@ public class OCIClassLoader extends URLClassLoader
         if (dllFolder.exists()) {
             oraHomeLibraries = dllFolder.listFiles(new FilenameFilter()
             {
+                @Override
                 public boolean accept(File dir, String name)
                 {
                     return name.toLowerCase().endsWith(System.mapLibraryName("")); // OS depenent library extension

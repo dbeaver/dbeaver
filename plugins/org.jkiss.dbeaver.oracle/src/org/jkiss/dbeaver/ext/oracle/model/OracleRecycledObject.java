@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
@@ -99,6 +103,7 @@ public class OracleRecycledObject extends OracleSchemaObject implements DBSObjec
         return canPurge;
     }
 
+    @Override
     public Object getLazyReference(Object propertyId)
     {
         return tablespace;

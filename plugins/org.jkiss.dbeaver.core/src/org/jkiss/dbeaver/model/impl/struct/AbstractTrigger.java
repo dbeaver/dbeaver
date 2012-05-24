@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.struct;
@@ -31,6 +31,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.description = description;
     }
 
+    @Override
     @Property(name = "Trigger Name", viewable = true, order = 1)
     public String getName()
     {
@@ -64,12 +65,14 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.manipulationType = manipulationType;
     }
 
+    @Override
     @Property(name = "Trigger Description", viewable = true, order = 100)
     public String getDescription()
     {
         return description;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

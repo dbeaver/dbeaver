@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -36,10 +36,12 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
 
     }
 
+    @Override
     protected Request createTargetRequest()
     {
         CreateRequest request = new CreateRequest();
         request.setFactory(new CreationFactory() {
+            @Override
             public Object getNewObject()
             {
                 Collection<DBPNamedObject> objects = DatabaseObjectTransfer.getInstance().getObject();
@@ -52,6 +54,7 @@ public class NodeDropTargetListener extends AbstractTransferDropTargetListener {
                     objects);
             }
 
+            @Override
             public Object getObjectType()
             {
                 return RequestConstants.REQ_CREATE;

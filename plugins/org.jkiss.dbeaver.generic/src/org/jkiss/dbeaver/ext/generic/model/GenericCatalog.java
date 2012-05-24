@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -34,16 +34,19 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         this.catalogName = catalogName;
     }
 
+    @Override
     public GenericCatalog getCatalog()
     {
         return this;
     }
 
+    @Override
     public GenericSchema getSchema()
     {
         return null;
     }
 
+    @Override
     public GenericCatalog getObject()
     {
         return this;
@@ -71,17 +74,20 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return DBUtils.findObject(getSchemas(monitor), name);
     }
 
+    @Override
     @Property(name = "Catalog Name", viewable = true, order = 1)
     public String getName()
     {
         return catalogName;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getDataSource().getContainer();
@@ -96,6 +102,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         }
     }
 
+    @Override
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -106,6 +113,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         }
     }
 
+    @Override
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
@@ -116,6 +124,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         }
     }
 
+    @Override
     public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -126,6 +135,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         }
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
         this.schemas = null;
@@ -133,17 +143,20 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return true;
     }
 
+    @Override
     public boolean supportsObjectSelect()
     {
         return GenericConstants.ENTITY_TYPE_SCHEMA.equals(getDataSource().getSelectedEntityType()) &&
             !CommonUtils.isEmpty(schemas);
     }
 
+    @Override
     public GenericSchema getSelectedObject()
     {
         return DBUtils.findObject(schemas, getDataSource().getSelectedEntityName());
     }
 
+    @Override
     public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException
     {
         final GenericSchema oldSelectedEntity = getSelectedObject();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
@@ -54,11 +54,13 @@ public class GridEditor extends ControlEditor
         
         columnListener = new ControlListener()
         {
+            @Override
             public void controlMoved(ControlEvent e)
             {
                 layout();
             }
 
+            @Override
             public void controlResized(ControlEvent e)
             {
                 layout();
@@ -67,6 +69,7 @@ public class GridEditor extends ControlEditor
         
         resizeListener = new Listener()
         {
+         @Override
          public void handleEvent(Event event)
             {
                  layout();
@@ -75,10 +78,12 @@ public class GridEditor extends ControlEditor
         
         scrollListener = new SelectionListener()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 layout();
             }
+            @Override
             public void widgetDefaultSelected(SelectionEvent e)
             {
             }        
@@ -166,6 +171,7 @@ public class GridEditor extends ControlEditor
      * Removes all associations between the TableEditor and the cell in the
      * table. The Table and the editor Control are <b>not</b> disposed.
      */
+    @Override
     public void dispose()
     {
         if (!grid.isDisposed() && this.column > -1 && this.column < grid.getColumnCount())
@@ -280,6 +286,7 @@ public class GridEditor extends ControlEditor
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void layout()
     {
 

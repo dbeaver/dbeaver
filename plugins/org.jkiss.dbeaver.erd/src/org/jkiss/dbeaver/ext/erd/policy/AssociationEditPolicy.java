@@ -21,7 +21,8 @@ import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 public class AssociationEditPolicy extends ComponentEditPolicy
 {
 
-	protected Command createDeleteCommand(GroupRequest request)
+	@Override
+    protected Command createDeleteCommand(GroupRequest request)
 	{
 		ERDAssociation relationship = (ERDAssociation) getHost().getModel();
 		ERDEntity primaryKeyTarget = relationship.getPrimaryKeyEntity();

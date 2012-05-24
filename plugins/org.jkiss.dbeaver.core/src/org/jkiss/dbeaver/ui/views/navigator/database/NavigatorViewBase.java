@@ -42,6 +42,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return tree;
     }
 
+    @Override
     public TreeViewer getNavigatorViewer()
     {
         return tree.getViewer();
@@ -51,6 +52,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
      * This is a callback that will allow us to create the viewer and initialize
      * it.
      */
+    @Override
     public void createPartControl(Composite parent)
     {
         this.tree = createNavigatorTree(parent, getRootNode());
@@ -66,6 +68,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         navigatorTree.getViewer().addSelectionChangedListener(
             new ISelectionChangedListener()
             {
+                @Override
                 public void selectionChanged(SelectionChangedEvent event)
                 {
                     IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
@@ -85,6 +88,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             }
         );
         navigatorTree.getViewer().addDoubleClickListener(new IDoubleClickListener() {
+            @Override
             public void doubleClick(DoubleClickEvent event)
             {
                 IStructuredSelection selection = (IStructuredSelection)tree.getViewer().getSelection();
@@ -122,6 +126,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         return navigatorTree;
     }
 
+    @Override
     public void dispose()
     {
         model = null;
@@ -130,6 +135,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     /**
      * Passing the focus request to the viewer's control.
      */
+    @Override
     public void setFocus()
     {
         tree.getViewer().getControl().setFocus();
@@ -148,6 +154,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         tree.showNode(node);
     }
 
+    @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
         if (lastSelection instanceof DBNDatabaseNode) {

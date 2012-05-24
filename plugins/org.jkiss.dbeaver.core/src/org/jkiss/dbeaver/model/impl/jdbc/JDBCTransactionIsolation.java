@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc;
@@ -35,11 +35,13 @@ public enum JDBCTransactionIsolation implements DBPTransactionIsolation
         return code;
     }
 
+    @Override
     public boolean isEnabled()
     {
         return this != NONE;
     }
 
+    @Override
     public String getName()
     {
         return name;

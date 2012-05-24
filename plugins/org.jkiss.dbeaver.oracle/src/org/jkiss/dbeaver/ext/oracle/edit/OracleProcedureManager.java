@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.edit;
@@ -60,6 +60,7 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
         return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
     }
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;

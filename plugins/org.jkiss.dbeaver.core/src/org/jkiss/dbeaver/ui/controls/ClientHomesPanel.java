@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -74,6 +74,7 @@ public class ClientHomesPanel extends Composite
         fontItalic = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
         addDisposeListener(new DisposeListener()
         {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 UIUtils.dispose(fontBold);
@@ -267,6 +268,7 @@ public class ClientHomesPanel extends Composite
             this.driver = driver;
         }
 
+        @Override
         protected Control createDialogArea(Composite parent)
         {
             getShell().setText(CoreMessages.controls_client_homes_panel_dialog_title);
@@ -280,6 +282,7 @@ public class ClientHomesPanel extends Composite
             return parent;
         }
 
+        @Override
         protected boolean isResizable()
         {
             return true;

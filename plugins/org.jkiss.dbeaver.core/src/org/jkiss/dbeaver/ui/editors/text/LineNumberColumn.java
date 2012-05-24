@@ -77,6 +77,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.ui.texteditor.rulers.IContributedRulerColumn#getDescriptor()
       */
+    @Override
     public final RulerColumnDescriptor getDescriptor() {
         return fDescriptor;
     }
@@ -84,6 +85,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.ui.texteditor.rulers.IContributedRulerColumn#setDescriptor(org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor)
       */
+    @Override
     public final void setDescriptor(RulerColumnDescriptor descriptor) {
         Assert.isLegal(descriptor != null);
         Assert.isTrue(fDescriptor == null);
@@ -93,6 +95,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.ui.texteditor.rulers.IContributedRulerColumn#setEditor(org.eclipse.ui.texteditor.ITextEditor)
       */
+    @Override
     public final void setEditor(ITextEditor editor) {
         Assert.isLegal(editor != null);
         Assert.isTrue(fEditor == null);
@@ -102,6 +105,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.ui.texteditor.rulers.IContributedRulerColumn#getEditor()
       */
+    @Override
     public final ITextEditor getEditor() {
         return fEditor;
     }
@@ -109,12 +113,14 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.ui.texteditor.rulers.IContributedRulerColumn#columnCreated()
       */
+    @Override
     public void columnCreated() {
     }
 
     /*
       * @see org.eclipse.ui.texteditor.rulers.AbstractContributedRulerColumn#columnRemoved()
       */
+    @Override
     public void columnRemoved() {
         if (fDispatcher != null) {
             fDispatcher.dispose();
@@ -126,6 +132,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerColumn#createControl(org.eclipse.jface.text.source.CompositeRuler, org.eclipse.swt.widgets.Composite)
       */
+    @Override
     public Control createControl(CompositeRuler parentRuler, Composite parentControl) {
         Assert.isTrue(fDelegate != null);
         ITextViewer viewer = parentRuler.getTextViewer();
@@ -139,6 +146,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerColumn#getControl()
       */
+    @Override
     public Control getControl() {
         return fDelegate.getControl();
     }
@@ -146,6 +154,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerColumn#getWidth()
       */
+    @Override
     public int getWidth() {
         return fDelegate.getWidth();
     }
@@ -153,6 +162,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerColumn#redraw()
       */
+    @Override
     public void redraw() {
         fDelegate.redraw();
     }
@@ -160,6 +170,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerColumn#setFont(org.eclipse.swt.graphics.Font)
       */
+    @Override
     public void setFont(Font font) {
         fDelegate.setFont(font);
     }
@@ -167,6 +178,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerColumn#setModel(org.eclipse.jface.text.source.IAnnotationModel)
       */
+    @Override
     public void setModel(IAnnotationModel model) {
 //        if (getQuickDiffPreference())
 //            fDelegate.setModel(model);
@@ -175,6 +187,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerInfo#getLineOfLastMouseButtonActivity()
       */
+    @Override
     public int getLineOfLastMouseButtonActivity() {
         if (fDelegate instanceof IVerticalRulerInfo)
             return ((IVerticalRulerInfo) fDelegate).getLineOfLastMouseButtonActivity();
@@ -184,6 +197,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerInfo#toDocumentLineNumber(int)
       */
+    @Override
     public int toDocumentLineNumber(int y_coordinate) {
         if (fDelegate instanceof IVerticalRulerInfo)
             return ((IVerticalRulerInfo) fDelegate).toDocumentLineNumber(y_coordinate);
@@ -193,6 +207,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerInfoExtension#addVerticalRulerListener(org.eclipse.jface.text.source.IVerticalRulerListener)
       */
+    @Override
     public void addVerticalRulerListener(IVerticalRulerListener listener) {
         if (fDelegate instanceof IVerticalRulerInfoExtension)
             ((IVerticalRulerInfoExtension) fDelegate).addVerticalRulerListener(listener);
@@ -201,6 +216,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerInfoExtension#getHover()
       */
+    @Override
     public IAnnotationHover getHover() {
         if (fDelegate instanceof IVerticalRulerInfoExtension)
             return ((IVerticalRulerInfoExtension) fDelegate).getHover();
@@ -210,6 +226,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerInfoExtension#getModel()
       */
+    @Override
     public IAnnotationModel getModel() {
         if (fDelegate instanceof IVerticalRulerInfoExtension)
             return ((IVerticalRulerInfoExtension) fDelegate).getModel();
@@ -219,6 +236,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /*
       * @see org.eclipse.jface.text.source.IVerticalRulerInfoExtension#removeVerticalRulerListener(org.eclipse.jface.text.source.IVerticalRulerListener)
       */
+    @Override
     public void removeVerticalRulerListener(IVerticalRulerListener listener) {
         if (fDelegate instanceof IVerticalRulerInfoExtension)
             ((IVerticalRulerInfoExtension) fDelegate).removeVerticalRulerListener(listener);
@@ -252,12 +270,14 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
         fDispatcher = new PropertyEventDispatcher(store);
 
         fDispatcher.addPropertyChangeListener(FG_COLOR_KEY, new IPropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 updateForegroundColor(store, fDelegate);
                 fDelegate.redraw();
             }
         });
         IPropertyChangeListener backgroundHandler = new IPropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 updateBackgroundColor(store, fDelegate);
                 fDelegate.redraw();
@@ -267,6 +287,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
         fDispatcher.addPropertyChangeListener(USE_DEFAULT_BG_KEY, backgroundHandler);
 
         fDispatcher.addPropertyChangeListener(LINE_NUMBER_KEY, new IPropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent event) {
                 // only handle quick diff on/off information, but not ruler visibility (handled by AbstractDecoratedTextEditor)
                 updateLineNumbersVisibility(fDelegate);

@@ -31,6 +31,7 @@ public class MySQLIndexManager extends JDBCIndexManager<MySQLTableIndex, MySQLTa
         return object.getTable().getContainer().getIndexCache();
     }
 
+    @Override
     protected MySQLTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
@@ -72,6 +73,7 @@ public class MySQLIndexManager extends JDBCIndexManager<MySQLTableIndex, MySQLTa
         return index;
     }
 
+    @Override
     protected String getDropIndexPattern(MySQLTableIndex index)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$

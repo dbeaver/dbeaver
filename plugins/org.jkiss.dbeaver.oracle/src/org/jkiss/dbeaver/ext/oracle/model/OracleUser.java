@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -62,6 +62,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return id;
     }
 
+    @Override
     @Property(name = "User name", viewable = true, order = 2, description = "Name of the user")
     public String getName() {
         return name;
@@ -111,6 +112,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return OracleTablespace.resolveTablespaceReference(monitor, this, "tempTablespace");
     }
 
+    @Override
     public Object getLazyReference(Object propertyId)
     {
         if ("defaultTablespace".equals(propertyId)) {
@@ -137,6 +139,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return consumerGroup;
     }
 
+    @Override
     @Association
     public Collection<OraclePrivRole> getRolePrivs(DBRProgressMonitor monitor) throws DBException
     {
@@ -144,6 +147,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     }
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {
+        @Override
         public boolean isPropertyCached(OracleUser object, Object propertyId)
         {
             return

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -38,26 +38,31 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         loadSyntax(dataSource);
     }
 
+    @Override
     public Set<String> getReservedWords()
     {
         return reservedWords;
     }
 
+    @Override
     public Set<String> getFunctions()
     {
         return functions;
     }
 
+    @Override
     public TreeSet<String> getTypes()
     {
         return types;
     }
 
+    @Override
     public DBPKeywordType getKeywordType(String word)
     {
         return allKeywords.get(word.toUpperCase());
     }
 
+    @Override
     public List<String> getMatchedKeywords(String word)
     {
         word = word.toUpperCase();
@@ -72,17 +77,20 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         return result;
     }
 
+    @Override
     public boolean isKeywordStart(String word)
     {
         SortedMap<String, DBPKeywordType> map = allKeywords.tailMap(word);
         return !map.isEmpty() && map.firstKey().startsWith(word);
     }
 
+    @Override
     public boolean isTableQueryWord(String word)
     {
         return tableQueryWords.contains(word.toUpperCase());
     }
 
+    @Override
     public boolean isColumnQueryWord(String word)
     {
         return columnQueryWords.contains(word.toUpperCase());
@@ -180,6 +188,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         }
     }
 
+    @Override
     public String[] getSingleLineComments()
     {
         return singleLineComments;

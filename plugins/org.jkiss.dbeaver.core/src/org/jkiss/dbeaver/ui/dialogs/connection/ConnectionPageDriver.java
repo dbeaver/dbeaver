@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -33,6 +33,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         setDescription(CoreMessages.dialog_new_connection_wizard_start_description);
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
@@ -52,16 +53,19 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         return selectedDriver;
     }
 
+    @Override
     public boolean canFlipToNextPage()
     {
         return this.selectedDriver != null;
     }
 
+    @Override
     public boolean isPageComplete()
     {
         return canFlipToNextPage();
     }
 
+    @Override
     public void selectionChanged(SelectionChangedEvent event)
     {
         this.selectedDriver = null;
@@ -80,6 +84,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         getWizard().getContainer().updateMessage();
     }
 
+    @Override
     public void doubleClick(DoubleClickEvent event)
     {
         if (selectedDriver != null) {
@@ -87,6 +92,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         }
     }
 
+    @Override
     public void activatePage()
     {
         if (driverTreeControl != null) {
@@ -94,6 +100,7 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         }
     }
 
+    @Override
     public void deactivatePage()
     {
 

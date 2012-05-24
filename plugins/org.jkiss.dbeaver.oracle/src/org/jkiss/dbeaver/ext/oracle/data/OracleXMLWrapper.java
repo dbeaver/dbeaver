@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import javax.xml.transform.Result;
@@ -22,6 +26,7 @@ public class OracleXMLWrapper implements SQLXML {
         this.xmlType = xmlType;
     }
 
+    @Override
     public void free() throws SQLException
     {
         try {
@@ -31,6 +36,7 @@ public class OracleXMLWrapper implements SQLXML {
         }
     }
 
+    @Override
     public InputStream getBinaryStream() throws SQLException
     {
         try {
@@ -40,11 +46,13 @@ public class OracleXMLWrapper implements SQLXML {
         }
     }
 
+    @Override
     public OutputStream setBinaryStream() throws SQLException
     {
         throw new SQLException("Function not supported");
     }
 
+    @Override
     public Reader getCharacterStream() throws SQLException
     {
         try {
@@ -55,11 +63,13 @@ public class OracleXMLWrapper implements SQLXML {
         }
     }
 
+    @Override
     public Writer setCharacterStream() throws SQLException
     {
         throw new SQLException("Function not supported");
     }
 
+    @Override
     public String getString() throws SQLException
     {
         try {
@@ -69,16 +79,19 @@ public class OracleXMLWrapper implements SQLXML {
         }
     }
 
+    @Override
     public void setString(String value) throws SQLException
     {
         throw new SQLException("Function not supported");
     }
 
+    @Override
     public <T extends Source> T getSource(Class<T> sourceClass) throws SQLException
     {
         return null;
     }
 
+    @Override
     public <T extends Result> T setResult(Class<T> resultClass) throws SQLException
     {
         throw new SQLException("Function not supported");

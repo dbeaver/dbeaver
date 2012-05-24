@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.scripts;
@@ -39,13 +39,15 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
     public ScriptsExportWizard() {
 	}
 
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
+	@Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_scripts_export_wizard_window_title); //NON-NLS-1
         setDefaultPageImageDescriptor(DBIcon.SQL_SCRIPT.getImageDescriptor());
         setNeedsProgressMonitor(true);
         mainPage = new ScriptsExportWizardPage(CoreMessages.dialog_scripts_export_wizard_page_name); //NON-NLS-1
     }
 
+    @Override
     public void addPages() {
         super.addPages();
         addPage(mainPage);
@@ -56,6 +58,7 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
         final ScriptsExportData exportData = mainPage.getExportData();
         try {
             RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {

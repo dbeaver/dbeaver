@@ -29,6 +29,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         super(tableCache, GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
     }
 
+    @Override
     protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
     {
@@ -53,6 +54,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         }
     }
 
+    @Override
     protected GenericTableIndex fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String indexName, ResultSet dbResult)
         throws SQLException, DBException
     {
@@ -80,6 +82,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             true);
     }
 
+    @Override
     protected GenericTableIndexColumn fetchObjectRow(
         JDBCExecutionContext context,
         GenericTable parent, GenericTableIndex object, ResultSet dbResult)
@@ -102,16 +105,19 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             !"D".equalsIgnoreCase(ascOrDesc));
     }
 
+    @Override
     protected Collection<GenericTableIndex> getObjectsCache(GenericTable parent)
     {
         return parent.getIndexesCache();
     }
 
+    @Override
     protected void cacheObjects(GenericTable parent, List<GenericTableIndex> indexes)
     {
         parent.setIndexes(indexes);
     }
 
+    @Override
     protected void cacheChildren(GenericTableIndex index, List<GenericTableIndexColumn> rows)
     {
         index.setColumns(rows);

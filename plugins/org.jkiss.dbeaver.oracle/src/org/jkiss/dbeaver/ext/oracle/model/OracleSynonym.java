@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -36,6 +36,7 @@ public class OracleSynonym extends OracleSchemaObject {
         return OracleObjectType.getByType(objectTypeName);
     }
 
+    @Override
     @Property(name = "Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.util;
@@ -33,6 +33,7 @@ public class BestMatchHover extends AbstractSQLEditorTextHover
     /*
      * @see AbstractSQLEditorTextHover#setEditor(IEditorPart)
      */
+    @Override
     public void setEditor(IEditorPart editor)
     {
         this.editor = editor;
@@ -100,12 +101,14 @@ public class BestMatchHover extends AbstractSQLEditorTextHover
      * @deprecated
      * @see ITextHover#getHoverInfo(ITextViewer, IRegion)
      */
+    @Override
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion)
     {
         Object info = getHoverInfo2(textViewer, hoverRegion);
         return info == null ? null : info.toString();
     }
 
+    @Override
     public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion)
     {
         checkTextHovers();
@@ -136,6 +139,7 @@ public class BestMatchHover extends AbstractSQLEditorTextHover
      * @see org.eclipse.jface.text.ITextHoverExtension#getHoverControlCreator()
      * @since 3.0
      */
+    @Override
     public IInformationControlCreator getHoverControlCreator()
     {
         if (bestHover instanceof ITextHoverExtension)
@@ -150,6 +154,7 @@ public class BestMatchHover extends AbstractSQLEditorTextHover
      * @see org.eclipse.jface.text.information.IInformationProviderExtension2#getInformationPresenterControlCreator()
      * @since 3.0
      */
+    @Override
     public IInformationControlCreator getInformationPresenterControlCreator()
     {
         if (bestHover instanceof IInformationProviderExtension2)

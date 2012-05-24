@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -28,6 +28,7 @@ public class MySQLParameter implements DBSObject
         this.value = value;
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
@@ -41,21 +42,25 @@ public class MySQLParameter implements DBSObject
     }
 
 //    @Property(name = "Description", viewable = true, order = 100)
+    @Override
     public String getDescription()
     {
         return description;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getDataSource();
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

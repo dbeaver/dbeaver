@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
@@ -53,6 +53,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         super.dispose();
     }
 
+    @Override
     public String getText(Object obj)
     {
         String text;
@@ -73,6 +74,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         return text;
     }
 
+    @Override
     public Image getImage(Object obj)
     {
         if (obj instanceof ILabelProvider) {
@@ -85,6 +87,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         }
     }
 
+    @Override
     public Font getFont(Object element)
     {
         if (defaultFont == null || !isDefaultElement(element)) {
@@ -94,6 +97,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         }
     }
 
+    @Override
     public Color getForeground(Object element)
     {
         if (element instanceof DBNNode) {
@@ -108,6 +112,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         return null;
     }
 
+    @Override
     public Color getBackground(Object element)
     {
         return null;

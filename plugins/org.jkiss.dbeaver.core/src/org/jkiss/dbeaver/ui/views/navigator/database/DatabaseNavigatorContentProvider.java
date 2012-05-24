@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
@@ -41,14 +41,17 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         this.showRoot = showRoot;
     }
 
+    @Override
     public void inputChanged(Viewer v, Object oldInput, Object newInput)
     {
     }
 
+    @Override
     public void dispose()
     {
     }
 
+    @Override
     public Object[] getElements(Object parent)
     {
         if (parent instanceof DatabaseNavigatorContent) {
@@ -62,6 +65,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         }
     }
 
+    @Override
     public Object getParent(Object child)
     {
         if (child instanceof DBNNode) {
@@ -74,6 +78,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         }
     }
 
+    @Override
     public Object[] getChildren(final Object parent)
     {
         if (parent instanceof TreeLoadNode) {
@@ -121,6 +126,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                     ex);
                 // Collapse this item
                 Display.getDefault().asyncExec(new Runnable() {
+                    @Override
                     public void run()
                     {
                         viewer.collapseToLevel(parent, 1);
@@ -132,6 +138,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
         }
     }
 
+    @Override
     public boolean hasChildren(Object parent)
     {
         return parent instanceof DBNNode && ((DBNNode) parent).allowsNavigableChildren();

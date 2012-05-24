@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -14,6 +14,7 @@ public class PropertyViewFilter implements IFilter {
 
     public static final PropertyViewFilter INSTANCE = new PropertyViewFilter();
 
+    @Override
     public boolean select(Object toTest)
     {
         return toTest instanceof IPropertyDescriptor && !"name".equals(((IPropertyDescriptor)toTest).getId());

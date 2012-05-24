@@ -40,6 +40,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         super(parentNode);
     }
 
+    @Override
     void dispose(boolean reflect)
     {
         clearChildren(reflect);
@@ -52,6 +53,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return getObject() == null ? "" : getMeta().getNodeType(getObject().getDataSource()); //$NON-NLS-1$
     }
 
+    @Override
     public String getNodeName()
     {
         if (getObject() == null) {
@@ -64,6 +66,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return objectName;
     }
 
+    @Override
     public String getNodePathName()
     {
         if (getObject() instanceof DBPQualifiedObject) {
@@ -73,11 +76,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
     }
 
+    @Override
     public String getNodeDescription()
     {
         return getObject() == null ? null : getObject().getDescription();
     }
 
+    @Override
     public Image getNodeIcon()
     {
         Image image = null;
@@ -98,11 +103,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
     }
 
+    @Override
     public boolean allowsChildren()
     {
         return !isDisposed() && this.getMeta().hasChildren(this);
     }
 
+    @Override
     public boolean allowsNavigableChildren()
     {
         return !isDisposed() && this.getMeta().hasChildren(this, true);
@@ -125,6 +132,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return false;
     }
 
+    @Override
     public List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -195,6 +203,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return childNodes == null && allowsChildren();
     }
 
+    @Override
     public boolean isLocked()
     {
         return locked || super.isLocked();
@@ -227,6 +236,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */
+    @Override
     public DBNNode refreshNode(DBRProgressMonitor monitor, Object source) throws DBException
     {
         if (isLocked()) {
@@ -465,6 +475,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
     }
 
+    @Override
     public boolean testAttribute(Object target, String name, String value) {
         if (getObject() != null) {
             if (name.equals("targetType")) { //$NON-NLS-1$

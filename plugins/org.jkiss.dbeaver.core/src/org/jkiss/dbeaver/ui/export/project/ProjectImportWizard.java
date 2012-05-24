@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.project;
@@ -49,11 +49,13 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
     public ProjectImportWizard() {
 	}
 
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
+	@Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_project_import_wizard_title);
         setNeedsProgressMonitor(true);
     }
 
+    @Override
     public void addPages() {
         super.addPages();
         addPage(new ProjectImportWizardPageFile(data));
@@ -64,6 +66,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 	public boolean performFinish() {
         try {
             RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {

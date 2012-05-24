@@ -31,6 +31,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
         super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
     }
 
+    @Override
     public List<MySQLTableForeignKeyColumnTable> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -44,6 +45,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
         columns.add(column);
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -52,6 +54,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
             this);
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return getTable().getDataSource();

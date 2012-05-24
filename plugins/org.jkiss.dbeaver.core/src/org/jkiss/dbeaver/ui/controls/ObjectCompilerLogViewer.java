@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -52,6 +52,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     public void layoutLog()
     {
         UIUtils.runInUI(null, new Runnable() {
+            @Override
             public void run()
             {
                 if (!infoTable.isDisposed()) {
@@ -68,6 +69,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     {
         super.log(type, message, t);
         UIUtils.runInUI(null, new Runnable() {
+            @Override
             public void run()
             {
                 if (infoTable == null || infoTable.isDisposed()) {
@@ -136,9 +138,11 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(infoTable);
         menuMgr.addMenuListener(new IMenuListener() {
+            @Override
             public void menuAboutToShow(IMenuManager manager)
             {
                 IAction copyAction = new Action(WorkbenchMessages.Workbench_copy) {
+                    @Override
                     public void run()
                     {
                         copySelectionToClipboard();
@@ -148,6 +152,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
                 copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
                 IAction selectAllAction = new Action(WorkbenchMessages.Workbench_selectAll) {
+                    @Override
                     public void run()
                     {
                         infoTable.selectAll();
@@ -156,6 +161,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
                 selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
 
                 IAction clearLogAction = new Action(WorkbenchMessages.Workbench_revert) {
+                    @Override
                     public void run()
                     {
                         infoTable.removeAll();

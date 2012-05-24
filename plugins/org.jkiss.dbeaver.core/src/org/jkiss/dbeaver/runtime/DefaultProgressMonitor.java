@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime;
@@ -28,36 +28,43 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
         this.nestedMonitor = nestedMonitor;
     }
 
+    @Override
     public IProgressMonitor getNestedMonitor()
     {
         return nestedMonitor;
     }
 
+    @Override
     public void beginTask(String name, int totalWork)
     {
         nestedMonitor.beginTask(name, totalWork);
     }
 
+    @Override
     public void done()
     {
         nestedMonitor.done();
     }
 
+    @Override
     public void subTask(String name)
     {
         nestedMonitor.subTask(name);
     }
 
+    @Override
     public void worked(int work)
     {
         nestedMonitor.worked(work);
     }
 
+    @Override
     public boolean isCanceled()
     {
         return nestedMonitor.isCanceled();
     }
 
+    @Override
     public synchronized void startBlock(DBRBlockingObject object, String taskName)
     {
         if (taskName != null) {
@@ -69,6 +76,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
         blocks.add(object);
     }
 
+    @Override
     public synchronized void endBlock()
     {
         if (blocks == null || blocks.isEmpty()) {
@@ -81,6 +89,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
         blocks.remove(blocks.size() - 1);
     }
 
+    @Override
     public DBRBlockingObject getActiveBlock()
     {
         return blocks == null || blocks.isEmpty() ? null : blocks.get(blocks.size() - 1);

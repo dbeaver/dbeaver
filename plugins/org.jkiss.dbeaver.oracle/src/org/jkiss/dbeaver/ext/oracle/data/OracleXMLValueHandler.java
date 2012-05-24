@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.data;
@@ -26,6 +26,7 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
 
     public static final OracleXMLValueHandler INSTANCE = new OracleXMLValueHandler();
 
+    @Override
     protected DBDContent getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column, int columnIndex) throws DBCException, SQLException
     {
         Object object;

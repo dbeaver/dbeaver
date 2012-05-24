@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
@@ -26,6 +26,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
 
     protected abstract IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command);
 
+    @Override
     ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
     {
         return new StructCreateCommand(object, CoreMessages.model_jdbc_create_new_object);
@@ -36,6 +37,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
         List<NestedObjectCommand> nestedCommands = new ArrayList<NestedObjectCommand>();
         nestedCommands.addAll(structCommand.getObjectCommands().values());
         Collections.sort(nestedCommands, new Comparator<NestedObjectCommand>() {
+            @Override
             public int compare(NestedObjectCommand o1, NestedObjectCommand o2)
             {
                 final DBPObject object1 = o1.getObject();
@@ -78,6 +80,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
             return objectCommands;
         }
 
+        @Override
         public boolean aggregateCommand(DBECommand<?> command)
         {
             if (command instanceof NestedObjectCommand) {
@@ -88,12 +91,14 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
             }
         }
 
+        @Override
         public void resetAggregatedCommands()
         {
             objectCommands.clear();
             objectCommands.put(getObject(), this);
         }
 
+        @Override
         public IDatabasePersistAction[] getPersistActions()
         {
             return makeStructObjectCreateActions(this);

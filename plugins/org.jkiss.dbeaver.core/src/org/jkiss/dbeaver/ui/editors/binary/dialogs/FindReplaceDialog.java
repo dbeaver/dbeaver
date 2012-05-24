@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary.dialogs;
@@ -60,6 +60,7 @@ public class FindReplaceDialog extends Dialog {
     private static final String textText = CoreMessages.dialog_find_replace_text;
 
     SelectionAdapter defaultSelectionAdapter = new SelectionAdapter() {
+        @Override
         public void widgetSelected(SelectionEvent e)
         {
             if (lastIgnoreCase != checkBox.getSelection() ||
@@ -135,6 +136,7 @@ public class FindReplaceDialog extends Dialog {
             gc.dispose();
             textCombo.setLayoutData(new GridData(width, SWT.DEFAULT));
             textCombo.addVerifyListener(new VerifyListener() {
+                @Override
                 public void verifyText(org.eclipse.swt.events.VerifyEvent e)
                 {
                     if (e.keyCode == 0) return;  // a list selection
@@ -145,6 +147,7 @@ public class FindReplaceDialog extends Dialog {
                 }
             });
             textCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     int index = textCombo.getSelectionIndex();
@@ -157,6 +160,7 @@ public class FindReplaceDialog extends Dialog {
                 }
             });
             textCombo.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     feedbackLabel.setText(""); //$NON-NLS-1$
@@ -182,6 +186,7 @@ public class FindReplaceDialog extends Dialog {
             hexRadioButton.setText(textHex);
             hexRadioButton.addSelectionListener(defaultSelectionAdapter);
             hexRadioButton.addSelectionListener(new SelectionAdapter() {
+                @Override
                 public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
                 {
                     Matcher numberMatcher = patternHexDigits.matcher(textCombo.getText());
@@ -265,6 +270,7 @@ public class FindReplaceDialog extends Dialog {
     private void activateProgressBar()
     {
         Display.getCurrent().timerExec(500, new Runnable() {
+            @Override
             public void run()
             {
                 if (searching && !progressComposite.isDisposed()) {
@@ -289,6 +295,7 @@ public class FindReplaceDialog extends Dialog {
         progressBar.setSelection(0);
         final int finalFactor = factor;
         Display.getCurrent().timerExec(1000, new Runnable() {
+            @Override
             public void run()
             {
                 if (!searching || progressBar.isDisposed()) return;
@@ -380,6 +387,7 @@ public class FindReplaceDialog extends Dialog {
         findButton.setText(textFind);
         findButton.addSelectionListener(defaultSelectionAdapter);
         findButton.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 doFind();
@@ -390,6 +398,7 @@ public class FindReplaceDialog extends Dialog {
         replaceFindButton.setText(textReplaceFind);
         replaceFindButton.addSelectionListener(defaultSelectionAdapter);
         replaceFindButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+            @Override
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
                 doReplaceFind();
@@ -400,6 +409,7 @@ public class FindReplaceDialog extends Dialog {
         replaceButton.setText(textReplace);
         replaceButton.addSelectionListener(defaultSelectionAdapter);
         replaceButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+            @Override
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
                 doReplace();
@@ -410,6 +420,7 @@ public class FindReplaceDialog extends Dialog {
         replaceAllButton.setText(textReplaceAll);
         replaceAllButton.addSelectionListener(defaultSelectionAdapter);
         replaceAllButton.addSelectionListener(new org.eclipse.swt.events.SelectionAdapter() {
+            @Override
             public void widgetSelected(org.eclipse.swt.events.SelectionEvent e)
             {
                 doReplaceAll();
@@ -475,6 +486,7 @@ public class FindReplaceDialog extends Dialog {
         formLayout.spacing = 5;
         sShell.setLayout(formLayout);
         sShell.addShellListener(new ShellAdapter() {
+            @Override
             public void shellActivated(ShellEvent e)
             {
                 enableDisableControls();
@@ -487,6 +499,7 @@ public class FindReplaceDialog extends Dialog {
         findGroup.initialise();
         findGroup.group.setText(textFindLiteral);
         SelectionAdapter hexTextSelectionAdapter = new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 checkBox.setEnabled(e.widget == findGroup.textRadioButton);
@@ -552,6 +565,7 @@ public class FindReplaceDialog extends Dialog {
         progressCancelButton.setLayoutData(formData6);
         formData5.right = new FormAttachment(progressCancelButton);
         progressCancelButton.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 editControl.stopSearching();
@@ -566,6 +580,7 @@ public class FindReplaceDialog extends Dialog {
         formData1.bottom = new FormAttachment(100);
         closeButton.setLayoutData(formData1);
         closeButton.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 sShell.close();
@@ -575,6 +590,7 @@ public class FindReplaceDialog extends Dialog {
         formData2.right = new FormAttachment(closeButton);
 
         sShell.addListener(SWT.Close, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 editControl.stopSearching();

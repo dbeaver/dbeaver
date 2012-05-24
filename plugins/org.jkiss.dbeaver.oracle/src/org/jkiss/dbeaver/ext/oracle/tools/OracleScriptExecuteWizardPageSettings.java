@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.tools;
@@ -38,6 +38,7 @@ public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPag
         return super.isPageComplete() && wizard.getInputFile() != null;
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);

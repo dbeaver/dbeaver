@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -61,7 +61,8 @@ public class CustomComboBoxCellEditor extends CellEditor {
 		populateComboBoxItems();
 	}
 
-	protected Control createControl(Composite parent) {
+	@Override
+    protected Control createControl(Composite parent) {
 
 		comboBox = new CCombo(parent, getStyle());
         //comboBox.setEditable((getStyle() & SWT.READ_ONLY) == 0);
@@ -72,21 +73,25 @@ public class CustomComboBoxCellEditor extends CellEditor {
 		populateComboBoxItems();
 
 		comboBox.addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
+			@Override
+            public void keyPressed(KeyEvent e) {
 				keyReleaseOccured(e);
 			}
 		});
 
 		comboBox.addSelectionListener(new SelectionAdapter() {
-			public void widgetDefaultSelected(SelectionEvent event) {
+			@Override
+            public void widgetDefaultSelected(SelectionEvent event) {
 				applyEditorValueAndDeactivate();
 			}
-			public void widgetSelected(SelectionEvent event) {
+			@Override
+            public void widgetSelected(SelectionEvent event) {
 			}
 		});
 
 		comboBox.addTraverseListener(new TraverseListener() {
-			public void keyTraversed(TraverseEvent e) {
+			@Override
+            public void keyTraversed(TraverseEvent e) {
 				if (e.detail == SWT.TRAVERSE_ESCAPE
 						|| e.detail == SWT.TRAVERSE_RETURN) {
 					e.doit = false;
@@ -95,21 +100,24 @@ public class CustomComboBoxCellEditor extends CellEditor {
 		});
 
 		comboBox.addFocusListener(new FocusAdapter() {
-			public void focusLost(FocusEvent e) {
+			@Override
+            public void focusLost(FocusEvent e) {
 				CustomComboBoxCellEditor.this.focusLost();
 			}
 		});
 		return comboBox;
 	}
 
-	protected Object doGetValue() {
+	@Override
+    protected Object doGetValue() {
 		return comboBox.getText();
 	}
 
 	/*
 	 * (non-Javadoc) Method declared on CellEditor.
 	 */
-	protected void doSetFocus() {
+	@Override
+    protected void doSetFocus() {
 		comboBox.setFocus();
         fireEnablementChanged(DELETE);
         fireEnablementChanged(COPY);
@@ -117,7 +125,8 @@ public class CustomComboBoxCellEditor extends CellEditor {
         fireEnablementChanged(PASTE);
 	}
 
-	public LayoutData getLayoutData() {
+	@Override
+    public LayoutData getLayoutData() {
 		LayoutData layoutData = super.getLayoutData();
 		if ((comboBox == null) || comboBox.isDisposed()) {
 			layoutData.minimumWidth = 60;
@@ -140,7 +149,8 @@ public class CustomComboBoxCellEditor extends CellEditor {
 	 *            the zero-based index of the selection wrapped as an
 	 *            <code>Integer</code>
 	 */
-	protected void doSetValue(Object value) {
+	@Override
+    protected void doSetValue(Object value) {
 		Assert.isTrue(comboBox != null && (value instanceof String || value instanceof DBPNamedObject || value instanceof Enum));
         if (value instanceof DBPNamedObject) {
             comboBox.setText(((DBPNamedObject) value).getName());
@@ -183,13 +193,15 @@ public class CustomComboBoxCellEditor extends CellEditor {
 		deactivate();
 	}
 
-	protected void focusLost() {
+	@Override
+    protected void focusLost() {
 		if (isActivated()) {
 			applyEditorValueAndDeactivate();
 		}
 	}
 
-	protected void keyReleaseOccured(KeyEvent keyEvent) {
+	@Override
+    protected void keyReleaseOccured(KeyEvent keyEvent) {
 		if (keyEvent.character == '\u001b') { // Escape character
 			fireCancelEditor();
 		} else if (keyEvent.character == SWT.TAB) { // tab key
@@ -200,34 +212,42 @@ public class CustomComboBoxCellEditor extends CellEditor {
 		}
 	}
 
+    @Override
     public boolean isCopyEnabled() {
         return comboBox != null && !comboBox.isDisposed();
     }
 
+    @Override
     public boolean isCutEnabled() {
         return comboBox != null && !comboBox.isDisposed();
     }
 
+    @Override
     public boolean isDeleteEnabled() {
         return comboBox != null && !comboBox.isDisposed();
     }
 
+    @Override
     public boolean isPasteEnabled() {
         return comboBox != null && !comboBox.isDisposed();
     }
 
+    @Override
     public void performCopy() {
         comboBox.copy();
     }
 
+    @Override
     public void performCut() {
         comboBox.cut();
     }
 
+    @Override
     public void performDelete() {
         comboBox.setText("");
     }
 
+    @Override
     public void performPaste() {
         comboBox.paste();
     }

@@ -29,6 +29,7 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
         this.description = description;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return entity.getDataSource();

@@ -23,16 +23,19 @@ public class WMIClassReference extends WMIClassAttribute implements DBSEntityAss
         this.refClass = refClass;
     }
 
+    @Override
     public DBSEntityConstraintType getConstraintType()
     {
         return DBSEntityConstraintType.ASSOCIATION;
     }
 
+    @Override
     public DBSEntity getAssociatedEntity()
     {
         return refClass;
     }
 
+    @Override
     public DBSTableConstraint getReferencedConstraint()
     {
         return null;

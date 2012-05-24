@@ -23,11 +23,13 @@ public abstract class DataExporterAbstract implements IDataExporter {
         return site;
     }
 
+    @Override
     public void init(IDataExporterSite site) throws DBException
     {
         this.site = site;
     }
 
+    @Override
     public void dispose()
     {
         // do nothing

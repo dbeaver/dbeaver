@@ -31,6 +31,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         this.constraintType = constraintType;
     }
 
+    @Override
     @Property(id = "owner", name = "Owner", viewable = true, order = 2)
     public TABLE getTable()
     {
@@ -43,6 +44,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         return getColumns(monitor);
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
@@ -55,6 +57,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
     }
 
     //    @Property(name = "Description", viewable = true, order = 100)
+    @Override
     public String getDescription()
     {
         return description;
@@ -65,16 +68,19 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         this.description = description;
     }
 
+    @Override
     public DBSEntityConstraintType getConstraintType()
     {
         return constraintType;
     }
 
+    @Override
     public TABLE getParentObject()
     {
         return table;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

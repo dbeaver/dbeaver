@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.sql;
@@ -75,6 +75,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
         }
         Collections.sort(validDataTypes, new Comparator<DBSDataType>() {
+            @Override
             public int compare(DBSDataType o1, DBSDataType o2)
             {
                 return o1.getName().compareTo(o2.getName());
@@ -94,6 +95,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
@@ -152,15 +154,18 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private class ParametersMouseListener implements MouseListener {
 
+        @Override
         public void mouseDoubleClick(MouseEvent e)
         {
             //handleColumnClick(e, true);
         }
 
+        @Override
         public void mouseDown(MouseEvent e)
         {
         }
 
+        @Override
         public void mouseUp(MouseEvent e)
         {
             handleColumnClick(e);
@@ -256,21 +261,25 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             this.item = item;
         }
 
+        @Override
         public DBPDataSource getDataSource()
         {
             return dataSource;
         }
 
+        @Override
         public DBSColumnBase getColumnMetaData()
         {
             return parameter;
         }
 
+        @Override
         public Object getValue()
         {
             return parameter.getValue();
         }
 
+        @Override
         public void updateValue(Object value)
         {
             parameter.setValue(value);
@@ -290,48 +299,58 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             updateStatus(Status.OK_STATUS);
         }
 
+        @Override
         public DBDValueHandler getValueHandler()
         {
             return parameter.getValueHandler();
         }
 
+        @Override
         public boolean isInlineEdit()
         {
             return true;
         }
 
+        @Override
         public boolean isReadOnly()
         {
             return false;
         }
 
+        @Override
         public IWorkbenchPartSite getValueSite()
         {
             return ownerSite;
         }
 
+        @Override
         public Composite getInlinePlaceholder()
         {
             return placeholder;
         }
 
+        @Override
         public void closeInlineEditor()
         {
             disposeOldEditor();
         }
 
+        @Override
         public void nextInlineEditor(boolean next)
         {
         }
 
+        @Override
         public void registerEditor(DBDValueEditor editor)
         {
         }
 
+        @Override
         public void unregisterEditor(DBDValueEditor editor)
         {
         }
 
+        @Override
         public void showMessage(String message, boolean error)
         {
             updateStatus(new Status(error ? Status.ERROR : Status.INFO, DBeaverConstants.PLUGIN_ID, message));

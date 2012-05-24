@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model.session;
@@ -124,6 +124,7 @@ public class OracleServerSession implements DBAServerSession {
         return remoteProgram;
     }
 
+    @Override
     public String getActiveQuery()
     {
         return sql;

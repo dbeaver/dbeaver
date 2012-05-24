@@ -69,6 +69,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.hidden = JDBCUtils.safeGetBoolean(dbResult, "HIDDEN_COLUMN", OracleConstants.YES);
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return getTable().getDataSource();
@@ -106,12 +107,14 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return super.getMaxLength();
     }
 
+    @Override
     @Property(name = "Precision", viewable = true, order = 41, description = "Decimal precision for NUMBER datatype; binary precision for FLOAT datatype; NULL for all other datatypes")
     public int getPrecision()
     {
         return super.getPrecision();
     }
 
+    @Override
     @Property(name = "Scale", viewable = true, order = 42, description = "Digits to the right of the decimal point in a number")
     public int getScale()
     {
@@ -125,12 +128,14 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return super.isRequired();
     }
 
+    @Override
     @Property(name = "Default", viewable = true, editable = true, updatable = true, order = 70, description = "Default value for the column")
     public String getDefaultValue()
     {
         return defaultValue;
     }
 
+    @Override
     public boolean isSequence()
     {
         return false;
@@ -152,11 +157,13 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.comment = comment;
     }
 
+    @Override
     public boolean isHidden()
     {
         return hidden;
     }
 
+    @Override
     public Image getObjectImage()
     {
         if (type != null && type.getName().equals(OracleConstants.TYPE_NAME_XML)) {
@@ -167,11 +174,13 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
 
     public static class ColumnDataTypeListProvider implements IPropertyValueListProvider<OracleTableColumn> {
 
+        @Override
         public boolean allowCustomValue()
         {
             return false;
         }
 
+        @Override
         public Object[] getPossibleValues(OracleTableColumn column)
         {
             final Collection<? extends DBSDataType> dataTypes = column.getTable().getDataSource().getDataTypes();

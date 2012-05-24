@@ -70,6 +70,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         this.dataSource = dataSource;
     }
 
+    @Override
     public void activatePage()
     {
         setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getName()));
@@ -80,6 +81,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         //this.editor.loadSettings();
     }
 
+    @Override
     public void deactivatePage()
     {
         if (this.connectionEditor != null) {
@@ -93,6 +95,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
             connectionEditor.saveSettings();
         }
     }
+    @Override
     public void createControl(Composite parent)
     {
         try {
@@ -115,11 +118,13 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         }
     }
 
+    @Override
     public boolean canFlipToNextPage()
     {
         return true;
     }
 
+    @Override
     public boolean isPageComplete()
     {
         if (wizard.getPageSettings() != this) {
@@ -128,11 +133,13 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         return this.connectionEditor != null && this.connectionEditor.isComplete();
     }
 
+    @Override
     public DriverDescriptor getDriver()
     {
         return wizard.getSelectedDriver();
     }
 
+    @Override
     public DBPConnectionInfo getConnectionInfo()
     {
         if (dataSource != null) {
@@ -148,17 +155,20 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         return info;
     }
 
+    @Override
     public void updateButtons()
     {
         getWizard().getContainer().updateButtons();
     }
 
+    @Override
     public void updateMessage()
     {
         getWizard().getContainer().updateMessage();
         getWizard().getContainer().updateTitleBar();
     }
 
+    @Override
     public void testConnection()
     {
         if (this.connectionEditor != null) {
@@ -167,6 +177,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         }
     }
 
+    @Override
     public boolean openDriverEditor()
     {
         DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), this.getDriver());

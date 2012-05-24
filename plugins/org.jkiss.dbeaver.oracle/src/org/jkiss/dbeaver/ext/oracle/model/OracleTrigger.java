@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -48,6 +48,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
             this.title = title;
         }
 
+        @Override
         public String getName()
         {
             return title;
@@ -91,12 +92,14 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         this.table = table;
     }
 
+    @Override
     @Property(name = "Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
         return super.getName();
     }
 
+    @Override
     @Property(name = "Table", viewable = true, order = 4)
     public OracleTableBase getTable()
     {
@@ -145,6 +148,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         return status;
     }
 
+    @Override
     @Property(name = "Description", order = 11)
     public String getDescription()
     {
@@ -176,11 +180,13 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         this.columns = columns;
     }
 
+    @Override
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.TRIGGER;
     }
 
+    @Override
     @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
@@ -190,21 +196,25 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         return sourceDeclaration;
     }
 
+    @Override
     public void setSourceDeclaration(String source)
     {
         this.sourceDeclaration = source;
     }
 
+    @Override
     public DBSObjectState getObjectState()
     {
         return status != OracleObjectStatus.ERROR ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
     }
 
+    @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
         this.status = (OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TRIGGER) ? OracleObjectStatus.ENABLED : OracleObjectStatus.ERROR);
     }
 
+    @Override
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {

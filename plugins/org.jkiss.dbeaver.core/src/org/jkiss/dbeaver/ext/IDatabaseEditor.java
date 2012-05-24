@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext;
@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceUser;
 public interface IDatabaseEditor extends IEditorPart, DBPDataSourceUser, IDataSourceProvider, IRefreshablePart
 {
 
+    @Override
     IDatabaseEditorInput getEditorInput();
 
 }

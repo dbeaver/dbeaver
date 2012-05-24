@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.data;
@@ -34,6 +34,7 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     protected DBDValue getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column, int columnIndex) throws DBCException, SQLException
     {
         //final Object object = resultSet.getObject(columnIndex);
@@ -47,21 +48,25 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
         throw new DBCException("Parameter bind is not implemented");
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_NONE;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return java.lang.Object.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value) throws DBCException
     {
         return null;
     }
 
+    @Override
     public boolean editValue(DBDValueController controller) throws DBException
     {
         return false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.struct;
@@ -44,6 +44,7 @@ public class CreateProcedureDialog extends TrayDialog {
 
         final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 name = nameText.getText();
@@ -53,6 +54,7 @@ public class CreateProcedureDialog extends TrayDialog {
         typeCombo.add(DBSProcedureType.PROCEDURE.name());
         typeCombo.add(DBSProcedureType.FUNCTION.name());
         typeCombo.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 type = typeCombo.getSelectionIndex() == 0 ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION;

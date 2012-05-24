@@ -148,11 +148,13 @@ public class TestService {
             this.objectList = new ArrayList<WMIObject>();
         }
 
+        @Override
         public void indicate(WMIObject[] objects)
         {
             Collections.addAll(objectList, objects);
         }
 
+        @Override
         public void setStatus(WMIObjectSinkStatus status, int result, String param, WMIObject errorObject)
         {
             if (status == WMIObjectSinkStatus.complete) {

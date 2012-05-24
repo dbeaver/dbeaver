@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.querylog;
@@ -30,6 +30,7 @@ public class QueryLogCommandHandler extends AbstractHandler {
         return null;
     }
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         QueryLogViewer logViewer = getActiveQueryLog(event);

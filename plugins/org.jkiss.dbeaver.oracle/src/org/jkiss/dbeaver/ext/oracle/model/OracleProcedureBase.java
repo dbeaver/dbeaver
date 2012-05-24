@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -38,12 +38,14 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
         this.procedureType = procedureType;
     }
 
+    @Override
     @Property(name = "Procedure Type", viewable = true, editable = true, order = 3)
     public DBSProcedureType getProcedureType()
     {
         return procedureType ;
     }
 
+    @Override
     public DBSObjectContainer getContainer()
     {
         return getParentObject();
@@ -53,6 +55,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
 
     public abstract Integer getOverloadNumber();
 
+    @Override
     public Collection<OracleProcedureArgument> getColumns(DBRProgressMonitor monitor) throws DBException
     {
         return argumentsCache.getObjects(monitor, this);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
@@ -45,6 +45,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         setPageComplete(false);
     }
 
+    @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
@@ -58,6 +59,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
         {
             Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
             directoryText = UIUtils.createOutputFolderChooser(generalSettings, new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e) {
                     getWizard().getSettings().setOutputFolder(directoryText.getText());
                     updatePageCompletion();
@@ -70,6 +72,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             gd.horizontalSpan = 4;
             fileNameText.setLayoutData(gd);
             fileNameText.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e) {
                     getWizard().getSettings().setOutputFilePattern(fileNameText.getText());
                     updatePageCompletion();
@@ -81,6 +84,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 encodingCombo = UIUtils.createEncodingCombo(generalSettings, getWizard().getSettings().getOutputEncoding());
                 //encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingCombo.addModifyListener(new ModifyListener() {
+                    @Override
                     public void modifyText(ModifyEvent e) {
                         int index = encodingCombo.getSelectionIndex();
                         if (index >= 0) {
@@ -94,6 +98,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 encodingBOMCheckbox = new Button(generalSettings, SWT.CHECK);
                 encodingBOMCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
                     public void widgetSelected(SelectionEvent e) {
                         getWizard().getSettings().setOutputEncodingBOM(encodingBOMCheckbox.getSelection());
                     }
@@ -104,6 +109,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_compress, false);
             compressCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 4, 1));
             compressCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setCompressResults(compressCheckbox.getSelection());
                 }
@@ -118,6 +124,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
             threadsNumText.setMinimum(1);
             threadsNumText.setMaximum(10);
             threadsNumText.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e) {
                     try {
                         getWizard().getSettings().setMaxJobCount(Integer.parseInt(threadsNumText.getText()));
@@ -154,6 +161,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
                 segmentSizeText = new Text(generalSettings, SWT.BORDER);
                 segmentSizeText.addModifyListener(new ModifyListener() {
+                    @Override
                     public void modifyText(ModifyEvent e)
                     {
                         try {
@@ -168,6 +176,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
             newConnectionCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_new_connection, true);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setOpenNewConnections(newConnectionCheckbox.getSelection());
                 }
@@ -176,6 +185,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
             rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_select_row_count, true);
             rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setQueryRowCount(rowCountCheckbox.getSelection());
                 }
@@ -184,6 +194,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
             showFolderCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_open_folder, true);
             showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
                 public void widgetSelected(SelectionEvent e) {
                     getWizard().getSettings().setOpenFolderOnFinish(showFolderCheckbox.getSelection());
                 }

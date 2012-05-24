@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -23,6 +23,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
     public static final String BOTTOM_BOTTOM_LEFT = "bottomLeft"; //$NON-NLS-1$
     public static final String FOLDER_BOTTOM_RIGHT = "bottomRight"; //$NON-NLS-1$
 
+    @Override
     public void createInitialLayout(IPageLayout layout)
     {
         String editorArea = layout.getEditorArea();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.qm.meta;
@@ -16,6 +16,7 @@ public class QMMStatementScripInfo extends QMMObject {
         this.session = session;
     }
 
+    @Override
     protected void close()
     {
         super.close();

@@ -22,7 +22,8 @@ public class EntityContainerEditPolicy extends ContainerEditPolicy
 	/**
  * @return command to handle adding a new column
  */
-	protected Command getCreateCommand(CreateRequest request)
+	@Override
+    protected Command getCreateCommand(CreateRequest request)
 	{
 /*
 		Object newObject = request.getNewObject();

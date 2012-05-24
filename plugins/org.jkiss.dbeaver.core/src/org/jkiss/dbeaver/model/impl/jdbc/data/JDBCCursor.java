@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -26,16 +26,19 @@ public class JDBCCursor extends JDBCResultSetImpl implements DBDCursor {
         super(context, original, description);
     }
 
+    @Override
     public boolean isNull()
     {
         return false;
     }
 
+    @Override
     public DBDValue makeNull()
     {
         throw new IllegalStateException(CoreMessages.model_jdbc_cant_create_null_cursor);
     }
 
+    @Override
     public void release()
     {
         super.close();

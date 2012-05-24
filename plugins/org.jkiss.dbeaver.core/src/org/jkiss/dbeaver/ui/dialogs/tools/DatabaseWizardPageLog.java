@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.tools;
@@ -41,6 +41,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         return true;
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -58,6 +59,7 @@ public class DatabaseWizardPageLog extends WizardPage {
             return;
         }
         UIUtils.runInUI(getShell(), new Runnable() {
+            @Override
             public void run()
             {
                 synchronized (DatabaseWizardPageLog.this) {
@@ -78,6 +80,7 @@ public class DatabaseWizardPageLog extends WizardPage {
             return;
         }
         UIUtils.runInUI(getShell(), new Runnable() {
+            @Override
             public void run()
             {
                 synchronized (DatabaseWizardPageLog.this) {
@@ -111,6 +114,7 @@ public class DatabaseWizardPageLog extends WizardPage {
             this.input = stream;
         }
 
+        @Override
         public void run()
         {
             clearLog();
@@ -174,6 +178,7 @@ public class DatabaseWizardPageLog extends WizardPage {
             this.input = stream;
         }
 
+        @Override
         public void run()
         {
             try {

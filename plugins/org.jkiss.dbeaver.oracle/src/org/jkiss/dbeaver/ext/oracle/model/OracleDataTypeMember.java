@@ -45,26 +45,31 @@ public abstract class OracleDataTypeMember implements DBSEntityElement
         return dataType;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public OracleDataType getParentObject()
     {
         return dataType;
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return dataType.getDataSource();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     @Property(name = "Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {

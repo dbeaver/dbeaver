@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
@@ -34,6 +34,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     abstract protected OBJECT fetchObject(JDBCExecutionContext context, OWNER owner, ResultSet resultSet)
         throws SQLException, DBException;
 
+    @Override
     public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
@@ -43,6 +44,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         return getCachedObjects();
     }
 
+    @Override
     public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
         throws DBException
     {

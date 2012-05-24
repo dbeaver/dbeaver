@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
@@ -29,6 +29,7 @@ class EditorTabDescriptor extends AbstractTabDescriptor {
         this.descriptor = descriptor;
         setSectionDescriptors(Collections.singletonList(
             new SectionDescriptor(PropertiesContributor.SECTION_STANDARD, this.descriptor.getId()) {
+                @Override
                 public ISection getSectionClass()
                 {
                     return new EditorWrapperSection(
@@ -38,26 +39,31 @@ class EditorTabDescriptor extends AbstractTabDescriptor {
             }));
     }
 
+    @Override
     public String getCategory()
     {
         return PropertiesContributor.CATEGORY_STRUCT;
     }
 
+    @Override
     public String getId()
     {
         return descriptor.getId();
     }
 
+    @Override
     public String getLabel()
     {
         return descriptor.getName();
     }
 
+    @Override
     public Image getImage()
     {
         return descriptor.getIcon();
     }
 
+    @Override
     public boolean isIndented()
     {
         return !DBeaverCore.getInstance().getLocalSystem().isWindows();

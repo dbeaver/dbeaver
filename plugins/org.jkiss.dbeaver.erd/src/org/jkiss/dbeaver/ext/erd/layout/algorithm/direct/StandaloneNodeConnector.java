@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -53,6 +53,7 @@ public class StandaloneNodeConnector {
             // Order nodes by their connections count
             // Order unconnected nodes by their geometrical size
             Collections.sort(nodeList, new Comparator<Node>() {
+                @Override
                 public int compare(Node o1, Node o2)
                 {
                     final int connCount1 = o2.outgoing.size() + o2.incoming.size();

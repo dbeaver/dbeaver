@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.log;
@@ -22,6 +22,7 @@ class SQLLogFilter implements IQueryLogFilter {
         this.editor = editor;
     }
 
+    @Override
     public boolean accept(QMMetaEvent event)
     {
         // Accept only following events:

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui;
@@ -24,6 +24,7 @@ public class SharedTextColors implements ISharedTextColors {
         super();
     }
 
+    @Override
     public Color getColor(RGB rgb)
     {
         if (rgb == null)
@@ -39,6 +40,7 @@ public class SharedTextColors implements ISharedTextColors {
             colorTable = new HashMap<RGB, Color>(10);
             fDisplayTable.put(display, colorTable);
             display.disposeExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     dispose(display);
@@ -55,6 +57,7 @@ public class SharedTextColors implements ISharedTextColors {
         return color;
     }
 
+    @Override
     public void dispose()
     {
         if (fDisplayTable == null)

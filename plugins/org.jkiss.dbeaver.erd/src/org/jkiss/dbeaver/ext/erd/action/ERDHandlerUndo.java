@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.action;
@@ -18,6 +18,7 @@ public class ERDHandlerUndo extends AbstractHandler {
 
     }
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Control control = (Control) HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
         if (control != null) {

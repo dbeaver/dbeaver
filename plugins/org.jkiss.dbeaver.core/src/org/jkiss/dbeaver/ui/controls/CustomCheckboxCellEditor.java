@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -30,6 +30,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         super(parent, style);
     }
 
+    @Override
     protected Control createControl(Composite parent) {
         Composite placeholder = new Composite(parent, SWT.NONE);
         placeholder.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
@@ -66,10 +67,12 @@ public class CustomCheckboxCellEditor extends CellEditor {
         return placeholder;
     }
 
+    @Override
     protected Object doGetValue() {
         return checkbox.getSelection();
     }
 
+    @Override
     protected void doSetFocus() {
         checkbox.setFocus();
         checkbox.setSelection(!checkbox.getSelection());
@@ -81,11 +84,13 @@ public class CustomCheckboxCellEditor extends CellEditor {
 //        });
     }
 
+    @Override
     protected void doSetValue(Object value) {
         Assert.isTrue(checkbox != null && (value instanceof Boolean));
         checkbox.setSelection((Boolean)value);
     }
 
+    @Override
     public LayoutData getLayoutData() {
         LayoutData layoutData = super.getLayoutData();
         layoutData.grabHorizontal = true;

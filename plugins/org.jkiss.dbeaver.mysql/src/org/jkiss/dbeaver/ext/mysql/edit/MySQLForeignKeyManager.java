@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
  */
 public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLTableForeignKey, MySQLTable> {
 
+    @Override
     protected MySQLTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTable table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
@@ -60,6 +61,7 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLTableFore
         return foreignKey;
     }
 
+    @Override
     protected String getDropForeignKeyPattern(MySQLTableForeignKey foreignKey)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$

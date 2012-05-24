@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.process;
@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessController;
 
 public class ShellProcessStopHandler extends AbstractHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         if (activePart instanceof DBRProcessController) {

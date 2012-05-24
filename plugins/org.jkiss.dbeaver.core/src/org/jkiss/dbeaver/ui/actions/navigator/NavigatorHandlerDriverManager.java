@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.ui.dialogs.driver.DriverManagerDialog;
 
 public class NavigatorHandlerDriverManager extends AbstractHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
         DriverManagerDialog dialog = new DriverManagerDialog(HandlerUtil.getActiveShell(event));

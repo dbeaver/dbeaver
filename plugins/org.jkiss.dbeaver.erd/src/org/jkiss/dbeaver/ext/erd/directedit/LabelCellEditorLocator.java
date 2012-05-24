@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -39,7 +39,8 @@ public class LabelCellEditorLocator implements CellEditorLocator
 	/**
 	 * expands the size of the control by 1 pixel in each direction
 	 */
-	public void relocate(CellEditor celleditor)
+	@Override
+    public void relocate(CellEditor celleditor)
 	{
 		Text text = (Text) celleditor.getControl();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.tools;
@@ -62,12 +62,14 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
         this.outputFile = outputFile;
     }
 
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(MySQLMessages.tools_db_export_wizard_title);
         setNeedsProgressMonitor(true);
         mainPage = new MySQLDatabaseExportWizardPageSettings(this);
     }
 
+    @Override
     public void addPages() {
         super.addPages();
         addPage(mainPage);
@@ -146,6 +148,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
             this.input = stream;
         }
 
+        @Override
         public void run()
         {
             monitor.beginTask(MySQLMessages.tools_db_export_wizard_monitor_export_db, 100);

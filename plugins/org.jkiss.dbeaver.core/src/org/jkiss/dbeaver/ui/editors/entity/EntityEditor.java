@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity;
@@ -87,6 +87,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public EntityEditor()
     {
         folderListener = new IFolderListener() {
+            @Override
             public void folderSelected(String folderId)
             {
                 IEditorPart editor = getActiveEditor();
@@ -100,11 +101,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
         };
     }
 
+    @Override
     public void handlePropertyChange(int propId)
     {
         super.handlePropertyChange(propId);
     }
 
+    @Override
     public ProgressPageControl getProgressControl()
     {
         IEditorPart activeEditor = getActiveEditor();
@@ -168,6 +171,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return false;
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return this.activeEditor != null && this.activeEditor.isSaveAsAllowed();
@@ -186,6 +190,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
      * Saves data in all nested editors
      * @param monitor progress monitor
      */
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
         if (!isDirty()) {
@@ -235,6 +240,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 final DBNDatabaseNode treeNode = getEditorInput().getTreeNode();
                 try {
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
                             try {
@@ -315,6 +321,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 command.validateCommand();
             } catch (final DBException e) {
                 Display.getDefault().syncExec(new Runnable() {
+                    @Override
                     public void run()
                     {
                         UIUtils.showErrorDialog(getSite().getShell(), "Validation", e.getMessage());
@@ -349,6 +356,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 */
     }
 
+    @Override
     protected void createPages()
     {
 /*
@@ -378,6 +386,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         // Property listener
         addPropertyListener(new IPropertyListener() {
+            @Override
             public void propertyChanged(Object source, int propId)
             {
                 if (propId == IEditorPart.PROP_DIRTY) {
@@ -466,6 +475,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Collect tabs from navigator tree model
         final List<TabInfo> tabs = new ArrayList<TabInfo>();
         DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
+            @Override
             public void run(DBRProgressMonitor monitor)
             {
                 tabs.addAll(collectTabs(monitor));
@@ -544,6 +554,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+    @Override
     public int promptToSaveOnClose()
     {
         final int result = ConfirmationDialog.showConfirmDialog(
@@ -561,6 +572,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+    @Override
     public Object getActiveFolder()
     {
         if (getActiveEditor() instanceof IFolderedPart) {
@@ -569,6 +581,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return null;
     }
 
+    @Override
     public void switchFolder(String folderId)
     {
         for (IEditorPart editor : editorMap.values()) {
@@ -584,10 +597,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
 //        }
     }
 
+    @Override
     public void addFolderListener(IFolderListener listener)
     {
     }
 
+    @Override
     public void removeFolderListener(IFolderListener listener)
     {
     }
@@ -743,6 +758,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         actionContributors.put(editor, contributor);
     }
 
+    @Override
     public void refreshPart(final Object source, boolean force)
     {
         // TODO: make smart content refresh
@@ -770,10 +786,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+    @Override
     public DBNNode getRootNode() {
         return getEditorInput().getTreeNode();
     }
 
+    @Override
     public Viewer getNavigatorViewer()
     {
         IWorkbenchPart activePart = getActiveEditor();
@@ -810,6 +828,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             this.allowSave = allowSave;
         }
 
+        @Override
         public void run()
         {
             ViewSQLDialog dialog = new ViewSQLDialog(

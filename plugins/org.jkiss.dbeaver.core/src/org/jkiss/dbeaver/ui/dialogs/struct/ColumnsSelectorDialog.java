@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.struct;
@@ -113,6 +113,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         final List<DBNDatabaseNode> columnNodes = new ArrayList<DBNDatabaseNode>();
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
@@ -220,6 +221,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         super.okPressed();
     }
 
+    @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         shell.setText(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, tableNode.getNodeName()));

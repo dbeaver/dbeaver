@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -48,6 +48,7 @@ public class MySQLCollation extends MySQLInformation {
         return charset;
     }
 
+    @Override
     @Property(name = "Collation", viewable = true, order = 2)
     public String getName()
     {
@@ -78,6 +79,7 @@ public class MySQLCollation extends MySQLInformation {
         return sortLength;
     }
 
+    @Override
     public String getDescription()
     {
         return null;

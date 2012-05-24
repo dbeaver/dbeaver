@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
@@ -35,6 +35,7 @@ public class DefaultTopLeftRenderer extends AbstractRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void paint(GC gc) {
         gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 

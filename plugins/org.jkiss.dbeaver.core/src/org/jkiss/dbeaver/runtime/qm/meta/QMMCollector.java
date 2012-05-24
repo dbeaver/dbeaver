@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.qm.meta;
@@ -68,6 +68,7 @@ public class QMMCollector extends DefaultExecutionHandler {
         return running;
     }
 
+    @Override
     public String getHandlerName()
     {
         return "Meta info collector";
@@ -281,6 +282,7 @@ public class QMMCollector extends DefaultExecutionHandler {
                 // Dispatch all events
                 Display display = Display.getDefault();
                 display.syncExec(new Runnable() {
+                    @Override
                     public void run()
                     {
                         for (QMMetaListener listener : listeners) {

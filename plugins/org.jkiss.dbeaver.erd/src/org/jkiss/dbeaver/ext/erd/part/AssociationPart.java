@@ -43,14 +43,17 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         return (ERDAssociation) getModel();
     }
 
+    @Override
     public void activate() {
         super.activate();
     }
 
+    @Override
     public void deactivate() {
         super.deactivate();
     }
 
+    @Override
     protected void createEditPolicies() {
         installEditPolicy(EditPolicy.CONNECTION_ENDPOINTS_ROLE, new ConnectionEndpointEditPolicy());
         installEditPolicy(EditPolicy.CONNECTION_BENDPOINTS_ROLE, new AssociationBendEditPolicy());
@@ -60,6 +63,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
     }
 
+    @Override
     protected IFigure createFigure() {
         ERDAssociation association = (ERDAssociation) getModel();
 
@@ -150,6 +154,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     /**
      * Sets the width of the line when selected
      */
+    @Override
     public void setSelected(int value) {
         super.setSelected(value);
         if (value != EditPart.SELECTED_NONE) {
@@ -191,6 +196,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         return erdColumns;
     }
 
+    @Override
     public void performRequest(Request request)
     {
         if (request.getType() == RequestConstants.REQ_OPEN) {

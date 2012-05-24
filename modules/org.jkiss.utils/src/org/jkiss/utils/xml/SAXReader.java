@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.utils.xml;
@@ -226,17 +226,20 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
 	// SAX Context Handler overrides
 	///////////////////////////////////////////////////////////////
 
-	public void startDocument()
+	@Override
+    public void startDocument()
 	{
 		// just do-nothing
 	}
 
-	public void endDocument()
+	@Override
+    public void endDocument()
 	{
 		this.close();
 	}
 
-	public void startElement(
+	@Override
+    public void startElement(
 		String namespaceURI,
 		String localName,
 		String qName,
@@ -259,7 +262,8 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
 		elementLayers.push(curListener);
 	}
 
-	public void endElement(
+	@Override
+    public void endElement(
 		String namespaceURI,
 		String localName,
 		String qName)
@@ -279,20 +283,23 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
 		depth--;
 	}
 
-	public void startPrefixMapping(
+	@Override
+    public void startPrefixMapping(
 		String prefix,
 		String uri)
 	{
 		// just do-nothing
 	}
 
-	public void endPrefixMapping(
+	@Override
+    public void endPrefixMapping(
 		String prefix)
 	{
 		// just do-nothing
 	}
 
-	public void characters(
+	@Override
+    public void characters(
 		char[] ch,
 		int start,
 		int length)
@@ -300,7 +307,8 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
 		textValue.append(ch, start, length);
 	}
 
-	public void ignorableWhitespace(
+	@Override
+    public void ignorableWhitespace(
 		char[] ch,
 		int start,
 		int length)
@@ -310,20 +318,23 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
 		}
 	}
 
-	public void processingInstruction(
+	@Override
+    public void processingInstruction(
 		String target,
 		String data)
 	{
 		// just do-nothing
 	}
 
-	public void setDocumentLocator(
+	@Override
+    public void setDocumentLocator(
 		org.xml.sax.Locator locator)
 	{
 		this.locator = locator;
 	}
 
-	public void skippedEntity(
+	@Override
+    public void skippedEntity(
 		String name)
 	{
 		// just do-nothing
@@ -362,16 +373,19 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
 
     static class ParseErrorHandler implements org.xml.sax.ErrorHandler {
 
+        @Override
         public void error(org.xml.sax.SAXParseException exception)
         {
 
         }
 
+        @Override
         public void fatalError(org.xml.sax.SAXParseException exception)
         {
 
         }
 
+        @Override
         public void warning(org.xml.sax.SAXParseException exception)
         {
 

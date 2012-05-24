@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -48,6 +48,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         this.columns = null;
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -55,6 +56,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
             this);
     }
 
+    @Override
     public Collection<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -64,12 +66,14 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         return columns;
     }
 
+    @Override
     public MySQLTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
         throws DBException
     {
         return DBUtils.findObject(getColumns(monitor), columnName);
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;

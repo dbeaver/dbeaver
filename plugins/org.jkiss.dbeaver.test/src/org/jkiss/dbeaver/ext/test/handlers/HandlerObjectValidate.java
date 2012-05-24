@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.test.handlers;
@@ -23,6 +23,7 @@ import java.util.List;
 
 public class HandlerObjectValidate extends AbstractHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (selection instanceof IStructuredSelection) {
@@ -53,6 +54,7 @@ public class HandlerObjectValidate extends AbstractHandler {
             this.rootNode = rootNode;
         }
 
+        @Override
         public void run(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {

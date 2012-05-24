@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -25,7 +25,8 @@ public class ERDPalettePreferences implements FlyoutPreferences
 	protected static final String PALETTE_SIZE = "Palette Size";
 	protected static final String PALETTE_STATE = "Palette state";
 
-	public int getDockLocation()
+	@Override
+    public int getDockLocation()
 	{
 		int location = Activator.getDefault().getPreferenceStore().getInt(PALETTE_DOCK_LOCATION);
 		if (location == 0)
@@ -35,12 +36,14 @@ public class ERDPalettePreferences implements FlyoutPreferences
 		return location;
 	}
 
-	public int getPaletteState()
+	@Override
+    public int getPaletteState()
 	{
 		return Activator.getDefault().getPreferenceStore().getInt(PALETTE_STATE);
 	}
 
-	public int getPaletteWidth()
+	@Override
+    public int getPaletteWidth()
 	{
 		int width = Activator.getDefault().getPreferenceStore().getInt(PALETTE_SIZE);
 		if (width == 0)
@@ -48,17 +51,20 @@ public class ERDPalettePreferences implements FlyoutPreferences
 		return width;
 	}
 
-	public void setDockLocation(int location)
+	@Override
+    public void setDockLocation(int location)
 	{
 		Activator.getDefault().getPreferenceStore().setValue(PALETTE_DOCK_LOCATION, location);
 	}
 
-	public void setPaletteState(int state)
+	@Override
+    public void setPaletteState(int state)
 	{
 		Activator.getDefault().getPreferenceStore().setValue(PALETTE_STATE, state);
 	}
 
-	public void setPaletteWidth(int width)
+	@Override
+    public void setPaletteWidth(int width)
 	{
 		Activator.getDefault().getPreferenceStore().setValue(PALETTE_SIZE, width);
 	}

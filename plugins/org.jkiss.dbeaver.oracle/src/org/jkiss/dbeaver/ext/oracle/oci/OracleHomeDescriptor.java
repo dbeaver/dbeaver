@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.oci;
@@ -64,11 +64,13 @@ public class OracleHomeDescriptor extends JDBCClientHome
         return oraVersion;
     }
 
+    @Override
     public String getProductName()
     {
         return "Oracle" + (oraVersion == null ? "" : " " + oraVersion);
     }
 
+    @Override
     public String getProductVersion()
     {
         if (fullOraVersion == null) {
@@ -85,6 +87,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
         return isInstantClient;
     }
 
+    @Override
     public String getDisplayName()
     {
         if (displayName != null) {
@@ -107,6 +110,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
     {
         List<File> list = new ArrayList<File>();
         FileFilter jarFilter = new FileFilter() {
+            @Override
             public boolean accept(File pathname)
             {
                 final String name = pathname.getName();

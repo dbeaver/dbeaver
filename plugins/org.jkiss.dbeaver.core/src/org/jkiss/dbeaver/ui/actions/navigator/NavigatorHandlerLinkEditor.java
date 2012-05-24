@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 
 public class NavigatorHandlerLinkEditor extends AbstractHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
         final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);

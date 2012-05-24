@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -46,48 +46,57 @@ public class StringEditorInput implements IEditorInput {
 		return buffer.equals(other.buffer);
 	}
 
-	public boolean exists() {
+	@Override
+    public boolean exists() {
 		return true;
 	}
 
-	public ImageDescriptor getImageDescriptor() {
+	@Override
+    public ImageDescriptor getImageDescriptor() {
 		return DBIcon.TREE_INFO.getImageDescriptor();
 	}
 
 	/* (non-Javadoc)
 	 * Method declared on IEditorInput.
 	 */
-	public String getName() {
+	@Override
+    public String getName() {
 		return name;
 	}
 
-	public IPersistableElement getPersistable() {
+	@Override
+    public IPersistableElement getPersistable() {
 		return null;
 	}
 
 	public IStorage getStorage() {
         if (storage == null) {
             storage = new IStorage() {
+                @Override
                 public InputStream getContents() throws CoreException
                 {
                     return new ByteArrayInputStream(buffer.toString().getBytes());
                 }
 
+                @Override
                 public IPath getFullPath()
                 {
                     return null;
                 }
 
+                @Override
                 public String getName()
                 {
                     return name;
                 }
 
+                @Override
                 public boolean isReadOnly()
                 {
                     return readOnly;
                 }
 
+                @Override
                 public Object getAdapter(Class adapter)
                 {
                     return null;
@@ -97,7 +106,8 @@ public class StringEditorInput implements IEditorInput {
 		return storage;
 	}
 
-	public String getToolTipText() {
+	@Override
+    public String getToolTipText() {
 		return name;
 	}
 
@@ -105,7 +115,8 @@ public class StringEditorInput implements IEditorInput {
 		return buffer.toString(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
-	public Object getAdapter(Class adapter) {
+	@Override
+    public Object getAdapter(Class adapter) {
         if (adapter == IStorage.class) {
             return getStorage();
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.project;
@@ -67,6 +67,7 @@ class ProjectExportWizardPage extends WizardPage {
         return false;
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         String outDir = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PREF_PROJECTS_EXPORT_OUT_DIR);
@@ -119,6 +120,7 @@ class ProjectExportWizardPage extends WizardPage {
         fileNameText = UIUtils.createLabelText(fileNameGroup, CoreMessages.dialog_project_export_wizard_start_label_output_file, ""); //$NON-NLS-2$
         fileNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fileNameText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 if (!CommonUtils.equalObjects(fileNameText.getText(), getArchiveFileName(getProjectsToExport()))) {
@@ -136,6 +138,7 @@ class ProjectExportWizardPage extends WizardPage {
             directoryText.setText(outDir);
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             directoryText.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     updateState();

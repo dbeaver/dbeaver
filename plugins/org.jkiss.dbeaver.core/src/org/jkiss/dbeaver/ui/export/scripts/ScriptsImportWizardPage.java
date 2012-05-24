@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.scripts;
@@ -60,6 +60,7 @@ class ScriptsImportWizardPage extends WizardPage {
             importRoot instanceof DBNResource;
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         String externalDir = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR);
@@ -79,6 +80,7 @@ class ScriptsImportWizardPage extends WizardPage {
             directoryText.setText(externalDir);
             directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             directoryText.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     updateState();
@@ -132,6 +134,7 @@ class ScriptsImportWizardPage extends WizardPage {
         final DatabaseNavigatorTree scriptsNavigator = new DatabaseNavigatorTree(placeholder, importRoot, SWT.BORDER | SWT.SINGLE, true);
         scriptsNavigator.setLayoutData(new GridData(GridData.FILL_BOTH));
         scriptsNavigator.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event)
             {
                 IStructuredSelection sel = (IStructuredSelection)event.getSelection();

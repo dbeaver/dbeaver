@@ -35,6 +35,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         this.defferability = defferability;
     }
 
+    @Override
     public GenericDataSource getDataSource()
     {
         return getTable().getDataSource();
@@ -46,6 +47,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         return defferability;
     }
 
+    @Override
     public List<GenericTableForeignKeyColumnTable> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -64,6 +66,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         this.columns = columns;
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -55,11 +55,13 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return valid;
     }
 
+    @Override
     public OracleSchema getSchema()
     {
         return getParentObject();
     }
 
+    @Override
     public OracleSourceType getSourceType()
     {
         return getProcedureType() == DBSProcedureType.PROCEDURE ?
@@ -73,6 +75,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return null;
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -80,6 +83,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             this);
     }
 
+    @Override
     @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
@@ -89,11 +93,13 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return sourceDeclaration;
     }
 
+    @Override
     public void setSourceDeclaration(String sourceDeclaration)
     {
         this.sourceDeclaration = sourceDeclaration;
     }
 
+    @Override
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {
@@ -105,11 +111,13 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             )};
     }
 
+    @Override
     public DBSObjectState getObjectState()
     {
         return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
     }
 
+    @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this,

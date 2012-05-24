@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.project;
@@ -34,6 +34,7 @@ class ProjectCreateWizardPageSettings extends WizardPage {
         return !CommonUtils.isEmpty(createData.getName());
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
@@ -41,6 +42,7 @@ class ProjectCreateWizardPageSettings extends WizardPage {
 
         final Text projectNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_create_settings_label_name, ""); //$NON-NLS-2$
         projectNameText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 createData.setName(projectNameText.getText());
@@ -50,6 +52,7 @@ class ProjectCreateWizardPageSettings extends WizardPage {
 
         final Text projectDescriptionText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_create_settings_label_description, ""); //$NON-NLS-2$
         projectDescriptionText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 createData.setDescription(projectDescriptionText.getText());

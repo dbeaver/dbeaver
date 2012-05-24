@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -24,16 +24,19 @@ public enum UserPropertyHandler implements DBEPropertyHandler<MySQLUser>, DBEPro
     MAX_USER_CONNECTIONS;
 
 
+    @Override
     public Object getId()
     {
         return name();
     }
 
+    @Override
     public MySQLCommandChangeUser createCompositeCommand(MySQLUser object)
     {
         return new MySQLCommandChangeUser(object);
     }
 
+    @Override
     public void reflectValueChange(MySQLUser object, Object oldValue, Object newValue)
     {
         if (this == NAME || this == HOST) {

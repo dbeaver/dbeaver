@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -42,6 +42,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         }
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         for (DBNDataSource dataSource : dataSources) {
@@ -60,36 +61,43 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         return dataSourceRegistry;
     }
 
+    @Override
     public Object getValueObject()
     {
         return dataSourceRegistry;
     }
 
+    @Override
     public String getChildrenType()
     {
         return CoreMessages.model_navigator_Connection;
     }
 
+    @Override
     public Class<DataSourceDescriptor> getChildrenClass()
     {
         return DataSourceDescriptor.class;
     }
 
+    @Override
     public String getNodeName()
     {
         return "Connections";
     }
 
+    @Override
     public String getNodeDescription()
     {
         return getResource().getProject().getName() + CoreMessages.model_navigator__connections;
     }
 
+    @Override
     public Image getNodeIcon()
     {
         return DBIcon.CONNECTIONS.getImage();
     }
 
+    @Override
     public boolean allowsChildren()
     {
         return !dataSources.isEmpty();
@@ -101,11 +109,13 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         return allowsChildren();
     }
 
+    @Override
     public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
     {
         return dataSources;
     }
 
+    @Override
     public boolean allowsOpen()
     {
         return false;
@@ -133,6 +143,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
         }
     }
 
+    @Override
     public void handleDataSourceEvent(DBPEvent event)
     {
         switch (event.getAction()) {
@@ -147,6 +158,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
                             // We have to load children here
                             try {
                                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                                    @Override
                                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                                     {
                                         try {

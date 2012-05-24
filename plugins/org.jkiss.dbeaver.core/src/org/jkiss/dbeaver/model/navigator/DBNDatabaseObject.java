@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -30,6 +30,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
         this.editorDescriptor = DBeaverCore.getActiveWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(meta.getEditorId());
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         DBNModel.getInstance().removeNode(this, reflect);
@@ -41,6 +42,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
         return editorDescriptor;
     }
 
+    @Override
     public DBXTreeObject getMeta()
     {
         return meta;
@@ -51,16 +53,19 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
         // do nothing
     }
 
+    @Override
     public DBSObject getObject()
     {
         return this;
     }
 
+    @Override
     public Object getValueObject()
     {
         return this;
     }
 
+    @Override
     public String getNodePathName()
     {
         StringBuilder pathName = new StringBuilder();
@@ -83,28 +88,33 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     }
 
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         return meta.getNodeType(getDataSource());
     }
 
+    @Override
     public String getDescription()
     {
         return meta.getDescription();
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getParentNode() instanceof DBNDatabaseNode ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         DBSObject parentObject = getParentObject();
         return parentObject == null ? null : parentObject.getDataSource();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

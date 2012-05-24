@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -33,6 +33,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
 
+    @Override
     protected Object getColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
@@ -51,6 +52,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     protected void bindParameter(
         JDBCExecutionContext context,
         JDBCPreparedStatement statement,
@@ -62,16 +64,19 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         throw new DBCException("Unsupported value type: " + value);
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_NONE;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return Struct.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
@@ -91,11 +96,13 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     }
 */
 
+    @Override
     public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
         throws DBCException
     {
     }
 
+    @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         try {
@@ -112,6 +119,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {

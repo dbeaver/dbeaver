@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.help;
@@ -11,7 +11,8 @@ import org.eclipse.help.IHelpContentProducer;
 
 public class HelpContentProducer implements IHelpContentProducer {
 
-	public InputStream getInputStream(String pluginID, String href, Locale locale) {
+	@Override
+    public InputStream getInputStream(String pluginID, String href, Locale locale) {
         if (href.equals(IHelpContextIds.CTX_DRIVER_EDITOR)) {
 
         } else if (href.startsWith(IHelpContextIds.CTX_DRIVER_EDITOR)) {

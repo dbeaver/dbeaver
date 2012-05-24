@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.editors;
@@ -41,6 +41,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
         super.dispose();
     }
 
+    @Override
     public void createPartControl(Composite parent) {
         killSessionAction = new DisconnectSessionAction(true);
         disconnectSessionAction = new DisconnectSessionAction(false);
@@ -65,6 +66,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
         sessionsViewer.refreshSessions();
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         sessionsViewer.refreshSessions();

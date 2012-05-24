@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.test;
@@ -25,12 +25,14 @@ public class Activator extends AbstractUIPlugin {
 	public Activator() {
 	}
 
-	public void start(BundleContext context) throws Exception {
+	@Override
+    public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
 	}
 
-	public void stop(BundleContext context) throws Exception {
+	@Override
+    public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		super.stop(context);
 	}

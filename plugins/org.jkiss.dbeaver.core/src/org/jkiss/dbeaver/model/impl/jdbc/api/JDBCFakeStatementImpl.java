@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
@@ -46,6 +46,7 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
         return 0;
     }
 
+    @Override
     public JDBCResultSet executeQuery()
     {
         return resultSet;

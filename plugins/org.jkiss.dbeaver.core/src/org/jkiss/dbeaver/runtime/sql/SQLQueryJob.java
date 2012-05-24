@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.sql;
@@ -116,6 +116,7 @@ public class SQLQueryJob extends DataSourceJob
         this.queryListeners.remove(listener);
     }
 
+    @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
@@ -393,6 +394,7 @@ public class SQLQueryJob extends DataSourceJob
     {
         final Shell shell = DBeaverCore.getActiveWorkbenchShell();
         final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
+            @Override
             public void run()
             {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(

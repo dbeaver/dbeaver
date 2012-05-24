@@ -31,6 +31,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
     public static final MySQLEnumValueHandler INSTANCE = new MySQLEnumValueHandler();
 
+    @Override
     public String getValueDisplayString(DBSTypedObject column, Object value) {
         if (!(value instanceof MySQLTypeEnum)) {
             return super.getValueDisplayString(column, value);
@@ -39,6 +40,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         return strValue == null ? DBConstants.NULL_VALUE_LABEL : strValue;
     }
 
+    @Override
     protected Object getColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
@@ -81,6 +83,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
@@ -89,6 +92,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
             Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
             initInlineControl(controller, editor, new ValueExtractor<Combo>() {
+                @Override
                 public Object getValueFromControl(Combo control)
                 {
                     int selIndex = control.getSelectionIndex();
@@ -121,16 +125,19 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return MySQLTypeEnum.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {

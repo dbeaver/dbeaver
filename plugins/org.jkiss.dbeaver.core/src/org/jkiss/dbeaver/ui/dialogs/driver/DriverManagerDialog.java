@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.driver;
@@ -52,6 +52,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         super(shell, IHelpContextIds.CTX_DRIVER_MANAGER);
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         List<DataSourceProviderDescriptor> provders = DataSourceProviderRegistry.getDefault().getDataSourceProviders();
@@ -99,11 +100,13 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             newButton.setLayoutData(gd);
             newButton.addSelectionListener(new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     createDriver();
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -116,11 +119,13 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             editButton.setLayoutData(gd);
             editButton.addSelectionListener(new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     editDriver();
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -133,11 +138,13 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             deleteButton.setLayoutData(gd);
             deleteButton.addSelectionListener(new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     deleteDriver();
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -186,6 +193,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         return group;
     }
 
+    @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
         createButton(
@@ -195,6 +203,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             true);
     }
 
+    @Override
     protected void buttonPressed(int buttonId)
     {
         if (buttonId == IDialogConstants.CLOSE_ID) {
@@ -203,6 +212,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         }
     }
 
+    @Override
     public void selectionChanged(SelectionChangedEvent event)
     {
         this.selectedDriver = null;
@@ -225,6 +235,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         this.updateButtons();
     }
 
+    @Override
     public void doubleClick(DoubleClickEvent event)
     {
         if (selectedDriver != null) {

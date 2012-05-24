@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
@@ -41,6 +41,7 @@ class PropertyPageTabbed extends TabbedPropertySheetPage {
      * This is empty implementation of resizeScrolledComposite()
      * to avoid scrolled composite scroll-bars
      */
+    @Override
     public void resizeScrolledComposite()
     {
         if (allowContentScroll) {
@@ -69,6 +70,7 @@ class PropertyPageTabbed extends TabbedPropertySheetPage {
     }
 
     private static ITabbedPropertySheetPageContributor DEFAULT_PROP_SHEET_CONTRIBUTOR = new ITabbedPropertySheetPageContributor() {
+        @Override
         public String getContributorId()
         {
             return PropertyTabDescriptorProvider.CONTRIBUTOR_ID;

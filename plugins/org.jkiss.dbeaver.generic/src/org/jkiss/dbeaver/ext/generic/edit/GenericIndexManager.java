@@ -26,6 +26,7 @@ import java.util.Collections;
  */
 public class GenericIndexManager extends JDBCIndexManager<GenericTableIndex, GenericTable> {
 
+    @Override
     protected GenericTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,

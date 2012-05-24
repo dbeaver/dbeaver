@@ -72,6 +72,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
      *
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(ITextViewer, int)
      */
+    @Override
     public ICompletionProposal[] computeCompletionProposals(
         ITextViewer viewer,
         int documentOffset)
@@ -102,6 +103,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 try {
                     final QueryType qt = queryType;
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException
                         {
@@ -496,6 +498,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
      * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeContextInformation(ITextViewer,
      *      int)
      */
+    @Override
     public IContextInformation[] computeContextInformation(
         ITextViewer viewer, int documentOffset)
     {
@@ -509,21 +512,25 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         return result;
     }
 
+    @Override
     public char[] getCompletionProposalAutoActivationCharacters()
     {
         return new char[] {'.'};
     }
 
+    @Override
     public char[] getContextInformationAutoActivationCharacters()
     {
         return null;
     }
 
+    @Override
     public String getErrorMessage()
     {
         return null;
     }
 
+    @Override
     public IContextInformationValidator getContextInformationValidator()
     {
         return validator;
@@ -538,17 +545,20 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         protected int fInstallOffset;
 
+        @Override
         public boolean isContextInformationValid(int offset)
         {
             return Math.abs(fInstallOffset - offset) < 5;
         }
 
+        @Override
         public void install(IContextInformation info,
             ITextViewer viewer, int offset)
         {
             fInstallOffset = offset;
         }
 
+        @Override
         public boolean updatePresentation(int documentPosition,
             TextPresentation presentation)
         {

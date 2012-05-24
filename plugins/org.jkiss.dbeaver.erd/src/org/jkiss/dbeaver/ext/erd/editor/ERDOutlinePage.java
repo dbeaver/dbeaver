@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -51,12 +51,14 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
      */
+    @Override
     public void addSelectionChangedListener(ISelectionChangedListener listener)
     {}
 
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.IPage#createControl(org.eclipse.swt.widgets.Composite)
      */
+    @Override
     public void createControl(Composite parent)
     {
         // create canvas and lws
@@ -75,6 +77,7 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.IPage#dispose()
      */
+    @Override
     public void dispose()
     {
         if (null != thumbnail)
@@ -86,6 +89,7 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.IPage#getControl()
      */
+    @Override
     public Control getControl()
     {
         return overview;
@@ -94,6 +98,7 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
      */
+    @Override
     public ISelection getSelection()
     {
         return StructuredSelection.EMPTY;
@@ -102,12 +107,14 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
      */
+    @Override
     public void removeSelectionChangedListener(ISelectionChangedListener listener)
     {}
 
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.IPage#setFocus()
      */
+    @Override
     public void setFocus()
     {
         if (getControl() != null)
@@ -117,6 +124,7 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
     /* (non-Javadoc)
      * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
      */
+    @Override
     public void setSelection(ISelection selection)
     {}
 }

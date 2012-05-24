@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -35,7 +35,8 @@ public class NoteDeleteCommand extends Command
 	/**
 	 * @see org.eclipse.gef.commands.Command#execute()
 	 */
-	public void execute()
+	@Override
+    public void execute()
 	{
 		entityDiagram.removeNote(note, true);
 	}
@@ -43,12 +44,14 @@ public class NoteDeleteCommand extends Command
 	/**
 	 * @see org.eclipse.gef.commands.Command#redo()
 	 */
-	public void redo()
+	@Override
+    public void redo()
 	{
 		execute();
 	}
 
-	public void undo()
+	@Override
+    public void undo()
 	{
 		entityDiagram.addNote(note, true);
 	}

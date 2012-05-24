@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui;
@@ -29,6 +29,7 @@ public class TableToolTip {
 
         // Implement a "fake" tooltip
         final Listener labelListener = new Listener () {
+            @Override
             public void handleEvent (Event event) {
                 Label label = (Label)event.widget;
                 Shell shell = label.getShell ();
@@ -43,6 +44,7 @@ public class TableToolTip {
         Listener tableListener = new Listener () {
             Shell tip = null;
             Label label = null;
+            @Override
             public void handleEvent (Event event) {
                 switch (event.type) {
                     case SWT.Dispose:

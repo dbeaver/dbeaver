@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.editors.xml;
 
 import org.apache.commons.logging.Log;
@@ -13,7 +17,8 @@ public class XMLDoubleClickStrategy implements ITextDoubleClickStrategy {
 
 	protected ITextViewer fText;
 
-	public void doubleClicked(ITextViewer part) {
+	@Override
+    public void doubleClicked(ITextViewer part) {
 		int pos = part.getSelectedRange().x;
 
 		if (pos < 0)

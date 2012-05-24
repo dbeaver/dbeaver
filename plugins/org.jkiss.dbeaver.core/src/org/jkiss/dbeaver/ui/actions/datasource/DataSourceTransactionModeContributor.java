@@ -103,6 +103,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             try {
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress()
                 {
+                    @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Check connection's auto-commit state");

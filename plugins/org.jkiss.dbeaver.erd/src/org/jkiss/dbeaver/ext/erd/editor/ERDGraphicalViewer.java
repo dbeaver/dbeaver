@@ -127,7 +127,8 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 	 * @param fe
 	 *            the focusEvent received by this viewer's control
 	 */
-	protected void handleFocusLost(FocusEvent fe)
+	@Override
+    protected void handleFocusLost(FocusEvent fe)
 	{
 		//give the superclass a chance to handle this first
 		super.handleFocusLost(fe);
@@ -135,6 +136,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 		messageHandler.reset();
 	}
 
+    @Override
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
@@ -304,6 +306,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         return null;
     }
 
+    @Override
     public void handleDataSourceEvent(DBPEvent event)
     {
         if (!(event.getObject() instanceof DBSDataSourceContainer)) {
@@ -318,6 +321,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             // Close editor only if it is simple disconnect
             // Workbench shutdown doesn't close editor
             Display.getDefault().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
 
@@ -336,6 +340,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             setDescription(DBUtils.getObjectFullName(table));
             this.table = table;
         }
+        @Override
         public Tool createTool()
         {
             return new ToolSelectTable(table);

@@ -126,6 +126,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     ////////////////////////////////////////////////////
     // Datasources
 
+    @Override
     public DataSourceDescriptor getDataSource(String id)
     {
         synchronized (dataSources) {
@@ -138,6 +139,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
+    @Override
     public DataSourceDescriptor getDataSource(DBPDataSource dataSource)
     {
         synchronized (dataSources) {
@@ -150,6 +152,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
+    @Override
     public DataSourceDescriptor findDataSourceByName(String name)
     {
         synchronized (dataSources) {
@@ -162,11 +165,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return null;
     }
 
+    @Override
     public List<DataSourceDescriptor> getDataSources()
     {
         synchronized (dataSources) {
             List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
             Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
+                @Override
                 public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2)
                 {
                     return o1.getName().compareToIgnoreCase(o2.getName());
@@ -204,11 +209,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
     }
 
+    @Override
     public void flushConfig()
     {
         this.saveDataSources();
     }
 
+    @Override
     public void addDataSourceListener(DBPEventListener listener)
     {
         synchronized (dataSourceListeners) {
@@ -216,6 +223,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
+    @Override
     public boolean removeDataSourceListener(DBPEventListener listener)
     {
         synchronized (dataSourceListeners) {
@@ -478,6 +486,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.endElement();
     }
 
+    @Override
     public IProject getProject()
     {
         return DBeaverCore.getInstance().getProject(projectId);
@@ -496,6 +505,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             this.encrypter = encrypter;
         }
 
+        @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
             throws XMLException
         {
@@ -602,6 +612,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         }
 
+        @Override
         public void saxText(SAXReader reader, String data)
             throws XMLException
         {
@@ -613,6 +624,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         }
 
+        @Override
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
             throws XMLException
         {
@@ -642,6 +654,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private class DisconnectTask implements DBRRunnableWithProgress {
         boolean disconnected;
+        @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             for (DataSourceDescriptor dataSource : dataSources) {
                 if (dataSource.isConnected()) {

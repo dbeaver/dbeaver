@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -42,7 +42,8 @@ public class EditableLabel extends Label
 	/**
 	 * sets the text of the label
 	 */
-	public void setText(String s)
+	@Override
+    public void setText(String s)
 	{
 		super.setText(s);
 	}
@@ -51,7 +52,8 @@ public class EditableLabel extends Label
 	/**
 	 * paints figure differently depends on the whether the figure has focus or is selected 
 	 */
-	protected void paintFigure(Graphics graphics)
+	@Override
+    protected void paintFigure(Graphics graphics)
 	{
 		if (selected)
 		{

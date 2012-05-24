@@ -45,7 +45,8 @@ public class AttributePart extends PropertyAwarePart
     /**
 	 * @return the ColumnLabel representing the Column
 	 */
-	protected IFigure createFigure()
+	@Override
+    protected IFigure createFigure()
 	{
 		ERDEntityAttribute column = (ERDEntityAttribute) getModel();
 		String label = column.getLabelText();
@@ -76,14 +77,16 @@ public class AttributePart extends PropertyAwarePart
 	/**
 	 * Creats EditPolicies for the column label
 	 */
-	protected void createEditPolicies()
+	@Override
+    protected void createEditPolicies()
 	{
 		//installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
 		//installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new ColumnDirectEditPolicy());
 		//installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
 	}
 
-	public void performRequest(Request request)
+	@Override
+    public void performRequest(Request request)
 	{
 		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
 		{
@@ -125,7 +128,8 @@ public class AttributePart extends PropertyAwarePart
 	/**
 	 * Sets the width of the line when selected
 	 */
-	public void setSelected(int value)
+	@Override
+    public void setSelected(int value)
 	{
 		super.setSelected(value);
 		EditableLabel columnLabel = (EditableLabel) getFigure();
@@ -147,7 +151,8 @@ public class AttributePart extends PropertyAwarePart
 	/**
 	 * Handles when successfully applying direct edit
 	 */
-	protected void commitNameChange(PropertyChangeEvent evt)
+	@Override
+    protected void commitNameChange(PropertyChangeEvent evt)
 	{
 		EditableLabel label = (EditableLabel) getFigure();
 		label.setText(getColumn().getLabelText());
@@ -171,7 +176,8 @@ public class AttributePart extends PropertyAwarePart
 	 * We don't need to explicitly handle refresh visuals because the times when
 	 * this needs to be done it is handled by the table e.g. handleNameChange()
 	 */
-	protected void refreshVisuals()
+	@Override
+    protected void refreshVisuals()
 	{
 		ERDEntityAttribute column = (ERDEntityAttribute) getModel();
 		EditableLabel columnLabel = (EditableLabel) getFigure();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -42,6 +42,7 @@ public class DBNProject extends DBNResource implements IAdaptable
         //this.children.add(bookmarks);
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         //this.databases = null;
@@ -67,6 +68,7 @@ public class DBNProject extends DBNResource implements IAdaptable
         throw new IllegalStateException("No databases resource in project");
     }
 
+    @Override
     public String getNodeDescription()
     {
         try {
@@ -83,11 +85,13 @@ public class DBNProject extends DBNResource implements IAdaptable
         return DBIcon.PROJECT.getImage();
     }
 
+    @Override
     public boolean allowsOpen()
     {
         return false;
     }
 
+    @Override
     public Object getAdapter(Class adapter) {
         if (adapter == DBNProject.class) {
             return this;
@@ -97,12 +101,14 @@ public class DBNProject extends DBNResource implements IAdaptable
         return null;
     }
 
+    @Override
     public boolean supportsRename()
     {
         // Do not rename active projects
         return DBeaverCore.getInstance().getProjectRegistry().getActiveProject() != getProject();
     }
 
+    @Override
     public void rename(DBRProgressMonitor monitor, String newName) throws DBException
     {
         try {

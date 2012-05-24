@@ -59,17 +59,20 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
 
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return getTable().getDataSource();
     }
 
+    @Override
     @Property(name = "Unique", viewable = true, order = 5)
     public boolean isUnique()
     {
         return !nonUnique;
     }
 
+    @Override
     public Object getLazyReference(Object propertyId)
     {
         return tablespace;
@@ -82,11 +85,13 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
         return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public List<OracleTableIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -111,6 +116,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
         columns.add(column);
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),

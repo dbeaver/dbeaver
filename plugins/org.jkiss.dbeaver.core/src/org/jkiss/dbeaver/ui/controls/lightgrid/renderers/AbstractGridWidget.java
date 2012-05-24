@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
@@ -20,6 +20,7 @@ public abstract class AbstractGridWidget extends AbstractRenderer implements IGr
     /**
      * @return the hoverDetail
      */
+    @Override
     public String getHoverDetail()
     {
         return hoverDetail;
@@ -28,6 +29,7 @@ public abstract class AbstractGridWidget extends AbstractRenderer implements IGr
     /**
      * @param hoverDetail the hoverDetail to set
      */
+    @Override
     public void setHoverDetail(String hoverDetail)
     {
         this.hoverDetail = hoverDetail;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.datasource;
@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 
 public class DataSourceInvalidateHandler extends DataSourceHandler
 {
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false, false);

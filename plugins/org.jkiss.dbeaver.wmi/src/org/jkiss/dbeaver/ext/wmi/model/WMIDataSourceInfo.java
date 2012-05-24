@@ -22,171 +22,205 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     {
     }
 
+    @Override
     public boolean isReadOnlyData()
     {
         return false;
     }
 
+    @Override
     public boolean isReadOnlyMetaData()
     {
         return false;
     }
 
+    @Override
     public String getDatabaseProductName()
     {
         return "WMI";
     }
 
+    @Override
     public String getDatabaseProductVersion()
     {
         return "?";
     }
 
+    @Override
     public String getDriverName()
     {
         return "JKISS WMI native driver";
     }
 
+    @Override
     public String getDriverVersion()
     {
         return "1.0";
     }
 
+    @Override
     public String getIdentifierQuoteString()
     {
         return "'";
     }
 
+    @Override
     public Collection<String> getSQLKeywords()
     {
         return Collections.emptyList();
     }
 
+    @Override
     public Collection<String> getNumericFunctions()
     {
         return Collections.emptyList();
     }
 
+    @Override
     public Collection<String> getStringFunctions()
     {
         return Collections.emptyList();
     }
 
+    @Override
     public Collection<String> getSystemFunctions()
     {
         return Collections.emptyList();
     }
 
+    @Override
     public Collection<String> getTimeDateFunctions()
     {
         return Collections.emptyList();
     }
 
+    @Override
     public Collection<String> getExecuteKeywords()
     {
         return Collections.emptyList();
     }
 
+    @Override
     public String getSearchStringEscape()
     {
         return "%";
     }
 
+    @Override
     public String getSchemaTerm()
     {
         return "Namespace";
     }
 
+    @Override
     public String getProcedureTerm()
     {
         return "Procedure";
     }
 
+    @Override
     public String getCatalogTerm()
     {
         return "Server";
     }
 
+    @Override
     public int getCatalogUsage()
     {
         return 0;
     }
 
+    @Override
     public int getSchemaUsage()
     {
         return 0;
     }
 
+    @Override
     public String getCatalogSeparator()
     {
         return ".";
     }
 
+    @Override
     public String getStructSeparator()
     {
         return ".";
     }
 
+    @Override
     public boolean isCatalogAtStart()
     {
         return true;
     }
 
+    @Override
     public DBCStateType getSQLStateType()
     {
         return DBCStateType.UNKNOWN;
     }
 
+    @Override
     public boolean supportsTransactions()
     {
         return false;
     }
 
+    @Override
     public boolean supportsSavepoints()
     {
         return false;
     }
 
+    @Override
     public boolean supportsReferentialIntegrity()
     {
         return false;
     }
 
+    @Override
     public boolean supportsIndexes()
     {
         return false;
     }
 
+    @Override
     public Collection<DBPTransactionIsolation> getSupportedTransactionIsolations()
     {
         return null;
     }
 
+    @Override
     public String getScriptDelimiter()
     {
         return ";";
     }
 
+    @Override
     public boolean validUnquotedCharacter(char c)
     {
         return Character.isLetter(c) || Character.isDigit(c) || c == '_';
     }
 
+    @Override
     public boolean supportsUnquotedMixedCase()
     {
         return true;
     }
 
+    @Override
     public boolean supportsQuotedMixedCase()
     {
         return true;
     }
 
+    @Override
     public DBPIdentifierCase storesUnquotedCase()
     {
         return DBPIdentifierCase.MIXED;
     }
 
+    @Override
     public DBPIdentifierCase storesQuotedCase()
     {
         return DBPIdentifierCase.MIXED;

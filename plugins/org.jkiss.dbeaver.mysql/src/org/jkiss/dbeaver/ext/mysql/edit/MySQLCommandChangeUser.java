@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -27,6 +27,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         super(user, MySQLMessages.edit_command_change_user_name);
     }
 
+    @Override
     public void updateModel()
     {
         for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
@@ -51,6 +52,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         }
     }
 
+    @Override
     public IDatabasePersistAction[] getPersistActions()
     {
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();

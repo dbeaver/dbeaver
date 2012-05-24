@@ -37,6 +37,7 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
             DBObjectNameCaseTransformer.transformName(parent, "NewTable")); //$NON-NLS-1$
     }
 
+    @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
@@ -53,6 +54,7 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     {
     }
 
+    @Override
     protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
         return new IDatabasePersistAction[] {
@@ -63,11 +65,13 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
         };
     }
 
+    @Override
     public Class<?>[] getChildTypes()
     {
         return CHILD_TYPES;
     }
 
+    @Override
     public void renameObject(DBECommandContext commandContext, OracleTable object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.tools;
@@ -46,6 +46,7 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
         return super.isPageComplete() && wizard.getOutputFile() != null;
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -72,6 +73,7 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
             outputFileText.setText(wizard.getOutputFile().getAbsolutePath());
         }
         outputFileText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 updateState();

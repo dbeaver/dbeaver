@@ -57,6 +57,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
         return table;
     }
 
+    @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
@@ -96,6 +97,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
         }
     }
 
+    @Override
     protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
         return new IDatabasePersistAction[] {
@@ -106,11 +108,13 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
         };
     }
 
+    @Override
     public Class<?>[] getChildTypes()
     {
         return CHILD_TYPES;
     }
 
+    @Override
     public void renameObject(DBECommandContext commandContext, MySQLTableBase object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);

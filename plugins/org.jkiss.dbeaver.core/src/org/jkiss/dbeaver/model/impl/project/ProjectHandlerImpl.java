@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.project;
@@ -22,6 +22,7 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
 
     public static final String RES_TYPE_PROJECT = "project";
 
+    @Override
     public String getTypeName(IResource resource)
     {
         return "project";
@@ -44,6 +45,7 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+    @Override
     public DBNProject makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
     {
         return new DBNProject(parentNode, (IProject)resource, this);

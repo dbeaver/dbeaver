@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.handlers;
@@ -22,6 +22,7 @@ import java.util.Map;
 public class UndoChangesHandler extends AbstractHandler implements IElementUpdater
 {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         EntityEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);
@@ -31,6 +32,7 @@ public class UndoChangesHandler extends AbstractHandler implements IElementUpdat
         return null;
     }
 
+    @Override
     public void updateElement(UIElement element, Map parameters)
     {
         IWorkbenchWindow workbenchWindow = (IWorkbenchWindow) element.getServiceLocator().getService(IWorkbenchWindow.class);

@@ -48,11 +48,13 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         return super.getName();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
@@ -62,6 +64,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
      * Enumerations supported only for unique constraints
      * @return true for unique constraint else otherwise
      */
+    @Override
     public boolean supportsEnumeration() {
         return getConstraintType().isUnique();
     }
@@ -75,6 +78,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
      * @param maxResults maximum enumeration values in result set     @return
      * @throws DBException
      */
+    @Override
     public Collection<DBDLabelValuePair> getKeyEnumeration(
         DBCExecutionContext context,
         DBSEntityAttribute keyColumn,

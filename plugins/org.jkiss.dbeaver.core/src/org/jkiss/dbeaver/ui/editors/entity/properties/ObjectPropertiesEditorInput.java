@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
@@ -30,36 +30,43 @@ public class ObjectPropertiesEditorInput extends MultiEditorInput implements IDa
         this.mainInput = mainInput;
     }
 
+    @Override
     public DBNDatabaseNode getTreeNode()
     {
         return mainInput.getTreeNode();
     }
 
+    @Override
     public DBSObject getDatabaseObject()
     {
         return mainInput.getDatabaseObject();
     }
 
+    @Override
     public String getDefaultPageId()
     {
         return mainInput.getDefaultPageId();
     }
 
+    @Override
     public String getDefaultFolderId()
     {
         return mainInput.getDefaultFolderId();
     }
 
+    @Override
     public DBECommandContext getCommandContext()
     {
         return mainInput.getCommandContext();
     }
 
+    @Override
     public IPropertySource2 getPropertySource()
     {
         return mainInput.getPropertySource();
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return mainInput.getDataSource();

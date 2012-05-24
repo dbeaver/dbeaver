@@ -50,6 +50,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         this.dataFilter = new DBDDataFilter(resultSetViewer.getDataFilter());
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(CoreMessages.controls_resultset_filter_title);
@@ -194,6 +195,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
 
     class ColumnLabelProvider extends LabelProvider implements ITableLabelProvider
     {
+        @Override
         public Image getColumnImage(Object element, int columnIndex)
         {
             DBDColumnBinding column = (DBDColumnBinding) element;
@@ -209,6 +211,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             return null;
         }
 
+        @Override
         public String getColumnText(Object element, int columnIndex)
         {
             DBDColumnBinding column = (DBDColumnBinding) element;
@@ -280,15 +283,18 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             if (oldEditor != null) oldEditor.dispose();
         }
 
+        @Override
         public void mouseDoubleClick(MouseEvent e)
         {
             //handleColumnClick(e, true);
         }
 
+        @Override
         public void mouseDown(MouseEvent e)
         {
         }
 
+        @Override
         public void mouseUp(MouseEvent e)
         {
             handleColumnClick(e);
@@ -334,6 +340,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             Text text = new Text(columnsTable, SWT.BORDER);
             text.setText(item.getText(2));
             text.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e) {
                     Text text = (Text) tableEditor.getEditor();
                     String criteria = text.getText().trim();

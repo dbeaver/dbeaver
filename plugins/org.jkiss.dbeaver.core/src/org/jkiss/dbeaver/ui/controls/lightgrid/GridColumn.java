@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
@@ -153,7 +153,8 @@ public class GridColumn extends Item {
     /**
 	 * {@inheritDoc}
 	 */
-	public void dispose() {
+	@Override
+    public void dispose() {
 		if (!parent.isDisposing()) {
 			parent.removeColumn(this);
 		}
@@ -322,6 +323,7 @@ public class GridColumn extends Item {
 	public void addSelectionListener(final SelectionListener listener) {
 		checkWidget();
 		this.addListener(SWT.Selection, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 listener.widgetSelected(new SelectionEvent(event));
@@ -436,12 +438,14 @@ public class GridColumn extends Item {
 	public void addControlListener(final ControlListener listener) {
 		checkWidget();
 		addListener(SWT.Resize, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 listener.controlResized(new ControlEvent(event));
             }
         });
 		addListener(SWT.Move, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 listener.controlMoved(new ControlEvent(event));
@@ -604,7 +608,8 @@ public class GridColumn extends Item {
 			// a later one needs more space
 			control.getDisplay().asyncExec(new Runnable() {
 
-				public void run() {
+				@Override
+                public void run() {
 					if (GridColumn.this.controlEditor != null
 							&& GridColumn.this.controlEditor.getEditor() != null) {
 						GridColumn.this.controlEditor.layout();

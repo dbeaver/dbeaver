@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.struct;
@@ -45,6 +45,7 @@ public abstract class AbstractColumn implements DBSColumnBase
         this.ordinalPosition = ordinalPosition;
     }
 
+    @Override
     @Property(name = "Column Name", viewable = true, order = 10)
     public String getName()
     {
@@ -56,6 +57,7 @@ public abstract class AbstractColumn implements DBSColumnBase
         this.name = columnName;
     }
 
+    @Override
     @Property(name = "Data Type", viewable = true, order = 20)
     public String getTypeName()
     {
@@ -78,6 +80,7 @@ public abstract class AbstractColumn implements DBSColumnBase
         this.ordinalPosition = ordinalPosition;
     }
 
+    @Override
     public int getTypeID()
     {
         return valueType;
@@ -88,6 +91,7 @@ public abstract class AbstractColumn implements DBSColumnBase
         this.valueType = valueType;
     }
 
+    @Override
     @Property(name = "Length", viewable = true, order = 40)
     public long getMaxLength()
     {
@@ -110,6 +114,7 @@ public abstract class AbstractColumn implements DBSColumnBase
         this.required = required;
     }
 
+    @Override
     @Property(name = "Scale", viewable = false, order = 60)
     public int getScale()
     {
@@ -121,6 +126,7 @@ public abstract class AbstractColumn implements DBSColumnBase
         this.scale = scale;
     }
 
+    @Override
     @Property(name = "Precision", viewable = false, order = 61)
     public int getPrecision()
     {

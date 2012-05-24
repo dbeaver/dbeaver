@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -37,16 +37,19 @@ public class EditConnectionWizard extends ConnectionWizard
         setWindowTitle(CoreMessages.dialog_connection_wizard_title);
     }
 
+    @Override
     public DataSourceDescriptor getDataSourceDescriptor()
     {
         return dataSource;
     }
 
+    @Override
     public DriverDescriptor getSelectedDriver()
     {
         return dataSource.getDriver();
     }
 
+    @Override
     public ConnectionPageSettings getPageSettings()
     {
         return this.pageSettings;
@@ -55,6 +58,7 @@ public class EditConnectionWizard extends ConnectionWizard
     /**
      * Adding the page to the wizard.
      */
+    @Override
     public void addPages()
     {
         DataSourceViewDescriptor view = dataSource.getDriver().getProviderDescriptor().getView(IActionConstants.EDIT_CONNECTION_POINT);
@@ -72,6 +76,7 @@ public class EditConnectionWizard extends ConnectionWizard
      * the wizard. We will create an operation and run it
      * using wizard as execution context.
      */
+    @Override
     public boolean performFinish()
     {
         super.performFinish();
@@ -81,6 +86,7 @@ public class EditConnectionWizard extends ConnectionWizard
         return true;
     }
 
+    @Override
     public boolean performCancel()
     {
         dataSource.setConnectionInfo(oldData);
@@ -91,6 +97,7 @@ public class EditConnectionWizard extends ConnectionWizard
      * We will accept the selection in the workbench to see if
      * we can initialize from it.
      */
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection)
     {
     }

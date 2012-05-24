@@ -32,6 +32,7 @@ import java.util.Map;
 
 public class DataSourceAutoCommitHandler extends DataSourceHandler implements IElementUpdater
 {
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true, false);
@@ -45,6 +46,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
         final DBPDataSource dataSource = dataSourceContainer.getDataSource();
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -75,6 +77,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
         }
     }
 
+    @Override
     public void updateElement(UIElement element, Map parameters)
     {
         IWorkbenchWindow workbenchWindow = (IWorkbenchWindow) element.getServiceLocator().getService(IWorkbenchWindow.class);

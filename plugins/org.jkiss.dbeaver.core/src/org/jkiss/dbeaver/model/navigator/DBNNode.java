@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -56,6 +56,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         return getParentNode() != null && getParentNode().isLocked();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;
@@ -66,6 +67,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         return false;
     }
 
+    @Override
     public String getName()
     {
         return getNodeName();

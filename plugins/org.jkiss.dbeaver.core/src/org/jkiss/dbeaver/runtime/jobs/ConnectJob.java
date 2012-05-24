@@ -81,11 +81,13 @@ public class ConnectJob extends EventProcessorJob
         return run(monitor);
     }
 
+    @Override
     public boolean belongsTo(Object family)
     {
         return container == family;
     }
 
+    @Override
     protected void canceling()
     {
         if (connectThread != null) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
@@ -55,6 +55,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
         this.jdbcMetaData = original;
     }
 
+    @Override
     public DBCResultSet getResultSet()
     {
         return resultSet;
@@ -65,6 +66,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
         return jdbcMetaData;
     }
 
+    @Override
     public List<DBCColumnMetaData> getColumns()
     {
         return columns;
@@ -125,138 +127,161 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
         return tableMetaData;
     }
 
+    @Override
     public int getColumnCount()
         throws SQLException
     {
         return jdbcMetaData.getColumnCount();
     }
 
+    @Override
     public boolean isAutoIncrement(int column)
         throws SQLException
     {
         return jdbcMetaData.isAutoIncrement(column);
     }
 
+    @Override
     public boolean isCaseSensitive(int column)
         throws SQLException
     {
         return jdbcMetaData.isCaseSensitive(column);
     }
 
+    @Override
     public boolean isSearchable(int column)
         throws SQLException
     {
         return jdbcMetaData.isSearchable(column);
     }
 
+    @Override
     public boolean isCurrency(int column)
         throws SQLException
     {
         return jdbcMetaData.isCurrency(column);
     }
 
+    @Override
     public int isNullable(int column)
         throws SQLException
     {
         return jdbcMetaData.isNullable(column);
     }
 
+    @Override
     public boolean isSigned(int column)
         throws SQLException
     {
         return jdbcMetaData.isSigned(column);
     }
 
+    @Override
     public int getColumnDisplaySize(int column)
         throws SQLException
     {
         return jdbcMetaData.getColumnDisplaySize(column);
     }
 
+    @Override
     public String getColumnLabel(int column)
         throws SQLException
     {
         return JDBCUtils.normalizeIdentifier(jdbcMetaData.getColumnLabel(column));
     }
 
+    @Override
     public String getColumnName(int column)
         throws SQLException
     {
         return JDBCUtils.normalizeIdentifier(jdbcMetaData.getColumnName(column));
     }
 
+    @Override
     public String getSchemaName(int column)
         throws SQLException
     {
         return JDBCUtils.normalizeIdentifier(jdbcMetaData.getSchemaName(column));
     }
 
+    @Override
     public int getPrecision(int column)
         throws SQLException
     {
         return jdbcMetaData.getPrecision(column);
     }
 
+    @Override
     public int getScale(int column)
         throws SQLException
     {
         return jdbcMetaData.getScale(column);
     }
 
+    @Override
     public String getTableName(int column)
         throws SQLException
     {
         return JDBCUtils.normalizeIdentifier(jdbcMetaData.getTableName(column));
     }
 
+    @Override
     public String getCatalogName(int column)
         throws SQLException
     {
         return JDBCUtils.normalizeIdentifier(jdbcMetaData.getCatalogName(column));
     }
 
+    @Override
     public int getColumnType(int column)
         throws SQLException
     {
         return jdbcMetaData.getColumnType(column);
     }
 
+    @Override
     public String getColumnTypeName(int column)
         throws SQLException
     {
         return JDBCUtils.normalizeIdentifier(jdbcMetaData.getColumnTypeName(column));
     }
 
+    @Override
     public boolean isReadOnly(int column)
         throws SQLException
     {
         return jdbcMetaData.isReadOnly(column);
     }
 
+    @Override
     public boolean isWritable(int column)
         throws SQLException
     {
         return jdbcMetaData.isWritable(column);
     }
 
+    @Override
     public boolean isDefinitelyWritable(int column)
         throws SQLException
     {
         return jdbcMetaData.isDefinitelyWritable(column);
     }
 
+    @Override
     public String getColumnClassName(int column)
         throws SQLException
     {
         return JDBCUtils.normalizeIdentifier(jdbcMetaData.getColumnClassName(column));
     }
 
+    @Override
     public <T> T unwrap(Class<T> iface)
         throws SQLException
     {
         return jdbcMetaData.unwrap(iface);
     }
 
+    @Override
     public boolean isWrapperFor(Class<?> iface)
         throws SQLException
     {

@@ -27,7 +27,8 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 	/**
 	 * @see GraphicalNodeEditPolicy#getConnectionCreateCommand(CreateConnectionRequest)
 	 */
-	protected Command getConnectionCreateCommand(CreateConnectionRequest request)
+	@Override
+    protected Command getConnectionCreateCommand(CreateConnectionRequest request)
 	{
 
 		AssociationCreateCommand cmd = new AssociationCreateCommand();
@@ -40,7 +41,8 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 	/**
 	 * @see GraphicalNodeEditPolicy#getConnectionCompleteCommand(CreateConnectionRequest)
 	 */
-	protected Command getConnectionCompleteCommand(CreateConnectionRequest request)
+	@Override
+    protected Command getConnectionCompleteCommand(CreateConnectionRequest request)
 	{
 		AssociationCreateCommand cmd = (AssociationCreateCommand) request.getStartCommand();
 		EntityPart part = (EntityPart) request.getTargetEditPart();
@@ -51,7 +53,8 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 	/**
 	 * @see GraphicalNodeEditPolicy#getReconnectSourceCommand(ReconnectRequest)
 	 */
-	protected Command getReconnectSourceCommand(ReconnectRequest request)
+	@Override
+    protected Command getReconnectSourceCommand(ReconnectRequest request)
 	{
 		
 		AssociationReconnectSourceCommand cmd = new AssociationReconnectSourceCommand();
@@ -64,7 +67,8 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 	/**
 	 * @see GraphicalNodeEditPolicy#getReconnectTargetCommand(ReconnectRequest)
 	 */
-	protected Command getReconnectTargetCommand(ReconnectRequest request)
+	@Override
+    protected Command getReconnectTargetCommand(ReconnectRequest request)
 	{
 		AssociationReconnectTargetCommand cmd = new AssociationReconnectTargetCommand();
 		cmd.setRelationship((ERDAssociation) request.getConnectionEditPart().getModel());

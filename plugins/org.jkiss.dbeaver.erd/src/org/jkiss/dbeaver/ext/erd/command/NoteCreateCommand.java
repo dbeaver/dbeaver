@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.command;
@@ -29,6 +29,7 @@ public class NoteCreateCommand extends Command
         this.location = location;
     }
 
+    @Override
     public void execute()
 	{
         diagramPart.getDiagram().addNote(note, true);
@@ -50,6 +51,7 @@ public class NoteCreateCommand extends Command
         }
 	}
 
+    @Override
     public void undo()
     {
         diagramPart.getDiagram().removeNote(note, true);

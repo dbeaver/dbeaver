@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.sql;
@@ -29,6 +29,7 @@ public class SQLQueryErrorDialog extends ErrorDialog {
         this.script = script;
     }
 
+    @Override
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Details buttons
         createButton(
@@ -56,6 +57,7 @@ public class SQLQueryErrorDialog extends ErrorDialog {
         createDetailsButton(parent);
     }
 
+    @Override
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.DETAILS_ID) {
             super.buttonPressed(buttonId);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.navigator;
@@ -35,6 +35,7 @@ public class DBNDiagramFolder extends DBNResource
         super.dispose(reflect);
     }
 
+    @Override
     public Image getNodeIcon()
     {
         if (getResource().getParent() instanceof IProject) {

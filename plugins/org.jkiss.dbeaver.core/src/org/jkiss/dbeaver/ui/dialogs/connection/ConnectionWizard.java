@@ -46,6 +46,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         return null;
     }
     
+    @Override
     public boolean performFinish()
     {
         if (getPageSettings() != null) {
@@ -62,6 +63,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
     {
         DBRRunnableWithProgress op = new DBRRunnableWithProgress()
         {
+            @Override
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {

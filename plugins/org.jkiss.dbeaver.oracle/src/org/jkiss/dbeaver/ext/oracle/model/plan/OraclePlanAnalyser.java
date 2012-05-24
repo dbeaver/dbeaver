@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model.plan;
@@ -33,11 +33,13 @@ public class OraclePlanAnalyser implements DBCPlan {
         this.query = query;
     }
 
+    @Override
     public String getQueryString()
     {
         return query;
     }
 
+    @Override
     public Collection<OraclePlanNode> getPlanNodes()
     {
         return rootNodes;

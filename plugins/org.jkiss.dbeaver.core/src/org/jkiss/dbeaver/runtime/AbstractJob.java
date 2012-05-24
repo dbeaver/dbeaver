@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime;
@@ -72,6 +72,7 @@ public abstract class AbstractJob extends Job
         }
     }
 
+    @Override
     protected final IStatus run(IProgressMonitor monitor)
     {
         progressMonitor = RuntimeUtils.makeMonitor(monitor);
@@ -87,6 +88,7 @@ public abstract class AbstractJob extends Job
     protected abstract IStatus run(DBRProgressMonitor monitor);
 
 
+    @Override
     protected void canceling()
     {
 /*

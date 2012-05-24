@@ -140,6 +140,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * Initializes the editor.
      */
+    @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
         editDomain = new DefaultEditDomain(this);
@@ -168,6 +169,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * The <code>CommandStackListener</code> that listens for
      * <code>CommandStack </code> changes.
      */
+    @Override
     public void commandStackChanged(EventObject event)
     {
         // Reevaluate properties
@@ -181,6 +183,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         super.commandStackChanged(event);
     }
 
+    @Override
     public void dispose()
     {
         Activator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
@@ -203,6 +206,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * Adaptable implementation for Editor
      */
+    @Override
     public Object getAdapter(Class adapter)
     {
         // we need to handle common GEF elements we created
@@ -222,6 +226,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             return getGraphicalViewer().getProperty(ZoomManager.class.toString());
         } else if (IWorkbenchAdapter.class.equals(adapter)) {
             return new WorkbenchAdapter() {
+                @Override
                 public String getLabel(Object o)
                 {
                     return "ERD Editor";
@@ -241,6 +246,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * Save as not allowed
      */
+    @Override
     public void doSaveAs()
     {
         saveDiagramAsImage();
@@ -249,6 +255,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * Save as not allowed
      */
+    @Override
     public boolean isSaveAsAllowed()
     {
         return true;
@@ -259,6 +266,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @see org.eclipse.ui.part.EditorPart#isDirty
      */
+    @Override
     public boolean isDirty()
     {
         return !isReadOnly() && isDirty;
@@ -272,6 +280,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @return the <code>CommandStack</code>
      */
+    @Override
     public CommandStack getCommandStack()
     {
         return getEditDomain().getCommandStack();
@@ -295,6 +304,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * @see org.eclipse.ui.part.EditorPart#setInput(org.eclipse.ui.IEditorInput)
      */
+    @Override
     protected void setInput(IEditorInput input)
     {
         super.setInput(input);
@@ -306,6 +316,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @return the palette provider
      */
+    @Override
     protected PaletteViewerProvider createPaletteViewerProvider()
     {
         return new ERDPaletteViewerProvider(editDomain);
@@ -322,6 +333,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param parent the parent composite
      */
+    @Override
     protected void createGraphicalViewer(Composite parent)
     {
         GraphicalViewer viewer = createViewer(parent);
@@ -406,6 +418,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         addAction(zoomOut);
 
         graphicalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event)
             {
                 String status;
@@ -458,6 +471,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      *
      * @param actionIds the list of ids of actions to update
      */
+    @Override
     protected void updateActions(List actionIds)
     {
         for (Iterator<?> ids = actionIds.iterator(); ids.hasNext();) {
@@ -504,6 +518,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * @return the preferences for the Palette Flyout
      */
+    @Override
     protected FlyoutPreferences getPalettePreferences()
     {
         return new ERDPalettePreferences();
@@ -512,6 +527,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * @return the PaletteRoot to be used with the PaletteViewer
      */
+    @Override
     protected PaletteRoot getPaletteRoot()
     {
         if (paletteRoot == null) {
@@ -557,10 +573,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     "Note",
                     "Create Note",
                     new CreationFactory() {
+                        @Override
                         public Object getNewObject()
                         {
                             return new ERDNote("Note");
                         }
+                        @Override
                         public Object getObjectType()
                         {
                             return RequestConstants.REQ_CREATE;
@@ -611,6 +629,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         refreshDiagram();
@@ -741,16 +760,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         //new PrintAction(this).run();
     }
 
+    @Override
     public boolean isSearchPossible()
     {
         return true;
     }
 
+    @Override
     public boolean isSearchEnabled()
     {
         return progressControl != null && progressControl.isSearchEnabled();
     }
 
+    @Override
     public boolean performSearch(SearchType searchType)
     {
         return progressControl != null && progressControl.performSearch(searchType);
@@ -783,6 +805,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     private class ConfigPropertyListener implements IPropertyChangeListener {
+        @Override
         public void propertyChange(PropertyChangeEvent event)
         {
             if (ERDConstants.PREF_GRID_ENABLED.equals(event.getProperty())) {
@@ -850,28 +873,34 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             // to prevent zoom disable on part change - as it is standalone zoom control, not global one
             zoomCombo = new ZoomComboContributionItem(
                 new IPartService() {
+                    @Override
                     public void addPartListener(IPartListener listener)
                     {
                     }
 
+                    @Override
                     public void addPartListener(IPartListener2 listener)
                     {
                     }
 
+                    @Override
                     public IWorkbenchPart getActivePart()
                     {
                         return ERDEditorPart.this;
                     }
 
+                    @Override
                     public IWorkbenchPartReference getActivePartReference()
                     {
                         return null;
                     }
 
+                    @Override
                     public void removePartListener(IPartListener listener)
                     {
                     }
 
+                    @Override
                     public void removePartListener(IPartListener2 listener)
                     {
                     }
@@ -962,16 +991,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     private class Searcher extends ObjectSearcher<DBPNamedObject> {
 
+        @Override
         protected void setInfo(String message)
         {
             progressControl.setInfo(message);
         }
 
+        @Override
         protected Collection<DBPNamedObject> getContent()
         {
             return getDiagramPart().getChildren();
         }
 
+        @Override
         protected void selectObject(DBPNamedObject object)
         {
             if (object == null) {
@@ -981,10 +1013,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             }
         }
 
+        @Override
         protected void updateObject(DBPNamedObject object)
         {
         }
 
+        @Override
         protected void revealObject(DBPNamedObject object)
         {
             getGraphicalViewer().reveal((EditPart)object);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui;
@@ -34,16 +34,19 @@ public class CompositeSelectionProvider implements ISelectionProvider {
         });
     }
 
+    @Override
     public void addSelectionChangedListener(ISelectionChangedListener listener)
     {
         listeners.add(listener);
     }
 
+    @Override
     public void removeSelectionChangedListener(ISelectionChangedListener listener)
     {
         listeners.remove(listener);
     }
 
+    @Override
     public ISelection getSelection()
     {
         if (provider != null) {
@@ -53,6 +56,7 @@ public class CompositeSelectionProvider implements ISelectionProvider {
         }
     }
 
+    @Override
     public void setSelection(ISelection selection)
     {
         if (provider != null) {

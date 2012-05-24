@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
@@ -52,11 +52,13 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         return null;
     }
 
+    @Override
     public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
         return new PropertyHandler(property);
     }
 
+    @Override
     public final OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
         OBJECT_TYPE newObject = createDatabaseObject(workbenchWindow, activeEditor, commandContext, parent, copyFrom);
@@ -72,6 +74,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         return newObject;
     }
 
+    @Override
     public final void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
     {
         commandContext.addCommand(
@@ -162,11 +165,13 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             super(property);
         }
 
+        @Override
         public DBECommandComposite<OBJECT_TYPE, ? extends DBEPropertyHandler<OBJECT_TYPE>> createCompositeCommand(OBJECT_TYPE object)
         {
             return new ObjectChangeCommand(object);
         }
 
+        @Override
         public void reflectValueChange(OBJECT_TYPE object, Object oldValue, Object newValue)
         {
         }
@@ -192,6 +197,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
                 getId().equals(((PropertyHandler) obj).getId());
         }
 
+        @Override
         public void validate(OBJECT_TYPE object, Object value) throws DBException
         {
             validateObjectProperty(object, original, value);
@@ -217,6 +223,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             super(object, "JDBC Composite"); //$NON-NLS-1$
         }
 
+        @Override
         public IDatabasePersistAction[] getPersistActions()
         {
             return makeObjectModifyActions(this);
@@ -228,6 +235,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             validateObjectProperties(this);
         }
 
+        @Override
         public String getNestedDeclaration(DBSObject owner)
         {
             // It is a trick
@@ -245,6 +253,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             super(object, title);
         }
 
+        @Override
         public IDatabasePersistAction[] getPersistActions()
         {
             return makeObjectCreateActions(this);
@@ -265,6 +274,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             }
         }
 
+        @Override
         public String getNestedDeclaration(DBSObject owner)
         {
             // It is a trick
@@ -281,6 +291,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             super(table, title);
         }
 
+        @Override
         public IDatabasePersistAction[] getPersistActions()
         {
             return makeObjectDeleteActions(this);
@@ -318,6 +329,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             return newName;
         }
 
+        @Override
         public IDatabasePersistAction[] getPersistActions()
         {
             return makeObjectRenameActions(this);
@@ -335,6 +347,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
     public class RenameObjectReflector implements DBECommandReflector<OBJECT_TYPE, ObjectRenameCommand> {
 
+        @Override
         public void redoCommand(ObjectRenameCommand command)
         {
             if (command.getObject() instanceof DBPNamedObject2) {
@@ -343,6 +356,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             }
         }
 
+        @Override
         public void undoCommand(ObjectRenameCommand command)
         {
             if (command.getObject() instanceof DBPNamedObject2) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.content;
@@ -46,6 +46,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     private Combo encodingCombo;
 
     private IPropertyListener dirtyListener = new IPropertyListener() {
+        @Override
         public void propertyChanged(Object source, int propId)
         {
             if (propId == ContentEditor.PROP_DIRTY) {
@@ -126,6 +127,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         }
     }
 
+    @Override
     public void setActivePage(IEditorPart activeEditor)
     {
         //this.activePage = activeEditor;
@@ -172,6 +174,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         manager.add(new Separator());
         manager.add(new ControlContribution("Encoding")
         {
+            @Override
             protected Control createControl(Composite parent)
             {
                 String curCharset = null;
@@ -194,6 +197,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                             final String charset = combo.getItem(combo.getSelectionIndex());
                             try {
                                 contentEditor.getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
+                                    @Override
                                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                                         try {
                                             contentEditorInput.getFile().setCharset(charset, monitor);
@@ -258,6 +262,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             }
             try {
                 getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                    @Override
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -300,6 +305,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             }
             try {
                 getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                    @Override
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -351,6 +357,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         {
             try {
                 getEditor().getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
+                    @Override
                     public void run(IProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {

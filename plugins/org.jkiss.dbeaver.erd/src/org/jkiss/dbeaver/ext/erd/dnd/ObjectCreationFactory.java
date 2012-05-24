@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.dnd;
@@ -20,11 +20,13 @@ public class ObjectCreationFactory implements CreationFactory {
         this.objectType = objectType;
     }
 
+    @Override
     public Object getNewObject()
     {
         return newObject;
     }
 
+    @Override
     public Object getObjectType()
     {
         return objectType;

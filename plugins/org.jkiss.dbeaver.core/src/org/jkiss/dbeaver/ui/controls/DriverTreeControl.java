@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -79,6 +79,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         super(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         parent.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 UIUtils.dispose(boldFont);
@@ -119,19 +120,23 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
 
     class ViewContentProvider implements ITreeContentProvider
     {
+        @Override
         public void inputChanged(Viewer v, Object oldInput, Object newInput)
         {
         }
 
+        @Override
         public void dispose()
         {
         }
 
+        @Override
         public Object[] getElements(Object parent)
         {
             return getChildren(parent);
         }
 
+        @Override
         public Object getParent(Object child)
         {
             if (child instanceof DriverDescriptor) {
@@ -143,6 +148,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
             }
         }
 
+        @Override
         public Object[] getChildren(Object parent)
         {
             if (parent instanceof DataSourceProviderRegistry) {
@@ -178,6 +184,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
                     }
                 }
                 Collections.sort(children, new Comparator<Object>() {
+                    @Override
                     public int compare(Object o1, Object o2)
                     {
                         String name1 = o1 instanceof DriverDescriptor ? ((DriverDescriptor) o1).getName() : ((DriverCategory) o1).getName();
@@ -193,6 +200,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
             }
         }
 
+        @Override
         public boolean hasChildren(Object parent)
         {
             if (parent instanceof DataSourceProviderRegistry) {
@@ -209,6 +217,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     class ViewLabelProvider extends CellLabelProvider
     {
 
+        @Override
         public void update(ViewerCell cell) {
             switch (cell.getColumnIndex()) {
                 case 0:
@@ -304,6 +313,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
     }
 
 
+    @Override
     public void selectionChanged(SelectionChangedEvent event)
     {
         if (site instanceof ISelectionChangedListener) {
@@ -311,6 +321,7 @@ public class DriverTreeControl extends TreeViewer implements ISelectionChangedLi
         }
     }
 
+    @Override
     public void doubleClick(DoubleClickEvent event)
     {
         if (site instanceof IDoubleClickListener) {

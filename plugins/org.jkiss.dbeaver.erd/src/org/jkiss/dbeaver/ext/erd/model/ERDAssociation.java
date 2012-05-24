@@ -109,6 +109,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         return getObject() + " [" + primaryKeyEntity + "->" + foreignKeyEntity + "]";
     }
 
+    @Override
     public String getName()
     {
         return getObject().getName();

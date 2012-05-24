@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc;
@@ -23,16 +23,19 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
 {
     static final protected Log log = LogFactory.getLog(JDBCDataSourceProvider.class);
 
+    @Override
     public void close()
     {
 
     }
 
+    @Override
     public void init(DBPApplication application)
     {
 
     }
 
+    @Override
     public Collection<IPropertyDescriptor> getConnectionProperties(
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)

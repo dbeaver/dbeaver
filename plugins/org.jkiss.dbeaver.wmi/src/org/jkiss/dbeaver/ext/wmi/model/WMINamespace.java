@@ -61,6 +61,7 @@ public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseabl
         return service;
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
@@ -209,6 +210,7 @@ public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseabl
         }
     }
 
+    @Override
     public Collection<? extends WMIContainer> getChildren(DBRProgressMonitor monitor) throws DBException
     {
         List<WMIContainer> children = new ArrayList<WMIContainer>();
@@ -218,22 +220,26 @@ public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseabl
         return children;
     }
 
+    @Override
     public WMIContainer getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
         return DBUtils.findObject(getChildren(monitor), childName);
     }
 
+    @Override
     public Class<? extends WMIContainer> getChildType(DBRProgressMonitor monitor) throws DBException
     {
         return WMIContainer.class;
     }
 
+    @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
     {
         getNamespaces(monitor);
         getClasses(monitor);
     }
 
+    @Override
     public void close()
     {
         if (!CommonUtils.isEmpty(namespaces)) {

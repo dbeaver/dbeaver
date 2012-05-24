@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -95,11 +95,13 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
         return subPartitions;
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return getTable().getDataSource();
     }
 
+    @Override
     @Property(name = "Partition Name", viewable = true, order = 1)
     public String getName()
     {
@@ -124,6 +126,7 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
         return expression;
     }
 
+    @Override
     @Property(name = "Description", viewable = true, order = 5)
     public String getDescription()
     {

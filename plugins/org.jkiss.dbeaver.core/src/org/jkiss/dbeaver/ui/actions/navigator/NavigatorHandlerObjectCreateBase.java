@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -81,6 +81,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             final DBNNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(result);
             if (newChild != null) {
                 Display.getDefault().asyncExec(new Runnable() {
+                    @Override
                     public void run()
                     {
                         DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);

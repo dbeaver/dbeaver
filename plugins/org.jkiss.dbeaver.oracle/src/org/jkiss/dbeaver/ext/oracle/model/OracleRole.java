@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -28,6 +28,7 @@ public class OracleRole extends OracleGrantee implements DBARole
         this.authentication = JDBCUtils.safeGetStringTrimmed(resultSet, "PASSWORD_REQUIRED");
     }
 
+    @Override
     @Property(name = "Role name", viewable = true, order = 2, description = "Name of the role")
     public String getName() {
         return name;

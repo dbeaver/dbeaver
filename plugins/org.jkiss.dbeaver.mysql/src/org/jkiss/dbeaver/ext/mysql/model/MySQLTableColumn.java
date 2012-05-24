@@ -38,11 +38,13 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         UNI,
         MUL;
 
+        @Override
         public boolean isInUniqueKey()
         {
             return this == PRI || this == UNI;
         }
 
+        @Override
         public boolean isInReferenceKey()
         {
             return this == MUL;
@@ -120,6 +122,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         }
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return getTable().getDataSource();
@@ -151,6 +154,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return super.isRequired();
     }
 
+    @Override
     @Property(name = "Auto Increment", viewable = true, editable = true, updatable = true, order = 51)
     public boolean isSequence()
     {
@@ -162,6 +166,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.autoIncrement = autoIncrement;
     }
 
+    @Override
     @Property(name = "Default", viewable = true, editable = true, updatable = true, order = 70)
     public String getDefaultValue()
     {
@@ -173,6 +178,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.defaultValue = defaultValue;
     }
 
+    @Override
     @Property(name = "Key", viewable = true, order = 80)
     public KeyType getKeyType()
     {
@@ -218,10 +224,12 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
+        @Override
         public boolean allowCustomValue()
         {
             return false;
         }
+        @Override
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
             return object.getDataSource().getCharsets().toArray();
@@ -229,10 +237,12 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     public static class CollationListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
+        @Override
         public boolean allowCustomValue()
         {
             return false;
         }
+        @Override
         public Object[] getPossibleValues(MySQLTableColumn object)
         {
             if (object.getCharset() == null) {

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.apache.commons.logging.Log;
@@ -34,11 +38,13 @@ public abstract class WMIPropertySource implements IPropertySource
         }
     }
 
+    @Override
     public Object getEditableValue()
     {
         return this;//getQualifiedObject();
     }
 
+    @Override
     public IPropertyDescriptor[] getPropertyDescriptors()
     {
         try {
@@ -63,6 +69,7 @@ public abstract class WMIPropertySource implements IPropertySource
         }
     }
 
+    @Override
     public Object getPropertyValue(Object id)
     {
         try {
@@ -73,6 +80,7 @@ public abstract class WMIPropertySource implements IPropertySource
         }
     }
 
+    @Override
     public boolean isPropertySet(Object id)
     {
         try {
@@ -83,11 +91,13 @@ public abstract class WMIPropertySource implements IPropertySource
         }
     }
 
+    @Override
     public void resetPropertyValue(Object id)
     {
 
     }
 
+    @Override
     public void setPropertyValue(Object id, Object value)
     {
 

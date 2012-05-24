@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model.plan;
@@ -118,11 +118,13 @@ public class OraclePlanNode implements DBCPlanNode {
         }
     }
 
+    @Override
     public OraclePlanNode getParent()
     {
         return parent;
     }
 
+    @Override
     public List<OraclePlanNode> getNested()
     {
         return nested;

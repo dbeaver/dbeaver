@@ -25,12 +25,14 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         super(wmiClass, attribute);
     }
 
+    @Override
     @Property(name = "Type", viewable = true, order = 10)
     public String getTypeName()
     {
         return element.getTypeName();
     }
 
+    @Override
     public int getTypeID()
     {
         return element.getType();
@@ -79,12 +81,14 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         return getFlagQualifier(WMIConstants.Q_Key) || getFlagQualifier(WMIConstants.Q_CIM_Key);
     }
 
+    @Override
     @Property(name = "Default Value", viewable = true, order = 20)
     public String getDefaultValue()
     {
         return CommonUtils.toString(element.getValue());
     }
 
+    @Override
     public Image getObjectImage()
     {
         return getPropertyImage(element.getType());

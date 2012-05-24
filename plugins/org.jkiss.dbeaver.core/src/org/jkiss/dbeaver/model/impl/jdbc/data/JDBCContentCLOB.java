@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -42,6 +42,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         this.clob = clob;
     }
 
+    @Override
     public long getLOBLength() throws DBCException {
         if (clob == null) {
             return 0;
@@ -53,11 +54,13 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         }
     }
 
+    @Override
     public String getContentType()
     {
         return MimeTypes.TEXT_PLAIN;
     }
 
+    @Override
     public DBDContentStorage getContents(DBRProgressMonitor monitor)
         throws DBCException
     {
@@ -99,6 +102,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         return storage;
     }
 
+    @Override
     public void release()
     {
         if (tmpReader != null) {
@@ -116,6 +120,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         super.release();
     }
 
+    @Override
     public void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement preparedStatement,
                               DBSTypedObject columnType, int paramIndex)
         throws DBCException
@@ -166,6 +171,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         }
     }
 
+    @Override
     public boolean isNull()
     {
         return clob == null && storage == null;

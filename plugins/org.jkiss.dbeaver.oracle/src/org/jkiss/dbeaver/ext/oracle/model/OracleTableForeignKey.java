@@ -64,12 +64,14 @@ public class OracleTableForeignKey extends OracleTableConstraint implements DBST
         return referencedKey.getTable();
     }
 
+    @Override
     @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
     public OracleTableConstraint getReferencedConstraint()
     {
         return referencedKey;
     }
 
+    @Override
     @Property(name = "On Delete", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSConstraintModifyRule getDeleteRule()
     {
@@ -77,16 +79,19 @@ public class OracleTableForeignKey extends OracleTableConstraint implements DBST
     }
 
     // Update rule is not supported by Oracle
+    @Override
     public DBSConstraintModifyRule getUpdateRule()
     {
         return DBSConstraintModifyRule.NO_ACTION;
     }
 
+    @Override
     public OracleTableBase getAssociatedEntity()
     {
         return getReferencedTable();
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -97,11 +102,13 @@ public class OracleTableForeignKey extends OracleTableConstraint implements DBST
 
     public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider<JDBCTableForeignKey> {
 
+        @Override
         public boolean allowCustomValue()
         {
             return false;
         }
 
+        @Override
         public Object[] getPossibleValues(JDBCTableForeignKey foreignKey)
         {
             return new DBSConstraintModifyRule[] {

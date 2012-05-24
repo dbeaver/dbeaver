@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -37,6 +37,7 @@ public class SubEditorSite implements IEditorSite {
         this.selectionProvider = new FakeSelectionProvider();
     }
 
+    @Override
     public IEditorActionBarContributor getActionBarContributor()
     {
         if (parentSite instanceof IEditorSite) {
@@ -46,125 +47,151 @@ public class SubEditorSite implements IEditorSite {
         }
     }
 
+    @Override
     public IActionBars getActionBars()
     {
         return actionBars;
     }
 
+    @Override
     public void registerContextMenu(MenuManager menuManager, ISelectionProvider selectionProvider, boolean includeEditorInput)
     {
     }
 
+    @Override
     public void registerContextMenu(String menuId, MenuManager menuManager, ISelectionProvider selectionProvider, boolean includeEditorInput)
     {
     }
 
+    @Override
     public String getId()
     {
         return parentSite.getId() + ".sub";
     }
 
+    @Override
     public String getPluginId()
     {
         return DBeaverConstants.PLUGIN_ID;
     }
 
+    @Override
     public String getRegisteredName()
     {
         return parentSite.getRegisteredName();
     }
 
+    @Override
     public void registerContextMenu(String menuId, MenuManager menuManager, ISelectionProvider selectionProvider)
     {
     }
 
+    @Override
     public void registerContextMenu(MenuManager menuManager, ISelectionProvider selectionProvider)
     {
     }
 
+    @Override
     @Deprecated
     public IKeyBindingService getKeyBindingService()
     {
         return keyBindingService;
     }
 
+    @Override
     public IWorkbenchPart getPart()
     {
         return parentSite.getPart();
     }
 
+    @Override
     public IWorkbenchPage getPage()
     {
         return parentSite.getPage();
     }
 
+    @Override
     public ISelectionProvider getSelectionProvider()
     {
         return selectionProvider;
     }
 
+    @Override
     public Shell getShell()
     {
         return parentSite.getShell();
     }
 
+    @Override
     public IWorkbenchWindow getWorkbenchWindow()
     {
         return parentSite.getWorkbenchWindow();
     }
 
+    @Override
     public void setSelectionProvider(ISelectionProvider provider)
     {
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         return parentSite.getAdapter(adapter);
     }
 
+    @Override
     public Object getService(Class api)
     {
         return parentSite.getService(api);
     }
 
+    @Override
     public boolean hasService(Class api)
     {
         return parentSite.hasService(api);
     }
 
     private static class FakeKeyBindingService implements IKeyBindingService {
+        @Override
         public String[] getScopes()
         {
             return new String[0];
         }
 
+        @Override
         public void registerAction(IAction action)
         {
         }
 
+        @Override
         public void setScopes(String[] scopes)
         {
         }
 
+        @Override
         public void unregisterAction(IAction action)
         {
         }
     }
 
     private static class FakeSelectionProvider implements ISelectionProvider {
+        @Override
         public void addSelectionChangedListener(ISelectionChangedListener listener)
         {
         }
 
+        @Override
         public ISelection getSelection()
         {
             return new StructuredSelection();
         }
 
+        @Override
         public void removeSelectionChangedListener(ISelectionChangedListener listener)
         {
         }
 
+        @Override
         public void setSelection(ISelection selection)
         {
         }
@@ -172,14 +199,17 @@ public class SubEditorSite implements IEditorSite {
 
     private static class FakeEditorActionBarContributor implements IEditorActionBarContributor {
 
+        @Override
         public void init(IActionBars bars, IWorkbenchPage page)
         {
         }
 
+        @Override
         public void setActiveEditor(IEditorPart targetEditor)
         {
         }
 
+        @Override
         public void dispose()
         {
         }
@@ -187,32 +217,40 @@ public class SubEditorSite implements IEditorSite {
 
     private static class FakeActionBars implements IActionBars {
 
+        @Override
         public void clearGlobalActionHandlers()
         {
         }
+        @Override
         public IAction getGlobalActionHandler(String actionId)
         {
             return null;
         }
+        @Override
         public IMenuManager getMenuManager()
         {
             return null;
         }
+        @Override
         public IServiceLocator getServiceLocator()
         {
             return null;
         }
+        @Override
         public IStatusLineManager getStatusLineManager()
         {
             return null;
         }
+        @Override
         public IToolBarManager getToolBarManager()
         {
             return null;
         }
+        @Override
         public void setGlobalActionHandler(String actionId, IAction handler)
         {
         }
+        @Override
         public void updateActionBars()
         {
         }

@@ -64,6 +64,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
+    @Override
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
         final GenericDataSourceInfo info = new GenericDataSourceInfo(this, metaData);
@@ -123,76 +124,91 @@ public class GenericDataSource extends JDBCDataSource
         return DBUtils.findObject(getSchemas(), name);
     }
 
+    @Override
     public GenericDataSource getDataSource() {
         return this;
     }
 
+    @Override
     public DBSObject getObject() {
         return getContainer();
     }
 
+    @Override
     public GenericCatalog getCatalog() {
         return null;
     }
 
+    @Override
     public GenericSchema getSchema() {
         return null;
     }
 
+    @Override
     public TableCache getTableCache() {
         return structureContainer.getTableCache();
     }
 
+    @Override
     public IndexCache getIndexCache() {
         return structureContainer.getIndexCache();
     }
 
+    @Override
     public PrimaryKeysCache getPrimaryKeysCache() {
         return structureContainer.getPrimaryKeysCache();
     }
 
+    @Override
     public ForeignKeysCache getForeignKeysCache() {
         return structureContainer.getForeignKeysCache();
     }
 
 
 
+    @Override
     public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getTables(monitor);
     }
 
+    @Override
     public GenericTable getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getTable(monitor, name);
     }
 
+    @Override
     public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getPackages(monitor);
     }
 
+    @Override
     public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getIndexes(monitor);
     }
 
+    @Override
     public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor);
     }
 
+    @Override
     public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor, name);
     }
 
+    @Override
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -377,6 +393,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -424,6 +441,7 @@ public class GenericDataSource extends JDBCDataSource
         return container.getTable(monitor, tableName);
     }
 
+    @Override
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -438,6 +456,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
+    @Override
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
@@ -452,6 +471,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
+    @Override
     public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -464,6 +484,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
+    @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             for (GenericCatalog catalog : catalogs) catalog.cacheStructure(monitor, scope);
@@ -485,6 +506,7 @@ public class GenericDataSource extends JDBCDataSource
         return false;
     }
 
+    @Override
     public boolean supportsObjectSelect()
     {
         if (!CommonUtils.isEmpty(querySetActiveDB)) {
@@ -500,6 +522,7 @@ public class GenericDataSource extends JDBCDataSource
         return false;
     }
 
+    @Override
     public DBSObject getSelectedObject()
     {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
@@ -519,6 +542,7 @@ public class GenericDataSource extends JDBCDataSource
         return null;
     }
 
+    @Override
     public void selectObject(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {
@@ -571,6 +595,7 @@ public class GenericDataSource extends JDBCDataSource
         selectedEntityName = entity.getName();
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
@@ -580,6 +605,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
+    @Override
     public String getObjectTypeTerm(String path, String objectType, boolean multiple)
     {
         String term = null;
@@ -596,11 +622,13 @@ public class GenericDataSource extends JDBCDataSource
         return term;
     }
 
+    @Override
     public Collection<? extends DBSDataType> getDataTypes()
     {
         return dataTypeCache.getCachedObjects();
     }
 
+    @Override
     public DBSDataType getDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);
@@ -628,30 +656,37 @@ public class GenericDataSource extends JDBCDataSource
             super(GenericDataSource.this);
         }
 
+        @Override
         public GenericCatalog getCatalog() {
             return null;
         }
 
+        @Override
         public GenericSchema getSchema() {
             return null;
         }
 
+        @Override
         public DBSObject getObject() {
             return GenericDataSource.this.getContainer();
         }
 
+        @Override
         public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException {
             return GenericTable.class;
         }
 
+        @Override
         public String getName() {
             return GenericDataSource.this.getName();
         }
 
+        @Override
         public String getDescription() {
             return GenericDataSource.this.getDescription();
         }
 
+        @Override
         public DBSObject getParentObject() {
             return GenericDataSource.this.getParentObject();
         }

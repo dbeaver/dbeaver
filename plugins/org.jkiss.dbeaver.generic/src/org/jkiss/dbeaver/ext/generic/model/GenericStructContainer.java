@@ -17,6 +17,7 @@ import java.util.Collection;
 public interface GenericStructContainer extends DBSObject, DBSObjectContainer
 {
 
+    @Override
     GenericDataSource getDataSource();
 
     DBSObject getObject();

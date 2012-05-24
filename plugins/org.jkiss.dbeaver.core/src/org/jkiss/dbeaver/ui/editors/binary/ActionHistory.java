@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary;
@@ -286,6 +286,7 @@ public class ActionHistory {
      *
      * @see Object#finalize()
      */
+    @Override
     protected void finalize() throws Throwable
     {
         dispose();

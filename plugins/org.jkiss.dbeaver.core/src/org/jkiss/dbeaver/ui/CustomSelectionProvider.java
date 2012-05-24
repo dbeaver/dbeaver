@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.viewers.*;
@@ -18,21 +22,25 @@ public class CustomSelectionProvider implements ISelectionProvider {
         selection = new StructuredSelection();
     }
 
+    @Override
     public void addSelectionChangedListener(ISelectionChangedListener listener)
     {
         listeners.add(listener);
     }
 
+    @Override
     public void removeSelectionChangedListener(ISelectionChangedListener listener)
     {
         listeners.remove(listener);
     }
 
+    @Override
     public ISelection getSelection()
     {
         return selection;
     }
 
+    @Override
     public void setSelection(ISelection selection)
     {
         this.selection = selection;

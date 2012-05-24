@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
@@ -25,6 +25,7 @@ public class DefaultEmptyCellRenderer extends GridCellRenderer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void paint(GC gc)
     {
 
@@ -68,6 +69,7 @@ public class DefaultEmptyCellRenderer extends GridCellRenderer
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean notify(int event, Point point, Object value)
     {
         return false;

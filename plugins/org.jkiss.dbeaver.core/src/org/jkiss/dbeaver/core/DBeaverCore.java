@@ -175,6 +175,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         try {
             PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
+                @Override
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -335,6 +336,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return localSystem;
     }
 
+    @Override
     public DBNModel getNavigatorModel()
     {
         return navigatorModel;
@@ -388,6 +390,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return plugin.getPreferenceStore();
     }
 
+    @Override
     public void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InterruptedException, InvocationTargetException
     {
         try {
@@ -399,6 +402,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 runnableContext = this.getWorkbench().getProgressService();
             }
             runnableContext.run(true, true, new IRunnableWithProgress() {
+                @Override
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -414,6 +418,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         throws InvocationTargetException, InterruptedException
     {
         this.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {
+            @Override
             public void run(IProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
@@ -425,6 +430,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public static void runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
     {
         new AbstractUIJob(jobName) {
+            @Override
             public IStatus runInUIThread(DBRProgressMonitor monitor)
             {
                 try {
@@ -443,6 +449,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     {
         try {
             this.getWorkbench().getProgressService().runInUI(context, new IRunnableWithProgress() {
+                @Override
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {

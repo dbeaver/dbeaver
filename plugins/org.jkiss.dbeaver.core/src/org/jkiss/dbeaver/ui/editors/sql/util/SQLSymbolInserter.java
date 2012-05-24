@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.util;
@@ -112,6 +112,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
     /*
      * @see org.eclipse.swt.custom.VerifyKeyListener#verifyKey(org.eclipse.swt.events.VerifyEvent)
      */
+    @Override
     public void verifyKey(VerifyEvent event)
     {
 
@@ -234,6 +235,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
     /*
      * @see org.eclipse.jface.text.link.ILinkedModeListener#left(org.eclipse.jface.text.link.LinkedModeModel, int)
      */
+    @Override
     public void left(LinkedModeModel environment, int flags)
     {
 
@@ -249,6 +251,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
             IDocumentExtension extension = (IDocumentExtension) document;
             extension.registerPostNotificationReplace(null, new IDocumentExtension.IReplace() {
 
+                @Override
                 public void perform(IDocument d, IDocumentListener owner)
                 {
                     if ((level.firstPosition.isDeleted || level.firstPosition.length == 0)
@@ -282,6 +285,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
     /*
      * @see org.eclipse.jface.text.link.ILinkedModeListener#suspend(org.eclipse.jface.text.link.LinkedModeModel)
      */
+    @Override
     public void suspend(LinkedModeModel environment)
     {
     }
@@ -289,6 +293,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
     /*
      * @see org.eclipse.jface.text.link.ILinkedModeListener#resume(org.eclipse.jface.text.link.LinkedModeModel, int)
      */
+    @Override
     public void resume(LinkedModeModel environment, int flags)
     {
     }
@@ -316,6 +321,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
             size = this.stack.size();
         }
 
+        @Override
         public ExitFlags doExit(LinkedModeModel model, VerifyEvent event, int offset, int length)
         {
 
@@ -378,6 +384,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
 
         private static class EditorHistoryUpdater implements ILinkedModeUIFocusListener {
 
+            @Override
             public void linkingFocusLost(LinkedPosition position, LinkedModeUITarget target) {
                 // mark navigation history
                 IWorkbenchWindow win= PlatformUI.getWorkbench().getActiveWorkbenchWindow();
@@ -389,6 +396,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     }
                 }
             }
+            @Override
             public void linkingFocusGained(LinkedPosition position, LinkedModeUITarget target) {
             }
         }

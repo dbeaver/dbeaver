@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -32,39 +32,46 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema
         this.schemaName = schemaName;
     }
 
+    @Override
     @Property(name = "Catalog", order = 2)
     public GenericCatalog getCatalog()
     {
         return catalog;
     }
 
+    @Override
     public GenericSchema getSchema()
     {
         return this;
     }
 
+    @Override
     public GenericSchema getObject()
     {
         return this;
     }
 
+    @Override
     @Property(name = "Schema Name", viewable = true, order = 1)
     public String getName()
     {
         return schemaName;
     }
 
+    @Override
     @Property(name = "Schema Description", viewable = true, order = 100)
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return catalog != null ? catalog : getDataSource().getContainer();
     }
 
+    @Override
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary;
@@ -73,6 +73,7 @@ public class BinaryContent {
             dirty = isDirty;
         }
 
+        @Override
         public Object clone()
         {
             try {
@@ -83,6 +84,7 @@ public class BinaryContent {
             }
         }
 
+        @Override
         public int compareTo(Range other)
         {
             if (position < other.position && exclusiveEnd() <= other.position) return -1;
@@ -448,6 +450,7 @@ public class BinaryContent {
      *
      * @see Object#finalize()
      */
+    @Override
     protected void finalize() throws Throwable
     {
         dispose();

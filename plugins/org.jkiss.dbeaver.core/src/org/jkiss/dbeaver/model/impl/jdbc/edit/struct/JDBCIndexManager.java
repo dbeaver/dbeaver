@@ -20,6 +20,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCTableIndex<TABLE_
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;

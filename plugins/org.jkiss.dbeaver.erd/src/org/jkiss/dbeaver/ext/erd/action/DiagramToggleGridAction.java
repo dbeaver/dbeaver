@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -27,7 +27,8 @@ public class DiagramToggleGridAction extends Action
 		super("Toggle Grid", Activator.getImageDescriptor("icons/layer_grid.png"));
 	}
 
-	public void run()
+	@Override
+    public void run()
 	{
         final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         final boolean gridEnabled = store.getBoolean(ERDConstants.PREF_GRID_ENABLED);

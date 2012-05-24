@@ -25,33 +25,39 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
     }
 
     //@Property(name = "Name", viewable = true, order = 1)
+    @Override
     public String getName()
     {
         return tableColumn.getName();
     }
 
+    @Override
     @Property(id = "name", name = "Column", viewable = true, order = 1)
     public MySQLTableColumn getAttribute()
     {
         return tableColumn;
     }
 
+    @Override
     @Property(name = "Position", viewable = false, order = 2)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
     }
 
+    @Override
     public String getDescription()
     {
         return tableColumn.getDescription();
     }
 
+    @Override
     public AbstractTableConstraint<MySQLTable> getParentObject()
     {
         return constraint;
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return constraint.getTable().getDataSource();

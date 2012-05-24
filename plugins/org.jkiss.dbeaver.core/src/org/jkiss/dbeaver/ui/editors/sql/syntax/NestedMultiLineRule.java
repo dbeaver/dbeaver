@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -29,6 +29,7 @@ public class NestedMultiLineRule extends MultiLineRule
         super(startSequence, endSequence, token, escapeCharacter, breaksOnEOF);
     }
 
+    @Override
     protected boolean endSequenceDetected(ICharacterScanner scanner)
     {
         int c;
@@ -71,6 +72,7 @@ public class NestedMultiLineRule extends MultiLineRule
         return false;
     }
 
+    @Override
     protected IToken doEvaluate(ICharacterScanner scanner, boolean resume)
     {
         if (resume)

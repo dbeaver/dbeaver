@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -52,6 +52,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     private IStructuredSelection structSelection;
     private Boolean deleteAll;
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         this.structSelection = null;
         this.deleteAll = null;
@@ -262,6 +263,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
     }
 
+    @Override
     public void updateElement(UIElement element, Map parameters)
     {
         if (!updateUI) {

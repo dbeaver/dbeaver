@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql;
@@ -60,6 +60,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         }
     }
 
+    @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
         return dataSourceContainer;
@@ -81,6 +82,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         }
     }
 
+    @Override
     public String getName()
     {
         String dsName = "<None>";
@@ -90,6 +92,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         return scriptName + " (" + dsName + ")";
     }
 
+    @Override
     public String getToolTipText()
     {
         if (dataSourceContainer == null) {
@@ -108,21 +111,25 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         return this;
     }
 
+    @Override
     public String getFactoryId()
     {
         return SQLEditorInputFactory.getFactoryId();
     }
 
-    public void saveState(IMemento memento) 
+    @Override
+    public void saveState(IMemento memento)
     {
         SQLEditorInputFactory.saveState(memento, this);
     }
 
+    @Override
     public boolean isAutoSaveEnabled()
     {
         return true;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return getDataSourceContainer().getDataSource();

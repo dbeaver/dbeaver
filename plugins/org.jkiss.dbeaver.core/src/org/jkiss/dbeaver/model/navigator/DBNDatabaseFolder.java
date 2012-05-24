@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -33,12 +33,14 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         DBNModel.getInstance().addNode(this);
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         DBNModel.getInstance().removeNode(this, reflect);
         super.dispose(reflect);
     }
 
+    @Override
     public DBXTreeFolder getMeta()
     {
         return meta;
@@ -49,16 +51,19 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         // do nothing
     }
 
+    @Override
     public DBSObject getObject()
     {
         return this;
     }
 
+    @Override
     public Object getValueObject()
     {
         return getParentNode() instanceof DBNDatabaseNode ? ((DBNDatabaseNode)getParentNode()).getValueObject() : null;
     }
 
+    @Override
     public String getChildrenType()
     {
         final List<DBXTreeNode> metaChildren = meta.getChildren(this);
@@ -69,32 +74,38 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         }
     }
 
+    @Override
     @Property(name = "Name", viewable = true)
     public String getName()
     {
         return meta.getChildrenType(getDataSource());
     }
 
+    @Override
     public String getDescription()
     {
         return meta.getDescription();
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getParentNode() instanceof DBSWrapper ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return getParentObject() == null ? null : getParentObject().getDataSource();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return getParentNode() != null && getParentNode().isPersisted();
     }
 
+    @Override
     public Class<? extends DBSObject> getChildrenClass()
     {
         String itemsType = CommonUtils.toString(meta.getType());
@@ -113,6 +124,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         return aClass ;
     }
 
+    @Override
     public Collection<DBSObject> getChildrenObjects(DBRProgressMonitor monitor) throws DBException
     {
         List<DBNDatabaseNode> children = getChildren(monitor);

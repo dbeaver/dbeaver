@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
@@ -46,31 +46,37 @@ public class JDBCDataType implements DBSDataType
         this.maxScale = maxScale;
     }
 
+    @Override
     public int getValueType()
     {
         return valueType;
     }
 
+    @Override
     public String getName()
     {
         return name;
     }
 
+    @Override
     public String getDescription()
     {
         return remarks;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return owner;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return owner.getDataSource();
     }
 
+    @Override
     public DBSDataKind getDataKind()
     {
         return getDataKind(valueType);
@@ -86,16 +92,19 @@ public class JDBCDataType implements DBSDataType
         return isSearchable;
     }
 
+    @Override
     public int getPrecision()
     {
         return precision;
     }
 
+    @Override
     public int getMinScale()
     {
         return minScale;
     }
 
+    @Override
     public int getMaxScale()
     {
         return maxScale;
@@ -106,6 +115,7 @@ public class JDBCDataType implements DBSDataType
         return name;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

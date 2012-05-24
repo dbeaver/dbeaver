@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.import_config.wizards;
@@ -35,6 +35,7 @@ public abstract class ConfigImportWizardPage extends WizardPage {
         return importData;
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         Composite placeholder = new Composite(parent, SWT.NONE);
@@ -53,6 +54,7 @@ public abstract class ConfigImportWizardPage extends WizardPage {
         UIUtils.packColumns(connectionTable);
 
         connectionTable.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 TableItem item = (TableItem) e.item;

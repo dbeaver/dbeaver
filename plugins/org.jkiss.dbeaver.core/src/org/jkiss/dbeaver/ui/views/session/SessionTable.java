@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.session;
@@ -55,6 +55,7 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
     }
 
     private static IStructuredContentProvider CONTENT_PROVIDER = new IStructuredContentProvider() {
+        @Override
         public Object[] getElements(Object inputElement)
         {
             if (inputElement instanceof Collection) {
@@ -63,10 +64,12 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             return null;
         }
 
+        @Override
         public void dispose()
         {
         }
 
+        @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
         {
         }
@@ -80,6 +83,7 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             super("Load sessions", sessionManager.getDataSource());
         }
 
+        @Override
         public Collection<DBAServerSession> evaluate()
             throws InvocationTargetException, InterruptedException
         {
@@ -112,6 +116,7 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             this.options = options;
         }
 
+        @Override
         public Void evaluate()
             throws InvocationTargetException, InterruptedException
         {

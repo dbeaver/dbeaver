@@ -45,6 +45,7 @@ public class ERDHandlerPaste extends AbstractHandler {
         return false;
     }
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         Control control = (Control) HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
         if (control != null) {

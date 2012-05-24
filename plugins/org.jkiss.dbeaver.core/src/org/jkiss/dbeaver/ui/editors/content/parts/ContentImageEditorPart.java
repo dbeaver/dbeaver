@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.content.parts;
@@ -37,12 +37,15 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
     private ImageViewControl imageViewer;
     private boolean contentValid;
 
+    @Override
     public void doSave(IProgressMonitor monitor) {
     }
 
+    @Override
     public void doSaveAs() {
     }
 
+    @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
         setSite(site);
         setInput(input);
@@ -61,14 +64,17 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         super.dispose();
     }
 
+    @Override
     public boolean isDirty() {
         return false;
     }
 
+    @Override
     public boolean isSaveAsAllowed() {
         return false;
     }
 
+    @Override
     public void createPartControl(Composite parent) {
         imageViewer = new ImageViewControl(parent, SWT.NONE);
 
@@ -99,49 +105,59 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         }
     }
 
+    @Override
     public void setFocus() {
         imageViewer.setFocus();
     }
 
+    @Override
     public void initPart(IEditorPart contentEditor, MimeType mimeType)
     {
     }
 
+    @Override
     public IEditorActionBarContributor getActionBarContributor()
     {
         return null;
     }
 
+    @Override
     public String getContentTypeTitle()
     {
         return "Image";
     }
 
+    @Override
     public Image getContentTypeImage()
     {
         return DBIcon.TYPE_IMAGE.getImage();
     }
 
+    @Override
     public String getPreferredMimeType()
     {
         return "image";
     }
 
+    @Override
     public long getMaxContentLength()
     {
         return 20 * 1024 * 1024;
     }
 
+    @Override
     public boolean isPreferredContent()
     {
         return contentValid;
     }
 
+    @Override
     public boolean isOptionalContent()
     {
         return true;
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
 
         IResourceDelta delta = event.getDelta();
@@ -163,6 +179,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Refresh editor
             getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     loadImage();

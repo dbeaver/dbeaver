@@ -24,41 +24,49 @@ public class WMIClassInheritance implements DBSEntityAssociation
         this.subClass = subClass;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;
     }
 
+    @Override
     public String getName()
     {
         return subClass.getName() + " inherits " + superClass.getName();
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public WMIClass getParentObject()
     {
         return subClass;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return subClass.getDataSource();
     }
 
+    @Override
     public WMIClass getAssociatedEntity()
     {
         return superClass;
     }
 
+    @Override
     public DBSEntityConstraintType getConstraintType()
     {
         return DBSEntityConstraintType.INHERITANCE;
     }
 
+    @Override
     public DBSTableConstraint getReferencedConstraint()
     {
         return null;

@@ -31,6 +31,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
         return object.getContainer().getTableCache();
     }
 
+    @Override
     public Class<?>[] getChildTypes()
     {
         return CHILD_TYPES;

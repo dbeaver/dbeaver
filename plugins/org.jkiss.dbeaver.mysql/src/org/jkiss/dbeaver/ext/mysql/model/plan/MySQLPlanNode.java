@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model.plan;
@@ -48,11 +48,13 @@ public class MySQLPlanNode implements DBCPlanNode {
         this.extra = JDBCUtils.safeGetString(dbResult, "extra");
     }
 
+    @Override
     public DBCPlanNode getParent()
     {
         return parent;
     }
 
+    @Override
     public List<MySQLPlanNode> getNested()
     {
         return nested;

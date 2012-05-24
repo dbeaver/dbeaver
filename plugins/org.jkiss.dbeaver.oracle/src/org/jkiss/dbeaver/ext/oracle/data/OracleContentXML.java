@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.data;
@@ -32,6 +32,7 @@ public class OracleContentXML extends JDBCContentXML {
         return new OracleContentXML(null);
     }
 
+    @Override
     public void bindParameter(
         JDBCExecutionContext context,
         JDBCPreparedStatement preparedStatement,

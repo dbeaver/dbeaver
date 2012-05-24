@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -93,11 +93,13 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         return sourceObject;
     }
 
+    @Override
     public Object getEditableValue()
     {
         return object;
     }
 
+    @Override
     public IPropertyDescriptor[] getPropertyDescriptors()
     {
         return props.toArray(new IPropertyDescriptor[props.size()]);
@@ -115,6 +117,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
     }
 */
 
+    @Override
     public boolean isPropertySet(Object id)
     {
         Object value = propValues.get(id);
@@ -125,6 +128,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         }
     }
 
+    @Override
     public boolean isPropertySet(Object object, ObjectPropertyDescriptor prop)
     {
         try {
@@ -135,6 +139,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         }
     }
 
+    @Override
     public final Object getPropertyValue(final Object id)
     {
         Object value = propValues.get(id);
@@ -145,6 +150,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
     }
 
 
+    @Override
     public Object getPropertyValue(final Object object, final ObjectPropertyDescriptor prop)
     {
         try {
@@ -197,6 +203,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         }
     }
 
+    @Override
     public boolean isPropertyResettable(Object id)
     {
         Object value = propValues.get(id);
@@ -208,11 +215,13 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         }
     }
 
+    @Override
     public boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop)
     {
         return false;
     }
 
+    @Override
     public final void resetPropertyValue(Object id)
     {
         Object value = propValues.get(id);
@@ -223,11 +232,13 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         }
     }
 
+    @Override
     public void resetPropertyValue(Object object, ObjectPropertyDescriptor id)
     {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
 
+    @Override
     public final void setPropertyValue(Object id, Object value)
     {
         Object prop = propValues.get(id);
@@ -239,6 +250,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         }
     }
 
+    @Override
     public void setPropertyValue(Object object, ObjectPropertyDescriptor prop, Object value)
     {
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
@@ -284,6 +296,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
             super(TEXT_LOADING);
         }
 
+        @Override
         public Map<ObjectPropertyDescriptor, Object> evaluate()
             throws InvocationTargetException, InterruptedException
         {
@@ -305,6 +318,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
             }
         }
 
+        @Override
         public Object getFamily() {
             final Object editableValue = getEditableValue();
             return editableValue instanceof DBSObject ? ((DBSObject) editableValue).getDataSource() : editableValue;
@@ -333,20 +347,24 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         {
         }
 
+        @Override
         public Shell getShell() {
             return UIUtils.getActiveShell();
         }
 
+        @Override
         public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
         {
             return monitor;
         }
 
+        @Override
         public boolean isCompleted()
         {
             return completed;
         }
 
+        @Override
         public void visualizeLoading()
         {
 /*
@@ -362,6 +380,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
 */
         }
 
+        @Override
         public void completeLoading(Map<ObjectPropertyDescriptor, Object> result)
         {
             completed = true;

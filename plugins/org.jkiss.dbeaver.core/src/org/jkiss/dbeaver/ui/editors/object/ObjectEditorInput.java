@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.object;
@@ -19,6 +19,7 @@ public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseObject>
         super(dbmNode);
     }
 
+    @Override
     public ImageDescriptor getImageDescriptor()
     {
         DBNDatabaseObject node = getTreeNode();
@@ -30,6 +31,7 @@ public class ObjectEditorInput extends DatabaseEditorInput<DBNDatabaseObject>
         }
     }
 
+    @Override
     public String getToolTipText()
     {
         return getTreeNode().getMeta().getDescription();

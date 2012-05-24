@@ -25,6 +25,7 @@ import java.util.Collections;
  */
 public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, OracleTablePhysical> {
 
+    @Override
     protected OracleTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
@@ -61,6 +62,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, Oracl
         return index;
     }
 
+    @Override
     protected String getDropIndexPattern(OracleTableIndex index)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$

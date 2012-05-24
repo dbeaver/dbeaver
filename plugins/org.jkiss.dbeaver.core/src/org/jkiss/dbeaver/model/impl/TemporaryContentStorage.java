@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl;
@@ -33,6 +33,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
         this.file = file;
     }
 
+    @Override
     public InputStream getContentStream()
         throws IOException
     {
@@ -44,6 +45,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
         }
     }
 
+    @Override
     public Reader getContentReader()
         throws IOException
     {
@@ -57,11 +59,13 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
         }
     }
 
+    @Override
     public long getContentLength()
     {
         return file.getLocation().toFile().length();
     }
 
+    @Override
     public String getCharset()
     {
         try {
@@ -73,6 +77,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
         }
     }
 
+    @Override
     public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
         throws IOException
     {
@@ -93,6 +98,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
         return new TemporaryContentStorage(tempFile);
     }
 
+    @Override
     public void release()
     {
         try {
@@ -103,6 +109,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
         }
     }
 
+    @Override
     public IFile getDataFile()
     {
         return file;

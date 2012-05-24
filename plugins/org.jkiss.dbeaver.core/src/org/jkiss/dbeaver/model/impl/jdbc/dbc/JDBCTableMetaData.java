@@ -46,6 +46,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         return resultSetMetaData;
     }
 
+    @Override
     public DBSTable getEntity(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -84,22 +85,26 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         return schemaName;
     }
 
+    @Override
     public String getEntityName()
     {
         return tableName;
     }
 
+    @Override
     public String getEntityAlias()
     {
         return alias;
     }
 
+    @Override
     public boolean isIdentified(DBRProgressMonitor monitor)
         throws DBException
     {
         return getBestIdentifier(monitor) != null;
     }
 
+    @Override
     public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {

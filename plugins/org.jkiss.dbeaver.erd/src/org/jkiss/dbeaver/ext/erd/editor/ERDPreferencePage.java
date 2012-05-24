@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -37,6 +37,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
 
+    @Override
     protected Control createContents(Composite parent)
     {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
@@ -86,15 +87,18 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
  * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
  */
 
+    @Override
     public void init(IWorkbench workbench)
     {
     }
 
+    @Override
     protected void performDefaults()
     {
         super.performDefaults();
     }
 
+    @Override
     public boolean performOk()
     {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
@@ -123,11 +127,13 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
         return true;
     }
 
+    @Override
     public IAdaptable getElement()
     {
         return element;
     }
 
+    @Override
     public void setElement(IAdaptable element)
     {
         this.element = element;

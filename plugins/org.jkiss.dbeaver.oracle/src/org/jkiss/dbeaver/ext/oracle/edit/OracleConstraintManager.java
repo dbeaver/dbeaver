@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
  */
 public class OracleConstraintManager extends JDBCConstraintManager<OracleTableConstraint, OracleTableBase> {
 
+    @Override
     protected OracleTableConstraint createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent,
@@ -56,6 +57,7 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleTableCo
         return constraint;
     }
 
+    @Override
     protected String getDropConstraintPattern(OracleTableConstraint constraint)
     {
         String clause;

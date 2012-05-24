@@ -27,12 +27,14 @@ public class GraphLayoutXY extends FreeformLayout {
         this.diagram = diagram;
     }
 
+    @Override
     public void layout(IFigure container)
     {
         super.layout(container);
         diagram.setTableModelBounds();
     }
 
+    @Override
     public Object getConstraint(IFigure child)
     {
 /*

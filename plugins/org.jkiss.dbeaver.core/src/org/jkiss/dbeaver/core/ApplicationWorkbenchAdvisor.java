@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -42,11 +42,13 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
 
+    @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {
         return new ApplicationWorkbenchWindowAdvisor(configurer);
     }
 
+    @Override
     public String getInitialWindowPerspectiveId()
     {
         return PERSPECTIVE_ID;
@@ -108,6 +110,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         }
     }
 
+    @Override
     public boolean preShutdown()
     {
         final DBeaverCore core = DBeaverCore.getInstance();
@@ -129,6 +132,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
             }
             // Wait for all datasource jobs to finish
             core.runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -148,6 +152,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         return super.preShutdown();
     }
 
+    @Override
     public void postShutdown()
     {
         super.postShutdown();

@@ -37,7 +37,8 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 	/**
 	 * @see ContextMenuProvider#buildContextMenu(org.eclipse.jface.action.IMenuManager)
 	 */
-	public void buildContextMenu(IMenuManager menu)
+	@Override
+    public void buildContextMenu(IMenuManager menu)
 	{
 		GEFActionConstants.addStandardActionGroups(menu);
 

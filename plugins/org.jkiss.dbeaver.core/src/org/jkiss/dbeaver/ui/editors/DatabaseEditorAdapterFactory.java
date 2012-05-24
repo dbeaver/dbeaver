@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -23,6 +23,7 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
 {
     private static final Class<?>[] ADAPTER_LIST = { DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class };
 
+    @Override
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {
         if (adapterType == DBSDataSourceContainer.class) {
@@ -72,6 +73,7 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
         return null;
     }
 
+    @Override
     public Class[] getAdapterList()
     {
         return ADAPTER_LIST;

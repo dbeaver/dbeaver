@@ -66,7 +66,8 @@ public class EntityDeleteCommand extends Command
 	/**
 	 * @see org.eclipse.gef.commands.Command#execute()
 	 */
-	public void execute()
+	@Override
+    public void execute()
 	{
 		primExecute();
 	}
@@ -91,7 +92,8 @@ public class EntityDeleteCommand extends Command
 	/**
 	 * @see org.eclipse.gef.commands.Command#redo()
 	 */
-	public void redo()
+	@Override
+    public void redo()
 	{
 		primExecute();
 	}
@@ -117,7 +119,8 @@ public class EntityDeleteCommand extends Command
 	/**
 	 * @see org.eclipse.gef.commands.Command#undo()
 	 */
-	public void undo()
+	@Override
+    public void undo()
 	{
 		entityDiagram.addTable(entity, index, true);
 		restoreRelationships();

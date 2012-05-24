@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.tools;
@@ -23,6 +23,7 @@ import java.util.List;
  */
 public class MySQLToolScript implements DBPTool
 {
+    @Override
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
     {
         if (object instanceof MySQLCatalog) {

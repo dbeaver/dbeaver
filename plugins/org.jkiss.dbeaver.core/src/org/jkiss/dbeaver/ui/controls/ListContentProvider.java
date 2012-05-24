@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -14,14 +14,17 @@ import java.util.Collection;
  */
 public class ListContentProvider implements IStructuredContentProvider {
 
+    @Override
     public void dispose()
     {
     }
 
+    @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
     {
     }
 
+    @Override
     public Object[] getElements(Object inputElement)
     {
         if (inputElement instanceof Collection) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.data;
@@ -17,6 +17,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
 
     private NumberFormat numberFormat;
 
+    @Override
     public void init(Locale locale, Map<Object, Object> properties)
     {
         numberFormat = NumberFormat.getNumberInstance(locale);
@@ -50,6 +51,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         }
     }
 
+    @Override
     public String formatValue(Object value)
     {
         if (value == null) {
@@ -62,6 +64,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
         }
     }
 
+    @Override
     public Object parseValue(String value) throws ParseException
     {
         return numberFormat.parse(value);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
@@ -153,6 +153,7 @@ public abstract class JDBCStructCache<
         }
     }
 
+    @Override
     public void clearCache()
     {
         this.clearChildrenCache();

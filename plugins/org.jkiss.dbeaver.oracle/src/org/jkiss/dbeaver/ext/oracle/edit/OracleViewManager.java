@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.edit;
@@ -22,11 +22,13 @@ import org.jkiss.utils.CommonUtils;
  */
 public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema> {
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
+    @Override
     protected void validateObjectProperties(ObjectChangeCommand command)
         throws DBException
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -68,6 +68,7 @@ public class MigrateConnectionWizard extends Wizard
     /**
      * Adding the page to the wizard.
      */
+    @Override
     public void addPages()
     {
         pageConnections = new PageConnections();
@@ -86,6 +87,7 @@ public class MigrateConnectionWizard extends Wizard
         }
     }
 
+    @Override
     public boolean performFinish()
     {
         final List<DataSourceDescriptor> connections = pageConnections.getSelectedConnections();
@@ -110,15 +112,18 @@ public class MigrateConnectionWizard extends Wizard
             setDescription(CoreMessages.dialog_migrate_wizard_start_description);
         }
 
+        @Override
         public void createControl(Composite parent)
         {
             connectionsViewer = new Table(parent, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION | SWT.CHECK);
             connectionsViewer.addSelectionListener(new SelectionListener() {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     getContainer().updateButtons();
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                     getContainer().showPage(getNextPage());
@@ -136,6 +141,7 @@ public class MigrateConnectionWizard extends Wizard
             setControl(connectionsViewer);
         }
 
+        @Override
         public boolean isPageComplete()
         {
             for (TableItem item : connectionsViewer.getItems()) {
@@ -169,6 +175,7 @@ public class MigrateConnectionWizard extends Wizard
             setDescription(CoreMessages.dialog_migrate_wizard_choose_driver_description);
         }
 
+        @Override
         public void createControl(Composite parent)
         {
             Composite placeholder = UIUtils.createPlaceholder(parent, 1);
@@ -181,11 +188,13 @@ public class MigrateConnectionWizard extends Wizard
             setControl(placeholder);
         }
 
+        @Override
         public boolean isPageComplete()
         {
             return this.selectedDriver != null;
         }
 
+        @Override
         public void selectionChanged(SelectionChangedEvent event)
         {
             this.selectedDriver = null;

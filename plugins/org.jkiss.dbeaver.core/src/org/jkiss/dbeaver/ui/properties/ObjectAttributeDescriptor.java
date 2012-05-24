@@ -168,6 +168,7 @@ public abstract class ObjectAttributeDescriptor {
             }
         }
         Collections.sort(annoProps, new Comparator<ObjectAttributeDescriptor>() {
+            @Override
             public int compare(ObjectAttributeDescriptor o1, ObjectAttributeDescriptor o2)
             {
                 return o1.getOrderNumber() - o2.getOrderNumber();

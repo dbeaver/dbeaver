@@ -65,16 +65,19 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return dataSource.getContainer();
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @Override
     @Property(name = "Schema Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
@@ -86,16 +89,19 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         this.name = name;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
@@ -212,24 +218,28 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return triggerCache.getObject(monitor, this, name);
     }
 
+    @Override
     public Collection<MySQLTableBase> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getObjects(monitor, this);
     }
 
+    @Override
     public MySQLTableBase getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return tableCache.getObject(monitor, this, childName);
     }
 
+    @Override
     public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLTable.class;
     }
 
+    @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
@@ -245,6 +255,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -274,12 +285,14 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             super(JDBCConstants.TABLE_NAME);
         }
 
+        @Override
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException
         {
             return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(getDataSource(), getName()));
         }
 
+        @Override
         protected MySQLTableBase fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
@@ -291,16 +304,19 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
         }
 
+        @Override
         protected boolean isChildrenCached(MySQLTableBase table)
         {
             return table.isColumnsCached();
         }
 
+        @Override
         protected void cacheChildren(MySQLTableBase table, List<MySQLTableColumn> columns)
         {
             table.setColumns(columns);
         }
 
+        @Override
         protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase forTable)
             throws SQLException
         {
@@ -321,6 +337,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
+        @Override
         protected MySQLTableColumn fetchChild(JDBCExecutionContext context, MySQLCatalog owner, MySQLTableBase table, ResultSet dbResult)
             throws SQLException, DBException
         {
@@ -337,6 +354,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
 
+        @Override
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
         {
@@ -357,6 +375,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
+        @Override
         protected MySQLTableIndex fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
@@ -384,6 +403,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 comment);
         }
 
+        @Override
         protected MySQLTableIndexColumn fetchObjectRow(
             JDBCExecutionContext context,
             MySQLTable parent, MySQLTableIndex object, ResultSet dbResult)
@@ -408,16 +428,19 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 nullable);
         }
 
+        @Override
         protected Collection<MySQLTableIndex> getObjectsCache(MySQLTable parent)
         {
             return parent.getIndexesCache();
         }
 
+        @Override
         protected void cacheObjects(MySQLTable parent, List<MySQLTableIndex> indexes)
         {
             parent.setIndexes(indexes);
         }
 
+        @Override
         protected void cacheChildren(MySQLTableIndex index, List<MySQLTableIndexColumn> rows)
         {
             index.setColumns(rows);
@@ -433,6 +456,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
         }
 
+        @Override
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
         {
@@ -453,6 +477,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
+        @Override
         protected MySQLTableConstraint fetchObject(JDBCExecutionContext context, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
             throws SQLException, DBException
         {
@@ -465,6 +490,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
         }
 
+        @Override
         protected MySQLTableConstraintColumn fetchObjectRow(
             JDBCExecutionContext context,
             MySQLTable parent, MySQLTableConstraint object, ResultSet dbResult)
@@ -484,16 +510,19 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 ordinalPosition);
         }
 
+        @Override
         protected Collection<MySQLTableConstraint> getObjectsCache(MySQLTable parent)
         {
             return parent.getUniqueKeysCache();
         }
 
+        @Override
         protected void cacheObjects(MySQLTable parent, List<MySQLTableConstraint> constraints)
         {
             parent.cacheUniqueKeys(constraints);
         }
 
+        @Override
         protected void cacheChildren(MySQLTableConstraint constraint, List<MySQLTableConstraintColumn> rows)
         {
             constraint.setColumns(rows);
@@ -510,6 +539,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             super(JDBCConstants.PROCEDURE_NAME);
         }
 
+        @Override
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException
         {
@@ -522,22 +552,26 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
+        @Override
         protected MySQLProcedure fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLProcedure(MySQLCatalog.this, dbResult);
         }
 
+        @Override
         protected boolean isChildrenCached(MySQLProcedure parent)
         {
             return parent.isColumnsCached();
         }
 
+        @Override
         protected void cacheChildren(MySQLProcedure parent, List<MySQLProcedureColumn> columns)
         {
             parent.cacheColumns(columns);
         }
 
+        @Override
         protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure procedure)
             throws SQLException
         {
@@ -552,6 +586,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 null).getSource();
         }
 
+        @Override
         protected MySQLProcedureColumn fetchChild(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
@@ -591,6 +626,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
+        @Override
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException
         {
@@ -598,6 +634,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 "SHOW FULL TRIGGERS FROM " + getName());
         }
 
+        @Override
         protected MySQLTrigger fetchObject(JDBCExecutionContext context, MySQLCatalog owner, ResultSet dbResult)
             throws SQLException, DBException
         {

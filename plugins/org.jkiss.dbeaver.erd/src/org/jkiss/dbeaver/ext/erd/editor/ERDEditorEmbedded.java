@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -36,6 +36,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
     {
     }
 
+    @Override
     public IDatabaseEditorInput getEditorInput()
     {
         return (IDatabaseEditorInput)super.getEditorInput();
@@ -47,6 +48,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         return true;
     }
 
+    @Override
     public void activatePart()
     {
         if (progressControl == null) {
@@ -59,6 +61,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         loadDiagram();
     }
 
+    @Override
     public void deactivatePart()
     {
     }
@@ -91,6 +94,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         return object;
     }
 
+    @Override
     protected synchronized void loadDiagram()
     {
         DBSObject object = getRootObject();
@@ -103,6 +107,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         }
         diagramLoadingJob = LoadingUtils.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
+                @Override
                 public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
@@ -126,6 +131,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         diagramLoadingJob.schedule();
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return getEditorInput().getDataSource();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -37,51 +37,60 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         this.nameFromCatalog = nameFromCatalog;
     }
 
+    @Override
     @Property(name = "Package", viewable = true, order = 1)
     public String getName()
     {
         return packageName;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return container;
     }
 
+    @Override
     @Property(name = "Catalog", viewable = true, order = 3)
     public GenericCatalog getCatalog()
     {
         return container.getCatalog();
     }
 
+    @Override
     @Property(name = "Schema", viewable = true, order = 4)
     public GenericSchema getSchema()
     {
         return container.getSchema();
     }
 
+    @Override
     public DBSObject getObject()
     {
         return this;
     }
 
+    @Override
     public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return procedures;
     }
 
+    @Override
     public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return DBUtils.findObjects(procedures, name);
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -90,25 +99,30 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
             this);
     }
 
+    @Override
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException
     {
         return procedures;
     }
 
+    @Override
     public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
         return DBUtils.findObject(procedures, childName);
     }
 
+    @Override
     public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException
     {
         return GenericProcedure.class;
     }
 
+    @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
     {
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         procedures.clear();

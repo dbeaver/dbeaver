@@ -24,6 +24,7 @@ public class MySQLTableForeignKeyColumnTable extends MySQLTableConstraintColumn 
         this.referencedColumn = referencedColumn;
     }
 
+    @Override
     @Property(id = "reference", name = "Reference Column", viewable = true, order = 4)
     public MySQLTableColumn getReferencedColumn()
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
@@ -79,6 +79,7 @@ public class ItemListControl extends NodeListControl
         return new CellEditingSupport(columnIndex);
     }
 
+    @Override
     protected CellLabelProvider getColumnLabelProvider(int columnIndex)
     {
         return new ItemColorProvider(columnIndex);
@@ -94,6 +95,7 @@ public class ItemListControl extends NodeListControl
             this.metaNode = metaNode;
         }
 
+        @Override
         public Collection<DBNNode> evaluate()
             throws InvocationTargetException, InterruptedException
         {
@@ -164,6 +166,7 @@ public class ItemListControl extends NodeListControl
             return property != null && property.isEditable(getObjectValue(object));
         }
 
+        @Override
         protected Object getValue(Object element)
         {
             DBNNode object = (DBNNode) element;
@@ -174,6 +177,7 @@ public class ItemListControl extends NodeListControl
             return null;
         }
 
+        @Override
         protected void setValue(Object element, Object value)
         {
             DBNNode object = (DBNNode) element;
@@ -230,11 +234,13 @@ public class ItemListControl extends NodeListControl
             super(columnIndex);
         }
 
+        @Override
         public Color getForeground(Object element)
         {
             return null;
         }
 
+        @Override
         public Color getBackground(Object element)
         {
             DBNNode node = (DBNNode) element;

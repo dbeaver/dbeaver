@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity;
@@ -25,6 +25,7 @@ public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
         super(dbnDatabaseNode, commandContext);
     }
 
+    @Override
     public String getToolTipText()
     {
         DBNNode node = getTreeNode();

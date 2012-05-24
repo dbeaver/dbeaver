@@ -1,6 +1,6 @@
 
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.splash;
@@ -98,6 +98,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 
         getContent().addPaintListener(new PaintListener() {
 
+            @Override
             public void paintControl(PaintEvent e) {
                 String productVersion = "";
                 if (product != null) {

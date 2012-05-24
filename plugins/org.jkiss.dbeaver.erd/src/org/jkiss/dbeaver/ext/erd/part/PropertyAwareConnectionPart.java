@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
  */
 public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener, DBPNamedObject
 {
+    @Override
     public String getName()
     {
         return ((ERDObject)getModel()).getName();
@@ -35,7 +36,8 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 	/**
 	 * @see org.eclipse.gef.EditPart#activate()
 	 */
-	public void activate()
+	@Override
+    public void activate()
 	{
 		super.activate();
 		ERDObject<?> erdObject = (ERDObject<?>) getModel();
@@ -45,7 +47,8 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 	/**
 	 * @see org.eclipse.gef.EditPart#deactivate()
 	 */
-	public void deactivate()
+	@Override
+    public void deactivate()
 	{
 		super.deactivate();
 		ERDObject<?> erdObject = (ERDObject<?>) getModel();
@@ -55,7 +58,8 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
 	/**
 	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
 	 */
-	public void propertyChange(PropertyChangeEvent evt)
+	@Override
+    public void propertyChange(PropertyChangeEvent evt)
 	{
 
 		String property = evt.getPropertyName();

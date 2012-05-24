@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.ui.editors.xml;
 
 import org.eclipse.jface.text.IDocument;
@@ -8,6 +12,7 @@ import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 
 public class XMLDocumentProvider extends FileRefDocumentProvider {
 
+    @Override
     protected void setupDocument(IDocument document) {
 		if (document instanceof IDocumentExtension3) {
 			IDocumentPartitioner partitioner =

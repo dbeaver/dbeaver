@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -57,11 +57,13 @@ public class OraclePackage extends OracleSchemaObject
         return valid;
     }
 
+    @Override
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.PACKAGE;
     }
 
+    @Override
     @Property(name = "Header", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
@@ -71,11 +73,13 @@ public class OraclePackage extends OracleSchemaObject
         return sourceDeclaration;
     }
 
+    @Override
     public void setSourceDeclaration(String sourceDeclaration)
     {
         this.sourceDeclaration = sourceDeclaration;
     }
 
+    @Override
     @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
@@ -85,6 +89,7 @@ public class OraclePackage extends OracleSchemaObject
         return sourceDefinition;
     }
 
+    @Override
     public void setSourceDefinition(String source)
     {
         this.sourceDefinition = source;
@@ -96,26 +101,31 @@ public class OraclePackage extends OracleSchemaObject
         return proceduresCache.getObjects(monitor, this);
     }
 
+    @Override
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException
     {
         return proceduresCache.getObjects(monitor, this);
     }
 
+    @Override
     public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException
     {
         return proceduresCache.getObject(monitor, this, childName);
     }
 
+    @Override
     public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException
     {
         return OracleProcedurePackaged.class;
     }
 
+    @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
     {
         proceduresCache.getObjects(monitor, this);
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         this.proceduresCache.clearCache();
@@ -124,11 +134,13 @@ public class OraclePackage extends OracleSchemaObject
         return true;
     }
 
+    @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE);
     }
 
+    @Override
     public IDatabasePersistAction[] getCompileActions()
     {
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
@@ -151,6 +163,7 @@ public class OraclePackage extends OracleSchemaObject
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
+    @Override
     public DBSObjectState getObjectState()
     {
         return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;
@@ -158,6 +171,7 @@ public class OraclePackage extends OracleSchemaObject
 
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
 
+        @Override
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OraclePackage owner)
             throws SQLException
         {
@@ -171,6 +185,7 @@ public class OraclePackage extends OracleSchemaObject
             return dbStat;
         }
 
+        @Override
         protected OracleProcedurePackaged fetchObject(JDBCExecutionContext context, OraclePackage owner, ResultSet dbResult)
             throws SQLException, DBException
         {

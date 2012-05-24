@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.part;
@@ -39,7 +39,8 @@ public class NotePart extends NodePart
 	/**
 	 * Creates edit policies and associates these with roles
 	 */
-	protected void createEditPolicies()
+	@Override
+    protected void createEditPolicies()
 	{
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
@@ -53,7 +54,8 @@ public class NotePart extends NodePart
         }
 	}
 
-	public void performRequest(Request request)
+	@Override
+    public void performRequest(Request request)
 	{
 		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
 		{
@@ -105,7 +107,8 @@ public class NotePart extends NodePart
 	/**
 	 * Handles change in name when committing a direct edit
 	 */
-	protected void commitNameChange(PropertyChangeEvent evt)
+	@Override
+    protected void commitNameChange(PropertyChangeEvent evt)
 	{
 		NoteFigure noteFigure = (NoteFigure) getFigure();
 		noteFigure.setText(getNote().getObject());
@@ -118,7 +121,8 @@ public class NotePart extends NodePart
 	/**
 	 * Creates a figure which represents the table
 	 */
-	protected IFigure createFigure()
+	@Override
+    protected IFigure createFigure()
 	{
         final NoteFigure noteFigure = new NoteFigure(getNote());
         Rectangle bounds = ((DiagramPart) getParent()).getDiagram().getInitBounds(getNote());
@@ -137,7 +141,8 @@ public class NotePart extends NodePart
 	/**
 	 * Reset the layout constraint, and revalidate the content pane
 	 */
-	protected void refreshVisuals()
+	@Override
+    protected void refreshVisuals()
 	{
 		NoteFigure notefigure = (NoteFigure) getFigure();
 		Point location = notefigure.getLocation();
@@ -149,7 +154,8 @@ public class NotePart extends NodePart
 	/**
 	 * Sets the width of the line when selected
 	 */
-	public void setSelected(int value)
+	@Override
+    public void setSelected(int value)
 	{
 		super.setSelected(value);
 /*
@@ -162,21 +168,25 @@ public class NotePart extends NodePart
 */
 	}
 
+    @Override
     public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection)
     {
         return new ChopboxAnchor(getFigure());
     }
 
+    @Override
     public ConnectionAnchor getSourceConnectionAnchor(Request request)
     {
         return new ChopboxAnchor(getFigure());
     }
 
+    @Override
     public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection)
     {
         return new ChopboxAnchor(getFigure());
     }
 
+    @Override
     public ConnectionAnchor getTargetConnectionAnchor(Request request)
     {
         return new ChopboxAnchor(getFigure());

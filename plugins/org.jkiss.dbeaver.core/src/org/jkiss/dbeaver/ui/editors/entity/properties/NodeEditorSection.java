@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
@@ -52,6 +52,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         }
     }
 
+    @Override
     public void dispose()
     {
         if (editor instanceof IRefreshableContainer) {
@@ -59,6 +60,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         }
     }
 
+    @Override
     public void createControls(Composite parent, TabbedPropertySheetPage tabbedPropertySheetPage)
     {
         this.parent = parent;
@@ -68,11 +70,13 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
     {
     }
 
+    @Override
     public void setInput(IWorkbenchPart part, ISelection selection)
     {
         this.editor = (IDatabaseEditor)part;
     }
 
+    @Override
     public void aboutToBeShown()
     {
         if (itemControl == null) {
@@ -93,6 +97,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         }
     }
 
+    @Override
     public void aboutToBeHidden()
     {
         if (itemControl != null) {
@@ -130,16 +135,19 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         parent.layout();
     }
 
+    @Override
     public int getMinimumHeight()
     {
         return SWT.DEFAULT;
     }
 
+    @Override
     public boolean shouldUseExtraSpace()
     {
         return true;
     }
 
+    @Override
     public void refresh()
     {
         // Do nothing
@@ -156,21 +164,25 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
         return getEditorInput().getDataSource();
     }
 
+    @Override
     public boolean isSearchPossible()
     {
         return itemControl.isSearchPossible();
     }
 
+    @Override
     public boolean isSearchEnabled()
     {
         return itemControl.isSearchEnabled();
     }
 
+    @Override
     public boolean performSearch(SearchType searchType)
     {
         return itemControl.performSearch(searchType);
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         if (!activated || itemControl == null || itemControl.isDisposed()) {

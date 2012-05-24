@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dnd;
@@ -34,7 +34,8 @@ public abstract class LocalObjectTransfer<OBJECT_TYPE> extends ByteArrayTransfer
 	 *
 	 * @see org.eclipse.swt.dnd.Transfer#javaToNative(Object, org.eclipse.swt.dnd.TransferData)
 	 */
-	public void javaToNative(Object object, TransferData transferData) {
+	@Override
+    public void javaToNative(Object object, TransferData transferData) {
 		setObject((OBJECT_TYPE)object);
 		startTime = System.currentTimeMillis();
 		if (transferData != null)
@@ -49,7 +50,8 @@ public abstract class LocalObjectTransfer<OBJECT_TYPE> extends ByteArrayTransfer
 	 *
 	 * @see org.eclipse.swt.dnd.Transfer#nativeToJava(org.eclipse.swt.dnd.TransferData)
 	 */
-	public Object nativeToJava(TransferData transferData) {
+	@Override
+    public Object nativeToJava(TransferData transferData) {
 		byte bytes[] = (byte[]) super.nativeToJava(transferData);
 		if (bytes == null) {
 			return null;

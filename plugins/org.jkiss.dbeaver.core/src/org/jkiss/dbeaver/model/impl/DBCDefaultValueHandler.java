@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl;
@@ -21,16 +21,19 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     public static final DBCDefaultValueHandler INSTANCE = new DBCDefaultValueHandler();
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return Object.class;
     }
 
+    @Override
     public Object getValueObject(
         DBCExecutionContext context,
         DBCResultSet resultSet,
@@ -40,6 +43,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         return resultSet.getColumnValue(columnIndex + 1);
     }
 
+    @Override
     public void bindValueObject(
         DBCExecutionContext context,
         DBCStatement statement,
@@ -50,11 +54,13 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         
     }
 
+    @Override
     public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
     {
         return null;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
@@ -67,26 +73,32 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         return null;
     }
 
+    @Override
     public void releaseValueObject(Object value) {
         if (value instanceof DBDValue) {
             ((DBDValue) value).release();
         }
     }
 
+    @Override
     public String getValueDisplayString(DBSTypedObject column, Object value) {
         return DBUtils.getDefaultValueDisplayString(value);
     }
 
+    @Override
     public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column) throws DBCException {
         return null;
     }
 
+    @Override
     public void fillContextMenu(IMenuManager menuManager, DBDValueController controller) throws DBCException {
     }
 
+    @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller) {
     }
 
+    @Override
     public boolean editValue(DBDValueController controller) throws DBException {
         TextViewDialog dialog = new TextViewDialog(controller);
         dialog.open();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl;
@@ -27,34 +27,40 @@ public class StringContentStorage implements DBDContentStorage {
         this.data = data;
     }
 
+    @Override
     public InputStream getContentStream()
         throws IOException
     {
         return new ByteArrayInputStream(data.getBytes());
     }
 
+    @Override
     public Reader getContentReader()
         throws IOException
     {
         return new StringReader(data);
     }
 
+    @Override
     public long getContentLength()
     {
         return data.length();
     }
 
+    @Override
     public String getCharset()
     {
         return ContentUtils.DEFAULT_FILE_CHARSET;
     }
 
+    @Override
     public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
         throws IOException
     {
         return new StringContentStorage(data);
     }
 
+    @Override
     public void release()
     {
         data = null;

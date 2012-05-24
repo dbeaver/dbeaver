@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model.session;
@@ -33,11 +33,13 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
         this.dataSource = dataSource;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @Override
     public Collection<MySQLSession> getSessions(DBCExecutionContext context, Map<String, Object> options) throws DBException
     {
         try {
@@ -61,6 +63,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
         }
     }
 
+    @Override
     public void alterSession(DBCExecutionContext context, MySQLSession session, Map<String, Object> options) throws DBException
     {
         try {

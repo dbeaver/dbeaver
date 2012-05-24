@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -29,6 +29,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCBooleanValueHandler.class);
 
+    @Override
     protected Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
                                     int columnIndex)
         throws DBCException, SQLException
@@ -37,6 +38,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         return resultSet.wasNull() ? null : value;
     }
 
+    @Override
     protected void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException
     {
@@ -47,16 +49,19 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return Boolean.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
@@ -64,6 +69,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         return value;
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
@@ -72,6 +78,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
 
             CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
             initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
+                @Override
                 public Object getValueFromControl(CCombo control)
                 {
                     switch (control.getSelectionIndex()) {

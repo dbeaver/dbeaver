@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs;
@@ -58,10 +58,12 @@ public class ViewSQLDialog extends Dialog {
         this.showSaveButton = showSaveButton;
     }
 
+    @Override
     protected boolean isResizable() {
     	return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(title);
@@ -78,6 +80,7 @@ public class ViewSQLDialog extends Dialog {
         editorPH.setLayout(new FillLayout());
 
         sqlViewer = new SQLEditorBase() {
+            @Override
             public DBPDataSource getDataSource()
             {
                 return dataSource.getDataSource();
@@ -92,6 +95,7 @@ public class ViewSQLDialog extends Dialog {
         sqlViewer.reloadSyntaxRules();
 
         composite.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 if (sqlViewer != null) {

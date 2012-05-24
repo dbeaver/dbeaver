@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -25,6 +25,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
     private DBDContentStorage originalStorage;
     protected DBDContentStorage storage;
 
+    @Override
     public long getContentLength() throws DBCException {
         if (storage != null) {
             return storage.getContentLength();
@@ -34,6 +35,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
 
     protected abstract long getLOBLength() throws DBCException;
 
+    @Override
     public boolean updateContents(
         DBRProgressMonitor monitor,
         DBDContentStorage storage)
@@ -50,6 +52,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
         return true;
     }
 
+    @Override
     public void release()
     {
         if (storage != null) {
@@ -58,6 +61,7 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
         }
     }
 
+    @Override
     public void resetContents()
     {
         if (this.originalStorage != null) {
@@ -65,11 +69,13 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
         }
     }
 
+    @Override
     public JDBCContentLOB makeNull()
     {
         return createNewContent();
     }
 
+    @Override
     public DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
         throws DBCException
     {

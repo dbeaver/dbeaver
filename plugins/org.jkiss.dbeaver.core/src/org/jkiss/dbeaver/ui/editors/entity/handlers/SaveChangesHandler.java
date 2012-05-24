@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.handlers;
@@ -20,12 +20,14 @@ import java.lang.reflect.InvocationTargetException;
 public class SaveChangesHandler extends AbstractHandler
 {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final EntityEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);
         if (editor != null) {
             try {
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         RuntimeUtils.validateAndSave(monitor, editor);

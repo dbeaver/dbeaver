@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -19,6 +19,7 @@ public class DriverPathDescriptor implements DBPDriverLocalPath
     private String comment;
     private boolean enabled;
 
+    @Override
     public String getPath()
     {
         return path;
@@ -29,6 +30,7 @@ public class DriverPathDescriptor implements DBPDriverLocalPath
         this.path = path;
     }
 
+    @Override
     public String getComment()
     {
         return comment;

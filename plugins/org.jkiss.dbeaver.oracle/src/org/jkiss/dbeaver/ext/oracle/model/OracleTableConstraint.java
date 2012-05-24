@@ -49,6 +49,7 @@ public class OracleTableConstraint extends JDBCTableConstraint<OracleTableBase> 
         this.status = CommonUtils.valueOf(OracleObjectStatus.class, JDBCUtils.safeGetStringTrimmed(dbResult, "STATUS"));
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return getTable().getDataSource();
@@ -73,6 +74,7 @@ public class OracleTableConstraint extends JDBCTableConstraint<OracleTableBase> 
         return status;
     }
 
+    @Override
     public List<OracleTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -91,6 +93,7 @@ public class OracleTableConstraint extends JDBCTableConstraint<OracleTableBase> 
         this.columns = columns;
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),

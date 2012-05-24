@@ -41,6 +41,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         super();
     }
 
+    @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
@@ -54,11 +55,13 @@ public class PrefPageSQLEditor extends TargetPrefPage
         ;
     }
 
+    @Override
     protected boolean supportsDataSourceSpecificOptions()
     {
         return true;
     }
 
+    @Override
     protected Control createPreferenceContent(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -147,6 +150,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         return composite;
     }
 
+    @Override
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
@@ -166,6 +170,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
     }
 
+    @Override
     protected void savePreferences(IPreferenceStore store)
     {
         try {
@@ -187,6 +192,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         RuntimeUtils.savePreferenceStore(store);
     }
 
+    @Override
     protected void clearPreferences(IPreferenceStore store)
     {
         store.setToDefault(PrefConstants.STATEMENT_TIMEOUT);
@@ -203,11 +209,13 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(PrefConstants.SCRIPT_AUTO_FOLDERS);
     }
 
+    @Override
     public void applyData(Object data)
     {
         super.applyData(data);
     }
 
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

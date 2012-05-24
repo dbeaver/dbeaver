@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
@@ -35,6 +35,7 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
         createContextMenu();
     }
 
+    @Override
     protected ObjectViewerRenderer createRenderer()
     {
         return new ObjectListRenderer();
@@ -46,9 +47,11 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
         menuMgr.addMenuListener(new IMenuListener() {
+            @Override
             public void menuAboutToShow(IMenuManager manager)
             {
                 IAction copyAction = new Action(CoreMessages.controls_itemlist_action_copy) {
+                    @Override
                     public void run()
                     {
                         String text = getRenderer().getSelectedText();
@@ -66,11 +69,13 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
     }
 
     private class ObjectListRenderer extends ViewerRenderer {
+        @Override
         public boolean isHyperlink(Object cellValue)
         {
             return cellValue instanceof DBSObject;
         }
 
+        @Override
         public void navigateHyperlink(Object cellValue)
         {
             if (cellValue instanceof DBSObject) {

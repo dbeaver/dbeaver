@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.data;
@@ -20,6 +20,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public static final String PROP_MIN_FRACT_DIGITS  ="minFractionDigits";
     public static final String PROP_ROUNDING_MODE ="roundingMode";
 
+    @Override
     public Map<Object, Object> getDefaultProperties(Locale locale)
     {
         NumberFormat tmp = NumberFormat.getNumberInstance(locale);
@@ -33,6 +34,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
         return props;
     }
 
+    @Override
     public Object getSampleValue()
     {
         return 1234567890.012345;

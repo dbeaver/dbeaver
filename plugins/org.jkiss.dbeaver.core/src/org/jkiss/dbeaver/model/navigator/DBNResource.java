@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -40,6 +40,7 @@ public class DBNResource extends DBNNode
         this.handler = handler;
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         this.resource = null;
@@ -67,6 +68,7 @@ public class DBNResource extends DBNNode
         return handler.getTypeName(resource);
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getNodeName()
     {
@@ -80,6 +82,7 @@ public class DBNResource extends DBNNode
 //        return resource.getFullPath().lastSegment();
     }
 
+    @Override
     public String getNodeDescription()
     {
         return handler.getResourceDescription(getResource());
@@ -185,6 +188,7 @@ public class DBNResource extends DBNNode
         }
     }
 
+    @Override
     public boolean isManagable()
     {
         return true;
@@ -225,6 +229,7 @@ public class DBNResource extends DBNNode
         }
     }
 
+    @Override
     public boolean supportsDrop(DBNNode otherNode)
     {
         if (!(resource instanceof IFolder) || (getFeatures() & DBPResourceHandler.FEATURE_MOVE_INTO) == 0) {
@@ -243,6 +248,7 @@ public class DBNResource extends DBNNode
             && ((DBNResource)otherNode).handler == this.handler;
     }
 
+    @Override
     public void dropNode(DBNNode otherNode) throws DBException
     {
         DBNResource resourceNode = (DBNResource)otherNode;
@@ -270,6 +276,7 @@ public class DBNResource extends DBNNode
     protected void sortChildren(List<DBNNode> list)
     {
         Collections.sort(list, new Comparator<DBNNode>() {
+            @Override
             public int compare(DBNNode o1, DBNNode o2)
             {
                 if (o1 instanceof DBNProjectDatabases) {

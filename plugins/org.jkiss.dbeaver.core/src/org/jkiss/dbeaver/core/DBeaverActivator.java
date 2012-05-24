@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -65,6 +65,7 @@ public class DBeaverActivator extends AbstractUIPlugin
       * (non-Javadoc)
       * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
       */
+    @Override
     public void stop(BundleContext context)
         throws Exception
     {

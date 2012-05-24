@@ -28,6 +28,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         super(tableCache, GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.PK_NAME);
     }
 
+    @Override
     protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
     {
@@ -48,6 +49,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
     }
 
+    @Override
     protected GenericPrimaryKey fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String pkName, ResultSet dbResult)
         throws SQLException, DBException
     {
@@ -59,6 +61,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             true);
     }
 
+    @Override
     protected GenericTableConstraintColumn fetchObjectRow(
         JDBCExecutionContext context,
         GenericTable parent, GenericPrimaryKey object, ResultSet dbResult)
@@ -79,16 +82,19 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         return new GenericTableConstraintColumn(object, tableColumn, keySeq);
     }
 
+    @Override
     protected Collection<GenericPrimaryKey> getObjectsCache(GenericTable parent)
     {
         return parent.getConstraintsCache();
     }
 
+    @Override
     protected void cacheObjects(GenericTable parent, List<GenericPrimaryKey> primaryKeys)
     {
         parent.setUniqueKeys(primaryKeys);
     }
 
+    @Override
     protected void cacheChildren(GenericPrimaryKey primaryKey, List<GenericTableConstraintColumn> rows)
     {
         primaryKey.setColumns(rows);

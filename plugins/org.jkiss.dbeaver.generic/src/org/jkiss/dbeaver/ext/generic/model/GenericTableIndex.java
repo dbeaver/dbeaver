@@ -56,17 +56,20 @@ public class GenericTableIndex extends JDBCTableIndex<GenericTable>
         }
     }
 
+    @Override
     public GenericDataSource getDataSource()
     {
         return getTable().getDataSource();
     }
 
+    @Override
     @Property(name = "Index Description", viewable = true, order = 100)
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     @Property(name = "Unique", viewable = true, order = 4)
     public boolean isUnique()
     {
@@ -85,6 +88,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericTable>
         return cardinality;
     }
 
+    @Override
     public List<GenericTableIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -108,6 +112,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericTable>
         columns.add(column);
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),

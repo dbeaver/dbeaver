@@ -40,6 +40,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
         }
     }
 
+    @Override
     public List<GenericTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -58,6 +59,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
         this.columns = columns;
         if (!CommonUtils.isEmpty(this.columns) && this.columns.size() > 1) {
             Collections.sort(columns, new Comparator<GenericTableConstraintColumn>() {
+                @Override
                 public int compare(GenericTableConstraintColumn o1, GenericTableConstraintColumn o2)
                 {
                     return o1.getOrdinalPosition() - o2.getOrdinalPosition();

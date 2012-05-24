@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.indent;
@@ -41,6 +41,7 @@ public class SQLHeuristicScanner implements Symbols
      */
     private static class NonWhitespace implements StopCondition
     {
+        @Override
         public boolean stop(char ch, int position, boolean forward)
         {
             return !Character.isWhitespace(ch);
@@ -57,6 +58,7 @@ public class SQLHeuristicScanner implements Symbols
         /*
          * @see org.eclipse.jdt.sqleditor.ui.text.SQLHeuristicScanner.StopCondition#stop(char)
          */
+        @Override
         public boolean stop(char ch, int position, boolean forward)
         {
             return super.stop(ch, position, true) && isDefaultPartition(position);
@@ -68,6 +70,7 @@ public class SQLHeuristicScanner implements Symbols
      */
     private static class NonSQLIdentifierPart implements StopCondition
     {
+        @Override
         public boolean stop(char ch, int position, boolean forward)
         {
             return !Character.isJavaIdentifierPart(ch);
@@ -81,6 +84,7 @@ public class SQLHeuristicScanner implements Symbols
      */
     private class NonSQLIdentifierPartDefaultPartition extends NonSQLIdentifierPart
     {
+        @Override
         public boolean stop(char ch, int position, boolean forward)
         {
             return super.stop(ch, position, true) || !isDefaultPartition(position);
@@ -107,6 +111,7 @@ public class SQLHeuristicScanner implements Symbols
             Arrays.sort(chars);
         }
 
+        @Override
         public boolean stop(char ch, int position, boolean forward)
         {
             return Arrays.binarySearch(_chars, ch) >= 0 && isDefaultPartition(position);
@@ -131,6 +136,7 @@ public class SQLHeuristicScanner implements Symbols
             super(chars);
         }
 
+        @Override
         public boolean stop(char ch, int position, boolean forward)
         {
             if (_depth == 0 && super.stop(ch, position, true))

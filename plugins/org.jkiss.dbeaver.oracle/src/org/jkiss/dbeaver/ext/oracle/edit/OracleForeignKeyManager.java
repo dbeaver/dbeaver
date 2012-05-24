@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleTableForeignKey, OracleTableBase> {
 
 
+    @Override
     protected OracleTableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase table, Object from)
     {
         EditForeignKeyDialog editDialog = new EditForeignKeyDialog(
@@ -58,6 +59,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleTableFo
         return foreignKey;
     }
 
+    @Override
     protected String getDropForeignKeyPattern(OracleTableForeignKey foreignKey)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.querylog;
@@ -99,18 +99,21 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
     private static LogColumn COLUMN_TIME = new LogColumn(CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
         private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
+        @Override
         String getText(QMMObject object)
         {
             return timeFormat.format(new Date(object.getOpenTime()));
         }
     };
     private static LogColumn COLUMN_TYPE = new LogColumn(CoreMessages.controls_querylog_column_type_name, CoreMessages.controls_querylog_column_type_tooltip, 100) {
+        @Override
         String getText(QMMObject object)
         {
             return getObjectType(object);
         }
     };
     private static LogColumn COLUMN_TEXT = new LogColumn(CoreMessages.controls_querylog_column_text_name, CoreMessages.controls_querylog_column_text_tooltip, 400) {
+        @Override
         String getText(QMMObject object)
         {
             if (object instanceof QMMStatementExecuteInfo) {
@@ -142,6 +145,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         }
     };
     private static LogColumn COLUMN_DURATION = new LogColumn(CoreMessages.controls_querylog_column_duration_name, CoreMessages.controls_querylog_column_duration_tooltip, 100) {
+        @Override
         String getText(QMMObject object)
         {
             if (object instanceof QMMStatementExecuteInfo) {
@@ -177,6 +181,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         }
     };
     private static LogColumn COLUMN_ROWS = new LogColumn(CoreMessages.controls_querylog_column_rows_name, CoreMessages.controls_querylog_column_rows_tooltip, 120) {
+        @Override
         String getText(QMMObject object)
         {
             if (object instanceof QMMStatementExecuteInfo) {
@@ -189,6 +194,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         }
     };
     private static LogColumn COLUMN_RESULT = new LogColumn(CoreMessages.controls_querylog_column_result_name, CoreMessages.controls_querylog_column_result_tooltip, 120) {
+        @Override
         String getText(QMMObject object)
         {
             if (object instanceof QMMStatementExecuteInfo) {
@@ -276,6 +282,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             focusService.addFocusTracker(logTable, QUERY_LOG_CONTROL_ID);
 
             logTable.addDisposeListener(new DisposeListener() {
+                @Override
                 public void widgetDisposed(DisposeEvent e)
                 {
                     // Unregister from focus service
@@ -358,20 +365,24 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         this.filter = filter;
     }
 
+    @Override
     public Control getControl()
     {
         return logTable;
     }
 
+    @Override
     public Object getInput()
     {
         return null;
     }
 
+    @Override
     public void setInput(Object input)
     {
     }
 
+    @Override
     public IStructuredSelection getSelection()
     {
         TableItem[] items = logTable.getSelection();
@@ -382,10 +393,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         return new StructuredSelection(data);
     }
 
+    @Override
     public void setSelection(ISelection selection, boolean reveal)
     {
     }
 
+    @Override
     public void refresh()
     {
         // Refresh plan
@@ -479,6 +492,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         metaInfoChanged(QMUtils.getPastMetaEvents());
     }
 
+    @Override
     public synchronized void metaInfoChanged(java.util.List<QMMetaEvent> events)
     {
         if (logTable.isDisposed()) {
@@ -590,9 +604,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(logTable);
         menuMgr.addMenuListener(new IMenuListener() {
+            @Override
             public void menuAboutToShow(IMenuManager manager)
             {
                 IAction copyAction = new Action(CoreMessages.controls_querylog_action_copy) {
+                    @Override
                     public void run()
                     {
                         copySelectionToClipboard(false);
@@ -602,6 +618,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                 copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
 
                 IAction copyAllAction = new Action(CoreMessages.controls_querylog_action_copy_all_fields) {
+                    @Override
                     public void run()
                     {
                         copySelectionToClipboard(true);
@@ -611,6 +628,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                 copyAllAction.setActionDefinitionId(ICommandIds.CMD_COPY_SPECIAL);
 
                 IAction selectAllAction = new Action(CoreMessages.controls_querylog_action_select_all) {
+                    @Override
                     public void run()
                     {
                         selectAll();
@@ -619,6 +637,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                 selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
 
                 IAction clearLogAction = new Action(CoreMessages.controls_querylog_action_clear_log) {
+                    @Override
                     public void run()
                     {
                         clearLog();
@@ -646,8 +665,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         dndSource.setTransfer(types);
         dndSource.addDragListener (new DragSourceListener() {
 
+            @Override
             public void dragStart(DragSourceEvent event) {
             }
+            @Override
             public void dragSetData (DragSourceEvent event) {
                 String tdt = getSelectedText(false);
                 if (!CommonUtils.isEmpty(tdt)) {
@@ -656,6 +677,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                     event.data = ""; //$NON-NLS-1$
                 }
             }
+            @Override
             public void dragFinished(DragSourceEvent event) {
             }
         });
@@ -724,6 +746,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
     private ConfigRefreshJob configRefreshJob = null;
 
+    @Override
     public synchronized void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().startsWith(QMConstants.PROP_PREFIX)) {
@@ -748,6 +771,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         {
             super(CoreMessages.controls_querylog_job_refresh);
         }
+        @Override
         protected IStatus runInUIThread(DBRProgressMonitor monitor)
         {
             reloadEvents();
@@ -767,12 +791,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             this.object = object;
         }
 
+        @Override
         protected void configureShell(Shell shell) {
             super.configureShell(shell);
             shell.setText(CoreMessages.controls_querylog_shell_text + COLUMN_TYPE.getText(object));
         }
 
-	    protected Control createDialogArea(Composite parent) {
+	    @Override
+        protected Control createDialogArea(Composite parent) {
 
             final Composite composite = new Composite(parent, SWT.NONE);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));

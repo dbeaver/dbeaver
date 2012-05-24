@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.command;
@@ -19,10 +19,12 @@ public class BendpointCreateCommand extends BendpointCommand {
         this.bendpointIndex = bendpointIndex;
     }
 
+    @Override
     public void execute() {
         association.addBendpoint(bendpointIndex, location);
     }
 
+    @Override
     public void undo() {
         association.removeBendpoint(bendpointIndex);
     }

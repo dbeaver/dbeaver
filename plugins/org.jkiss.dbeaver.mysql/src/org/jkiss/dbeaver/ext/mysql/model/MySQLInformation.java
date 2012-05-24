@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -18,16 +18,19 @@ public abstract class MySQLInformation implements DBSObject {
         this.dataSource = dataSource;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getDataSource().getContainer();
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

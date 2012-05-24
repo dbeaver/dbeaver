@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -36,11 +36,13 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         this.privilege = privilege;
     }
 
+    @Override
     public void updateModel()
     {
         getObject().clearGrantsCache();
     }
 
+    @Override
     public IDatabasePersistAction[] getPersistActions()
     {
         String privName = privilege.getName();

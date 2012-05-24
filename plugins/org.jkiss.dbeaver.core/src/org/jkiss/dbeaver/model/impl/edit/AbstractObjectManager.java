@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.edit;
@@ -21,11 +21,13 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
 
     public static class CreateObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
 
+        @Override
         public void redoCommand(DBECommand<OBJECT_TYPE> command)
         {
             DBUtils.fireObjectAdd(command.getObject());
         }
 
+        @Override
         public void undoCommand(DBECommand<OBJECT_TYPE> command)
         {
             DBUtils.fireObjectRemove(command.getObject());
@@ -34,11 +36,13 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
 
     public static class DeleteObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
 
+        @Override
         public void redoCommand(DBECommand<OBJECT_TYPE> command)
         {
             DBUtils.fireObjectRemove(command.getObject());
         }
 
+        @Override
         public void undoCommand(DBECommand<OBJECT_TYPE> command)
         {
             DBUtils.fireObjectAdd(command.getObject());

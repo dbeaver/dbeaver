@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.edit.prop;
@@ -54,6 +54,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
         widget.addListener(SWT.FocusOut, listener);
         widget.addListener(SWT.Modify, listener);
         widget.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 //widget.removeListener();
@@ -126,6 +127,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
     }
 
     private class WidgetListener implements Listener {
+        @Override
         public void handleEvent(Event event)
         {
             switch (event.type) {
@@ -146,11 +148,13 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                 {
                     final Object newValue = readWidgetValue();
                     DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>> commandReflector = new DBECommandReflector<OBJECT_TYPE, DBECommandProperty<OBJECT_TYPE>>() {
+                        @Override
                         public void redoCommand(DBECommandProperty<OBJECT_TYPE> command)
                         {
                             writeWidgetValue(command.getNewValue());
                         }
 
+                        @Override
                         public void undoCommand(DBECommandProperty<OBJECT_TYPE> command)
                         {
                             writeWidgetValue(command.getOldValue());

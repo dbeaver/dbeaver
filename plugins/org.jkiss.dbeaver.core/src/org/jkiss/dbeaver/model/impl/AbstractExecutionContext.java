@@ -36,31 +36,37 @@ public abstract class AbstractExecutionContext implements DBCExecutionContext, D
         QMUtils.getDefaultHandler().handleContextOpen(this);
     }
 
+    @Override
     public String getTaskTitle()
     {
         return taskTitle;
     }
 
+    @Override
     public boolean isConnected()
     {
         return true;
     }
 
+    @Override
     public DBRProgressMonitor getProgressMonitor()
     {
         return monitor;
     }
 
+    @Override
     public DBCTransactionManager getTransactionManager()
     {
         return new AbstractTransactionManager();
     }
 
+    @Override
     public DBCExecutionPurpose getPurpose()
     {
         return purpose;
     }
 
+    @Override
     public DBDDataFormatterProfile getDataFormatterProfile()
     {
         if (dataFormatterProfile == null) {
@@ -69,16 +75,19 @@ public abstract class AbstractExecutionContext implements DBCExecutionContext, D
         return dataFormatterProfile;
     }
 
+    @Override
     public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile)
     {
         dataFormatterProfile = formatterProfile;
     }
 
+    @Override
     public DBDValueHandler getDefaultValueHandler()
     {
         return DBCDefaultValueHandler.INSTANCE;
     }
 
+    @Override
     public void close()
     {
         QMUtils.getDefaultHandler().handleContextClose(this);
@@ -86,58 +95,68 @@ public abstract class AbstractExecutionContext implements DBCExecutionContext, D
 
     protected class AbstractTransactionManager implements DBCTransactionManager {
 
+        @Override
         public DBPDataSource getDataSource()
         {
             return AbstractExecutionContext.this.getDataSource();
         }
 
+        @Override
         public DBPTransactionIsolation getTransactionIsolation()
             throws DBCException
         {
             return null;
         }
 
+        @Override
         public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation)
             throws DBCException
         {
             throw new DBCException("Transaction isolation change not supported");
         }
 
+        @Override
         public boolean isAutoCommit()
             throws DBCException
         {
             return true;
         }
 
+        @Override
         public void setAutoCommit(boolean autoCommit)
             throws DBCException
         {
             throw new DBCException("Auto-commit change not supported");
         }
 
+        @Override
         public boolean supportsSavepoints()
         {
             return getDataSource().getInfo().supportsSavepoints();
         }
 
+        @Override
         public DBCSavepoint setSavepoint(String name)
             throws DBCException
         {
             throw new DBCException("Savepoint not supported");
         }
 
+        @Override
         public void releaseSavepoint(DBCSavepoint savepoint)
             throws DBCException
         {
             throw new DBCException("Savepoint not supported");
         }
 
+        @Override
         public void commit()
             throws DBCException
         {
             // do nothing
         }
 
+        @Override
         public void rollback(DBCSavepoint savepoint)
             throws DBCException
         {

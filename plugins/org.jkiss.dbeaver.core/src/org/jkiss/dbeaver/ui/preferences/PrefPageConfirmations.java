@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
@@ -34,6 +34,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
 
     private Map<String, Combo> confirmChecks = new HashMap<String, Combo>();
 
+    @Override
     public void init(IWorkbench workbench)
     {
 

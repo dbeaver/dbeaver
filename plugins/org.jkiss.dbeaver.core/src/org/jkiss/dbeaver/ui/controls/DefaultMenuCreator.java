@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -14,15 +14,18 @@ import org.eclipse.swt.widgets.Menu;
 public class DefaultMenuCreator implements IMenuCreator
 {
 
+    @Override
     public void dispose()
     {
     }
 
+    @Override
     public Menu getMenu(Control parent)
     {
         return null;
     }
 
+    @Override
     public Menu getMenu(Menu parent)
     {
         return null;

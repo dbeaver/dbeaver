@@ -73,17 +73,20 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         properties.clear();
     }
 
+    @Override
     public void addPropertyChangeListener(IPropertyChangeListener listener)
     {
         addListenerObject(listener);
     }
 
+    @Override
     public boolean contains(String name)
     {
         return (properties.containsKey(name) || defaultProperties
             .containsKey(name));
     }
 
+    @Override
     public void firePropertyChangeEvent(String name, Object oldValue, Object newValue)
     {
         final Object[] finalListeners = getListeners();
@@ -96,6 +99,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
                 final IPropertyChangeListener l = (IPropertyChangeListener) finalListeners[i];
                 SafeRunnable.run(new SafeRunnable(JFaceResources.getString("PreferenceStore.changeError")) //$NON-NLS-1$
                 {
+                    @Override
                     public void run()
                     {
                         l.propertyChange(pe);
@@ -105,11 +109,13 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
     }
 
+    @Override
     public boolean getBoolean(String name)
     {
         return getBoolean(properties, true, false, name);
     }
 
+    @Override
     public boolean getDefaultBoolean(String name)
     {
         return getBoolean(defaultProperties, true, true, name);
@@ -126,11 +132,13 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return value.equals(IPreferenceStore.TRUE);
     }
 
+    @Override
     public double getDouble(String name)
     {
         return getDouble(properties, true, false, name);
     }
 
+    @Override
     public double getDefaultDouble(String name)
     {
         return getDouble(defaultProperties, true, true, name);
@@ -153,11 +161,13 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return ival;
     }
 
+    @Override
     public float getFloat(String name)
     {
         return getFloat(properties, true, false, name);
     }
 
+    @Override
     public float getDefaultFloat(String name)
     {
         return getFloat(defaultProperties, true, true, name);
@@ -180,11 +190,13 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return ival;
     }
 
+    @Override
     public int getInt(String name)
     {
         return getInt(properties, true, false, name);
     }
 
+    @Override
     public int getDefaultInt(String name)
     {
         return getInt(defaultProperties, true, true, name);
@@ -207,11 +219,13 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return ival;
     }
 
+    @Override
     public long getLong(String name)
     {
         return getLong(properties, true, false, name);
     }
 
+    @Override
     public long getDefaultLong(String name)
     {
         return getLong(defaultProperties, true, true, name);
@@ -234,11 +248,13 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return ival;
     }
 
+    @Override
     public String getString(String name)
     {
         return getString(properties, true, false, name);
     }
 
+    @Override
     public String getDefaultString(String name)
     {
         return getString(defaultProperties, true, true, name);
@@ -255,6 +271,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return value;
     }
 
+    @Override
     public boolean isDefault(String name)
     {
         return (!properties.containsKey(name) && defaultProperties
@@ -266,6 +283,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return properties.containsKey(name);
     }
 
+    @Override
     public boolean needsSaving()
     {
         return dirty;
@@ -276,6 +294,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         return properties.keySet().toArray(new String[properties.size()]);
     }
 
+    @Override
     public void putValue(String name, String value)
     {
         String oldValue = getString(properties, false, false, name);
@@ -285,41 +304,49 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
     }
 
+    @Override
     public void removePropertyChangeListener(IPropertyChangeListener listener)
     {
         removeListenerObject(listener);
     }
 
+    @Override
     public void setDefault(String name, double value)
     {
         setValue(defaultProperties, name, value);
     }
 
+    @Override
     public void setDefault(String name, float value)
     {
         setValue(defaultProperties, name, value);
     }
 
+    @Override
     public void setDefault(String name, int value)
     {
         setValue(defaultProperties, name, value);
     }
 
+    @Override
     public void setDefault(String name, long value)
     {
         setValue(defaultProperties, name, value);
     }
 
+    @Override
     public void setDefault(String name, String value)
     {
         setValue(defaultProperties, name, value);
     }
 
+    @Override
     public void setDefault(String name, boolean value)
     {
         setValue(defaultProperties, name, value);
     }
 
+    @Override
     public void setToDefault(String name)
     {
         Object oldValue = properties.get(name);
@@ -332,6 +359,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         firePropertyChangeEvent(name, oldValue, newValue);
     }
 
+    @Override
     public void setValue(String name, double value)
     {
         double oldValue = getDouble(properties, false, false, name);
@@ -342,6 +370,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
     }
 
+    @Override
     public void setValue(String name, float value)
     {
         float oldValue = getFloat(properties, false, false, name);
@@ -352,6 +381,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
     }
 
+    @Override
     public void setValue(String name, int value)
     {
         int oldValue = getInt(properties, false, false, name);
@@ -362,6 +392,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
     }
 
+    @Override
     public void setValue(String name, long value)
     {
         long oldValue = getLong(properties, false, false, name);
@@ -372,6 +403,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
     }
 
+    @Override
     public void setValue(String name, String value)
     {
         String oldValue = getString(properties, false, false, name);
@@ -382,6 +414,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
         }
     }
 
+    @Override
     public void setValue(String name, boolean value)
     {
         boolean oldValue = getBoolean(properties, false, false, name);

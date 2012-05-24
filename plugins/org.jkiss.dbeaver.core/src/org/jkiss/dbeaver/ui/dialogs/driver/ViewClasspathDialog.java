@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.driver;
@@ -26,11 +26,13 @@ public class ViewClasspathDialog extends Dialog
         super(shell);
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(CoreMessages.dialog_view_classpath_title);
@@ -59,6 +61,7 @@ public class ViewClasspathDialog extends Dialog
         return group;
     }
 
+    @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
         createButton(

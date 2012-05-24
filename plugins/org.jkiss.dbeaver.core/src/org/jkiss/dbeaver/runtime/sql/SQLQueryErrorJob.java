@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.sql;
@@ -27,6 +27,7 @@ public class SQLQueryErrorJob extends AbstractUIJob {
         this.script = script;
     }
 
+    @Override
     public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
         SQLQueryErrorDialog dialog = new SQLQueryErrorDialog(

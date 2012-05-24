@@ -40,6 +40,7 @@ public class DiagramPart extends PropertyAwarePart {
 
     CommandStackListener stackListener = new CommandStackListener() {
 
+        @Override
         public void commandStackChanged(EventObject event)
         {
             if (delegatingLayoutManager.getActiveLayoutManager() instanceof GraphLayoutAuto) {
@@ -62,6 +63,7 @@ public class DiagramPart extends PropertyAwarePart {
      * Adds this EditPart as a command stack listener, which can be used to call
      * performUpdate() when it changes
      */
+    @Override
     public void activate()
     {
         super.activate();
@@ -71,6 +73,7 @@ public class DiagramPart extends PropertyAwarePart {
     /**
      * Removes this EditPart as a command stack listener
      */
+    @Override
     public void deactivate()
     {
         resetFonts();
@@ -89,6 +92,7 @@ public class DiagramPart extends PropertyAwarePart {
         boldItalicFont = null;
     }
 
+    @Override
     protected IFigure createFigure()
     {
         Figure figure = new EntityDiagramFigure();
@@ -168,6 +172,7 @@ public class DiagramPart extends PropertyAwarePart {
     /**
      * @return the children Model objects as a new ArrayList
      */
+    @Override
     protected List<?> getModelChildren()
     {
         return getDiagram().getContents();
@@ -176,6 +181,7 @@ public class DiagramPart extends PropertyAwarePart {
     /**
      * @see org.eclipse.gef.editparts.AbstractEditPart#isSelectable()
      */
+    @Override
     public boolean isSelectable()
     {
         return false;
@@ -185,6 +191,7 @@ public class DiagramPart extends PropertyAwarePart {
      * Creates EditPolicy objects for the EditPart. The LAYOUT_ROLE policy is
      * left to the delegating layout manager
      */
+    @Override
     protected void createEditPolicies()
     {
         installEditPolicy(EditPolicy.CONTAINER_ROLE, new DiagramContainerEditPolicy());
@@ -275,6 +282,7 @@ public class DiagramPart extends PropertyAwarePart {
     /**
      * Sets layout constraint only if XYLayout is active
      */
+    @Override
     public void setLayoutConstraint(EditPart child, IFigure childFigure, Object constraint)
     {
         super.setLayoutConstraint(child, childFigure, constraint);
@@ -285,6 +293,7 @@ public class DiagramPart extends PropertyAwarePart {
      * changed. The delegating layout manager will then decide whether to
      * delegate layout to the XY or Graph layout
      */
+    @Override
     protected void handleChildChange(PropertyChangeEvent evt)
     {
         super.handleChildChange(evt);

@@ -35,7 +35,8 @@ public class AssociationReconnectSourceCommand extends Command
 	 * Makes sure that primary key doesn't reconnect to itself or try to create
 	 * a relationship which already exists
 	 */
-	public boolean canExecute()
+	@Override
+    public boolean canExecute()
 	{
 
 		boolean returnVal = true;
@@ -71,7 +72,8 @@ public class AssociationReconnectSourceCommand extends Command
 	/**
 	 * @see org.eclipse.gef.commands.Command#execute()
 	 */
-	public void execute()
+	@Override
+    public void execute()
 	{
 		if (sourceForeignKey != null)
 		{
@@ -139,7 +141,8 @@ public class AssociationReconnectSourceCommand extends Command
 	/**
 	 * @see org.eclipse.gef.commands.Command#undo()
 	 */
-	public void undo()
+	@Override
+    public void undo()
 	{
 		sourceForeignKey.removeForeignKeyRelationship(relationship, true);
 		relationship.setForeignKeyEntity(oldSourceForeignKey);

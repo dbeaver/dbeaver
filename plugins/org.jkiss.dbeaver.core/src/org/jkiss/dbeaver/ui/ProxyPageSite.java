@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui;
@@ -22,11 +22,13 @@ public class ProxyPageSite implements IPageSite {
         this.partSite = partSite;
     }
 
+    @Override
     public void registerContextMenu(String menuId, MenuManager menuManager, ISelectionProvider selectionProvider)
     {
         partSite.registerContextMenu(menuId, menuManager, selectionProvider);
     }
 
+    @Override
     public IActionBars getActionBars()
     {
         if (partSite instanceof IEditorSite) {
@@ -38,41 +40,49 @@ public class ProxyPageSite implements IPageSite {
         }
     }
 
+    @Override
     public IWorkbenchPage getPage()
     {
         return partSite.getPage();
     }
 
+    @Override
     public ISelectionProvider getSelectionProvider()
     {
         return partSite.getSelectionProvider();
     }
 
+    @Override
     public Shell getShell()
     {
         return partSite.getShell();
     }
 
+    @Override
     public IWorkbenchWindow getWorkbenchWindow()
     {
         return partSite.getWorkbenchWindow();
     }
 
+    @Override
     public void setSelectionProvider(ISelectionProvider provider)
     {
         partSite.setSelectionProvider(provider);
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         return partSite.getAdapter(adapter);
     }
 
+    @Override
     public Object getService(Class api)
     {
         return partSite.getService(api);
     }
 
+    @Override
     public boolean hasService(Class api)
     {
         return partSite.hasService(api);

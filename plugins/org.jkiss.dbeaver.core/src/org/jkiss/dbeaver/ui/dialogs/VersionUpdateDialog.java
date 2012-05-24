@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs;
@@ -32,6 +32,7 @@ public class VersionUpdateDialog extends Dialog {
         this.newVersion = newVersion;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(CoreMessages.dialog_version_update_title);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -52,6 +52,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         super(configurer);
     }
 
+    @Override
     protected void makeActions(final IWorkbenchWindow window)
     {
         register(ActionFactory.SAVE.create(window));
@@ -73,6 +74,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         register(newWindowAction);
     }
 
+    @Override
     protected void fillMenuBar(IMenuManager menuBar)
     {
         MenuManager fileMenu = new MenuManager(CoreMessages.actions_menu_file, IWorkbenchActionConstants.M_FILE);
@@ -154,6 +156,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         helpMenu.add(ActionUtils.makeAction(checkUpdatesAction, null, null, CoreMessages.actions_menu_check_update, null, null));
     }
 
+    @Override
     protected void fillCoolBar(ICoolBarManager coolBar)
     {
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATABASE));

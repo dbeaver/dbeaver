@@ -32,6 +32,7 @@ public final class DBUtils {
     public static <TYPE extends DBSObject> Comparator<TYPE> nameComparator()
     {
         return new Comparator<TYPE>() {
+            @Override
             public int compare(DBSObject o1, DBSObject o2)
             {
                 return o1.getName().compareTo(o2.getName());
@@ -736,6 +737,7 @@ public final class DBUtils {
     public static <T extends DBPNamedObject> void orderObjects(List<T> objects)
     {
         Collections.sort(objects, new Comparator<T>() {
+            @Override
             public int compare(T o1, T o2)
             {
                 return o1.getName().compareTo(o2.getName());
@@ -814,6 +816,7 @@ public final class DBUtils {
             this.column = column;
         }
 
+        @Override
         public void run(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {

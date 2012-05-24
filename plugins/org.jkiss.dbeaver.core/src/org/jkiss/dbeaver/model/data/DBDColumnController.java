@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.data;
@@ -25,6 +25,7 @@ public interface DBDColumnController extends DBDValueController
      * Column meta data
      * @return meta data
      */
+    @Override
     DBCColumnMetaData getColumnMetaData();
 
     /**

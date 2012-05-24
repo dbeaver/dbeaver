@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -46,38 +46,45 @@ public class OracleTriggerColumn extends AbstractTriggerColumn
         this.columnList = source.columnList;
     }
 
+    @Override
     public OracleTrigger getTrigger()
     {
         return trigger;
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         return name;
     }
 
+    @Override
     @Property(name = "Column", viewable = true, order = 2)
     public OracleTableColumn getTableColumn()
     {
         return tableColumn;
     }
 
+    @Override
     public int getOrdinalPosition()
     {
         return 0;
     }
 
+    @Override
     public String getDescription()
     {
         return tableColumn.getDescription();
     }
 
+    @Override
     public OracleTrigger getParentObject()
     {
         return trigger;
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return trigger.getDataSource();

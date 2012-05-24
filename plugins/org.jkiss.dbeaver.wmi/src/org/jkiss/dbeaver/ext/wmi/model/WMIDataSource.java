@@ -34,26 +34,31 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
         this.container = container;
     }
 
+    @Override
     public DBSDataSourceContainer getContainer()
     {
         return container;
     }
 
+    @Override
     public DBPDataSourceInfo getInfo()
     {
         return new WMIDataSourceInfo();
     }
 
+    @Override
     public boolean isConnected()
     {
         return true;
     }
 
+    @Override
     public DBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
     {
         return new WMIExecutionContext(monitor, purpose, task, this);
     }
 
+    @Override
     public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
     {
         // Open simple context.
@@ -61,10 +66,12 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
         return openContext(monitor, purpose, task);
     }
 
+    @Override
     public void invalidateConnection(DBRProgressMonitor monitor) throws DBException
     {
     }
 
+    @Override
     public void initialize(DBRProgressMonitor monitor) throws DBException
     {
         final DBPConnectionInfo connectionInfo = container.getConnectionInfo();
@@ -84,6 +91,7 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
         }
     }
 
+    @Override
     public void close()
     {
         if (rootNamespace != null) {

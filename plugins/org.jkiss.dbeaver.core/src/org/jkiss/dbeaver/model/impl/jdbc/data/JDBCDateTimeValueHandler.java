@@ -65,6 +65,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         return formatter;
     }
 
+    @Override
     protected Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
                                     int columnIndex)
         throws DBCException, SQLException
@@ -79,6 +80,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         }
     }
 
+    @Override
     protected void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException
     {
@@ -99,6 +101,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         }
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
@@ -116,6 +119,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
 
             if (dateEditor != null) {
                 initInlineControl(controller, dateEditor, new ValueExtractor<DateTime>() {
+                    @Override
                     public Object getValueFromControl(DateTime control)
                     {
                         return getDate(dateEditor, timeEditor);
@@ -129,6 +133,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             }
             if (timeEditor != null) {
                 initInlineControl(controller, timeEditor, new ValueExtractor<DateTime>() {
+                    @Override
                     public Object getValueFromControl(DateTime control)
                     {
                         return getDate(dateEditor, timeEditor);
@@ -146,6 +151,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             // Let's focus on it in async mode
 */
             dateTimeGroup.getDisplay().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     dateTimeGroup.setFocus();
@@ -175,16 +181,19 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         }
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return Date.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {

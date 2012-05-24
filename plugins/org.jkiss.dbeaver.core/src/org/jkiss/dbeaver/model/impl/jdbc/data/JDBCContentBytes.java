@@ -38,6 +38,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         this.data = this.originalData = data;
     }
 
+    @Override
     public InputStream getContentStream()
         throws IOException
     {
@@ -48,6 +49,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         }
     }
 
+    @Override
     public Reader getContentReader()
         throws IOException
     {
@@ -55,6 +57,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
             getContentStream());
     }
 
+    @Override
     public long getContentLength() {
         if (data == null) {
             return 0;
@@ -62,28 +65,33 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         return data.length;
     }
 
+    @Override
     public String getCharset()
     {
         return null;
     }
 
+    @Override
     public JDBCContentBytes cloneStorage(DBRProgressMonitor monitor)
         throws IOException
     {
         return cloneValue(monitor);
     }
 
+    @Override
     public String getContentType()
     {
         return MimeTypes.OCTET_STREAM;
     }
 
+    @Override
     public DBDContentStorage getContents(DBRProgressMonitor monitor)
         throws DBCException
     {
         return this;
     }
 
+    @Override
     public boolean updateContents(
         DBRProgressMonitor monitor,
         DBDContentStorage storage)
@@ -112,6 +120,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         return false;
     }
 
+    @Override
     public void resetContents()
     {
         if (this.originalData != null) {
@@ -119,6 +128,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         }
     }
 
+    @Override
     public void bindParameter(
         JDBCExecutionContext context,
         JDBCPreparedStatement preparedStatement,
@@ -138,16 +148,19 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         }
     }
 
+    @Override
     public boolean isNull()
     {
         return data == null;
     }
 
+    @Override
     public JDBCContentBytes makeNull()
     {
         return new JDBCContentBytes(null);
     }
 
+    @Override
     public void release()
     {
         // Return original data
@@ -162,6 +175,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         return "binary [" + data.length + "]"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    @Override
     public JDBCContentBytes cloneValue(DBRProgressMonitor monitor)
     {
         return new JDBCContentBytes(data);

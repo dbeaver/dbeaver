@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties.tabbed;
@@ -37,6 +37,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
     {
         setSorter(
             new PropertySheetSorter() {
+                @Override
                 public int compare(IPropertySheetEntry entryA, IPropertySheetEntry entryB)
                 {
                     // No damn sorting
@@ -57,6 +58,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
         super.dispose();
     }
 
+    @Override
     public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
     {
         // Make page refresh if our main object was updated
@@ -90,6 +92,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
         super.selectionChanged(part, selection);
     }
 
+    @Override
     public IPropertySource getPropertySource(Object object)
     {
         if (object == null || object.getClass().isPrimitive() || object instanceof CharSequence || object instanceof Number || object instanceof Boolean) {

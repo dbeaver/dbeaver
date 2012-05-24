@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity;
@@ -23,6 +23,7 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
 
     private ItemListControl itemControl;
 
+    @Override
     public void createPartControl(Composite parent)
     {
         itemControl = new ItemListControl(parent, SWT.NONE, this, getEditorInput().getTreeNode(), null);
@@ -31,18 +32,22 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
     }
 
+    @Override
     public DBNNode getRootNode() {
         return getEditorInput().getTreeNode();
     }
 
+    @Override
     public Viewer getNavigatorViewer()
     {
         return itemControl.getNavigatorViewer();
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         Display.getDefault().asyncExec(new Runnable() {
+            @Override
             public void run()
             {
 
@@ -54,16 +59,19 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
         });
     }
 
+    @Override
     public boolean isSearchPossible()
     {
         return itemControl.isSearchPossible();
     }
 
+    @Override
     public boolean isSearchEnabled()
     {
         return itemControl.isSearchEnabled();
     }
 
+    @Override
     public boolean performSearch(SearchType searchType)
     {
         return itemControl.performSearch(searchType);

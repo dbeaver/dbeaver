@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -22,7 +22,8 @@ public class DataEditDropTargetListener extends TemplateTransferDropTargetListen
 		super(viewer);
 	}
 
-	protected CreationFactory getFactory(Object template)
+	@Override
+    protected CreationFactory getFactory(Object template)
 	{
 		return new DataElementFactory(template);
 	}

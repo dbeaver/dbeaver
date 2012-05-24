@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.util;
@@ -18,6 +18,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         /**
          * @see org.eclipse.ui.IPartListener#partOpened(org.eclipse.ui.IWorkbenchPart)
          */
+        @Override
         public void partOpened(IWorkbenchPart part)
         {
         }
@@ -25,6 +26,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         /**
          * @see org.eclipse.ui.IPartListener#partDeactivated(org.eclipse.ui.IWorkbenchPart)
          */
+        @Override
         public void partDeactivated(IWorkbenchPart part)
         {
         }
@@ -32,6 +34,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         /**
          * @see org.eclipse.ui.IPartListener#partClosed(org.eclipse.ui.IWorkbenchPart)
          */
+        @Override
         public void partClosed(IWorkbenchPart part)
         {
             if (part == editor) {
@@ -43,11 +46,13 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         /**
          * @see org.eclipse.ui.IPartListener#partActivated(org.eclipse.ui.IWorkbenchPart)
          */
+        @Override
         public void partActivated(IWorkbenchPart part)
         {
             update();
         }
 
+        @Override
         public void partBroughtToTop(IWorkbenchPart part)
         {
             update();
@@ -96,6 +101,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         }
     }
 
+    @Override
     public IRegion getSubject(ITextViewer textViewer, int offset)
     {
 
@@ -109,12 +115,14 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     /*
      * @deprecated
      */
+    @Override
     public String getInformation(ITextViewer textViewer, IRegion subject)
     {
         Object information = getInformation2(textViewer, subject);
         return information == null ? null : information.toString();
     }
 
+    @Override
     public Object getInformation2(ITextViewer textViewer, IRegion subject)
     {
         if (implementation != null) {
@@ -131,6 +139,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
      *
      * @see org.eclipse.jface.text.information.IInformationProviderExtension2#getInformationPresenterControlCreator()
      */
+    @Override
     public IInformationControlCreator getInformationPresenterControlCreator()
     {
         IInformationControlCreator controlCreator = null;
@@ -143,6 +152,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
 
         if (informationControlCreator == null) {
             informationControlCreator = new IInformationControlCreator() {
+                @Override
                 public IInformationControl createInformationControl(Shell shell)
                 {
                     //boolean cutDown = false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -76,27 +76,32 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         return super.getName();
     }
 
+    @Override
     public boolean isView()
     {
         return true;
     }
 
+    @Override
     public OracleSchema getSchema()
     {
         return getContainer();
     }
 
+    @Override
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.VIEW;
     }
 
+    @Override
     @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         return getAdditionalInfo(monitor).getText();
     }
 
+    @Override
     public void setSourceDeclaration(String source)
     {
         if (source == null) {
@@ -106,6 +111,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         }
     }
 
+    @Override
     public AdditionalInfo getAdditionalInfo()
     {
         return additionalInfo;
@@ -137,6 +143,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         return true;
     }
 
+    @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.VIEW);
@@ -185,6 +192,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         }
     }
 
+    @Override
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {

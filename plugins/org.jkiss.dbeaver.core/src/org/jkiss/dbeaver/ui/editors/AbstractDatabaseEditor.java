@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -22,6 +22,7 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
     private DatabaseEditorListener listener;
     private Image editorImage;
 
+    @Override
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
@@ -34,6 +35,7 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
         listener = new DatabaseEditorListener(this);
     }
 
+    @Override
     public void dispose()
     {
         if (editorImage != null) {
@@ -51,24 +53,29 @@ public abstract class AbstractDatabaseEditor<INPUT_TYPE extends IDatabaseEditorI
         return (INPUT_TYPE)super.getEditorInput();
     }
 
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
     }
 
+    @Override
     public void doSaveAs()
     {
     }
 
+    @Override
     public boolean isDirty()
     {
         return false;
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return false;
     }
 
+    @Override
     public void setFocus() {
 
     }

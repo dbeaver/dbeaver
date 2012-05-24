@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
@@ -47,6 +47,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
         setPageComplete(false);
     }
 
+    @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 

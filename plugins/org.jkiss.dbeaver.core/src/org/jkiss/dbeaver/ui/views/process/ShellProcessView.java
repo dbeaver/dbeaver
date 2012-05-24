@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.process;
@@ -34,6 +34,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
     private static int viewId = 0;
     private DBRProcessDescriptor processDescriptor;
 
+    @Override
     public void createPartControl(Composite parent)
     {
         Composite group = UIUtils.createPlaceholder(parent, 1);
@@ -43,17 +44,20 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         UIUtils.setHelp(group, IHelpContextIds.CTX_QUERY_MANAGER);
     }
 
+    @Override
     public DBRProcessDescriptor getProcessDescriptor()
     {
         return processDescriptor;
     }
 
+    @Override
     public void terminateProcess()
     {
         if (processDescriptor != null) {
             if (processDescriptor.isRunning()) {
                 processDescriptor.terminate();
                 DBeaverCore.getActiveWorkbenchShell().getDisplay().asyncExec(new Runnable() {
+                    @Override
                     public void run()
                     {
                         setPartName(processDescriptor.getName() + " (destroyed: " + processDescriptor.getExitValue() + ")");
@@ -71,6 +75,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         super.dispose();
     }
 
+    @Override
     public void setFocus()
     {
         if (processLogText != null && !processLogText.isDisposed()) {
@@ -139,6 +144,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         }
         final String logLine = line + ContentUtils.getDefaultLineSeparator();
         shell.getDisplay().asyncExec(new Runnable() {
+            @Override
             public void run()
             {
                 if (processLogText == null || processLogText.isDisposed()) {

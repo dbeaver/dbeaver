@@ -179,6 +179,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return resultSetMeta;
     }
 
+    @Override
     public int getIndex()
     {
         return index;
@@ -189,71 +190,85 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return notNull;
     }
 
+    @Override
     public long getMaxLength()
     {
         return displaySize;
     }
 
+    @Override
     public String getLabel()
     {
         return label;
     }
 
+    @Override
     public String getName()
     {
         return name;
     }
 
+    @Override
     public int getPrecision()
     {
         return precision;
     }
 
+    @Override
     public int getScale()
     {
         return scale;
     }
 
+    @Override
     public String getTableName()
     {
         return tableMetaData != null ? tableMetaData.getEntityName() : tableName;
     }
 
+    @Override
     public String getCatalogName()
     {
         return catalogName;
     }
 
+    @Override
     public String getSchemaName()
     {
         return schemaName;
     }
 
+    @Override
     public int getTypeID()
     {
         return type;
     }
 
+    @Override
     public String getTypeName()
     {
         return typeName;
     }
 
+    @Override
     public boolean isReadOnly()
     {
         return readOnly;
     }
 
+    @Override
     public boolean isWritable()
     {
         return writable;
     }
 
+    @Override
     public JDBCTableMetaData getTable()
     {
         return tableMetaData;
     }
 
+    @Override
     public DBSEntityAttribute getTableColumn(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -267,6 +282,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return tableColumn;
     }
 
+    @Override
     public boolean isForeignKey(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -289,6 +305,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return false;
     }
 
+    @Override
     public List<DBSEntityReferrer> getReferrers(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -312,6 +329,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return refs;
     }
 
+    @Override
     public Image getObjectImage()
     {
         if (tableColumn instanceof IObjectImageProvider) {

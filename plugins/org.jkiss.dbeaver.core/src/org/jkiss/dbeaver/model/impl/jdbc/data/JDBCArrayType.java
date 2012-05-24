@@ -24,21 +24,25 @@ public class JDBCArrayType implements DBSTypedObject {
         this.valueType = valueType;
     }
 
+    @Override
     public String getTypeName()
     {
         return typeName;
     }
 
+    @Override
     public int getTypeID()
     {
         return valueType;
     }
 
+    @Override
     public int getScale()
     {
         return 0;
     }
 
+    @Override
     public int getPrecision()
     {
         return 0;

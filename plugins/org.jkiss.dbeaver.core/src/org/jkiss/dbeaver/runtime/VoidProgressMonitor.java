@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime;
@@ -21,42 +21,51 @@ public class VoidProgressMonitor implements DBRProgressMonitor {
     private VoidProgressMonitor() {
     }
 
+    @Override
     public IProgressMonitor getNestedMonitor()
     {
         return NESTED_INSTANCE;
     }
 
+    @Override
     public void beginTask(String name, int totalWork)
     {
     }
 
+    @Override
     public void done()
     {
     }
 
+    @Override
     public void subTask(String name)
     {
     }
 
+    @Override
     public void worked(int work)
     {
     }
 
+    @Override
     public boolean isCanceled()
     {
         return false;
     }
 
+    @Override
     public void startBlock(DBRBlockingObject object, String taskName)
     {
         // do nothing
     }
 
+    @Override
     public void endBlock()
     {
         // do nothing
     }
 
+    @Override
     public DBRBlockingObject getActiveBlock()
     {
         return null;

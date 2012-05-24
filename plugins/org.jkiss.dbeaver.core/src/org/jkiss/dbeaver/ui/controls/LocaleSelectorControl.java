@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -51,6 +51,7 @@ public class LocaleSelectorControl extends Composite
         languageCombo = new Combo(group, SWT.DROP_DOWN);
         languageCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         languageCombo.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 onLanguageChange(null);
@@ -61,6 +62,7 @@ public class LocaleSelectorControl extends Composite
         countryCombo = new Combo(group, SWT.DROP_DOWN);
         countryCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         countryCombo.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 onCountryChange(null);
@@ -71,6 +73,7 @@ public class LocaleSelectorControl extends Composite
         variantCombo = new Combo(group, SWT.DROP_DOWN);
         variantCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         variantCombo.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 calculateLocale();

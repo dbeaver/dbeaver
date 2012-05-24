@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs;
@@ -26,10 +26,12 @@ public class AcceptLicenseDialog extends Dialog {
         this.license = license;
     }
 
+    @Override
     protected boolean isResizable() {
     	return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(title);

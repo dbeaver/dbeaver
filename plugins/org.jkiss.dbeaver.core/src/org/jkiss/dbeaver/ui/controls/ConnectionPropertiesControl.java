@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -69,11 +69,13 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
             properties);
     }
 
+    @Override
     protected String[] getCustomCategories()
     {
         return new String[] { USER_PROPERTIES_CATEGORY };
     }
 
+    @Override
     protected void contributeContextMenu(IMenuManager manager, final Object node, final String category, final IPropertyDescriptor property)
     {
         boolean isCustom = USER_PROPERTIES_CATEGORY.equals(category);

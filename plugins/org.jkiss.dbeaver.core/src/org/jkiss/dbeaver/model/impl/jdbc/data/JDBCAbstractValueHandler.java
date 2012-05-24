@@ -121,6 +121,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         control.setFont(controller.getInlinePlaceholder().getFont());
         control.addTraverseListener(new TraverseListener()
         {
+            @Override
             public void keyTraversed(TraverseEvent e)
             {
                 if (e.detail == SWT.TRAVERSE_RETURN) {

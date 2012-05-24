@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.views;
@@ -57,11 +57,13 @@ public class OracleCompilerDialog extends TrayDialog
         this.compileUnits = compileUnits;
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(OracleMessages.views_oracle_compiler_dialog_title);
@@ -120,6 +122,7 @@ public class OracleCompilerDialog extends TrayDialog
                 }
             });
             unitTable.addSelectionChangedListener(new ISelectionChangedListener() {
+                @Override
                 public void selectionChanged(SelectionChangedEvent event)
                 {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -128,6 +131,7 @@ public class OracleCompilerDialog extends TrayDialog
                 }
             });
             unitTable.addDoubleClickListener(new IDoubleClickListener() {
+                @Override
                 public void doubleClick(DoubleClickEvent event)
                 {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -169,6 +173,7 @@ public class OracleCompilerDialog extends TrayDialog
             IDialogConstants.CLOSE_LABEL, false);
     }
 
+    @Override
     protected void okPressed()
     {
         super.okPressed();
@@ -189,6 +194,7 @@ public class OracleCompilerDialog extends TrayDialog
         if (!CommonUtils.isEmpty(toCompile)) {
             try {
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         performCompilation(monitor, toCompile);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -61,11 +61,13 @@ public class NewConnectionWizard extends ConnectionWizard
         return this.settingsPages.get(driver.getProviderDescriptor());
     }
 
+    @Override
     public DriverDescriptor getSelectedDriver()
     {
         return getPageDrivers().getSelectedDriver();
     }
 
+    @Override
     public ConnectionPageSettings getPageSettings()
     {
         if (pageDrivers.getSelectedDriver() == null) {
@@ -77,6 +79,7 @@ public class NewConnectionWizard extends ConnectionWizard
     /**
      * Adding the page to the wizard.
      */
+    @Override
     public void addPages()
     {
         pageDrivers = new ConnectionPageDriver(this);
@@ -84,6 +87,7 @@ public class NewConnectionWizard extends ConnectionWizard
 
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -115,6 +119,7 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageFinal);
     }
 
+    @Override
     public IWizardPage getNextPage(IWizardPage page)
     {
         if (page == pageDrivers) {
@@ -131,6 +136,7 @@ public class NewConnectionWizard extends ConnectionWizard
      * the wizard. We will create an operation and run it
      * using wizard as execution context.
      */
+    @Override
     public boolean performFinish()
     {
         super.performFinish();
@@ -144,6 +150,7 @@ public class NewConnectionWizard extends ConnectionWizard
         return true;
     }
 
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection)
     {
     }

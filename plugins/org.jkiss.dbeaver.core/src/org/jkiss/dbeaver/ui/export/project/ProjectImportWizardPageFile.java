@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.project;
@@ -47,6 +47,7 @@ class ProjectImportWizardPageFile extends WizardPage {
         return importData.isProjectsSelected(this);
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
@@ -54,6 +55,7 @@ class ProjectImportWizardPageFile extends WizardPage {
 
         final Text fileNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_import_wizard_file_label_file, ""); //$NON-NLS-2$
         fileNameText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 String fileName = fileNameText.getText();
@@ -130,6 +132,7 @@ class ProjectImportWizardPageFile extends WizardPage {
                 Control oldEditor = tableEditor.getEditor();
                 if (oldEditor != null) oldEditor.dispose();
             }
+            @Override
             public void mouseUp(MouseEvent e)
             {
                 // Clean up any previous editor control
@@ -145,6 +148,7 @@ class ProjectImportWizardPageFile extends WizardPage {
                 Text text = new Text(projectsTable, SWT.BORDER);
                 text.setText(item.getText(1));
                 text.addModifyListener(new ModifyListener() {
+                    @Override
                     public void modifyText(ModifyEvent e) {
                         Text text = (Text) tableEditor.getEditor();
                         item.setText(1, text.getText());

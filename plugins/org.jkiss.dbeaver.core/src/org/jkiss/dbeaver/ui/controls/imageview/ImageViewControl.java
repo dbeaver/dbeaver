@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.imageview;
@@ -95,8 +95,10 @@ public class ImageViewControl extends Composite {
         final DragSource source = new DragSource(canvas, operations);
         source.setTransfer(types);
         source.addDragListener (new DragSourceListener() {
+            @Override
             public void dragStart(DragSourceEvent event) {
             }
+            @Override
             public void dragSetData (DragSourceEvent event) {
                 if (canvas.getImageData() != null) {
                     event.data = canvas.getImageData();
@@ -104,6 +106,7 @@ public class ImageViewControl extends Composite {
                     event.data = null;
                 }
             }
+            @Override
             public void dragFinished(DragSourceEvent event) {
             }
         });

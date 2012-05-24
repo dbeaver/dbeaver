@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.import_config.wizards;
@@ -28,7 +28,8 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 		super();
 	}
 
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
+	@Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
 		setWindowTitle("Import Configuration"); //NON-NLS-1
 		setNeedsProgressMonitor(true);
 		mainPage = createMainPage(); //NON-NLS-1
@@ -36,11 +37,13 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
 
     protected abstract ConfigImportWizardPage createMainPage();
 
+    @Override
     public void addPages() {
         super.addPages(); 
         addPage(mainPage);        
     }
 
+    @Override
     public boolean performFinish() {
         final ImportData importData = mainPage.getImportData();
         try {

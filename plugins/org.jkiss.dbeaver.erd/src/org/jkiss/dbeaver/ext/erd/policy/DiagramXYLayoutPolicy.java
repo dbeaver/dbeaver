@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -29,7 +29,8 @@ import org.jkiss.dbeaver.ext.erd.part.NodePart;
 public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 {
 
-	protected Command createAddCommand(EditPart child, Object constraint)
+	@Override
+    protected Command createAddCommand(EditPart child, Object constraint)
 	{
 		return null;
 	}
@@ -37,7 +38,8 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 	/**
 	 * Creates command to move table. Does not allow table to be resized
 	 */
-	protected Command createChangeConstraintCommand(EditPart child, Object constraint)
+	@Override
+    protected Command createChangeConstraintCommand(EditPart child, Object constraint)
 	{
 
 		if (!(child instanceof NodePart))
@@ -67,7 +69,8 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 	 * Returns the current bounds as the constraint if none can be found in the
 	 * figures Constraint object
 	 */
-	public Rectangle getCurrentConstraintFor(GraphicalEditPart child)
+	@Override
+    public Rectangle getCurrentConstraintFor(GraphicalEditPart child)
 	{
 
 		IFigure fig = child.getFigure();
@@ -79,12 +82,14 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 		return rectangle;
 	}
 
-	protected Command getCreateCommand(CreateRequest request)
+	@Override
+    protected Command getCreateCommand(CreateRequest request)
 	{
 		return null;
 	}
 
-	protected Command getDeleteDependantCommand(Request request)
+	@Override
+    protected Command getDeleteDependantCommand(Request request)
 	{
 		return null;
 	}

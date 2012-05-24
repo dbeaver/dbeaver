@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -30,6 +30,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         return object == null || super.isDisposed();
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         // Notify model
@@ -39,6 +40,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         super.dispose(reflect);
     }
 
+    @Override
     public DBXTreeItem getMeta()
     {
         return meta;
@@ -51,11 +53,13 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         DBNModel.getInstance().addNode(this, false);
     }
 
+    @Override
     public DBSObject getObject()
     {
         return object;
     }
 
+    @Override
     public Object getValueObject()
     {
         return object;
@@ -67,6 +71,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         return object != null && object.isPersisted();
     }
 
+    @Override
     public final boolean isManagable()
     {
         return true;

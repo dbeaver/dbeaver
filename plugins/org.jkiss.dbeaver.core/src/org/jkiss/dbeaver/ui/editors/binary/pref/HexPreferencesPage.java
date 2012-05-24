@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary.pref;
@@ -51,6 +51,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
     /**
      * @see org.eclipse.jface.preference.PreferencePage#createContents(org.eclipse.swt.widgets.Composite)
      */
+    @Override
     protected Control createContents(Composite parent)
     {
         FontData fontData = getPrefFontData();
@@ -64,6 +65,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
  * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
  */
 
+    @Override
     public void init(IWorkbench workbench)
     {
     }
@@ -72,6 +74,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
     /**
      * @see HexPreferencesPage#performDefaults()
      */
+    @Override
     protected void performDefaults()
     {
         super.performDefaults();
@@ -81,6 +84,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
     /**
      * @see HexPreferencesPage#performOk()
      */
+    @Override
     public boolean performOk()
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();

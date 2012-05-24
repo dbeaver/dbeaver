@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -159,6 +159,7 @@ public class PairListControl<ELEMENT> extends Composite
         final TableColumn column = new TableColumn(table, SWT.LEFT);
 
         table.addListener (SWT.Resize,  new Listener() {
+            @Override
             public void handleEvent (Event e) {
                 column.setWidth(table.getClientArea().width);
             }

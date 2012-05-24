@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl;
@@ -40,6 +40,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         this.listOrderComparator = listOrderComparator;
     }
 
+    @Override
     public Collection<OBJECT> getCachedObjects()
     {
         synchronized (this) {
@@ -59,6 +60,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         return result;
     }
 
+    @Override
     public OBJECT getCachedObject(String name)
     {
         synchronized (this) {
@@ -66,6 +68,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
+    @Override
     public void cacheObject(OBJECT object)
     {
         synchronized (this) {
@@ -113,6 +116,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         }
     }
 
+    @Override
     public void clearCache()
     {
         synchronized (this) {
@@ -162,16 +166,19 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         {
         }
 
+        @Override
         public boolean hasNext()
         {
             return listIterator.hasNext();
         }
 
+        @Override
         public OBJECT next()
         {
             return (curObject = listIterator.next());
         }
 
+        @Override
         public void remove()
         {
             listIterator.remove();

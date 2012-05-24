@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui;
@@ -47,7 +47,8 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
         this.bottomRight = bottomRight;
     }
 
-	protected void drawCompositeImage(int width, int height) {
+	@Override
+    protected void drawCompositeImage(int width, int height) {
 		ImageData base = baseImageData;
 		drawImage(base, 0, 0);
         if (topRight != null)
@@ -63,7 +64,8 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
             drawTopLeft(topLeft);
 	}
 
-	protected Point getSize() {
+	@Override
+    protected Point getSize() {
 		return imageSize;
 	}
 

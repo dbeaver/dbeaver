@@ -322,6 +322,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
         }
     }
 
+    @Override
     public String getName()
     {
         return getObject().getName();

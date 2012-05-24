@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.command;
@@ -15,10 +15,12 @@ public class BendpointDeleteCommand extends BendpointCommand {
         this.bendpointIndex = bendpointIndex;
     }
 
+    @Override
     public void execute() {
         association.removeBendpoint(bendpointIndex);
     }
 
+    @Override
     public void undo() {
 /*
         super.undo();

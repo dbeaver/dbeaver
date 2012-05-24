@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.qm;
@@ -26,6 +26,7 @@ public class QueryManagerView extends ViewPart
         return queryLogViewer;
     }
 
+    @Override
     public void createPartControl(Composite parent)
     {
         Composite group = UIUtils.createPlaceholder(parent, 1);
@@ -34,6 +35,7 @@ public class QueryManagerView extends ViewPart
         UIUtils.setHelp(group, IHelpContextIds.CTX_QUERY_MANAGER);
     }
 
+    @Override
     public void setFocus()
     {
         queryLogViewer.getControl().setFocus();
@@ -57,6 +59,7 @@ public class QueryManagerView extends ViewPart
     {
         if (adapter == IWorkbenchAdapter.class) {
             return new WorkbenchAdapter() {
+                @Override
                 public String getLabel(Object o)
                 {
                     return "Query Manager";

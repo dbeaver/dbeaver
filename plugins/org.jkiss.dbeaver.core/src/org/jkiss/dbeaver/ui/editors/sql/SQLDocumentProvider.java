@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql;
@@ -18,11 +18,13 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
  */
 class SQLDocumentProvider extends FileRefDocumentProvider {
 
+    @Override
     protected IEditorInput createNewEditorInput(IFile newFile)
     {
         return new SQLEditorInput(newFile);
     }
 
+    @Override
     protected Document createDocument(Object element) throws CoreException
     {
         Document document = super.createDocument(element);

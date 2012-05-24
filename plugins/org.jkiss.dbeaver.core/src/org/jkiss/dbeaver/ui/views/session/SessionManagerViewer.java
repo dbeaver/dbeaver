@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.session;
@@ -53,6 +53,7 @@ public class SessionManagerViewer
 
         sessionTable = new SessionListControl(sash, sessionManager);
         sessionTable.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event)
             {
                 onSessionSelect(getSelectedSession());

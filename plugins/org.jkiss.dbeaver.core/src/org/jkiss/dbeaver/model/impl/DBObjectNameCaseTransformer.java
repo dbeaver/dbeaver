@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl;
@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
  */
 public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DBSObject, String> {
 
+    @Override
     public String transform(DBSObject object, String value)
     {
         return transformName(object.getDataSource(), value);

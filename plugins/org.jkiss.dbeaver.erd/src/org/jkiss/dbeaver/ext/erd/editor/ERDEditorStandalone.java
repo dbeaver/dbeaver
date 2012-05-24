@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -73,6 +73,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
         loadDiagram();
     }
 
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
         try {
@@ -97,6 +98,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
     }
 */
 
+    @Override
     protected synchronized void loadDiagram()
     {
         if (diagramLoadingJob != null) {
@@ -105,6 +107,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
         }
         diagramLoadingJob = LoadingUtils.createService(
             new AbstractLoadService<EntityDiagram>("Load diagram '" + getEditorInput().getName() + "'") {
+                @Override
                 public EntityDiagram evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
@@ -117,6 +120,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
                     return null;
                 }
 
+                @Override
                 public Object getFamily()
                 {
                     return ERDEditorStandalone.this;
@@ -166,6 +170,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
         return (IFile) getEditorInput().getAdapter(IFile.class);
     }
 
+    @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
         for (Object part : getViewer().getSelectedEditParts()) {
@@ -183,6 +188,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
         return null;
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event)
     {
         IResourceDelta delta= event.getDelta();
@@ -197,6 +203,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
         if (delta.getKind() == IResourceDelta.REMOVED) {
             // Refresh editor
             Display.getDefault().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -29,6 +29,7 @@ public class NavigatorActionExecuteTool implements IActionDelegate
         this.tool = tool;
     }
 
+    @Override
     public void run(IAction action)
     {
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
@@ -51,6 +52,7 @@ public class NavigatorActionExecuteTool implements IActionDelegate
         }
     }
 
+    @Override
     public void selectionChanged(IAction action, ISelection selection)
     {
         this.selection = selection;

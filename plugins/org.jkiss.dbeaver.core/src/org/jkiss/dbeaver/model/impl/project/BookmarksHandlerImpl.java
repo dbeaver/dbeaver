@@ -62,6 +62,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         return super.getFeatures(resource);
     }
 
+    @Override
     public String getTypeName(IResource resource)
     {
         if (resource instanceof IFolder) {
@@ -110,10 +111,12 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             //}
             final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
             dsNode.initializeNode(null, new Runnable() {
+                @Override
                 public void run()
                 {
                     if (dsNode.getDataSourceContainer().isConnected()) {
                         Display.getDefault().syncExec(new Runnable() {
+                            @Override
                             public void run()
                             {
                                 openNodeByPath(dsNode, (IFile) resource, storage, window);
@@ -132,6 +135,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     {
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
@@ -161,6 +165,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                             // Open entity editor
                             final DBNDatabaseNode databaseNode = (DBNDatabaseNode) currentNode;
                             Display.getDefault().syncExec(new Runnable() {
+                                @Override
                                 public void run()
                                 {
                                     NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, window);

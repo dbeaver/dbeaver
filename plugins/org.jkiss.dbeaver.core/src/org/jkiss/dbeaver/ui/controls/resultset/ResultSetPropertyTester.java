@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.resultset;
@@ -30,6 +30,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
 
+    @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         Spreadsheet spreadsheet = Spreadsheet.getFromGrid((LightGrid) receiver);
         if (spreadsheet == null) {

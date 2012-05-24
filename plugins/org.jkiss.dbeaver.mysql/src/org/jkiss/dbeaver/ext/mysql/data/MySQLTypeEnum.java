@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.data;
@@ -32,16 +32,19 @@ public class MySQLTypeEnum implements DBDValue {
         return value;
     }
 
+    @Override
     public boolean isNull()
     {
         return value == null;
     }
 
+    @Override
     public DBDValue makeNull()
     {
         return new MySQLTypeEnum(column, null);
     }
 
+    @Override
     public void release()
     {
         // do nothing

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -38,11 +38,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
+    @Override
     public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer)
     {
         return new ApplicationActionBarAdvisor(configurer);
     }
 
+    @Override
     public void preWindowOpen()
     {
         IWorkbenchWindowConfigurer configurer = getWindowConfigurer();
@@ -67,6 +69,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     org.eclipse.ui.preferencePages.Keys
     org.eclipse.ui.preferencePages.ContentTypes
     */
+    @Override
     public void postWindowCreate()
     {
         Shell activeShell = UIUtils.getActiveShell();
@@ -76,6 +79,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         updateWindowTitle();
     }
 
+    @Override
     public boolean preWindowShellClose()
     {
         IWorkbenchWindow window = getWindowConfigurer().getWindow();
@@ -110,6 +114,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         if (projectRegistry.getActiveDataSourceRegistry().getDataSources().isEmpty()) {
             // Open New Connection wizard
             Display.getCurrent().asyncExec(new Runnable() {
+                @Override
                 public void run() {
                     IWorkbenchWindow window = getWindowConfigurer().getWindow();
                     final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
@@ -141,6 +146,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         getWindowConfigurer().getWindow().getShell().setText(title);
     }
 
+    @Override
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
         updateWindowTitle();

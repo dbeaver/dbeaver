@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
@@ -44,6 +44,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
     private Text textEntriesPerPage;
 
 
+    @Override
     public void init(IWorkbench workbench)
     {
 
@@ -138,11 +139,13 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         return super.performOk();
     }
 
+    @Override
     public IAdaptable getElement()
     {
         return null;
     }
 
+    @Override
     public void setElement(IAdaptable element)
     {
 

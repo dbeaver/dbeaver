@@ -29,6 +29,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLTableCons
         return object.getTable().getContainer().getConstraintCache();
     }
 
+    @Override
     protected MySQLTableConstraint createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor, DBECommandContext context, MySQLTable parent,
@@ -63,6 +64,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLTableCons
         return constraint;
     }
 
+    @Override
     protected String getDropConstraintPattern(MySQLTableConstraint constraint)
     {
         String clause;

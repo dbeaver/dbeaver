@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity;
@@ -16,6 +16,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class DefaultDatabaseObjectManager implements DBEObjectManager<DBSObject> {
 
+    @Override
     public void executePersistAction(DBCExecutionContext context, DBECommand<DBSObject> dbsObjectDBECommand, IDatabasePersistAction action) throws DBException
     {
         throw new DBException("Persistence not supported in default object manager");

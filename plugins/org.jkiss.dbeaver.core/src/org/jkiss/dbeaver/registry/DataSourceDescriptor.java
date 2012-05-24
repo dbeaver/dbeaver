@@ -129,10 +129,12 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public DriverDescriptor getDriver()
     {
         return driver;
@@ -148,6 +150,7 @@ public class DataSourceDescriptor
         this.driver.addUser(this);
     }
 
+    @Override
     public DBPConnectionInfo getConnectionInfo()
     {
         return connectionInfo;
@@ -158,11 +161,13 @@ public class DataSourceDescriptor
         this.connectionInfo = connectionInfo;
     }
 
+    @Override
     public DBPConnectionInfo getActualConnectionInfo()
     {
         return tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo;
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
@@ -174,6 +179,7 @@ public class DataSourceDescriptor
         this.name = name;
     }
 
+    @Override
     @Property(name = "Description", order = 100)
     public String getDescription()
     {
@@ -190,6 +196,7 @@ public class DataSourceDescriptor
         this.savePassword = savePassword;
     }
 
+    @Override
     public boolean isShowSystemObjects()
     {
         return showSystemObjects;
@@ -200,6 +207,7 @@ public class DataSourceDescriptor
         this.showSystemObjects = showSystemObjects;
     }
 
+    @Override
     public String getCatalogFilter()
     {
         return catalogFilter;
@@ -210,6 +218,7 @@ public class DataSourceDescriptor
         this.catalogFilter = catalogFilter;
     }
 
+    @Override
     public String getSchemaFilter()
     {
         return schemaFilter;
@@ -220,16 +229,19 @@ public class DataSourceDescriptor
         this.schemaFilter = schemaFilter;
     }
 
+    @Override
     public DBPClientHome getClientHome()
     {
         return clientHome;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return null;
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -277,21 +289,25 @@ public class DataSourceDescriptor
         this.loginDate = loginDate;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;
     }
 
+    @Override
     public DataSourceRegistry getRegistry()
     {
         return registry;
     }
 
+    @Override
     public DBPKeywordManager getKeywordManager()
     {
         if (!isConnected()) {
@@ -303,11 +319,13 @@ public class DataSourceDescriptor
         return keywordManager;
     }
 
+    @Override
     public boolean isConnected()
     {
         return connectTime != null;
     }
 
+    @Override
     public void connect(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -394,6 +412,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
     public boolean disconnect(final DBRProgressMonitor monitor)
         throws DBException
     {
@@ -539,6 +558,7 @@ public class DataSourceDescriptor
         return true;
     }
 
+    @Override
     public boolean reconnect(final DBRProgressMonitor monitor)
         throws DBException
     {
@@ -558,6 +578,7 @@ public class DataSourceDescriptor
         return true;
     }
 
+    @Override
     public Collection<DBPDataSourceUser> getUsers()
     {
         synchronized (users) {
@@ -565,6 +586,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
     public void acquire(DBPDataSourceUser user)
     {
         synchronized (users) {
@@ -576,6 +598,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
     public void release(DBPDataSourceUser user)
     {
         synchronized (users) {
@@ -587,10 +610,12 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
     public void fireEvent(DBPEvent event) {
         registry.fireDataSourceEvent(event);
     }
 
+    @Override
     public DBDDataFormatterProfile getDataFormatterProfile()
     {
         if (this.formatterProfile == null) {
@@ -599,16 +624,19 @@ public class DataSourceDescriptor
         return this.formatterProfile;
     }
 
+    @Override
     public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile)
     {
         this.formatterProfile = formatterProfile;
     }
 
+    @Override
     public DBDValueHandler getDefaultValueHandler()
     {
         return DBCDefaultValueHandler.INSTANCE;
     }
 
+    @Override
     public AbstractPreferenceStore getPreferenceStore()
     {
         return preferenceStore;
@@ -621,6 +649,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         if (DBSDataSourceContainer.class.isAssignableFrom(adapter)) {
@@ -629,11 +658,13 @@ public class DataSourceDescriptor
         return null;
     }
 
+    @Override
     public Image getObjectImage()
     {
         return driver.getPlainIcon();
     }
 
+    @Override
     public DBSObjectState getObjectState()
     {
         if (isConnected()) {
@@ -645,6 +676,7 @@ public class DataSourceDescriptor
         }
     }
 
+    @Override
     public void refreshObjectState(DBRProgressMonitor monitor)
     {
         // just do nothing
@@ -727,6 +759,7 @@ public class DataSourceDescriptor
         return null;
     }
 
+    @Override
     public void editObject(IWorkbenchWindow workbenchWindow)
     {
         ConnectionDialog dialog = new ConnectionDialog(
@@ -745,6 +778,7 @@ public class DataSourceDescriptor
 
     private class TransactionCloseConfirmer implements Runnable {
         int result = IDialogConstants.NO_ID;
+        @Override
         public void run()
         {
             result = ConfirmationDialog.showConfirmDialog(

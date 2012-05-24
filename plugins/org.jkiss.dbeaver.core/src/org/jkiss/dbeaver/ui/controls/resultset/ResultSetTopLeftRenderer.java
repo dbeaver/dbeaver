@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.resultset;
@@ -43,6 +43,7 @@ public class ResultSetTopLeftRenderer extends AbstractRenderer {
         super.setBounds(bounds);
     }
 
+    @Override
     public void paint(GC gc) {
         //cfgButton.redraw();
         //gc.drawImage(DBIcon.FILTER.getImage(), 0, 0);

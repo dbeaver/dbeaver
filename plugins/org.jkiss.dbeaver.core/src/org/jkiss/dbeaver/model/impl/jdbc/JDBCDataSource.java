@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc;
@@ -158,11 +158,13 @@ public abstract class JDBCDataSource
         return null;
     }
 
+    @Override
     public Connection getConnection()
     {
         return connection;
     }
 
+    @Override
     public Connection openIsolatedConnection() throws SQLException {
         try {
             return openConnection();
@@ -175,6 +177,7 @@ public abstract class JDBCDataSource
         }
     }
 
+    @Override
     public JDBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         if (connection == null) {
@@ -183,25 +186,30 @@ public abstract class JDBCDataSource
         return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, false);
     }
 
+    @Override
     public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
         return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, true);
     }
 
+    @Override
     public DBSDataSourceContainer getContainer()
     {
         return container;
     }
 
+    @Override
     public synchronized DBPDataSourceInfo getInfo()
     {
         return dataSourceInfo;
     }
 
+    @Override
     public synchronized boolean isConnected()
     {
         return connection != null;
     }
 
+    @Override
     public void invalidateConnection(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -216,6 +224,7 @@ public abstract class JDBCDataSource
         }
     }
 
+    @Override
     public synchronized void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -230,6 +239,7 @@ public abstract class JDBCDataSource
         }
     }
 
+    @Override
     public void close()
     {
         if (connection != null) {
@@ -246,32 +256,38 @@ public abstract class JDBCDataSource
         QMUtils.getDefaultHandler().handleSessionEnd(this);
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
         return container.getName();
     }
 
+    @Override
     public String getDescription()
     {
         return container.getDescription();
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return container;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
         this.dataSourceInfo = null;
         return true;
     }
 
+    @Override
     public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type)
     {
         if (type == DBCQueryTransformType.ORDER_BY) {

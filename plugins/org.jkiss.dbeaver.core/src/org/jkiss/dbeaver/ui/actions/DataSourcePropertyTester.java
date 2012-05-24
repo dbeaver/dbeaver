@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions;
@@ -37,6 +37,7 @@ public class DataSourcePropertyTester extends PropertyTester
         super();
     }
 
+    @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (!(receiver instanceof DBSDataSourceContainer)) {
             return false;

@@ -44,6 +44,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         super.dispose();
     }
 
+    @Override
     public void createControl(Composite composite)
     {
         //Composite group = new Composite(composite, SWT.NONE);
@@ -67,6 +68,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         optionsFolder.addSelectionListener(
             new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (e.item == propsTab) {
@@ -74,6 +76,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
                     }
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -86,6 +89,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
     {
         ModifyListener textListener = new ModifyListener()
         {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 evaluateURL();
@@ -152,11 +156,13 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
             testButton.setLayoutData(gd);
             testButton.addSelectionListener(new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     site.testConnection();
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -175,6 +181,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         return addrGroup;
     }
 
+    @Override
     public boolean isComplete()
     {
         return hostText != null && namespaceCombo != null &&
@@ -182,6 +189,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
             !CommonUtils.isEmpty(namespaceCombo.getText());
     }
 
+    @Override
     public void loadSettings()
     {
         // Load values from new connection info
@@ -213,6 +221,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         super.loadSettings();
     }
 
+    @Override
     protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {

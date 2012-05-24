@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -75,6 +75,7 @@ public class MySQLUser implements DBAUser, DBPSaveableObject
         }
     }
 
+    @Override
     @Property(name = "User name", viewable = true, order = 1)
     public String getName() {
         return userName + "@" + host;
@@ -93,23 +94,28 @@ public class MySQLUser implements DBAUser, DBPSaveableObject
         return "'" + userName + "'@'" + host + "'";
     }
 
+    @Override
     public String getDescription() {
         return null;
     }
 
+    @Override
     public DBSObject getParentObject() {
         return dataSource.getContainer();
     }
 
+    @Override
     public MySQLDataSource getDataSource() {
         return dataSource;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;

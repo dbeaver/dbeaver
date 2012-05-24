@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.qm.meta;
@@ -36,6 +36,7 @@ public class QMMSessionInfo extends QMMObject {
         this.transactional = transactional;
     }
 
+    @Override
     protected void close()
     {
         if (transaction != null) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.qm;
@@ -60,35 +60,42 @@ public class QMControllerImpl implements QMController {
       	defaultHandler = null;
     }
 
+    @Override
     public QMMCollector getMetaCollector()
     {
         return metaHandler;
     }
 
+    @Override
     public QMExecutionHandler getDefaultHandler() {
         return defaultHandler;
     }
 
+    @Override
     public synchronized void registerHandler(QMExecutionHandler handler) {
         handlers.add(handler);
     }
 
+    @Override
     public synchronized void unregisterHandler(QMExecutionHandler handler) {
         if (!handlers.remove(handler)) {
             log.warn("QM handler '" + handler + "' isn't registered within QM controller");
         }
     }
 
+    @Override
     public void registerMetaListener(QMMetaListener metaListener)
     {
         metaHandler.addListener(metaListener);
     }
 
+    @Override
     public void unregisterMetaListener(QMMetaListener metaListener)
     {
         metaHandler.removeListener(metaListener);
     }
 
+    @Override
     public List<QMMetaEvent> getPastMetaEvents()
     {
         return metaHandler.getPastEvents();
@@ -118,6 +125,7 @@ public class QMControllerImpl implements QMController {
 
     private class NotifyInvocationHandler implements InvocationHandler {
 
+        @Override
         public synchronized Object invoke(Object proxy, Method method, Object[] args)
         {
             if (method.getReturnType() == Void.TYPE && method.getName().startsWith("handle")) {

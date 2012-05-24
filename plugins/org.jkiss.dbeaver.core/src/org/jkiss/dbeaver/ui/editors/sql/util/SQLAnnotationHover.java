@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.util;
@@ -45,12 +45,14 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
      * @param hoverRegion the text range in the viewer which is used to determine the hover display information
      * @return the hover popup display information
      */
+    @Override
     public String getHoverInfo(ITextViewer textViewer, IRegion hoverRegion)
     {
         Object hoverInfo2 = getHoverInfo2(textViewer, hoverRegion);
         return hoverInfo2 == null ? null : hoverInfo2.toString();
     }
 
+    @Override
     public Object getHoverInfo2(ITextViewer textViewer, IRegion hoverRegion)
     {
         IAnnotationModel model;
@@ -74,6 +76,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
      * @param offset     the offset for which the hover request has been issued
      * @return the hover region used to compute the hover display information
      */
+    @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset)
     {
         IDocument document = textViewer.getDocument();
@@ -118,6 +121,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
      * @param lineNumber   the line number for which information is requested
      * @return the requested information or <code>null</code> if no such information exists
      */
+    @Override
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNumber)
     {
         if (annotations.size() == 0) {
@@ -193,6 +197,7 @@ public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     }
 */
 
+    @Override
     public void setEditor(IEditorPart editor)
     {
         this.editor = editor;

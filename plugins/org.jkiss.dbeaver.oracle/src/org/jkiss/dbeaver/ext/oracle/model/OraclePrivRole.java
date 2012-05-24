@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -25,6 +25,7 @@ public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDa
         this.role = this.name;
     }
 
+    @Override
     public String getName() {
         return super.getName();
     }
@@ -44,6 +45,7 @@ public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDa
         return defaultRole;
     }
 
+    @Override
     public Object getLazyReference(Object propertyId)
     {
         return this.role;

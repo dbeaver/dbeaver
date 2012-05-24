@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry.encode;
@@ -47,6 +47,7 @@ public class SimpleStringEncrypter implements PasswordEncrypter {
 
     }
 
+    @Override
     public String encrypt(String unencryptedString) throws EncryptionException
     {
         if (unencryptedString == null || unencryptedString.trim().length() == 0) {
@@ -86,6 +87,7 @@ public class SimpleStringEncrypter implements PasswordEncrypter {
         }
     }
 
+    @Override
     public String decrypt(String encryptedString) throws EncryptionException
     {
         if (encryptedString == null || encryptedString.trim().length() <= 0) {

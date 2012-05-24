@@ -76,6 +76,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         super.dispose();
     }
 
+    @Override
     public void activatePage()
     {
         if (testButton != null) {
@@ -139,10 +140,12 @@ class ConnectionPageFinal extends ActiveWizardPage {
         UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
     }
 
+    @Override
     public void deactivatePage()
     {
     }
 
+    @Override
     public void createControl(Composite parent)
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
@@ -160,6 +163,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
         connectionNameText = UIUtils.createLabelText(group, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
         connectionNameText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 connectionNameChanged = true;
@@ -212,6 +216,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 gd.grabExcessVerticalSpace = true;
                 tunnelButton.setLayoutData(gd);
                 tunnelButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
                     public void widgetSelected(SelectionEvent e)
                     {
                         configureTunnels();
@@ -226,6 +231,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 gd.grabExcessHorizontalSpace = true;
                 eventsButton.setLayoutData(gd);
                 eventsButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
                     public void widgetSelected(SelectionEvent e)
                     {
                         configureEvents();
@@ -241,6 +247,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
             testButton.setLayoutData(gd);
 
             testButton.addSelectionListener(new SelectionAdapter() {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     testConnection();
@@ -254,6 +261,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
     }
 
+    @Override
     public boolean isPageComplete()
     {
         return connectionNameText != null &&

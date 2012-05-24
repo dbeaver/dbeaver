@@ -71,6 +71,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         NavigatorUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
 
         setDoubleClickHandler(new IDoubleClickListener() {
+            @Override
             public void doubleClick(DoubleClickEvent event)
             {
                 // Run default node action
@@ -95,6 +96,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         //getSelectionProvider().setSelection(new StructuredSelection(rootNode));
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         if (rootNode instanceof DBNDatabaseNode) {
@@ -111,6 +113,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         super.dispose();
     }
 
+    @Override
     public ISelectionProvider getSelectionProvider()
     {
         return selectionProvider;
@@ -187,6 +190,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
     }
 
+    @Override
     protected Class<?>[] getListBaseTypes()
     {
         List<Class<?>> baseTypes;
@@ -202,11 +206,13 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         return baseTypes == null || baseTypes.isEmpty() ? null : baseTypes.toArray(new Class<?>[baseTypes.size()]);
     }
 
+    @Override
     public Viewer getNavigatorViewer()
     {
         return getItemsViewer();
     }
 
+    @Override
     public DBNNode getRootNode() {
         return rootNode;
     }
@@ -244,6 +250,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
     }
 
+    @Override
     public void nodeChanged(final DBNEvent event)
     {
         if (isDisposed()) {
@@ -255,6 +262,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 loadData(false);
             } else {
                 Display.getDefault().asyncExec(new Runnable() {
+                    @Override
                     public void run()
                     {
                         getItemsViewer().update(event.getNode(), null);
@@ -264,6 +272,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         }
     }
 
+    @Override
     public void menuAboutToShow(IMenuManager manager)
     {
         // Hook context menu
@@ -276,6 +285,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     private class NodeRenderer extends ViewerRenderer {
+        @Override
         public boolean isHyperlink(Object cellValue)
         {
             Object ownerObject = null;
@@ -285,6 +295,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             return cellValue instanceof DBSObject && cellValue != ownerObject;
         }
 
+        @Override
         public void navigateHyperlink(Object cellValue)
         {
             if (cellValue instanceof DBSObject) {
@@ -301,11 +312,13 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             super(commandContext, NodeListControl.this, NodeListControl.this);
         }
 
+        @Override
         public DBNNode getSourceObject()
         {
             return getCurrentListObject();
         }
 
+        @Override
         public Object getEditableValue()
         {
             return getObjectValue(getCurrentListObject());
@@ -330,6 +343,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             return structEditor != null && RuntimeUtils.isTypeSupported(curClass, structEditor.getChildTypes());
         }
 
+        @Override
         public IPropertyDescriptor[] getPropertyDescriptors()
         {
             Set<IPropertyDescriptor> props = getAllProperties();
@@ -352,6 +366,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             this.original.addSelectionChangedListener(this);
         }
 
+        @Override
         public void addSelectionChangedListener(ISelectionChangedListener listener)
         {
             synchronized (listeners) {
@@ -359,6 +374,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             }
         }
 
+        @Override
         public ISelection getSelection()
         {
             final ISelection selection = original.getSelection();
@@ -369,6 +385,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             }
         }
 
+        @Override
         public void removeSelectionChangedListener(ISelectionChangedListener listener)
         {
             synchronized (listeners) {
@@ -376,6 +393,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             }
         }
 
+        @Override
         public void setSelection(ISelection selection)
         {
             if (selection == defaultSelection) {
@@ -385,6 +403,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             }
         }
 
+        @Override
         public void selectionChanged(SelectionChangedEvent event)
         {
             synchronized (listeners) {

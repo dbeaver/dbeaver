@@ -394,6 +394,7 @@ public class JDBCUtils {
     private static DBRBlockingObject makeBlockingObject(final Connection connection)
     {
         return new DBRBlockingObject() {
+            @Override
             public void cancelBlock()
                 throws DBException
             {

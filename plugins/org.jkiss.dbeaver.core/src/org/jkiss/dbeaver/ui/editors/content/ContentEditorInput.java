@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.content;
@@ -63,16 +63,19 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return editorParts;
     }
 
+    @Override
     public boolean exists()
     {
         return false;
     }
 
+    @Override
     public ImageDescriptor getImageDescriptor()
     {
         return DBIcon.TYPE_LOB.getImageDescriptor();
     }
 
+    @Override
     public String getName()
     {
         String tableName = valueController.getColumnMetaData().getTableName();
@@ -85,16 +88,19 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return inputName;
     }
 
+    @Override
     public IPersistableElement getPersistable()
     {
         return null;
     }
 
+    @Override
     public String getToolTipText()
     {
         return getName();
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         if (adapter == IFile.class) {
@@ -184,6 +190,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return contentFile;
     }
 
+    @Override
     public IPath getPath()
     {
         return contentFile == null ? null : contentFile.getFullPath();
@@ -284,6 +291,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     ////////////////////////////////////////////////////////
     // IDatabaseEditorInput methods
 
+    @Override
     public DBPDataSource getDataSource() {
         return valueController.getDataSource();
     }

@@ -23,16 +23,19 @@ public class WMIExecutionContext extends AbstractExecutionContext {
         this.dataSource = dataSource;
     }
 
+    @Override
     public WMIDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @Override
     public DBCStatement prepareStatement(DBCStatementType type, String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException
     {
         return new WMIStatement(this, type, query);
     }
 
+    @Override
     public void cancelBlock() throws DBException
     {
         // Cancel WMI async call

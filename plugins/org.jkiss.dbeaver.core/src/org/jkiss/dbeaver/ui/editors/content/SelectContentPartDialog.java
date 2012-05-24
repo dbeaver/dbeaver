@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.content;
@@ -31,11 +31,13 @@ class SelectContentPartDialog extends Dialog {
         this.dirtyParts = dirtyParts;
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText("Choose content editor");
@@ -105,6 +107,7 @@ class SelectContentPartDialog extends Dialog {
         return group;
     }
 
+    @Override
     protected Control createContents(Composite parent)
     {
         Control ctl = super.createContents(parent);

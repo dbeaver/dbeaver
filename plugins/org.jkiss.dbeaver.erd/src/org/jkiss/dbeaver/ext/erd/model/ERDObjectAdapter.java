@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.model;
@@ -20,6 +20,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
     public ERDObjectAdapter() {
     }
 
+    @Override
     public Object getAdapter(Object adaptableObject, Class adapterType) {
         if (DBPObject.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof EditPart) {
@@ -38,6 +39,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
         return null;
     }
 
+    @Override
     public Class[] getAdapterList() {
         return new Class[] { ERDObject.class, DBPNamedObject.class, DBSObject.class, DBNNode.class };
     }

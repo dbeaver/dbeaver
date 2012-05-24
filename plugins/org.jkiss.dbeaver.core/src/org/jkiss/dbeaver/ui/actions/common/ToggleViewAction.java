@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.common;
@@ -51,11 +51,13 @@ public class ToggleViewAction extends Action implements IPartListener
         return super.getImageDescriptor();
     }
 
+    @Override
     public int getStyle()
     {
         return AS_CHECK_BOX;
     }
 
+    @Override
     public boolean isChecked()
     {
         if (!listenerRegistered) {
@@ -71,6 +73,7 @@ public class ToggleViewAction extends Action implements IPartListener
         return super.isChecked();
     }
 
+    @Override
     public void run()
     {
         IWorkbenchPage activePage = getActivePage();
@@ -95,10 +98,12 @@ public class ToggleViewAction extends Action implements IPartListener
         return workbenchWindow.getActivePage();
     }
 
+    @Override
     public void partBroughtToTop(IWorkbenchPart part)
     {
     }
 
+    @Override
     public void partOpened(IWorkbenchPart part)
     {
         if (part.getSite().getId().equals(viewId)) {
@@ -106,6 +111,7 @@ public class ToggleViewAction extends Action implements IPartListener
         }
     }
 
+    @Override
     public void partClosed(IWorkbenchPart part)
     {
         if (part.getSite().getId().equals(viewId)) {
@@ -113,10 +119,12 @@ public class ToggleViewAction extends Action implements IPartListener
         }
     }
 
+    @Override
     public void partActivated(IWorkbenchPart part)
     {
     }
 
+    @Override
     public void partDeactivated(IWorkbenchPart part)
     {
     }

@@ -34,21 +34,25 @@ public class RelationalObjectType implements DBSObjectType {
         this.objectClass = objectClass;
     }
 
+    @Override
     public String getTypeName()
     {
         return typeName;
     }
 
+    @Override
     public String getDescription()
     {
         return description;
     }
 
+    @Override
     public Image getImage()
     {
         return image;
     }
 
+    @Override
     public Class<? extends DBSObject> getTypeClass()
     {
         return objectClass;

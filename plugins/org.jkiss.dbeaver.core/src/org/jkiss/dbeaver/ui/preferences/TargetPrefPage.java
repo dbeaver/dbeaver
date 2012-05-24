@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
@@ -78,15 +78,18 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         return containerNode.getObject();
     }
 
+    @Override
     public void init(IWorkbench workbench)
     {
     }
 
+    @Override
     public IAdaptable getElement()
     {
         return containerNode;
     }
 
+    @Override
     public void setElement(IAdaptable element)
     {
         if (element == null) {
@@ -109,6 +112,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         }
     }
 
+    @Override
     protected Label createDescriptionLabel(Composite parent)
     {
         parentComposite = parent;
@@ -120,6 +124,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
             dataSourceSettingsButton = new Button(composite, SWT.CHECK);
             dataSourceSettingsButton.addSelectionListener(new SelectionAdapter()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     boolean enabled = dataSourceSettingsButton.getSelection();
@@ -150,6 +155,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     /*
      * @see org.eclipse.jface.preference.IPreferencePage#createContents(Composite)
      */
+    @Override
     protected Control createContents(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -180,11 +186,13 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         link.setText("<A>" + text + "</A>");  //$NON-NLS-1$//$NON-NLS-2$
         link.addSelectionListener(new SelectionListener()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 doLinkActivated((Link) e.widget);
             }
 
+            @Override
             public void widgetDefaultSelected(SelectionEvent e)
             {
                 widgetSelected(e);
@@ -273,11 +281,13 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         }
     }
 
+    @Override
     protected final void performApply()
     {
         performOk();
     }
 
+    @Override
     public final boolean performOk()
     {
         IPreferenceStore store = isDataSourcePreferencePage() ?

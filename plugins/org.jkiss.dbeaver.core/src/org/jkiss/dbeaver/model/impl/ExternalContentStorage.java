@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl;
@@ -35,28 +35,33 @@ public class ExternalContentStorage implements DBDContentStorage {
         this.charset = charset;
     }
 
+    @Override
     public InputStream getContentStream()
         throws IOException
     {
         return new FileInputStream(file);
     }
 
+    @Override
     public Reader getContentReader()
         throws IOException
     {
         return new InputStreamReader(new FileInputStream(file), charset);
     }
 
+    @Override
     public long getContentLength()
     {
         return file.length();
     }
 
+    @Override
     public String getCharset()
     {
         return charset;
     }
 
+    @Override
     public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
         throws IOException
     {
@@ -77,6 +82,7 @@ public class ExternalContentStorage implements DBDContentStorage {
         return new TemporaryContentStorage(tempFile);
     }
 
+    @Override
     public void release()
     {
         // Do nothing

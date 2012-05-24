@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary;
@@ -63,6 +63,7 @@ public class HexManager {
                 if (!pollerEnabled[0]) {
                     pollerEnabled[0] = true;
                     display.timerExec(300, new Runnable() {
+                        @Override
                         public void run()
                         {
                             pollerEnabled[0] = false;
@@ -114,6 +115,7 @@ public class HexManager {
         textsParent = parent;
         hexEditControl = new HexEditControl(textsParent, style);
         hexEditControl.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 if (fontText != null && !fontText.isDisposed())
@@ -127,6 +129,7 @@ public class HexManager {
 
         //hexEditControl.addLongSelectionListener(new ControlSelectionAdapter(ControlSelectionAdapter.UPDATE_POSITION_TEXT));
         hexEditControl.addListener(SWT.Modify, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 if (statusLine != null)
@@ -153,6 +156,7 @@ public class HexManager {
             MenuManager menuManager = new MenuManager();
             menuManager.setRemoveAllWhenShown(true);
             menuManager.addMenuListener(new IMenuListener() {
+                @Override
                 public void menuAboutToShow(IMenuManager manager)
                 {
                     if (menuListener != null) {

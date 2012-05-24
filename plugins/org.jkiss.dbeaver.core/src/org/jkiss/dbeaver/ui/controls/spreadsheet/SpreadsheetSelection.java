@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
@@ -31,31 +31,37 @@ class SpreadsheetSelection implements IStructuredSelection
         return grid;
     }
 
+    @Override
     public boolean isEmpty()
     {
         return selection.isEmpty();
     }
 
+    @Override
     public Object getFirstElement()
     {
         return selection.iterator().next();
     }
 
+    @Override
     public Iterator<GridPos> iterator()
     {
         return selection.iterator();
     }
 
+    @Override
     public int size()
     {
         return selection.size();
     }
 
+    @Override
     public Object[] toArray()
     {
         return selection.toArray();
     }
 
+    @Override
     public List<Object> toList()
     {
         return new ArrayList<Object>(selection);

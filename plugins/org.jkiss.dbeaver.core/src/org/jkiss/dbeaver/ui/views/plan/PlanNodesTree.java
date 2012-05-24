@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.plan;
@@ -39,6 +39,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
         setFitWidth(true);
     }
 
+    @Override
     protected ObjectViewerRenderer createRenderer()
     {
         return new PlanTreeRenderer();
@@ -64,6 +65,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
     }
 
     private static ITreeContentProvider CONTENT_PROVIDER = new ITreeContentProvider() {
+        @Override
         public Object[] getElements(Object inputElement)
         {
             if (inputElement instanceof Collection) {
@@ -72,6 +74,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             return null;
         }
 
+        @Override
         public Object[] getChildren(Object parentElement)
         {
             if (parentElement instanceof DBCPlanNode) {
@@ -81,6 +84,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             return null;
         }
 
+        @Override
         public Object getParent(Object element)
         {
             if (element instanceof DBCPlanNode) {
@@ -89,15 +93,18 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             return null;
         }
 
+        @Override
         public boolean hasChildren(Object element)
         {
             return element instanceof DBCPlanNode && !CommonUtils.isEmpty(((DBCPlanNode) element).getNested());
         }
 
+        @Override
         public void dispose()
         {
         }
 
+        @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
         {
         }
@@ -111,6 +118,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             super("Explain plan", planner.getDataSource());
         }
 
+        @Override
         public Collection<DBCPlanNode> evaluate()
             throws InvocationTargetException, InterruptedException
         {
@@ -135,6 +143,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
 
     public class PlanLoadVisualizer extends ObjectsLoadVisualizer {
 
+        @Override
         public void completeLoading(Collection<DBCPlanNode> items)
         {
             super.completeLoading(items);
@@ -149,11 +158,13 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
     }
 
     private class PlanTreeRenderer extends ViewerRenderer {
+        @Override
         public boolean isHyperlink(Object cellValue)
         {
             return cellValue instanceof DBSObject;
         }
 
+        @Override
         public void navigateHyperlink(Object cellValue)
         {
             if (cellValue instanceof DBSObject) {

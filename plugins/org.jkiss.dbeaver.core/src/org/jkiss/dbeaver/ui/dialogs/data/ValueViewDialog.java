@@ -77,14 +77,17 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         return getEnumerableConstraint() != null;
     }
 
+    @Override
     public DBDValueController getValueController() {
         return valueController;
     }
 
+    @Override
     public void showValueEditor() {
         getShell().setFocus();
     }
 
+    @Override
     public void closeValueEditor() {
         this.setReturnCode(CANCEL);
         this.close();
@@ -122,6 +125,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         return dialogGroup;
     }
 
+    @Override
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
         createButton(parent, IDialogConstants.OK_ID, CoreMessages.dialog_value_view_button_save, true).setEnabled(!valueController.isReadOnly());
@@ -129,6 +133,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         createButton(parent, IDialogConstants.CANCEL_ID, CoreMessages.dialog_value_view_button_cancel, false);
     }
 
+    @Override
     protected void initializeBounds()
     {
         super.initializeBounds();
@@ -177,6 +182,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         }
     }
 
+    @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         DBSColumnBase meta = valueController.getColumnMetaData();
@@ -220,6 +226,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 // Open
                 final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
                 DBeaverCore.getInstance().runInUI(window, new DBRRunnableWithProgress() {
+                    @Override
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -264,6 +271,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         });
 
         editor.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 if (handleEditorChange) {
@@ -305,6 +313,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
             this.pattern = pattern;
         }
 
+        @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
             final Map<Object, String> keyValues = new TreeMap<Object, String>();
@@ -366,6 +375,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                         return Status.CANCEL_STATUS;
                     }
                     getShell().getDisplay().syncExec(new Runnable() {
+                        @Override
                         public void run()
                         {
                             DBDValueHandler colHandler = DBUtils.getColumnValueHandler(context, fkColumn.getAttribute());

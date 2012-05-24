@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -87,6 +87,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
     public void openEditor() {
         if (object instanceof DBSObject) {
             DBeaverCore.runUIJob("Open object editor", new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -103,6 +104,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
         }
     }
 
+    @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IPropertySource.class) {
             return getPropertyCollector();

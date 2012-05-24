@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.struct;
@@ -39,11 +39,13 @@ public abstract class AbstractTable<
         return isView() ? DBSEntityType.VIEW : DBSEntityType.TABLE;
     }
 
+    @Override
     public CONTAINER getContainer()
     {
         return container;
     }
 
+    @Override
     @Property(name = "Table Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
@@ -55,17 +57,20 @@ public abstract class AbstractTable<
         this.tableName = tableName;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public DATASOURCE getDataSource()
     {
         return (DATASOURCE) container.getDataSource();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return container;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -29,7 +29,8 @@ public class FlyoutChangeLayoutAction extends Action
 		this.editor = editor;
 	}
 
-	public void run()
+	@Override
+    public void run()
 	{
 		if (editor instanceof ERDEditorPart)
 		{
@@ -44,7 +45,8 @@ public class FlyoutChangeLayoutAction extends Action
 		}
 	}
 
-	public boolean isChecked()
+	@Override
+    public boolean isChecked()
 	{
 		if (editor != null)
 			return isChecked(editor);

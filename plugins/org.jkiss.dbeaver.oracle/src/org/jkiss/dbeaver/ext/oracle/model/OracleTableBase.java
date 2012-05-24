@@ -43,6 +43,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<OracleTableBase> {
+        @Override
         public boolean isPropertyCached(OracleTableBase object, Object propertyId)
         {
             return object.getAdditionalInfo().isLoaded();
@@ -50,6 +51,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     public static class CommentsValidator implements IPropertyCacheValidator<OracleTableBase> {
+        @Override
         public boolean isPropertyCached(OracleTableBase object, Object propertyId)
         {
             return object.comment != null;
@@ -78,22 +80,26 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
     }
 
+    @Override
     public OracleSchema getSchema()
     {
         return super.getContainer();
     }
 
+    @Override
     @Property(name = "Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1, description = "Name of the table")
     public String getName()
     {
         return super.getName();
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -127,6 +133,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return comment;
     }
 
+    @Override
     public Collection<OracleTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -136,12 +143,14 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return columns;
     }
 
+    @Override
     public OracleTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
         throws DBException
     {
         return DBUtils.findObject(getColumns(monitor), columnName);
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;
@@ -166,11 +175,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return getContainer().triggerCache.getObjects(monitor, getContainer(), this);
     }
 
+    @Override
     public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Override
     @Association
     public List<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
@@ -202,11 +213,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return DBUtils.findObject(getAssociations(monitor), ukName);
     }
 
+    @Override
     public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Override
     public List<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
@@ -218,6 +231,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return OracleUtils.getDDL(monitor, getTableTypeName(), this);
     }
 
+    @Override
     public DBSObjectState getObjectState()
     {
         return valid ? DBSObjectState.NORMAL : DBSObjectState.INVALID;

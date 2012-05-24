@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.edit;
@@ -20,10 +20,12 @@ public class DatabaseObjectScriptCommand<OBJECT_TYPE extends DBSObject> extends 
         this.script = script;
     }
 
+    @Override
     public void updateModel()
     {
     }
 
+    @Override
     public IDatabasePersistAction[] getPersistActions()
     {
         return new IDatabasePersistAction[] {

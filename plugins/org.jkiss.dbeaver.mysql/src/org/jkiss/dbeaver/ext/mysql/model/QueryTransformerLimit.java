@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -18,11 +18,13 @@ class QueryTransformerLimit implements DBCQueryTransformer {
     private Object length;
     private boolean limitSet;
 
+    @Override
     public void setParameters(Object... parameters) {
         this.offset = parameters[0];
         this.length = parameters[1];
     }
 
+    @Override
     public String transformQueryString(String query) throws DBCException {
         String testQuery = query.toUpperCase().trim();
         if (!testQuery.startsWith("SELECT") || testQuery.indexOf("LIMIT") != -1) {
@@ -34,6 +36,7 @@ class QueryTransformerLimit implements DBCQueryTransformer {
         return query;
     }
 
+    @Override
     public void transformStatement(DBCStatement statement, int parameterIndex) throws DBCException {
         if (!limitSet) {
             statement.setLimit(((Number)offset).longValue(), ((Number)length).longValue());

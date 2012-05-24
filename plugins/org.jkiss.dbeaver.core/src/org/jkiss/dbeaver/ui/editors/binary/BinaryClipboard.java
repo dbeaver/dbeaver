@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary;
@@ -40,6 +40,7 @@ public class BinaryClipboard {
             return instance;
         }
 
+        @Override
         public void javaToNative(Object object, TransferData transferData)
         {
             if (object == null || !(object instanceof File)) return;
@@ -65,6 +66,7 @@ public class BinaryClipboard {
             }
         }
 
+        @Override
         public Object nativeToJava(TransferData transferData)
         {
             if (!isSupportedType(transferData)) return null;
@@ -92,11 +94,13 @@ public class BinaryClipboard {
             }
         }
 
+        @Override
         protected String[] getTypeNames()
         {
             return new String[]{FORMAT_NAME};
         }
 
+        @Override
         protected int[] getTypeIds()
         {
             return new int[]{FORMAT_ID};
@@ -119,6 +123,7 @@ public class BinaryClipboard {
             return instance;
         }
 
+        @Override
         public void javaToNative(Object object, TransferData transferData)
         {
             if (object == null || !(object instanceof byte[])) return;
@@ -129,6 +134,7 @@ public class BinaryClipboard {
             }
         }
 
+        @Override
         public Object nativeToJava(TransferData transferData)
         {
             Object result = null;
@@ -139,11 +145,13 @@ public class BinaryClipboard {
             return result;
         }
 
+        @Override
         protected String[] getTypeNames()
         {
             return new String[]{FORMAT_NAME};
         }
 
+        @Override
         protected int[] getTypeIds()
         {
             return new int[]{FORMAT_ID};
@@ -218,6 +226,7 @@ public class BinaryClipboard {
      *
      * @see Object#finalize()
      */
+    @Override
     protected void finalize() throws Throwable
     {
         dispose();

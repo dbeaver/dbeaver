@@ -30,6 +30,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         DBNModel.getInstance().addNode(this, false);
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         DBNModel.getInstance().removeNode(this, reflect);
@@ -47,21 +48,25 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         super.dispose(reflect);
     }
 
+    @Override
     public DataSourceDescriptor getObject()
     {
         return dataSource;
     }
 
+    @Override
     public Object getValueObject()
     {
         return dataSource == null ? null : dataSource.getDataSource();
     }
 
+    @Override
     public String getNodeName()
     {
         return dataSource == null ? "" : dataSource.getName();
     }
 
+    @Override
     public String getNodeDescription()
     {
         return dataSource == null ? "" : dataSource.getDescription();
@@ -73,16 +78,19 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         return getNodeName();
     }
 
+    @Override
     public boolean isLazyNode()
     {
         return super.isLazyNode();
     }
 
+    @Override
     public boolean isManagable()
     {
         return true;
     }
 
+    @Override
     public DBXTreeNode getMeta()
     {
         return treeRoot;
@@ -93,6 +101,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         dataSource = (DataSourceDescriptor) object;
     }
 
+    @Override
     public boolean initializeNode(DBRProgressMonitor monitor, Runnable onFinish)
     {
         if (!dataSource.isConnected()) {
@@ -106,6 +115,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         return dataSource.isConnected();
     }
 
+    @Override
     public Object getAdapter(Class adapter) {
         if (adapter == DBNDataSource.class) {
             return this;
@@ -115,16 +125,19 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
         return null;
     }
 
+    @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
         return dataSource;
     }
 
+    @Override
     public boolean supportsRename()
     {
         return true;
     }
 
+    @Override
     public void rename(DBRProgressMonitor monitor, String newName)
     {
         dataSource.setName(newName);

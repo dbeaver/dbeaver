@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -19,6 +19,7 @@ public class DatabaseEditorPropertyTester extends PropertyTester
         super();
     }
 
+    @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (!(receiver instanceof IDatabaseEditor)) {
             return false;

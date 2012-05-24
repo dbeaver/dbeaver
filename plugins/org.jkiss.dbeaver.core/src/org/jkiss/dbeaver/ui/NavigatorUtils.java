@@ -91,10 +91,12 @@ public class NavigatorUtils {
         Menu menu = menuMgr.createContextMenu(control);
         menu.addMenuListener(new MenuListener()
         {
+            @Override
             public void menuHidden(MenuEvent e)
             {
             }
 
+            @Override
             public void menuShown(MenuEvent e)
             {
                 Menu m = (Menu)e.widget;
@@ -115,6 +117,7 @@ public class NavigatorUtils {
             }
         });
         menuMgr.addMenuListener(new IMenuListener() {
+            @Override
             public void menuAboutToShow(final IMenuManager manager)
             {
                 // Fill context menu
@@ -193,10 +196,12 @@ public class NavigatorUtils {
 
             private IStructuredSelection selection;
 
+            @Override
             public void dragStart(DragSourceEvent event) {
                 selection = (IStructuredSelection) viewer.getSelection();
             }
 
+            @Override
             public void dragSetData (DragSourceEvent event) {
                 if (!selection.isEmpty()) {
                     List<DBNNode> nodes = new ArrayList<DBNNode>();
@@ -242,6 +247,7 @@ public class NavigatorUtils {
                     }
                 }
             }
+            @Override
             public void dragFinished(DragSourceEvent event) {
             }
         });
@@ -249,26 +255,31 @@ public class NavigatorUtils {
         DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
         dropTarget.setTransfer(new Transfer[] {TreeNodeTransfer.getInstance()});
         dropTarget.addDropListener(new DropTargetListener() {
+            @Override
             public void dragEnter(DropTargetEvent event)
             {
                 handleDragEvent(event);
             }
 
+            @Override
             public void dragLeave(DropTargetEvent event)
             {
                 handleDragEvent(event);
             }
 
+            @Override
             public void dragOperationChanged(DropTargetEvent event)
             {
                 handleDragEvent(event);
             }
 
+            @Override
             public void dragOver(DropTargetEvent event)
             {
                 handleDragEvent(event);
             }
 
+            @Override
             public void drop(DropTargetEvent event)
             {
                 handleDragEvent(event);
@@ -277,6 +288,7 @@ public class NavigatorUtils {
                 }
             }
 
+            @Override
             public void dropAccept(DropTargetEvent event)
             {
                 handleDragEvent(event);

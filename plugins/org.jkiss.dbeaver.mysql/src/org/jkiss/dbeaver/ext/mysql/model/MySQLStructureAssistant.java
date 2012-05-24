@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -38,6 +38,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         return dataSource;
     }
 
+    @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return new DBSObjectType[] {

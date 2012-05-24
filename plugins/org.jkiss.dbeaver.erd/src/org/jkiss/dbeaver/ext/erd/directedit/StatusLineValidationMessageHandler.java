@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -30,7 +30,8 @@ public class StatusLineValidationMessageHandler implements ValidationMessageHand
 	 * @param text
 	 *            the message to display
 	 */
-	public void setMessageText(String text)
+	@Override
+    public void setMessageText(String text)
 	{
 		editorSite.getActionBars().getStatusLineManager().setErrorMessage(text);
 	}
@@ -38,7 +39,8 @@ public class StatusLineValidationMessageHandler implements ValidationMessageHand
 	/**
 	 * Sets clears the status line
 	 */
-	public void reset()
+	@Override
+    public void reset()
 	{
 		editorSite.getActionBars().getStatusLineManager().setErrorMessage(null);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.api;
@@ -28,6 +28,7 @@ public class JDBCSavepointImpl implements DBCSavepoint, Savepoint {
         this.original = savepoint;
     }
 
+    @Override
     public int getId()
     {
         try {
@@ -39,6 +40,7 @@ public class JDBCSavepointImpl implements DBCSavepoint, Savepoint {
         }
     }
 
+    @Override
     public String getName()
     {
         try {
@@ -50,17 +52,20 @@ public class JDBCSavepointImpl implements DBCSavepoint, Savepoint {
         }
     }
 
+    @Override
     public JDBCExecutionContext getContext()
     {
         return connection;
     }
 
+    @Override
     public int getSavepointId()
         throws SQLException
     {
         return original.getSavepointId();
     }
 
+    @Override
     public String getSavepointName()
         throws SQLException
     {

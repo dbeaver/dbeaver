@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.wmi.model;
@@ -16,11 +16,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class WMIValueHandlerProvider implements DBDValueHandlerProvider {
 
+    @Override
     public Image getTypeImage(DBSTypedObject type)
     {
         return WMIClassAttribute.getPropertyImage(type.getTypeID());
     }
 
+    @Override
     public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
     {
         return DBCDefaultValueHandler.INSTANCE;

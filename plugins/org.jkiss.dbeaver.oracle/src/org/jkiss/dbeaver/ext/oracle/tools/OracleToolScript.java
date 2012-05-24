@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.tools;
@@ -17,6 +17,7 @@ import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
  */
 public class OracleToolScript implements DBPTool
 {
+    @Override
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
     {
         if (object instanceof DBSObject && ((DBSObject) object).getDataSource() instanceof OracleDataSource) {

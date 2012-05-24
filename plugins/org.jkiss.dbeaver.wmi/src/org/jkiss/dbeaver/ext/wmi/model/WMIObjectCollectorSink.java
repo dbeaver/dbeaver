@@ -47,6 +47,7 @@ class WMIObjectCollectorSink implements WMIObjectSink
         return objectList;
     }
 
+    @Override
     public void indicate(WMIObject[] objects)
     {
         if (finished) {
@@ -96,6 +97,7 @@ class WMIObjectCollectorSink implements WMIObjectSink
         monitor.subTask(String.valueOf(objectList.size()) + " objects loaded");
     }
 
+    @Override
     public void setStatus(WMIObjectSinkStatus status, int result, String param, WMIObject errorObject)
     {
         if (status == WMIObjectSinkStatus.complete || status == WMIObjectSinkStatus.error) {

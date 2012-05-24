@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.data;
@@ -15,6 +15,7 @@ import java.util.Map;
 
 public class DateFormatSample implements DBDDataFormatterSample {
 
+    @Override
     public Map<Object, Object> getDefaultProperties(Locale locale)
     {
         SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getDateInstance(DateFormat.LONG, locale);
@@ -22,6 +23,7 @@ public class DateFormatSample implements DBDDataFormatterSample {
         return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)pattern);
     }
 
+    @Override
     public Object getSampleValue()
     {
         return new Date();

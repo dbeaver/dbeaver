@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.exec.jdbc;
@@ -13,9 +13,11 @@ import java.sql.ResultSet;
  */
 public interface JDBCResultSet extends ResultSet, DBCResultSet {
 
+    @Override
     JDBCStatement getSource();
 
     ResultSet getOriginal();
 
+    @Override
     void close();
 }

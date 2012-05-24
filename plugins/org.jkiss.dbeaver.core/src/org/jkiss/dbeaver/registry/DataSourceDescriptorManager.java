@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -22,11 +22,13 @@ import java.util.Map;
  */
 public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDescriptor> implements DBEObjectMaker<DataSourceDescriptor, DataSourceRegistry> {
 
+    @Override
     public long getMakerOptions()
     {
         return 0;
     }
 
+    @Override
     public DataSourceDescriptor createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, DataSourceRegistry parent, Object copyFrom)
     {
         if (copyFrom != null) {
@@ -67,9 +69,11 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
         return null;
     }
 
+    @Override
     public void deleteObject(DBECommandContext commandContext, final DataSourceDescriptor object, Map<String, Object> options)
     {
         Runnable remover = new Runnable() {
+            @Override
             public void run()
             {
                 object.getRegistry().removeDataSource(object);

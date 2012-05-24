@@ -23,6 +23,7 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
         super(table, name, remarks, constraintType, persisted);
     }
 
+    @Override
     public List<MySQLTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -41,6 +42,7 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
         this.columns = columns;
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -49,6 +51,7 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
             this);
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return getTable().getDataSource();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -22,7 +22,8 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 public class EntityEditPolicy extends ComponentEditPolicy
 {
 
-	protected Command createDeleteCommand(GroupRequest request)
+	@Override
+    protected Command createDeleteCommand(GroupRequest request)
 	{
 		EntityPart entityPart = (EntityPart) getHost();
 		Rectangle bounds = entityPart.getFigure().getBounds().getCopy();

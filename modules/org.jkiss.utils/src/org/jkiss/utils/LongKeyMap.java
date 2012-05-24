@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.utils;
@@ -126,7 +126,8 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 *
 	 * @return the number of key-value mappings in this map.
 	 */
-	public int size() {
+	@Override
+    public int size() {
 		return size;
 	}
 
@@ -135,12 +136,14 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 *
 	 * @return <tt>true</tt> if this map contains no key-value mappings.
 	 */
-	public boolean isEmpty()
+	@Override
+    public boolean isEmpty()
 	{
 		return size == 0;
 	}
 
-	public boolean containsKey(Object key)
+	@Override
+    public boolean containsKey(Object key)
 	{
 		return containsKey(((Number)key).longValue());
 	}
@@ -412,7 +415,8 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	/**
 	 * Removes all mappings from this map.
 	 */
-	public void clear() {
+	@Override
+    public void clear() {
 		modCount++;
 		LongEntry<VALUE> tab[] = table;
 		for (int i = 0; i < tab.length; i++)
@@ -428,7 +432,8 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 * @return <tt>true</tt> if this map maps one or more keys to the
 	 *         specified value.
 	 */
-	public boolean containsValue(Object value)
+	@Override
+    public boolean containsValue(Object value)
 	{
 		if (value == null)
 			return containsNullValue();
@@ -441,22 +446,26 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 		return false;
 	}
 
-	public VALUE get(Object key)
+	@Override
+    public VALUE get(Object key)
 	{
 		return get(((Number)key).longValue());
 	}
 
-	public VALUE put(Long key, VALUE value)
+	@Override
+    public VALUE put(Long key, VALUE value)
 	{
 		return put(key.longValue(), value);
 	}
 
-	public VALUE remove(Object key)
+	@Override
+    public VALUE remove(Object key)
 	{
 		return remove(((Number)key).longValue());
 	}
 
-	public void putAll(Map<? extends Long, ? extends VALUE> t)
+	@Override
+    public void putAll(Map<? extends Long, ? extends VALUE> t)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -494,16 +503,19 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 			return key;
 		}
 
-		public Long getKey()
+		@Override
+        public Long getKey()
 		{
 			return Long.valueOf(key);
 		}
 
-		public VALUE getValue() {
+		@Override
+        public VALUE getValue() {
 			return value;
 		}
 
-		public VALUE setValue(VALUE newValue) {
+		@Override
+        public VALUE setValue(VALUE newValue) {
 			VALUE oldValue = value;
 			value = newValue;
 			return oldValue;
@@ -577,7 +589,8 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 			index = i;
 		}
 
-		public boolean hasNext() {
+		@Override
+        public boolean hasNext() {
 			return next != null;
 		}
 
@@ -598,7 +611,8 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 			return current = e;
 		}
 
-		public void remove() {
+		@Override
+        public void remove() {
 			if (current == null)
 				throw new IllegalStateException();
 			if (modCount != expectedModCount)
@@ -612,13 +626,15 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	}
 
 	private class ValueIterator extends HashIterator<VALUE> {
-		public VALUE next() {
+		@Override
+        public VALUE next() {
 			return nextEntry().value;
 		}
 	}
 
 	private class KeyIterator extends HashIterator<Long> {
-		public Long next() {
+		@Override
+        public Long next() {
 			return Long.valueOf(nextEntry().key);
 		}
 		public long nextLong() {
@@ -627,7 +643,8 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	}
 
 	private class EntryIterator extends HashIterator<LongEntry<VALUE>> {
-		public LongEntry<VALUE> next() {
+		@Override
+        public LongEntry<VALUE> next() {
 			return nextEntry();
 		}
 	}
@@ -664,33 +681,39 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 *
 	 * @return a set view of the keys contained in this map.
 	 */
-	public Set<Long> keySet() {
+	@Override
+    public Set<Long> keySet() {
 		Set<Long> ks = keySet;
 		return (ks != null ? ks : (keySet = new KeySet()));
 	}
 
 	private class KeySet extends AbstractSet<Long> {
-		public Iterator<Long> iterator() {
+		@Override
+        public Iterator<Long> iterator() {
 			return newKeyIterator();
 		}
-		public int size() {
+		@Override
+        public int size() {
 			return size;
 		}
-		public boolean contains(Object o) {
+		@Override
+        public boolean contains(Object o) {
 			if (o instanceof Number) {
 				return containsKey(((Number)o).longValue());
 			} else {
 				return false;
 			}
 		}
-		public boolean remove(Object o) {
+		@Override
+        public boolean remove(Object o) {
 			if (o instanceof Number) {
 				return LongKeyMap.this.removeEntryForKey(((Number)o).longValue()) != null;
 			} else {
 				return false;
 			}
 		}
-		public void clear() {
+		@Override
+        public void clear() {
 			LongKeyMap.this.clear();
 		}
 	}
@@ -706,50 +729,61 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 *
 	 * @return a collection view of the values contained in this map.
 	 */
-	public Collection<VALUE> values() {
+	@Override
+    public Collection<VALUE> values() {
 		Collection<VALUE> vs = values;
 		return (vs != null ? vs : (values = new Values()));
 	}
 
 	private class Values extends AbstractCollection<VALUE> {
-		public Iterator<VALUE> iterator() {
+		@Override
+        public Iterator<VALUE> iterator() {
 			return newValueIterator();
 		}
-		public int size() {
+		@Override
+        public int size() {
 			return size;
 		}
-		public boolean contains(Object o) {
+		@Override
+        public boolean contains(Object o) {
 			return containsValue(o);
 		}
-		public void clear() {
+		@Override
+        public void clear() {
 			LongKeyMap.this.clear();
 		}
 	}
 
-	public Set entrySet()
+	@Override
+    public Set entrySet()
 	{
 		Set<LongEntry<VALUE>> es = entrySet;
 		return (es != null ? es : (entrySet = new EntrySet()));
 	}
 
 	private class EntrySet extends AbstractSet<LongEntry<VALUE>> {
-		public Iterator<LongEntry<VALUE>> iterator() {
+		@Override
+        public Iterator<LongEntry<VALUE>> iterator() {
 			return newEntryIterator();
 		}
-		public boolean contains(Object o) {
+		@Override
+        public boolean contains(Object o) {
 			if (!(o instanceof LongEntry))
 				return false;
 			LongEntry e = (LongEntry)o;
 			LongEntry candidate = getEntry(e.key);
 			return candidate != null && candidate.equals(e);
 		}
-		public boolean remove(Object o) {
+		@Override
+        public boolean remove(Object o) {
 			return removeMapping(o) != null;
 		}
-		public int size() {
+		@Override
+        public int size() {
 			return size;
 		}
-		public void clear() {
+		@Override
+        public void clear() {
 			LongKeyMap.this.clear();
 		}
 	}

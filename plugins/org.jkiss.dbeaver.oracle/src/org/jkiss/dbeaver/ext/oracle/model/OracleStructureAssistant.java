@@ -39,6 +39,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         this.dataSource = dataSource;
     }
 
+    @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return new DBSObjectType[] {
@@ -51,6 +52,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             };
     }
 
+    @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return new DBSObjectType[] {
@@ -59,6 +61,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             };
     }
 
+    @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {
         return new DBSObjectType[] {
@@ -67,6 +70,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             };
     }
 
+    @Override
     public Collection<DBSObject> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,

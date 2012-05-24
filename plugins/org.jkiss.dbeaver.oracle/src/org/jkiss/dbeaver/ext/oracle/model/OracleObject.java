@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -46,21 +46,25 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
         this.persisted = persisted;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public PARENT getParentObject()
     {
         return parent;
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return (OracleDataSource) parent.getDataSource();
     }
 
+    @Override
     @Property(name = "Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
@@ -77,11 +81,13 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
         return objectId;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties.tabbed;
@@ -22,11 +22,13 @@ public abstract class SectionDescriptor extends AbstractSectionDescriptor {
         this.targetTab = targetTab;
     }
 
+    @Override
     public String getId()
     {
         return id;
     }
 
+    @Override
     public String getTargetTab()
     {
         return targetTab;

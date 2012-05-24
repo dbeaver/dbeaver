@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
@@ -35,6 +35,7 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void paint(GC gc)
     {
         GridColumn col = grid.getColumn(getColumn());
@@ -94,6 +95,7 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean notify(int event, Point point, Object value)
     {
         return false;
@@ -102,6 +104,7 @@ public class DefaultColumnFooterRenderer extends GridColumnRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Rectangle getTextBounds(Object value, boolean preferred)
     {
         GridColumn column = (GridColumn) value;

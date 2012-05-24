@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.misc;
@@ -37,11 +37,13 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
         super(parentShell);
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(CoreMessages.dialog_data_format_profiles_title);
@@ -57,6 +59,7 @@ public class DataFormatProfilesEditDialog extends org.eclipse.jface.dialogs.Dial
         profileList.setLayoutData(gd);
 
         profileList.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 getButton(DELETE_ID).setEnabled(profileList.getSelectionIndex() >= 0);

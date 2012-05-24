@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
@@ -28,6 +28,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void paint(GC gc) {
         String text = getHeaderText();
 

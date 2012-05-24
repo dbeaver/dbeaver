@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.editors;
@@ -46,6 +46,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         super.dispose();
     }
 
+    @Override
     public void createPartControl(Composite parent) {
         killSessionAction = new KillSessionAction(false);
         terminateQueryAction = new KillSessionAction(true);
@@ -70,6 +71,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         sessionsViewer.refreshSessions();
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         DBPDataSource dataSource = super.getDataSource();
@@ -80,6 +82,7 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         return null;
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         sessionsViewer.refreshSessions();

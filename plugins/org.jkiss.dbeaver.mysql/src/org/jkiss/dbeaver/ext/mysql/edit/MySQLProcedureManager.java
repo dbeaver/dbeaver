@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -30,11 +30,13 @@ public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQ
         return object.getContainer().getProceduresCache();
     }
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
+    @Override
     protected void validateObjectProperties(ObjectChangeCommand command)
         throws DBException
     {

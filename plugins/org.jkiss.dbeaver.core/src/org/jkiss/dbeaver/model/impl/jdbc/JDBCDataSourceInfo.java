@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc;
@@ -287,41 +287,49 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         return CommonUtils.isEmpty(term) ? defTerm : CommonUtils.capitalizeWord(term.toLowerCase());
     }
 
+    @Override
     public boolean isReadOnlyData()
     {
         return readOnly;
     }
 
+    @Override
     public boolean isReadOnlyMetaData()
     {
         return readOnly;
     }
 
+    @Override
     public String getDatabaseProductName()
     {
         return databaseProductName;
     }
 
+    @Override
     public String getDatabaseProductVersion()
     {
         return databaseProductVersion;
     }
 
+    @Override
     public String getDriverName()
     {
         return driverName;
     }
 
+    @Override
     public String getDriverVersion()
     {
         return driverVersion;
     }
 
+    @Override
     public String getIdentifierQuoteString()
     {
         return identifierQuoteString;
     }
 
+    @Override
     public Collection<String> getSQLKeywords()
     {
         return sqlKeywords;
@@ -332,91 +340,109 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         sqlKeywords.add(keyword);
     }
 
+    @Override
     public Collection<String> getNumericFunctions()
     {
         return numericFunctions;
     }
 
+    @Override
     public Collection<String> getStringFunctions()
     {
         return stringFunctions;
     }
 
+    @Override
     public Collection<String> getSystemFunctions()
     {
         return systemFunctions;
     }
 
+    @Override
     public Collection<String> getTimeDateFunctions()
     {
         return timeDateFunctions;
     }
 
+    @Override
     public Collection<String> getExecuteKeywords()
     {
         return null;
     }
 
+    @Override
     public String getSearchStringEscape()
     {
         return searchStringEscape;
     }
 
+    @Override
     public String getSchemaTerm()
     {
         return schemaTerm;
     }
 
+    @Override
     public String getProcedureTerm()
     {
         return procedureTerm;
     }
 
+    @Override
     public String getCatalogTerm()
     {
         return catalogTerm;
     }
 
+    @Override
     public int getCatalogUsage()
     {
         return catalogUsage;
     }
 
+    @Override
     public int getSchemaUsage()
     {
         return schemaUsage;
     }
 
+    @Override
     public String getCatalogSeparator()
     {
         return catalogSeparator;
     }
 
+    @Override
     public String getStructSeparator()
     {
         return STRUCT_SEPARATOR;
     }
 
+    @Override
     public boolean isCatalogAtStart()
     {
         return isCatalogAtStart;
     }
 
+    @Override
     public DBCStateType getSQLStateType()
     {
         return sqlStateType;
     }
 
+    @Override
     public boolean supportsTransactions()
     {
         return supportsTransactions;
     }
 
+    @Override
     public boolean supportsSavepoints()
     {
         return false;
     }
 
+    @Override
     public boolean supportsReferentialIntegrity()
     {
         return supportsReferences;
@@ -427,6 +453,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         this.supportsReferences = supportsReferences;
     }
 
+    @Override
     public boolean supportsIndexes()
     {
         return supportsIndexes;
@@ -437,36 +464,43 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         this.supportsIndexes = supportsIndexes;
     }
 
+    @Override
     public Collection<DBPTransactionIsolation> getSupportedTransactionIsolations()
     {
         return supportedIsolations;
     }
 
+    @Override
     public String getScriptDelimiter()
     {
         return ";"; //$NON-NLS-1$
     }
 
+    @Override
     public boolean validUnquotedCharacter(char c)
     {
         return Character.isLetter(c) || Character.isDigit(c) || c == '_' || validCharacters.indexOf(c) != -1;
     }
 
+    @Override
     public boolean supportsUnquotedMixedCase()
     {
         return supportsUnquotedMixedCase;
     }
 
+    @Override
     public boolean supportsQuotedMixedCase()
     {
         return supportsQuotedMixedCase;
     }
 
+    @Override
     public DBPIdentifierCase storesUnquotedCase()
     {
         return unquotedIdentCase;
     }
 
+    @Override
     public DBPIdentifierCase storesQuotedCase()
     {
         return quotedIdentCase;

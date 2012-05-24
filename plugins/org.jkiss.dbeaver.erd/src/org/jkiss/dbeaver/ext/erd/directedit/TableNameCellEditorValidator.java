@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -33,7 +33,8 @@ public class TableNameCellEditorValidator implements ICellEditorValidator
 	 *            of column type
 	 * @return the error message if an error has occurred, otherwise null
 	 */
-	public String isValid(Object value)
+	@Override
+    public String isValid(Object value)
 	{
 		String name = (String) value;
 

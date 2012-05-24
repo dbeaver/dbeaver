@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -43,41 +43,50 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
             new DBECommandContextImpl(node.getObject().getDataSource().getContainer());
     }
 
+    @Override
     public boolean exists()
     {
         return false;
     }
 
+    @Override
     public ImageDescriptor getImageDescriptor()
     {
         return ImageDescriptor.createFromImage(node.getNodeIconDefault());
     }
 
+    @Override
     public String getName()
     {
         return node.getNodePathName();
     }
 
+    @Override
     public IPersistableElement getPersistable()
     {
         return null;
     }
 
+    @Override
     public String getToolTipText()
     {
         return node.getNodeDescription();
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         if (IWorkbenchAdapter.class.equals(adapter)) {
             return new WorkbenchAdapter() {
+                @Override
                 public ImageDescriptor getImageDescriptor(Object object) {
                     return ImageDescriptor.createFromImage(node.getNodeIconDefault());
                 }
+                @Override
                 public String getLabel(Object o) {
                     return node.getName();
                 }
+                @Override
                 public Object getParent(Object o) {
                     return node.getParentNode();
                 }
@@ -87,37 +96,44 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         return null;
     }
 
+    @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
         final DBPDataSource dbpDataSource = getDataSource();
         return dbpDataSource == null ? null : dbpDataSource.getContainer();
     }
 
+    @Override
     public DBPDataSource getDataSource() {
         DBSObject object = node.getObject();
         return object == null ? null : object.getDataSource();
     }
 
+    @Override
     public NODE getTreeNode()
     {
         return node;
     }
 
+    @Override
     public DBSObject getDatabaseObject()
     {
         return node.getObject();
     }
 
+    @Override
     public String getDefaultPageId()
     {
         return defaultPageId;
     }
 
+    @Override
     public String getDefaultFolderId()
     {
         return defaultFolderId;
     }
 
+    @Override
     public DBECommandContext getCommandContext()
     {
         return commandContext;
@@ -133,6 +149,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         this.defaultFolderId = defaultFolderId;
     }
 
+    @Override
     public IPropertySource2 getPropertySource()
     {
         if (propertySource == null) {

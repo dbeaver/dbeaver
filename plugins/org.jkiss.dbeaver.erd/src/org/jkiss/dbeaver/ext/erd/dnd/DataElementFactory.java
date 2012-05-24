@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -32,7 +32,8 @@ public class DataElementFactory implements CreationFactory
 	/**
 	 * @see org.eclipse.gef.requests.CreationFactory#getNewObject()
 	 */
-	public Object getNewObject()
+	@Override
+    public Object getNewObject()
 	{
 		try
 		{
@@ -47,7 +48,8 @@ public class DataElementFactory implements CreationFactory
 	/**
 	 * @see org.eclipse.gef.requests.CreationFactory#getObjectType()
 	 */
-	public Object getObjectType()
+	@Override
+    public Object getObjectType()
 	{
 		return template;
 	}

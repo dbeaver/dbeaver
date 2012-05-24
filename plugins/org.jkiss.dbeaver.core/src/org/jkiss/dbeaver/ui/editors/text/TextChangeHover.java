@@ -26,14 +26,16 @@ public class TextChangeHover extends LineChangeHover {
 	/*
 	 * @see org.eclipse.jface.text.source.LineChangeHover#getTabReplacement()
 	 */
-	protected String getTabReplacement() {
+	@Override
+    protected String getTabReplacement() {
 		return Character.toString('\t');
 	}
 
 	/*
 	 * @see org.eclipse.jface.text.source.LineChangeHover#getHoverInfo(org.eclipse.jface.text.source.ISourceViewer, org.eclipse.jface.text.source.ILineRange, int)
 	 */
-	public Object getHoverInfo(ISourceViewer sourceViewer, ILineRange lineRange, int visibleLines) {
+	@Override
+    public Object getHoverInfo(ISourceViewer sourceViewer, ILineRange lineRange, int visibleLines) {
 		fLastScrollIndex= sourceViewer.getTextWidget().getHorizontalPixel();
 		return super.getHoverInfo(sourceViewer, lineRange, visibleLines);
 	}
@@ -41,9 +43,11 @@ public class TextChangeHover extends LineChangeHover {
 	/*
 	 * @see org.eclipse.jface.text.source.IAnnotationHoverExtension#getHoverControlCreator()
 	 */
-	public IInformationControlCreator getHoverControlCreator() {
+	@Override
+    public IInformationControlCreator getHoverControlCreator() {
 		return new IInformationControlCreator() {
-			public IInformationControl createInformationControl(Shell parent) {
+			@Override
+            public IInformationControl createInformationControl(Shell parent) {
                 return new DefaultInformationControl(parent, true);
 			}
 		};
@@ -53,9 +57,11 @@ public class TextChangeHover extends LineChangeHover {
 	 * @see org.eclipse.jface.text.information.IInformationProviderExtension2#getInformationPresenterControlCreator()
 	 * @since 3.3
 	 */
-	public IInformationControlCreator getInformationPresenterControlCreator() {
+	@Override
+    public IInformationControlCreator getInformationPresenterControlCreator() {
 		return new IInformationControlCreator() {
-			public IInformationControl createInformationControl(Shell parent) {
+			@Override
+            public IInformationControl createInformationControl(Shell parent) {
                 return new DefaultInformationControl(parent, true);
 			}
 		};

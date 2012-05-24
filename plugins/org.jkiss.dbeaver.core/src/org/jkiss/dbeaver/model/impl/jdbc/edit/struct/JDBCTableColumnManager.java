@@ -28,6 +28,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
@@ -90,6 +91,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
 
     }
 
+    @Override
     protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
     {
         OBJECT_TYPE column = command.getObject();
@@ -122,6 +124,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         return decl;
     }
 
+    @Override
     protected void validateObjectProperties(ObjectChangeCommand command)
         throws DBException
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -47,6 +47,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
         setListOrderComparator(DBUtils.<GenericTable>nameComparator());
     }
 
+    @Override
     protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner)
         throws SQLException
     {
@@ -57,6 +58,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
             null).getSource();
     }
 
+    @Override
     protected GenericTable fetchObject(JDBCExecutionContext context, GenericStructContainer owner, ResultSet dbResult)
         throws SQLException, DBException
     {
@@ -102,16 +104,19 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
             true);
     }
 
+    @Override
     protected boolean isChildrenCached(GenericTable table)
     {
         return table.isColumnsCached();
     }
 
+    @Override
     protected void cacheChildren(GenericTable table, List<GenericTableColumn> columns)
     {
         table.setColumns(columns);
     }
 
+    @Override
     protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forTable)
         throws SQLException
     {
@@ -122,6 +127,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
             null).getSource();
     }
 
+    @Override
     protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericStructContainer owner, GenericTable table, ResultSet dbResult)
         throws SQLException, DBException
     {

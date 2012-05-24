@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.data;
@@ -18,16 +18,19 @@ public class OracleObjectValue implements DBDValue{
         this.value = value;
     }
 
+    @Override
     public boolean isNull()
     {
         return value == null;
     }
 
+    @Override
     public DBDValue makeNull()
     {
         return new OracleObjectValue(null);
     }
 
+    @Override
     public void release()
     {
 

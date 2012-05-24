@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -71,6 +71,7 @@ public class ColumnInfoPanel extends Composite {
             this.column = column;
             this.value = value;
         }
+        @Override
         public String getName()
         {
             return column.getName();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -59,6 +59,7 @@ public class MySQLPrivilege implements DBAPrivilege
         return kind;
     }
 
+    @Override
     @Property(name = "Privilege", viewable = true, order = 1)
     public String getName() {
         return name;
@@ -71,18 +72,22 @@ public class MySQLPrivilege implements DBAPrivilege
     }
 
 //    @Property(name = "Description", viewable = true, order = 100)
+    @Override
     public String getDescription() {
         return comment;
     }
 
+    @Override
     public DBSObject getParentObject() {
         return dataSource;
     }
 
+    @Override
     public JDBCDataSource getDataSource() {
         return dataSource;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

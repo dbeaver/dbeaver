@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.edit.prop;
@@ -88,6 +88,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         }
     }
 
+    @Override
     public void updateModel()
     {
         if (handler instanceof DBEPropertyUpdater) {
@@ -95,6 +96,7 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         }
     }
 
+    @Override
     public IDatabasePersistAction[] getPersistActions()
     {
         if (handler instanceof DBEPropertyPersister) {

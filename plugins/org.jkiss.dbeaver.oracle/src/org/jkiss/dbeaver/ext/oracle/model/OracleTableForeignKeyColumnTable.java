@@ -22,6 +22,7 @@ public class OracleTableForeignKeyColumnTable extends OracleTableConstraintColum
         super(constraint, tableColumn, ordinalPosition);
     }
 
+    @Override
     @Property(id = "reference", name = "Reference Column", viewable = true, order = 4)
     public OracleTableColumn getReferencedColumn()
     {

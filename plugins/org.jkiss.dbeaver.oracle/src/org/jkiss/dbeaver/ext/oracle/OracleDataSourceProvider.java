@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle;
@@ -43,6 +43,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
     }
 
+    @Override
     public long getFeatures()
     {
         return FEATURE_SCHEMAS;
@@ -95,6 +96,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         return url.toString();
     }
 
+    @Override
     public DBPDataSource openDataSource(
         DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
@@ -105,6 +107,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     //////////////////////////////////////
     // Client manager
 
+    @Override
     public Collection<String> findClientHomeIds()
     {
         List<String> homeIds = new ArrayList<String>();
@@ -114,6 +117,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         return homeIds;
     }
 
+    @Override
     public String getDefaultClientHomeId()
     {
         List<OracleHomeDescriptor> oraHomes = OCIUtils.getOraHomes();
@@ -123,6 +127,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         return null;
     }
 
+    @Override
     public DBPClientHome getClientHome(String homeId)
     {
         return new OracleHomeDescriptor(homeId);

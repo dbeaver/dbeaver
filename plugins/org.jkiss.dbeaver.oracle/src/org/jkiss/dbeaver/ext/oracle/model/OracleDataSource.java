@@ -70,12 +70,14 @@ public class OracleDataSource extends JDBCDataSource
         super(container);
     }
 
+    @Override
     protected String getConnectionUserName(DBPConnectionInfo connectionInfo)
     {
         final Object role = connectionInfo.getProperties().get(OracleConstants.PROP_INTERNAL_LOGON);
         return role == null ? connectionInfo.getUserName() : connectionInfo.getUserName() + " AS " + role;
     }
 
+    @Override
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
         final JDBCDataSourceInfo info = new JDBCDataSourceInfo(this, metaData);
@@ -85,6 +87,7 @@ public class OracleDataSource extends JDBCDataSource
         return info;
     }
 
+    @Override
     protected Map<String, String> getInternalConnectionProperties()
     {
         return OracleDataSourceProvider.getConnectionsProps();
@@ -189,6 +192,7 @@ public class OracleDataSource extends JDBCDataSource
         return super.getDriverInstance();
     }
 
+    @Override
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -241,6 +245,7 @@ public class OracleDataSource extends JDBCDataSource
         this.dataTypeCache.getObjects(monitor, this);
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -259,40 +264,47 @@ public class OracleDataSource extends JDBCDataSource
         return true;
     }
 
+    @Override
     public Collection<OracleSchema> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getSchemas(monitor);
     }
 
+    @Override
     public OracleSchema getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getSchema(monitor, childName);
     }
 
+    @Override
     public Class<? extends OracleSchema> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         return OracleSchema.class;
     }
 
+    @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         
     }
 
+    @Override
     public boolean supportsObjectSelect()
     {
         return true;
     }
 
+    @Override
     public OracleSchema getSelectedObject()
     {
         return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
     }
 
+    @Override
     public void selectObject(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {
@@ -323,6 +335,7 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
+    @Override
     public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
     {
         OraclePlanAnalyser plan = new OraclePlanAnalyser(this, query);
@@ -330,6 +343,7 @@ public class OracleDataSource extends JDBCDataSource
         return plan;
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
@@ -338,15 +352,18 @@ public class OracleDataSource extends JDBCDataSource
         return null;
     }
 
+    @Override
     public OracleDataSource getDataSource() {
         return this;
     }
 
+    @Override
     public Collection<? extends DBSDataType> getDataTypes()
     {
         return dataTypeCache.getCachedObjects();
     }
 
+    @Override
     public DBSDataType getDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);

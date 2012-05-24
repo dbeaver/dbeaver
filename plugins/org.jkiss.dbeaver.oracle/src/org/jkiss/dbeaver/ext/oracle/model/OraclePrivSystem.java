@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -19,6 +19,7 @@ public class OraclePrivSystem extends OraclePriv {
         super(user, JDBCUtils.safeGetString(resultSet, "PRIVILEGE"), resultSet);
     }
 
+    @Override
     @Property(name = "Privilege", viewable = true, order = 2, description = "System privilege")
     public String getName() {
         return super.getName();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -65,6 +65,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         this.description = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_COMMENT);
     }
 
+    @Override
     @Property(name = "Procedure Type", order = 2)
     public DBSProcedureType getProcedureType()
     {
@@ -175,6 +176,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return charset;
     }
 
+    @Override
     public List<MySQLProcedureColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -197,6 +199,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         this.columns = columns;
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -204,12 +207,14 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
             this);
     }
 
+    @Override
     @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getClientBody(monitor);
     }
 
+    @Override
     public void setSourceText(String sourceText) throws DBException
     {
         setClientBody(sourceText);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs;
@@ -34,6 +34,7 @@ public class EnterNameDialog extends Dialog {
         return result;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(propertyName);
@@ -55,6 +56,7 @@ public class EnterNameDialog extends Dialog {
         return parent;
     }
 
+    @Override
     protected void okPressed()
     {
         result = propNameText.getText();

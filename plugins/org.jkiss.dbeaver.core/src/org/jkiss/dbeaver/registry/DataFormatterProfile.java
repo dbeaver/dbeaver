@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry;
@@ -77,6 +77,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
         }
     }
 
+    @Override
     public void saveProfile() throws IOException
     {
         store.setValue(PROP_LANGUAGE, locale.getLanguage());
@@ -97,41 +98,49 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
         RuntimeUtils.savePreferenceStore(store);
     }
 
+    @Override
     public IPreferenceStore getPreferenceStore()
     {
         return store;
     }
 
+    @Override
     public String getProfileName()
     {
         return name;
     }
 
+    @Override
     public void setProfileName(String name)
     {
         this.name = name;
     }
 
+    @Override
     public Locale getLocale()
     {
         return locale;
     }
 
+    @Override
     public void setLocale(Locale locale)
     {
         this.locale = locale;
     }
 
+    @Override
     public Map<Object, Object> getFormatterProperties(String typeId)
     {
         return properties.get(typeId);
     }
 
+    @Override
     public void setFormatterProperties(String typeId, Map<Object, Object> properties)
     {
         this.properties.put(typeId, new HashMap<Object, Object>(properties));
     }
 
+    @Override
     public boolean isOverridesParent()
     {
         if (store instanceof AbstractPreferenceStore) {
@@ -141,6 +150,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
         return true;
     }
 
+    @Override
     public void reset()
     {
         if (store instanceof AbstractPreferenceStore) {
@@ -149,6 +159,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
         loadProfile();
     }
 
+    @Override
     public DBDDataFormatter createFormatter(String typeId)
         throws IllegalAccessException, InstantiationException, IllegalArgumentException
     {
@@ -171,6 +182,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
         return formatter;
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty() != null && event.getProperty().startsWith(DATAFORMAT_PREFIX)) {

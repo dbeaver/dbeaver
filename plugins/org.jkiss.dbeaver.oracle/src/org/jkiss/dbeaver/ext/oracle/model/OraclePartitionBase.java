@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -91,6 +91,7 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
         this.lastAnalyzed = JDBCUtils.safeGetTimestamp(dbResult, "LAST_ANALYZED");
     }
 
+    @Override
     public Object getLazyReference(Object propertyId)
     {
         return tablespace;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -116,6 +116,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         this.bigFile = JDBCUtils.safeGetBoolean(dbResult, "BIGFILE", "Y");
     }
 
+    @Override
     @Property(name = "Name", viewable = true, editable = true, order = 1)
     public String getName()
     {
@@ -252,6 +253,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         return segmentCache.getObjects(monitor, this);
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         fileCache.clearCache();
@@ -307,6 +309,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     }
 
     public static class TablespaceReferenceValidator implements IPropertyCacheValidator<DBSObjectLazy<OracleDataSource>> {
+        @Override
         public boolean isPropertyCached(DBSObjectLazy<OracleDataSource> object, Object propertyId)
         {
             return

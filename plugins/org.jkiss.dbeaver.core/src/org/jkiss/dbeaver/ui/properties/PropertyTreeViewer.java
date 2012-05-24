@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -80,6 +80,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
         treeControl.addControlListener(new ControlAdapter() {
             private boolean packing = false;
+            @Override
             public void controlResized(ControlEvent e)
             {
                 if (!packing) {
@@ -135,11 +136,13 @@ public class PropertyTreeViewer extends TreeViewer {
 
                 return getPropertyValue(node);
             }
+            @Override
             public boolean isHyperlink(Object cellValue)
             {
                 return cellValue instanceof DBSObject;
             }
 
+            @Override
             public void navigateHyperlink(Object cellValue)
             {
                 if (cellValue instanceof DBSObject) {
@@ -230,6 +233,7 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
+    @Override
     public void refresh()
     {
         //disposeOldEditor();
@@ -264,10 +268,12 @@ public class PropertyTreeViewer extends TreeViewer {
 
         treeControl.addSelectionListener(new SelectionListener() {
 
+            @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 showEditor((TreeItem) e.item, true);
             }
 
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 showEditor((TreeItem) e.item, selectedColumn == 1 && (e.stateMask & SWT.BUTTON_MASK) != 0);
             }
@@ -285,6 +291,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         });
         treeControl.addTraverseListener(new TraverseListener() {
+            @Override
             public void keyTraversed(TraverseEvent e)
             {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
@@ -325,6 +332,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             final Object propertyValue = prop.propertySource.getPropertyValue(prop.property.getId());
             final ICellEditorListener cellEditorListener = new ICellEditorListener() {
+                @Override
                 public void applyEditorValue()
                 {
                     //editorValueChanged(true, true);
@@ -338,11 +346,13 @@ public class PropertyTreeViewer extends TreeViewer {
                     }
                 }
 
+                @Override
                 public void cancelEditor()
                 {
                     disposeOldEditor();
                 }
 
+                @Override
                 public void editorValueChanged(boolean oldValidState, boolean newValidState)
                 {
                 }
@@ -358,6 +368,7 @@ public class PropertyTreeViewer extends TreeViewer {
             final Control editorControl = cellEditor.getControl();
             if (editorControl != null) {
                 editorControl.addTraverseListener(new TraverseListener() {
+                    @Override
                     public void keyTraversed(TraverseEvent e)
                     {
                         if (e.detail == SWT.TRAVERSE_RETURN) {
@@ -390,6 +401,7 @@ public class PropertyTreeViewer extends TreeViewer {
             MenuManager menuMgr = new MenuManager();
             menuMgr.addMenuListener(new IMenuListener()
             {
+                @Override
                 public void menuAboutToShow(final IMenuManager manager)
                 {
                     final IStructuredSelection selection = (IStructuredSelection)PropertyTreeViewer.this.getSelection();
@@ -546,19 +558,23 @@ public class PropertyTreeViewer extends TreeViewer {
 
     class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider
     {
+        @Override
         public void inputChanged(Viewer v, Object oldInput, Object newInput)
         {
         }
 
+        @Override
         public void dispose()
         {
         }
 
+        @Override
         public Object[] getElements(Object parent)
         {
             return getChildren(parent);
         }
 
+        @Override
         public Object getParent(Object child)
         {
             if (child instanceof TreeNode) {
@@ -568,6 +584,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
 
+        @Override
         public Object[] getChildren(Object parent)
         {
             if (parent instanceof Collection) {
@@ -580,6 +597,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
 
+        @Override
         public boolean hasChildren(Object parent)
         {
             return getChildren(parent).length > 0;
@@ -619,6 +637,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
 
+        @Override
         public String getToolTipText(Object obj)
         {
             if (!(obj instanceof TreeNode)) {
@@ -632,11 +651,13 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
 
+        @Override
         public Point getToolTipShift(Object object)
         {
             return new Point(5, 5);
         }
 
+        @Override
         public void update(ViewerCell cell)
         {
             Object element = cell.getElement();
@@ -671,6 +692,7 @@ public class PropertyTreeViewer extends TreeViewer {
         int sortDirection = SWT.DOWN;
         TreeColumn prevColumn = null;
 
+        @Override
         public void handleEvent(Event e) {
             disposeOldEditor();
 
@@ -686,6 +708,7 @@ public class PropertyTreeViewer extends TreeViewer {
             tree.setSortDirection(sortDirection);
 
             PropertyTreeViewer.this.setSorter(new ViewerSorter(collator) {
+                @Override
                 public int compare(Viewer viewer, Object e1, Object e2)
                 {
                     int mul = (sortDirection == SWT.UP ? 1 : -1);
@@ -730,6 +753,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
     class PaintListener implements Listener {
 
+        @Override
         public void handleEvent(Event event) {
             if (getTree().isDisposed()) {
                 return;

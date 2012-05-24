@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.common;
@@ -11,6 +11,7 @@ import org.jkiss.dbeaver.core.DBeaverVersionChecker;
 
 public class CheckForUpdateAction extends ActionDelegate {
 
+    @Override
     public void run(IAction action)
     {
         new DBeaverVersionChecker(true).schedule();

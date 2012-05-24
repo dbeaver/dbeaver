@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -54,6 +54,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         this.syntaxManager = syntaxManager;
     }
 
+    @Override
     public synchronized IHyperlink[] detectHyperlinks(ITextViewer textViewer, IRegion region, boolean canShowMultipleHyperlinks)
     {
         if (region == null || textViewer == null || dataSourceProvider.getDataSource() == null) {

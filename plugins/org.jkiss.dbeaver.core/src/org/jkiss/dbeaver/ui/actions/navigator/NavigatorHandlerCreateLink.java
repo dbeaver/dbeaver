@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -34,6 +34,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class NavigatorHandlerCreateLink extends NavigatorHandlerObjectBase {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
@@ -62,6 +63,7 @@ public class NavigatorHandlerCreateLink extends NavigatorHandlerObjectBase {
         try {
             final IFolder linkedFolder = folder.getFolder(externalFolder.getName());
             workbenchWindow.run(true, true, new IRunnableWithProgress() {
+                @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {

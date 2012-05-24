@@ -41,21 +41,25 @@ public class JDBCTableIdentifier implements DBCEntityIdentifier {
         }
     }
 
+    @Override
     public DBSTableConstraint getConstraint()
     {
         return constraint;
     }
 
+    @Override
     public DBSTableIndex getIndex()
     {
         return index;
     }
 
+    @Override
     public List<JDBCColumnMetaData> getResultSetColumns()
     {
         return columns;
     }
 
+    @Override
     public List<? extends DBSTableColumn> getTableColumns()
     {
         return tableColumns;

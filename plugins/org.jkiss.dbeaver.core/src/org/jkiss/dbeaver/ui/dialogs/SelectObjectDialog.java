@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs;
@@ -44,11 +44,13 @@ public class SelectObjectDialog<T> extends Dialog {
         this.objects = objects;
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(title);
@@ -66,11 +68,13 @@ public class SelectObjectDialog<T> extends Dialog {
             {
                 return LoadingUtils.createService(
                     new AbstractLoadService<Collection<T>>() {
+                        @Override
                         public Collection<T> evaluate() throws InvocationTargetException, InterruptedException
                         {
                             return objects;
                         }
 
+                        @Override
                         public Object getFamily()
                         {
                             return SelectObjectDialog.this;
@@ -85,6 +89,7 @@ public class SelectObjectDialog<T> extends Dialog {
         gd.minimumWidth = 300;
         objectList.setLayoutData(gd);
         objectList.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event)
             {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -95,6 +100,7 @@ public class SelectObjectDialog<T> extends Dialog {
         });
         objectList.setDoubleClickHandler(new IDoubleClickListener()
         {
+            @Override
             public void doubleClick(DoubleClickEvent event)
             {
                 if (getButton(IDialogConstants.OK_ID).isEnabled()) {
@@ -108,6 +114,7 @@ public class SelectObjectDialog<T> extends Dialog {
         return group;
     }
 
+    @Override
     protected Control createContents(Composite parent)
     {
         Control ctl = super.createContents(parent);

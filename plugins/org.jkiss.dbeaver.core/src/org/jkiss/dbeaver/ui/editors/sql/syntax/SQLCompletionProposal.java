@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -71,6 +71,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         }
     }
 
+    @Override
     public void apply(IDocument document) {
         try {
             document.replace(replacementOffset, replacementLength, replacementString);
@@ -83,25 +84,30 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     /*
      * @see ICompletionProposal#getSelection(IDocument)
      */
+    @Override
     public Point getSelection(IDocument document) {
         return new Point(replacementOffset + cursorPosition, 0);
     }
 
+    @Override
     public String getAdditionalProposalInfo()
     {
         return additionalProposalInfo;
     }
 
+    @Override
     public String getDisplayString()
     {
         return displayString;
     }
 
+    @Override
     public Image getImage()
     {
         return image;
     }
 
+    @Override
     public IContextInformation getContextInformation()
     {
         return contextInformation;
@@ -110,21 +116,25 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     //////////////////////////////////////////////////////////////////
     // ICompletionProposalExtension2
 
+    @Override
     public void apply(ITextViewer viewer, char trigger, int stateMask, int offset)
     {
         apply(viewer.getDocument());
     }
 
+    @Override
     public void selected(ITextViewer viewer, boolean smartToggle)
     {
 
     }
 
+    @Override
     public void unselected(ITextViewer viewer)
     {
 
     }
 
+    @Override
     public boolean validate(IDocument document, int offset, DocumentEvent event)
     {
         final SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, offset);

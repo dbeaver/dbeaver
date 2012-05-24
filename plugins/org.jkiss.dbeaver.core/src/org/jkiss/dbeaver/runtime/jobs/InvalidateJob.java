@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.jobs;
@@ -23,6 +23,7 @@ public class InvalidateJob extends DataSourceJob
         super("Invalidate " + dataSource.getContainer().getName(), null, dataSource);
     }
 
+    @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
@@ -41,6 +42,7 @@ public class InvalidateJob extends DataSourceJob
         }
     }
 
+    @Override
     protected void canceling()
     {
         getThread().interrupt();

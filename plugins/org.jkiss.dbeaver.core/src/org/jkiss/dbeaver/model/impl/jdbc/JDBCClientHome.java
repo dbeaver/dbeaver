@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc;
@@ -22,11 +22,13 @@ public abstract class JDBCClientHome implements DBPClientHome
         this.path = new File(path);
     }
 
+    @Override
     public String getHomeId()
     {
         return id;
     }
 
+    @Override
     public File getHomePath()
     {
         return path;

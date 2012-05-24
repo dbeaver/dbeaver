@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime;
@@ -23,6 +23,7 @@ public abstract class AbstractUIJob extends UIJob
         super(name);
     }
 
+    @Override
     public IStatus runInUIThread(IProgressMonitor monitor)
     {
         return this.runInUIThread(RuntimeUtils.makeMonitor(monitor));

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.load;
@@ -28,6 +28,7 @@ public abstract class DatabaseLoadService<RESULT> extends AbstractLoadService<RE
         this(serviceName, wrapper == null || wrapper.getObject() == null ? null : wrapper.getObject().getDataSource());
     }
 
+    @Override
     public Object getFamily() {
         return dataSource;
     }

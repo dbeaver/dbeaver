@@ -67,6 +67,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         return (IDatabaseEditorInput)super.getEditorInput();
     }
 
+    @Override
     public T getSourceObject()
     {
         IDatabaseEditorInput editorInput = getEditorInput();
@@ -76,6 +77,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         return (T) editorInput.getDatabaseObject();
     }
 
+    @Override
     public DBPDataSource getDataSource() {
         IDatabaseEditorInput editorInput = getEditorInput();
         if (editorInput == null) {
@@ -128,6 +130,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         super.doSave(progressMonitor);
     }
 
+    @Override
     public void activatePart() {
         if (lazyInput != null) {
             try {
@@ -142,9 +145,11 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
     }
 
+    @Override
     public void deactivatePart() {
     }
 
+    @Override
     public void refreshPart(Object source, boolean force) {
         if (lazyInput == null && force) {
             try {
@@ -184,6 +189,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
             try {
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
                             String sourceText = getSourceText(monitor);
@@ -210,16 +216,19 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
     }
 
+    @Override
     public DBCCompileLog getCompileLog()
     {
         return compileLog;
     }
 
+    @Override
     public void setCompileInfo(String message, boolean error)
     {
         pageControl.setInfo(message);
     }
 
+    @Override
     public void positionSource(int line, int position)
     {
         try {
@@ -233,6 +242,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
     }
 
+    @Override
     public void showCompileLog()
     {
         editorSash.setMaximizedControl(null);
@@ -289,6 +299,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
             super("View compile log", DBIcon.COMPILE_LOG.getImageDescriptor()); //$NON-NLS-2$
         }
 
+        @Override
         public void run()
         {
             if (getTextViewer().getControl().isDisposed()) {

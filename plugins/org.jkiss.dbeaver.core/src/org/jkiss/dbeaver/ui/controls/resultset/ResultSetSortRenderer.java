@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.resultset;
@@ -35,6 +35,7 @@ class ResultSetSortRenderer extends AbstractRenderer {
         setSize(imgBounds.width, imgBounds.height);
     }
 
+    @Override
     public void paint(GC gc)
     {
         Rectangle bounds = getBounds();

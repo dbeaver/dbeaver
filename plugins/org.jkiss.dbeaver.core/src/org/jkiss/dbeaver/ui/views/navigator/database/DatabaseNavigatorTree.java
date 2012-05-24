@@ -51,6 +51,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         this.model = DBNModel.getInstance();
         this.model.addListener(this);
         addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 if (model != null) {
@@ -107,6 +108,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         return viewer;
     }
 
+    @Override
     public void nodeChanged(final DBNEvent event)
     {
         switch (event.getAction()) {
@@ -115,6 +117,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 final DBNNode parentNode = event.getNode().getParentNode();
                 if (parentNode != null) {
                     executeInUI(new Runnable() {
+                        @Override
                         public void run()
                         {
                             if (!viewer.getControl().isDisposed()) {
@@ -128,6 +131,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 break;
             case UPDATE:
                 executeInUI(new Runnable() {
+                    @Override
                     public void run()
                     {
                         if (!viewer.getControl().isDisposed() && !viewer.isBusy()) {
@@ -192,16 +196,19 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
 
         private volatile boolean doubleClick = false;
 
+        @Override
         public synchronized void mouseDoubleClick(MouseEvent e)
         {
             curSelection = null;
             renameJob.canceled = true;
         }
 
+        @Override
         public void mouseDown(MouseEvent e)
         {
         }
 
+        @Override
         public void mouseUp(MouseEvent e)
         {
             if ((e.stateMask & SWT.BUTTON1) == 0) {
@@ -237,11 +244,13 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                 super("Rename ");
             }
 
+            @Override
             protected IStatus runInUIThread(DBRProgressMonitor monitor)
             {
                 try {
                     if (!viewer.getTree().isDisposed() && viewer.getTree().isFocusControl() && curSelection != null && !canceled) {
                         getDisplay().asyncExec(new Runnable() {
+                            @Override
                             public void run()
                             {
                                 if (curSelection != null) {

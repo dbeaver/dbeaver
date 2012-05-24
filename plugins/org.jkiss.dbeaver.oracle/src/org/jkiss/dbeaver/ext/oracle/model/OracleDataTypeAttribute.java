@@ -63,6 +63,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
         return length;
     }
 
+    @Override
     @Property(name = "Precision", viewable = true, editable = true, order = 6)
     public int getPrecision()
     {
@@ -75,17 +76,20 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
         return length;
     }
 
+    @Override
     @Property(name = "Scale", viewable = true, editable = true, order = 7)
     public int getScale()
     {
         return scale == null ? 0 : scale;
     }
 
+    @Override
     public int getTypeID()
     {
         return attrType.getValueType();
     }
 
+    @Override
     public String getTypeName()
     {
         return attrType.getName();

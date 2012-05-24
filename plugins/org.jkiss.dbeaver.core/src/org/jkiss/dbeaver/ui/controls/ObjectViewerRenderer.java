@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -188,6 +188,7 @@ public abstract class ObjectViewerRenderer {
         int sortDirection = SWT.DOWN;
         Item prevColumn = null;
 
+        @Override
         public void handleEvent(Event e) {
             Collator collator = Collator.getInstance();
             Item column = (Item)e.widget;
@@ -206,6 +207,7 @@ public abstract class ObjectViewerRenderer {
             }
 
             itemsViewer.setSorter(new ViewerSorter(collator) {
+                @Override
                 public int compare(Viewer viewer, Object e1, Object e2)
                 {
                     int result;
@@ -230,15 +232,18 @@ public abstract class ObjectViewerRenderer {
 
     class CellTrackListener implements MouseTrackListener, MouseMoveListener {
 
+        @Override
         public void mouseEnter(MouseEvent e)
         {
         }
 
+        @Override
         public void mouseExit(MouseEvent e)
         {
             resetCursor();
         }
 
+        @Override
         public void mouseHover(MouseEvent e)
         {
         }
@@ -248,6 +253,7 @@ public abstract class ObjectViewerRenderer {
             getItemsViewer().getControl().setCursor(arrowCursor);
         }
 
+        @Override
         public void mouseMove(MouseEvent e)
         {
             Item hoverItem;

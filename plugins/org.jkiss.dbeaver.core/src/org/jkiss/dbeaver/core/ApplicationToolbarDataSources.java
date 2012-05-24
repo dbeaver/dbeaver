@@ -88,6 +88,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
             this.enabled = false;
         }
 
+        @Override
         public IStatus run(DBRProgressMonitor monitor)
         {
             DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, getDataSource());
@@ -167,12 +168,14 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         this.workbenchWindow.removePageListener(this);
     }
 
+    @Override
     public void handleRegistryLoad(DBPDataSourceRegistry registry)
     {
         registry.addDataSourceListener(this);
         handledRegistries.add(registry);
     }
 
+    @Override
     public void handleRegistryUnload(DBPDataSourceRegistry registry)
     {
         handledRegistries.remove(registry);
@@ -277,6 +280,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         // Connection related actions
         manager.add(new ControlContribution("datasource_selector_control") //$NON-NLS-1$
         {
+            @Override
             protected Control createControl(Composite parent)
             {
                 Composite comboGroup = new Composite(parent, SWT.NONE);
@@ -296,11 +300,13 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 fillDataSourceList(true);
                 connectionCombo.addSelectionListener(new SelectionListener()
                 {
+                    @Override
                     public void widgetSelected(SelectionEvent e)
                     {
                         changeDataSourceSelection();
                     }
 
+                    @Override
                     public void widgetDefaultSelected(SelectionEvent e)
                     {
                         widgetSelected(e);
@@ -316,11 +322,13 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
                 databaseCombo.select(0);
                 databaseCombo.addSelectionListener(new SelectionListener() {
+                    @Override
                     public void widgetSelected(SelectionEvent e)
                     {
                         changeDataBaseSelection();
                     }
 
+                    @Override
                     public void widgetDefaultSelected(SelectionEvent e)
                     {
                         widgetSelected(e);
@@ -342,10 +350,12 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                 resultSetSize.setLayoutData(gd);
                 resultSetSize.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
                 resultSetSize.addFocusListener(new FocusListener() {
+                    @Override
                     public void focusGained(FocusEvent e)
                     {
                     }
 
+                    @Override
                     public void focusLost(FocusEvent e)
                     {
                         changeResultSetSize();
@@ -423,6 +433,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         }
     }
 
+    @Override
     public void handleDataSourceEvent(final DBPEvent event)
     {
         if (event.getAction() == DBPEvent.Action.OBJECT_ADD ||
@@ -433,6 +444,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         {
             Display.getDefault().asyncExec(
                 new Runnable() {
+                    @Override
                     public void run()
                     {
                         updateControls(true);
@@ -539,6 +551,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                                         return;
                                     }
                                     UIUtils.runInUI(null, new Runnable() {
+                                        @Override
                                         public void run()
                                         {
                                             if (databaseCombo.isDisposed()) {
@@ -636,6 +649,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
             final DBPDataSource dataSource = dsContainer.getDataSource();
             try {
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
                     {
@@ -669,6 +683,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().equals(PrefConstants.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
@@ -680,17 +695,20 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
 
     // IPageListener
 
+    @Override
     public void pageActivated(IWorkbenchPage page)
     {
         // do nothing
     }
 
+    @Override
     public void pageClosed(IWorkbenchPage page)
     {
         page.removePartListener(this);
         page.removeSelectionListener(this);
     }
 
+    @Override
     public void pageOpened(IWorkbenchPage page)
     {
         page.addPartListener(this);
@@ -699,19 +717,23 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
 
     // IPartListener
 
+    @Override
     public void partActivated(IWorkbenchPart part)
     {
         setActivePart(part);
     }
 
+    @Override
     public void partBroughtToTop(IWorkbenchPart part)
     {
     }
 
+    @Override
     public void partClosed(IWorkbenchPart part)
     {
     }
 
+    @Override
     public void partDeactivated(IWorkbenchPart part)
     {
         // Do nothing
@@ -721,10 +743,12 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         //}
     }
 
+    @Override
     public void partOpened(IWorkbenchPart part)
     {
     }
 
+    @Override
     public void selectionChanged(IWorkbenchPart part, ISelection selection)
     {
         if (part == activePart && selection instanceof IStructuredSelection) {

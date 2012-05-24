@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.jobs;
@@ -31,6 +31,7 @@ public class DisconnectJob extends EventProcessorJob
         setUser(true);
     }
 
+    @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
@@ -49,11 +50,13 @@ public class DisconnectJob extends EventProcessorJob
         }
     }
 
+    @Override
     public boolean belongsTo(Object family)
     {
         return container == family;
     }
 
+    @Override
     protected void canceling()
     {
         getThread().interrupt();

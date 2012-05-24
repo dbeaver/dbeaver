@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -52,6 +52,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         /*
          * @see IWordDetector#isWordStart
          */
+        @Override
         public boolean isWordStart(char c)
         {
             return (c == '/');
@@ -60,6 +61,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         /*
          * @see IWordDetector#isWordPart
          */
+        @Override
         public boolean isWordPart(char c)
         {
             return (c == '*' || c == '/');
@@ -80,11 +82,13 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
             addWord("/**/", this.successToken); //$NON-NLS-1$
         }
 
+        @Override
         public IToken evaluate(ICharacterScanner scanner, boolean resume)
         {
             return evaluate(scanner);
         }
 
+        @Override
         public IToken getSuccessToken()
         {
             return successToken;

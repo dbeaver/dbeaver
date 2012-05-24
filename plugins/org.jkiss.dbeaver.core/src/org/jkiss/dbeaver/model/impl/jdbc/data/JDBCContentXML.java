@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -37,15 +37,18 @@ public class JDBCContentXML extends JDBCContentLOB {
         this.xml = xml;
     }
 
+    @Override
     public long getLOBLength() throws DBCException {
         return -1;
     }
 
+    @Override
     public String getContentType()
     {
         return MimeTypes.TEXT_XML;
     }
 
+    @Override
     public DBDContentStorage getContents(DBRProgressMonitor monitor)
         throws DBCException
     {
@@ -68,6 +71,7 @@ public class JDBCContentXML extends JDBCContentLOB {
         return storage;
     }
 
+    @Override
     public void release()
     {
         if (tmpReader != null) {
@@ -85,6 +89,7 @@ public class JDBCContentXML extends JDBCContentLOB {
         super.release();
     }
 
+    @Override
     public void bindParameter(
         JDBCExecutionContext context,
         JDBCPreparedStatement preparedStatement,
@@ -138,6 +143,7 @@ public class JDBCContentXML extends JDBCContentLOB {
         }
     }
 
+    @Override
     public boolean isNull()
     {
         return xml == null && storage == null;

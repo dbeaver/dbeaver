@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.navigator.database.load;
@@ -32,25 +32,30 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         this.parent = parent;
     }
 
+    @Override
     public Shell getShell() {
         return viewer.getControl().getShell();
     }
 
+    @Override
     public DBRProgressMonitor overwriteMonitor(DBRProgressMonitor monitor)
     {
         return monitor;
     }
 
+    @Override
     public boolean isCompleted()
     {
         return placeHolder.isDisposed() || viewer.testFindItem(parent) == null;
     }
 
+    @Override
     public void visualizeLoading()
     {
         viewer.refresh(placeHolder, true);
     }
 
+    @Override
     public void completeLoading(Object[] children)
     {
         try {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.resultset;
@@ -53,6 +53,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         this.nextSegmentRead = nextSegmentRead;
     }
 
+    @Override
     public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException
     {
@@ -80,6 +81,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         }
     }
 
+    @Override
     public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException
     {
@@ -110,6 +112,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         rows.add(row);
     }
 
+    @Override
     public void fetchEnd(DBCExecutionContext context)
         throws DBCException
     {
@@ -119,6 +122,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         }
 
         display.syncExec(new Runnable() {
+            @Override
             public void run()
             {
                 if (!nextSegmentRead) {
@@ -133,6 +137,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         });
     }
 
+    @Override
     public void close()
     {
         nextSegmentRead = false;

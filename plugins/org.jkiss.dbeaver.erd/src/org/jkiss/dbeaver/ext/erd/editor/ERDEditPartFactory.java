@@ -19,6 +19,7 @@ import org.jkiss.dbeaver.ext.erd.part.*;
  */
 class ERDEditPartFactory implements EditPartFactory
 {
+    @Override
     public EditPart createEditPart(EditPart context, Object model) {
         EditPart part = null;
         if (model instanceof EntityDiagram) {

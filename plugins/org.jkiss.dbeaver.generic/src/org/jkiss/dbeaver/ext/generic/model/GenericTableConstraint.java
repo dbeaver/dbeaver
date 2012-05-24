@@ -27,11 +27,13 @@ public abstract class GenericTableConstraint extends JDBCTableConstraint<Generic
         super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
     }
 
+    @Override
     public GenericDataSource getDataSource()
     {
         return getTable().getDataSource();
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.editors;
@@ -41,6 +41,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     private Text hostText;
     private CommandListener commandlistener;
 
+    @Override
     public void createPartControl(Composite parent)
     {
         pageControl = new PageControl(parent);
@@ -97,6 +98,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
             privTable.setLayoutData(gd);
 
             privTable.addListener(SWT.Modify, new Listener() {
+                @Override
                 public void handleEvent(Event event)
                 {
                     final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
@@ -109,12 +111,14 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                             null,
                             privilege),
                         new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
+                            @Override
                             public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                             {
                                 if (!privTable.isDisposed()) {
                                     privTable.checkPrivilege(privilege, grant);
                                 }
                             }
+                            @Override
                             public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                             {
                                 if (!privTable.isDisposed()) {
@@ -141,6 +145,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         super.dispose();
     }
 
+    @Override
     public void activatePart()
     {
         if (isLoaded) {
@@ -149,6 +154,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         isLoaded = true;
         LoadingUtils.createService(
             new DatabaseLoadService<List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_general_service_load_catalog_privileges, getDataSource()) {
+                @Override
                 public List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
@@ -175,6 +181,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         privTable.fillGrants(grants);
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         // do nothing
@@ -186,6 +193,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
         public ProgressVisualizer<List<MySQLPrivilege>> createLoadVisualizer() {
             return new ProgressVisualizer<List<MySQLPrivilege>>() {
+                @Override
                 public void completeLoading(List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
                     privTable.fillPrivileges(privs);
@@ -197,11 +205,13 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
     }
 
     private class CommandListener extends DBECommandAdapter {
+        @Override
         public void onSave()
         {
             if (newUser && getDatabaseObject().isPersisted()) {
                 newUser = false;
                 Display.getDefault().asyncExec(new Runnable() {
+                    @Override
                     public void run()
                     {
                         userNameText.setEditable(false);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -39,26 +39,31 @@ public class OracleDataTypeMethodParameter implements DBSObject {
             JDBCUtils.safeGetString(dbResult, "PARAM_TYPE_MOD"));
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return method;
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return method.getDataSource();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {

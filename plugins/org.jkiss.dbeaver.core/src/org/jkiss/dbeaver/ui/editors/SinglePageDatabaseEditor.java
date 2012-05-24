@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -15,17 +15,20 @@ import org.jkiss.dbeaver.model.DBPDataSource;
  */
 public abstract class SinglePageDatabaseEditor<INPUT_TYPE extends IDatabaseEditorInput> extends AbstractDatabaseEditor<INPUT_TYPE>
 {
+    @Override
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
         super.init(site, input);
     }
 
+    @Override
     public void dispose()
     {
         super.dispose();
     }
 
+    @Override
     public DBPDataSource getDataSource() {
         return getEditorInput() == null || getEditorInput().getDatabaseObject() == null ? null : getEditorInput().getDatabaseObject().getDataSource();
     }

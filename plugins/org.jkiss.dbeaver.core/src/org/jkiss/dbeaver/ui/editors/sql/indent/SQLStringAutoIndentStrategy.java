@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.indent;
@@ -22,6 +22,7 @@ public class SQLStringAutoIndentStrategy extends DefaultIndentLineAutoEditStrate
         super();
     }
 
+    @Override
     public void customizeDocumentCommand(IDocument document, DocumentCommand command)
     {
 

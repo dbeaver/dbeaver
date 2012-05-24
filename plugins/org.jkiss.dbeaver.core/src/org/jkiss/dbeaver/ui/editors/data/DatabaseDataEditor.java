@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.data;
@@ -25,11 +25,13 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     //private boolean running = false;
     private Composite parent;
 
+    @Override
     public void createPartControl(Composite parent)
     {
         this.parent = parent;
     }
 
+    @Override
     public void activatePart()
     {
         if (resultSetView == null) {
@@ -46,6 +48,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         }
     }
 
+    @Override
     public void deactivatePart()
     {
     }
@@ -59,11 +62,13 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         super.dispose();
     }
 
+    @Override
     public DBSDataContainer getDataContainer()
     {
         return (DBSDataContainer)getEditorInput().getDatabaseObject();
     }
 
+    @Override
     public boolean isReadyToRun()
     {
         return true;
@@ -77,6 +82,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         }
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         if (loaded) {
@@ -98,6 +104,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         }
     }
 
+    @Override
     public void handleResultSetChange()
     {
         firePropertyChange(IEditorPart.PROP_DIRTY);

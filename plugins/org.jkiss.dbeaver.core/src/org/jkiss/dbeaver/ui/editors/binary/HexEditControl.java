@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary;
@@ -172,6 +172,7 @@ public class HexEditControl extends Composite {
 
 
     private class ControlKeyAdapter extends KeyAdapter {
+        @Override
         public void keyPressed(KeyEvent e)
         {
             switch (e.keyCode) {
@@ -195,6 +196,7 @@ public class HexEditControl extends Composite {
                     }
                     ensureCaretIsVisible();
                     Runnable delayed = new Runnable() {
+                        @Override
                         public void run()
                         {
                             redrawTextAreas(false);
@@ -255,6 +257,7 @@ public class HexEditControl extends Composite {
             if (hexContent) charLen = 3;
         }
 
+        @Override
         public void mouseDown(MouseEvent e)
         {
             if (e.button == 1)
@@ -283,6 +286,7 @@ public class HexEditControl extends Composite {
             }
         }
 
+        @Override
         public void mouseUp(MouseEvent e)
         {
             if (e.button == 1)
@@ -299,6 +303,7 @@ public class HexEditControl extends Composite {
             hexContent = isHexText;
         }
 
+        @Override
         public void paintControl(PaintEvent event)
         {
             event.gc.setForeground(COLOR_LIGHT_SHADOW);
@@ -328,6 +333,7 @@ public class HexEditControl extends Composite {
             if (hexContent) charLen = 3;
         }
 
+        @Override
         public void widgetSelected(SelectionEvent e)
         {
             if (!dragging)
@@ -353,6 +359,7 @@ public class HexEditControl extends Composite {
 
 
     private class ControlTraverseAdapter implements TraverseListener {
+        @Override
         public void keyTraversed(TraverseEvent e)
         {
             if (e.detail == SWT.TRAVERSE_TAB_NEXT)
@@ -362,6 +369,7 @@ public class HexEditControl extends Composite {
 
 
     private class ControlVerifyKeyAdapter implements VerifyKeyListener {
+        @Override
         public void verifyKey(VerifyEvent e)
         {
             if (readOnly) {
@@ -381,6 +389,7 @@ public class HexEditControl extends Composite {
                     ensureWholeScreenIsVisible();
                     ensureCaretIsVisible();
                     Runnable delayed = new Runnable() {
+                        @Override
                         public void run()
                         {
                             redrawTextAreas(true);
@@ -420,6 +429,7 @@ public class HexEditControl extends Composite {
         myClipboard = new BinaryClipboard(parent.getDisplay());
         longSelectionListeners = new ArrayList<SelectionListener>();
         addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 colorCaretLine.dispose();
@@ -635,6 +645,7 @@ public class HexEditControl extends Composite {
         hexText.setLayoutData(textGridData);
         hexText.addKeyListener(keyAdapter);
         FocusListener myFocusAdapter = new FocusAdapter() {
+            @Override
             public void focusGained(FocusEvent e)
             {
                 drawUnfocusedCaret(false);
@@ -642,6 +653,7 @@ public class HexEditControl extends Composite {
                 if (e.widget == previewText)
                     lastFocusedTextArea = 2;
                 getDisplay().asyncExec(new Runnable() {
+                    @Override
                     public void run()
                     {
                         drawUnfocusedCaret(true);
@@ -720,6 +732,7 @@ public class HexEditControl extends Composite {
         vertical.setMinimum(0);
         vertical.setIncrement(1);
         vertical.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 e.doit = false;
@@ -729,6 +742,7 @@ public class HexEditControl extends Composite {
                 if (previousStart == textAreasStart) return;
 
                 Runnable delayed = new Runnable() {
+                    @Override
                     public void run()
                     {
                         redrawTextAreas(false);
@@ -741,18 +755,21 @@ public class HexEditControl extends Composite {
         });
         updateScrollBar();
         addMouseListener(new org.eclipse.swt.events.MouseAdapter() {
+            @Override
             public void mouseDown(org.eclipse.swt.events.MouseEvent e)
             {
                 setFocus();
             }
         });
         addControlListener(new org.eclipse.swt.events.ControlAdapter() {
+            @Override
             public void controlResized(org.eclipse.swt.events.ControlEvent e)
             {
                 updateTextsMetrics();
             }
         });
         addDisposeListener(new org.eclipse.swt.events.DisposeListener() {
+            @Override
             public void widgetDisposed(org.eclipse.swt.events.DisposeEvent e)
             {
                 if (content != null)
@@ -915,6 +932,7 @@ public class HexEditControl extends Composite {
         }
         startPosition = endPosition = incrementPosWithinLimits(getCaretPos(), event.widget == hexText);
         Runnable delayed = new Runnable() {
+            @Override
             public void run()
             {
                 ensureCaretIsVisible();
@@ -1091,6 +1109,7 @@ public class HexEditControl extends Composite {
         initFinder(findString, isHexString, searchForward, ignoreCase);
         final Object[] result = new Object[2];
         HexManager.blockUntilFinished(new Runnable() {
+            @Override
             public void run()
             {
                 try {
@@ -1548,6 +1567,7 @@ public class HexEditControl extends Composite {
             hexText.getCaret().setVisible(true);
             previewText.getCaret().setVisible(true);
             getDisplay().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     drawUnfocusedCaret(true);
@@ -1794,6 +1814,7 @@ public class HexEditControl extends Composite {
      *
      * @see Composite#setFocus()
      */
+    @Override
     public boolean setFocus()
     {
         redrawCaret(false);
@@ -1809,6 +1830,7 @@ public class HexEditControl extends Composite {
      * @see Control#setFont(org.eclipse.swt.graphics.Font)
      *      Font height must not be 1 or 2.
      */
+    @Override
     public void setFont(Font font)
     {
         // bugfix: HexText's raw array overflows when font is very small and window very big

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -21,6 +21,7 @@ public abstract class JDBCContentAbstract implements DBDContent, DBDValueCloneab
     public abstract void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException;
 
+    @Override
     public void resetContents()
     {
         // do nothing

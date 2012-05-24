@@ -38,11 +38,13 @@ public abstract class JDBCTableIndex<TABLE extends JDBCTable>
         this.persisted = source.persisted;
     }
 
+    @Override
     public TABLE getParentObject()
     {
         return table;
     }
 
+    @Override
     @Property(name = "Index Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
@@ -54,23 +56,27 @@ public abstract class JDBCTableIndex<TABLE extends JDBCTable>
         this.name = indexName;
     }
 
+    @Override
     @Property(name = "Table", viewable = true, order = 2)
     public TABLE getTable()
     {
         return table;
     }
 
+    @Override
     @Property(name = "Index Type", viewable = true, order = 3)
     public DBSIndexType getIndexType()
     {
         return this.indexType;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;

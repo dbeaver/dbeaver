@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
@@ -29,21 +29,25 @@ public class SpreadsheetSelectionProvider implements ISelectionProvider
         this.grid = grid;
     }
 
+    @Override
     public void addSelectionChangedListener(ISelectionChangedListener listener)
     {
         listeners.add(listener);
     }
 
+    @Override
     public void removeSelectionChangedListener(ISelectionChangedListener listener)
     {
         listeners.remove(listener);
     }
 
+    @Override
     public ISelection getSelection()
     {
         return new SpreadsheetSelection(grid);
     }
 
+    @Override
     public void setSelection(ISelection selection)
     {
         log.warn("Grid do not supports external selection changes");

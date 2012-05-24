@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
@@ -29,6 +29,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
 
     }
 
+    @Override
     public void paint(GC gc) {
         GridColumn col = grid.getColumn(getColumn());
         AbstractRenderer arrowRenderer = col.getSortRenderer();
@@ -198,6 +199,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean notify(int event, Point point, Object value) {
         return false;
     }
@@ -205,6 +207,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Rectangle getTextBounds(Object value, boolean preferred) {
         GridColumn column = (GridColumn) value;
 
@@ -241,6 +244,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
     /**
      * @return the bounds reserved for the control
      */
+    @Override
     public Rectangle getControlBounds(Object value, boolean preferred) {
         Rectangle bounds = getBounds();
         GridColumn column = (GridColumn) value;

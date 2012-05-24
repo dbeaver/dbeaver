@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic;
@@ -21,6 +21,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     {
     }
 
+    @Override
     public long getFeatures()
     {
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
@@ -63,6 +64,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         }
     }
 
+    @Override
     public DBPDataSource openDataSource(
         DBRProgressMonitor monitor,
         DBSDataSourceContainer container)

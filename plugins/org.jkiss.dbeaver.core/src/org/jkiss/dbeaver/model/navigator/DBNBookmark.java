@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -31,17 +31,20 @@ public class DBNBookmark extends DBNResource
         storage = new BookmarkStorage((IFile)resource, true);
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         storage.dispose();
         super.dispose(reflect);
     }
 
+    @Override
     public String getNodeName()
     {
         return storage.getTitle();
     }
 
+    @Override
     public String getNodeDescription()
     {
         String dsInfo = "";
@@ -55,6 +58,7 @@ public class DBNBookmark extends DBNResource
         return storage.getDescription() + dsInfo;
     }
 
+    @Override
     public Image getNodeIcon()
     {
         return storage.getImage();

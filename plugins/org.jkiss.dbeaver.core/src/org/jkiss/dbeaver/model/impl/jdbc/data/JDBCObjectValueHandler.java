@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -41,6 +41,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCObjectValueHandler INSTANCE = new JDBCObjectValueHandler();
 
+    @Override
     protected Object getColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
@@ -58,6 +59,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         return value;
     }
 
+    @Override
     protected void bindParameter(
         JDBCExecutionContext context,
         JDBCPreparedStatement statement,
@@ -69,22 +71,26 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + value);
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return Object.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         return null;
     }
 
+    @Override
     public String getValueDisplayString(DBSTypedObject column, Object value)
     {
         if (value instanceof DBDValue) {
@@ -96,15 +102,18 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         return DBUtils.getDefaultValueDisplayString(value);
     }
 
+    @Override
     public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
         throws DBCException
     {
     }
 
+    @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {

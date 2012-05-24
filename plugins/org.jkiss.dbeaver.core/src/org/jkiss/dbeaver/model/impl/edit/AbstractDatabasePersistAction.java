@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.edit;
@@ -32,21 +32,25 @@ public class AbstractDatabasePersistAction implements IDatabasePersistAction {
         this("", script, ActionType.NORMAL);
     }
 
+    @Override
     public String getTitle()
     {
         return title;
     }
 
+    @Override
     public String getScript()
     {
         return script;
     }
 
+    @Override
     public void handleExecute(Throwable error)
     {
         // do nothing
     }
 
+    @Override
     public ActionType getType()
     {
         return type;

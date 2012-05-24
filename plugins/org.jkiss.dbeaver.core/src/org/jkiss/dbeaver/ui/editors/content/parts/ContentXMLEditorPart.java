@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.content.parts;
@@ -28,32 +28,38 @@ public class ContentXMLEditorPart extends XMLEditor implements IContentEditorPar
     public ContentXMLEditorPart() {
     }
 
+    @Override
     public void initPart(IEditorPart contentEditor, MimeType mimeType)
     {
         this.contentEditor = contentEditor;
         this.mimeType = mimeType;
     }
 
+    @Override
     public IEditorActionBarContributor getActionBarContributor()
     {
         return null;
     }
 
+    @Override
     public String getContentTypeTitle()
     {
         return "XML";
     }
 
+    @Override
     public Image getContentTypeImage()
     {
         return DBIcon.TYPE_XML.getImage();
     }
 
+    @Override
     public String getPreferredMimeType()
     {
         return MimeTypes.TEXT_XML;
     }
 
+    @Override
     public long getMaxContentLength()
     {
         if (contentEditor instanceof IDataSourceProvider) {
@@ -62,6 +68,7 @@ public class ContentXMLEditorPart extends XMLEditor implements IContentEditorPar
         return 10 * 1024 * 1024;
     }
 
+    @Override
     public boolean isPreferredContent()
     {
         try {
@@ -71,6 +78,7 @@ public class ContentXMLEditorPart extends XMLEditor implements IContentEditorPar
         }
     }
 
+    @Override
     public boolean isOptionalContent()
     {
         return true;

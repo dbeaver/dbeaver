@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -29,6 +29,7 @@ public class DBNAdapterFactory implements IAdapterFactory
 {
     private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPQualifiedObject.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IProject.class, IFolder.class, IFile.class, IResource.class, IWorkbenchAdapter.class };
 
+    @Override
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {
         if (adapterType == DBSDataSourceContainer.class) {
@@ -100,16 +101,19 @@ public class DBNAdapterFactory implements IAdapterFactory
             if (adaptableObject instanceof DBNNode) {
                 final DBNNode node = (DBNNode)adaptableObject;
                 return new WorkbenchAdapter() {
+                    @Override
                     public ImageDescriptor getImageDescriptor(Object object)
                     {
                         return ImageDescriptor.createFromImage(node.getNodeIconDefault());
                     }
 
+                    @Override
                     public String getLabel(Object o)
                     {
                         return node.getNodeName();
                     }
 
+                    @Override
                     public Object getParent(Object o)
                     {
                         return node.getParentNode();
@@ -122,6 +126,7 @@ public class DBNAdapterFactory implements IAdapterFactory
         return null;
     }
 
+    @Override
     public Class[] getAdapterList()
     {
         return ADAPTER_LIST;

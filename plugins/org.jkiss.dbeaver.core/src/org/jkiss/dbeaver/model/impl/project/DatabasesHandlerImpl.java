@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.project;
@@ -28,11 +28,13 @@ public class DatabasesHandlerImpl extends AbstractResourceHandler {
     private static final String CONFIG_EMPTY = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
         "<data-sources></data-sources>";
 
+    @Override
     public String getTypeName(IResource resource)
     {
         return "databases";
     }
 
+    @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
         final IFile configFile = project.getFile(CONFIG_FILE);
@@ -43,6 +45,7 @@ public class DatabasesHandlerImpl extends AbstractResourceHandler {
         configFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_DATABASES);
     }
 
+    @Override
     public DBNProjectDatabases makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
     {
         //DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(resource.getProject());

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic;
@@ -15,12 +15,15 @@ public class SampleAction extends Action implements IViewActionDelegate {
 	public SampleAction() {
 	}
 
-	public void init(IViewPart view) {
+	@Override
+    public void init(IViewPart view) {
 	}
 
-	public void run(IAction action) {
+	@Override
+    public void run(IAction action) {
 	}
 
-	public void selectionChanged(IAction action, ISelection selection) {
+	@Override
+    public void selectionChanged(IAction action, ISelection selection) {
 	}
 }

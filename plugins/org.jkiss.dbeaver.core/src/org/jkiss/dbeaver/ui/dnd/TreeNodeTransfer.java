@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dnd;
@@ -35,14 +35,16 @@ public final class TreeNodeTransfer extends LocalObjectTransfer<Collection<DBNNo
 	/**
 	 * @see org.eclipse.swt.dnd.Transfer#getTypeIds()
 	 */
-	protected int[] getTypeIds() {
+	@Override
+    protected int[] getTypeIds() {
 		return new int[] { TYPEID };
 	}
 
 	/**
 	 * @see org.eclipse.swt.dnd.Transfer#getTypeNames()
 	 */
-	protected String[] getTypeNames() {
+	@Override
+    protected String[] getTypeNames() {
 		return new String[] { TYPE_NAME };
 	}
 

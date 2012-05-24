@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.handlers;
@@ -23,6 +23,7 @@ import java.util.List;
 
 public class DataExportHandler extends AbstractHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final ISelection selection = HandlerUtil.getCurrentSelection(event);

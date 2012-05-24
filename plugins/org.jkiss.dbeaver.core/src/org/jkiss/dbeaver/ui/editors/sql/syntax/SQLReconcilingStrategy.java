@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -50,11 +50,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         this.editor = editor;
     }
 
+    @Override
     public void setDocument(IDocument document)
     {
         this.document = document;
     }
 
+    @Override
     public void reconcile(DirtyRegion dirtyRegion, IRegion subRegion)
     {
         regionOffset = dirtyRegion.getOffset();
@@ -62,6 +64,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         calculatePositions();
     }
 
+    @Override
     public void reconcile(IRegion partition)
     {
         regionOffset = partition.getOffset();
@@ -69,10 +72,12 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         calculatePositions();
     }
 
+    @Override
     public void setProgressMonitor(IProgressMonitor monitor)
     {
     }
 
+    @Override
     public void initialReconcile()
     {
         regionOffset = 0;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -36,6 +36,7 @@ public class DBeaverApplication implements IApplication
     /* (non-Javadoc)
     * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
     */
+    @Override
     public Object start(IApplicationContext context)
     {
         Display display = PlatformUI.createDisplay();
@@ -91,6 +92,7 @@ public class DBeaverApplication implements IApplication
     /* (non-Javadoc)
       * @see org.eclipse.equinox.app.IApplication#stop()
       */
+    @Override
     public void stop()
     {
         final IWorkbench workbench = PlatformUI.getWorkbench();
@@ -99,6 +101,7 @@ public class DBeaverApplication implements IApplication
         final Display display = workbench.getDisplay();
         display.syncExec(new Runnable()
         {
+            @Override
             public void run()
             {
                 if (!display.isDisposed())
@@ -130,6 +133,7 @@ public class DBeaverApplication implements IApplication
         Rectangle size = region.getBounds();
         shell.setSize(size.width, size.height);
         shell.addPaintListener(new PaintListener() {
+            @Override
             public void paintControl(PaintEvent e) {
                 Rectangle bounds = image.getBounds();
                 Point size = shell.getSize();
@@ -137,6 +141,7 @@ public class DBeaverApplication implements IApplication
             }
         });
         shell.addListener(SWT.KeyDown, new Listener() {
+            @Override
             public void handleEvent(Event e)  {
                 if (e.character == SWT.ESC) {
                     shell.dispose();

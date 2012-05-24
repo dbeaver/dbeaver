@@ -95,6 +95,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         }
     }
 
+    @Override
     public Class<?> getDeclaringClass()
     {
         return declaringClass;
@@ -125,6 +126,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return valueTransformer;
     }
 
+    @Override
     public CellEditor createPropertyEditor(Composite parent)
     {
         final Object object = getSource().getEditableValue();
@@ -138,6 +140,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         }
     }
 
+    @Override
     public boolean isEditable(Object object)
     {
         final IPropertySource propertySource = getSource();
@@ -158,36 +161,43 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return object instanceof DBPPersistedObject && !((DBPPersistedObject) object).isPersisted();
     }
 
+    @Override
     public String getCategory()
     {
         return CommonUtils.isEmpty(propInfo.category()) ? null : propInfo.category();
     }
 
+    @Override
     public String getDescription()
     {
         return CommonUtils.isEmpty(propInfo.description()) ? getDisplayName() : propInfo.description();
     }
 
+    @Override
     public String getDisplayName()
     {
         return propInfo.name();
     }
 
+    @Override
     public String[] getFilterFlags()
     {
         return null;
     }
 
+    @Override
     public Object getHelpContextIds()
     {
         return propInfo.helpContextId();
     }
 
+    @Override
     public ILabelProvider getLabelProvider()
     {
         return this.labelProvider;
     }
 
+    @Override
     public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
     {
         return anotherProperty instanceof ObjectPropertyDescriptor &&
@@ -239,21 +249,25 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return getId() + " (" + propInfo.name() + ")";
     }
 
+    @Override
     public Class<?> getDataType()
     {
         return getGetter().getReturnType();
     }
 
+    @Override
     public boolean isRequired()
     {
         return false;
     }
 
+    @Override
     public Object getDefaultValue()
     {
         return null;
     }
 
+    @Override
     public boolean allowCustomValue()
     {
         if (propInfo.listProvider() != IPropertyValueListProvider.class) {
@@ -267,6 +281,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return false;
     }
 
+    @Override
     public Object[] getPossibleValues(Object object)
     {
         if (propInfo.listProvider() != IPropertyValueListProvider.class) {
@@ -340,6 +355,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     private class DefaultLabelProvider extends LabelProvider implements IFontProvider {
 
+        @Override
         public Image getImage(Object element)
         {
 //            if (getSource() instanceof IPropertySourceEditable) {
@@ -352,6 +368,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             return null;
         }
 
+        @Override
         public String getText(Object element)
         {
             return element == null ?
@@ -361,6 +378,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                     element.toString();
         }
 
+        @Override
         public Font getFont(Object element)
         {
             return null;

@@ -27,6 +27,7 @@ public class AssociationCreateCommand extends Command {
     /**
      * @see org.eclipse.gef.commands.Command#canExecute()
      */
+    @Override
     public boolean canExecute()
     {
 
@@ -57,6 +58,7 @@ public class AssociationCreateCommand extends Command {
     /**
      * @see org.eclipse.gef.commands.Command#execute()
      */
+    @Override
     public void execute()
     {
         association = new ERDAssociation(foreignEntity, primaryEntity, true);
@@ -91,6 +93,7 @@ public class AssociationCreateCommand extends Command {
     /**
      * @see org.eclipse.gef.commands.Command#redo()
      */
+    @Override
     public void redo()
     {
         foreignEntity.addForeignKeyRelationship(association, true);
@@ -124,6 +127,7 @@ public class AssociationCreateCommand extends Command {
     /**
      * Undo version of command
      */
+    @Override
     public void undo()
     {
         foreignEntity.removeForeignKeyRelationship(association, true);

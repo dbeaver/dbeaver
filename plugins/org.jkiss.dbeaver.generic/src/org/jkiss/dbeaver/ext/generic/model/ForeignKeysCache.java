@@ -42,6 +42,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         super.clearCache();
     }
 
+    @Override
     protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
     {
@@ -52,6 +53,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             .getSource();
     }
 
+    @Override
     protected GenericTableForeignKey fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String fkName, ResultSet dbResult)
         throws SQLException, DBException
     {
@@ -129,6 +131,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         return new GenericTableForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
     }
 
+    @Override
     protected GenericTableForeignKeyColumnTable fetchObjectRow(
         JDBCExecutionContext context,
         GenericTable parent, GenericTableForeignKey foreignKey, ResultSet dbResult)
@@ -152,16 +155,19 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         return new GenericTableForeignKeyColumnTable(foreignKey, fkColumn, keySeq, pkColumn.getAttribute());
     }
 
+    @Override
     protected Collection<GenericTableForeignKey> getObjectsCache(GenericTable parent)
     {
         return parent.getForeignKeysCache();
     }
 
+    @Override
     protected void cacheObjects(GenericTable parent, List<GenericTableForeignKey> foreignKeys)
     {
         parent.setForeignKeys(foreignKeys);
     }
 
+    @Override
     protected void cacheChildren(GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
         foreignKey.setColumns(rows);

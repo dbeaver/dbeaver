@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
@@ -93,6 +93,7 @@ public class DataExportSettings {
                 // Last one
                 folderOpened = true;
                 DBeaverCore.getDisplay().asyncExec(new Runnable() {
+                    @Override
                     public void run() {
                         Program.launch(outputFolder);
                     }

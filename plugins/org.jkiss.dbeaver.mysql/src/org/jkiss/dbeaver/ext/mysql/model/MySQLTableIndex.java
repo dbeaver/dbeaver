@@ -57,23 +57,27 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLTable>
         }
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return getTable().getDataSource();
     }
 
+    @Override
     @Property(name = "Unique", viewable = true, order = 5)
     public boolean isUnique()
     {
         return !nonUnique;
     }
 
+    @Override
     @Property(name = "Comment", viewable = true, order = 6)
     public String getDescription()
     {
         return comment;
     }
 
+    @Override
     public List<MySQLTableIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
@@ -97,6 +101,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLTable>
         columns.add(column);
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),

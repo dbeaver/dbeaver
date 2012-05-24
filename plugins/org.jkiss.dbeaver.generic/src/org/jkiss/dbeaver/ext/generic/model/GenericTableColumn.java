@@ -64,11 +64,13 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         this.radix = radix;
     }
 
+    @Override
     public GenericDataSource getDataSource()
     {
         return getTable().getDataSource();
     }
 
+    @Override
     public String getDefaultValue()
     {
         return defaultValue;
@@ -84,12 +86,14 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         return charLength;
     }
 
+    @Override
     @Property(name = "Auto Increment", viewable = true, order = 51)
     public boolean isSequence()
     {
         return autoIncrement;
     }
 
+    @Override
     public JDBCColumnKeyType getKeyType()
     {
         return this;
@@ -106,6 +110,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         this.radix = radix;
     }
 
+    @Override
     @Property(name = "Key", viewable = true, order = 80)
     public boolean isInUniqueKey()
     {
@@ -120,11 +125,13 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         return false;
     }
 
+    @Override
     public boolean isInReferenceKey()
     {
         return false;
     }
 
+    @Override
     @Property(name = "Description", viewable = true, order = 100)
     public String getDescription()
     {

@@ -47,6 +47,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return visualizer;
     }
 
+    @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
         return run(monitor, true);
@@ -77,6 +78,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         return Status.OK_STATUS;
     }
 
+    @Override
     public boolean belongsTo(Object family)
     {
         return family == loadingService.getFamily();
@@ -97,6 +99,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             this.innerError = innerError;
         }
 
+        @Override
         public void run()
         {
             visualizer.completeLoading(innerResult);

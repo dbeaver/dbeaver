@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry.tree;
@@ -205,6 +205,7 @@ public abstract class DBXTreeNode
     {
         return new JexlContext() {
 
+            @Override
             public Object get(String name)
             {
                 if (node instanceof DBNDatabaseNode && name.equals("object")) {
@@ -213,11 +214,13 @@ public abstract class DBXTreeNode
                 return null;
             }
 
+            @Override
             public void set(String name, Object value)
             {
                 log.warn("Set is not implemented in DBX model");
             }
 
+            @Override
             public boolean has(String name)
             {
                 return node instanceof DBNDatabaseNode && name.equals("object")

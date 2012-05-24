@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
@@ -52,6 +52,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
     {
     }
 
+    @Override
     public ITabDescriptor[] getTabDescriptors(IWorkbenchPart part, ISelection selection)
     {
         if (curTabs != null && CommonUtils.equalObjects(curSelection, selection)) {
@@ -75,6 +76,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             CoreMessages.ui_properties_category_information,
             DBIcon.TREE_INFO.getImage(),
             new SectionDescriptor(PropertiesContributor.SECTION_STANDARD, PropertiesContributor.TAB_STANDARD) {
+                @Override
                 public ISection getSectionClass()
                 {
                     return new StandardPropertiesSection();
@@ -108,6 +110,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         // Collect tabs from navigator tree model
         final List<NavigatorTabInfo> tabs = new ArrayList<NavigatorTabInfo>();
         DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
+            @Override
             public void run(DBRProgressMonitor monitor)
             {
                 tabs.addAll(collectNavigatorTabs(monitor, node));
@@ -192,6 +195,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
             tabInfo.getName(),
             tabInfo.node.getNodeIconDefault(),
             new SectionDescriptor(PropertiesContributor.SECTION_STANDARD, tabInfo.getName()) { //$NON-NLS-1$
+                @Override
                 public ISection getSectionClass()
                 {
                     return new NodeEditorSection(part, tabInfo.node, tabInfo.meta);

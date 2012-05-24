@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity;
@@ -24,21 +24,25 @@ public class EntityHyperlink implements IHyperlink
         this.region = region;
     }
 
+    @Override
     public IRegion getHyperlinkRegion()
     {
         return region;
     }
 
+    @Override
     public String getTypeLabel()
     {
         return null;
     }
 
+    @Override
     public String getHyperlinkText()
     {
         return node.getNodePathName();
     }
 
+    @Override
     public void open()
     {
         NavigatorHandlerObjectOpen.openEntityEditor(node, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());

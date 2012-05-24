@@ -41,6 +41,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         return data;
     }
 
+    @Override
     public InputStream getContentStream()
         throws IOException
     {
@@ -52,6 +53,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         }
     }
 
+    @Override
     public Reader getContentReader()
         throws IOException
     {
@@ -63,6 +65,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         }
     }
 
+    @Override
     public long getContentLength() {
         if (data == null) {
             return 0;
@@ -70,17 +73,20 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         return data.length();
     }
 
+    @Override
     public String getContentType()
     {
         return MimeTypes.TEXT_PLAIN;
     }
 
+    @Override
     public DBDContentStorage getContents(DBRProgressMonitor monitor)
         throws DBCException
     {
         return this;
     }
 
+    @Override
     public boolean updateContents(
         DBRProgressMonitor monitor,
         DBDContentStorage storage)
@@ -107,6 +113,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         return false;
     }
 
+    @Override
     public void resetContents()
     {
         if (this.originalData != null) {
@@ -114,16 +121,19 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         }
     }
 
+    @Override
     public String getCharset()
     {
         return ContentUtils.DEFAULT_FILE_CHARSET;
     }
 
+    @Override
     public JDBCContentChars cloneStorage(DBRProgressMonitor monitor)
     {
         return cloneValue(monitor);
     }
 
+    @Override
     public void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement preparedStatement,
                               DBSTypedObject columnType, int paramIndex)
         throws DBCException
@@ -140,16 +150,19 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         }
     }
 
+    @Override
     public boolean isNull()
     {
         return data == null;
     }
 
+    @Override
     public JDBCContentChars makeNull()
     {
         return new JDBCContentChars(null);
     }
 
+    @Override
     public void release()
     {
         this.data = this.originalData;
@@ -168,6 +181,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
         return data;
     }
 
+    @Override
     public JDBCContentChars cloneValue(DBRProgressMonitor monitor)
     {
         return new JDBCContentChars(data);

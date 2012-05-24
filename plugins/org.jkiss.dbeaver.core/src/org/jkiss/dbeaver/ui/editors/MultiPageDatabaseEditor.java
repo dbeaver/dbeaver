@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -30,6 +30,7 @@ public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implem
     private int activePageIndex = -1;
     private Image editorImage;
 
+    @Override
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
@@ -52,6 +53,7 @@ public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implem
         UIUtils.dispose(oldImage);
     }
 
+    @Override
     public void dispose()
     {
         UIUtils.dispose(editorImage);
@@ -64,19 +66,23 @@ public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implem
         return (IDatabaseEditorInput)super.getEditorInput();
     }
 
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
     }
 
+    @Override
     public void doSaveAs()
     {
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return false;
     }
 
+    @Override
     protected void createPages()
     {
         this.setContainerStyles();
@@ -114,6 +120,7 @@ public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implem
         }
     }
 
+    @Override
     protected void pageChange(int newPageIndex)
     {
         deactivateEditor();
@@ -143,10 +150,12 @@ public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implem
         }
     }
 
+    @Override
     public DBPDataSource getDataSource() {
         return getEditorInput().getDataSource();
     }
 
+    @Override
     public IEditorPart getActiveEditor()
     {
         return super.getActiveEditor();

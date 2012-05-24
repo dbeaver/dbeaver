@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -22,46 +22,55 @@ public class ProxyPropertyDescriptor implements IPropertyDescriptor
         this.original = original;
     }
 
+    @Override
     public Object getId()
     {
         return this.original.getId();
     }
 
+    @Override
     public CellEditor createPropertyEditor(Composite parent)
     {
         return this.original.createPropertyEditor(parent);
     }
 
+    @Override
     public String getCategory()
     {
         return this.original.getCategory();
     }
 
+    @Override
     public String getDescription()
     {
         return this.original.getDescription();
     }
 
+    @Override
     public String getDisplayName()
     {
         return this.original.getDisplayName();
     }
 
+    @Override
     public String[] getFilterFlags()
     {
         return this.original.getFilterFlags();
     }
 
+    @Override
     public Object getHelpContextIds()
     {
         return this.original.getHelpContextIds();
     }
 
+    @Override
     public ILabelProvider getLabelProvider()
     {
         return this.original.getLabelProvider();
     }
 
+    @Override
     public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
     {
         return this.original.isCompatibleWith(anotherProperty);

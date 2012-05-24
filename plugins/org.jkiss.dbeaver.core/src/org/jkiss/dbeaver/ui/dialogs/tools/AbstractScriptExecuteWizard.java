@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.tools;
@@ -37,11 +37,13 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
         this.inputFile = inputFile;
     }
 
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(task);
         setNeedsProgressMonitor(true);
     }
 
+    @Override
     public void addPages() {
         super.addPages();
         addPage(logPage);
@@ -65,6 +67,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
         //logPage.startLogReader(processBuilder, process.getInputStream());
     }
 
+    @Override
     protected boolean isMergeProcessStreams()
     {
         return true;
@@ -81,6 +84,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
             this.output = stream;
         }
 
+        @Override
         public void run()
         {
             try {

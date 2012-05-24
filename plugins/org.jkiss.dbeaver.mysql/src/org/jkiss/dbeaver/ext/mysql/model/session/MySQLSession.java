@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model.session;
@@ -76,6 +76,7 @@ public class MySQLSession implements DBAServerSession {
         return state;
     }
 
+    @Override
     public String getActiveQuery()
     {
         return info;

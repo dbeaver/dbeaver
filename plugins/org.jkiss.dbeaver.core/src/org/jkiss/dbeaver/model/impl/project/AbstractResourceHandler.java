@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.project;
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
  */
 public abstract class AbstractResourceHandler implements DBPResourceHandler {
 
+    @Override
     public int getFeatures(IResource resource)
     {
         if (resource instanceof IFolder) {
@@ -32,26 +33,31 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
         return 0;
     }
 
+    @Override
     public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
     {
         // Just do nothing
     }
 
+    @Override
     public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
     {
         return new DBNResource(parentNode, resource, this);
     }
 
+    @Override
     public void openResource(IResource resource, IWorkbenchWindow window) throws CoreException, DBException
     {
         //throw new DBException("Resource open is not implemented");
     }
 
+    @Override
     public String getTypeName(IResource resource)
     {
         return "resource";
     }
 
+    @Override
     public String getResourceDescription(IResource resource)
     {
         return resource.getName();

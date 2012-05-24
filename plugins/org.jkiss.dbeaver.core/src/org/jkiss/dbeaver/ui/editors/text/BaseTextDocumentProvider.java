@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.text;
@@ -43,6 +43,7 @@ public abstract class BaseTextDocumentProvider extends AbstractDocumentProvider 
     protected IRunnableContext getOperationRunner(final IProgressMonitor monitor)
     {
         return new IRunnableContext() {
+            @Override
             public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
             {
                 runnable.run(monitor);

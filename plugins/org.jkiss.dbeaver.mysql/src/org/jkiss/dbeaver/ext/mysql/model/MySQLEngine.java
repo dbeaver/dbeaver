@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -53,6 +53,7 @@ public class MySQLEngine extends MySQLInformation {
         this.supportsSavepoints = "YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE_SUPPORT_SAVEPOINTS));
     }
 
+    @Override
     @Property(name = "Engine", viewable = true, order = 1)
     public String getName()
     {
@@ -60,6 +61,7 @@ public class MySQLEngine extends MySQLInformation {
     }
 
 //    @Property(name = "Description", viewable = true, order = 100)
+    @Override
     public String getDescription()
     {
         return description;

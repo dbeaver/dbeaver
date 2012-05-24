@@ -57,6 +57,7 @@ public class UIUtils {
     public static final char PARAGRAPH_CHAR = (char)182;
 
     public static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
+        @Override
         public void verifyText(VerifyEvent e)
         {
             for (int i = 0; i < e.text.length(); i++) {
@@ -71,6 +72,7 @@ public class UIUtils {
     };
 
     public static final VerifyListener NUMBER_VERIFY_LISTENER = new VerifyListener() {
+        @Override
         public void verifyText(VerifyEvent e)
         {
             for (int i = 0; i < e.text.length(); i++) {
@@ -407,6 +409,7 @@ public class UIUtils {
     public static void showMessageBox(final Shell shell, final String title, final String info, final int messageType)
     {
         Runnable runnable = new Runnable() {
+            @Override
             public void run()
             {
                 MessageBox messageBox = new MessageBox(shell, messageType | SWT.OK);
@@ -421,6 +424,7 @@ public class UIUtils {
     public static boolean confirmAction(final Shell shell, final String title, final String question)
     {
         RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
+            @Override
             public void run()
             {
                 MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
@@ -545,6 +549,7 @@ public class UIUtils {
             button.setSelection(true);
         }
         labelControl.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseUp(MouseEvent e)
             {
                 if (!button.isDisposed() && button.isVisible() && button.isEnabled()) {
@@ -747,18 +752,22 @@ public class UIUtils {
         //sash.setBackground(sashActiveBackground);
 
         final IPartListener partListener = new IPartListener() {
+            @Override
             public void partBroughtToTop(IWorkbenchPart part)
             {
             }
 
+            @Override
             public void partOpened(IWorkbenchPart part)
             {
             }
 
+            @Override
             public void partClosed(IWorkbenchPart part)
             {
             }
 
+            @Override
             @SuppressWarnings("restriction")
             public void partActivated(IWorkbenchPart part)
             {
@@ -772,6 +781,7 @@ public class UIUtils {
                 }
             }
 
+            @Override
             public void partDeactivated(IWorkbenchPart part)
             {
                 if (part == workbenchPart) {
@@ -781,15 +791,18 @@ public class UIUtils {
         };
 
         final IPageListener pageListener = workbenchWindow.getActivePage() != null ? null : new IPageListener() {
+            @Override
             public void pageActivated(IWorkbenchPage page)
             {
             }
 
+            @Override
             public void pageOpened(IWorkbenchPage page)
             {
                 page.addPartListener(partListener);
             }
 
+            @Override
             public void pageClosed(IWorkbenchPage page)
             {
                 page.removePartListener(partListener);
@@ -804,6 +817,7 @@ public class UIUtils {
         }
 
         sash.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 if (pageListener != null) {
@@ -876,6 +890,7 @@ public class UIUtils {
     {
         //log.debug(message);
         Runnable runnable = new Runnable() {
+            @Override
             public void run()
             {
                 // Display the dialog
@@ -973,6 +988,7 @@ public class UIUtils {
         directoryText.addModifyListener(changeListener);
 
         final Runnable folderChooser = new Runnable() {
+            @Override
             public void run()
             {
                 DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);

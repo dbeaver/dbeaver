@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql;
@@ -64,6 +64,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         copyUnformattedTextAction = new CopyUnformattedTextAction();
     }
 
+    @Override
     public void dispose()
     {
         setActiveEditor(null);
@@ -71,6 +72,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         super.dispose();
     }
 
+    @Override
     public void setActiveEditor(IEditorPart targetEditor)
     {
         super.setActiveEditor(targetEditor);
@@ -89,11 +91,13 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         }
     }
 
+    @Override
     public void init(IActionBars bars)
     {
         super.init(bars);
     }
 
+    @Override
     public void contributeToMenu(IMenuManager manager)
     {
         if (!isNestedEditor()) {
@@ -114,6 +118,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         }
     }
 
+    @Override
     public void contributeToCoolBar(ICoolBarManager manager)
     {
         if (!isNestedEditor()) {
@@ -136,6 +141,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         }
     }
 
+    @Override
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
     {
         if (!isNestedEditor()) {

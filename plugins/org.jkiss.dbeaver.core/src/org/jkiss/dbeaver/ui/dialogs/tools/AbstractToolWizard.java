@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.tools;
@@ -122,6 +122,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         return false;
     }
 
+    @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
     {
         try {

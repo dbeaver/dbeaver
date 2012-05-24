@@ -113,6 +113,7 @@ public class DataExportJob extends AbstractJob {
             this.dataProvider = dataProvider;
         }
 
+        @Override
         public DBPNamedObject getSource()
         {
             return dataProvider.getDataContainer();
@@ -124,32 +125,38 @@ public class DataExportJob extends AbstractJob {
             return settings.getDataExporter().getName();
         }
 
+        @Override
         public Map<Object, Object> getProperties()
         {
             return settings.getExtractorProperties();
         }
 
+        @Override
         public List<DBDColumnBinding> getColumns()
         {
             return metaColumns;
         }
 
+        @Override
         public OutputStream getOutputStream()
         {
             return outputStream;
         }
 
+        @Override
         public PrintWriter getWriter()
         {
             return writer;
         }
 
+        @Override
         public void flush() throws IOException
         {
             writer.flush();
             outputStream.flush();
         }
 
+        @Override
         public void writeBinaryData(InputStream stream, long streamLength) throws IOException
         {
             flush();
@@ -179,6 +186,7 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
+        @Override
         public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
         {
             // Prepare columns
@@ -206,6 +214,7 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
+        @Override
         public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
         {
             try {
@@ -242,6 +251,7 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
+        @Override
         public void fetchEnd(DBCExecutionContext context) throws DBCException
         {
             try {
@@ -253,6 +263,7 @@ public class DataExportJob extends AbstractJob {
             }
         }
 
+        @Override
         public void close()
         {
             metaColumns = null;

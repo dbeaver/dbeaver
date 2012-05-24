@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.scripts;
@@ -44,11 +44,13 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
     public ScriptsImportWizard() {
 	}
 
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
+	@Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_scripts_import_wizard_window_title);
         setNeedsProgressMonitor(true);
     }
 
+    @Override
     public void addPages() {
         super.addPages();
         pageMain = new ScriptsImportWizardPage();
@@ -178,6 +180,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             return importedCount;
         }
 
+        @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {

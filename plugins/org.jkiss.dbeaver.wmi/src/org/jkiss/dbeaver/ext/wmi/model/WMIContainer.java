@@ -18,21 +18,25 @@ public abstract class WMIContainer extends WMIPropertySource implements DBSObjec
         this.parent = parent;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return parent;
     }
 
+    @Override
     public WMIDataSource getDataSource()
     {
         return parent.getDataSource();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

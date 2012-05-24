@@ -136,6 +136,7 @@ public class WMIClass extends WMIContainer
         subClasses.add(wmiClass);
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 1)
     public String getName()
     {
@@ -166,6 +167,7 @@ public class WMIClass extends WMIContainer
         }
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         //if (classObject == null) {
@@ -199,6 +201,7 @@ public class WMIClass extends WMIContainer
         return referenceAttributes;
     }
 
+    @Override
     public Collection<WMIClassAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
     {
         if (attributes == null) {
@@ -332,6 +335,7 @@ public class WMIClass extends WMIContainer
         }
     }
 
+    @Override
     public List<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         // Read attributes and references
@@ -349,6 +353,7 @@ public class WMIClass extends WMIContainer
         return associations;
     }
 
+    @Override
     public List<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         List<DBSEntityAssociation> references = new ArrayList<DBSEntityAssociation>();
@@ -375,6 +380,7 @@ public class WMIClass extends WMIContainer
         return references;
     }
 
+    @Override
     public void close()
     {
         if (classObject != null) {
@@ -395,11 +401,13 @@ public class WMIClass extends WMIContainer
     ///////////////////////////////////////////////////////////////////////
     // Data container
 
+    @Override
     public int getSupportedFeatures()
     {
         return DATA_SELECT;
     }
 
+    @Override
     public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
     {
         try {
@@ -435,26 +443,31 @@ public class WMIClass extends WMIContainer
         }
     }
 
+    @Override
     public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
     {
         throw new DBException("Not implemented");
     }
 
+    @Override
     public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
     {
         throw new DBException("Not implemented");
     }
 
+    @Override
     public long updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
     {
         throw new DBException("Not implemented");
     }
 
+    @Override
     public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
     {
         throw new DBException("Not implemented");
     }
 
+    @Override
     public Image getObjectImage()
     {
         try {

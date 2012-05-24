@@ -16,11 +16,13 @@ import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, IObjectImageProvider
 {
 
+    @Override
     public boolean isPersisted()
     {
         return true;
     }
 
+    @Override
     public Image getObjectImage()
     {
         DBSTableColumn tableColumn = getTableColumn();

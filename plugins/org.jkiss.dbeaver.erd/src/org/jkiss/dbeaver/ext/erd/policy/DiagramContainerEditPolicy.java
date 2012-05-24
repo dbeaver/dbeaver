@@ -35,6 +35,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
     /**
      * @see org.eclipse.gef.editpolicies.ContainerEditPolicy#getAddCommand(org.eclipse.gef.requests.GroupRequest)
      */
+    @Override
     protected Command getAddCommand(GroupRequest request)
     {
         EditPart host = getTargetEditPart(request);
@@ -44,6 +45,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
     /**
      * @see ContainerEditPolicy#getCreateCommand(org.eclipse.gef.requests.CreateRequest)
      */
+    @Override
     protected Command getCreateCommand(CreateRequest request)
     {
         DiagramPart diagramPart = (DiagramPart) getHost();
@@ -71,6 +73,7 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
     /**
      * @see AbstractEditPolicy#getTargetEditPart(org.eclipse.gef.Request)
      */
+    @Override
     public EditPart getTargetEditPart(Request request)
     {
         if (REQ_CREATE.equals(request.getType())) {

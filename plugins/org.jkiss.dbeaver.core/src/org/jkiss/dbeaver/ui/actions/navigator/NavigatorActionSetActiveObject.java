@@ -25,6 +25,7 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
 {
     private ISelection selection;
 
+    @Override
     public void run(IAction action)
     {
         if (selection instanceof IStructuredSelection) {
@@ -35,6 +36,7 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
                     DBSObjectSelector.class, databaseNode.getObject());
                 try {
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException
                         {
@@ -54,6 +56,7 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
         }
     }
 
+    @Override
     public void selectionChanged(IAction action, ISelection selection)
     {
         this.selection = selection;

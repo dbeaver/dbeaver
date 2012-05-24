@@ -188,16 +188,19 @@ public class OracleDataType extends OracleObject
         }
     }
 
+    @Override
     public OracleSchema getSchema()
     {
         return parent instanceof OracleSchema ? (OracleSchema)parent : null;
     }
 
+    @Override
     public OracleSourceType getSourceType()
     {
         return OracleSourceType.TYPE;
     }
 
+    @Override
     @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
@@ -207,11 +210,13 @@ public class OracleDataType extends OracleObject
         return sourceDeclaration;
     }
 
+    @Override
     public void setSourceDeclaration(String sourceDeclaration)
     {
         this.sourceDeclaration = sourceDeclaration;
     }
 
+    @Override
     public IDatabasePersistAction[] getCompileActions()
     {
         return new IDatabasePersistAction[] {
@@ -222,6 +227,7 @@ public class OracleDataType extends OracleObject
             )};
     }
 
+    @Override
     @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
@@ -231,21 +237,25 @@ public class OracleDataType extends OracleObject
         return sourceDefinition;
     }
 
+    @Override
     public void setSourceDefinition(String source)
     {
         this.sourceDefinition = source;
     }
 
+    @Override
     public int getValueType()
     {
         return valueType;
     }
 
+    @Override
     public DBSDataKind getDataKind()
     {
         return JDBCDataType.getDataKind(valueType);
     }
 
+    @Override
     public int getPrecision()
     {
         if (precision != 0) {
@@ -254,16 +264,19 @@ public class OracleDataType extends OracleObject
         return typeDesc == null ? 0 : typeDesc.precision;
     }
 
+    @Override
     public int getMinScale()
     {
         return typeDesc == null ? 0 : typeDesc.minScale;
     }
 
+    @Override
     public int getMaxScale()
     {
         return typeDesc == null ? 0 : typeDesc.maxScale;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return parent instanceof OracleSchema ?
@@ -271,6 +284,7 @@ public class OracleDataType extends OracleObject
             parent instanceof OracleDataSource ? ((OracleDataSource) parent).getContainer() : null;
     }
 
+    @Override
     @Property(name = "Type Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
@@ -357,6 +371,7 @@ public class OracleDataType extends OracleObject
         return DBSEntityType.TYPE;
     }
 
+    @Override
     @Association
     public Collection<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
         throws DBException
@@ -382,16 +397,19 @@ public class OracleDataType extends OracleObject
         return methodCache != null ? methodCache.getObjects(monitor, this) : null;
     }
 
+    @Override
     public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Override
     public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return parent instanceof OracleSchema ?
@@ -453,11 +471,13 @@ public class OracleDataType extends OracleObject
         return typeName;
     }
 
+    @Override
     public DBSObjectState getObjectState()
     {
         return DBSObjectState.NORMAL;
     }
 
+    @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
 

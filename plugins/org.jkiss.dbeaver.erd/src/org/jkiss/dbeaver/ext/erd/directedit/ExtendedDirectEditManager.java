@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -61,7 +61,8 @@ public class ExtendedDirectEditManager extends DirectEditManager
 	/**
 	 * @see org.eclipse.gef.tools.DirectEditManager#bringDown()
 	 */
-	protected void bringDown()
+	@Override
+    protected void bringDown()
 	{
 		Font disposeFont = figureFont;
 		figureFont = null;
@@ -73,7 +74,8 @@ public class ExtendedDirectEditManager extends DirectEditManager
 	/**
 	 * @see org.eclipse.gef.tools.DirectEditManager#initCellEditor()
 	 */
-	protected void initCellEditor()
+	@Override
+    protected void initCellEditor()
 	{
 
 		Text text = (Text) getCellEditor().getControl();
@@ -86,7 +88,8 @@ public class ExtendedDirectEditManager extends DirectEditManager
 			 * Changes the size of the editor control to reflect the changed
 			 * text
 			 */
-			public void verifyText(VerifyEvent event)
+			@Override
+            public void verifyText(VerifyEvent event)
 			{
 				Text text = (Text) getCellEditor().getControl();
 				String oldText = text.getText();
@@ -143,7 +146,8 @@ public class ExtendedDirectEditManager extends DirectEditManager
 	 * from the source edit part and executing it via the {@link CommandStack}.
 	 * Finally, {@link #bringDown()}is called to perform and necessary cleanup.
 	 */
-	protected void commit()
+	@Override
+    protected void commit()
 	{
 
 		if (committing)
@@ -174,7 +178,8 @@ public class ExtendedDirectEditManager extends DirectEditManager
 	/**
 	 * Need to override so as to remove the verify listener
 	 */
-	protected void unhookListeners()
+	@Override
+    protected void unhookListeners()
 	{
 		super.unhookListeners();
 		Text text = (Text) getCellEditor().getControl();

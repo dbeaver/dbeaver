@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.actions;
@@ -20,6 +20,7 @@ public class OracleObjectAdapter implements IAdapterFactory {
     public OracleObjectAdapter() {
     }
 
+    @Override
     public Object getAdapter(Object adaptableObject, Class adapterType) {
         if (OracleSourceObject.class.isAssignableFrom(adapterType)) {
             DBSObject dbObject = null;
@@ -37,6 +38,7 @@ public class OracleObjectAdapter implements IAdapterFactory {
         return null;
     }
 
+    @Override
     public Class[] getAdapterList() {
         return new Class[] { OracleSourceObject.class, OracleSourceObjectEx.class };
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.load;
@@ -28,21 +28,25 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
         this("Loading");
     }
 
+    @Override
     public String getServiceName()
     {
         return serviceName;
     }
 
+    @Override
     public DBRProgressMonitor getProgressMonitor()
     {
         return progressMonitor;
     }
 
+    @Override
     public void setProgressMonitor(DBRProgressMonitor monitor)
     {
         this.progressMonitor = monitor;
     }
 
+    @Override
     public boolean cancel() throws InvocationTargetException
     {
         // Invoke nested service cancel

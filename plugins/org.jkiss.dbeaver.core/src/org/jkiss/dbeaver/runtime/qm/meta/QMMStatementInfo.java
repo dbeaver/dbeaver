@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.qm.meta;
@@ -29,6 +29,7 @@ public class QMMStatementInfo extends QMMObject {
         this.previous = previous;
     }
 
+    @Override
     protected void close()
     {
         super.close();

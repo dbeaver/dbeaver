@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.editors;
@@ -50,6 +50,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private Font boldFont;
 
+    @Override
     public void createPartControl(Composite parent)
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
@@ -137,6 +138,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         pageControl.createProgressPanel();
 
         parent.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 UIUtils.dispose(boldFont);
@@ -150,6 +152,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void addGrantListener(final PrivilegeTableControl privTable)
     {
         privTable.addListener(SWT.Modify, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
@@ -167,6 +170,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         curTable,
                         privilege),
                     new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
+                        @Override
                         public void redoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
@@ -174,6 +178,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                             }
                             updateLocalData(privilege, isGrant, curCatalog, curTable);
                         }
+                        @Override
                         public void undoCommand(MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
                         {
                             if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
@@ -228,6 +233,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     {
         LoadingUtils.createService(
             new DatabaseLoadService<Collection<MySQLTable>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getDataSource()) {
+                @Override
                 public Collection<MySQLTable> evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
@@ -262,6 +268,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         otherPrivilegesTable.fillGrants(curGrants);
     }
 
+    @Override
     public synchronized void activatePart()
     {
         if (isLoaded) {
@@ -270,6 +277,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         isLoaded = true;
         LoadingUtils.createService(
             new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_privileges_service_load_privileges, getDataSource()) {
+                @Override
                 public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
@@ -339,6 +347,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         // do nothing
@@ -351,6 +360,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
         public ProgressVisualizer<Collection<MySQLTable>> createTablesLoadVisualizer() {
             return new ProgressVisualizer<Collection<MySQLTable>>() {
+                @Override
                 public void completeLoading(Collection<MySQLTable> tables) {
                     super.completeLoading(tables);
                     if (tablesTable.isDisposed()) {
@@ -376,6 +386,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
         public ProgressVisualizer<java.util.List<MySQLPrivilege>> createPrivilegesLoadVisualizer() {
             return new ProgressVisualizer<java.util.List<MySQLPrivilege>>() {
+                @Override
                 public void completeLoading(java.util.List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
                     List<MySQLPrivilege> otherPrivs = new ArrayList<MySQLPrivilege>();

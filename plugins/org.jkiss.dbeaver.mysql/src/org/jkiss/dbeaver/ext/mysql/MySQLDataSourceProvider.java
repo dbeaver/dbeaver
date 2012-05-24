@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql;
@@ -56,6 +56,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
     }
 
+    @Override
     public long getFeatures()
     {
         return FEATURE_CATALOGS;
@@ -69,6 +70,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                 "/" + connectionInfo.getDatabaseName();
     }
 
+    @Override
     public DBPDataSource openDataSource(
         DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
@@ -79,6 +81,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     //////////////////////////////////////
     // Client manager
 
+    @Override
     public Collection<String> findClientHomeIds()
     {
         findLocalClients();
@@ -89,12 +92,14 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         return homes;
     }
 
+    @Override
     public String getDefaultClientHomeId()
     {
         findLocalClients();
         return localServers.isEmpty() ? null : localServers.values().iterator().next().getHomeId();
     }
 
+    @Override
     public DBPClientHome getClientHome(String homeId)
     {
         return getServerHome(homeId);

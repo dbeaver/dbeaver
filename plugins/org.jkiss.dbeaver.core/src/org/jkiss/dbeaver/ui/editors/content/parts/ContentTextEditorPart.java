@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.content.parts;
@@ -28,31 +28,37 @@ public class ContentTextEditorPart extends BaseTextEditor implements IContentEdi
         setDocumentProvider(new FileRefDocumentProvider());
     }
 
+    @Override
     public void initPart(IEditorPart contentEditor, MimeType mimeType)
     {
         this.contentEditor = contentEditor;
     }
 
+    @Override
     public IEditorActionBarContributor getActionBarContributor()
     {
         return null;
     }
 
+    @Override
     public String getContentTypeTitle()
     {
         return "Text";
     }
 
+    @Override
     public Image getContentTypeImage()
     {
         return DBIcon.TYPE_TEXT.getImage();
     }
 
+    @Override
     public String getPreferredMimeType()
     {
         return MimeTypes.TEXT;
     }
 
+    @Override
     public long getMaxContentLength()
     {
         if (contentEditor instanceof IDataSourceProvider) {
@@ -65,11 +71,13 @@ public class ContentTextEditorPart extends BaseTextEditor implements IContentEdi
      * Always return false cos' text editor can load any binary content
      * @return false
      */
+    @Override
     public boolean isPreferredContent()
     {
         return false;
     }
 
+    @Override
     public boolean isOptionalContent()
     {
         return true;

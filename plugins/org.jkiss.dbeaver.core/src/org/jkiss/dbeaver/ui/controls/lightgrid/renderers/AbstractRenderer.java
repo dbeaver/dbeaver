@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
@@ -53,6 +53,7 @@ public abstract class AbstractRenderer implements IGridRenderer
         return column;
     }
 
+    @Override
     public void setColumn(int column)
     {
         this.column = column;
@@ -62,6 +63,7 @@ public abstract class AbstractRenderer implements IGridRenderer
         return row;
     }
 
+    @Override
     public void setRow(int row) {
         this.row = row;
     }
@@ -79,6 +81,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setBounds(int x, int y, int width, int height)
     {
         setBounds(new Rectangle(x, y, width, height));
@@ -88,6 +91,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setBounds(Rectangle bounds)
     {
         this.bounds = bounds;
@@ -106,6 +110,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setLocation(int x, int y)
     {
         setBounds(new Rectangle(x, y, bounds.width, bounds.height));
@@ -114,6 +119,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setLocation(Point location)
     {
         setBounds(new Rectangle(location.x, location.y, bounds.width, bounds.height));
@@ -122,6 +128,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setSize(int width, int height)
     {
         setBounds(new Rectangle(bounds.x, bounds.y, width, height));
@@ -130,6 +137,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setSize(Point size)
     {
         setBounds(new Rectangle(bounds.x, bounds.y, size.x, size.y));
@@ -148,6 +156,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setFocus(boolean focus)
     {
         this.focus = focus;
@@ -166,6 +175,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setHover(boolean hover)
     {
         this.hover = hover;
@@ -185,6 +195,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setMouseDown(boolean mouseDown)
     {
         this.mouseDown = mouseDown;
@@ -203,6 +214,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setSelected(boolean selected)
     {
         this.selected = selected;

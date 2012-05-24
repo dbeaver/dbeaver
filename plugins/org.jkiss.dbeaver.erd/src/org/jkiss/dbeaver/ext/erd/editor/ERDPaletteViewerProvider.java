@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -27,7 +27,8 @@ public class ERDPaletteViewerProvider extends PaletteViewerProvider
 		super(graphicalViewerDomain);
 	}
 
-	protected void configurePaletteViewer(PaletteViewer viewer)
+	@Override
+    protected void configurePaletteViewer(PaletteViewer viewer)
 	{
 		super.configurePaletteViewer(viewer);
 		viewer.addDragSourceListener(new TemplateTransferDragSourceListener(viewer));

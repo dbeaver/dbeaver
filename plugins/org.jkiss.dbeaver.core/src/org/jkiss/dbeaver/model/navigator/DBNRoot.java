@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -27,6 +27,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
+    @Override
     void dispose(boolean reflect)
     {
         for (DBNProject project : projects) {
@@ -42,36 +43,43 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         return CoreMessages.model_navigator_Root;
     }
 
+    @Override
     public Object getValueObject()
     {
         return this;
     }
 
+    @Override
     public String getChildrenType()
     {
         return CoreMessages.model_navigator_Project;
     }
 
+    @Override
     public Class<IProject> getChildrenClass()
     {
         return IProject.class;
     }
 
+    @Override
     public String getNodeName()
     {
         return "#root"; //$NON-NLS-1$
     }
 
+    @Override
     public String getNodeDescription()
     {
         return CoreMessages.model_navigator_Model_root;
     }
 
+    @Override
     public Image getNodeIcon()
     {
         return null;
     }
 
+    @Override
     public boolean allowsChildren()
     {
         return !projects.isEmpty();
@@ -83,11 +91,13 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         return allowsChildren();
     }
 
+    @Override
     public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
     {
         return projects;
     }
 
+    @Override
     public boolean allowsOpen()
     {
         return false;
@@ -111,6 +121,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
             DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(ProjectHandlerImpl.RES_TYPE_PROJECT));
         projects.add(projectNode);
         Collections.sort(projects, new Comparator<DBNProject>() {
+            @Override
             public int compare(DBNProject o1, DBNProject o2)
             {
                 return o1.getNodeName().compareTo(o2.getNodeName());
@@ -134,6 +145,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         }
     }
 
+    @Override
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
         DBNProject projectNode = getProject(newValue);

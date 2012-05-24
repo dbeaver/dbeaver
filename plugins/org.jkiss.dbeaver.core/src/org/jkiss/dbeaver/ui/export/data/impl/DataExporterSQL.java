@@ -76,6 +76,7 @@ public class DataExporterSQL extends DataExporterAbstract {
         super.dispose();
     }
 
+    @Override
     public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
     {
         columns = getSite().getColumns();
@@ -89,6 +90,7 @@ public class DataExporterSQL extends DataExporterAbstract {
         // do nothing
     }
 
+    @Override
     public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
     {
         int columnsSize = columns.size();
@@ -153,6 +155,7 @@ public class DataExporterSQL extends DataExporterAbstract {
         out.write(rowDelimiter);
     }
 
+    @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException
     {
         // do nothing

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity;
@@ -42,14 +42,17 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         this.metaNode = metaNode;
     }
 
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
     }
 
+    @Override
     public void doSaveAs()
     {
     }
 
+    @Override
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
@@ -57,16 +60,19 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         setInput(input);
     }
 
+    @Override
     public boolean isDirty()
     {
         return false;
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return false;
     }
 
+    @Override
     public void createPartControl(Composite parent)
     {
         itemControl = new ItemListControl(parent, SWT.NONE, this, node, metaNode);
@@ -80,19 +86,23 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         getSite().setSelectionProvider(itemControl.getSelectionProvider());
     }
 
+    @Override
     public void setFocus()
     {
     }
 
+    @Override
     public DBNNode getRootNode() {
         return node;
     }
 
+    @Override
     public Viewer getNavigatorViewer()
     {
         return itemControl.getNavigatorViewer();
     }
 
+    @Override
     public void activatePart()
     {
         if (!activated) {
@@ -101,10 +111,12 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         }
     }
 
+    @Override
     public void deactivatePart()
     {
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         if (!activated) {
@@ -135,11 +147,13 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
         super.dispose();
     }
 
+    @Override
     public IDatabaseEditorInput getEditorInput()
     {
         return (IDatabaseEditorInput)super.getEditorInput();
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return getEditorInput().getDataSource();

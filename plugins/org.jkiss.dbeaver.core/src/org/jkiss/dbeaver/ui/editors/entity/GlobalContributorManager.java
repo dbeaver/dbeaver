@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity;
@@ -34,6 +34,7 @@ public class GlobalContributorManager implements IDatabaseEditorContributorManag
         return instance;
     }
 
+    @Override
     public IEditorActionBarContributor getContributor(Class<? extends IEditorActionBarContributor> type)
     {
         ActionContributorInfo info = contributorMap.get(type);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.data;
@@ -61,11 +61,13 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         return null;
     }
 
+    @Override
     public DBSDataContainer getDataContainer()
     {
         return dataContainer;
     }
 
+    @Override
     public boolean isReadyToRun()
     {
         return true;
@@ -73,12 +75,14 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
 
     private class CursorDataContainer implements DBSDataContainer {
 
+        @Override
         public int getSupportedFeatures()
         {
             // Nothing but plain read
             return 0;
         }
 
+        @Override
         public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
         {
             DBRProgressMonitor monitor = context.getProgressMonitor();
@@ -118,47 +122,56 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
             }
         }
 
+        @Override
         public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
         {
             return -1;
         }
 
+        @Override
         public long insertData(DBCExecutionContext context, java.util.List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
         {
             return -1;
         }
 
+        @Override
         public long updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
         {
             return -1;
         }
 
+        @Override
         public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
         {
             return -1;
         }
 
+        @Override
         public String getDescription()
         {
             return value.toString();
         }
 
+        @Override
         public DBSObject getParentObject()
         {
             return null;
         }
 
+        @Override
         public DBPDataSource getDataSource()
         {
             final DBDValueController valueController = getValueController();
             return valueController == null ? null : valueController.getDataSource();
         }
 
+        @Override
         public String getName()
         {
             return value.toString();
         }
 
+        @Override
         public boolean isPersisted()
         {
             return false;

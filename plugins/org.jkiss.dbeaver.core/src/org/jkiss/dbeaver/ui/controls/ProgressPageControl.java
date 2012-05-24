@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls;
@@ -84,6 +84,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         //layout.verticalSpacing = 0;
         this.setLayout(layout);
         addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 dispose();
@@ -311,6 +312,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             }
         });
         searchText.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 curSearchText = searchText.getText();
@@ -390,16 +392,19 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return null;
     }
 
+    @Override
     public boolean isSearchPossible()
     {
         return getSearchRunner() != null;
     }
 
+    @Override
     public boolean isSearchEnabled()
     {
         return getProgressControl().progressBar == null;
     }
 
+    @Override
     public boolean performSearch(SearchType searchType)
     {
         getProgressControl().createSearchControls();
@@ -492,10 +497,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         private String curStatus;
         private final java.util.List<TaskInfo> tasksRunning = new ArrayList<TaskInfo>();
 
+        @Override
         public Shell getShell() {
             return getProgressControl().isDisposed() ? null : getProgressControl().getShell();
         }
 
+        @Override
         public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor)
         {
             return new ProxyProgressMonitor(monitor) {
@@ -553,11 +560,13 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             return null;
         }
 
+        @Override
         public boolean isCompleted()
         {
             return completed;
         }
 
+        @Override
         public void visualizeLoading()
         {
             if (!getProgressControl().isDisposed()) {
@@ -582,6 +591,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             }
         }
 
+        @Override
         public void completeLoading(RESULT result)
         {
             completed = true;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
  */
 public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDataSource> implements DBEObjectRenamer<MySQLCatalog> {
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_SAVE_IMMEDIATELY;
@@ -63,6 +64,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
         };
     }
 
+    @Override
     public void renameObject(DBECommandContext commandContext, MySQLCatalog catalog, String newName) throws DBException
     {
         throw new DBException("Direct database rename is not yet implemented in MySQL. You should use export/import functions for that.");

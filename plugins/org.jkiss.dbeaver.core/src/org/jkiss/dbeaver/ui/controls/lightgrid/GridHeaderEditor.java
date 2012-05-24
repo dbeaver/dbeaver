@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
@@ -42,40 +42,47 @@ class GridHeaderEditor extends ControlEditor {
 		this.column = column;
 
 		columnListener = new ControlListener() {
-			public void controlMoved(ControlEvent e) {
+			@Override
+            public void controlMoved(ControlEvent e) {
 				grid.getDisplay().asyncExec(new Runnable() {
 
-					public void run() {
+					@Override
+                    public void run() {
 						layout();
 					}
 
 				});
 			}
 
-			public void controlResized(ControlEvent e) {
+			@Override
+            public void controlResized(ControlEvent e) {
 				layout();
 			}
 		};
 
 		resizeListener = new Listener() {
-			public void handleEvent(Event event) {
+			@Override
+            public void handleEvent(Event event) {
 				layout();
 			}
 		};
 
 		scrollListener = new SelectionListener() {
-			public void widgetSelected(SelectionEvent e) {
+			@Override
+            public void widgetSelected(SelectionEvent e) {
 				layout();
 			}
 
-			public void widgetDefaultSelected(SelectionEvent e) {
+			@Override
+            public void widgetDefaultSelected(SelectionEvent e) {
 			}
 		};
 
 		// Reset the mouse cursor when the mouse hovers the control
 		mouseOverListener = new Listener() {
 
-			public void handleEvent(Event event) {
+			@Override
+            public void handleEvent(Event event) {
 				if (grid.getCursor() != null) {
 					// We need to reset because it could be that when we left the resizer was active
 					grid.hoveringOnColumnResizer=false;
@@ -120,7 +127,8 @@ class GridHeaderEditor extends ControlEditor {
 	 * Removes all associations between the TableEditor and the cell in the
 	 * grid. The Table and the editor Control are <b>not</b> disposed.
 	 */
-	public void dispose() {
+	@Override
+    public void dispose() {
 		if (!grid.isDisposed() && !column.isDisposed()) {
 			column.removeControlListener(columnListener);
 		}
@@ -156,7 +164,8 @@ class GridHeaderEditor extends ControlEditor {
 	/**
 	 * {@inheritDoc}
 	 */
-	public void layout() {
+	@Override
+    public void layout() {
 		if (grid.isDisposed())
 			return;
 
@@ -188,7 +197,8 @@ class GridHeaderEditor extends ControlEditor {
 		}
 	}
 
-	public void setEditor(Control editor) {
+	@Override
+    public void setEditor(Control editor) {
 		if (getEditor() != null) {
 			getEditor().removeListener(SWT.MouseEnter, mouseOverListener);
 		}

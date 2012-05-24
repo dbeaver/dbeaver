@@ -43,6 +43,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         super.dispose();
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         if (IRevisionRulerColumn.class.equals(adapter)) {
@@ -60,6 +61,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         super.createPartControl(parent);
     }
 
+    @Override
     protected void editorContextMenuAboutToShow(IMenuManager menu)
     {
         super.editorContextMenuAboutToShow(menu);
@@ -92,6 +94,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
       * @see org.eclipse.ui.texteditor.AbstractTextEditor#rulerContextMenuAboutToShow(org.eclipse.jface.action.IMenuManager)
       * @since 3.1
       */
+    @Override
     protected void rulerContextMenuAboutToShow(IMenuManager menu) {
         menu.add(new Separator(ITextEditorActionConstants.GROUP_RULERS));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_REST));
@@ -119,6 +122,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                 continue;
             final boolean isVisible= support.isColumnVisible(descriptor);
             IAction action= new Action("Show " + descriptor.getName(), IAction.AS_CHECK_BOX) {
+                @Override
                 public void run() {
                     if (descriptor.isGlobal())
                         // column state is modified via preference listener of AbstractTextEditor
@@ -146,6 +150,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         store.setValue(LINE_NUMBER_RULER, !isLineNumberRulerVisible());
     }
 
+    @Override
     public void showChangeInformation(boolean show)
     {
         if (show == isChangeInformationShowing())
@@ -164,6 +169,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         }
     }
 
+    @Override
     public boolean isChangeInformationShowing()
     {
         return fLineColumn != null && fLineColumn.isShowingChangeInformation();
@@ -205,8 +211,10 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         return fLineNumberRulerColumn;
     }
 
+    @Override
     protected final IColumnSupport createColumnSupport() {
         return new ColumnSupport(this, RulerColumnRegistry.getDefault()) {
+            @Override
             protected void initializeColumn(IContributedRulerColumn column) {
                 super.initializeColumn(column);
                 RulerColumnDescriptor descriptor= column.getDescriptor();
@@ -215,12 +223,15 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                     if (LineNumberColumn.ID.equals(descriptor.getId())) {
                         fLineColumn= ((LineNumberColumn) column);
                         fLineColumn.setForwarder(new LineNumberColumn.ICompatibilityForwarder() {
+                            @Override
                             public IVerticalRulerColumn createLineNumberRulerColumn() {
                                 return BaseTextEditor.this.createLineNumberRulerColumn();
                             }
+                            @Override
                             public boolean isQuickDiffEnabled() {
                                 return false;
                             }
+                            @Override
                             public boolean isLineNumberRulerVisible() {
                                 return BaseTextEditor.this.isLineNumberRulerVisible();
                             }
@@ -228,6 +239,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                     }
                 }
             }
+            @Override
             public void dispose() {
                 fLineColumn= null;
                 super.dispose();
@@ -235,6 +247,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         };
     }
 
+    @Override
     protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
 
         try {

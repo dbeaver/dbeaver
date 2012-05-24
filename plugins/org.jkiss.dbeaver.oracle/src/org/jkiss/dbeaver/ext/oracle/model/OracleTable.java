@@ -69,6 +69,7 @@ public class OracleTable extends OracleTablePhysical
         return "TABLE";
     }
 
+    @Override
     public boolean isView()
     {
         return false;
@@ -98,6 +99,7 @@ public class OracleTable extends OracleTablePhysical
         return nested;
     }
 
+    @Override
     public List<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -114,6 +116,7 @@ public class OracleTable extends OracleTablePhysical
         return refs;
     }
 
+    @Override
     @Association
     public List<OracleTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException

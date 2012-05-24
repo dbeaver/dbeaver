@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.common;
@@ -19,6 +19,7 @@ public class AboutBoxAction extends ActionDelegate
         this.window = window;
     }
 
+    @Override
     public void run(IAction action)
     {
         AboutBoxDialog dialog = new AboutBoxDialog(window.getShell());

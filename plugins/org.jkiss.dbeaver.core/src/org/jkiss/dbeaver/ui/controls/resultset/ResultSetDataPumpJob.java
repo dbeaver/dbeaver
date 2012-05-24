@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.resultset;
@@ -42,6 +42,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
         return error;
     }
 
+    @Override
     protected IStatus run(DBRProgressMonitor monitor) {
         error = null;
         DBCExecutionContext context = getDataSource().openContext(

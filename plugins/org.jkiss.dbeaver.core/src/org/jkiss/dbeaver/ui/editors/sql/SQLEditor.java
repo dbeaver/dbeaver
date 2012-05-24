@@ -108,17 +108,20 @@ public class SQLEditor extends SQLEditorBase
         partListener = new PartListener();
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         return dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
     }
 
+    @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
         return getEditorInput().getDataSourceContainer();
     }
 
+    @Override
     public boolean setDataSourceContainer(DBSDataSourceContainer container)
     {
         final DBSDataSourceContainer curContainer = getDataSourceContainer();
@@ -151,6 +154,7 @@ public class SQLEditor extends SQLEditorBase
         return resultsView;
     }
 
+    @Override
     public boolean isDirty()
     {
         return (resultsView != null && resultsView.isDirty()) || super.isDirty();
@@ -169,6 +173,7 @@ public class SQLEditor extends SQLEditorBase
         return dataSourceContainer != null && dataSourceContainer.isConnected();
     }
 
+    @Override
     public void createPartControl(Composite parent)
     {
         setRangeIndicator(new DefaultRangeIndicator());
@@ -184,6 +189,7 @@ public class SQLEditor extends SQLEditorBase
             resultTabs = new CTabFolder(sashForm, SWT.TOP | SWT.FLAT);
             resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultTabs.addSelectionListener(new SelectionAdapter() {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     resultTabs.indexOf((CTabItem) e.item);
@@ -229,11 +235,13 @@ public class SQLEditor extends SQLEditorBase
         onDataSourceChange();
     }
 
+    @Override
     public SQLEditorInput getEditorInput()
     {
         return (SQLEditorInput) super.getEditorInput();
     }
 
+    @Override
     public void init(IEditorSite site, IEditorInput editorInput)
         throws PartInitException
     {
@@ -259,6 +267,7 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
+    @Override
     public void resourceChanged(final IResourceChangeEvent event)
     {
 /*
@@ -426,11 +435,13 @@ public class SQLEditor extends SQLEditorBase
 
                 private long lastUIUpdateTime = -1l;
 
+                @Override
                 public void onStartJob()
                 {
                     curJobRunning = true;
                     if (!isSingleQuery) {
                         asyncExec(new Runnable() {
+                            @Override
                             public void run()
                             {
                                 sashForm.setMaximizedControl(editorControl);
@@ -438,11 +449,13 @@ public class SQLEditor extends SQLEditorBase
                         });
                     }
                 }
+                @Override
                 public void onStartQuery(final SQLStatementInfo query)
                 {
                     final long curTime = System.currentTimeMillis();
                     if (lastUIUpdateTime <= 0 || (curTime - lastUIUpdateTime >= SCRIPT_UI_UPDATE_PERIOD)) {
                         syncExec(new Runnable() {
+                            @Override
                             public void run()
                             {
                                 selectAndReveal(query.getOffset(), query.getLength());
@@ -453,6 +466,7 @@ public class SQLEditor extends SQLEditorBase
                     }
                 }
 
+                @Override
                 public void onEndQuery(final SQLQueryResult result)
                 {
                     if (isDisposed()) {
@@ -460,6 +474,7 @@ public class SQLEditor extends SQLEditorBase
                     }
                     if (isSingleQuery) {
                         syncExec(new Runnable() {
+                            @Override
                             public void run()
                             {
                                 if (result.getError() == null) {
@@ -491,6 +506,7 @@ public class SQLEditor extends SQLEditorBase
                         });
                     }
                 }
+                @Override
                 public void onEndJob(final boolean hasErrors)
                 {
                     curJobRunning = false;
@@ -499,6 +515,7 @@ public class SQLEditor extends SQLEditorBase
                         return;
                     }
                     asyncExec(new Runnable() {
+                        @Override
                         public void run()
                         {
                             if (!hasErrors && queries.size() > 1) {
@@ -560,15 +577,18 @@ public class SQLEditor extends SQLEditorBase
     }
 
 
+    @Override
     public void beforeConnect()
     {
     }
 
+    @Override
     public void beforeDisconnect()
     {
         closeJob();
     }
 
+    @Override
     public void dispose()
     {
         // Acquire ds container
@@ -620,11 +640,13 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
+    @Override
     public void handleDataSourceEvent(final DBPEvent event)
     {
         if (event.getObject() == getDataSourceContainer()) {
             getSite().getShell().getDisplay().asyncExec(
                 new Runnable() {
+                    @Override
                     public void run() {
                         switch (event.getAction()) {
                             case OBJECT_REMOVE:
@@ -646,6 +668,7 @@ public class SQLEditor extends SQLEditorBase
         super.doSave(progressMonitor);
     }
 
+    @Override
     public int promptToSaveOnClose()
     {
         if (curJobRunning) {
@@ -663,11 +686,13 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
+    @Override
     public DBSDataContainer getDataContainer()
     {
         return dataContainer;
     }
 
+    @Override
     public boolean isReadyToRun()
     {
         return curJob != null && !curJobRunning;
@@ -675,11 +700,13 @@ public class SQLEditor extends SQLEditorBase
 
     private class DataContainer implements DBSDataContainer {
 
+        @Override
         public int getSupportedFeatures()
         {
             return 0;
         }
 
+        @Override
         public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
         {
             if (curJob != null) {
@@ -691,46 +718,55 @@ public class SQLEditor extends SQLEditorBase
             }
         }
 
+        @Override
         public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
         {
             throw new DBException("Not Implemented");
         }
 
+        @Override
         public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
         {
             throw new DBException("Not Implemented");
         }
 
+        @Override
         public long updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
         {
             throw new DBException("Not Implemented");
         }
 
+        @Override
         public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
         {
             throw new DBException("Not Implemented");
         }
 
+        @Override
         public String getDescription()
         {
             return CoreMessages.editors_sql_description;
         }
 
+        @Override
         public DBSObject getParentObject()
         {
             return getDataSourceContainer();
         }
 
+        @Override
         public DBPDataSource getDataSource()
         {
             return SQLEditor.this.getDataSource();
         }
 
+        @Override
         public boolean isPersisted()
         {
             return true;
         }
 
+        @Override
         public String getName()
         {
             return curJob == null ? null :
@@ -739,16 +775,19 @@ public class SQLEditor extends SQLEditorBase
     }
 
     private class PartListener implements IPartListener {
+        @Override
         public void partActivated(IWorkbenchPart part)
         {
 
         }
 
+        @Override
         public void partBroughtToTop(IWorkbenchPart part)
         {
 
         }
 
+        @Override
         public void partClosed(IWorkbenchPart part)
         {
             if (part == SQLEditor.this) {
@@ -756,11 +795,13 @@ public class SQLEditor extends SQLEditorBase
             }
         }
 
+        @Override
         public void partDeactivated(IWorkbenchPart part)
         {
 
         }
 
+        @Override
         public void partOpened(IWorkbenchPart part)
         {
 

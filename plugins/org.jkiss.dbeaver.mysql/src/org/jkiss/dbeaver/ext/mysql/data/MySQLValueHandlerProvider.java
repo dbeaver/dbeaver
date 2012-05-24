@@ -18,11 +18,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
 
+    @Override
     public Image getTypeImage(DBSTypedObject type)
     {
         return JDBCUtils.getDataIcon(type).getImage();
     }
 
+    @Override
     public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
     {
         if (MySQLConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typeName)) {

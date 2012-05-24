@@ -32,16 +32,19 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
         this.pk = pk;
     }
 
+    @Override
     public DBSEntityConstraint getReferencedConstraint()
     {
         return pk;
     }
 
+    @Override
     public DBSEntity getAssociatedEntity()
     {
         return pk.getParentObject();
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return entity.getDataSource();

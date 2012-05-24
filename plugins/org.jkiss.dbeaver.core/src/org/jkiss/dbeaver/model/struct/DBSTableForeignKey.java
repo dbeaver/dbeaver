@@ -9,6 +9,7 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSTableForeignKey extends DBSTableConstraint, DBSEntityAssociation
 {
+    @Override
     DBSTableConstraint getReferencedConstraint();
 
     DBSConstraintModifyRule getDeleteRule();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
@@ -13,6 +13,7 @@ import org.jkiss.dbeaver.ext.IDatabaseEditorInputFactory;
  */
 public class ObjectPropertiesEditorInputFactory implements IDatabaseEditorInputFactory {
 
+    @Override
     public IEditorInput createNestedEditorInput(IDatabaseEditorInput mainInput)
     {
         return mainInput;// new ObjectPropertiesEditorInput(mainInput);

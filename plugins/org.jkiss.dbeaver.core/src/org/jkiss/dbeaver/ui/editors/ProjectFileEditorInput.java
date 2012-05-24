@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -50,7 +50,8 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 		return file.equals(other.file);
 	}
 
-	public boolean exists() {
+	@Override
+    public boolean exists() {
 		return file.exists();
 	}
 
@@ -69,18 +70,21 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
         return getFile().getProject();
     }
 
-	public ImageDescriptor getImageDescriptor() {
+	@Override
+    public ImageDescriptor getImageDescriptor() {
 		return DBIcon.TYPE_UNKNOWN.getImageDescriptor();
 	}
 
 	/* (non-Javadoc)
 	 * Method declared on IEditorInput.
 	 */
-	public String getName() {
+	@Override
+    public String getName() {
 		return file.getName();
 	}
 
-	public IPersistableElement getPersistable() {
+	@Override
+    public IPersistableElement getPersistable() {
 		return null;
 	}
 
@@ -91,7 +95,8 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 	/* (non-Javadoc)
 	 * Method declared on IEditorInput.
 	 */
-	public String getToolTipText() {
+	@Override
+    public String getToolTipText() {
 		return file.getFullPath().makeRelative().toString();
 	}
 
@@ -109,18 +114,22 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 	 *
 	 * @see org.eclipse.core.runtime.PlatformObject#getAdapter(java.lang.Class)
 	 */
-	public Object getAdapter(Class adapter) {
+	@Override
+    public Object getAdapter(Class adapter) {
 		if (IWorkbenchAdapter.class.equals(adapter)) {
 			return new WorkbenchAdapter() {
-				public ImageDescriptor getImageDescriptor(Object object) {
+				@Override
+                public ImageDescriptor getImageDescriptor(Object object) {
 					return ProjectFileEditorInput.this.getImageDescriptor();
 				}
 
-				public String getLabel(Object o) {
+				@Override
+                public String getLabel(Object o) {
 					return ProjectFileEditorInput.this.getName();
 				}
 
-				public Object getParent(Object o) {
+				@Override
+                public Object getParent(Object o) {
 					return ProjectFileEditorInput.this.file.getParent();
 				}
 			};
@@ -131,6 +140,7 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 		return super.getAdapter(adapter);
 	}
 
+    @Override
     public IPath getPath()
     {
         if (file == null) {

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
  */
 public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrimaryKey, GenericTable> {
 
+    @Override
     protected GenericPrimaryKey createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor, DBECommandContext context, GenericTable parent,

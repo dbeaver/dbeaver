@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.navigator;
@@ -43,11 +43,13 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
         this.folder = folder;
 	}
 
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
+	@Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(ERDMessages.wizard_diagram_create_title);
         setNeedsProgressMonitor(true);
     }
 
+    @Override
     public void addPages() {
         super.addPages();
         pageContent = new DiagramCreateWizardPage(diagram);
@@ -92,6 +94,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
             this.roots = roots;
         }
 
+        @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {

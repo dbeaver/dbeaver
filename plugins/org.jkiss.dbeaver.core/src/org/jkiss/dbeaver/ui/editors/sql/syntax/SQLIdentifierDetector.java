@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -48,6 +48,7 @@ public class SQLIdentifierDetector extends SQLWordDetector
         return tokens;
     }
 
+    @Override
     public boolean isWordPart(char c) {
         return super.isWordPart(c) || catalogSeparator.indexOf(c) != -1;
     }

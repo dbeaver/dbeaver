@@ -24,7 +24,8 @@ public class EntityLayoutEditPolicy extends FlowLayoutEditPolicy
 	 * Creates command to transfer child column to after column (in another
 	 * table)
 	 */
-	protected Command createAddCommand(EditPart child, EditPart after)
+	@Override
+    protected Command createAddCommand(EditPart child, EditPart after)
 	{
 
 /*
@@ -55,7 +56,8 @@ public class EntityLayoutEditPolicy extends FlowLayoutEditPolicy
 	 * Creates command to transfer child column to after specified column
 	 * (within table)
 	 */
-	protected Command createMoveChildCommand(EditPart child, EditPart after)
+	@Override
+    protected Command createMoveChildCommand(EditPart child, EditPart after)
 	{
 /*
 		if (after != null)
@@ -78,7 +80,8 @@ public class EntityLayoutEditPolicy extends FlowLayoutEditPolicy
 	 * @param request
 	 * @return
 	 */
-	protected Command getCreateCommand(CreateRequest request)
+	@Override
+    protected Command getCreateCommand(CreateRequest request)
 	{
 		return null;
 	}
@@ -87,7 +90,8 @@ public class EntityLayoutEditPolicy extends FlowLayoutEditPolicy
 	 * @param request
 	 * @return
 	 */
-	protected Command getDeleteDependantCommand(Request request)
+	@Override
+    protected Command getDeleteDependantCommand(Request request)
 	{
 		return null;
 	}

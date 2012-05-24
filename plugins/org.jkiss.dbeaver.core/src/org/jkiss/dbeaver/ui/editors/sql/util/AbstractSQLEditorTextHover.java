@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.util;
@@ -29,9 +29,11 @@ public abstract class AbstractSQLEditorTextHover implements ITextHover, ITextHov
      *
      * @see org.eclipse.jface.text.ITextHoverExtension#getHoverControlCreator()
      */
+    @Override
     public IInformationControlCreator getHoverControlCreator()
     {
         return new IInformationControlCreator() {
+            @Override
             public IInformationControl createInformationControl(Shell parent)
             {
                 DefaultInformationControl control = new DefaultInformationControl(parent, true);
@@ -41,6 +43,7 @@ public abstract class AbstractSQLEditorTextHover implements ITextHover, ITextHov
         };
     }
 
+    @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset)
     {
         return SQLWordFinder.findWord(textViewer.getDocument(), offset);

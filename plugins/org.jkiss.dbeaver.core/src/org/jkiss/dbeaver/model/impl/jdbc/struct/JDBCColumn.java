@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
@@ -30,6 +30,7 @@ public abstract class JDBCColumn extends AbstractColumn implements IObjectImageP
         super(name, typeName, valueType, ordinalPosition, maxLength, scale, precision, nullable);
     }
 
+    @Override
     public Image getObjectImage()
     {
         Image columnImage = JDBCUtils.getDataIcon(this).getImage();

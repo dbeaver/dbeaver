@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs;
@@ -36,6 +36,7 @@ public class ActiveWizardDialog extends WizardDialog
             ((IWorkbenchWizard)wizard).init(window.getWorkbench(), selection);
         }
         addPageChangingListener(new IPageChangingListener() {
+            @Override
             public void handlePageChanging(PageChangingEvent event)
             {
                 if (event.getCurrentPage() instanceof ActiveWizardPage) {

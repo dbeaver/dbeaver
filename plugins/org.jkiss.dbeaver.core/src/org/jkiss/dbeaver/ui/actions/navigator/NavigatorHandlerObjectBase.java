@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -192,6 +192,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             this.object = object;
         }
 
+        @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             node = model.getNodeByObject(monitor, object, true);
@@ -206,6 +207,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             this.commander = commandContext;
         }
 
+        @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {

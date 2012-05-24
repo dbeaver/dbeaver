@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
@@ -63,16 +63,19 @@ public class PrefPageDataFormat extends TargetPrefPage
         setPreferenceStore(DBeaverCore.getInstance().getGlobalPreferenceStore());
     }
 
+    @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
         return dataSourceDescriptor.getDataFormatterProfile().isOverridesParent();
     }
 
+    @Override
     protected boolean supportsDataSourceSpecificOptions()
     {
         return true;
     }
 
+    @Override
     protected void createPreferenceHeader(Composite composite)
     {
         if (!isDataSourcePreferencePage()) {
@@ -100,6 +103,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
+    @Override
     protected Control createPreferenceContent(Composite parent)
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
@@ -109,6 +113,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         // Locale
         localeSelector = new LocaleSelectorControl(composite, null);
         localeSelector.addListener(SWT.Selection, new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 if (event.data instanceof Locale) {
@@ -138,6 +143,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             propertiesControl = new PropertyTreeViewer(formatGroup, SWT.BORDER);
             propertiesControl.getControl().addListener(SWT.Modify, new Listener() {
+                @Override
                 public void handleEvent(Event event)
                 {
                     saveFormatterProperties();
@@ -328,6 +334,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         }
     }
 
+    @Override
     protected void loadPreferences(IPreferenceStore store)
     {
         refreshProfileList();
@@ -335,6 +342,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         setCurrentProfile(getDefaultProfile());
     }
 
+    @Override
     protected void savePreferences(IPreferenceStore store)
     {
         try {
@@ -350,11 +358,13 @@ public class PrefPageDataFormat extends TargetPrefPage
         RuntimeUtils.savePreferenceStore(store);
     }
 
+    @Override
     protected void clearPreferences(IPreferenceStore store)
     {
         formatterProfile.reset();
     }
 
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -19,6 +19,7 @@ public class ERDEditorInputFactory implements IElementFactory
 
     private static final String TAG_PATH = "path"; //$NON-NLS-1$
 
+    @Override
     public IAdaptable createElement(IMemento memento)
     {
         // Get the file name.

@@ -18,7 +18,8 @@ import org.eclipse.gef.requests.GroupRequest;
 public class AttributeEditPolicy extends ComponentEditPolicy
 {
 
-	protected Command createDeleteCommand(GroupRequest request)
+	@Override
+    protected Command createDeleteCommand(GroupRequest request)
 	{
 /*
 		ERDEntity parent = (ERDEntity) (getHost().getParent().getModel());

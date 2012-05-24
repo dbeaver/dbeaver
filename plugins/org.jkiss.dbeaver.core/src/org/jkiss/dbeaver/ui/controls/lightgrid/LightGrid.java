@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.lightgrid;
@@ -537,6 +537,7 @@ public class LightGrid extends Canvas {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Color getBackground()
     {
         checkWidget();
@@ -548,6 +549,7 @@ public class LightGrid extends Canvas {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setBackground(Color color)
     {
         checkWidget();
@@ -603,6 +605,7 @@ public class LightGrid extends Canvas {
     /**
      * {@inheritDoc}
      */
+    @Override
     public Point computeSize(int wHint, int hHint, boolean changed)
     {
         checkWidget();
@@ -1654,11 +1657,13 @@ public class LightGrid extends Canvas {
         hScroll = scroll;
 
         hScroll.addSelectionListener(new SelectionListener() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 onScrollSelection();
             }
 
+            @Override
             public void widgetDefaultSelected(SelectionEvent e)
             {
             }
@@ -1684,11 +1689,13 @@ public class LightGrid extends Canvas {
         vScroll = scroll;
 
         vScroll.addSelectionListener(new SelectionListener() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 onScrollSelection();
             }
 
+            @Override
             public void widgetDefaultSelected(SelectionEvent e)
             {
             }
@@ -2859,6 +2866,7 @@ public class LightGrid extends Canvas {
     private void initListeners()
     {
         disposeListener = new Listener() {
+            @Override
             public void handleEvent(Event e)
             {
                 onDispose(e);
@@ -2867,6 +2875,7 @@ public class LightGrid extends Canvas {
         addListener(SWT.Dispose, disposeListener);
 
         addPaintListener(new PaintListener() {
+            @Override
             public void paintControl(PaintEvent e)
             {
                 onPaint(e);
@@ -2874,6 +2883,7 @@ public class LightGrid extends Canvas {
         });
 
         addListener(SWT.Resize, new Listener() {
+            @Override
             public void handleEvent(Event e)
             {
                 onResize();
@@ -2882,6 +2892,7 @@ public class LightGrid extends Canvas {
 
         if (getVerticalBar() != null) {
             getVerticalBar().addListener(SWT.Selection, new Listener() {
+                @Override
                 public void handleEvent(Event e)
                 {
                     onScrollSelection();
@@ -2891,6 +2902,7 @@ public class LightGrid extends Canvas {
 
         if (getHorizontalBar() != null) {
             getHorizontalBar().addListener(SWT.Selection, new Listener() {
+                @Override
                 public void handleEvent(Event e)
                 {
                     onScrollSelection();
@@ -2899,6 +2911,7 @@ public class LightGrid extends Canvas {
         }
 
         addListener(SWT.KeyDown, new Listener() {
+            @Override
             public void handleEvent(Event e)
             {
                 onKeyDown(e);
@@ -2906,6 +2919,7 @@ public class LightGrid extends Canvas {
         });
 
         addTraverseListener(new TraverseListener() {
+            @Override
             public void keyTraversed(TraverseEvent e)
             {
                 e.doit = true;
@@ -2913,16 +2927,19 @@ public class LightGrid extends Canvas {
         });
 
         addMouseListener(new MouseListener() {
+            @Override
             public void mouseDoubleClick(MouseEvent e)
             {
                 onMouseDoubleClick(e);
             }
 
+            @Override
             public void mouseDown(MouseEvent e)
             {
                 onMouseDown(e);
             }
 
+            @Override
             public void mouseUp(MouseEvent e)
             {
                 onMouseUp(e);
@@ -2930,6 +2947,7 @@ public class LightGrid extends Canvas {
         });
 
         addMouseMoveListener(new MouseMoveListener() {
+            @Override
             public void mouseMove(MouseEvent e)
             {
                 onMouseMove(e);
@@ -2937,27 +2955,32 @@ public class LightGrid extends Canvas {
         });
 
         addMouseTrackListener(new MouseTrackListener() {
+            @Override
             public void mouseEnter(MouseEvent e)
             {
             }
 
+            @Override
             public void mouseExit(MouseEvent e)
             {
                 onMouseExit(e);
             }
 
+            @Override
             public void mouseHover(MouseEvent e)
             {
             }
         });
 
         addFocusListener(new FocusListener() {
+            @Override
             public void focusGained(FocusEvent e)
             {
                 onFocusIn();
                 redraw();
             }
 
+            @Override
             public void focusLost(FocusEvent e)
             {
                 redraw();
@@ -2967,6 +2990,7 @@ public class LightGrid extends Canvas {
         // Special code to reflect mouse wheel events if using an external
         // scroller
         addListener(SWT.MouseWheel, new Listener() {
+            @Override
             public void handleEvent(Event e)
             {
                 onMouseWheel(e);
@@ -4447,6 +4471,7 @@ public class LightGrid extends Canvas {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void setFont(Font font)
     {
         super.setFont(font);
@@ -4493,6 +4518,7 @@ public class LightGrid extends Canvas {
      *
      * @return the receiver's tool tip text
      */
+    @Override
     public String getToolTipText()
     {
         checkWidget();
@@ -4506,6 +4532,7 @@ public class LightGrid extends Canvas {
      *
      * @param string the new tool tip text (or null)
      */
+    @Override
     public void setToolTipText(String string)
     {
         checkWidget();
@@ -4730,6 +4757,7 @@ public class LightGrid extends Canvas {
     }
 
     private static class CellComparator implements Comparator<GridPos> {
+        @Override
         public int compare(GridPos pos1, GridPos pos2)
         {
             int res = pos1.row - pos2.row;

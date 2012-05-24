@@ -19,15 +19,18 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     private boolean libLoaded = false;
 
+    @Override
     public void init(DBPApplication application)
     {
     }
 
+    @Override
     public long getFeatures()
     {
         return FEATURE_SCHEMAS;
     }
 
+    @Override
     public Collection<IPropertyDescriptor> getConnectionProperties(DBPDriver driver, DBPConnectionInfo connectionInfo) throws DBException
     {
         driver.validateFilesPresence();
@@ -43,6 +46,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
                 "/" + connectionInfo.getDatabaseName();
     }
 
+    @Override
     public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
     {
         if (!libLoaded) {
@@ -67,6 +71,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
         }
     }
 
+    @Override
     public void close()
     {
         //WMIService.unInitializeThread();

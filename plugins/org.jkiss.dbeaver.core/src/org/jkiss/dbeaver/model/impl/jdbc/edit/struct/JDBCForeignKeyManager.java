@@ -24,6 +24,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCTableConstra
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
@@ -40,6 +41,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCTableConstra
         };
     }
 
+    @Override
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
@@ -51,6 +53,7 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCTableConstra
         };
     }
 
+    @Override
     protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
     {
         OBJECT_TYPE foreignKey = command.getObject();

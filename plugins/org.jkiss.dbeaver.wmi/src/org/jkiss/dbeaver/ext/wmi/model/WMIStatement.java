@@ -38,21 +38,25 @@ public class WMIStatement implements DBCStatement {
         return context.getDataSource().getService();
     }
 
+    @Override
     public DBCExecutionContext getContext()
     {
         return context;
     }
 
+    @Override
     public String getQueryString()
     {
         return query;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public boolean executeStatement() throws DBCException
     {
         try {
@@ -70,6 +74,7 @@ public class WMIStatement implements DBCStatement {
         }
     }
 
+    @Override
     public DBCResultSet openResultSet() throws DBCException
     {
         if (queryResult == null) {
@@ -82,46 +87,55 @@ public class WMIStatement implements DBCStatement {
         }
     }
 
+    @Override
     public DBCResultSet openGeneratedKeysResultSet() throws DBCException
     {
         throw new DBCException("Not Implemented");
     }
 
+    @Override
     public int getUpdateRowCount() throws DBCException
     {
         return 0;
     }
 
+    @Override
     public void close()
     {
 
     }
 
+    @Override
     public void setLimit(long offset, long limit) throws DBCException
     {
         this.firstRow = offset;
         this.maxRows = limit;
     }
 
+    @Override
     public DBSObject getDataContainer()
     {
         return null;
     }
 
+    @Override
     public void setDataContainer(DBSObject container)
     {
     }
 
+    @Override
     public Object getUserData()
     {
         return userData;
     }
 
+    @Override
     public void setUserData(Object userData)
     {
         this.userData = userData;
     }
 
+    @Override
     public void cancelBlock() throws DBException
     {
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -32,6 +32,7 @@ public class OracleUserProfile extends OracleGlobalObject
         this.name = JDBCUtils.safeGetString(resultSet, "PROFILE");
     }
 
+    @Override
     @Property(name = "Profile name", viewable = true, order = 1, description = "Profile name")
     public String getName() {
         return name;
@@ -72,6 +73,7 @@ public class OracleUserProfile extends OracleGlobalObject
             this.limit = JDBCUtils.safeGetString(resultSet, "LIMIT");
         }
 
+        @Override
         @Property(name = "Resource name", viewable = true, order = 1, description = "Resource name")
         public String getName() {
             return super.getName();

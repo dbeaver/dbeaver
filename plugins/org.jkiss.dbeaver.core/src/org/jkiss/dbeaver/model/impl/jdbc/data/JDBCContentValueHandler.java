@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -56,6 +56,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     private static final int MAX_STRING_LENGTH = 0xfffff;
 
+    @Override
     protected DBDContent getColumnValue(
         DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
         int columnIndex)
@@ -105,6 +106,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     protected void bindParameter(
         JDBCExecutionContext context,
         JDBCPreparedStatement statement,
@@ -120,16 +122,19 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return DBDContent.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
@@ -143,6 +148,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         return createValueObject(context, column);
     }
 
+    @Override
     public DBDContent createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
     {
         // Create wrapper using column type
@@ -169,6 +175,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public String getValueDisplayString(DBSTypedObject column, Object value)
     {
         if (value instanceof DBDContent) {
@@ -182,6 +189,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value);
     }
 
+    @Override
     public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
         throws DBCException
     {
@@ -201,6 +209,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         });
     }
 
+    @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         try {
@@ -228,6 +237,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             controller.getColumnMetaData().getMaxLength());
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
@@ -239,6 +249,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
                 Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
                 initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                    @Override
                     public Object getValueFromControl(Text control)
                     {
                         String newValue = control.getText();
@@ -302,6 +313,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         final DBDContent value = (DBDContent)controller.getValue();
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -347,6 +359,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         final DBDContent value = (DBDContent)controller.getValue();
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {

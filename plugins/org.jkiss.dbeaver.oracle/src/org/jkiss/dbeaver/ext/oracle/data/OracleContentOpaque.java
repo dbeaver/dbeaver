@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.data;
@@ -37,15 +37,18 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
         this.opaque = opaque;
     }
 
+    @Override
     public long getLOBLength() throws DBCException {
         return 0;//opaque.getLength();
     }
 
+    @Override
     public String getContentType()
     {
         return MimeTypes.TEXT_XML;
     }
 
+    @Override
     public DBDContentStorage getContents(DBRProgressMonitor monitor)
         throws DBCException
     {
@@ -56,6 +59,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
         return storage;
     }
 
+    @Override
     public void release()
     {
         if (tmpStream != null) {
@@ -65,6 +69,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
         super.release();
     }
 
+    @Override
     public void bindParameter(
         JDBCExecutionContext context,
         JDBCPreparedStatement preparedStatement,
@@ -89,6 +94,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
         }
     }
 
+    @Override
     public boolean isNull()
     {
         return opaque == null && storage == null;
@@ -101,6 +107,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
 
     protected abstract String getOpaqueType();
 
+    @Override
     protected abstract OracleContentOpaque createNewContent();
 
     protected abstract OPAQUE_TYPE createNewOracleObject(Connection connection)

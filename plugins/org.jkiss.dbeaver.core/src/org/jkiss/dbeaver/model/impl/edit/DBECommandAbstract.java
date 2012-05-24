@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.edit;
@@ -24,35 +24,42 @@ public class DBECommandAbstract<OBJECT_TYPE extends DBPObject> implements DBECom
         this.title = title;
     }
 
+    @Override
     public OBJECT_TYPE getObject()
     {
         return object;
     }
 
+    @Override
     public String getTitle()
     {
         return title;
     }
 
+    @Override
     public boolean isUndoable()
     {
         return true;
     }
 
+    @Override
     public void validateCommand() throws DBException
     {
         // do nothing by default
     }
 
+    @Override
     public void updateModel()
     {
     }
 
+    @Override
     public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
     {
         return this;
     }
 
+    @Override
     public IDatabasePersistAction[] getPersistActions()
     {
         return null;

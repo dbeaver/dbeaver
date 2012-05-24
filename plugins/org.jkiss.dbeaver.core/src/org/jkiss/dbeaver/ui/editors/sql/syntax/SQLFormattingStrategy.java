@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -31,6 +31,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
     /**
    * @see org.eclipse.jface.text.formatter.IFormattingStrategy#formatterStarts(String)
    */
+    @Override
     public void formatterStarts(String initialIndentation)
     {
     }
@@ -38,6 +39,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
     /**
    * @see org.eclipse.jface.text.formatter.IFormattingStrategy#format(String, boolean, String, int[])
    */
+    @Override
     public String format(String content, boolean isLineStart, String indentation, int[] positions)
     {
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
@@ -78,6 +80,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
         return newContent.toString();
     }
 
+    @Override
     public void formatterStops()
     {
     }

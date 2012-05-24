@@ -33,17 +33,20 @@ public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
         this.ordinalPosition = column.ordinalPosition;
     }
 
+    @Override
     public String getName()
     {
         return tableColumn.getName();
     }
 
+    @Override
     @Property(id = "name", name = "Column", viewable = true, order = 1)
     public GenericTableColumn getAttribute()
     {
         return tableColumn;
     }
 
+    @Override
     @Property(name = "Position", viewable = false, order = 2)
     public int getOrdinalPosition()
     {
@@ -51,16 +54,19 @@ public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
     }
 
 //    @Property(name = "Description", viewable = true, order = 100)
+    @Override
     public String getDescription()
     {
         return tableColumn.getDescription();
     }
 
+    @Override
     public JDBCTableConstraint getParentObject()
     {
         return constraint;
     }
 
+    @Override
     public GenericDataSource getDataSource()
     {
         return (GenericDataSource) constraint.getDataSource();

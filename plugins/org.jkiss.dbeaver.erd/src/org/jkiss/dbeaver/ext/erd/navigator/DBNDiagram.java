@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.navigator;
@@ -35,12 +35,14 @@ public class DBNDiagram extends DBNResource
         super(parentNode, resource, handler);
     }
 
+    @Override
     protected void dispose(boolean reflect)
     {
         UIUtils.dispose(image);
         super.dispose(reflect);
     }
 
+    @Override
     public Image getNodeIcon()
     {
 

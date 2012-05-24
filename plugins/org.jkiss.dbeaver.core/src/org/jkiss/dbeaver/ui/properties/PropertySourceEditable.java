@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -35,6 +35,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         //this.objectManager = editorInput.getObjectManager(DBEObjectEditor.class);
     }
 
+    @Override
     public boolean isEditable(Object object)
     {
         return commandContext != null && getObjectEditor() != null;
@@ -51,6 +52,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             DBEObjectEditor.class);
     }
 
+    @Override
     public DBECommandContext getCommandContext()
     {
         return commandContext;
@@ -173,6 +175,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
     private class CommandReflector implements DBECommandReflector<DBPObject, PropertyChangeCommand> {
 
+        @Override
         public void redoCommand(PropertyChangeCommand command)
         {
             updatePropertyValue(command.getObject(), command.property, command.getNewValue(), false);
@@ -184,6 +187,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 */
         }
 
+        @Override
         public void undoCommand(PropertyChangeCommand command)
         {
             updatePropertyValue(command.getObject(), command.property, command.getOldValue(), false);

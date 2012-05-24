@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.handlers;
@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 public class PreviewChangesHandler extends AbstractHandler
 {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         EntityEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);

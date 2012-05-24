@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.plan;
@@ -86,12 +86,14 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         planPanel.setMaximizedControl(planTree);
 
         planTree.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 dispose();
             }
         });
         planTree.getControl().addPaintListener(new PaintListener() {
+            @Override
             public void paintControl(PaintEvent e)
             {
                 if (planner == null) {
@@ -109,6 +111,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         });
 
         this.planTree.getControl().addTraverseListener(new TraverseListener() {
+            @Override
             public void keyTraversed(TraverseEvent e)
             {
                 if (toggleViewAction.isEnabled() &&
@@ -163,6 +166,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         refreshPlanAction.setEnabled(false);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent event)
     {
     }

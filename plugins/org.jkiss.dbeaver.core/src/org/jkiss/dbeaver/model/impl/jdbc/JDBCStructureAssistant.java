@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc;
@@ -30,21 +30,25 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
 
     protected abstract JDBCDataSource getDataSource();
 
+    @Override
     public DBSObjectType[] getSupportedObjectTypes()
     {
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
+    @Override
     public DBSObjectType[] getHyperlinkObjectTypes()
     {
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
+    @Override
     public DBSObjectType[] getAutoCompleteObjectTypes()
     {
         return new DBSObjectType[] { RelationalObjectType.TYPE_TABLE };
     }
 
+    @Override
     public Collection<DBSObject> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,

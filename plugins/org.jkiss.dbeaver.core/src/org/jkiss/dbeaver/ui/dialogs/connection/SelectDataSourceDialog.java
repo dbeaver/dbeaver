@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -36,11 +36,13 @@ public class SelectDataSourceDialog extends Dialog {
         super(parentShell);
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(CoreMessages.dialog_select_datasource_title);
@@ -68,6 +70,7 @@ public class SelectDataSourceDialog extends Dialog {
         dsList.loadData();
         dsList.getNavigatorViewer().addSelectionChangedListener(new ISelectionChangedListener()
         {
+            @Override
             public void selectionChanged(SelectionChangedEvent event)
             {
                 IStructuredSelection selection = (IStructuredSelection)event.getSelection();
@@ -88,6 +91,7 @@ public class SelectDataSourceDialog extends Dialog {
         });
         dsList.setDoubleClickHandler(new IDoubleClickListener()
         {
+            @Override
             public void doubleClick(DoubleClickEvent event)
             {
                 if (getButton(IDialogConstants.OK_ID).isEnabled()) {
@@ -99,6 +103,7 @@ public class SelectDataSourceDialog extends Dialog {
         return group;
     }
 
+    @Override
     protected Control createContents(Composite parent)
     {
         Control ctl = super.createContents(parent);

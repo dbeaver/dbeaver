@@ -19,11 +19,13 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
  */
 public class WMINamespaceManager extends AbstractObjectManager<WMINamespace> implements DBEObjectEditor<WMINamespace> {
 
+    @Override
     public DBEPropertyHandler<WMINamespace> makePropertyHandler(WMINamespace object, IPropertyDescriptor property)
     {
         return null;
     }
 
+    @Override
     public void executePersistAction(DBCExecutionContext context, DBECommand<WMINamespace> wmiNamespaceDBECommand, IDatabasePersistAction action) throws DBException
     {
 

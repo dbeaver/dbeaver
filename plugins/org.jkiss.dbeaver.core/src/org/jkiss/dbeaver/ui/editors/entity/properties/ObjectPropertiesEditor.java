@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.entity.properties;
@@ -65,6 +65,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
     {
     }
 
+    @Override
     public void createPartControl(Composite parent)
     {
         // Add lazy props listener
@@ -115,6 +116,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
                 databaseNode.getNodeType(),
                 databaseNode.getNodeName(),
                 databaseNode == node ? null : new SelectionAdapter() {
+                    @Override
                     public void widgetSelected(SelectionEvent e)
                     {
                         NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
@@ -168,6 +170,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
 
         properties.addTabSelectionListener(new ITabSelectionListener() {
+            @Override
             public void tabSelected(ITabDescriptor tabDescriptor)
             {
                 if (CommonUtils.equalObjects(curFolderId, tabDescriptor.getId())) {
@@ -237,6 +240,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         super.dispose();
     }
 
+    @Override
     public void setFocus()
     {
         properties.setFocus();
@@ -254,6 +258,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
     }
 
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
         for (ISaveablePart sp : nestedSaveable) {
@@ -261,6 +266,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
     }
 
+    @Override
     public void doSaveAs()
     {
         Object activeFolder = getActiveFolder();
@@ -269,6 +275,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
     }
 
+    @Override
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
@@ -276,6 +283,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         setInput(input);
     }
 
+    @Override
     public boolean isDirty()
     {
         for (ISaveablePart sp : nestedSaveable) {
@@ -286,6 +294,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         return false;
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return false;
@@ -324,11 +333,13 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
     }
 */
 
+    @Override
     public ProgressPageControl getProgressControl()
     {
         return pageControl;
     }
 
+    @Override
     public Object getActiveFolder()
     {
         TabContents currentTab = properties.getCurrentTab();
@@ -345,11 +356,13 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         return null;
     }
 
+    @Override
     public void switchFolder(String folderId)
     {
         properties.setSelectedTab(folderId);
     }
 
+    @Override
     public void addFolderListener(IFolderListener listener)
     {
         synchronized (folderListeners) {
@@ -357,6 +370,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
     }
 
+    @Override
     public void removeFolderListener(IFolderListener listener)
     {
         synchronized (folderListeners) {
@@ -373,22 +387,26 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         return null;
     }
 
+    @Override
     public boolean isSearchPossible()
     {
         return true;
     }
 
+    @Override
     public boolean isSearchEnabled()
     {
         ISearchContextProvider provider = getFolderSearch();
         return provider != null && provider.isSearchEnabled();
     }
 
+    @Override
     public boolean performSearch(SearchType searchType)
     {
         return getFolderSearch().performSearch(searchType);
     }
 
+    @Override
     public void addRefreshClient(IRefreshablePart part)
     {
         synchronized (refreshClients) {
@@ -396,6 +414,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
     }
 
+    @Override
     public void removeRefreshClient(IRefreshablePart part)
     {
         synchronized (refreshClients) {
@@ -403,6 +422,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         }
     }
 
+    @Override
     public void refreshPart(Object source, boolean force) {
         synchronized (refreshClients) {
             for (IRefreshablePart part : refreshClients) {

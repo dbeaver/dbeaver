@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary;
@@ -54,6 +54,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     }
 
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event)
     {
         IResourceDelta delta= event.getDelta();
@@ -75,6 +76,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Refresh editor
             getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     loadBinaryContent();
@@ -83,6 +85,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         }
     }
 
+    @Override
     public void addSelectionChangedListener(ISelectionChangedListener listener)
     {
         if (listener == null) return;
@@ -94,6 +97,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     }
 
 
+    @Override
     public void createPartControl(Composite parent)
     {
         manager.setTextFont(HexPreferencesPage.getPrefFontData());
@@ -118,6 +122,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         createEditorAction(bars, ITextEditorActionConstants.GOTO_LINE);
 
         manager.addListener(new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 firePropertyChange(PROP_DIRTY);
@@ -128,6 +133,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         bars.updateActionBars();
 
         preferencesChangeListener = new IPropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent event)
             {
                 if (HexPreferencesPage.PROP_FONT_DATA.equals(event.getProperty()))
@@ -138,6 +144,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         store.addPropertyChangeListener(preferencesChangeListener);
 
         manager.addLongSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 if (selectionListeners == null) return;
@@ -154,6 +161,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         });
         getSite().getPage().addSelectionListener(//getSite().getPage().getActiveEditor().getSite().getId(),
              new ISelectionListener() {
+                 @Override
                  public void selectionChanged(IWorkbenchPart part,
                                               ISelection selection)
                  {
@@ -197,6 +205,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
      *
      * @see WorkbenchPart#dispose()
      */
+    @Override
     public void dispose()
     {
         if (manager != null) {
@@ -215,6 +224,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     /**
      * @see org.eclipse.ui.part.EditorPart#doSave(org.eclipse.core.runtime.IProgressMonitor)
      */
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
     }
@@ -223,10 +233,12 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     /**
      * @see org.eclipse.ui.part.EditorPart#doSaveAs()
      */
+    @Override
     public void doSaveAs()
     {
     }
 
+    @Override
     public Object getAdapter(Class required)
     {
         if (BinaryContent.class.isAssignableFrom(required)) {
@@ -238,6 +250,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         }
     }
 
+    @Override
     public ISelection getSelection()
     {
         long[] longSelection = manager.getSelection();
@@ -245,6 +258,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             {longSelection[0], longSelection[1]});
     }
 
+    @Override
     public void init(IEditorSite site, final IEditorInput input)
         throws PartInitException
     {
@@ -262,18 +276,21 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     }
 
 
+    @Override
     public boolean isDirty()
     {
         return manager.isDirty();
     }
 
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return true;
     }
 
 
+    @Override
     public void removeSelectionChangedListener(ISelectionChangedListener listener)
     {
         if (selectionListeners != null) {
@@ -281,12 +298,14 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         }
     }
 
+    @Override
     public void setFocus()
     {
         // useless. It is called before ActionBarContributor.setActiveEditor() so focusing is done there
     }
 
 
+    @Override
     public void setSelection(ISelection selection)
     {
         if (selection.isEmpty()) return;
@@ -335,6 +354,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         bars.updateActionBars();
     }
 
+    @Override
     public void menuAboutToShow(IMenuManager manager)
     {
         manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_COPY, "Copy"));
@@ -363,6 +383,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             setActionDefinitionId(actionId);
         }
 
+        @Override
         public void run()
         {
             if (actionId.equals(IWorkbenchCommandConstants.EDIT_UNDO))

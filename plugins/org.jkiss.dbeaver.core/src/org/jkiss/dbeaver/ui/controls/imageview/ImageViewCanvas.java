@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.imageview;
@@ -52,12 +52,14 @@ class ImageViewCanvas extends Canvas {
 		super( parent, style|SWT.BORDER|SWT.V_SCROLL|SWT.H_SCROLL
 				            | SWT.NO_BACKGROUND);
 		addControlListener(new ControlAdapter() { /* resize listener. */
-			public void controlResized(ControlEvent event) {
+			@Override
+            public void controlResized(ControlEvent event) {
 				syncScrollBars();
 			}
 		});
 		addPaintListener(new PaintListener() { /* paint listener. */
-			public void paintControl(final PaintEvent event) {
+			@Override
+            public void paintControl(final PaintEvent event) {
 				paint(event.gc);
 			}
 		});
@@ -67,7 +69,8 @@ class ImageViewCanvas extends Canvas {
     /**
 	 * Dispose the garbage here
 	 */
-	public void dispose() {
+	@Override
+    public void dispose() {
 		if (sourceImage != null && !sourceImage.isDisposed()) {
 			sourceImage.dispose();
 		}
@@ -121,14 +124,16 @@ class ImageViewCanvas extends Canvas {
 		ScrollBar horizontal = getHorizontalBar();
 		horizontal.setEnabled(false);
 		horizontal.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
+			@Override
+            public void widgetSelected(SelectionEvent event) {
 				scrollHorizontally((ScrollBar) event.widget);
 			}
 		});
 		ScrollBar vertical = getVerticalBar();
 		vertical.setEnabled(false);
 		vertical.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
+			@Override
+            public void widgetSelected(SelectionEvent event) {
 				scrollVertically((ScrollBar) event.widget);
 			}
 		});

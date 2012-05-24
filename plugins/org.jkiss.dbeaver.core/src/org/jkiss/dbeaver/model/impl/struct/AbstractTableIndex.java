@@ -24,6 +24,7 @@ public abstract class AbstractTableIndex implements DBSTableIndex
         return getColumns(monitor);
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
@@ -22,12 +22,14 @@ public class PrefPageEmpty extends PreferencePage implements IWorkbenchPreferenc
         super();
     }
 
+    @Override
     protected Control createContents(Composite parent)
     {
         super.noDefaultAndApplyButton();
         return parent;
     }
 
+    @Override
     public void init(IWorkbench workbench)
     {
     }

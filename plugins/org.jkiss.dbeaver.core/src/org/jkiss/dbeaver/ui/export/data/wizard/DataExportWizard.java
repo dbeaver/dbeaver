@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.export.data.wizard;
@@ -37,6 +37,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
         return settings;
     }
 
+    @Override
     public void addPages() {
         super.addPages();
         addPage(new DataExportPageInit());
@@ -45,11 +46,13 @@ public class DataExportWizard extends Wizard implements IExportWizard {
         addPage(new DataExportPageFinal());
     }
 
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         setWindowTitle("Export data");
         setNeedsProgressMonitor(true);
     }
 
+    @Override
     public boolean performFinish() {
         // Save settings
         getSettings().saveTo(getDialogSettings());

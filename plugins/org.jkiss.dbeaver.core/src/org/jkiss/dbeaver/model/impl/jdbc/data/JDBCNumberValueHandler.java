@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -62,6 +62,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return value == null ? DBConstants.NULL_VALUE_LABEL : formatter.formatValue(value);
     }
 
+    @Override
     protected Object getColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
@@ -121,6 +122,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     protected void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement statement, DBSTypedObject paramType,
                                  int paramIndex, Object value) throws SQLException
     {
@@ -160,6 +162,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
@@ -169,6 +172,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             if (controller.getColumnMetaData().getTypeID() == java.sql.Types.BIT) {
                 CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
                 initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
+                    @Override
                     public Object getValueFromControl(CCombo control)
                     {
                         switch (control.getSelectionIndex()) {
@@ -185,6 +189,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             } else {
                 Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
                 initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                    @Override
                     public Object getValueFromControl(Text control)
                     {
                         String text = control.getText();
@@ -220,16 +225,19 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return Number.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
@@ -278,6 +286,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return value;
     }
 
+    @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(

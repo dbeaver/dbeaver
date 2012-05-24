@@ -27,7 +27,8 @@ public class NoteDirectEditPolicy extends DirectEditPolicy
 	/**
 	 * @see org.eclipse.gef.editpolicies.DirectEditPolicy#getDirectEditCommand(org.eclipse.gef.requests.DirectEditRequest)
 	 */
-	protected Command getDirectEditCommand(DirectEditRequest request)
+	@Override
+    protected Command getDirectEditCommand(DirectEditRequest request)
 	{
 /*
 		EntityRenameCommand cmd = new EntityRenameCommand();
@@ -44,14 +45,16 @@ public class NoteDirectEditPolicy extends DirectEditPolicy
 	/**
 	 * @see org.eclipse.gef.editpolicies.DirectEditPolicy#showCurrentEditValue(org.eclipse.gef.requests.DirectEditRequest)
 	 */
-	protected void showCurrentEditValue(DirectEditRequest request)
+	@Override
+    protected void showCurrentEditValue(DirectEditRequest request)
 	{
 		String value = (String) request.getCellEditor().getValue();
 		NotePart notePart = (NotePart) getHost();
 		notePart.handleNameChange(value);
 	}
 
-	protected void storeOldEditValue(DirectEditRequest request)
+	@Override
+    protected void storeOldEditValue(DirectEditRequest request)
 	{
 		
 		CellEditor cellEditor = request.getCellEditor();
@@ -61,7 +64,8 @@ public class NoteDirectEditPolicy extends DirectEditPolicy
 	/**
 	 * @param request
 	 */
-	protected void revertOldEditValue(DirectEditRequest request)
+	@Override
+    protected void revertOldEditValue(DirectEditRequest request)
 	{
 		CellEditor cellEditor = request.getCellEditor();
 		cellEditor.setValue(oldValue);

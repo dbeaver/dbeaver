@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ui.search.SearchObjectsDialog;
 @SuppressWarnings("restriction")
 public class NavigatorHandlerObjectFind extends DataSourceHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         WorkbenchPage activePage = (WorkbenchPage)HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
         if (activePage == null) {

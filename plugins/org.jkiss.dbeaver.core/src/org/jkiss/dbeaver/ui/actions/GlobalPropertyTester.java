@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions;
@@ -24,6 +24,7 @@ public class GlobalPropertyTester extends PropertyTester
         super();
     }
 
+    @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (property.equals(PROP_HAS_MULTI_PROJECTS)) {
             return DBeaverCore.getInstance().getLiveProjects().size() > 1;

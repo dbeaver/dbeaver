@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -34,6 +34,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCArrayValueHandler INSTANCE = new JDBCArrayValueHandler();
 
+    @Override
     protected Object getColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
@@ -52,6 +53,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     protected void bindParameter(
         JDBCExecutionContext context,
         JDBCPreparedStatement statement,
@@ -63,22 +65,26 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         throw new DBCException(CoreMessages.model_jdbc_exception_unsupported_value_type_ + value);
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_NONE;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return DBDArray.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
         return null;
     }
 
+    @Override
     public String getValueDisplayString(DBSTypedObject column, Object value)
     {
         if (value instanceof JDBCArray) {
@@ -90,11 +96,13 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value);
     }
 
+    @Override
     public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
         throws DBCException
     {
     }
 
+    @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         try {
@@ -113,6 +121,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -50,6 +50,7 @@ public class DatabaseEditorListener implements IDBNListener
         return databaseEditor.getEditorInput().getTreeNode();
     }
 
+    @Override
     public void nodeChanged(final DBNEvent event)
     {
         if (isValuableNode(event.getNode())) {
@@ -62,7 +63,8 @@ public class DatabaseEditorListener implements IDBNListener
                     event.getNodeChange() == DBNEvent.NodeChange.LOAD)
                 {
                     if (getTreeNode() == event.getNode()) {
-                        runner = new Runnable() { public void run() {
+                        runner = new Runnable() { @Override
+                                                  public void run() {
                             databaseEditor.refreshPart(
                                 event,
                                 event.getNodeChange() == DBNEvent.NodeChange.REFRESH &&
@@ -74,7 +76,8 @@ public class DatabaseEditorListener implements IDBNListener
                 }
             }
             if (closeEditor) {
-                runner = new Runnable() { public void run() {
+                runner = new Runnable() { @Override
+                                          public void run() {
                     IWorkbenchPage workbenchPage = databaseEditor.getSite().getWorkbenchWindow().getActivePage();
                     if (workbenchPage != null) {
                         workbenchPage.closeEditor(databaseEditor, false);

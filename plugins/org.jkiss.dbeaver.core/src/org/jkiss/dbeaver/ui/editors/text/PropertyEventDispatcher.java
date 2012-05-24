@@ -16,7 +16,8 @@ public final class PropertyEventDispatcher {
 	private final Map fReverseMap= new HashMap();
 	private final IPreferenceStore fStore;
 	private final IPropertyChangeListener fListener= new IPropertyChangeListener() {
-		public void propertyChange(PropertyChangeEvent event) {
+		@Override
+        public void propertyChange(PropertyChangeEvent event) {
 			firePropertyChange(event);
 		}
 	};

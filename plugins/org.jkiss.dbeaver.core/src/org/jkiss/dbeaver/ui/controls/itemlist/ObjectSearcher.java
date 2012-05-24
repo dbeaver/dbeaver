@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
@@ -20,6 +20,7 @@ public abstract class ObjectSearcher<OBJECT_TYPE extends DBPNamedObject> impleme
     private int curSearchIndex;
     private Set<OBJECT_TYPE> curSearchResult = null;
 
+    @Override
     public boolean performSearch(String searchString, int options)
     {
         boolean caseSensitiveSearch = (options & SEARCH_CASE_SENSITIVE) != 0;
@@ -88,6 +89,7 @@ public abstract class ObjectSearcher<OBJECT_TYPE extends DBPNamedObject> impleme
         }
     }
 
+    @Override
     public void cancelSearch()
     {
         if (curSearchPattern != null) {

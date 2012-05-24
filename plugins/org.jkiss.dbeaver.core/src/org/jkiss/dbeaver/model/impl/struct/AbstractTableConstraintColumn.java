@@ -14,6 +14,7 @@ import org.jkiss.dbeaver.model.struct.DBSTableColumn;
  */
 public abstract class AbstractTableConstraintColumn implements DBSTableConstraintColumn, IObjectImageProvider
 {
+    @Override
     public Image getObjectImage()
     {
         DBSTableColumn tableColumn = getAttribute();
@@ -23,6 +24,7 @@ public abstract class AbstractTableConstraintColumn implements DBSTableConstrain
         return null;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return getParentObject().isPersisted();

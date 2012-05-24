@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -25,6 +25,7 @@ public class DataSourcePropertyFilter implements IFilter {
         this.showExpensive = store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES);
     }
 
+    @Override
     public boolean select(Object toTest)
     {
         if (toTest instanceof ObjectPropertyDescriptor) {

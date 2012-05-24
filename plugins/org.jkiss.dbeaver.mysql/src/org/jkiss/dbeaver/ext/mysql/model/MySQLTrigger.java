@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -52,6 +52,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
         return body;
     }
 
+    @Override
     @Property(name = "Table", viewable = true, order = 4)
     public MySQLTable getTable()
     {
@@ -70,22 +71,26 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
         return sqlMode;
     }
 
+    @Override
     public DBSCatalog getParentObject()
     {
         return catalog;
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return catalog.getDataSource();
     }
 
+    @Override
     @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getBody();
     }
 
+    @Override
     public void setSourceText(String sourceText) throws DBException
     {
         body = sourceText;

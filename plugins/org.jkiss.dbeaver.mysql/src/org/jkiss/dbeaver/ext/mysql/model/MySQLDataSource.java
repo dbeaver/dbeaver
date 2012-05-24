@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -62,6 +62,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         dataTypeCache = new JDBCDataTypeCache(container);
     }
 
+    @Override
     protected Map<String, String> getInternalConnectionProperties()
     {
         return MySQLDataSourceProvider.getConnectionsProps();
@@ -87,6 +88,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return catalogCache.getCachedObject(name);
     }
 
+    @Override
     public void initialize(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -236,6 +238,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 */
     }
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -265,40 +268,47 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return catalog.getTable(monitor, tableName);
     }
 
+    @Override
     public Collection<? extends MySQLCatalog> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         return getCatalogs();
     }
 
+    @Override
     public MySQLCatalog getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
         return getCatalog(childName);
     }
 
+    @Override
     public Class<? extends MySQLCatalog> getChildType(DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLCatalog.class;
     }
 
+    @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         
     }
 
+    @Override
     public boolean supportsObjectSelect()
     {
         return true;
     }
 
+    @Override
     public MySQLCatalog getSelectedObject()
     {
         return getCatalog(activeCatalogName);
     }
 
+    @Override
     public void selectObject(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {
@@ -586,6 +596,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return super.createQueryTransformer(type);
     }
 
+    @Override
     public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
     {
         MySQLPlanAnalyser plan = new MySQLPlanAnalyser(this, query);
@@ -593,6 +604,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return plan;
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
@@ -603,15 +615,18 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return null;
     }
 
+    @Override
     public MySQLDataSource getDataSource() {
         return this;
     }
 
+    @Override
     public Collection<? extends DBSDataType> getDataTypes()
     {
         return dataTypeCache.getCachedObjects();
     }
 
+    @Override
     public DBSDataType getDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);

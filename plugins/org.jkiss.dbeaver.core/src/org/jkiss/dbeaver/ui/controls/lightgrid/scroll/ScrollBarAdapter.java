@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.scroll;
@@ -35,6 +35,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getIncrement()
     {
         return scrollBar.getIncrement();
@@ -43,6 +44,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getMaximum()
     {
         return scrollBar.getMaximum();
@@ -51,6 +53,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getMinimum()
     {
         return scrollBar.getMinimum();
@@ -59,6 +62,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getPageIncrement()
     {
         return scrollBar.getPageIncrement();
@@ -67,6 +71,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getSelection()
     {
         return scrollBar.getSelection();
@@ -75,6 +80,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getThumb()
     {
         return scrollBar.getThumb();
@@ -83,6 +89,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public boolean getVisible()
     {
         return scrollBar.getVisible();
@@ -91,6 +98,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setIncrement(int value)
     {
         scrollBar.setIncrement(value);
@@ -99,6 +107,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setMaximum(int value)
     {
         scrollBar.setMaximum(value);
@@ -107,6 +116,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setMinimum(int value)
     {
         scrollBar.setMinimum(value);
@@ -115,6 +125,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setPageIncrement(int value)
     {
         scrollBar.setPageIncrement(value);
@@ -123,6 +134,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setSelection(int selection)
     {
         scrollBar.setSelection(selection);
@@ -131,6 +143,7 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setThumb(int value)
     {
         scrollBar.setThumb(value);
@@ -139,7 +152,8 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
-    public void setValues(int selection, int minimum, int maximum, int thumb, int increment, 
+    @Override
+    public void setValues(int selection, int minimum, int maximum, int thumb, int increment,
                           int pageIncrement)
     {
         scrollBar.setValues(selection, minimum, maximum, thumb, increment, pageIncrement);
@@ -148,7 +162,8 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
-    public void setVisible(boolean visible)
+    p@Override
+     ublic void setVisible(boolean visible)
     {
         scrollBar.setVisible(visible);
     }
@@ -156,7 +171,8 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
-    public void handleMouseWheel(Event e)
+    @Override
+     ublic void handleMouseWheel(Event e)
     {
         //do nothing        
     }
@@ -164,7 +180,8 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
-    public void addSelectionListener(SelectionListener listener)
+    @Override
+     ublic void addSelectionListener(SelectionListener listener)
     {
         scrollBar.addSelectionListener(listener);
     }
@@ -172,7 +189,8 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
-    public void removeSelectionListener(SelectionListener listener)
+    @Override
+     ublic void removeSelectionListener(SelectionListener listener)
     {
         scrollBar.removeSelectionListener(listener);
     }

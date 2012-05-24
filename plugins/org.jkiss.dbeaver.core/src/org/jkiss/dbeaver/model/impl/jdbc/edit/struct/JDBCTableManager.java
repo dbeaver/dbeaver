@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
@@ -23,11 +23,13 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     extends JDBCStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
 {
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
+    @Override
     protected final IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectChangeCommand)
     {
         throw new IllegalStateException("makeObjectCreateActions should never be called in struct editor");

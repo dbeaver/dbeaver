@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -101,6 +101,7 @@ public class EditEventsDialog extends HelpEnabledDialog {
             UIUtils.createControlLabel(detailsGroup, CoreMessages.dialog_connection_events_label_command);
             commandText = new Text(detailsGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             commandText.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     updateEvent(true);

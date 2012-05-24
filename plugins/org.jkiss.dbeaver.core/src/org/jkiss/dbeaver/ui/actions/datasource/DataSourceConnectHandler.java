@@ -25,6 +25,7 @@ import org.jkiss.utils.CommonUtils;
 
 public class DataSourceConnectHandler extends DataSourceHandler
 {
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false, false);
@@ -85,16 +86,19 @@ public class DataSourceConnectHandler extends DataSourceHandler
             if (monitor != null) {
                 final IStatus result = connectJob.runSync(monitor);
                 jobChangeAdapter.done(new IJobChangeEvent() {
+                    @Override
                     public long getDelay()
                     {
                         return 0;
                     }
 
+                    @Override
                     public Job getJob()
                     {
                         return connectJob;
                     }
 
+                    @Override
                     public IStatus getResult()
                     {
                         return result;
@@ -126,6 +130,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
     {
         final boolean[] authResult = new boolean[] { false };
         Display.getDefault().syncExec(new Runnable() {
+            @Override
             public void run()
             {
                 ConnectionAuthDialog auth = new ConnectionAuthDialog(UIUtils.getActiveShell(), dataSourceContainer, handler);

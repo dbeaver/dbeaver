@@ -26,6 +26,7 @@ import java.sql.Types;
  */
 public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableColumn, MySQLTableBase> {
 
+    @Override
     public StringBuilder getNestedDeclaration(MySQLTableBase owner, DBECommandComposite<MySQLTableColumn, PropertyHandler> command)
     {
         StringBuilder decl = super.getNestedDeclaration(owner, command);
@@ -42,6 +43,7 @@ public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableCo
         return decl;
     }
 
+    @Override
     protected MySQLTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLTableBase parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$

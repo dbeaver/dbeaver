@@ -74,11 +74,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getContainer().getObject();
     }
 
+    @Override
     public String getFullQualifiedName()
     {
 /*
@@ -96,6 +98,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return DBUtils.getFullQualifiedName(getDataSource(), getCatalog(), getSchema(), this);
     }
 
+    @Override
     public boolean isView()
     {
         return this.isView;
@@ -125,6 +128,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return getContainer().getSchema();
     }
 
+    @Override
     public Collection<GenericTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -143,6 +147,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return columns;
     }
 
+    @Override
     public GenericTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
         throws DBException
     {
@@ -164,6 +169,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         this.columns = columns;
     }
 
+    @Override
     public List<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -190,6 +196,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return this.indexes;
     }
 
+    @Override
     public List<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -219,12 +226,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
     }
 
+    @Override
     public List<GenericTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         return loadReferences(monitor);
     }
 
+    @Override
     public List<GenericTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -244,6 +253,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return null;
     }
 
+    @Override
     @Property(name = "Table Description", viewable = true, order = 100)
     public String getDescription()
     {
@@ -278,6 +288,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
 */
 
+    @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;

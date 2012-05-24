@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -28,6 +28,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
             DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "PROCEDURE_TYPE")));
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -36,6 +37,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
             this);
     }
 
+    @Override
     public OracleSchema getSchema()
     {
         return getParentObject().getSchema();
@@ -52,6 +54,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
         this.overload = overload;
     }
 
+    @Override
     public String getUniqueName()
     {
         return overload == null || overload <= 1 ? getName() : getName() + "#" + overload;

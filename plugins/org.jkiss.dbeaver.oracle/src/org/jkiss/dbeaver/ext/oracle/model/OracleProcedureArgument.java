@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -70,31 +70,37 @@ public class OracleProcedureArgument implements DBSProcedureColumn
         this.dataPrecision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getProcedure();
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return procedure.getDataSource();
     }
 
+    @Override
     public OracleProcedureBase getProcedure()
     {
         return procedure;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return true;
     }
 
+    @Override
     @Property(name = "Name", viewable = true, order = 10)
     public String getName()
     {
@@ -116,6 +122,7 @@ public class OracleProcedureArgument implements DBSProcedureColumn
         return position;
     }
 
+    @Override
     @Property(name = "In/Out", viewable = true, order = 20)
     public DBSProcedureColumnType getColumnType()
     {
@@ -135,28 +142,33 @@ public class OracleProcedureArgument implements DBSProcedureColumn
         return false;
     }
 
+    @Override
     @Property(name = "Length", viewable = true, order = 30)
     public long getMaxLength()
     {
         return dataLength;
     }
 
+    @Override
     public String getTypeName()
     {
         return type.getName();
     }
 
+    @Override
     public int getTypeID()
     {
         return type.getValueType();
     }
 
+    @Override
     @Property(name = "Scale", viewable = true, order = 40)
     public int getScale()
     {
         return dataScale;
     }
 
+    @Override
     @Property(name = "Precision", viewable = true, order = 50)
     public int getPrecision()
     {

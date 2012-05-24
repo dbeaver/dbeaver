@@ -51,6 +51,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * @throws DBException on any DB error
      * @param monitor
      */
+    @Override
     Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
 
     /**
@@ -59,6 +60,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * @throws DBException on any DB error
      * @param monitor
      */
+    @Override
     Collection<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException;
 
     /**
@@ -67,6 +69,7 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
      * @throws DBException on any DB error
      * @param monitor
      */
+    @Override
     Collection<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException;
 
 }

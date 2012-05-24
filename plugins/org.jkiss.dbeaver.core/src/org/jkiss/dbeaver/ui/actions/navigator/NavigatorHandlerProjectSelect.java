@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
 
 public class NavigatorHandlerProjectSelect extends NavigatorHandlerObjectBase {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final DBeaverCore core = DBeaverCore.getInstance();
         final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());

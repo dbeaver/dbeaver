@@ -44,12 +44,14 @@ public abstract class JDBCTableForeignKey<
         return referencedKey.getTable();
     }
 
+    @Override
     @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
     public PRIMARY_KEY getReferencedConstraint()
     {
         return referencedKey;
     }
 
+    @Override
     @Property(name = "On Delete", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSConstraintModifyRule getDeleteRule()
     {
@@ -61,6 +63,7 @@ public abstract class JDBCTableForeignKey<
         this.deleteRule = deleteRule;
     }
 
+    @Override
     @Property(name = "On Update", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 6)
     public DBSConstraintModifyRule getUpdateRule()
     {
@@ -72,6 +75,7 @@ public abstract class JDBCTableForeignKey<
         this.updateRule = updateRule;
     }
 
+    @Override
     public TABLE getAssociatedEntity()
     {
         return getReferencedTable();
@@ -79,11 +83,13 @@ public abstract class JDBCTableForeignKey<
 
     public static class ConstraintModifyRuleListProvider implements IPropertyValueListProvider<JDBCTableForeignKey> {
 
+        @Override
         public boolean allowCustomValue()
         {
             return false;
         }
 
+        @Override
         public Object[] getPossibleValues(JDBCTableForeignKey foreignKey)
         {
             return new DBSConstraintModifyRule[] {

@@ -61,11 +61,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return super.getName();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
@@ -77,11 +79,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return getColumns(monitor);
     }
 
+    @Override
     public int getSupportedFeatures()
     {
         return DATA_COUNT | DATA_INSERT | DATA_UPDATE | DATA_DELETE | DATA_FILTER;
     }
 
+    @Override
     public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows)
         throws DBException
     {
@@ -156,6 +160,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    @Override
     public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
     {
         if (!(context instanceof JDBCExecutionContext)) {
@@ -199,6 +204,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    @Override
     public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver)
         throws DBException
     {
@@ -259,6 +265,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     }
 
+    @Override
     public long updateData(
         DBCExecutionContext context,
         List<DBDColumnValue> keyColumns,
@@ -314,6 +321,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    @Override
     public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns)
         throws DBException
     {

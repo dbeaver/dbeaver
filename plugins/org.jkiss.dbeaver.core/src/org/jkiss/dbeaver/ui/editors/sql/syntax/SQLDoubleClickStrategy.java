@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -36,6 +36,7 @@ public class SQLDoubleClickStrategy implements ITextDoubleClickStrategy {
      *
      * @see org.eclipse.jface.text.ITextDoubleClickStrategy#doubleClicked(ITextViewer)
      */
+    @Override
     public void doubleClicked(ITextViewer viewer) {
         // Get the viewer we are dealing with.
         fText = viewer;

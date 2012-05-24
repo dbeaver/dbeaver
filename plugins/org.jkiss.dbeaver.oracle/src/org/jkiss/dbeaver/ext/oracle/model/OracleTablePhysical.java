@@ -67,6 +67,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 //        return valid;
 //    }
 
+    @Override
     public Object getLazyReference(Object propertyId)
     {
         return tablespace;
@@ -79,6 +80,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
+    @Override
     @Association
     public List<OracleTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
@@ -163,6 +165,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return true;
     }
 
+    @Override
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TABLE);
@@ -239,6 +242,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     }
 
     public static class PartitionInfoValidator implements IPropertyCacheValidator<OracleTablePhysical> {
+        @Override
         public boolean isPropertyCached(OracleTablePhysical object, Object propertyId)
         {
             return object.partitioned && object.partitionInfo != null;

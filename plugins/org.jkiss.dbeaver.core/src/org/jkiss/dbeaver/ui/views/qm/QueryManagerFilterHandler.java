@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.qm;
@@ -12,6 +12,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 public class QueryManagerFilterHandler extends AbstractHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         QueryManagerView view = UIUtils.findView(HandlerUtil.getActiveWorkbenchWindow(event), QueryManagerView.class);
         if (view != null) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -35,11 +35,13 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
         extractAnnotations(source, this, getGetter().getReturnType(), children, filter);
     }
 
+    @Override
     public String getCategory()
     {
         return groupInfo.category();
     }
 
+    @Override
     public String getDescription()
     {
         return groupInfo.description();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.misc;
@@ -48,16 +48,19 @@ public class AboutBoxDialog extends Dialog
         return super.close();
     }
 
+    @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setText(CoreMessages.dialog_about_title);
     }
 
+    @Override
     protected boolean isResizable()
     {
         return true;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         Color background = JFaceColors.getBannerBackground(parent.getDisplay());
@@ -87,6 +90,7 @@ public class AboutBoxDialog extends Dialog
             @Override
             public void mouseDoubleClick(MouseEvent e) {
                 BusyIndicator.showWhile(getShell().getDisplay(), new Runnable() {
+                    @Override
                     public void run() {
                         // Do not create InstallationDialog directly
                         // but execute "org.eclipse.ui.help.installationDialog" command
@@ -132,6 +136,7 @@ public class AboutBoxDialog extends Dialog
         siteLink.setText(UIUtils.makeAnchor(product.getProperty(DBeaverConstants.PRODUCT_PROP_WEBSITE)));
         siteLink.setBackground(background);
         siteLink.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 Program.launch(e.text);
             }
@@ -144,6 +149,7 @@ public class AboutBoxDialog extends Dialog
         emailLink.setText(UIUtils.makeAnchor(product.getProperty(DBeaverConstants.PRODUCT_PROP_EMAIL)));
         emailLink.setBackground(background);
         emailLink.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e) {
                 Program.launch("mailto:" + e.text); //$NON-NLS-1$
             }

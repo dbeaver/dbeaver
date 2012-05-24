@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -21,6 +21,7 @@ public abstract class OraclePriv extends OracleObject<OracleGrantee> implements 
         this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION", "Y");
     }
 
+    @Override
     public String getName() {
         return super.getName();
     }

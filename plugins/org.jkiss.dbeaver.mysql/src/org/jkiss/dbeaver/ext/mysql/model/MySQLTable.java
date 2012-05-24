@@ -66,6 +66,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLTable> {
+        @Override
         public boolean isPropertyCached(MySQLTable object, Object propertyId)
         {
             return object.additionalInfo.loaded;
@@ -103,11 +104,13 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
+    @Override
     public boolean isView()
     {
         return false;
     }
 
+    @Override
     @Association
     public List<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
@@ -129,6 +132,7 @@ public class MySQLTable extends MySQLTableBase
         this.indexes = indexes;
     }
 
+    @Override
     @Association
     public List<MySQLTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
@@ -145,6 +149,7 @@ public class MySQLTable extends MySQLTableBase
         return DBUtils.findObject(getConstraints(monitor), ukName);
     }
 
+    @Override
     @Association
     public List<MySQLTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
@@ -152,6 +157,7 @@ public class MySQLTable extends MySQLTableBase
         return loadForeignKeys(monitor, true);
     }
 
+    @Override
     public List<MySQLTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -188,6 +194,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
 
+    @Override
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -488,16 +495,19 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
+    @Override
     public String getDescription()
     {
         return additionalInfo.description;
     }
 
     public static class EngineListProvider implements IPropertyValueListProvider<MySQLTable> {
+        @Override
         public boolean allowCustomValue()
         {
             return false;
         }
+        @Override
         public Object[] getPossibleValues(MySQLTable object)
         {
             final List<MySQLEngine> engines = new ArrayList<MySQLEngine>();
@@ -512,10 +522,12 @@ public class MySQLTable extends MySQLTableBase
     }
 
     public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTable> {
+        @Override
         public boolean allowCustomValue()
         {
             return false;
         }
+        @Override
         public Object[] getPossibleValues(MySQLTable object)
         {
             return object.getDataSource().getCharsets().toArray();
@@ -523,10 +535,12 @@ public class MySQLTable extends MySQLTableBase
     }
 
     public static class CollationListProvider implements IPropertyValueListProvider<MySQLTable> {
+        @Override
         public boolean allowCustomValue()
         {
             return false;
         }
+        @Override
         public Object[] getPossibleValues(MySQLTable object)
         {
             if (object.additionalInfo.charset == null) {

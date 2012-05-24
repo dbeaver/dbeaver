@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary;
@@ -38,6 +38,7 @@ public class DisplayedContent implements StyledTextContent {
         setDimensions(numberOfColumns, numberOfLines);
     }
 
+    @Override
     public void addTextChangeListener(TextChangeListener listener)
     {
         if (listener == null) throw new IllegalArgumentException("Cannot add a null listener");
@@ -45,18 +46,21 @@ public class DisplayedContent implements StyledTextContent {
         textListeners.add(listener);
     }
 
+    @Override
     public int getCharCount()
     {
         return data.length();
     }
 
 
+    @Override
     public String getLine(int lineIndex)
     {
         return getTextRange(lineIndex * numberOfColumns, numberOfColumns);
     }
 
 
+    @Override
     public int getLineAtOffset(int offset)
     {
         int result = offset / numberOfColumns;
@@ -67,22 +71,26 @@ public class DisplayedContent implements StyledTextContent {
     }
 
 
+    @Override
     public int getLineCount()
     {
         return (data.length() - 1) / numberOfColumns + 1;
     }
 
+    @Override
     public String getLineDelimiter()
     {
         return "";
     }
 
+    @Override
     public int getOffsetAtLine(int lineIndex)
     {
         return lineIndex * numberOfColumns;
     }
 
 
+    @Override
     public String getTextRange(int start, int length)
     {
         int dataLength = data.length();
@@ -93,6 +101,7 @@ public class DisplayedContent implements StyledTextContent {
     }
 
 
+    @Override
     public void removeTextChangeListener(TextChangeListener listener)
     {
         if (listener == null) throw new IllegalArgumentException("Cannot remove a null listener");
@@ -108,6 +117,7 @@ public class DisplayedContent implements StyledTextContent {
      *
      * @see org.eclipse.swt.custom.StyledTextContent#replaceTextRange(int, int, java.lang.String)
      */
+    @Override
     public void replaceTextRange(int start, int replaceLength, String text)
     {
         int length = text.length();
@@ -130,6 +140,7 @@ public class DisplayedContent implements StyledTextContent {
     /**
      * @see org.eclipse.swt.custom.StyledTextContent#setText(java.lang.String)
      */
+    @Override
     public void setText(String text)
     {
         data.setLength(0);

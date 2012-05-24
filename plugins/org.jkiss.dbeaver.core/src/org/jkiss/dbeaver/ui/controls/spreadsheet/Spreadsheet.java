@@ -173,6 +173,7 @@ public class Spreadsheet extends Composite implements Listener {
         this.grid.redraw();
     }
 
+    @Override
     public void setFont(Font font)
     {
         grid.setFont(font);
@@ -299,6 +300,7 @@ public class Spreadsheet extends Composite implements Listener {
         grid.addListener(LightGrid.Event_ChangeSort, this);
         //Event_ChangeSort
         gridSelectionListener = new SelectionListener() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 //Integer row = (Integer) e.data;
@@ -314,6 +316,7 @@ public class Spreadsheet extends Composite implements Listener {
                 //}
             }
 
+            @Override
             public void widgetDefaultSelected(SelectionEvent e)
             {
             }
@@ -338,6 +341,7 @@ public class Spreadsheet extends Composite implements Listener {
             final IFocusService focusService = (IFocusService) site.getService(IFocusService.class);
             focusService.addFocusTracker(grid, SPREADSHEET_CONTROL_ID);
             grid.addDisposeListener(new DisposeListener() {
+                @Override
                 public void widgetDisposed(DisposeEvent e) {
                     focusService.removeFocusTracker(grid);
                 }
@@ -370,6 +374,7 @@ public class Spreadsheet extends Composite implements Listener {
 */
 
 
+    @Override
     public void dispose()
     {
         this.clearGrid();
@@ -379,6 +384,7 @@ public class Spreadsheet extends Composite implements Listener {
         super.dispose();
     }
 
+    @Override
     public void handleEvent(Event event)
     {
         switch (event.type) {
@@ -555,6 +561,7 @@ public class Spreadsheet extends Composite implements Listener {
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(grid);
         menuMgr.addMenuListener(new IMenuListener() {
+            @Override
             public void menuAboutToShow(IMenuManager manager)
             {
 /*

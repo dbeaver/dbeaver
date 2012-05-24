@@ -40,12 +40,14 @@ public class AttributeFigure extends Figure
 	class ColumnFigureBorder extends AbstractBorder
 	{
 
-		public Insets getInsets(IFigure figure)
+		@Override
+        public Insets getInsets(IFigure figure)
 		{
 			return new Insets(5, 3, 3, 1);
 		}
 
-		public void paint(IFigure figure, Graphics graphics, Insets insets)
+		@Override
+        public void paint(IFigure figure, Graphics graphics, Insets insets)
 		{
 			graphics.drawLine(getPaintRectangle(figure, insets).getTopLeft(), tempRect.getTopRight());
 		}

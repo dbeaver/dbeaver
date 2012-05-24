@@ -34,7 +34,8 @@ public class AssociationDeleteCommand extends Command
 	/**
 	 * Removes the relationship
 	 */
-	public void execute()
+	@Override
+    public void execute()
 	{
         primaryKeyTarget.removePrimaryKeyRelationship(relationship, true);
 		foreignKeySource.removeForeignKeyRelationship(relationship, true);
@@ -45,7 +46,8 @@ public class AssociationDeleteCommand extends Command
 	/**
 	 * Restores the relationship
 	 */
-	public void undo()
+	@Override
+    public void undo()
 	{
 		relationship.setForeignKeyEntity(foreignKeySource);
 		relationship.setForeignKeyEntity(primaryKeyTarget);

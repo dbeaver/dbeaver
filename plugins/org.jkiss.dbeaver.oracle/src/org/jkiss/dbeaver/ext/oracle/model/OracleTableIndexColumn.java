@@ -37,45 +37,53 @@ public class OracleTableIndexColumn extends AbstractTableIndexColumn
         this.ascending = source.ascending;
     }
 
+    @Override
     public OracleTableIndex getIndex()
     {
         return index;
     }
 
     //@Property(name = "Name", viewable = true, order = 1)
+    @Override
     public String getName()
     {
         return tableColumn.getName();
     }
 
+    @Override
     @Property(id = "name", name = "Column", viewable = true, order = 1)
     public OracleTableColumn getTableColumn()
     {
         return tableColumn;
     }
 
+    @Override
     @Property(name = "Position", viewable = false, order = 2)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
     }
 
+    @Override
     @Property(name = "Ascending", viewable = true, order = 3)
     public boolean isAscending()
     {
         return ascending;
     }
 
+    @Override
     public String getDescription()
     {
         return tableColumn.getDescription();
     }
 
+    @Override
     public OracleTableIndex getParentObject()
     {
         return index;
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return index.getDataSource();

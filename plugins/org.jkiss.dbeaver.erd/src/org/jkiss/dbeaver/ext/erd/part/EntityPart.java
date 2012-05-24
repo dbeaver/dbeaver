@@ -59,7 +59,8 @@ public class EntityPart extends NodePart
 	/**
 	 * @return the children Model objects as a new ArrayList
 	 */
-	protected List<ERDEntityAttribute> getModelChildren()
+	@Override
+    protected List<ERDEntityAttribute> getModelChildren()
 	{
 		return getTable().getColumns();
 	}
@@ -67,7 +68,8 @@ public class EntityPart extends NodePart
 	/**
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelSourceConnections()
 	 */
-	protected List<ERDAssociation> getModelSourceConnections()
+	@Override
+    protected List<ERDAssociation> getModelSourceConnections()
 	{
 		return getTable().getForeignKeyRelationships();
 	}
@@ -75,7 +77,8 @@ public class EntityPart extends NodePart
 	/**
 	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelTargetConnections()
 	 */
-	protected List<ERDAssociation> getModelTargetConnections()
+	@Override
+    protected List<ERDAssociation> getModelTargetConnections()
 	{
 		return getTable().getPrimaryKeyRelationships();
 	}
@@ -85,7 +88,8 @@ public class EntityPart extends NodePart
 	/**
 	 * Creates edit policies and associates these with roles
 	 */
-	protected void createEditPolicies()
+	@Override
+    protected void createEditPolicies()
 	{
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
@@ -102,7 +106,8 @@ public class EntityPart extends NodePart
 	/**
 	 * @see org.eclipse.gef.EditPart#performRequest(org.eclipse.gef.Request)
 	 */
-	public void performRequest(Request request)
+	@Override
+    public void performRequest(Request request)
 	{
 		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
 		{
@@ -178,7 +183,8 @@ public class EntityPart extends NodePart
 	/**
 	 * Handles change in name when committing a direct edit
 	 */
-	protected void commitNameChange(PropertyChangeEvent evt)
+	@Override
+    protected void commitNameChange(PropertyChangeEvent evt)
 	{
 		EntityFigure entityFigure = (EntityFigure) getFigure();
 		EditableLabel label = entityFigure.getNameLabel();
@@ -192,7 +198,8 @@ public class EntityPart extends NodePart
 	/**
 	 * Creates a figure which represents the table
 	 */
-	protected IFigure createFigure()
+	@Override
+    protected IFigure createFigure()
 	{
         final EntityFigure figure = new EntityFigure(getTable());
         final EntityDiagram diagram = ((DiagramPart) getParent()).getDiagram();
@@ -207,7 +214,8 @@ public class EntityPart extends NodePart
 	/**
 	 * Reset the layout constraint, and revalidate the content pane
 	 */
-	protected void refreshVisuals()
+	@Override
+    protected void refreshVisuals()
 	{
 		EntityFigure entityFigure = (EntityFigure) getFigure();
 		Point location = entityFigure.getLocation();
@@ -219,30 +227,35 @@ public class EntityPart extends NodePart
 	/**
 	 * @return the Content pane for adding or removing child figures
 	 */
-	public IFigure getContentPane()
+	@Override
+    public IFigure getContentPane()
 	{
 		EntityFigure figure = (EntityFigure) getFigure();
 		return figure.getColumnsFigure();
 	}
 
-	public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection)
+	@Override
+    public ConnectionAnchor getSourceConnectionAnchor(ConnectionEditPart connection)
 	{
 		return new ChopboxAnchor(getFigure());
 	}
 
-	public ConnectionAnchor getSourceConnectionAnchor(Request request)
+	@Override
+    public ConnectionAnchor getSourceConnectionAnchor(Request request)
 	{
         return new ChopboxAnchor(getFigure());
 		//return new TopAnchor(getFigure());
 	}
 
-	public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection)
+	@Override
+    public ConnectionAnchor getTargetConnectionAnchor(ConnectionEditPart connection)
 	{
         return new ChopboxAnchor(getFigure());
 		//return new BottomAnchor(getFigure());
 	}
 
-	public ConnectionAnchor getTargetConnectionAnchor(Request request)
+	@Override
+    public ConnectionAnchor getTargetConnectionAnchor(Request request)
 	{
 		return new ChopboxAnchor(getFigure());
 	}
@@ -250,7 +263,8 @@ public class EntityPart extends NodePart
 	/**
 	 * Sets the width of the line when selected
 	 */
-	public void setSelected(int value)
+	@Override
+    public void setSelected(int value)
 	{
 		super.setSelected(value);
 		EntityFigure entityFigure = (EntityFigure) getFigure();
@@ -271,6 +285,7 @@ public class EntityPart extends NodePart
         return null;
     }
 
+    @Override
     public ERDGraphicalViewer getViewer() {
         return (ERDGraphicalViewer)super.getViewer();
     }

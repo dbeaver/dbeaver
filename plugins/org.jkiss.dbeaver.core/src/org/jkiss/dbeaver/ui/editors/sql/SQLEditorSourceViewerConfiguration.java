@@ -91,6 +91,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         this.hyperlinkDetector = hyperlinkDetector;
     }
 
+    @Override
     public IUndoManager getUndoManager(ISourceViewer sourceViewer) {
         return new TextViewerUndoManager(200);
     }
@@ -102,6 +103,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getAnnotationHover(org.eclipse.jface.text.source.ISourceViewer)
      */
+    @Override
     public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer)
     {
         return new SQLAnnotationHover(getSQLEditor());
@@ -111,6 +113,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      * @see SourceViewerConfiguration#getAutoIndentStrategy(ISourceViewer, String)
      */
 
+    @Override
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType)
     {
         if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
@@ -129,6 +132,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getConfiguredDocumentPartitioning(org.eclipse.jface.text.source.ISourceViewer)
      */
+    @Override
     public String getConfiguredDocumentPartitioning(ISourceViewer sourceViewer)
     {
         return SQLPartitionScanner.SQL_PARTITIONING;
@@ -139,6 +143,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getContentAssistant(ISourceViewer)
      */
+    @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
@@ -212,9 +217,11 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     *
     */
 
+    @Override
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer)
     {
         return new IInformationControlCreator() {
+            @Override
             public IInformationControl createInformationControl(Shell parent)
             {
                 return new DefaultInformationControl(parent, true);
@@ -227,6 +234,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getContentFormatter(ISourceViewer)
      */
+    @Override
     public IContentFormatter getContentFormatter(ISourceViewer sourceViewer)
     {
         ContentFormatter formatter = new ContentFormatter();
@@ -249,6 +257,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getDoubleClickStrategy(ISourceViewer, String)
      */
+    @Override
     public ITextDoubleClickStrategy getDoubleClickStrategy(ISourceViewer sourceViewer, String contentType)
     {
         return new SQLDoubleClickStrategy();
@@ -260,6 +269,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getPresentationReconciler(ISourceViewer)
      */
+    @Override
     public IPresentationReconciler getPresentationReconciler(ISourceViewer sourceViewer)
     {
 
@@ -322,6 +332,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      *
      * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getTextHover(org.eclipse.jface.text.source.ISourceViewer, java.lang.String)
      */
+    @Override
     public ITextHover getTextHover(ISourceViewer sourceViewer, String contentType)
     {
         return new BestMatchHover(this.getSQLEditor());
@@ -339,6 +350,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         }
     }*/
 
+    @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
     {
         return SQLPartitionScanner.SQL_PARTITION_TYPES;
@@ -349,6 +361,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
 	 *  @since 2.0
 	 */
 
+    @Override
     public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType)
     {
         return new String[]
@@ -358,6 +371,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
             ; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    @Override
     public IInformationPresenter getInformationPresenter(ISourceViewer sourceViewer)
     {
         InformationPresenter presenter = new InformationPresenter(getInformationControlCreator(sourceViewer));
@@ -374,6 +388,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         return presenter;
     }
 
+    @Override
     public IHyperlinkPresenter getHyperlinkPresenter(ISourceViewer sourceViewer)
     {
         return new MultipleHyperlinkPresenter(new RGB(0, 0, 255)) {
@@ -381,6 +396,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         };
     }
 
+    @Override
     public IHyperlinkDetector[] getHyperlinkDetectors(ISourceViewer sourceViewer)
     {
         if (sourceViewer == null) {

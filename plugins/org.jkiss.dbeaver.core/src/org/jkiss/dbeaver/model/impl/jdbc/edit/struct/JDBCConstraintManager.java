@@ -21,6 +21,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCTableConstra
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
@@ -49,6 +50,7 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCTableConstra
         };
     }
 
+    @Override
     public StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
     {
         OBJECT_TYPE constraint = command.getObject();

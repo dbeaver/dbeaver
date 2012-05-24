@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.content;
@@ -42,6 +42,7 @@ import java.util.List;
  */
 public class ContentEditor extends MultiPageEditorPart implements IDataSourceProvider, DBDValueEditor, IResourceChangeListener
 {
+    @Override
     public ContentEditorInput getEditorInput()
     {
         return (ContentEditorInput)super.getEditorInput();
@@ -79,6 +80,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
 
     static final Log log = LogFactory.getLog(ContentEditor.class);
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return getEditorInput().getDataSource();
@@ -105,6 +107,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
             this.editorParts = editorParts;
         }
 
+        @Override
         public void run(IProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
@@ -140,6 +143,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         return null;
     }
 
+    @Override
     public void doSave(final IProgressMonitor monitor)
     {
         if (!isDirty()) {
@@ -148,6 +152,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         }
         // Execute save in UI thread
         getSite().getShell().getDisplay().syncExec(new Runnable() {
+            @Override
             public void run()
             {
                 try {
@@ -205,6 +210,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
 
     }
 
+    @Override
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
@@ -231,6 +237,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
     }
 
+    @Override
     public void dispose()
     {
         this.partsLoaded = true;
@@ -251,6 +258,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         super.dispose();
     }
 
+    @Override
     public boolean isDirty()
     {
         if (dirty) {
@@ -264,6 +272,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         return false;
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return false;
@@ -275,6 +284,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         return new ContentEditorSite(this, editor);
     }
 
+    @Override
     protected void createPages() {
         DBDContent content = getContent();
         if (content == null) {
@@ -339,6 +349,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         this.partsLoaded = true;
     }
 
+    @Override
     public void removePage(int pageIndex) {
         for (ContentPartInfo contentPart : contentParts) {
             if (contentPart.index == pageIndex) {
@@ -350,6 +361,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         super.removePage(pageIndex);
     }
 
+    @Override
     protected Composite createPageContainer(Composite parent)
     {
         Composite panel = new Composite(parent, SWT.NONE);
@@ -404,17 +416,20 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         }
     }
 
+    @Override
     public DBDValueController getValueController()
     {
         ContentEditorInput input = getEditorInput();
         return input == null ? null : input.getValueController();
     }
 
+    @Override
     public void showValueEditor()
     {
         this.getEditorSite().getWorkbenchWindow().getActivePage().activate(this);
     }
 
+    @Override
     public void closeValueEditor()
     {
         IWorkbenchPage workbenchPage = this.getEditorSite().getWorkbenchWindow().getActivePage();
@@ -430,10 +445,12 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         }
     }
 
+    @Override
     public void setFocus()
     {
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event)
     {
         if (!partsLoaded || saveInProgress) {
@@ -454,6 +471,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
             // Content was changed somehow so mark editor as dirty
             dirty = true;
             getSite().getShell().getDisplay().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     firePropertyChange(PROP_DIRTY);

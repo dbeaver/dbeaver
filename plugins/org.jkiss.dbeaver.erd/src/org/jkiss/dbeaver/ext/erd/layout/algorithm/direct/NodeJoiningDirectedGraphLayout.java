@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -31,7 +31,8 @@ public class NodeJoiningDirectedGraphLayout extends DirectedGraphLayout
     /**
 	 * @param graph public method called to handle layout task
 	 */
-	public void visit(DirectedGraph graph)
+	@Override
+    public void visit(DirectedGraph graph)
 	{
 		//add dummy edges so that graph does not fall over because some nodes
 		// are not in relationships

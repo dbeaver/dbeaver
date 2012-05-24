@@ -98,6 +98,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         this.defaultCategory = category;
     }
 
+    @Override
     protected Control createContents(Composite parent)
     {
         Control ctl = super.createContents(parent);
@@ -105,6 +106,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         return ctl;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         if (driver == null) {
@@ -137,6 +139,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             driverNameText.setText(CommonUtils.getString(driver.getName()));
             driverNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverNameText.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     onChangeProperty();
@@ -169,6 +172,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name, CommonUtils.getString(driver.getDriverClassName()), SWT.BORDER | advStyle);
             driverClassText.addModifyListener(new ModifyListener()
             {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     onChangeProperty();
@@ -178,6 +182,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.getString(driver.getSampleURL()), SWT.BORDER | advStyle);
             driverURLText.addModifyListener(new ModifyListener()
             {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     onChangeProperty();
@@ -193,6 +198,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             driverPortText.setLayoutData(new GridData(SWT.NONE));
             driverPortText.addModifyListener(new ModifyListener()
             {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     onChangeProperty();
@@ -206,6 +212,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 Link urlLabel = new Link(ph, SWT.NONE);
                 urlLabel.setText("<a>" + (driver.getWebURL().length() > 32 ? CommonUtils.truncateString(driver.getWebURL(), 32) + "..." : driver.getWebURL()) + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
                 urlLabel.addSelectionListener(new SelectionAdapter() {
+                    @Override
                     public void widgetSelected(SelectionEvent e)
                     {
                         Program.launch(driver.getWebURL());
@@ -295,6 +302,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
             libTable.getControl().addListener(SWT.Selection, new Listener()
             {
+                @Override
                 public void handleEvent(Event event)
                 {
                     changeLibSelection();
@@ -337,6 +345,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             findClassButton.setText(CoreMessages.dialog_edit_driver_button_bind_class);
             findClassButton.addListener(SWT.Selection, new Listener()
             {
+                @Override
                 public void handleEvent(Event event)
                 {
                     try {
@@ -368,6 +377,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         newButton.addListener(SWT.Selection, new Listener()
         {
+            @Override
             public void handleEvent(Event event)
             {
                 FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
@@ -399,6 +409,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         newDirButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         newDirButton.addListener(SWT.Selection, new Listener()
         {
+            @Override
             public void handleEvent(Event event)
             {
                 DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.MULTI);
@@ -421,6 +432,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         deleteButton.addListener(SWT.Selection, new Listener()
         {
+            @Override
             public void handleEvent(Event event)
             {
                 libList.remove(getSelectedLibrary());
@@ -435,6 +447,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         upButton.setEnabled(false);
         upButton.addListener(SWT.Selection, new Listener()
         {
+            @Override
             public void handleEvent(Event event)
             {
                 DriverFileDescriptor selectedLib = getSelectedLibrary();
@@ -451,6 +464,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         downButton.setEnabled(false);
         downButton.addListener(SWT.Selection, new Listener()
         {
+            @Override
             public void handleEvent(Event event)
             {
                 DriverFileDescriptor selectedLib = getSelectedLibrary();
@@ -466,6 +480,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         cpButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cpButton.addListener(SWT.Selection, new Listener()
         {
+            @Override
             public void handleEvent(Event event)
             {
                 ViewClasspathDialog cpDialog = new ViewClasspathDialog(getShell());
@@ -624,6 +639,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         }
     }
 
+    @Override
     protected void okPressed()
     {
         // Set props
@@ -680,6 +696,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             return driverClassNames;
         }
 
+        @Override
         public void run(IProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {

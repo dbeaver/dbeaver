@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.edit;
@@ -44,11 +44,13 @@ public class DBECommandContextImpl implements DBECommandContext {
         this.dataSourceContainer = dataSourceContainer;
     }
 
+    @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
         return dataSourceContainer;
     }
 
+    @Override
     public boolean isDirty()
     {
         synchronized (commands) {
@@ -56,6 +58,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
         if (!dataSourceContainer.isConnected()) {
             throw new DBException("Not connected to database");
@@ -186,6 +189,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public void resetChanges()
     {
         synchronized (commands) {
@@ -206,6 +210,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public Collection<? extends DBECommand<?>> getFinalCommands()
     {
         synchronized (commands) {
@@ -224,6 +229,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public Collection<? extends DBECommand<?>> getUndoCommands()
     {
         synchronized (commands) {
@@ -243,6 +249,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public Collection<DBPObject> getEditedObjects()
     {
         final List<CommandQueue> queues = getCommandQueues();
@@ -253,6 +260,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         return result;
     }
 
+    @Override
     public void addCommand(
         DBECommand command,
         DBECommandReflector reflector)
@@ -260,6 +268,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         addCommand(command, reflector, false);
     }
 
+    @Override
     public void addCommand(DBECommand command, DBECommandReflector reflector, boolean execute)
     {
         synchronized (commands) {
@@ -304,6 +313,7 @@ public class DBECommandContextImpl implements DBECommandContext {
     }
 */
 
+    @Override
     public void removeCommand(DBECommand<?> command)
     {
         synchronized (commands) {
@@ -319,6 +329,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         fireCommandChange(command);
     }
 
+    @Override
     public void updateCommand(DBECommand<?> command, DBECommandReflector commandReflector)
     {
         synchronized (commands) {
@@ -340,6 +351,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         fireCommandChange(command);
     }
 
+    @Override
     public void addCommandListener(DBECommandListener listener)
     {
         synchronized (listeners) {
@@ -347,6 +359,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public void removeCommandListener(DBECommandListener listener)
     {
         synchronized (listeners) {
@@ -354,6 +367,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public Map<Object, Object> getUserParams()
     {
         return userParams;
@@ -373,6 +387,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public DBECommand getUndoCommand()
     {
         synchronized (commands) {
@@ -389,6 +404,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public DBECommand getRedoCommand()
     {
         synchronized (commands) {
@@ -403,6 +419,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public void undoCommand()
     {
         if (getUndoCommand() == null) {
@@ -434,6 +451,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
     }
 
+    @Override
     public void redoCommand()
     {
         if (getRedoCommand() == null) {
@@ -674,21 +692,25 @@ public class DBECommandContextImpl implements DBECommandContext {
             commands.add(info);
         }
 
+        @Override
         public DBPObject getObject()
         {
             return object;
         }
 
+        @Override
         public DBECommandQueue getParentQueue()
         {
             return parent;
         }
 
+        @Override
         public Collection<DBECommandQueue> getSubQueues()
         {
             return subQueues;
         }
 
+        @Override
         public boolean add(DBECommand dbeCommand)
         {
             return commands.add(new CommandInfo(dbeCommand, null));
@@ -699,17 +721,20 @@ public class DBECommandContextImpl implements DBECommandContext {
         {
             return new Iterator<DBECommand<DBPObject>>() {
                 private int index = -1;
+                @Override
                 public boolean hasNext()
                 {
                     return index < commands.size() - 1;
                 }
 
+                @Override
                 public DBECommand<DBPObject> next()
                 {
                     index++;
                     return (DBECommand<DBPObject>) commands.get(index).command;
                 }
 
+                @Override
                 public void remove()
                 {
                     commands.remove(index);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -104,76 +104,91 @@ public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyVal
         this.editable = editable;
     }
 
+    @Override
     public CellEditor createPropertyEditor(Composite parent)
     {
         return ObjectPropertyDescriptor.createCellEditor(parent, null, this);
     }
 
+    @Override
     public String getCategory()
     {
         return category;
     }
 
+    @Override
     public Object getId()
     {
         return id;
     }
 
+    @Override
     public ILabelProvider getLabelProvider()
     {
         return null;
     }
 
+    @Override
     public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
     {
         return category.equals(anotherProperty.getCategory()) && id.equals(anotherProperty.getId());
     }
 
+    @Override
     public String getDisplayName()
     {
         return name;
     }
 
+    @Override
     public String[] getFilterFlags()
     {
         return new String[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
+    @Override
     public Object getHelpContextIds()
     {
         return null;
     }
 
+    @Override
     public String getDescription()
     {
         return description;
     }
 
+    @Override
     public Object getDefaultValue()
     {
         return defaultValue;
     }
 
+    @Override
     public boolean isEditable(Object object)
     {
         return editable;
     }
 
+    @Override
     public Class<?> getDataType()
     {
         return type;
     }
 
+    @Override
     public boolean isRequired()
     {
         return required;
     }
 
+    @Override
     public boolean allowCustomValue()
     {
         return CommonUtils.isEmpty(validValues);
     }
 
+    @Override
     public Object[] getPossibleValues(Object object)
     {
         return validValues;

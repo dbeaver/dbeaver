@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.text;
@@ -106,6 +106,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
         return !isReadOnly(element);
     }
 
+    @Override
     public boolean isDeleted(Object element)
     {
         IStorage storage = getStorageFromInput(element);
@@ -246,6 +247,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
         refreshFile(file, getProgressMonitor());
     }
 
+    @Override
     protected ElementInfo createElementInfo(Object element) throws CoreException
     {
         if (element instanceof IEditorInput) {
@@ -294,6 +296,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
         return super.createElementInfo(element);
     }
 
+    @Override
     protected void disposeElementInfo(Object element, ElementInfo info)
     {
         if (info instanceof FileInfo) {
@@ -417,6 +420,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
         protected abstract void execute(IEditorInput input) throws Exception;
 
+        @Override
         public void run()
         {
 
@@ -479,6 +483,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
             isInstalled = false;
         }
 
+        @Override
         public void resourceChanged(IResourceChangeEvent e)
         {
             IResourceDelta delta = e.getDelta();
@@ -491,6 +496,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
             }
         }
 
+        @Override
         public boolean visit(IResourceDelta delta) throws CoreException
         {
             if (delta == null) {
@@ -515,6 +521,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                     boolean isSynchronized = computeModificationStamp(getFile()) == info.modificationStamp;
                     if ((IResourceDelta.ENCODING & delta.getFlags()) != 0 && isSynchronized) {
                         runnable = new SafeChange(fileEditorInput) {
+                            @Override
                             protected void execute(IEditorInput input) throws Exception
                             {
                                 handleElementContentChanged(input);
@@ -524,6 +531,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
                     if (runnable == null && (IResourceDelta.CONTENT & delta.getFlags()) != 0 && !isSynchronized) {
                         runnable = new SafeChange(fileEditorInput) {
+                            @Override
                             protected void execute(IEditorInput input) throws Exception
                             {
                                 handleElementContentChanged(input);
@@ -536,6 +544,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                     if ((IResourceDelta.MOVED_TO & delta.getFlags()) != 0) {
                         final IPath path = delta.getMovedToPath();
                         runnable = new SafeChange(fileEditorInput) {
+                            @Override
                             protected void execute(IEditorInput input) throws Exception
                             {
                                 handleElementMoved(input, path);
@@ -545,6 +554,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                         info = (FileInfo) getElementInfo(fileEditorInput);
                         if (info != null && !info.fCanBeSaved) {
                             runnable = new SafeChange(fileEditorInput) {
+                                @Override
                                 protected void execute(IEditorInput input) throws Exception
                                 {
                                     handleElementDeleted(input);

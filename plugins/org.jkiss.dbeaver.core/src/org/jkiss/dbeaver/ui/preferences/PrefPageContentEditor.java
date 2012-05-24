@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.preferences;
@@ -31,6 +31,7 @@ public class PrefPageContentEditor extends TargetPrefPage
         super();
     }
 
+    @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
@@ -42,11 +43,13 @@ public class PrefPageContentEditor extends TargetPrefPage
             ;
     }
 
+    @Override
     protected boolean supportsDataSourceSpecificOptions()
     {
         return true;
     }
 
+    @Override
     protected Control createPreferenceContent(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -73,6 +76,7 @@ public class PrefPageContentEditor extends TargetPrefPage
         return composite;
     }
 
+    @Override
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
@@ -85,6 +89,7 @@ public class PrefPageContentEditor extends TargetPrefPage
         }
     }
 
+    @Override
     protected void savePreferences(IPreferenceStore store)
     {
         try {
@@ -98,6 +103,7 @@ public class PrefPageContentEditor extends TargetPrefPage
         RuntimeUtils.savePreferenceStore(store);
     }
 
+    @Override
     protected void clearPreferences(IPreferenceStore store)
     {
         store.setToDefault(PrefConstants.RS_EDIT_MAX_TEXT_SIZE);
@@ -106,11 +112,13 @@ public class PrefPageContentEditor extends TargetPrefPage
         store.setToDefault(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY);
     }
 
+    @Override
     public void applyData(Object data)
     {
         super.applyData(data);
     }
 
+    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

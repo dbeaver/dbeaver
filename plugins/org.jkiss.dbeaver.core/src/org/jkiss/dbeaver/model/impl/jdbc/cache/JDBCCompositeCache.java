@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
@@ -83,12 +83,14 @@ public abstract class JDBCCompositeCache<
         }
     }
 
+    @Override
     public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
         return getObjects(monitor, owner, null);
     }
 
+    @Override
     public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String objectName)
         throws DBException
     {

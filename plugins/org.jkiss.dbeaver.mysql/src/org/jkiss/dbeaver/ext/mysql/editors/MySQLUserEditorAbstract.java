@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.editors;
@@ -28,6 +28,7 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
     {
         LoadingUtils.createService(
             new DatabaseLoadService<List<MySQLGrant>>(MySQLMessages.editors_user_editor_abstract_load_grants, getDatabaseObject().getDataSource()) {
+                @Override
                 public java.util.List<MySQLGrant> evaluate() throws InvocationTargetException, InterruptedException
                 {
                     try {
@@ -60,6 +61,7 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
 
         public ProgressVisualizer<List<MySQLGrant>> createGrantsLoadVisualizer() {
             return new ProgressVisualizer<List<MySQLGrant>>() {
+                @Override
                 public void completeLoading(List<MySQLGrant> grants) {
                     super.completeLoading(grants);
                     processGrants(grants);

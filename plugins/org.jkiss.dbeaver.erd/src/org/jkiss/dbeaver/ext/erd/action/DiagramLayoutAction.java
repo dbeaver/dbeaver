@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -27,7 +27,8 @@ public class DiagramLayoutAction extends Action
 		this.editor = editor;
 	}
 
-	public void run()
+	@Override
+    public void run()
 	{
         //editor.get
         editor.getDiagramPart().rearrangeDiagram();

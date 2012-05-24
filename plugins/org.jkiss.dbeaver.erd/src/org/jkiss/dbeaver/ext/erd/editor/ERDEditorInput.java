@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -27,11 +27,13 @@ public class ERDEditorInput extends ProjectFileEditorInput implements IPersistab
         this.diagramName = file.getFullPath().removeFileExtension().lastSegment();
     }
 
+    @Override
     public String getName()
     {
         return diagramName;
     }
 
+    @Override
     public String getToolTipText()
     {
         return "ER Diagram";
@@ -43,16 +45,19 @@ public class ERDEditorInput extends ProjectFileEditorInput implements IPersistab
         return this;
     }
 
+    @Override
     public String getFactoryId()
     {
         return ERDEditorInputFactory.getFactoryId();
     }
 
-    public void saveState(IMemento memento) 
+    @Override
+    public void saveState(IMemento memento)
     {
         ERDEditorInputFactory.saveState(memento, this);
     }
 
+    @Override
     public boolean isAutoSaveEnabled()
     {
         return false;

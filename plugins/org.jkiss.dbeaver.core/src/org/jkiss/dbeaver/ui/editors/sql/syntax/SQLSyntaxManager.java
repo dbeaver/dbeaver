@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
@@ -196,11 +196,13 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         {
             // Delimiter rule
             WordRule delimRule = new WordRule(new IWordDetector() {
+                @Override
                 public boolean isWordStart(char c)
                 {
                     return statementDelimiter.charAt(0) == c;
                 }
 
+                @Override
                 public boolean isWordPart(char c)
                 {
                     return statementDelimiter.indexOf(c) != -1;
@@ -215,6 +217,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             IRule parameterRule = new IRule() {
                 private StringBuilder buffer = new StringBuilder();
 
+                @Override
                 public IToken evaluate(ICharacterScanner scanner)
                 {
                     int column = scanner.getColumn();

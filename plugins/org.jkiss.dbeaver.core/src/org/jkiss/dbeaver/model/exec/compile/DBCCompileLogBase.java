@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.exec.compile;
@@ -30,16 +30,19 @@ public class DBCCompileLogBase extends SimpleLog implements DBCCompileLog {
         }
     }
 
+    @Override
     public Throwable getError()
     {
         return error;
     }
 
+    @Override
     public Collection<DBCCompileError> getErrorStack()
     {
         return errorStack;
     }
 
+    @Override
     public void clearLog()
     {
         error = null;

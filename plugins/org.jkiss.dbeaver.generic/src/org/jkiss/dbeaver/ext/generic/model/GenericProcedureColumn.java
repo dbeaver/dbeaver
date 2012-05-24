@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -45,27 +45,32 @@ public class GenericProcedureColumn extends JDBCColumn implements DBSProcedureCo
         this.columnType = columnType;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getProcedure();
     }
 
+    @Override
     public GenericDataSource getDataSource()
     {
         return procedure.getDataSource();
     }
 
+    @Override
     public GenericProcedure getProcedure()
     {
         return procedure;
     }
 
+    @Override
     @Property(name = "Column Type", viewable = true, order = 10)
     public DBSProcedureColumnType getColumnType()
     {
         return columnType;
     }
 
+    @Override
     public String getDescription()
     {
         return remarks;

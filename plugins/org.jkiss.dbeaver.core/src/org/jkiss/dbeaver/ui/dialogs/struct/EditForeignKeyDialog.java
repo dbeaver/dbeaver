@@ -139,6 +139,7 @@ public class EditForeignKeyDialog extends Dialog {
             gd.heightHint = 150;
             tableList.setLayoutData(gd);
             tableList.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
+                @Override
                 public void selectionChanged(SelectionChangedEvent event)
                 {
                     handleRefTableSelect(event.getSelection());
@@ -248,6 +249,7 @@ public class EditForeignKeyDialog extends Dialog {
             if (refTableNode != null) {
                 final DBSTable refTable = (DBSTable) refTableNode.getObject();
                 core.runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         try {
@@ -369,6 +371,7 @@ public class EditForeignKeyDialog extends Dialog {
         super.okPressed();
     }
 
+    @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         shell.setText(NLS.bind(CoreMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
@@ -411,6 +414,7 @@ public class EditForeignKeyDialog extends Dialog {
             if (oldEditor != null) oldEditor.dispose();
         }
 
+        @Override
         public void mouseUp(MouseEvent e)
         {
             handleColumnClick(e);

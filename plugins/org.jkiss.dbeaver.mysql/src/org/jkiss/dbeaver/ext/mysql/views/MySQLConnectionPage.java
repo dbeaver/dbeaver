@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.views;
@@ -44,6 +44,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         super.dispose();
     }
 
+    @Override
     public void createControl(Composite composite)
     {
         //Composite group = new Composite(composite, SWT.NONE);
@@ -67,6 +68,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         optionsFolder.addSelectionListener(
             new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     if (e.item == propsTab) {
@@ -74,6 +76,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
                     }
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -86,6 +89,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
     {
         ModifyListener textListener = new ModifyListener()
         {
+            @Override
             public void modifyText(ModifyEvent e)
             {
                 evaluateURL();
@@ -171,11 +175,13 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         testButton.setLayoutData(gd);
         testButton.addSelectionListener(new SelectionListener()
         {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 site.testConnection();
             }
 
+            @Override
             public void widgetDefaultSelected(SelectionEvent e)
             {
             }
@@ -184,6 +190,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         return addrGroup;
     }
 
+    @Override
     public boolean isComplete()
     {
         return hostText != null && portText != null && 
@@ -191,6 +198,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
             !CommonUtils.isEmpty(portText.getText());
     }
 
+    @Override
     public void loadSettings()
     {
         // Load values from new connection info
@@ -225,6 +233,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         super.loadSettings();
     }
 
+    @Override
     protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo != null) {

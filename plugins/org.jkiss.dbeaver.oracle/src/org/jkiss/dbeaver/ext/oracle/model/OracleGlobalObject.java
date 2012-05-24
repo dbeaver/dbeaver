@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -27,26 +27,31 @@ public abstract class OracleGlobalObject implements DBSObject, DBPSaveableObject
         this.persisted = persisted;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return dataSource.getContainer();
     }
 
+    @Override
     public OracleDataSource getDataSource()
     {
         return dataSource;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;

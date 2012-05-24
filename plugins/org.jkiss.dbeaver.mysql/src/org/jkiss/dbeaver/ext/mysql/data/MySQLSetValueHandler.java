@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.data;
@@ -20,6 +20,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
 
     public static final MySQLSetValueHandler INSTANCE = new MySQLSetValueHandler();
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
@@ -28,6 +29,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
 
             org.eclipse.swt.widgets.List editor = new org.eclipse.swt.widgets.List(controller.getInlinePlaceholder(), SWT.BORDER | SWT.MULTI);
             initInlineControl(controller, editor, new ValueExtractor<org.eclipse.swt.widgets.List>() {
+                @Override
                 public Object getValueFromControl(org.eclipse.swt.widgets.List control)
                 {
                     String[] selection = control.getSelection();

@@ -43,6 +43,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         return table;
     }
 
+    @Override
     public TABLE_TYPE getParentObject()
     {
         return getTable();
@@ -77,11 +78,13 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         return super.isRequired();
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
@@ -89,11 +92,13 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
 
     public static class ColumnTypeNameListProvider implements IPropertyValueListProvider<JDBCTableColumn> {
 
+        @Override
         public boolean allowCustomValue()
         {
             return true;
         }
 
+        @Override
         public Object[] getPossibleValues(JDBCTableColumn column)
         {
             Set<String> typeNames = new TreeSet<String>();

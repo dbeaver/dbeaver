@@ -9,6 +9,7 @@ package org.jkiss.dbeaver.model.struct;
  */
 public interface DBSEntityConstraint extends DBSObject {
 
+    @Override
     DBSEntity getParentObject();
 
     DBSEntityConstraintType getConstraintType();

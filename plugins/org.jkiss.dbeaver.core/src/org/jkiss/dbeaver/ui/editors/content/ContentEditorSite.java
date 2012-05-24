@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.content;
@@ -19,6 +19,7 @@ class ContentEditorSite extends MultiPageEditorSite {
         super(contentEditor, editor);
     }
 
+    @Override
     public IEditorActionBarContributor getActionBarContributor() {
         IEditorPart editor = getEditor();
         ContentEditor contentEditor = (ContentEditor) getMultiPageEditor();
@@ -30,6 +31,7 @@ class ContentEditorSite extends MultiPageEditorSite {
         }
     }
 
+    @Override
     public IWorkbenchPart getPart() {
         return getMultiPageEditor();
     }

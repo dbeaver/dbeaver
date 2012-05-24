@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.jobs;
@@ -57,6 +57,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
         return dataSourceContainer.getDataSource();
     }
 
+    @Override
     public boolean belongsTo(Object family)
     {
         return getDataSource() == family || family == DBPDataSource.class;

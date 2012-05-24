@@ -127,6 +127,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         return null;
     }
 
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         Shell shell = getShell();
@@ -154,6 +155,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 searchText.add(history);
             }
             searchText.addModifyListener(new ModifyListener() {
+                @Override
                 public void modifyText(ModifyEvent e)
                 {
                     nameMask = searchText.getText();
@@ -206,6 +208,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
                 maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 maxResultsSpinner.addModifyListener(new ModifyListener() {
+                    @Override
                     public void modifyText(ModifyEvent e)
                     {
                         maxResults = maxResultsSpinner.getSelection();
@@ -255,6 +258,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 dataSourceTree.getViewer().addSelectionChangedListener(
                     new ISelectionChangedListener()
                     {
+                        @Override
                         public void selectionChanged(SelectionChangedEvent event)
                         {
                             IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
@@ -263,9 +267,11 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                                 if (object instanceof DBNDataSource) {
                                     DBNDataSource dsNode = (DBNDataSource)object;
                                     dsNode.initializeNode(null, new Runnable() {
+                                        @Override
                                         public void run()
                                         {
                                             Display.getDefault().asyncExec(new Runnable() {
+                                                @Override
                                                 public void run()
                                                 {
                                                     if (!dataSourceTree.isDisposed()) {
@@ -286,6 +292,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 Group typesGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_object_types, 1, GridData.FILL_BOTH, 0);
                 typesTable = new Table(typesGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
                 typesTable.addSelectionListener(new SelectionAdapter() {
+                    @Override
                     public void widgetSelected(SelectionEvent e)
                     {
                         //checkedTypes.clear();
@@ -554,6 +561,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             this.maxResults = maxResults;
         }
 
+        @Override
         public Collection<DBNNode> evaluate()
             throws InvocationTargetException, InterruptedException
         {

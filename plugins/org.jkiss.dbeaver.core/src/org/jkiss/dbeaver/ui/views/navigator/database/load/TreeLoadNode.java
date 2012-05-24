@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.views.navigator.database.load;
@@ -58,6 +58,7 @@ public class TreeLoadNode implements ILabelProvider {
         return parent;
     }
 
+    @Override
     public String getText(Object element)
     {
         switch (count % 4) {
@@ -73,6 +74,7 @@ public class TreeLoadNode implements ILabelProvider {
         }
     }
 
+    @Override
     public Image getImage(Object element)
     {
         switch (count = (++count % 4)) {
@@ -124,19 +126,23 @@ public class TreeLoadNode implements ILabelProvider {
         }
     }
 
+    @Override
     public void addListener(ILabelProviderListener listener)
     {
     }
 
+    @Override
     public boolean isLabelProperty(Object element, String property)
     {
         return false;
     }
 
+    @Override
     public void removeListener(ILabelProviderListener listener)
     {
     }
 
+    @Override
     public void dispose()
     {
     }

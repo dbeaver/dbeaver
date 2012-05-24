@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -113,31 +113,37 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         return contents;
     }
 
+    @Override
     public DBSTypedObject getElementType()
     {
         return type;
     }
 
+    @Override
     public Object[] getValue() throws DBCException
     {
         return getContents();
     }
 
+    @Override
     public DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
     {
         return new JDBCArray(contents, type);
     }
 
+    @Override
     public boolean isNull()
     {
         return contents == null;
     }
 
+    @Override
     public DBDValue makeNull()
     {
         return new JDBCArray(null, type);
     }
 
+    @Override
     public void release()
     {
     }

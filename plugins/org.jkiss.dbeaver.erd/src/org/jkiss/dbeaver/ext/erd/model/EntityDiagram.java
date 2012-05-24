@@ -156,7 +156,8 @@ public class EntityDiagram extends ERDObject<DBSObject>
     /**
 	 * @return the name of the schema
 	 */
-	public String getName()
+	@Override
+    public String getName()
 	{
 		return name;
 	}

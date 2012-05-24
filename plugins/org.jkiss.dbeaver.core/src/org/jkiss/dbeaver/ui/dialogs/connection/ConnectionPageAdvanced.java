@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
@@ -33,6 +33,7 @@ public abstract class ConnectionPageAdvanced extends DialogPage implements IData
         return placeholder;
     }
 
+    @Override
     public void setSite(IDataSourceConnectionEditorSite site)
     {
         this.site = site;
@@ -43,6 +44,7 @@ public abstract class ConnectionPageAdvanced extends DialogPage implements IData
         return false;
     }
 
+    @Override
     public void loadSettings()
     {
         // Load values from new connection info
@@ -66,6 +68,7 @@ public abstract class ConnectionPageAdvanced extends DialogPage implements IData
         }
     }
 
+    @Override
     public void saveSettings()
     {
         saveSettings(site.getConnectionInfo());

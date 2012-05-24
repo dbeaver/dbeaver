@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 
 public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
         final ISelection selection = HandlerUtil.getCurrentSelection(event);

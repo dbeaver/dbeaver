@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -32,6 +32,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler
 
     private static final int MAX_STRING_LENGTH = 0xffff;
 
+    @Override
     protected Object getColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
@@ -54,6 +55,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler
         }
     }
 
+    @Override
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
@@ -63,6 +65,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler
             Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
             initInlineControl(controller, editor, new ValueExtractor<Text>()
             {
+                @Override
                 public Object getValueFromControl(Text control)
                 {
                     return control.getText();
@@ -81,16 +84,19 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler
         }
     }
 
+    @Override
     public int getFeatures()
     {
         return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
     }
 
+    @Override
     public Class getValueObjectType()
     {
         return String.class;
     }
 
+    @Override
     public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException
     {
@@ -104,6 +110,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler
         return clipboard.getContents(TextTransfer.getInstance());
     }
 
+    @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(

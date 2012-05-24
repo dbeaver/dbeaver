@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.actions.navigator;
@@ -41,6 +41,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
 
     }
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
@@ -48,6 +49,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
             final IStructuredSelection structSelection = (IStructuredSelection)selection;
 
             workbenchWindow.getShell().getDisplay().syncExec(new Runnable() {
+                @Override
                 public void run() {
                     List<DBNNode> selectedNodes = new ArrayList<DBNNode>();
                     List<DBPNamedObject> selectedObjects = new ArrayList<DBPNamedObject>();
@@ -120,6 +122,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
 
     protected abstract String getSelectionTitle(IStructuredSelection selection);
 
+    @Override
     public void updateElement(UIElement element, Map parameters)
     {
         if (!NavigatorHandlerObjectBase.updateUI) {

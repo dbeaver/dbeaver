@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid.scroll;
@@ -19,6 +19,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public boolean getVisible()
     {
         return false;
@@ -27,6 +28,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setVisible(boolean visible)
     {
     }
@@ -34,6 +36,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getSelection()
     {
         return 0;
@@ -42,6 +45,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setSelection(int selection)
     {
     }
@@ -49,6 +53,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setValues(int selection, int min, int max, int thumb, int increment,
                           int pageIncrement)
     {
@@ -57,6 +62,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void handleMouseWheel(Event e)
     {
     }
@@ -64,6 +70,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setMinimum(int min)
     {
     }
@@ -71,6 +78,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getMinimum()
     {
         return 0;
@@ -79,6 +87,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setMaximum(int max)
     {
     }
@@ -86,6 +95,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getMaximum()
     {
         return 0;
@@ -94,6 +104,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setThumb(int thumb)
     {
     }
@@ -101,6 +112,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getThumb()
     {
         return 0;
@@ -109,6 +121,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setIncrement(int increment)
     {
     }
@@ -116,6 +129,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getIncrement()
     {
         return 0;
@@ -124,6 +138,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void setPageIncrement(int page)
     {
     }
@@ -131,6 +146,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public int getPageIncrement()
     {
         return 0;
@@ -139,6 +155,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void addSelectionListener(SelectionListener listener)
     { 
     }
@@ -146,6 +163,7 @@ public class NullScrollBar implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
+    @Override
     public void removeSelectionListener(SelectionListener listener)
     {
    

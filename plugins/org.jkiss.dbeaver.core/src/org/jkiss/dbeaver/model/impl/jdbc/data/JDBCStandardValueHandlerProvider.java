@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
@@ -17,11 +17,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider {
 
+    @Override
     public Image getTypeImage(DBSTypedObject type)
     {
         return JDBCUtils.getDataIcon(type).getImage();
     }
 
+    @Override
     public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
     {
         DBSDataKind dataKind = JDBCUtils.getDataKind(typeName, valueType);

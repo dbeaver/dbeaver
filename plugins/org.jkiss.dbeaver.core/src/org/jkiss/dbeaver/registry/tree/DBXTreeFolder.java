@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.registry.tree;
@@ -34,6 +34,7 @@ public class DBXTreeFolder extends DBXTreeNode
         return label;
     }
 
+    @Override
     public String getChildrenType(DBPDataSource dataSource)
     {
         return label;

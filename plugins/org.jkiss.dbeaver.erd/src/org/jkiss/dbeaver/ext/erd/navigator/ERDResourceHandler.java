@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.navigator;
@@ -67,6 +67,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         }
     }
 
+    @Override
     public String getTypeName(IResource resource)
     {
         if (resource instanceof IFolder) {
@@ -129,6 +130,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
         try {
             DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {

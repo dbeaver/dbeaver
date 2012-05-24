@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -51,6 +51,7 @@ public class DBeaverVersionChecker extends AbstractJob {
     {
         final Shell shell = DBeaverCore.getActiveWorkbenchShell();
         shell.getDisplay().asyncExec(new Runnable() {
+            @Override
             public void run()
             {
                 VersionUpdateDialog dialog = new VersionUpdateDialog(

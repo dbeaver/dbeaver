@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors;
@@ -25,6 +25,7 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
     extends EditorPart implements IDatabaseEditor, IActiveWorkbenchPart
 {
 
+    @Override
     public void init(IEditorSite site, IEditorInput input)
         throws PartInitException
     {
@@ -32,33 +33,40 @@ public abstract class AbstractDatabaseObjectEditor<OBJECT_TYPE extends DBSObject
         super.setInput(input);
     }
 
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
     }
 
+    @Override
     public void doSaveAs()
     {
     }
 
+    @Override
     public boolean isDirty()
     {
         return getEditorInput().getCommandContext().isDirty();
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return false;
     }
 
+    @Override
     public void activatePart()
     {
         // do nothing by default
     }
 
+    @Override
     public void deactivatePart() {
         // do nothing by default
     }
 
+    @Override
     public DBPDataSource getDataSource() {
         OBJECT_TYPE object = getDatabaseObject();
         return object == null ? null : object.getDataSource();

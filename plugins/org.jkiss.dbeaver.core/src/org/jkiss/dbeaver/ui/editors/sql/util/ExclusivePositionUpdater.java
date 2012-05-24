@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.sql.util;
@@ -19,6 +19,7 @@ public class ExclusivePositionUpdater implements IPositionUpdater
         this.category = category;
     }
 
+    @Override
     public void update(DocumentEvent event)
     {
 

@@ -62,26 +62,31 @@ public class DriverFileDescriptor implements DBPDriverFile
         return driver;
     }
 
+    @Override
     public DBPDriverFileType getType()
     {
         return type;
     }
 
+    @Override
     public OSDescriptor getSystem()
     {
         return system;
     }
 
+    @Override
     public String getPath()
     {
         return path;
     }
 
+    @Override
     public String getDescription()
     {
         return description;
     }
 
+    @Override
     public boolean isCustom()
     {
         return custom;
@@ -92,11 +97,13 @@ public class DriverFileDescriptor implements DBPDriverFile
         this.custom = custom;
     }
 
+    @Override
     public String getExternalURL()
     {
         return externalURL;
     }
 
+    @Override
     public boolean isDisabled()
     {
         return disabled;
@@ -107,6 +114,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         this.disabled = disabled;
     }
 
+    @Override
     public boolean isLocal()
     {
         return path.startsWith(DriverDescriptor.DRIVERS_FOLDER);
@@ -123,6 +131,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         return file;
     }
 
+    @Override
     public File getFile()
     {
         // Try to use direct path
@@ -157,6 +166,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         return libraryFile;
     }
 
+    @Override
     public boolean matchesCurrentPlatform()
     {
         return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());

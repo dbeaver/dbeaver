@@ -68,6 +68,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         super.dispose();
     }
 
+    @Override
     public void createControl(Composite composite)
     {
         //Composite group = new Composite(composite, SWT.NONE);
@@ -341,11 +342,13 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
             testButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             testButton.addSelectionListener(new SelectionListener()
             {
+                @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     site.testConnection();
                 }
 
+                @Override
                 public void widgetDefaultSelected(SelectionEvent e)
                 {
                 }
@@ -400,6 +403,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         return cfgGroup;
     }
 
+    @Override
     public boolean isComplete()
     {
         if (isOCI && CommonUtils.isEmpty(oraHomeSelector.getSelectedHome())) {
@@ -423,6 +427,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         return this.connectionType == OracleConstants.ConnectionType.CUSTOM;
     }
 
+    @Override
     public void loadSettings()
     {
         isOCI = OCIUtils.isOciDriver(site.getDriver());
@@ -522,6 +527,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         super.loadSettings();
     }
 
+    @Override
     protected void saveSettings(DBPConnectionInfo connectionInfo)
     {
         if (connectionInfo == null) {
@@ -598,12 +604,15 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     }
 
     private class ControlsListener implements ModifyListener, SelectionListener {
+        @Override
         public void modifyText(ModifyEvent e) {
             updateUI();
         }
+        @Override
         public void widgetSelected(SelectionEvent e) {
             updateUI();
         }
+        @Override
         public void widgetDefaultSelected(SelectionEvent e) {
             updateUI();
         }

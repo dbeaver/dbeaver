@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.action;
@@ -20,6 +20,7 @@ public class ERDEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_EDITABLE = "editable";
 
+    @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (!(receiver instanceof ERDEditorPart)) {
             return false;

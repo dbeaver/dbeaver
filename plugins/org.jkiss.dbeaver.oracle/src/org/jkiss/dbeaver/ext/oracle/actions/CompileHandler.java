@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.actions;
@@ -52,6 +52,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
 {
     static final Log log = LogFactory.getLog(CompileHandler.class);
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final List<OracleSourceObject> objects = getSelectedObjects(event);
@@ -74,6 +75,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 Throwable error = null;
                 try {
                     DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
                             try {
@@ -155,6 +157,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
         return objects;
     }
 
+    @Override
     public void updateElement(UIElement element, Map parameters)
     {
         List<OracleSourceObject> objects = new ArrayList<OracleSourceObject>();

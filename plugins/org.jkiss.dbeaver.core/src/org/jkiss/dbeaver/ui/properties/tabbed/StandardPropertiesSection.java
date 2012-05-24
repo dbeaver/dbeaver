@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties.tabbed;
@@ -33,6 +33,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     private IPropertySource curPropertySource;
     private Font boldFont;
 
+    @Override
     public void createControls(Composite parent, final TabbedPropertySheetPage tabbedPropertySheetPage)
     {
 		super.createControls(parent, tabbedPropertySheetPage);
@@ -43,7 +44,8 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
         PropertiesContributor.getInstance().addLazyListener(this);
 	}
 
-	public void setInput(IWorkbenchPart part, ISelection newSelection) {
+	@Override
+    public void setInput(IWorkbenchPart part, ISelection newSelection) {
         if (!CommonUtils.equalObjects(getSelection(), newSelection)) {
 		    super.setInput(part, newSelection);
             if (!newSelection.isEmpty() && newSelection instanceof IStructuredSelection) {
@@ -60,7 +62,8 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
         }
 	}
 
-	public void dispose() {
+	@Override
+    public void dispose() {
         if (curPropertySource.getEditableValue() instanceof DBSObject) {
             final DBPDataSource dataSource = ((DBSObject) curPropertySource.getEditableValue()).getDataSource();
             if (dataSource != null) {
@@ -72,11 +75,13 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 		super.dispose();
 	}
 
-	public void refresh() {
+	@Override
+    public void refresh() {
 		//propertyTree.refresh();
 	}
 
-	public boolean shouldUseExtraSpace()
+	@Override
+    public boolean shouldUseExtraSpace()
     {
 		return true;
 	}
@@ -97,6 +102,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 
     }
 
+    @Override
     public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
     {
         if (curPropertySource.getEditableValue() == object && !propertyTree.getControl().isDisposed()) {
@@ -106,11 +112,13 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
         }
     }
 
+    @Override
     public void handleDataSourceEvent(DBPEvent event)
     {
         if (curPropertySource.getEditableValue() == event.getObject() && !Boolean.FALSE.equals(event.getEnabled()) && !propertyTree.getControl().isDisposed()) {
             //propertyTree.get
             Display.getDefault().asyncExec(new Runnable() {
+                @Override
                 public void run() {
                     if (propertyTree != null && !propertyTree.getControl().isDisposed()) {
                         propertyTree.refresh();
@@ -121,6 +129,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     }
 
     private class PropertyLabelProvider extends ColumnLabelProvider implements IFontProvider {
+        @Override
         public Font getFont(Object element)
         {
             if (element instanceof IPropertyDescriptorEx && curPropertySource != null && ((IPropertyDescriptorEx) element).isEditable(curPropertySource.getEditableValue())) {

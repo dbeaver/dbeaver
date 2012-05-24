@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.model;
@@ -34,6 +34,7 @@ public class OraclePrivObject extends OracleObject<OracleGrantee> implements DBA
         this.hierarchy = JDBCUtils.safeGetBoolean(resultSet, "HIERARCHY", "Y");
     }
 
+    @Override
     public String getName() {
         return super.getName();
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
@@ -30,11 +30,13 @@ public abstract class JDBCTableObject<TABLE extends JDBCTable> implements DBSObj
         this.persisted = source.persisted;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return table;
     }
 
+    @Override
     public String getName()
     {
         return name;
@@ -51,16 +53,19 @@ public abstract class JDBCTableObject<TABLE extends JDBCTable> implements DBSObj
         return table;
     }
 
+    @Override
     public String getDescription()
     {
         return null;
     }
 
+    @Override
     public boolean isPersisted()
     {
         return persisted;
     }
 
+    @Override
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;

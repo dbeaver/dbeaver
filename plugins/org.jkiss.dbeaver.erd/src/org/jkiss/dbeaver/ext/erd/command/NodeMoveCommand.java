@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -32,7 +32,8 @@ public class NodeMoveCommand extends Command
 		this.newBounds = newBounds;
 	}
 
-	public void execute()
+	@Override
+    public void execute()
 	{
 /*
         List tcList = nodePart.getTargetConnections();
@@ -45,7 +46,8 @@ public class NodeMoveCommand extends Command
         nodePart.modifyBounds(newBounds);
 	}
 
-	public void undo()
+	@Override
+    public void undo()
 	{
 		nodePart.modifyBounds(oldBounds);
 	}

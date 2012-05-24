@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.project;
@@ -71,6 +71,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
         return super.getFeatures(resource);
     }
 
+    @Override
     public String getTypeName(IResource resource)
     {
         final ProgramInfo program = getProgram(resource);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.tools.ant.babel;
@@ -32,6 +32,7 @@ public class BabelRepackerTask extends Task
 {
     public static final FilenameFilter JARS_FILTER = new FilenameFilter()
     {
+        @Override
         public boolean accept(File dir, String name)
         {
             return name.endsWith(".jar");
@@ -39,6 +40,7 @@ public class BabelRepackerTask extends Task
     };
     public static final FilenameFilter PROPERTIES_FILTER = new FilenameFilter()
     {
+        @Override
         public boolean accept(File dir, String name)
         {
             return name.endsWith(".properties");
@@ -50,6 +52,7 @@ public class BabelRepackerTask extends Task
     private String locales;
 
     // The method executing the task
+    @Override
     public void execute() throws BuildException
     {
 /*
@@ -72,6 +75,7 @@ public class BabelRepackerTask extends Task
             if (babelDir.exists() && babelDir.isDirectory()) {
                 babelJars = babelDir.list(new FilenameFilter()
                 {
+                    @Override
                     public boolean accept(File dir, String name)
                     {
                         return name.endsWith(".jar") && name.contains(nlSuffix);

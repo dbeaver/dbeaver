@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 /*
@@ -24,7 +24,8 @@ import org.jkiss.dbeaver.ext.erd.part.NotePart;
 public class NoteEditPolicy extends ComponentEditPolicy
 {
 
-	protected Command createDeleteCommand(GroupRequest request)
+	@Override
+    protected Command createDeleteCommand(GroupRequest request)
 	{
 		NotePart notePart = (NotePart) getHost();
 		Rectangle bounds = notePart.getFigure().getBounds().getCopy();

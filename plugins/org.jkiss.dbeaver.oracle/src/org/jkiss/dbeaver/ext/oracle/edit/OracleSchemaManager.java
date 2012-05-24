@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.oracle.edit;
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
  */
 public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDataSource> implements DBEObjectRenamer<OracleSchema> {
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_SAVE_IMMEDIATELY;
@@ -56,6 +57,7 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
         };
     }
 
+    @Override
     public void renameObject(DBECommandContext commandContext, OracleSchema schema, String newName) throws DBException
     {
         throw new DBException("Direct database rename is not yet implemented in Oracle. You should use export/import functions for that.");

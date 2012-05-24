@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.edit;
@@ -27,11 +27,13 @@ import java.util.Map;
  */
 public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DBEObjectMaker<MySQLUser, MySQLDataSource>, DBECommandFilter<MySQLUser> {
 
+    @Override
     public long getMakerOptions()
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
+    @Override
     public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
         MySQLUser newUser = new MySQLUser(parent, null);
@@ -49,11 +51,13 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
         return newUser;
     }
 
+    @Override
     public void deleteObject(DBECommandContext commandContext, MySQLUser user, Map<String, Object> options)
     {
         commandContext.addCommand(new CommandDropUser(user), new DeleteObjectReflector(), true);
     }
 
+    @Override
     public void filterCommands(DBECommandQueue<MySQLUser> queue)
     {
         if (!queue.isEmpty()) {
@@ -79,6 +83,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
         {
             super(user, MySQLMessages.edit_user_manager_command_drop_user);
         }
+        @Override
         public IDatabasePersistAction[] getPersistActions()
         {
             return new IDatabasePersistAction[] {

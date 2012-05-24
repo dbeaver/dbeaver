@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.navigator;
@@ -24,6 +24,7 @@ public class DBNBookmarkFolder extends DBNResource
         super(parentNode, resource, handler);
     }
 
+    @Override
     public Image getNodeIcon()
     {
         if (getResource().getParent() instanceof IProject) {

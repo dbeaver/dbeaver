@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties.tabbed;
@@ -52,6 +52,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         return editor;
     }
 
+    @Override
     public void createControls(Composite parent, final TabbedPropertySheetPage tabbedPropertySheetPage)
     {
 		super.createControls(parent, tabbedPropertySheetPage);
@@ -68,6 +69,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         super.dispose();
     }
 
+    @Override
     public boolean shouldUseExtraSpace()
     {
 		return true;
@@ -86,6 +88,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
             // We need it to tell owner editor about dirty state change
             if (ownerMultiPageEditor instanceof IPropertyChangeReflector) {
                 editor.addPropertyListener(new IPropertyListener() {
+                    @Override
                     public void propertyChanged(Object source, int propId)
                     {
                         ((IPropertyChangeReflector)ownerMultiPageEditor).handlePropertyChange(propId);
@@ -104,6 +107,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         }
         editor.createPartControl(parent);
         parent.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 if (editor != null) {
@@ -166,6 +170,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         }
     }
 
+    @Override
     public void refreshPart(Object source, boolean force)
     {
         // Reload sources
@@ -174,6 +179,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         }
     }
 
+    @Override
     public Object getAdapter(Class adapter)
     {
         if (editor != null) {
@@ -186,6 +192,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         return null;
     }
 
+    @Override
     public IEditorActionBarContributor getContributor(IDatabaseEditorContributorManager manager)
     {
         Class<? extends IEditorActionBarContributor> contributorClass = editorDescriptor.getContributorClass();
@@ -203,6 +210,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         return this.actionContributor;
     }
 
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
         if (editor != null) {
@@ -210,6 +218,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         }
     }
 
+    @Override
     public void doSaveAs()
     {
         if (editor != null) {
@@ -217,16 +226,19 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
         }
     }
 
+    @Override
     public boolean isDirty()
     {
         return editor != null && editor.isDirty();
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return editor != null && editor.isSaveAsAllowed();
     }
 
+    @Override
     public boolean isSaveOnCloseNeeded()
     {
         return editor != null && editor.isSaveOnCloseNeeded();

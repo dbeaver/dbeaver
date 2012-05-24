@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.runtime.qm.meta;
@@ -75,10 +75,12 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     {
         return new Iterator<QMMStatementExecuteInfo>() {
             private QMMStatementExecuteInfo curExec = lastExecute;
+            @Override
             public boolean hasNext()
             {
                 return curExec != null && curExec.getSavepoint() == QMMTransactionSavepointInfo.this;
             }
+            @Override
             public QMMStatementExecuteInfo next()
             {
                 if (curExec == null || curExec.getSavepoint() != QMMTransactionSavepointInfo.this) {
@@ -88,6 +90,7 @@ public class QMMTransactionSavepointInfo extends QMMObject {
                 curExec = curExec.getPrevious();
                 return n;
             }
+            @Override
             public void remove()
             {
                 throw new UnsupportedOperationException();

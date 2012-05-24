@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model.impl.jdbc.edit;
@@ -23,6 +23,7 @@ public abstract class JDBCObjectManager<OBJECT_TYPE extends DBSObject> extends A
 
     protected static final Log log = LogFactory.getLog(JDBCObjectManager.class);
 
+    @Override
     public void executePersistAction(DBCExecutionContext context, DBECommand<OBJECT_TYPE> command, IDatabasePersistAction action) throws DBException
     {
         String script = action.getScript();

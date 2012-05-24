@@ -117,6 +117,7 @@ public class RuntimeUtils {
         throws InvocationTargetException, InterruptedException
     {
         runnableContext.run(fork, cancelable, new IRunnableWithProgress() {
+            @Override
             public void run(IProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException
             {
@@ -356,6 +357,7 @@ public class RuntimeUtils {
         final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
         if (command.isShowProcessPanel()) {
             shell.getDisplay().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     try {
@@ -403,6 +405,7 @@ public class RuntimeUtils {
             return result;
         }
 
+        @Override
         public void run()
         {
             int choice = -1;

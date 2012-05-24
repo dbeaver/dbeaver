@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.model;
@@ -42,21 +42,25 @@ public class MySQLProcedureColumn extends JDBCColumn implements DBSProcedureColu
         this.columnType = columnType;
     }
 
+    @Override
     public DBSObject getParentObject()
     {
         return getProcedure();
     }
 
+    @Override
     public MySQLDataSource getDataSource()
     {
         return procedure.getDataSource();
     }
 
+    @Override
     public MySQLProcedure getProcedure()
     {
         return procedure;
     }
 
+    @Override
     @Property(name = "Column Type", viewable = true, order = 10)
     public DBSProcedureColumnType getColumnType()
     {

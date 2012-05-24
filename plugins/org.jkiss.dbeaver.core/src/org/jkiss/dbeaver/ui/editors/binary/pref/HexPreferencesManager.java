@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.editors.binary.pref;
@@ -143,6 +143,7 @@ public class HexPreferencesManager {
         gridData52.widthHint = averageCharWidth * 40;
         list.setLayoutData(gridData52);
         list.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 text.setText(list.getSelection()[0]);
@@ -158,6 +159,7 @@ public class HexPreferencesManager {
         list1.setLayoutData(gridData21);
         list1.setItems(new String[]{TEXT_REGULAR, TEXT_BOLD, TEXT_ITALIC, TEXT_BOLD_ITALIC});
         list1.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 text1.setText(list1.getSelection()[0]);
@@ -171,6 +173,7 @@ public class HexPreferencesManager {
         gridData7.heightHint = gridData52.heightHint;
         list2.setLayoutData(gridData7);
         list2.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 text2.setText(list2.getSelection()[0]);
@@ -188,6 +191,7 @@ public class HexPreferencesManager {
         gridData8.horizontalAlignment = org.eclipse.swt.layout.GridData.FILL;
         sampleText.setLayoutData(gridData8);
         sampleText.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 if (sampleFont != null && !sampleFont.isDisposed()) {
@@ -286,6 +290,7 @@ public class HexPreferencesManager {
         fontsRejected = new HashSet<String>();
         fontsGc = new GC(parent);
         Display.getCurrent().asyncExec(new Runnable() {
+            @Override
             public void run()
             {
                 populateFixedCharWidthFontsAsync();
@@ -335,6 +340,7 @@ public class HexPreferencesManager {
             fontsRejected = null;
         } else {
             Display.getCurrent().asyncExec(new Runnable() {
+                @Override
                 public void run()
                 {
                     populateFixedCharWidthFontsAsync();

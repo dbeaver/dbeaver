@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.generic.model;
@@ -77,12 +77,14 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         return getContainer() instanceof GenericPackage ? (GenericPackage) getContainer() : null;
     }
 
+    @Override
     @Property(name = "Type", viewable = true, order = 6)
     public DBSProcedureType getProcedureType()
     {
         return procedureType;
     }
 
+    @Override
     public List<GenericProcedureColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -182,6 +184,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.columns.add(column);
     }
 
+    @Override
     public String getFullQualifiedName()
     {
         return DBUtils.getFullQualifiedName(getDataSource(),
@@ -190,6 +193,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
             this);
     }
 
+    @Override
     public String getUniqueName()
     {
         return CommonUtils.isEmpty(specificName) ? getName() : specificName;

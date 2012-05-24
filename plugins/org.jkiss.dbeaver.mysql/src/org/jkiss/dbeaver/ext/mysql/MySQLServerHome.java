@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql;
@@ -30,16 +30,19 @@ public class MySQLServerHome extends JDBCClientHome {
         this.name = name == null ? path : name;
     }
 
+    @Override
     public String getDisplayName()
     {
         return name;
     }
 
+    @Override
     public String getProductName() throws DBException
     {
         return "MySQL";
     }
 
+    @Override
     public String getProductVersion() throws DBException
     {
         if (version == null) {

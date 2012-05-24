@@ -45,11 +45,13 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         this.isolatedConnection = null;
     }
 
+    @Override
     public DBCTransactionManager getTransactionManager()
     {
         return new TransactionManager();
     }
 
+    @Override
     public Connection getOriginal()
     {
         if (isolatedConnection != null) {
@@ -72,11 +74,13 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         }
     }
 
+    @Override
     public DBPDataSource getDataSource()
     {
         return connector.getDataSource();
     }
 
+    @Override
     public boolean isConnected() {
         try {
             return !isClosed();
@@ -86,6 +90,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         }
     }
 
+    @Override
     public JDBCStatement prepareStatement(
         DBCStatementType type,
         String sqlQuery,
@@ -147,6 +152,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         }
     }
 
+    @Override
     public DBDValueHandler getDefaultValueHandler()
     {
         return JDBCObjectValueHandler.INSTANCE;
@@ -164,30 +170,35 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         }
     }
 
+    @Override
     public JDBCStatement createStatement()
         throws SQLException
     {
         return makeStatement(getConnection().createStatement());
     }
 
+    @Override
     public JDBCPreparedStatement prepareStatement(String sql)
         throws SQLException
     {
         return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql), sql);
     }
 
+    @Override
     public JDBCCallableStatement prepareCall(String sql)
         throws SQLException
     {
         return new JDBCCallableStatementImpl(this, getConnection().prepareCall(sql), sql);
     }
 
+    @Override
     public String nativeSQL(String sql)
         throws SQLException
     {
         return getConnection().nativeSQL(sql);
     }
 
+    @Override
     public void setAutoCommit(boolean autoCommit)
         throws SQLException
     {
@@ -196,12 +207,14 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         QMUtils.getDefaultHandler().handleTransactionAutocommit(this, autoCommit);
     }
 
+    @Override
     public boolean getAutoCommit()
         throws SQLException
     {
         return getConnection().getAutoCommit();
     }
 
+    @Override
     public void commit()
         throws SQLException
     {
@@ -210,6 +223,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         QMUtils.getDefaultHandler().handleTransactionCommit(this);
     }
 
+    @Override
     public void rollback()
         throws SQLException
     {
@@ -218,6 +232,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         QMUtils.getDefaultHandler().handleTransactionRollback(this, null);
     }
 
+    @Override
     public void close()
     {
         // Check for warnings
@@ -245,66 +260,77 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         super.close();
     }
 
+    @Override
     public boolean isClosed()
         throws SQLException
     {
         return getConnection().isClosed();
     }
 
+    @Override
     public JDBCDatabaseMetaData getMetaData()
         throws SQLException
     {
         return new JDBCDatabaseMetaDataImpl(this, getConnection().getMetaData());
     }
 
+    @Override
     public void setReadOnly(boolean readOnly)
         throws SQLException
     {
         getConnection().setReadOnly(readOnly);
     }
 
+    @Override
     public boolean isReadOnly()
         throws SQLException
     {
         return getConnection().isReadOnly();
     }
 
+    @Override
     public void setCatalog(String catalog)
         throws SQLException
     {
         getConnection().setCatalog(catalog);
     }
 
+    @Override
     public String getCatalog()
         throws SQLException
     {
         return getConnection().getCatalog();
     }
 
+    @Override
     public void setTransactionIsolation(int level)
         throws SQLException
     {
         getConnection().setTransactionIsolation(level);
     }
 
+    @Override
     public int getTransactionIsolation()
         throws SQLException
     {
         return getConnection().getTransactionIsolation();
     }
 
+    @Override
     public SQLWarning getWarnings()
         throws SQLException
     {
         return getConnection().getWarnings();
     }
 
+    @Override
     public void clearWarnings()
         throws SQLException
     {
         getConnection().clearWarnings();
     }
 
+    @Override
     public JDBCStatementImpl createStatement(int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
@@ -313,6 +339,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             getConnection().createStatement(resultSetType, resultSetConcurrency));
     }
 
+    @Override
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
@@ -322,36 +349,42 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             sql);
     }
 
+    @Override
     public JDBCCallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
         return new JDBCCallableStatementImpl(this, getConnection().prepareCall(sql, resultSetType, resultSetConcurrency), sql);
     }
 
+    @Override
     public Map<String, Class<?>> getTypeMap()
         throws SQLException
     {
         return getConnection().getTypeMap();
     }
 
+    @Override
     public void setTypeMap(Map<String, Class<?>> map)
         throws SQLException
     {
         getConnection().setTypeMap(map);
     }
 
+    @Override
     public void setHoldability(int holdability)
         throws SQLException
     {
         getConnection().setHoldability(holdability);
     }
 
+    @Override
     public int getHoldability()
         throws SQLException
     {
         return getConnection().getHoldability();
     }
 
+    @Override
     public Savepoint setSavepoint()
         throws SQLException
     {
@@ -364,6 +397,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         return jdbcSavepoint;
     }
 
+    @Override
     public Savepoint setSavepoint(String name)
         throws SQLException
     {
@@ -376,6 +410,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         return jdbcSavepoint;
     }
 
+    @Override
     public void rollback(Savepoint savepoint)
         throws SQLException
     {
@@ -387,6 +422,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint instanceof DBCSavepoint ? (DBCSavepoint) savepoint : null);
     }
 
+    @Override
     public void releaseSavepoint(Savepoint savepoint)
         throws SQLException
     {
@@ -396,12 +432,14 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         getConnection().releaseSavepoint(savepoint);
     }
 
+    @Override
     public JDBCStatement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
         return makeStatement(getConnection().createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
     }
 
+    @Override
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
@@ -411,6 +449,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             sql);
     }
 
+    @Override
     public JDBCCallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
@@ -420,54 +459,63 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             sql);
     }
 
+    @Override
     public JDBCPreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
         throws SQLException
     {
         return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, autoGeneratedKeys), sql);
     }
 
+    @Override
     public JDBCPreparedStatement prepareStatement(String sql, int[] columnIndexes)
         throws SQLException
     {
         return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, columnIndexes), sql);
     }
 
+    @Override
     public JDBCPreparedStatement prepareStatement(String sql, String[] columnNames)
         throws SQLException
     {
         return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, columnNames), sql);
     }
 
+    @Override
     public Clob createClob()
         throws SQLException
     {
         return getConnection().createClob();
     }
 
+    @Override
     public Blob createBlob()
         throws SQLException
     {
         return getConnection().createBlob();
     }
 
+    @Override
     public NClob createNClob()
         throws SQLException
     {
         return getConnection().createNClob();
     }
 
+    @Override
     public SQLXML createSQLXML()
         throws SQLException
     {
         return getConnection().createSQLXML();
     }
 
+    @Override
     public boolean isValid(int timeout)
         throws SQLException
     {
         return getConnection().isValid(timeout);
     }
 
+    @Override
     public void setClientInfo(String name, String value)
         throws SQLClientInfoException
     {
@@ -482,6 +530,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         }
     }
 
+    @Override
     public void setClientInfo(Properties properties)
         throws SQLClientInfoException
     {
@@ -496,42 +545,49 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         }
     }
 
+    @Override
     public String getClientInfo(String name)
         throws SQLException
     {
         return getConnection().getClientInfo(name);
     }
 
+    @Override
     public Properties getClientInfo()
         throws SQLException
     {
         return getConnection().getClientInfo();
     }
 
+    @Override
     public Array createArrayOf(String typeName, Object[] elements)
         throws SQLException
     {
         return getConnection().createArrayOf(typeName, elements);
     }
 
+    @Override
     public Struct createStruct(String typeName, Object[] attributes)
         throws SQLException
     {
         return getConnection().createStruct(typeName, attributes);
     }
 
+    @Override
     public <T> T unwrap(Class<T> iface)
         throws SQLException
     {
         return getConnection().unwrap(iface);
     }
 
+    @Override
     public boolean isWrapperFor(Class<?> iface)
         throws SQLException
     {
         return getConnection().isWrapperFor(iface);
     }
 
+    @Override
     public void cancelBlock()
         throws DBException
     {
@@ -545,6 +601,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
 
     private class TransactionManager extends AbstractTransactionManager {
 
+        @Override
         public DBPTransactionIsolation getTransactionIsolation()
             throws DBCException
         {
@@ -555,6 +612,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             }
         }
 
+        @Override
         public void setTransactionIsolation(DBPTransactionIsolation transactionIsolation)
             throws DBCException
         {
@@ -571,6 +629,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             QMUtils.getDefaultHandler().handleTransactionIsolation(JDBCConnectionImpl.this, jdbcTIL);
         }
 
+        @Override
         public boolean isAutoCommit()
             throws DBCException
         {
@@ -582,6 +641,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             }
         }
 
+        @Override
         public void setAutoCommit(boolean autoCommit)
             throws DBCException
         {
@@ -593,6 +653,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             }
         }
 
+        @Override
         public DBCSavepoint setSavepoint(String name)
             throws DBCException
         {
@@ -610,6 +671,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             return new JDBCSavepointImpl(JDBCConnectionImpl.this, savepoint);
         }
 
+        @Override
         public void releaseSavepoint(DBCSavepoint savepoint)
             throws DBCException
         {
@@ -625,6 +687,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             }
         }
 
+        @Override
         public void commit()
             throws DBCException
         {
@@ -636,6 +699,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             }
         }
 
+        @Override
         public void rollback(DBCSavepoint savepoint)
             throws DBCException
         {

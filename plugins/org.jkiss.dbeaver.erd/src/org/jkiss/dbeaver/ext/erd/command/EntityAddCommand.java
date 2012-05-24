@@ -31,6 +31,7 @@ public class EntityAddCommand extends Command
         this.location = location;
     }
 
+    @Override
     public void execute()
 	{
         Point curLocation = location == null ? null : new Point(location);
@@ -61,6 +62,7 @@ public class EntityAddCommand extends Command
         }
 	}
 
+    @Override
     public void undo()
     {
         for (ERDEntity entity : entities) {

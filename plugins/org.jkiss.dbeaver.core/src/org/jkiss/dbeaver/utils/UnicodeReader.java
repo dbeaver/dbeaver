@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.utils;
 
 import java.io.*;
@@ -64,11 +68,13 @@ public class UnicodeReader extends Reader {
         return reader.getEncoding();
     }
 
+    @Override
     public int read(char[] cbuf, int off, int len) throws IOException
     {
         return reader.read(cbuf, off, len);
     }
 
+    @Override
     public void close() throws IOException
     {
         reader.close();

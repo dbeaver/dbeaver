@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.mysql.controls;
@@ -63,6 +63,7 @@ public class PrivilegeTableControl extends Composite {
 
         Button checkButton = UIUtils.createPushButton(buttonsPanel, "Check All", null);
         checkButton.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 for (TableItem item : privTable.getItems()) {
@@ -75,6 +76,7 @@ public class PrivilegeTableControl extends Composite {
         });
         Button clearButton = UIUtils.createPushButton(buttonsPanel, "Clear All", null);
         clearButton.addSelectionListener(new SelectionAdapter() {
+            @Override
             public void widgetSelected(SelectionEvent e)
             {
                 for (TableItem item : privTable.getItems()) {

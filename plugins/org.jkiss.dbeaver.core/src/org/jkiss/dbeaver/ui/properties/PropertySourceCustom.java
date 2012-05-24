@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui.properties;
@@ -66,16 +66,19 @@ public class PropertySourceCustom implements IPropertySourceEx {
         }
     }
 
+    @Override
     public Object getEditableValue()
     {
         return this;
     }
 
+    @Override
     public IPropertyDescriptor[] getPropertyDescriptors()
     {
         return props.toArray(new IPropertyDescriptor[props.size()]);
     }
 
+    @Override
     public Object getPropertyValue(Object id)
     {
         Object value = propValues.get(id);
@@ -85,11 +88,13 @@ public class PropertySourceCustom implements IPropertySourceEx {
         return value != null ? value : defaultValues.get(id);
     }
 
+    @Override
     public boolean isPropertyResettable(Object id)
     {
         return true;
     }
 
+    @Override
     public boolean isPropertySet(Object id)
     {
         final Object value = getPropertyValue(id);
@@ -100,11 +105,13 @@ public class PropertySourceCustom implements IPropertySourceEx {
         return !CommonUtils.equalObjects(value, defaultValue);
     }
 
+    @Override
     public void resetPropertyValue(Object id)
     {
         propValues.remove(id);
     }
 
+    @Override
     public void setPropertyValue(Object id, Object value)
     {
         if (!originalValues.containsKey(id)) {
@@ -123,16 +130,19 @@ public class PropertySourceCustom implements IPropertySourceEx {
         }
     }
 
+    @Override
     public boolean isDirty(Object id)
     {
         return !propValues.isEmpty();
     }
 
+    @Override
     public boolean hasDefaultValue(Object id)
     {
         return defaultValues.containsKey(id);
     }
 
+    @Override
     public void resetPropertyValueToDefault(Object id)
     {
         propValues.remove(id);

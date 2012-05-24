@@ -76,6 +76,7 @@ public class DataExporterCSV extends DataExporterAbstract {
         super.dispose();
     }
 
+    @Override
     public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
     {
         columns = getSite().getColumns();
@@ -96,6 +97,7 @@ public class DataExporterCSV extends DataExporterAbstract {
         writeRowLimit();
     }
 
+    @Override
     public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
     {
         for (int i = 0; i < row.length; i++) {
@@ -133,6 +135,7 @@ public class DataExporterCSV extends DataExporterAbstract {
         writeRowLimit();
     }
 
+    @Override
     public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException
     {
         if (headerPosition == HeaderPosition.bottom || headerPosition == HeaderPosition.both) {

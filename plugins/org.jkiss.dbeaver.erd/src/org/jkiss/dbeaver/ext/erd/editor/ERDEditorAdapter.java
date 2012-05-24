@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ext.erd.editor;
@@ -32,6 +32,7 @@ public class ERDEditorAdapter implements IAdapterFactory {
         return editorsMap.get(control);
     }
 
+    @Override
     public Object getAdapter(Object adaptableObject, Class adapterType) {
         if (adapterType == ERDEditorPart.class) {
             if (adaptableObject instanceof Control) {
@@ -41,6 +42,7 @@ public class ERDEditorAdapter implements IAdapterFactory {
         return null;
     }
 
+    @Override
     public Class[] getAdapterList() {
         return new Class[] { ERDEditorPart.class };
     }

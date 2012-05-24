@@ -35,6 +35,7 @@ public class DBSConstraintModifyRule implements DBPNamedObject
         return id;
     }
 
+    @Override
     public String getName()
     {
         return name;
