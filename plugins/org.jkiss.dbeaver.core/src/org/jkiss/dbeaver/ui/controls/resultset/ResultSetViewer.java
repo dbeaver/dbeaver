@@ -186,12 +186,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeManager.addPropertyChangeListener(this);
         this.spreadsheet.addDisposeListener(new DisposeListener() {
+            @Override
             public void widgetDisposed(DisposeEvent e)
             {
                 dispose();
             }
         });
         this.spreadsheet.addCursorChangeListener(new Listener() {
+            @Override
             public void handleEvent(Event event)
             {
                 updateGridCursor(event.x, event.y);
@@ -290,6 +292,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         statusLabel.setLayoutData(gd);
         statusLabel.setBackground(statusBar.getBackground());
         statusLabel.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseDoubleClick(MouseEvent e)
             {
                 ViewTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
@@ -363,6 +366,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
         this.dataFilter = dataFilter;
         reorderResultSet(true, new Runnable() {
+            @Override
             public void run()
             {
                 resetColumnOrdering();
@@ -505,6 +509,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
@@ -632,6 +637,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
         if (update) {
             UIUtils.runInUI(null, new Runnable() {
+                @Override
                 public void run()
                 {
                     spreadsheet.clearGrid();
@@ -734,6 +740,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         this.updateFiltersText();
     }
 
+    @Override
     public int promptToSaveOnClose()
     {
         if (!isDirty()) {
@@ -753,30 +760,36 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    @Override
     public void doSave(IProgressMonitor monitor)
     {
         applyChanges(RuntimeUtils.makeMonitor(monitor));
     }
 
+    @Override
     public void doSaveAs()
     {
     }
 
+    @Override
     public boolean isDirty()
     {
         return !editedValues.isEmpty() || !addedRows.isEmpty() || !removedRows.isEmpty();
     }
 
+    @Override
     public boolean isSaveAsAllowed()
     {
         return false;
     }
 
+    @Override
     public boolean isSaveOnCloseNeeded()
     {
         return true;
     }
 
+    @Override
     public boolean isEditable()
     {
         if (updateInProgress) {
@@ -790,6 +803,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return dataSource != null && dataSource.isConnected() && !dataSource.getInfo().isReadOnlyData();
     }
 
+    @Override
     public boolean isCellEditable(GridPos pos) {
         if (!isEditable()) {
             return false;
@@ -818,6 +832,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return !editedValues.isEmpty() && editedValues.containsKey(pos);
     }
 
+    @Override
     public boolean isInsertable()
     {
         if (!isEditable()) {
@@ -826,6 +841,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return singleSourceCells && !CommonUtils.isEmpty(metaColumns);
     }
 
+    @Override
     public boolean showCellEditor(
         GridPos cell,
         final boolean inline,
@@ -882,6 +898,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         updateEditControls();
     }
 
+    @Override
     public void fillContextMenu(GridPos curCell, IMenuManager manager) {
 
         // Custom oldValue items
@@ -968,6 +985,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
+    @Override
     public void changeSorting(final GridColumn column, final int state)
     {
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
@@ -1003,6 +1021,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
         //final int sort = newSort;
         reorderResultSet(false, new Runnable() {
+            @Override
             public void run()
             {
                 resetColumnOrdering();
@@ -1020,6 +1039,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         setStatus(String.valueOf(curRows.size()) + CoreMessages.controls_resultset_viewer_status_rows_fetched);
     }
 
+    @Override
     public Control getControl()
     {
         return viewerPanel;
@@ -1030,20 +1050,24 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return this.spreadsheet.getGrid();
     }
 
+    @Override
     public Object getInput()
     {
         return null;
     }
 
+    @Override
     public void setInput(Object input)
     {
     }
 
+    @Override
     public IStructuredSelection getSelection()
     {
         return new StructuredSelection(spreadsheet.getSelection().toArray());
     }
 
+    @Override
     public void setSelection(ISelection selection, boolean reveal)
     {
     }
@@ -1052,6 +1076,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return dataReceiver;
     }
 
+    @Override
     public void refresh()
     {
         // Check if we are dirty
@@ -1062,9 +1087,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 case ISaveablePart2.YES:
                     // Apply changes
                     applyChanges(null, new DBDValueListener() {
+                        @Override
                         public void onUpdate(boolean success) {
                             if (success) {
                                 getControl().getDisplay().asyncExec(new Runnable() {
+                                    @Override
                                     public void run() {
                                         refresh();
                                     }
@@ -1095,6 +1122,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 segmentSize = (oldRowNum / segmentSize + 1) * segmentSize;
             }
             runDataPump(0, segmentSize, new GridPos(oldColNum, oldRowNum), new Runnable() {
+                @Override
                 public void run()
                 {
                     if (!supportsDataFilter() && !dataFilter.getOrderColumns().isEmpty()) {
@@ -1144,6 +1172,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return;
         }
         Collections.sort(curRows, new Comparator<Object[]>() {
+            @Override
             public int compare(Object[] row1, Object[] row2)
             {
                 int result = 0;
@@ -1214,6 +1243,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     final Throwable error = dataPumpJob == null ? null : dataPumpJob.getError();
                     dataPumpJob = null;
                     Display.getDefault().asyncExec(new Runnable() {
+                        @Override
                         public void run()
                         {
                             final Shell shell = getControl().getShell();
@@ -1314,12 +1344,23 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             // No inline editors for readonly columns
             return;
         }
-//        try {
-//            metaColumn.getValueHandler().createValueObject();
-//        }
-//        catch (Exception e) {
-//            UIUtils.showErrorDialog(site.getShell(), "Cannot replace cell value", null, e);
-//        }
+        try {
+            Object newValue = metaColumn.getValueHandler().getValueFromClipboard(
+                metaColumn.getColumn(),
+                getSpreadsheet().getClipboard());
+            if (newValue == null) {
+                return;
+            }
+            new ResultSetValueController(
+                this.curRows.get(cell.row),
+                cell.col,
+                null).updateValue(newValue);
+            spreadsheet.redrawGrid();
+            updateEditControls();
+        }
+        catch (Exception e) {
+            UIUtils.showErrorDialog(site.getShell(), "Cannot replace cell value", null, e);
+        }
     }
 
     private boolean isRowAdded(int row)
@@ -1351,6 +1392,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         final int currentRowNumber = rowNum;
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
@@ -1573,20 +1615,24 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             this.inlinePlaceholder = inlinePlaceholder;
         }
 
+        @Override
         public DBPDataSource getDataSource()
         {
             return getDataContainer().getDataSource();
         }
 
+        @Override
         public DBDRowController getRow() {
             return this;
         }
 
+        @Override
         public DBCColumnMetaData getColumnMetaData()
         {
             return columns[columnIndex].getColumn();
         }
 
+        @Override
         public String getColumnId() {
             String dsName = getDataSource().getContainer().getName();
             String catalogName = getColumnMetaData().getCatalogName();
@@ -1609,11 +1655,13 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return columnId.toString();
         }
 
+        @Override
         public Object getValue()
         {
             return curRow[columnIndex];
         }
 
+        @Override
         public void updateValue(Object value)
         {
             Object oldValue = curRow[columnIndex];
@@ -1640,6 +1688,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     curRow[columnIndex] = value;
                     // Update controls
                     site.getShell().getDisplay().asyncExec(new Runnable() {
+                        @Override
                         public void run() {
                             updateEditControls();
                         }
@@ -1649,41 +1698,49 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        @Override
         public DBDValueLocator getValueLocator()
         {
             return columns[columnIndex].getValueLocator();
         }
 
+        @Override
         public DBDValueHandler getValueHandler()
         {
             return columns[columnIndex].getValueHandler();
         }
 
+        @Override
         public boolean isInlineEdit()
         {
             return inlinePlaceholder != null;
         }
 
+        @Override
         public boolean isReadOnly()
         {
             return isColumnReadOnly(columns[columnIndex]);
         }
 
+        @Override
         public IWorkbenchPartSite getValueSite()
         {
             return site;
         }
 
+        @Override
         public Composite getInlinePlaceholder()
         {
             return inlinePlaceholder;
         }
 
+        @Override
         public void closeInlineEditor()
         {
             spreadsheet.cancelInlineEditor();
         }
 
+        @Override
         public void nextInlineEditor(boolean next) {
             spreadsheet.cancelInlineEditor();
             int colOffset = next ? 1 : -1;
@@ -1702,19 +1759,23 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             spreadsheet.openCellViewer(true);
         }
 
+        @Override
         public void registerEditor(DBDValueEditor editor) {
             openEditors.put(this, editor);
         }
 
+        @Override
         public void unregisterEditor(DBDValueEditor editor) {
             openEditors.remove(this);
         }
 
+        @Override
         public void showMessage(String message, boolean error)
         {
             setStatus(message, error);
         }
 
+        @Override
         public Collection<DBCColumnMetaData> getColumnsMetaData() {
             List<DBCColumnMetaData> columns = new ArrayList<DBCColumnMetaData>();
             for (DBDColumnBinding column : this.columns) {
@@ -1723,6 +1784,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return columns;
         }
 
+        @Override
         public DBCColumnMetaData getColumnMetaData(DBCEntityMetaData entity, String columnName)
         {
             for (DBDColumnBinding column : columns) {
@@ -1733,6 +1795,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return null;
         }
 
+        @Override
         public Object getColumnValue(DBCColumnMetaData column)
         {
             for (int i = 0; i < columns.length; i++) {
@@ -1788,6 +1851,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         {
             return String.valueOf(row);
         }
+        @Override
         public int compareTo(RowInfo o)
         {
             return row - o.row;
@@ -2084,6 +2148,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                 this.listener = listener;
             }
 
+            @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {
                 ResultSetViewer.this.updateInProgress = true;
@@ -2091,6 +2156,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     final Throwable error = executeStatements(monitor);
 
                     ResultSetViewer.this.site.getShell().getDisplay().syncExec(new Runnable() {
+                        @Override
                         public void run() {
                             boolean rowsChanged = false;
                             if (DataUpdaterJob.this.autocommit || error == null) {
@@ -2232,12 +2298,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             this.statement = statement;
         }
 
+        @Override
         public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
             throws DBCException
         {
 
         }
 
+        @Override
         public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
             throws DBCException
         {
@@ -2286,12 +2354,14 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        @Override
         public void fetchEnd(DBCExecutionContext context)
             throws DBCException
         {
 
         }
 
+        @Override
         public void close()
         {
         }
@@ -2299,6 +2369,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private class ContentProvider implements IGridContentProvider {
 
+        @Override
         public GridPos getSize()
         {
             if (mode == ResultSetMode.RECORD) {
@@ -2312,6 +2383,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        @Override
         public Object getElement(GridPos pos)
         {
             if (mode == ResultSetMode.RECORD) {
@@ -2321,6 +2393,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        @Override
         public void updateColumn(GridColumn column)
         {
             if (mode == ResultSetMode.RECORD) {
@@ -2338,6 +2411,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        @Override
         public Object[] getElements(Object inputElement)
         {
             if (mode == ResultSetMode.RECORD) {
@@ -2348,10 +2422,12 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        @Override
         public void dispose()
         {
         }
 
+        @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
         {
         }
@@ -2415,6 +2491,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return String.valueOf(getValue(element, true));
         }
 
+        @Override
         public Color getForeground(Object element)
         {
             Object value = getValue(element, false);
@@ -2425,6 +2502,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        @Override
         public Color getBackground(Object element)
         {
             GridPos cell = translateGridPos((GridPos)element);
@@ -2474,6 +2552,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         }
 
+        @Override
         public Font getFont(Object element)
         {
             int colNumber = ((Number)element).intValue();

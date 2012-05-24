@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.dnd.Clipboard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -62,7 +63,7 @@ public interface DBDValueHandler
      * Creates new value object.
      * For simple types returns null (as initial value). For complex type may return DBDValue.
      *
-     * @param context
+     * @param context execution context
      * @param column column
      * @return initial object value
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
@@ -73,13 +74,26 @@ public interface DBDValueHandler
     /**
      * Makes value copy. For Non-mutable objects (like numbers and string) may return the same value as passed in.
      * If copy operation is not supported for some values then may return null.
-     * @param context
-     * @param column
+     * @param context execution context
+     * @param column column descriptor
      * @param value original value  @return copied value or null  @return value copy
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
+     * @return new object copy
      */
     Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
         throws DBCException;
+
+    /**
+     * Get value from clipboard. If clipboard doesn't contain data in appropriate format
+     * or value cannot be parsed then this function should return null
+     *
+     * @param column column descriptor
+     * @param clipboard clipboard
+     * @return value (return null only in case of NULL value in clipboard)
+     * @throws org.jkiss.dbeaver.DBException on unexpected error (IO, etc)
+     */
+    Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
+        throws DBException;
 
     /**
      * Release any internal resources associated with this value.

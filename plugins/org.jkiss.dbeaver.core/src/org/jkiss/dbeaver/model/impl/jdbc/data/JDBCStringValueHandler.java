@@ -5,6 +5,8 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -23,7 +25,8 @@ import java.sql.SQLException;
 /**
  * JDBC string value handler
  */
-public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
+public class JDBCStringValueHandler extends JDBCAbstractValueHandler
+{
 
     public static final JDBCStringValueHandler INSTANCE = new JDBCStringValueHandler();
 
@@ -58,7 +61,8 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
             Object value = controller.getValue();
             Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
-            initInlineControl(controller, editor, new ValueExtractor<Text>() {
+            initInlineControl(controller, editor, new ValueExtractor<Text>()
+            {
                 public Object getValueFromControl(Text control)
                 {
                     return control.getText();
@@ -92,6 +96,12 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     {
         // String are immutable
         return value;
+    }
+
+    @Override
+    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard) throws DBException
+    {
+        return clipboard.getContents(TextTransfer.getInstance());
     }
 
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)

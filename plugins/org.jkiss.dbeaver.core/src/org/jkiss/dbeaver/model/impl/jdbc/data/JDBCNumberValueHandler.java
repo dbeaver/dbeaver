@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -60,8 +62,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         return value == null ? DBConstants.NULL_VALUE_LABEL : formatter.formatValue(value);
     }
 
-    protected Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
-                                    int columnIndex)
+    protected Object getColumnValue(
+        DBCExecutionContext context,
+        JDBCResultSet resultSet,
+        DBSTypedObject column,
+        int columnIndex)
         throws DBCException, SQLException
     {
         Number value;
@@ -229,6 +234,47 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         throws DBCException
     {
         // Number are immutable
+        return value;
+    }
+
+    @Override
+    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard) throws DBException
+    {
+        String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
+        if (CommonUtils.isEmpty(strValue)) {
+            return null;
+        }
+        Number value;
+        try {
+            switch (column.getTypeID()) {
+            case java.sql.Types.BIGINT:
+                value = Long.valueOf(strValue);
+                break;
+            case java.sql.Types.DOUBLE:
+            case java.sql.Types.REAL:
+                value = Double.valueOf(strValue);
+                break;
+            case java.sql.Types.FLOAT:
+                value = Float.valueOf(strValue);
+                break;
+            case java.sql.Types.INTEGER:
+                value = Integer.valueOf(strValue);
+                break;
+            case java.sql.Types.SMALLINT:
+                value = Short.valueOf(strValue);
+                break;
+            case java.sql.Types.TINYINT:
+            case java.sql.Types.BIT:
+                value = Byte.valueOf(strValue);
+                break;
+            default:
+                // Here may be any numeric value. BigDecimal or BigInteger for example
+                value = new BigDecimal(strValue);
+                break;
+            }
+        } catch (NumberFormatException e) {
+            return null;
+        }
         return value;
     }
 

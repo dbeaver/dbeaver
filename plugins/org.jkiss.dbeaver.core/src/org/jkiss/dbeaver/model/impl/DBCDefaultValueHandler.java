@@ -5,18 +5,14 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.dnd.Clipboard;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCursor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
-
-import java.sql.ResultSet;
 
 /**
  * Default value handler
@@ -63,6 +59,12 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
         throws DBCException
     {
         return value;
+    }
+
+    @Override
+    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard) throws DBException
+    {
+        return null;
     }
 
     public void releaseValueObject(Object value) {

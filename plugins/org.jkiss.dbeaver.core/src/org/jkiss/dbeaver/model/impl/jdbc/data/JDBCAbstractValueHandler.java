@@ -8,9 +8,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.swt.IFocusService;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -34,6 +36,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
     private static final String CELL_VALUE_INLINE_EDITOR = "org.jkiss.dbeaver.CellValueInlineEditor";
 
+    @Override
     public final Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column, int columnIndex)
         throws DBCException
     {
@@ -45,6 +48,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
+    @Override
     public final void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnMetaData,
                                       int paramIndex, Object value) throws DBCException {
         try {
@@ -55,12 +59,21 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
+    @Override
     public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
     {
         // Default value for most object types is NULL
         return null;
     }
 
+    @Override
+    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard) throws DBException
+    {
+        // By default handler doesn't support any clipboard format
+        return null;
+    }
+
+    @Override
     public void releaseValueObject(Object value)
     {
         if (value instanceof DBDValue) {
@@ -68,22 +81,26 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
+    @Override
     public String getValueDisplayString(DBSTypedObject column, Object value) {
         return value == null ? DBConstants.NULL_VALUE_LABEL : value.toString();
     }
 
+    @Override
     public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)
         throws DBCException
     {
         return null;
     }
 
+    @Override
     public void fillContextMenu(IMenuManager menuManager, DBDValueController controller)
         throws DBCException
     {
 
     }
 
+    @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(
@@ -133,7 +150,8 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             {
                 // Check new focus control in async mode
                 // (because right now focus is still on edit control)
-                control.getDisplay().asyncExec(new Runnable() {
+                control.getDisplay().asyncExec(new Runnable()
+                {
                     @Override
                     public void run()
                     {
