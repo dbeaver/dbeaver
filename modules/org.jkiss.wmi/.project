@@ -25,11 +25,11 @@
 		<nature>org.eclipse.pde.PluginNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
+	<!-- <linkedResources>
 		<link>
 			<name>java</name>
 			<type>2</type>
-			<location>D:/Devel/my/dbeaver/modules/org.jkiss.wmi/src/java</location>
+			<location>src/java</location>
 		</link>
-	</linkedResources>
+	</linkedResources> -->
 </projectDescription>
