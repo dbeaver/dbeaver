@@ -162,8 +162,8 @@ public class ScrollBarAdapter implements IGridScrollBar
     /** 
      * {@inheritDoc}
      */
-    p@Override
-     ublic void setVisible(boolean visible)
+    @Override
+    public void setVisible(boolean visible)
     {
         scrollBar.setVisible(visible);
     }
@@ -172,7 +172,7 @@ public class ScrollBarAdapter implements IGridScrollBar
      * {@inheritDoc}
      */
     @Override
-     ublic void handleMouseWheel(Event e)
+    public void handleMouseWheel(Event e)
     {
         //do nothing        
     }
@@ -181,7 +181,7 @@ public class ScrollBarAdapter implements IGridScrollBar
      * {@inheritDoc}
      */
     @Override
-     ublic void addSelectionListener(SelectionListener listener)
+    public void addSelectionListener(SelectionListener listener)
     {
         scrollBar.addSelectionListener(listener);
     }
@@ -190,7 +190,7 @@ public class ScrollBarAdapter implements IGridScrollBar
      * {@inheritDoc}
      */
     @Override
-     ublic void removeSelectionListener(SelectionListener listener)
+    public void removeSelectionListener(SelectionListener listener)
     {
         scrollBar.removeSelectionListener(listener);
     }
