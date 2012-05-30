@@ -32,6 +32,18 @@
 
     <versions>
         <version>
+            <number>1.5.7</number>
+            <type>ea</type>
+            <date>30.05.2012</date>
+
+            <release-notes>
+                - Non public EA version for Entelgy
+                - A lot of fixes and refactoring
+                - HEX editor save fix
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.5.6</number>
             <type>minor</type>
             <date>22.05.2012</date>
