@@ -43,7 +43,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     //static final String textSavingFilePleaseWait = "Saving file, please wait";
 
-    private final HexManager manager = new HexManager();
+    private HexManager manager;
     private IPropertyChangeListener preferencesChangeListener = null;
     private Set<ISelectionChangedListener> selectionListeners = null;  // of ISelectionChangedListener
 
@@ -51,7 +51,6 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         super();
     }
-
 
     @Override
     public void resourceChanged(IResourceChangeEvent event)
@@ -78,7 +77,9 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 @Override
                 public void run()
                 {
-                    loadBinaryContent();
+                    if (manager != null) {
+                        loadBinaryContent();
+                    }
                 }
             });
         }
@@ -99,6 +100,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void createPartControl(Composite parent)
     {
+        manager = new HexManager();
         manager.setTextFont(HexPreferencesPage.getPrefFontData());
         manager.setMenuListener(this);
         int editorStyle = SWT.NONE;
@@ -209,6 +211,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         if (manager != null) {
             manager.dispose();
+            manager = null;
         }
 
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();

@@ -42,11 +42,10 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
         throws DBException
     {
         if (this.storage != null) {
-            if (this.originalStorage == null) {
-                this.originalStorage = this.storage;
-            } else {
-                this.release();
+            if (this.originalStorage != null) {
+                this.originalStorage.release();
             }
+            this.originalStorage = this.storage;
         }
         this.storage = storage;
         return true;
@@ -55,9 +54,13 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
     @Override
     public void release()
     {
-        if (storage != null) {
-            storage.release();
-            storage = null;
+        if (this.storage != null) {
+            this.storage.release();
+            this.storage = null;
+        }
+        if (this.originalStorage != null) {
+            this.originalStorage.release();
+            this.originalStorage = null;
         }
     }
 
@@ -65,6 +68,9 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
     public void resetContents()
     {
         if (this.originalStorage != null) {
+            if (this.storage != null) {
+                this.storage.release();
+            }
             this.storage = this.originalStorage;
         }
     }
