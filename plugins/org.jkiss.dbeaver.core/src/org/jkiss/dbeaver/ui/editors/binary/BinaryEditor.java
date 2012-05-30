@@ -227,6 +227,18 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void doSave(IProgressMonitor monitor)
     {
+        if (getEditorInput() instanceof IPathEditorInput) {
+            final IPath absolutePath = Platform.getLocation().append(
+                ((IPathEditorInput) getEditorInput()).getPath());
+            File systemFile = absolutePath.toFile();
+            // Save to file
+            try {
+                manager.getContent().get(systemFile);
+            }
+            catch (IOException e) {
+                log.error("Could not save binary content", e);
+            }
+        }
     }
 
 
