@@ -4,11 +4,15 @@
 
 package org.jkiss.dbeaver.ui.dialogs.data;
 
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -19,6 +23,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -30,6 +37,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
     private DBDCursor value;
     private ResultSetViewer resultSetViewer;
     private CursorDataContainer dataContainer;
+    private static boolean keepStatementOpenToggleState = false;
 
     public CursorViewDialog(DBDValueController valueController) {
         super(valueController);
@@ -39,10 +47,34 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        DBDValueController valueController = getValueController();
+        final DBDValueController valueController = getValueController();
         value = (DBDCursor) valueController.getValue();
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
+
+        if (value instanceof DBDCursor) {
+            IPreferenceStore globalPreferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
+            if (!globalPreferenceStore.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN) && !keepStatementOpenToggleState) {
+                MessageDialogWithToggle dialogWithToggle = MessageDialogWithToggle.openOkCancelConfirm(
+                        getShell(),
+                        CoreMessages.dialog_cursor_view_keep_cursor_title,
+                        CoreMessages.dialog_cursor_view_keep_cursor_message,
+                        null, keepStatementOpenToggleState, null, null);
+                keepStatementOpenToggleState = dialogWithToggle.getToggleState();
+                if (dialogWithToggle.getReturnCode() == Window.OK) {
+                    globalPreferenceStore.setValue(PrefConstants.KEEP_STATEMENT_OPEN, true);
+                    ((SQLEditor)valueController.getValueSite().getPart()).getResultsView().refresh();
+                }
+                dialogGroup.getDisplay().asyncExec(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        close();
+                    }
+                });
+            }
+        }
 
         resultSetViewer = new ResultSetViewer(dialogGroup, valueController.getValueSite(), this);
 
