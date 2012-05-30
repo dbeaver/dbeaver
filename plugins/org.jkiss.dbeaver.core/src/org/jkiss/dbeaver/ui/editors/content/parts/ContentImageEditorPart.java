@@ -82,6 +82,9 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
     }
 
     private void loadImage() {
+        if (imageViewer == null || imageViewer.isDisposed()) {
+            return;
+        }
         IEditorInput input = getEditorInput();
         if (input instanceof IPathEditorInput) {
             try {
@@ -159,7 +162,6 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
 
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
-
         IResourceDelta delta = event.getDelta();
         if (delta == null) {
             return;

@@ -6,10 +6,7 @@ package org.jkiss.dbeaver.ui.editors.binary;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -30,7 +27,9 @@ import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -227,9 +226,10 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void doSave(IProgressMonitor monitor)
     {
-        if (getEditorInput() instanceof IPathEditorInput) {
+        IEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof IPathEditorInput) {
             final IPath absolutePath = Platform.getLocation().append(
-                ((IPathEditorInput) getEditorInput()).getPath());
+                ((IPathEditorInput) editorInput).getPath());
             File systemFile = absolutePath.toFile();
             // Save to file
             try {
@@ -237,6 +237,11 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             }
             catch (IOException e) {
                 log.error("Could not save binary content", e);
+            }
+            // Sync file changes
+            IFile file = (IFile) editorInput.getAdapter(IFile.class);
+            if (file != null) {
+                ContentUtils.syncFile(RuntimeUtils.makeMonitor(monitor), file);
             }
         }
     }
