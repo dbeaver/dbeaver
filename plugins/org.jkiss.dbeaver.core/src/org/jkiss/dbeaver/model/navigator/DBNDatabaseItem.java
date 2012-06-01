@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DBNDatabaseItem
@@ -62,6 +63,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     @Override
     public Object getValueObject()
     {
+        getNodeItemPath();
         return object;
     }
 
@@ -76,4 +78,5 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     {
         return true;
     }
+
 }

@@ -94,26 +94,6 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         }
     }
 
-    public String getNodeItemPath()
-    {
-        StringBuilder pathName = new StringBuilder();
-        pathName.append(getNodeName());
-
-        for (DBNNode parent = getParentNode(); parent instanceof DBNDatabaseNode; parent = parent.getParentNode()) {
-            if (!(parent instanceof DBNDatabaseItem)) {
-                // skip folders
-                continue;
-            }
-            String parentName = ((DBNDatabaseItem) parent).getMeta().getPath();
-            if (!CommonUtils.isEmpty(parentName)) {
-                log.debug("Path not specified in meta node " + parent.getNodeFullName());
-                parentName = "?";
-            }
-            pathName.insert(0, '.').insert(0, parentName);
-        }
-        return pathName.toString();
-    }
-
     public String getNodeFullName()
     {
         StringBuilder pathName = new StringBuilder();

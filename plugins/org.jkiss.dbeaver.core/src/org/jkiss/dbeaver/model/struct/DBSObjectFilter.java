@@ -9,6 +9,7 @@ public class DBSObjectFilter
 {
     private String name;
     private String description;
+    private boolean enabled;
     private List<String> includes;
     private List<String> excludes;
 
@@ -30,6 +31,16 @@ public class DBSObjectFilter
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
     }
 
     public List<String> getIncludes()
