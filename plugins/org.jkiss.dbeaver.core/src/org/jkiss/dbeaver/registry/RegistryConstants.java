@@ -74,6 +74,7 @@ public class RegistryConstants {
     public static final String TAG_FOLDER = "folder"; //$NON-NLS-1$
     public static final String TAG_ITEMS = "items"; //$NON-NLS-1$
     public static final String TAG_OBJECT = "object"; //$NON-NLS-1$
+
     static final String TAG_TREE = "tree"; //$NON-NLS-1$
     static final String TAG_DRIVER_PROPERTIES = "driver-properties"; //$NON-NLS-1$
     static final String TAG_VIEWS = "views"; //$NON-NLS-1$
@@ -100,4 +101,28 @@ public class RegistryConstants {
     public static final String ATTR_UI_CLASS = "uiClass"; //$NON-NLS-1$
     public static final String ATTR_SECURED = "secured"; //$NON-NLS-1$
 
+    public static final String TAG_DATA_SOURCE = "data-source"; //$NON-NLS-1$
+    public static final String TAG_EVENT = "event"; //$NON-NLS-1$
+    public static final String TAG_NETWORK_HANDLER = "network-handler"; //$NON-NLS-1$
+    public static final String TAG_CUSTOM_PROPERTY = "custom-property"; //$NON-NLS-1$
+    public static final String TAG_DESCRIPTION = "description"; //$NON-NLS-1$
+    public static final String TAG_CONNECTION = "connection"; //$NON-NLS-1$
+
+    public static final String ATTR_CREATE_DATE = "create-date"; //$NON-NLS-1$
+    public static final String ATTR_UPDATE_DATE = "update-date"; //$NON-NLS-1$
+    public static final String ATTR_LOGIN_DATE = "login-date"; //$NON-NLS-1$
+    public static final String ATTR_SAVE_PASSWORD = "save-password"; //$NON-NLS-1$
+    public static final String ATTR_SHOW_SYSTEM_OBJECTS = "show-system-objects"; //$NON-NLS-1$
+    public static final String ATTR_READ_ONLY = "read-only"; //$NON-NLS-1$
+    public static final String ATTR_FILTER_CATALOG = "filter-catalog"; //$NON-NLS-1$
+    public static final String ATTR_FILTER_SCHEMA = "filter-schema"; //$NON-NLS-1$
+    public static final String ATTR_HOST = "host"; //$NON-NLS-1$
+    public static final String ATTR_SERVER = "server"; //$NON-NLS-1$
+    public static final String ATTR_DATABASE = "database"; //$NON-NLS-1$
+    public static final String ATTR_USER = "user"; //$NON-NLS-1$
+    public static final String ATTR_PASSWORD = "password"; //$NON-NLS-1$
+    public static final String ATTR_HOME = "home"; //$NON-NLS-1$
+    public static final String ATTR_SHOW_PANEL = "show-panel"; //$NON-NLS-1$
+    public static final String ATTR_WAIT_PROCESS = "wait-process"; //$NON-NLS-1$
+    public static final String ATTR_TERMINATE_AT_DISCONNECT = "terminate-at-disconnect"; //$NON-NLS-1$
 }

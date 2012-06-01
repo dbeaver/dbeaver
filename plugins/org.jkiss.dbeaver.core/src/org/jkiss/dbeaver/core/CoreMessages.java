@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.core;
@@ -390,6 +390,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_checkbox_save_password_locally;
 
 	public static String dialog_connection_wizard_final_checkbox_show_system_objects;
+
+    public static String dialog_connection_wizard_final_checkbox_connection_readonly;
 
 	public static String dialog_connection_wizard_final_default_new_connection_name;
 

@@ -51,6 +51,8 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     boolean isShowSystemObjects();
 
+    boolean isConnectionReadOnly();
+
     String getCatalogFilter();
 
     String getSchemaFilter();

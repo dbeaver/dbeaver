@@ -8,6 +8,7 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -67,6 +68,9 @@ public class ObjectPropertyTester extends PropertyTester
             }/* else if (node.isManagable() && node instanceof DBSWrapper) {
                 objectType = ((DBSWrapper)node).getObject() == null ? null : ((DBSWrapper)node).getObject().getClass();
             }*/
+            if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
+                return false;
+            }
             if (objectType == null || !hasObjectManager(objectType, DBEObjectMaker.class)) {
                 return false;
             }
@@ -93,6 +97,7 @@ public class ObjectPropertyTester extends PropertyTester
             if (node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper)node).getObject();
                 return
+                    !isReadOnly(object) &&
                     node.getParentNode() instanceof DBNContainer &&
                     object != null &&
                     hasObjectManager(object.getClass(), DBEObjectMaker.class);
@@ -108,6 +113,7 @@ public class ObjectPropertyTester extends PropertyTester
             if (node instanceof DBNDatabaseNode) {
                 DBSObject object = ((DBNDatabaseNode)node).getObject();
                 return
+                    !isReadOnly(object) &&
                     node.getParentNode() instanceof DBNContainer &&
                     object != null &&
                     hasObjectManager(object.getClass(), DBEObjectRenamer.class);
@@ -122,6 +128,12 @@ public class ObjectPropertyTester extends PropertyTester
             }
         }
         return false;
+    }
+
+    private boolean isReadOnly(DBSObject object)
+    {
+        DBPDataSource dataSource = object.getDataSource();
+        return dataSource == null || dataSource.getContainer().isConnectionReadOnly();
     }
 
     private static boolean hasObjectManager(Class objectType, Class<? extends DBEObjectManager> managerType)

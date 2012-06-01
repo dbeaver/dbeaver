@@ -76,6 +76,7 @@ public class DataSourceDescriptor
     private String description;
     private boolean savePassword;
     private boolean showSystemObjects;
+    private boolean connectionReadOnly;
     private String catalogFilter;
     private String schemaFilter;
     private Date createDate;
@@ -205,6 +206,17 @@ public class DataSourceDescriptor
     public void setShowSystemObjects(boolean showSystemObjects)
     {
         this.showSystemObjects = showSystemObjects;
+    }
+
+    @Override
+    public boolean isConnectionReadOnly()
+    {
+        return connectionReadOnly;
+    }
+
+    public void setConnectionReadOnly(boolean connectionReadOnly)
+    {
+        this.connectionReadOnly = connectionReadOnly;
     }
 
     @Override

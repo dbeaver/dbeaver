@@ -364,41 +364,42 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void saveDataSource(XMLBuilder xml, DataSourceDescriptor dataSource, PasswordEncrypter encrypter)
         throws IOException
     {
-        xml.startElement("data-source");
-        xml.addAttribute("id", dataSource.getId());
-        xml.addAttribute("provider", dataSource.getDriver().getProviderDescriptor().getId());
-        xml.addAttribute("driver", dataSource.getDriver().getId());
-        xml.addAttribute("name", dataSource.getName());
-        xml.addAttribute("create-date", dataSource.getCreateDate().getTime());
+        xml.startElement(RegistryConstants.TAG_DATA_SOURCE);
+        xml.addAttribute(RegistryConstants.ATTR_ID, dataSource.getId());
+        xml.addAttribute(RegistryConstants.ATTR_PROVIDER, dataSource.getDriver().getProviderDescriptor().getId());
+        xml.addAttribute(RegistryConstants.ATTR_DRIVER, dataSource.getDriver().getId());
+        xml.addAttribute(RegistryConstants.ATTR_NAME, dataSource.getName());
+        xml.addAttribute(RegistryConstants.ATTR_CREATE_DATE, dataSource.getCreateDate().getTime());
         if (dataSource.getUpdateDate() != null) {
-            xml.addAttribute("update-date", dataSource.getUpdateDate().getTime());
+            xml.addAttribute(RegistryConstants.ATTR_UPDATE_DATE, dataSource.getUpdateDate().getTime());
         }
         if (dataSource.getLoginDate() != null) {
-            xml.addAttribute("login-date", dataSource.getLoginDate().getTime());
+            xml.addAttribute(RegistryConstants.ATTR_LOGIN_DATE, dataSource.getLoginDate().getTime());
         }
-        xml.addAttribute("save-password", dataSource.isSavePassword());
-        xml.addAttribute("show-system-objects", dataSource.isShowSystemObjects());
+        xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
+        xml.addAttribute(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
+        xml.addAttribute(RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
         if (!CommonUtils.isEmpty(dataSource.getCatalogFilter())) {
-            xml.addAttribute("filter-catalog", dataSource.getCatalogFilter());
+            xml.addAttribute(RegistryConstants.ATTR_FILTER_CATALOG, dataSource.getCatalogFilter());
         }
         if (!CommonUtils.isEmpty(dataSource.getSchemaFilter())) {
-            xml.addAttribute("filter-schema", dataSource.getSchemaFilter());
+            xml.addAttribute(RegistryConstants.ATTR_FILTER_SCHEMA, dataSource.getSchemaFilter());
         }
 
         {
             // Connection info
             DBPConnectionInfo connectionInfo = dataSource.getConnectionInfo();
-            xml.startElement("connection");
+            xml.startElement(RegistryConstants.TAG_CONNECTION);
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                xml.addAttribute("host", connectionInfo.getHostName());
+                xml.addAttribute(RegistryConstants.ATTR_HOST, connectionInfo.getHostName());
             }
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                xml.addAttribute("port", connectionInfo.getHostPort());
+                xml.addAttribute(RegistryConstants.ATTR_PORT, connectionInfo.getHostPort());
             }
-            xml.addAttribute("server", CommonUtils.getString(connectionInfo.getServerName()));
-            xml.addAttribute("database", CommonUtils.getString(connectionInfo.getDatabaseName()));
-            xml.addAttribute("url", CommonUtils.getString(connectionInfo.getUrl()));
-            xml.addAttribute("user", CommonUtils.getString(connectionInfo.getUserName()));
+            xml.addAttribute(RegistryConstants.ATTR_SERVER, CommonUtils.getString(connectionInfo.getServerName()));
+            xml.addAttribute(RegistryConstants.ATTR_DATABASE, CommonUtils.getString(connectionInfo.getDatabaseName()));
+            xml.addAttribute(RegistryConstants.ATTR_URL, CommonUtils.getString(connectionInfo.getUrl()));
+            xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.getString(connectionInfo.getUserName()));
             if (dataSource.isSavePassword() && !CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
                 String encPassword = connectionInfo.getUserPassword();
                 if (!CommonUtils.isEmpty(encPassword)) {
@@ -409,39 +410,39 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         log.error("Could not encrypt password. Save it as is", e);
                     }
                 }
-                xml.addAttribute("password", encPassword);
+                xml.addAttribute(RegistryConstants.ATTR_PASSWORD, encPassword);
             }
             if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
-                xml.addAttribute("home", connectionInfo.getClientHomeId());
+                xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
             }
             if (connectionInfo.getProperties() != null) {
                 for (Map.Entry<Object, Object> entry : connectionInfo.getProperties().entrySet()) {
-                    xml.startElement("property");
-                    xml.addAttribute("name", CommonUtils.toString(entry.getKey()));
-                    xml.addAttribute("value", CommonUtils.toString(entry.getValue()));
+                    xml.startElement(RegistryConstants.TAG_PROPERTY);
+                    xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
+                    xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
                     xml.endElement();
                 }
             }
             // Save events
             for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
                 DBRShellCommand command = connectionInfo.getEvent(eventType);
-                xml.startElement("event");
-                xml.addAttribute("type", eventType.name());
-                xml.addAttribute("enabled", command.isEnabled());
-                xml.addAttribute("show-panel", command.isShowProcessPanel());
-                xml.addAttribute("wait-process", command.isWaitProcessFinish());
-                xml.addAttribute("terminate-at-disconnect", command.isTerminateAtDisconnect());
+                xml.startElement(RegistryConstants.TAG_EVENT);
+                xml.addAttribute(RegistryConstants.ATTR_TYPE, eventType.name());
+                xml.addAttribute(RegistryConstants.ATTR_ENABLED, command.isEnabled());
+                xml.addAttribute(RegistryConstants.ATTR_SHOW_PANEL, command.isShowProcessPanel());
+                xml.addAttribute(RegistryConstants.ATTR_WAIT_PROCESS, command.isWaitProcessFinish());
+                xml.addAttribute(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT, command.isTerminateAtDisconnect());
                 xml.addText(command.getCommand());
                 xml.endElement();
             }
             // Save network handlers' configurations
             for (DBWHandlerConfiguration configuration : connectionInfo.getDeclaredHandlers()) {
-                xml.startElement("network-handler");
-                xml.addAttribute("type", configuration.getType().name());
-                xml.addAttribute("id", CommonUtils.getString(configuration.getId()));
-                xml.addAttribute("enabled", configuration.isEnabled());
-                xml.addAttribute("user", CommonUtils.getString(configuration.getUserName()));
-                xml.addAttribute("save-password", configuration.isSavePassword());
+                xml.startElement(RegistryConstants.TAG_NETWORK_HANDLER);
+                xml.addAttribute(RegistryConstants.ATTR_TYPE, configuration.getType().name());
+                xml.addAttribute(RegistryConstants.ATTR_ID, CommonUtils.getString(configuration.getId()));
+                xml.addAttribute(RegistryConstants.ATTR_ENABLED, configuration.isEnabled());
+                xml.addAttribute(RegistryConstants.ATTR_USER, CommonUtils.getString(configuration.getUserName()));
+                xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, configuration.isSavePassword());
                 if (configuration.isSavePassword() && !CommonUtils.isEmpty(configuration.getPassword())) {
                     String encPassword = configuration.getPassword();
                     if (!CommonUtils.isEmpty(encPassword)) {
@@ -452,12 +453,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             log.error("Could not encrypt password. Save it as is", e);
                         }
                     }
-                    xml.addAttribute("password", encPassword);
+                    xml.addAttribute(RegistryConstants.ATTR_PASSWORD, encPassword);
                 }
                 for (Map.Entry<String, String> entry : configuration.getProperties().entrySet()) {
-                    xml.startElement("property");
-                    xml.addAttribute("name", entry.getKey());
-                    xml.addAttribute("value", CommonUtils.getString(entry.getValue()));
+                    xml.startElement(RegistryConstants.TAG_PROPERTY);
+                    xml.addAttribute(RegistryConstants.ATTR_NAME, entry.getKey());
+                    xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.getString(entry.getValue()));
                     xml.endElement();
                 }
                 xml.endElement();
@@ -475,9 +476,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 if (propValue == null || (defValue != null && defValue.equals(propValue))) {
                     continue;
                 }
-                xml.startElement("custom-property");
-                xml.addAttribute("name", propName);
-                xml.addAttribute("value", propValue);
+                xml.startElement(RegistryConstants.TAG_CUSTOM_PROPERTY);
+                xml.addAttribute(RegistryConstants.ATTR_NAME, propName);
+                xml.addAttribute(RegistryConstants.ATTR_VALUE, propValue);
                 xml.endElement();
             }
         }
@@ -511,23 +512,23 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         {
             isDescription = false;
             curCommand = null;
-            if (localName.equals("data-source")) {
-            	String name = atts.getValue("name");
-                String id = atts.getValue("id");
+            if (localName.equals(RegistryConstants.TAG_DATA_SOURCE)) {
+            	String name = atts.getValue(RegistryConstants.ATTR_NAME);
+                String id = atts.getValue(RegistryConstants.ATTR_ID);
                 if (id == null) {
                     // Support of old version without ID
                     id = name;
                 }
-                String providerId = atts.getValue("provider");
+                String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
                 DataSourceProviderDescriptor provider = DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProvider(providerId);
                 if (provider == null) {
                     log.warn("Can't find datasource provider " + providerId + " for datasource '" + name + "'");
                     curDataSource = null;
                     return;
                 }
-                DriverDescriptor driver = provider.getDriver(atts.getValue("driver"));
+                DriverDescriptor driver = provider.getDriver(atts.getValue(RegistryConstants.ATTR_DRIVER));
                 if (driver == null) {
-                    log.warn("Can't find driver " + atts.getValue("driver") + " in datasource provider " + provider.getId() + " for datasource '" + name + "'");
+                    log.warn("Can't find driver " + atts.getValue(RegistryConstants.ATTR_DRIVER) + " in datasource provider " + provider.getId() + " for datasource '" + name + "'");
                     curDataSource = null;
                     return;
                 }
@@ -537,77 +538,78 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     driver,
                     new DBPConnectionInfo());
                 curDataSource.setName(name);
-                String createDate = atts.getValue("create-date");
+                String createDate = atts.getValue(RegistryConstants.ATTR_CREATE_DATE);
                 if (!CommonUtils.isEmpty(createDate)) {
                     curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
                 }
-                String udateDate = atts.getValue("update-date");
+                String udateDate = atts.getValue(RegistryConstants.ATTR_UPDATE_DATE);
                 if (!CommonUtils.isEmpty(udateDate)) {
                     curDataSource.setUpdateDate(new Date(Long.parseLong(udateDate)));
                 }
-                String logineDate = atts.getValue("login-date");
+                String logineDate = atts.getValue(RegistryConstants.ATTR_LOGIN_DATE);
                 if (!CommonUtils.isEmpty(logineDate)) {
                     curDataSource.setLoginDate(new Date(Long.parseLong(logineDate)));
                 }
-                curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue("save-password")));
-                curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue("show-system-objects")));
-                curDataSource.setCatalogFilter(atts.getValue("filter-catalog"));
-                curDataSource.setSchemaFilter(atts.getValue("filter-schema"));
+                curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
+                curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
+                curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
+                curDataSource.setCatalogFilter(atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG));
+                curDataSource.setSchemaFilter(atts.getValue(RegistryConstants.ATTR_FILTER_SCHEMA));
 
                 dataSources.add(curDataSource);
-            } else if (localName.equals("connection")) {
+            } else if (localName.equals(RegistryConstants.TAG_CONNECTION)) {
                 if (curDataSource != null) {
-                    curDataSource.getConnectionInfo().setHostName(atts.getValue("host"));
-                    curDataSource.getConnectionInfo().setHostPort(atts.getValue("port"));
-                    curDataSource.getConnectionInfo().setServerName(atts.getValue("server"));
-                    curDataSource.getConnectionInfo().setDatabaseName(atts.getValue("database"));
-                    curDataSource.getConnectionInfo().setUrl(atts.getValue("url"));
-                    curDataSource.getConnectionInfo().setUserName(atts.getValue("user"));
-                    curDataSource.getConnectionInfo().setUserPassword(decryptPassword(atts.getValue("password")));
-                    curDataSource.getConnectionInfo().setClientHomeId(atts.getValue("home"));
+                    curDataSource.getConnectionInfo().setHostName(atts.getValue(RegistryConstants.ATTR_HOST));
+                    curDataSource.getConnectionInfo().setHostPort(atts.getValue(RegistryConstants.ATTR_PORT));
+                    curDataSource.getConnectionInfo().setServerName(atts.getValue(RegistryConstants.ATTR_SERVER));
+                    curDataSource.getConnectionInfo().setDatabaseName(atts.getValue(RegistryConstants.ATTR_DATABASE));
+                    curDataSource.getConnectionInfo().setUrl(atts.getValue(RegistryConstants.ATTR_URL));
+                    curDataSource.getConnectionInfo().setUserName(atts.getValue(RegistryConstants.ATTR_USER));
+                    curDataSource.getConnectionInfo().setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
+                    curDataSource.getConnectionInfo().setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
                 }
-            } else if (localName.equals("property")) {
+            } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
                 if (curNetworkHandler != null) {
                     curNetworkHandler.getProperties().put(
-                        atts.getValue("name"),
-                        atts.getValue("value"));
+                        atts.getValue(RegistryConstants.ATTR_NAME),
+                        atts.getValue(RegistryConstants.ATTR_VALUE));
                 } else if (curDataSource != null) {
                     curDataSource.getConnectionInfo().getProperties().put(
-                        atts.getValue("name"),
-                        atts.getValue("value"));
+                        atts.getValue(RegistryConstants.ATTR_NAME),
+                        atts.getValue(RegistryConstants.ATTR_VALUE));
                 }
-            } else if (localName.equals("event")) {
+            } else if (localName.equals(RegistryConstants.TAG_EVENT)) {
                 if (curDataSource != null) {
-                    DBPConnectionEventType eventType = DBPConnectionEventType.valueOf(atts.getValue("type"));
+                    DBPConnectionEventType eventType = DBPConnectionEventType.valueOf(atts.getValue(RegistryConstants.ATTR_TYPE));
                     curCommand = new DBRShellCommand("");
-                    curCommand.setEnabled(CommonUtils.getBoolean(atts.getValue("enabled")));
-                    curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue("show-panel")));
-                    curCommand.setWaitProcessFinish(CommonUtils.getBoolean(atts.getValue("wait-process")));
-                    curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue("terminate-at-disconnect")));
+                    curCommand.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
+                    curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_PANEL)));
+                    curCommand.setWaitProcessFinish(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_WAIT_PROCESS)));
+                    curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT)));
                     curDataSource.getConnectionInfo().setEvent(eventType, curCommand);
                 }
-            } else if (localName.equals("custom-property")) {
+            } else if (localName.equals(RegistryConstants.TAG_CUSTOM_PROPERTY)) {
                 if (curDataSource != null) {
                     curDataSource.getPreferenceStore().getProperties().put(
-                        atts.getValue("name"),
-                        atts.getValue("value"));
+                        atts.getValue(RegistryConstants.ATTR_NAME),
+                        atts.getValue(RegistryConstants.ATTR_VALUE));
                 }
-            } else if (localName.equals("network-handler")) {
+            } else if (localName.equals(RegistryConstants.TAG_NETWORK_HANDLER)) {
                 if (curDataSource != null) {
-                    String handlerId = atts.getValue("id");
+                    String handlerId = atts.getValue(RegistryConstants.ATTR_ID);
                     NetworkHandlerDescriptor handlerDescriptor = DBeaverCore.getInstance().getNetworkHandlerRegistry().getDescriptor(handlerId);
                     if (handlerDescriptor == null) {
                         log.warn("Can't find network handler '" + handlerId + "'");
                         return;
                     }
                     curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
-                    curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue("enabled")));
-                    curNetworkHandler.setUserName(CommonUtils.getString(atts.getValue("user")));
-                    curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue("save-password")));
-                    curNetworkHandler.setPassword(decryptPassword(atts.getValue("password")));
+                    curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
+                    curNetworkHandler.setUserName(CommonUtils.getString(atts.getValue(RegistryConstants.ATTR_USER)));
+                    curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
+                    curNetworkHandler.setPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
                     curDataSource.getConnectionInfo().addHandler(curNetworkHandler);
                 }
-            } else if (localName.equals("description")) {
+            } else if (localName.equals(RegistryConstants.TAG_DESCRIPTION)) {
                 isDescription = true;
             }
         }
@@ -628,9 +630,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
             throws XMLException
         {
-            if (localName.equals("data-source")) {
+            if (localName.equals(RegistryConstants.TAG_DATA_SOURCE)) {
                 curDataSource = null;
-            } else if (localName.equals("network-handler")) {
+            } else if (localName.equals(RegistryConstants.TAG_NETWORK_HANDLER)) {
                 curNetworkHandler = null;
             }
             isDescription = false;

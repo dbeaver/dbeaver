@@ -122,6 +122,11 @@ public abstract class JDBCDataSource
                 throw new DBException("Null connection returned");
             }
 
+            // Set read-only flag
+            if (container.isConnectionReadOnly()) {
+                connection.setReadOnly(true);
+            }
+
             return connection;
         }
         catch (SQLException ex) {

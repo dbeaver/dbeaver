@@ -128,6 +128,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         if (dataSourceDescriptor != null) {
             savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
             showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
+            readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
             catFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getCatalogFilter()));
             schemaFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getSchemaFilter()));
         }
@@ -195,6 +196,11 @@ class ConnectionPageFinal extends ActiveWizardPage {
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             showSystemObjects.setLayoutData(gd);
+
+            readOnlyConnection = UIUtils.createCheckbox(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly, dataSourceDescriptor == null || dataSourceDescriptor.isConnectionReadOnly());
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            readOnlyConnection.setLayoutData(gd);
 
             String catFilter = dataSourceDescriptor == null ? null : dataSourceDescriptor.getCatalogFilter();
             catFilterText = UIUtils.createCheckText(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_catalogs, CommonUtils.getString(catFilter), !CommonUtils.isEmpty(catFilter), 200);
@@ -274,6 +280,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         dataSource.setName(connectionNameText.getText());
         dataSource.setSavePassword(savePasswordCheck.getSelection());
         dataSource.setShowSystemObjects(showSystemObjects.getSelection());
+        dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
         }

@@ -800,7 +800,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             return false;
         }
         DBPDataSource dataSource = dataContainer.getDataSource();
-        return dataSource != null && dataSource.isConnected() && !dataSource.getInfo().isReadOnlyData();
+        return dataSource != null &&
+            dataSource.isConnected() &&
+            !dataSource.getContainer().isConnectionReadOnly() &&
+            !dataSource.getInfo().isReadOnlyData();
     }
 
     @Override
