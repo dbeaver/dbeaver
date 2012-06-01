@@ -66,7 +66,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     }
 
     @Override
-    public String getNodePathName()
+    public String getNodeFullName()
     {
         StringBuilder pathName = new StringBuilder();
         for (DBNNode parent = getParentNode(); parent != null; parent = parent.getParentNode()) {

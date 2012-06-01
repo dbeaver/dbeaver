@@ -58,7 +58,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     @Override
     public String getName()
     {
-        return node.getNodePathName();
+        return node.getNodeFullName();
     }
 
     @Override

@@ -39,7 +39,7 @@ public class EntityHyperlink implements IHyperlink
     @Override
     public String getHyperlinkText()
     {
-        return node.getNodePathName();
+        return node.getNodeFullName();
     }
 
     @Override

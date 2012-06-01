@@ -153,7 +153,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                                 }
                             }
                             if (nextChild == null) {
-                                throw new DBException("Can't find node '" + path + "' in '" + currentNode.getNodePathName() + "'"); //$NON-NLS-2$ //$NON-NLS-3$
+                                throw new DBException("Can't find node '" + path + "' in '" + currentNode.getNodeFullName() + "'"); //$NON-NLS-2$ //$NON-NLS-3$
                             }
                             currentNode = nextChild;
                         }
@@ -172,7 +172,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                                 }
                             });
                         } else if (currentNode != null) {
-                            throw new DBException("Node '" + currentNode.getNodePathName() + "' is not a database object");
+                            throw new DBException("Node '" + currentNode.getNodeFullName() + "' is not a database object");
                         } else {
                             throw new DBException("Can't find database node by path");
                         }

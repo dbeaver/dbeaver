@@ -67,12 +67,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     }
 
     @Override
-    public String getNodePathName()
+    public String getNodeFullName()
     {
         if (getObject() instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject)getObject()).getFullQualifiedName();
         } else {
-            return super.getNodePathName();
+            return super.getNodeFullName();
         }
     }
 

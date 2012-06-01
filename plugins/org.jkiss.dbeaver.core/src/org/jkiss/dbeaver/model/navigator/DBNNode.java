@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
@@ -14,6 +12,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -95,7 +94,27 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         }
     }
 
-    public String getNodePathName()
+    public String getNodeItemPath()
+    {
+        StringBuilder pathName = new StringBuilder();
+        pathName.append(getNodeName());
+
+        for (DBNNode parent = getParentNode(); parent instanceof DBNDatabaseNode; parent = parent.getParentNode()) {
+            if (!(parent instanceof DBNDatabaseItem)) {
+                // skip folders
+                continue;
+            }
+            String parentName = ((DBNDatabaseItem) parent).getMeta().getPath();
+            if (!CommonUtils.isEmpty(parentName)) {
+                log.debug("Path not specified in meta node " + parent.getNodeFullName());
+                parentName = "?";
+            }
+            pathName.insert(0, '.').insert(0, parentName);
+        }
+        return pathName.toString();
+    }
+
+    public String getNodeFullName()
     {
         StringBuilder pathName = new StringBuilder();
         pathName.append(getNodeName());
@@ -152,7 +171,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
      * navigation model - each occurrence will be refreshed then.
      *
      * @param monitor progress monitor
-     * @param source
+     * @param source event source
      * @return real refreshed node or null if nothing was refreshed
      * @throws DBException on any internal exception
      */

@@ -73,7 +73,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     }
 
     @Override
-    public String getNodePathName()
+    public String getNodeFullName()
     {
         return getNodeName();
     }
