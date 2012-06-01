@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.model.struct;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,6 +13,19 @@ public class DBSObjectFilter
     private boolean enabled;
     private List<String> includes;
     private List<String> excludes;
+
+    public DBSObjectFilter()
+    {
+    }
+
+    public DBSObjectFilter(DBSObjectFilter filter)
+    {
+        this.name = filter.name;
+        this.description = filter.description;
+        this.enabled = filter.enabled;
+        this.includes = new ArrayList<String>(filter.includes);
+        this.excludes = new ArrayList<String>(filter.excludes);
+    }
 
     public String getName()
     {

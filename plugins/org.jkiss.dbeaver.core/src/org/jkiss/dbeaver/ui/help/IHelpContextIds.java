@@ -31,4 +31,5 @@ public interface IHelpContextIds
     public static final String CTX_SEARCH_OBJECTS = "search-objects"; //$NON-NLS-1$
     public static final String CTX_EDIT_CONNECTION_EVENTS = "connection-events";
     public static final String CTX_EDIT_CONNECTION_TUNNELS = "connection-tunnels";
+    public static final String CTX_EDIT_OBJECT_FILTERS = "object-filters";
 }

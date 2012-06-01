@@ -63,7 +63,6 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     @Override
     public Object getValueObject()
     {
-        getNodeItemPath();
         return object;
     }
 

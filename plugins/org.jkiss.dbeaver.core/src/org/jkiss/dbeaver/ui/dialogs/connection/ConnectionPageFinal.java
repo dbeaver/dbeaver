@@ -46,6 +46,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private Text connectionNameText;
     private Button savePasswordCheck;
     private Button showSystemObjects;
+    private Button readOnlyConnection;
     private Button testButton;
     private Text catFilterText;
     private Text schemaFilterText;
