@@ -30,7 +30,6 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
     private Combo localeCombo;
     private Text usernameText;
     private Text passwordText;
-    private Button testButton;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/wmi_logo.png");
 
@@ -149,26 +148,6 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
             usernameText.addModifyListener(textListener);
 
 
-            testButton = new Button(addrGroup, SWT.PUSH);
-            testButton.setText("Test Connection");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            gd.horizontalSpan = 2;
-            testButton.setLayoutData(gd);
-            testButton.addSelectionListener(new SelectionListener()
-            {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    site.testConnection();
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
-            });
-            testButton.setEnabled(false);
-
             Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
@@ -247,9 +226,6 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
     private void evaluateURL()
     {
         site.updateButtons();
-        if (testButton != null) {
-            testButton.setEnabled(this.isComplete());
-        }
     }
 
 

@@ -43,7 +43,6 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     private Text userNameText;
     private Combo userRoleCombo;
     private Text passwordText;
-    private Button testButton;
     private Combo tnsNameCombo;
 	private CTabFolder connectionTypeFolder;
     private Composite bottomControls;
@@ -335,26 +334,6 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
         Label ph = new Label(bottomControls, SWT.NONE);
         ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        {
-            testButton = new Button(bottomControls, SWT.PUSH);
-            testButton.setText(OracleMessages.dialog_connection_test_connection);
-            testButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            testButton.addSelectionListener(new SelectionListener()
-            {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    site.testConnection();
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
-            });
-            testButton.setEnabled(false);
-        }
     }
 
     private Composite createConfigurationTab(Composite parent)
@@ -598,9 +577,6 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     private void updateUI()
     {
         site.updateButtons();
-        if (testButton != null) {
-            testButton.setEnabled(this.isComplete());
-        }
     }
 
     private class ControlsListener implements ModifyListener, SelectionListener {

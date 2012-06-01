@@ -85,7 +85,7 @@ public class ClientHomesPanel extends Composite
         GridLayout layout = new GridLayout(2, true);
         setLayout(layout);
 
-        Composite listGroup = UIUtils.createPlaceholder(this, 1);
+        Composite listGroup = UIUtils.createPlaceholder(this, 1, 5);
         listGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         homesTable = new Table(listGroup, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         homesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -102,7 +102,7 @@ public class ClientHomesPanel extends Composite
                 }
             }
         });
-        Composite buttonsGroup = UIUtils.createPlaceholder(listGroup, 2);
+        Composite buttonsGroup = UIUtils.createPlaceholder(listGroup, 2, 5);
         buttonsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
         Button addButton = new Button(buttonsGroup, SWT.PUSH);
         addButton.setText(CoreMessages.controls_client_homes_panel_button_add_home);

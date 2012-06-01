@@ -33,7 +33,6 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
     private Text usernameText;
     private Text passwordText;
     private ClientHomesSelector homesSelector;
-    private Button testButton;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/mysql_logo.png");
 
@@ -114,7 +113,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         hostText.addModifyListener(textListener);
 
         Label portLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_port);
-        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         portLabel.setLayoutData(gd);
 
         portText = new Text(addrGroup, SWT.BORDER);
@@ -142,11 +141,6 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         gd.grabExcessHorizontalSpace = true;
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(textListener);
-        Composite ph = UIUtils.createPlaceholder(addrGroup, 1);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
-        ph.setLayoutData(gd);
 
         Label passwordLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -156,37 +150,13 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         gd.grabExcessHorizontalSpace = true;
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
-        ph = UIUtils.createPlaceholder(addrGroup, 1);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 2;
-        ph.setLayoutData(gd);
 
-        homesSelector = new ClientHomesSelector(addrGroup, SWT.NONE, "Local Server");
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 3;
-        gd.minimumWidth = 300;
+        homesSelector = new ClientHomesSelector(addrGroup, SWT.NONE, "Local Client");
+        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalSpan = 2;
+        //gd.minimumWidth = 300;
         homesSelector.setLayoutData(gd);
 
-        testButton = new Button(addrGroup, SWT.PUSH);
-        testButton.setText(MySQLMessages.dialog_connection_test_connection);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 1;
-        testButton.setLayoutData(gd);
-        testButton.addSelectionListener(new SelectionListener()
-        {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                site.testConnection();
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        });
-        testButton.setEnabled(false);
         return addrGroup;
     }
 
@@ -262,9 +232,6 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
     private void evaluateURL()
     {
         site.updateButtons();
-        if (testButton != null) {
-            testButton.setEnabled(this.isComplete());
-        }
     }
 
 }

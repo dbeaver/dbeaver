@@ -47,7 +47,6 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private Button savePasswordCheck;
     private Button showSystemObjects;
     private Button readOnlyConnection;
-    private Button testButton;
     private Text catFilterText;
     private Text schemaFilterText;
     private Font boldFont;
@@ -80,9 +79,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
     @Override
     public void activatePage()
     {
-        if (testButton != null) {
+        if (connectionNameText != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
-            testButton.setEnabled(settings != null && settings.isPageComplete());
             if (settings != null && connectionNameText != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
                 DBPConnectionInfo connectionInfo = settings.getConnectionInfo();
                 String newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
@@ -129,8 +127,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
             savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
             showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
             readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
-            catFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getCatalogFilter()));
-            schemaFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getSchemaFilter()));
+            //catFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getCatalogFilter()));
+            //schemaFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getSchemaFilter()));
         }
         long features = 0;
         try {
@@ -138,8 +136,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
         } catch (DBException e) {
             log.error("Can't obtain data source provider instance", e); //$NON-NLS-1$
         }
-        UIUtils.enableCheckText(catFilterText, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
-        UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
+        //UIUtils.enableCheckText(catFilterText, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
+        //UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
     }
 
     @Override
@@ -187,35 +185,57 @@ class ConnectionPageFinal extends ActiveWizardPage {
         }
 
         {
-            Group filterGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_filters, 2, GridData.FILL_HORIZONTAL, 0);
+            Group miscGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_misc, 2, GridData.FILL_HORIZONTAL, 0);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
-            filterGroup.setLayoutData(gd);
+            miscGroup.setLayoutData(gd);
 
-            showSystemObjects = UIUtils.createCheckbox(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects, dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
+            showSystemObjects = UIUtils.createCheckbox(miscGroup, CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects, dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             showSystemObjects.setLayoutData(gd);
 
-            readOnlyConnection = UIUtils.createCheckbox(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly, dataSourceDescriptor == null || dataSourceDescriptor.isConnectionReadOnly());
+            readOnlyConnection = UIUtils.createCheckbox(miscGroup, CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly, dataSourceDescriptor == null || dataSourceDescriptor.isConnectionReadOnly());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             readOnlyConnection.setLayoutData(gd);
-
-            String catFilter = dataSourceDescriptor == null ? null : dataSourceDescriptor.getCatalogFilter();
-            catFilterText = UIUtils.createCheckText(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_catalogs, CommonUtils.getString(catFilter), !CommonUtils.isEmpty(catFilter), 200);
-
-            String schFilter = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getSchemaFilter(); //$NON-NLS-1$
-            schemaFilterText = UIUtils.createCheckText(filterGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_schemas, CommonUtils.getString(schFilter), !CommonUtils.isEmpty(schFilter), 200);
         }
 
         {
-            Composite buttonsGroup = UIUtils.createPlaceholder(group, 3);
-            //buttonsGroup.setLayout(new GridLayout(3, false));
+            //Composite buttonsGroup = UIUtils.createPlaceholder(group, 3);
+            Composite buttonsGroup = new Composite(group, SWT.NONE);
+            gl = new GridLayout(3, false);
+            gl.verticalSpacing = 0;
+            gl.horizontalSpacing = 10;
+            gl.marginHeight = 0;
+            gl.marginWidth = 0;
+            buttonsGroup.setLayout(gl);
+
+            //buttonsGroup.setLayout(new GridLayout(2, true));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
 
+//            String catFilter = dataSourceDescriptor == null ? null : dataSourceDescriptor.getCatalogFilter();
+//            catFilterText = UIUtils.createCheckText(buttonsGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_catalogs, CommonUtils.getString(catFilter), !CommonUtils.isEmpty(catFilter), 200);
+//
+//            String schFilter = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getSchemaFilter(); //$NON-NLS-1$
+//            schemaFilterText = UIUtils.createCheckText(buttonsGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_schemas, CommonUtils.getString(schFilter), !CommonUtils.isEmpty(schFilter), 200);
+
+            {
+                Button filtersButton = new Button(buttonsGroup, SWT.PUSH);
+                filtersButton.setText("Object Filters ...");
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.grabExcessVerticalSpace = true;
+                filtersButton.setLayoutData(gd);
+                filtersButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+
+                    }
+                });
+            }
             {
                 tunnelButton = new Button(buttonsGroup, SWT.PUSH);
                 tunnelButton.setText("Tunneling ...");
@@ -245,22 +265,6 @@ class ConnectionPageFinal extends ActiveWizardPage {
                     }
                 });
             }
-
-            testButton = new Button(buttonsGroup, SWT.PUSH);
-            testButton.setText(CoreMessages.dialog_connection_wizard_final_button_test);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            gd.grabExcessHorizontalSpace = true;
-            gd.grabExcessVerticalSpace = true;
-            testButton.setLayoutData(gd);
-
-            testButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    testConnection();
-                }
-            });
-
         }
 
         setControl(group);
@@ -284,13 +288,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
         }
-        dataSource.setCatalogFilter(catFilterText == null || !catFilterText.isEnabled() ? null : catFilterText.getText());
-        dataSource.setSchemaFilter(schemaFilterText == null || !schemaFilterText.isEnabled() ? null : schemaFilterText.getText());
-    }
-
-    private void testConnection()
-    {
-        wizard.testConnection(wizard.getPageSettings().getConnectionInfo());
+        //dataSource.setCatalogFilter(catFilterText == null || !catFilterText.isEnabled() ? null : catFilterText.getText());
+        //dataSource.setSchemaFilter(schemaFilterText == null || !schemaFilterText.isEnabled() ? null : schemaFilterText.getText());
     }
 
     private void configureEvents()

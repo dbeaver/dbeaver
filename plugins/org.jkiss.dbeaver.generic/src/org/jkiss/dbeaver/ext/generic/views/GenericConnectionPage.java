@@ -40,8 +40,6 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
     // URL
     private Text urlText;
 
-    private Button testButton;
-
     private boolean isCustom;
     private DriverDescriptor.MetaURL metaURL;
 
@@ -135,7 +133,6 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
                 public void modifyText(ModifyEvent e)
                 {
                     site.updateButtons();
-                    testButton.setEnabled(isComplete());
                 }
             });
 
@@ -324,27 +321,6 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
                 {
                 }
             });
-
-            testButton = new Button(buttonsPanel, SWT.PUSH);
-            testButton.setText(GenericMessages.dialog_connection_test_connection_button);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_END);
-            gd.grabExcessHorizontalSpace = true;
-            gd.grabExcessVerticalSpace = true;
-            testButton.setLayoutData(gd);
-            testButton.addSelectionListener(new SelectionListener()
-            {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    site.testConnection();
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
-            });
-            testButton.setEnabled(false);
         }
         return settingsGroup;
     }
@@ -519,7 +495,6 @@ public class GenericConnectionPage extends ConnectionPageAdvanced
     {
         saveSettings(site.getConnectionInfo());
         site.updateButtons();
-        testButton.setEnabled(this.isComplete());
     }
 
     private void showControlGroup(String group, boolean show)

@@ -401,6 +401,8 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_connection_wizard_final_group_security;
 
+    public static String dialog_connection_wizard_final_group_misc;
+
 	public static String dialog_connection_wizard_final_header;
 
 	public static String dialog_connection_wizard_final_label_connection_name;
