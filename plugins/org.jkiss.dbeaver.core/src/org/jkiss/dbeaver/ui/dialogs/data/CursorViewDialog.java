@@ -4,9 +4,8 @@
 
 package org.jkiss.dbeaver.ui.dialogs.data;
 
-import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -23,9 +22,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -54,14 +53,12 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
 
         if (value instanceof DBDCursor) {
             IPreferenceStore globalPreferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
-            if (!globalPreferenceStore.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN) && !keepStatementOpenToggleState) {
-                MessageDialogWithToggle dialogWithToggle = MessageDialogWithToggle.openOkCancelConfirm(
+            if (!globalPreferenceStore.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN)) {
+                if (ConfirmationDialog.showConfirmDialog(
                         getShell(),
-                        CoreMessages.dialog_cursor_view_keep_cursor_title,
-                        CoreMessages.dialog_cursor_view_keep_cursor_message,
-                        null, keepStatementOpenToggleState, null, null);
-                keepStatementOpenToggleState = dialogWithToggle.getToggleState();
-                if (dialogWithToggle.getReturnCode() == Window.OK) {
+                        PrefConstants.CONFIRM_KEEP_STATEMENT_OPEN,
+                        ConfirmationDialog.QUESTION,
+                        ConfirmationDialog.WARNING) == IDialogConstants.YES_ID) {
                     globalPreferenceStore.setValue(PrefConstants.KEEP_STATEMENT_OPEN, true);
                     ((SQLEditor)valueController.getValueSite().getPart()).getResultsView().refresh();
                 }

@@ -426,8 +426,9 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_title;
 
 	public static String dialog_cursor_view_monitor_rows_fetched;
-	public static String dialog_cursor_view_keep_cursor_title;
-	public static String dialog_cursor_view_keep_cursor_message;
+	public static String confirm_keep_statement_open_title;
+	public static String confirm_keep_statement_open_message;
+	public static String confirm_keep_statement_open_toggleMessage;
 
 	public static String dialog_data_format_profiles_button_delete_profile;
 

@@ -46,6 +46,7 @@ public final class PrefConstants
     public static final String CONFIRM_EDITOR_CLOSE = "close_editor_edit"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$
+    public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
 
     // Hex editor font identifiers
     public static final String HEX_FONT_NAME = "hex.font.name"; //$NON-NLS-1$
