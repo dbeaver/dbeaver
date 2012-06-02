@@ -17,6 +17,7 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
@@ -85,7 +86,6 @@ public class UIUtils {
             e.doit = true;
         }
     };
-    private static final String CHECK_TEXT_PARAMETER = "check"; //$NON-NLS-1$
 
     public static Object makeStringForUI(Object object)
     {
@@ -119,72 +119,6 @@ public class UIUtils {
         }
         return object;
     }
-
-/*
-    public static ToolItem createToolItem(ToolBar toolBar, IServiceLocator serviceLocator, final String commandId, SelectionListener listener)
-    {
-        final ToolItem item = new ToolItem(toolBar, SWT.PUSH);
-
-        final ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
-        final ICommandImageService commandImageService = (ICommandImageService)serviceLocator.getService(ICommandImageService.class);
-        final IBindingService bindingService = (IBindingService)serviceLocator.getService(IBindingService.class);
-        //final IHandlerService handlerService = (IHandlerService)serviceLocator.getService(IHandlerService.class);
-
-        final Command command = commandService.getCommand(commandId);
-        if (command == null) {
-            log.error("Command '" + commandId + "' not found");
-            return item;
-        }
-        String commandName;
-        try {
-            commandName = command.getName();
-        } catch (NotDefinedException e) {
-            commandName = commandId;
-        }
-        final String toolTip = commandName;
-        ImageDescriptor imageDescriptor = commandImageService.getImageDescriptor(commandId);
-
-        item.setToolTipText(toolTip);
-        if (imageDescriptor != null) {
-            final Image image = imageDescriptor.createImage();
-            item.setImage(image);
-            item.addDisposeListener(new DisposeListener() {
-                public void widgetDisposed(DisposeEvent e)
-                {
-                    image.dispose();
-                }
-            });
-        }
-        item.addSelectionListener(listener);
-        toolBar.addListener(SWT.MouseEnter, new Listener() {
-            private String origToolTip;
-            public void handleEvent(Event event)
-            {
-                if (origToolTip == null) {
-                    origToolTip = item.getToolTipText();
-                }
-                TriggerSequence sequence = bindingService.getBestActiveBindingFor(commandId);
-                if (sequence != null) {
-                    String newToolTip = origToolTip + " (" + sequence.format() + ")";
-                    if (!item.getToolTipText().equals(newToolTip)) {
-                        item.setToolTipText(newToolTip);
-                    }
-                }
-            }
-        });
-
-        return item;
-    }
-
-    public static ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, SelectionListener listener)
-    {
-        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
-        item.setToolTipText(text);
-        item.setImage(icon.getImage());
-        item.addSelectionListener(listener);
-        return item;
-    }
-*/
 
     public static ToolItem createToolItem(ToolBar toolBar, String text, Image icon, final IAction action)
     {
@@ -585,41 +519,6 @@ public class UIUtils {
         combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         return combo;
-    }
-
-    public static Text createCheckText(Composite parent, String label, String value, boolean checked, int textWidth)
-    {
-        final Button checkbox = UIUtils.createCheckbox(parent, label, checked);
-        final Text text = new Text(parent, SWT.BORDER);
-        text.setText(value);
-        text.setEnabled(checked);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        if (textWidth > 0) {
-            gd.widthHint = 200;
-        }
-        text.setLayoutData(gd);
-        text.setData(CHECK_TEXT_PARAMETER, checkbox);
-
-        checkbox.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                text.setEnabled(checkbox.getSelection());
-            }
-        });
-
-        return text;
-    }
-
-    public static void enableCheckText(Text text, boolean enable)
-    {
-        if (text != null) {
-            final Button checkbox = (Button) text.getData(CHECK_TEXT_PARAMETER);
-            if (checkbox != null) {
-                checkbox.setEnabled(enable);
-                text.setEnabled(enable && checkbox.getSelection());
-            }
-        }
     }
 
     public static Shell getActiveShell()
@@ -1061,4 +960,50 @@ public class UIUtils {
         clipboard.dispose();
     }
 
+    public interface TableEditorController {
+        void showEditor(TableItem item);
+        void closeEditor(TableEditor tableEditor);
+    }
+
+    public static class ColumnTextEditorTraverseListener implements TraverseListener {
+        private final Table table;
+        private final TableEditor tableEditor;
+        private final int columnIndex;
+        private final TableEditorController controller;
+
+        public ColumnTextEditorTraverseListener(Table table, TableEditor tableEditor, int columnIndex, TableEditorController controller)
+        {
+            this.table = table;
+            this.tableEditor = tableEditor;
+            this.columnIndex = columnIndex;
+            this.controller = controller;
+        }
+
+        @Override
+        public void keyTraversed(TraverseEvent e)
+        {
+            Text editor = (Text) tableEditor.getEditor();
+            if (editor.isDisposed()) {
+                editor = null;
+            }
+            if (e.detail == SWT.TRAVERSE_RETURN) {
+                if (editor != null) {
+                    tableEditor.getItem().setText(columnIndex, editor.getText());
+                    controller.closeEditor(tableEditor);
+                } else {
+                    TableItem[] selection = table.getSelection();
+                    if (selection != null && selection.length >= 1) {
+                        controller.showEditor(selection[0]);
+                    }
+                }
+                e.doit = false;
+                e.detail = SWT.TRAVERSE_NONE;
+            } else if (e.detail == SWT.TRAVERSE_ESCAPE && editor != null) {
+                controller.closeEditor(tableEditor);
+                e.doit = false;
+                e.detail = SWT.TRAVERSE_NONE;
+            }
+        }
+    }
+    
 }

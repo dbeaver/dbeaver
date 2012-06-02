@@ -4,6 +4,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.swt.events.*;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
@@ -15,10 +16,6 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -86,7 +83,11 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             tableEditor.grabHorizontal = true;
             tableEditor.minimumWidth = 50;
 
-            columnsTable.addMouseListener(new ColumnsMouseListener(tableEditor, columnsTable));
+            ColumnsMouseListener mouseListener = new ColumnsMouseListener(tableEditor, columnsTable);
+            columnsTable.addMouseListener(mouseListener);
+            columnsTable.addTraverseListener(
+                new UIUtils.ColumnTextEditorTraverseListener(columnsTable, tableEditor, 2, mouseListener));
+
 
             TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
             libsTab.setText(CoreMessages.controls_resultset_filter_group_columns);
@@ -267,7 +268,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
     }
 */
 
-    private class ColumnsMouseListener implements MouseListener {
+    private class ColumnsMouseListener extends MouseAdapter implements UIUtils.TableEditorController {
         private final TableEditor tableEditor;
         private final Table columnsTable;
 
@@ -277,32 +278,11 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             this.columnsTable = columnsTable;
         }
 
-        private void disposeOldEditor()
-        {
-            Control oldEditor = tableEditor.getEditor();
-            if (oldEditor != null) oldEditor.dispose();
-        }
-
-        @Override
-        public void mouseDoubleClick(MouseEvent e)
-        {
-            //handleColumnClick(e, true);
-        }
-
-        @Override
-        public void mouseDown(MouseEvent e)
-        {
-        }
-
         @Override
         public void mouseUp(MouseEvent e)
         {
-            handleColumnClick(e);
-        }
-
-        private void handleColumnClick(MouseEvent e) {
             // Clean up any previous editor control
-            disposeOldEditor();
+            closeEditor(tableEditor);
 
             TableItem item = columnsTable.getItem(new Point(e.x, e.y));
             if (item == null) {
@@ -335,7 +315,8 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             columnsViewer.refresh();
         }
 
-        private void showEditor(final TableItem item) {
+        @Override
+        public void showEditor(final TableItem item) {
             // Identify the selected row
             Text text = new Text(columnsTable, SWT.BORDER);
             text.setText(item.getText(2));
@@ -361,21 +342,19 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                 }
             });
             text.selectAll();
-/*
-            text.addKeyListener(new KeyAdapter() {
-                @Override
-                public void keyPressed(KeyEvent e)
-                {
-                    if (e.keyCode == SWT.CR) {
-                        e.doit = false;
-                    }
-                }
-            });
-*/
+
             // Selected by mouse
             text.setFocus();
 
             tableEditor.setEditor(text, item, 2);
         }
+
+        @Override
+        public void closeEditor(TableEditor tableEditor)
+        {
+            Control oldEditor = this.tableEditor.getEditor();
+            if (oldEditor != null) oldEditor.dispose();
+        }
+
     }
 }
