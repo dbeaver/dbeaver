@@ -20,7 +20,7 @@ public class DBSObjectFilter
 
     public DBSObjectFilter()
     {
-        include.add("%");
+        include.add("");
         exclude.add("");
     }
 

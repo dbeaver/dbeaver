@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,6 +35,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private DBSObjectFilter filter;
     private Composite blockControl;
     private ControlEnableState blockEnableState;
+    private Table includeTable;
+    private Table excludeTable;
 
     protected EditObjectFilterDialog(Shell shell, String objectTitle, DBSObjectFilter filter)
     {
@@ -67,43 +70,43 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         enableButton.setSelection(filter.isEnabled());
         blockControl = UIUtils.createPlaceholder(composite, 1);
 
-        createEditableList("Include", filter.getInclude());
-        createEditableList("Exclude", filter.getExclude());
+        includeTable = createEditableList("Include", filter.getInclude());
+        excludeTable = createEditableList("Exclude", filter.getExclude());
 
         return composite;
     }
 
-    private void createEditableList(String name, List<String> values)
+    private Table createEditableList(String name, List<String> values)
     {
         Group group = UIUtils.createControlGroup(blockControl, name, 2, GridData.FILL_HORIZONTAL, 0);
         group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        final Table paramTable = new Table(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        final Table valueTable = new Table(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 300;
         gd.heightHint = 100;
-        paramTable.setLayoutData(gd);
-        //paramTable.setHeaderVisible(true);
-        paramTable.setLinesVisible(true);
+         valueTable.setLayoutData(gd);
+        // valueTable.setHeaderVisible(true);
+         valueTable.setLinesVisible(true);
 
-        final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Value");
+        final TableColumn valueColumn = UIUtils.createTableColumn( valueTable, SWT.LEFT, "Value");
         valueColumn.setWidth(300);
 
         for (String value : values) {
-            new TableItem(paramTable, SWT.LEFT).setText(value);
+            new TableItem( valueTable, SWT.LEFT).setText(value);
         }
 
-        final TableEditor tableEditor = new TableEditor(paramTable);
+        final TableEditor tableEditor = new TableEditor( valueTable);
         tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.horizontalAlignment = SWT.LEFT;
         tableEditor.grabHorizontal = true;
         tableEditor.grabVertical = true;
 
-        final EditorMouseAdapter mouseAdapter = new EditorMouseAdapter(paramTable, tableEditor);
-        paramTable.addMouseListener(mouseAdapter);
+        final EditorMouseAdapter mouseAdapter = new EditorMouseAdapter( valueTable, tableEditor);
+         valueTable.addMouseListener(mouseAdapter);
 
-        paramTable.addTraverseListener(
-            new UIUtils.ColumnTextEditorTraverseListener(paramTable, tableEditor, 0, mouseAdapter));
+         valueTable.addTraverseListener(
+            new UIUtils.ColumnTextEditorTraverseListener( valueTable, tableEditor, 0, mouseAdapter));
 
         Composite buttonsGroup = UIUtils.createPlaceholder(group, 1, 5);
         buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
@@ -114,8 +117,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                TableItem newItem = new TableItem(paramTable, SWT.LEFT);
-                paramTable.setSelection(newItem);
+                TableItem newItem = new TableItem( valueTable, SWT.LEFT);
+                 valueTable.setSelection(newItem);
                 mouseAdapter.closeEditor(tableEditor);
                 mouseAdapter.showEditor(newItem);
             }
@@ -128,22 +131,24 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                int selectionIndex = paramTable.getSelectionIndex();
+                int selectionIndex =  valueTable.getSelectionIndex();
                 if (selectionIndex >= 0) {
                     mouseAdapter.closeEditor(tableEditor);
-                    paramTable.remove(selectionIndex);
+                     valueTable.remove(selectionIndex);
                 }
             }
         });
-        
-        paramTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                int selectionIndex = paramTable.getSelectionIndex();
-                removeButton.setEnabled(selectionIndex >= 0);
-            }
-        });
+        removeButton.setEnabled(false);
+
+         valueTable.addSelectionListener(new SelectionAdapter() {
+             @Override
+             public void widgetSelected(SelectionEvent e)
+             {
+                 int selectionIndex =  valueTable.getSelectionIndex();
+                 removeButton.setEnabled(selectionIndex >= 0);
+             }
+         });
+        return valueTable;
     }
 
     protected void enableFiltersContent()
@@ -160,6 +165,21 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     private void saveConfigurations()
     {
+        filter.setInclude(collectValues(includeTable));
+        filter.setExclude(collectValues(excludeTable));
+    }
+
+    private List<String> collectValues(Table table)
+    {
+        List<String> values = new ArrayList<String>();
+        for (TableItem item : includeTable.getItems()) {
+            String value = item.getText().trim();
+            if (value.isEmpty() || value.equals("%")) {
+                continue;
+            }
+            values.add(value);
+        }
+        return values;
     }
 
     @Override
