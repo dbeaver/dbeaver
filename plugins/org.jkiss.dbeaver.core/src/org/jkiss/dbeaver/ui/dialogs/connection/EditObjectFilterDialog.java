@@ -9,7 +9,10 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -17,6 +20,8 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
+
+import java.util.List;
 
 /**
  * Object filter edit dialog
@@ -59,22 +64,21 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 enableFiltersContent();
             }
         });
+        enableButton.setSelection(filter.isEnabled());
         blockControl = UIUtils.createPlaceholder(composite, 1);
-        
-        Group includesGroup = UIUtils.createControlGroup(blockControl, "Includes", 1, GridData.FILL_HORIZONTAL, 0);
-        includesGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createEditableList(includesGroup);
 
-        Group excludesGroup = UIUtils.createControlGroup(blockControl, "Excludes", 1, GridData.FILL_HORIZONTAL, 0);
-        excludesGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createEditableList(excludesGroup);
+        createEditableList("Include", filter.getInclude());
+        createEditableList("Exclude", filter.getExclude());
 
         return composite;
     }
 
-    private void createEditableList(Composite parent)
+    private void createEditableList(String name, List<String> values)
     {
-        final Table paramTable = new Table(parent, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        Group group = UIUtils.createControlGroup(blockControl, name, 2, GridData.FILL_HORIZONTAL, 0);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        final Table paramTable = new Table(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 300;
         gd.heightHint = 100;
@@ -84,21 +88,62 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Value");
         valueColumn.setWidth(300);
-        
-        for (int i = 0; i < 10; i++) {
-            new TableItem(paramTable, SWT.LEFT).setText("xxx" + i);
+
+        for (String value : values) {
+            new TableItem(paramTable, SWT.LEFT).setText(value);
         }
+
         final TableEditor tableEditor = new TableEditor(paramTable);
         tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.horizontalAlignment = SWT.LEFT;
         tableEditor.grabHorizontal = true;
         tableEditor.grabVertical = true;
 
-        EditorMouseAdapter mouseAdapter = new EditorMouseAdapter(paramTable, tableEditor);
+        final EditorMouseAdapter mouseAdapter = new EditorMouseAdapter(paramTable, tableEditor);
         paramTable.addMouseListener(mouseAdapter);
 
         paramTable.addTraverseListener(
             new UIUtils.ColumnTextEditorTraverseListener(paramTable, tableEditor, 0, mouseAdapter));
+
+        Composite buttonsGroup = UIUtils.createPlaceholder(group, 1, 5);
+        buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        final Button addButton = new Button(buttonsGroup, SWT.PUSH);
+        addButton.setText("Add");
+        addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        addButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                TableItem newItem = new TableItem(paramTable, SWT.LEFT);
+                paramTable.setSelection(newItem);
+                mouseAdapter.closeEditor(tableEditor);
+                mouseAdapter.showEditor(newItem);
+            }
+        });
+
+        final Button removeButton = new Button(buttonsGroup, SWT.PUSH);
+        removeButton.setText("Remove");
+        removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        removeButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                int selectionIndex = paramTable.getSelectionIndex();
+                if (selectionIndex >= 0) {
+                    mouseAdapter.closeEditor(tableEditor);
+                    paramTable.remove(selectionIndex);
+                }
+            }
+        });
+        
+        paramTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                int selectionIndex = paramTable.getSelectionIndex();
+                removeButton.setEnabled(selectionIndex >= 0);
+            }
+        });
     }
 
     protected void enableFiltersContent()
@@ -143,6 +188,10 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         @Override
         public void mouseUp(MouseEvent e)
         {
+            Text editor = (Text)tableEditor.getEditor();
+            if (editor != null && !editor.isDisposed()) {
+                tableEditor.getItem().setText(editor.getText());
+            }
             // Clean up any previous editor control
             closeEditor(tableEditor);
 
@@ -158,7 +207,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         }
 
         @Override
-        public void showEditor(final TableItem item) {
+        public void showEditor(final TableItem item)
+        {
             Text editor = new Text(paramTable, SWT.BORDER);
             editor.setText(item.getText());
             tableEditor.setEditor(editor, item, 0);

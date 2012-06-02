@@ -983,7 +983,7 @@ public class UIUtils {
         public void keyTraversed(TraverseEvent e)
         {
             Text editor = (Text) tableEditor.getEditor();
-            if (editor.isDisposed()) {
+            if (editor != null && editor.isDisposed()) {
                 editor = null;
             }
             if (e.detail == SWT.TRAVERSE_RETURN) {

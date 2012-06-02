@@ -14,12 +14,14 @@ public class DBSObjectFilter
 {
     private String name;
     private String description;
-    private boolean enabled;
-    private List<String> includes;
-    private List<String> excludes;
+    private boolean enabled = true;
+    private List<String> include = new ArrayList<String>();
+    private List<String> exclude = new ArrayList<String>();
 
     public DBSObjectFilter()
     {
+        include.add("%");
+        exclude.add("");
     }
 
     public DBSObjectFilter(DBSObjectFilter filter)
@@ -27,8 +29,8 @@ public class DBSObjectFilter
         this.name = filter.name;
         this.description = filter.description;
         this.enabled = filter.enabled;
-        this.includes = filter.includes == null ? null : new ArrayList<String>(filter.includes);
-        this.excludes = filter.excludes == null ? null : new ArrayList<String>(filter.excludes);
+        this.include = filter.include == null ? null : new ArrayList<String>(filter.include);
+        this.exclude = filter.exclude == null ? null : new ArrayList<String>(filter.exclude);
     }
 
     public String getName()
@@ -61,23 +63,23 @@ public class DBSObjectFilter
         this.enabled = enabled;
     }
 
-    public List<String> getIncludes()
+    public List<String> getInclude()
     {
-        return includes;
+        return include;
     }
 
-    public void setIncludes(List<String> includes)
+    public void setInclude(List<String> include)
     {
-        this.includes = includes;
+        this.include = include;
     }
 
-    public List<String> getExcludes()
+    public List<String> getExclude()
     {
-        return excludes;
+        return exclude;
     }
 
-    public void setExcludes(List<String> excludes)
+    public void setExclude(List<String> exclude)
     {
-        this.excludes = excludes;
+        this.exclude = exclude;
     }
 }
