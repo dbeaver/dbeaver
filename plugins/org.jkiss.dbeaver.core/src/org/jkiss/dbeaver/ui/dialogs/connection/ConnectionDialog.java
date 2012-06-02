@@ -44,7 +44,7 @@ public class ConnectionDialog extends ActiveWizardDialog
     protected void createButtonsForButtonBar(Composite parent)
     {
         super.createButtonsForButtonBar(parent);
-        testButton = createButton(parent, TEST_BUTTON_ID, "Test Connection ...", false);
+        testButton = createButton(parent, TEST_BUTTON_ID, "&Test Connection ...", false);
         testButton.setEnabled(false);
         testButton.moveAbove(getButton(IDialogConstants.BACK_ID));
     }

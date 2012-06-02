@@ -6,6 +6,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -47,13 +49,13 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private Button savePasswordCheck;
     private Button showSystemObjects;
     private Button readOnlyConnection;
-    private Text catFilterText;
-    private Text schemaFilterText;
     private Font boldFont;
 
     private boolean connectionNameChanged = false;
     private Button tunnelButton;
     private Button eventsButton;
+    private Button catalogFiltersButton;
+    private Button schemaFiltersButton;
 
     ConnectionPageFinal(ConnectionWizard wizard)
     {
@@ -136,8 +138,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
         } catch (DBException e) {
             log.error("Can't obtain data source provider instance", e); //$NON-NLS-1$
         }
-        //UIUtils.enableCheckText(catFilterText, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
-        //UIUtils.enableCheckText(schemaFilterText, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
+        catalogFiltersButton.setEnabled((features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
+        schemaFiltersButton.setEnabled((features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
     }
 
     @Override
@@ -184,21 +186,66 @@ class ConnectionPageFinal extends ActiveWizardPage {
             savePasswordCheck.setLayoutData(gd);
         }
 
+        Composite optionsGroup = new Composite(group, SWT.NONE);
+        gl = new GridLayout(2, true);
+        gl.verticalSpacing = 0;
+        gl.horizontalSpacing = 5;
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        optionsGroup.setLayout(gl);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        optionsGroup.setLayoutData(gd);
+
         {
-            Group miscGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_misc, 2, GridData.FILL_HORIZONTAL, 0);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            miscGroup.setLayoutData(gd);
+            Group miscGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_misc, 1, GridData.FILL_HORIZONTAL, 0);
+            miscGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             showSystemObjects = UIUtils.createCheckbox(miscGroup, CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects, dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
+            //gd.horizontalSpan = 2;
             showSystemObjects.setLayoutData(gd);
 
             readOnlyConnection = UIUtils.createCheckbox(miscGroup, CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly, dataSourceDescriptor == null || dataSourceDescriptor.isConnectionReadOnly());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
+            //gd.horizontalSpan = 2;
             readOnlyConnection.setLayoutData(gd);
+        }
+        {
+            Group filtersGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_filters, 2, GridData.FILL_HORIZONTAL, 0);
+            filtersGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
+
+            catalogFiltersButton = new Button(filtersGroup, SWT.PUSH);
+            catalogFiltersButton.setText("Catalog Filters");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.grabExcessVerticalSpace = true;
+            catalogFiltersButton.setLayoutData(gd);
+            catalogFiltersButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    EditObjectFilterDialog dialog = new EditObjectFilterDialog(getShell(), "Catalog", new DBSObjectFilter());
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+
+                    }
+                }
+            });
+
+            schemaFiltersButton = new Button(filtersGroup, SWT.PUSH);
+            schemaFiltersButton.setText("Schema Filters");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.grabExcessVerticalSpace = true;
+            schemaFiltersButton.setLayoutData(gd);
+            schemaFiltersButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    EditObjectFilterDialog dialog = new EditObjectFilterDialog(getShell(), "Schema/User", new DBSObjectFilter());
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+
+                    }
+                }
+            });
         }
 
         {
@@ -222,20 +269,6 @@ class ConnectionPageFinal extends ActiveWizardPage {
 //            String schFilter = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getSchemaFilter(); //$NON-NLS-1$
 //            schemaFilterText = UIUtils.createCheckText(buttonsGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_schemas, CommonUtils.getString(schFilter), !CommonUtils.isEmpty(schFilter), 200);
 
-            {
-                Button filtersButton = new Button(buttonsGroup, SWT.PUSH);
-                filtersButton.setText("Object Filters ...");
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.grabExcessVerticalSpace = true;
-                filtersButton.setLayoutData(gd);
-                filtersButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-
-                    }
-                });
-            }
             {
                 tunnelButton = new Button(buttonsGroup, SWT.PUSH);
                 tunnelButton.setText("Tunneling ...");

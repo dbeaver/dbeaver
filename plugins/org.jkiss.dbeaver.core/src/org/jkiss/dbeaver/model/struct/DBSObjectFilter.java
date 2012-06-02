@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
+ */
+
 package org.jkiss.dbeaver.model.struct;
 
 import java.util.ArrayList;
@@ -23,8 +27,8 @@ public class DBSObjectFilter
         this.name = filter.name;
         this.description = filter.description;
         this.enabled = filter.enabled;
-        this.includes = new ArrayList<String>(filter.includes);
-        this.excludes = new ArrayList<String>(filter.excludes);
+        this.includes = filter.includes == null ? null : new ArrayList<String>(filter.includes);
+        this.excludes = filter.excludes == null ? null : new ArrayList<String>(filter.excludes);
     }
 
     public String getName()
