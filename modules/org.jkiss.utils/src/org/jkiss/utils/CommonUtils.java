@@ -4,6 +4,7 @@
 
 package org.jkiss.utils;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -12,6 +13,7 @@ import java.util.*;
  */
 public class CommonUtils {
     //static final Log log = LogFactory.getLog(CommonUtils.class);
+    private static Object[] EMPTY_ARRAY = new Object[0];
 
 	public static boolean isJavaIdentifier(CharSequence str)
 	{
@@ -454,6 +456,14 @@ public class CommonUtils {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static <T> T[] safeArray(T[] array) {
+        if (array == null) {
+            return (T[]) EMPTY_ARRAY;
+        } else {
+            return array;
         }
     }
 
