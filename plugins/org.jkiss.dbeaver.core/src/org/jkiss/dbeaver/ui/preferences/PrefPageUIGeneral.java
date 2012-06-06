@@ -4,9 +4,12 @@
 
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -14,29 +17,42 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.registry.encode.EncryptionException;
+import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PrefPageUIGeneral
  */
 public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
+    static final Log log = LogFactory.getLog(PrefPageUIGeneral.class);
+
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ui.general"; //$NON-NLS-1$
     private Button automaticUpdateCheck;
     private Text proxyHostText;
     private Spinner proxyPortSpinner;
+    private Text proxyUserText;
+    private Text proxyPasswordText;
+    private SecuredPasswordEncrypter encrypter;
 
     @Override
     public void init(IWorkbench workbench)
     {
-
+        try {
+            encrypter = new SecuredPasswordEncrypter();
+        } catch (EncryptionException e) {
+            // ignore
+            log.warn(e);
+        }
     }
 
     @Override
     protected Control createContents(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
         automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, false);
@@ -44,6 +60,8 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
         Group proxyObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_http_proxy, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
         proxyHostText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_host, ""); //$NON-NLS-2$
         proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, CoreMessages.pref_page_ui_general_spinner_proxy_port, 0, 0, 65535);
+        proxyUserText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_user, ""); //$NON-NLS-2$
+        proxyPasswordText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_password, "", SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
 
         performDefaults();
 
@@ -58,6 +76,17 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
         automaticUpdateCheck.setSelection(store.getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK));
         proxyHostText.setText(store.getString(PrefConstants.UI_PROXY_HOST));
         proxyPortSpinner.setSelection(store.getInt(PrefConstants.UI_PROXY_PORT));
+        proxyUserText.setText(store.getString(PrefConstants.UI_PROXY_USER));
+        // Load and decrypt password
+        String passwordString = store.getString(PrefConstants.UI_PROXY_PASSWORD);
+        if (!CommonUtils.isEmpty(passwordString) && encrypter != null) {
+            try {
+                passwordString = encrypter.decrypt(passwordString);
+            } catch (EncryptionException e) {
+                log.warn(e);
+            }
+        }
+        proxyPasswordText.setText(passwordString);
 
         super.performDefaults();
     }
@@ -69,6 +98,17 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
         store.setValue(PrefConstants.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
         store.setValue(PrefConstants.UI_PROXY_HOST, proxyHostText.getText());
         store.setValue(PrefConstants.UI_PROXY_PORT, proxyPortSpinner.getSelection());
+        store.setValue(PrefConstants.UI_PROXY_USER, proxyUserText.getText());
+        String password = proxyPasswordText.getText();
+        if (!CommonUtils.isEmpty(password) && encrypter != null) {
+            // Encrypt password
+            try {
+                password = encrypter.encrypt(password);
+            } catch (EncryptionException e) {
+                log.warn(e);
+            }
+        }
+        store.setValue(PrefConstants.UI_PROXY_PASSWORD, password);
         RuntimeUtils.savePreferenceStore(store);
 
         return super.performOk();

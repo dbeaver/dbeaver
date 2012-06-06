@@ -58,6 +58,8 @@ public final class PrefConstants
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
     public static final String UI_PROXY_HOST = "ui.proxy.host"; //$NON-NLS-1$
     public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
+    public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
+    public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
 
     // Network
     public static final String NET_TUNNEL_PORT_MIN = "net.tunnel.port.min"; //$NON-NLS-1$

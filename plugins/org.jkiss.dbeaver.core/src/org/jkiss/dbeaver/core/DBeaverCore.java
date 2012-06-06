@@ -556,6 +556,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_AUTO_UPDATE_CHECK, true);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_HOST, "");
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_PORT, 0);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_USER, "");
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_PASSWORD, "");
 
         // Network
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NET_TUNNEL_PORT_MIN, 10000);
