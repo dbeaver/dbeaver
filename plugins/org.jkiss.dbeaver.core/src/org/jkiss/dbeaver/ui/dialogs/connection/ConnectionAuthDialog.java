@@ -20,11 +20,6 @@ public class ConnectionAuthDialog extends BaseAuthDialog
     private DataSourceDescriptor dataSource;
     private DBWHandlerConfiguration networkHandler;
 
-    public ConnectionAuthDialog(Shell parentShell, DataSourceDescriptor dataSource)
-    {
-        this(parentShell, dataSource, null);
-    }
-
     public ConnectionAuthDialog(Shell parentShell, DataSourceDescriptor dataSource, DBWHandlerConfiguration networkHandler)
     {
         super(parentShell,
@@ -35,39 +30,29 @@ public class ConnectionAuthDialog extends BaseAuthDialog
 
         this.dataSource = dataSource;
         this.networkHandler = networkHandler;
-    }
 
-    @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        Control area = super.createDialogArea(parent);
         if (networkHandler != null) {
-            usernameText.setText(CommonUtils.getString(networkHandler.getUserName()));
+            setUserName(CommonUtils.getString(networkHandler.getUserName()));
+            setUserPassword(CommonUtils.getString(networkHandler.getPassword()));
         } else {
-            usernameText.setText(CommonUtils.getString(dataSource.getConnectionInfo().getUserName()));
+            setUserName(CommonUtils.getString(dataSource.getConnectionInfo().getUserName()));
+            setUserPassword(CommonUtils.getString(dataSource.getConnectionInfo().getUserPassword()));
         }
-        if (networkHandler != null) {
-            passwordText.setText(CommonUtils.getString(networkHandler.getPassword()));
-        } else {
-            passwordText.setText(CommonUtils.getString(dataSource.getConnectionInfo().getUserPassword()));
-        }
-
-        return area;
     }
 
     @Override
     protected void okPressed() {
-        if (networkHandler != null) {
-            networkHandler.setUserName(usernameText.getText());
-            networkHandler.setPassword(passwordText.getText());
-            networkHandler.setSavePassword(savePasswordCheck.getSelection());
-        } else {
-            dataSource.getConnectionInfo().setUserName(usernameText.getText());
-            dataSource.getConnectionInfo().setUserPassword(passwordText.getText());
-            dataSource.setSavePassword(savePasswordCheck.getSelection());
-        }
-
         super.okPressed();
+
+        if (networkHandler != null) {
+            networkHandler.setUserName(getUserName());
+            networkHandler.setPassword(getUserPassword());
+            networkHandler.setSavePassword(isSavePassword());
+        } else {
+            dataSource.getConnectionInfo().setUserName(getUserName());
+            dataSource.getConnectionInfo().setUserPassword(getUserPassword());
+            dataSource.setSavePassword(isSavePassword());
+        }
     }
 
 }

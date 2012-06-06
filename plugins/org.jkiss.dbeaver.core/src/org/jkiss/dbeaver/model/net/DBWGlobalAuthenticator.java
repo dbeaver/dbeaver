@@ -1,11 +1,15 @@
 package org.jkiss.dbeaver.model.net;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -17,8 +21,6 @@ import java.net.PasswordAuthentication;
  */
 public class DBWGlobalAuthenticator extends Authenticator {
 
-    static final Log log = LogFactory.getLog(DBWGlobalAuthenticator.class);
-
     private static DBWGlobalAuthenticator instance = new DBWGlobalAuthenticator();
 
     private SecuredPasswordEncrypter encrypter;
@@ -27,17 +29,35 @@ public class DBWGlobalAuthenticator extends Authenticator {
     protected PasswordAuthentication getPasswordAuthentication() {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
-        String proxyHost = store.getString(PrefConstants.UI_PROXY_HOST);
+        final String proxyHost = store.getString(PrefConstants.UI_PROXY_HOST);
         if (!CommonUtils.isEmpty(proxyHost) && proxyHost.equalsIgnoreCase(getRequestingHost()) &&
             store.getInt(PrefConstants.UI_PROXY_PORT) == getRequestingPort())
         {
             String userName = store.getString(PrefConstants.UI_PROXY_USER);
-            String userPassword = store.getString(PrefConstants.UI_PROXY_PASSWORD);
-            if (!CommonUtils.isEmpty(userPassword)) {
-                userPassword = decryptPassword(userPassword);
-            }
+            String userPassword = decryptPassword(store.getString(PrefConstants.UI_PROXY_PASSWORD));
             if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
                 // Ask user
+                final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+                final BaseAuthDialog authDialog = new BaseAuthDialog(shell, "Auth proxy '" + proxyHost + "'", DBIcon.CONNECTIONS.getImage());
+                authDialog.setUserName(userName);
+                authDialog.setUserPassword(userPassword);
+                final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
+                    @Override
+                    public void run()
+                    {
+                        result = (authDialog.open() == IDialogConstants.OK_ID);
+                    }
+                };
+                UIUtils.runInUI(shell, binder);
+                if (binder.getResult() != null && binder.getResult()) {
+                    userName = authDialog.getUserName();
+                    userPassword = authDialog.getUserPassword();
+                    if (authDialog.isSavePassword()) {
+                        // Save in preferences
+                        store.setValue(PrefConstants.UI_PROXY_USER, userName);
+                        store.setValue(PrefConstants.UI_PROXY_PASSWORD, encryptPassword(userPassword));
+                    }
+                }
             }
             if (!CommonUtils.isEmpty(userName) && !CommonUtils.isEmpty(userPassword)) {
                 return new PasswordAuthentication(userName, userPassword.toCharArray());
@@ -63,6 +83,9 @@ public class DBWGlobalAuthenticator extends Authenticator {
     }
 
     private String decryptPassword(String password) {
+        if (CommonUtils.isEmpty(password)) {
+            return password;
+        }
         try {
             if (encrypter == null) {
                 encrypter = new SecuredPasswordEncrypter();
