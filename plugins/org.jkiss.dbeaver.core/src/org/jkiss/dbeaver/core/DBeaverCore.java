@@ -22,6 +22,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.net.DBWGlobalAuthenticator;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -44,6 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.Authenticator;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,21 +93,20 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 if (instance == null) {
                     // Initialize DBeaver Core
                     DBeaverCore.createInstance(DBeaverActivator.getInstance());
-
-                    instance.cleanupLobFiles(new NullProgressMonitor());
                 }
             }
         }
         return instance;
     }
 
-    static DBeaverCore createInstance(DBeaverActivator plugin)
+    private static DBeaverCore createInstance(DBeaverActivator plugin)
     {
         log.debug("Initializing DBeaver");
         log.debug("Host plugin: " + plugin.getBundle().getSymbolicName() + " " + plugin.getBundle().getVersion());
 
         instance = new DBeaverCore(plugin);
         instance.initialize();
+        instance.cleanupLobFiles(new NullProgressMonitor());
         return instance;
     }
 
@@ -145,7 +146,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.sharedTextColors = new SharedTextColors();
 
         // Register properties adapter
-        editorsAdapter = new DatabaseEditorAdapterFactory();
+        this.editorsAdapter = new DatabaseEditorAdapterFactory();
         IAdapterManager mgr = Platform.getAdapterManager();
         mgr.registerAdapters(editorsAdapter, IWorkbenchPart.class);
 
@@ -168,6 +169,12 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.networkHandlerRegistry = new NetworkHandlerRegistry(extensionRegistry);
 
         this.queryManager = new QMControllerImpl(dataSourceProviderRegistry);
+
+        // Init preferences
+        initDefaultPreferences();
+
+        // Init default network settings
+        Authenticator.setDefault(DBWGlobalAuthenticator.getInstance());
 
         // Init project registry
         this.projectRegistry = new ProjectRegistry();
@@ -204,9 +211,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         } catch (InterruptedException e) {
             // do nothing
         }
-
-        // Init preferences
-        initDefaultPreferences();
 
         // Navigator model
         this.navigatorModel = new DBNModel();

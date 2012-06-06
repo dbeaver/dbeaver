@@ -1,3 +1,17 @@
+Major:
+
+Eclipse plugin
+Proxy config
+Object filters
+Search refactoring (scripts search)
+Localizations
+JDBC driver versions update
+GPL license, copyright, etc
+Improve help system (use external help)
+
+
+Minor:
+
 rename mysql (generic?) table,column
 comment mysql table, column
 
