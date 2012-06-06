@@ -33,8 +33,14 @@ public class DBWGlobalAuthenticator extends Authenticator {
         {
             String userName = store.getString(PrefConstants.UI_PROXY_USER);
             String userPassword = store.getString(PrefConstants.UI_PROXY_PASSWORD);
+            if (!CommonUtils.isEmpty(userPassword)) {
+                userPassword = decryptPassword(userPassword);
+            }
             if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
-
+                // Ask user
+            }
+            if (!CommonUtils.isEmpty(userName) && !CommonUtils.isEmpty(userPassword)) {
+                return new PasswordAuthentication(userName, userPassword.toCharArray());
             }
         }
 
@@ -45,18 +51,26 @@ public class DBWGlobalAuthenticator extends Authenticator {
         return instance;
     }
 
-    private String encryptPassword(String password) throws EncryptionException {
-        if (encrypter == null) {
-            encrypter = new SecuredPasswordEncrypter();
+    private String encryptPassword(String password) {
+        try {
+            if (encrypter == null) {
+                encrypter = new SecuredPasswordEncrypter();
+            }
+            return encrypter.encrypt(password);
+        } catch (EncryptionException e) {
+            return password;
         }
-        return encrypter.encrypt(password);
     }
 
-    private String decryptPassword(String password) throws EncryptionException {
-        if (encrypter == null) {
-            encrypter = new SecuredPasswordEncrypter();
+    private String decryptPassword(String password) {
+        try {
+            if (encrypter == null) {
+                encrypter = new SecuredPasswordEncrypter();
+            }
+            return encrypter.decrypt(password);
+        } catch (EncryptionException e) {
+            return password;
         }
-        return encrypter.decrypt(password);
     }
 
 }
