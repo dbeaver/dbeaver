@@ -31,7 +31,7 @@ public abstract class EventProcessorJob extends AbstractJob {
 
     protected void processEvents(DBPConnectionEventType eventType)
     {
-        DBPConnectionInfo info = container.getConnectionInfo();
+        DBPConnectionInfo info = container.getActualConnectionInfo();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
             Map<String, Object> variables = new HashMap<String, Object>();

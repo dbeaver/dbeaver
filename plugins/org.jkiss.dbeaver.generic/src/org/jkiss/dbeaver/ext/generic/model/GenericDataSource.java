@@ -90,7 +90,7 @@ public class GenericDataSource extends JDBCDataSource
             try {
                 final Driver driver = getDriverInstance();
                 if (driver != null) {
-                    driver.connect(getContainer().getConnectionInfo().getUrl() + paramShutdown, null);
+                    driver.connect(getContainer().getActualConnectionInfo().getUrl() + paramShutdown, null);
                 }
             } catch (Exception e) {
                 log.debug(e);

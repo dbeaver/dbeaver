@@ -74,7 +74,7 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
     @Override
     public void initialize(DBRProgressMonitor monitor) throws DBException
     {
-        final DBPConnectionInfo connectionInfo = container.getConnectionInfo();
+        final DBPConnectionInfo connectionInfo = container.getActualConnectionInfo();
         try {
             WMIService service = WMIService.connect(
                 connectionInfo.getServerName(),
@@ -83,7 +83,7 @@ public class WMIDataSource implements DBPDataSource, IAdaptable//, DBSObjectCont
                 connectionInfo.getUserPassword(),
                 null,
                 connectionInfo.getDatabaseName());
-            this.rootNamespace = new WMINamespace(null, this, container.getConnectionInfo().getDatabaseName(), service);
+            this.rootNamespace = new WMINamespace(null, this, connectionInfo.getDatabaseName(), service);
         } catch (UnsatisfiedLinkError e) {
             throw new DBException("Can't link with WMI native library", e);
         } catch (Throwable e) {
