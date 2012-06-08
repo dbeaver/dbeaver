@@ -7,8 +7,10 @@ Search refactoring (scripts search)
 Localizations
 JDBC driver versions update
 GPL license, copyright, etc
-Improve help system (use external help)
-
+Help system improvement (use external help)
+Execution history
+DB2 & PostgreSQL & MS SQL plugins
+DDL tab for Generic plugin
 
 Minor:
 
