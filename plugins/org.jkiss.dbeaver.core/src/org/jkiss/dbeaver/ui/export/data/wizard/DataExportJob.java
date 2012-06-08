@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.export.data.wizard;
 
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 import org.apache.commons.logging.Log;
@@ -273,6 +274,11 @@ public class DataExportJob extends AbstractJob {
         private File saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
             throws IOException, DBCException
         {
+            DBDContentStorage contents = content.getContents(monitor);
+            if (contents == null) {
+                log.warn("Null value content");
+                return null;
+            }
             if (lobDirectory == null) {
                 lobDirectory = new File(settings.getOutputFolder(), LOB_DIRECTORY_NAME);
                 if (!lobDirectory.exists()) {
@@ -283,7 +289,7 @@ public class DataExportJob extends AbstractJob {
             }
             lobCount++;
             File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + ".data"); //$NON-NLS-1$ //$NON-NLS-2$
-            ContentUtils.saveContentToFile(content.getContents(monitor).getContentStream(), lobFile, monitor);
+            ContentUtils.saveContentToFile(contents.getContentStream(), lobFile, monitor);
             return lobFile;
         }
 
