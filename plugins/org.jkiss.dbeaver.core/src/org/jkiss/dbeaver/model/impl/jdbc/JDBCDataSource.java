@@ -92,7 +92,7 @@ public abstract class JDBCDataSource
             }
         }
 
-        DBPConnectionInfo connectionInfo = container.getConnectionInfo();
+        DBPConnectionInfo connectionInfo = container.getActualConnectionInfo();
         if (connectionInfo.getProperties() != null) {
             connectProps.putAll(connectionInfo.getProperties());
         }
