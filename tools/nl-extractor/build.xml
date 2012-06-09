@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
+<project name="extractor" default="do-extract">
+    <property file="build.properties"/>
+
+    <target name="build">
+        <mkdir dir="build"/>
+        <javac srcdir="src" destdir="build" includeantruntime="true"/>
+    </target>
+
+    <target name="declare" depends="build">
+        <taskdef name="nl-extractor"
+                 classname="org.jkiss.tools.ant.extractor.NlExtractorTask"
+                 classpath="build"/>
+    </target>
+
+    <target name="do-extract" depends="declare">
+        <mkdir dir="${targetLocation}"/>
+        <nl-extractor baseLocation="${baseLocation}" targetLocation="${targetLocation}"/>
+    </target>
+</project>
