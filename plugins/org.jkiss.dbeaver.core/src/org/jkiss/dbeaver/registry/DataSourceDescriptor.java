@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
@@ -66,6 +63,26 @@ public class DataSourceDescriptor
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
+    public static class FilterMapping {
+        public final Class<? extends DBSObject> type;
+        public DBSObjectFilter defaultFilter;
+        public Map<String, DBSObjectFilter> customFilters = new HashMap<String, DBSObjectFilter>();
+
+        FilterMapping(Class<? extends DBSObject> type)
+        {
+            this.type = type;
+        }
+
+        FilterMapping(FilterMapping mapping)
+        {
+            this.type = mapping.type;
+            this.defaultFilter = mapping.defaultFilter == null ? null : new DBSObjectFilter(mapping.defaultFilter);
+            for (Map.Entry<String, DBSObjectFilter> entry : mapping.customFilters.entrySet()) {
+                this.customFilters.put(entry.getKey(), new DBSObjectFilter(entry.getValue()));
+            }
+        }
+    }
+
     private DataSourceRegistry registry;
     private DriverDescriptor driver;
     private DBPConnectionInfo connectionInfo;
@@ -77,8 +94,7 @@ public class DataSourceDescriptor
     private boolean savePassword;
     private boolean showSystemObjects;
     private boolean connectionReadOnly;
-    private String catalogFilter;
-    private String schemaFilter;
+    private Map<Class<? extends DBSObject>, FilterMapping> filterMap = new HashMap<Class<? extends DBSObject>, FilterMapping>();
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -219,26 +235,40 @@ public class DataSourceDescriptor
         this.connectionReadOnly = connectionReadOnly;
     }
 
+    public Collection<FilterMapping> getObjectFilters()
+    {
+        return filterMap.values();
+    }
+
+    public void setObjectFilters(Collection<FilterMapping> mappings)
+    {
+        filterMap = new HashMap<Class<? extends DBSObject>, FilterMapping>();
+        for (FilterMapping mapping : mappings) {
+            filterMap.put(mapping.type, new FilterMapping(mapping));
+        }
+    }
+
     @Override
-    public String getCatalogFilter()
+    public <T extends DBSObject> DBSObjectFilter getObjectFilter(Class<T> type, DBSObject parentObject)
     {
-        return catalogFilter;
+        FilterMapping filterMapping = filterMap.get(type);
+        return filterMapping == null ?
+            null :
+            (parentObject == null ? filterMapping.defaultFilter : filterMapping.customFilters.get(parentObject));
     }
 
-    public void setCatalogFilter(String catalogFilter)
+    public void setObjectFilter(Class<? extends DBSObject> type, String objectID, DBSObjectFilter filter)
     {
-        this.catalogFilter = catalogFilter;
-    }
-
-    @Override
-    public String getSchemaFilter()
-    {
-        return schemaFilter;
-    }
-
-    public void setSchemaFilter(String schemaFilter)
-    {
-        this.schemaFilter = schemaFilter;
+        FilterMapping filterMapping = filterMap.get(type);
+        if (filterMapping == null) {
+            filterMapping = new FilterMapping(type);
+            filterMap.put(type, filterMapping);
+        }
+        if (objectID == null) {
+            filterMapping.defaultFilter = filter;
+        } else {
+            filterMapping.customFilters.put(objectID, filter);
+        }
     }
 
     @Override
@@ -800,4 +830,5 @@ public class DataSourceDescriptor
                 getName());
         }
     }
+    
 }

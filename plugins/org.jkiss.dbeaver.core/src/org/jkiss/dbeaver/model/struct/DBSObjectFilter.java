@@ -4,8 +4,12 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.utils.CommonUtils;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Object filter configuration
@@ -15,22 +19,25 @@ public class DBSObjectFilter
     private String name;
     private String description;
     private boolean enabled = true;
-    private List<String> include = new ArrayList<String>();
-    private List<String> exclude = new ArrayList<String>();
+    private List<String> include;
+    private List<String> exclude;
+
+    private transient List<Pattern> includePatterns = null;
+    private transient List<Pattern> excludePatterns = null;
 
     public DBSObjectFilter()
     {
-        include.add("");
-        exclude.add("");
     }
 
     public DBSObjectFilter(DBSObjectFilter filter)
     {
-        this.name = filter.name;
-        this.description = filter.description;
-        this.enabled = filter.enabled;
-        this.include = filter.include == null ? null : new ArrayList<String>(filter.include);
-        this.exclude = filter.exclude == null ? null : new ArrayList<String>(filter.exclude);
+        if (filter != null) {
+            this.name = filter.name;
+            this.description = filter.description;
+            this.enabled = filter.enabled;
+            this.include = filter.include == null ? null : new ArrayList<String>(filter.include);
+            this.exclude = filter.exclude == null ? null : new ArrayList<String>(filter.exclude);
+        }
     }
 
     public String getName()
@@ -68,9 +75,19 @@ public class DBSObjectFilter
         return include;
     }
 
+    public void addInclude(String name)
+    {
+        if (include == null) {
+            include = new ArrayList<String>();
+        }
+        include.add(name);
+        this.includePatterns = null;
+    }
+
     public void setInclude(List<String> include)
     {
         this.include = include;
+        this.includePatterns = null;
     }
 
     public List<String> getExclude()
@@ -78,8 +95,75 @@ public class DBSObjectFilter
         return exclude;
     }
 
+    public void addExclude(String name)
+    {
+        if (exclude == null) {
+            exclude = new ArrayList<String>();
+        }
+        exclude.add(name);
+        this.excludePatterns = null;
+    }
+
     public void setExclude(List<String> exclude)
     {
         this.exclude = exclude;
+        this.excludePatterns = null;
     }
+
+    public boolean isEmpty()
+    {
+        return enabled && (!CommonUtils.isEmpty(include) || !CommonUtils.isEmpty(exclude));
+    }
+    
+    public boolean hasSingleMask()
+    {
+        return include.size() == 1 && exclude.isEmpty();
+    }
+
+    public String getSingleMask()
+    {
+        return include.get(0);
+    }
+    
+    public boolean matches(String name)
+    {
+        if (includePatterns == null && !include.isEmpty()) {
+            includePatterns = new ArrayList<Pattern>(include.size());
+            for (String inc : include) {
+                if (!inc.isEmpty()) {
+                    includePatterns.add(Pattern.compile(
+                        SQLUtils.makeLikePattern(inc), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
+                }
+            }
+        }
+        if (includePatterns != null) {
+            // Match includes
+            for (Pattern pattern : includePatterns) {
+                if (!pattern.matcher(name).matches()) {
+                    return false;
+                }
+            }
+        }
+
+        if (excludePatterns == null && !exclude.isEmpty()) {
+            excludePatterns = new ArrayList<Pattern>(exclude.size());
+            for (String exc : exclude) {
+                if (!exc.isEmpty()) {
+                    excludePatterns.add(Pattern.compile(
+                        SQLUtils.makeLikePattern(exc), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
+                }
+            }
+        }
+        if (excludePatterns != null) {
+            // Match excludes
+            for (Pattern pattern : excludePatterns) {
+                if (pattern.matcher(name).matches()) {
+                    return false;
+                }
+            }
+        }
+        // Done
+        return true;
+    }
+
 }

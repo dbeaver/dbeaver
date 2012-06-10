@@ -415,7 +415,6 @@ public class OracleDataSource extends JDBCDataSource
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, OracleDataSource owner) throws SQLException
         {
-            List<String> schemaFilters = SQLUtils.splitFilter(owner.getContainer().getSchemaFilter());
             StringBuilder schemasQuery = new StringBuilder();
             boolean manyObjects = "false".equals(owner.getContainer().getConnectionInfo().getProperties().get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
             schemasQuery.append("SELECT U.USERNAME FROM SYS.ALL_USERS U\n");
@@ -433,15 +432,9 @@ public class OracleDataSource extends JDBCDataSource
             }
 //                }
 
-            if (!schemaFilters.isEmpty()) {
-                schemasQuery.append(" AND (");
-                for (int i = 0; i < schemaFilters.size(); i++) {
-                    if (i > 0) {
-                        schemasQuery.append(" OR ");
-                    }
-                    schemasQuery.append("USERNAME LIKE ?");
-                }
-                schemasQuery.append(")");
+            DBSObjectFilter schemaFilters = owner.getContainer().getObjectFilter(OracleSchema.class, null);
+            if (schemaFilters != null) {
+                JDBCUtils.appendFilterClause(schemasQuery, schemaFilters, "U.USERNAME", false);
             }
             schemasQuery.append(")");
             //if (!CommonUtils.isEmpty(owner.activeSchemaName)) {
@@ -451,10 +444,8 @@ public class OracleDataSource extends JDBCDataSource
 
             JDBCPreparedStatement dbStat = context.prepareStatement(schemasQuery.toString());
 
-            if (!schemaFilters.isEmpty()) {
-                for (int i = 0; i < schemaFilters.size(); i++) {
-                    dbStat.setString(i + 1, schemaFilters.get(i));
-                }
+            if (schemaFilters != null) {
+                JDBCUtils.setFilterParameters(dbStat, 1, schemaFilters);
             }
             return dbStat;
         }

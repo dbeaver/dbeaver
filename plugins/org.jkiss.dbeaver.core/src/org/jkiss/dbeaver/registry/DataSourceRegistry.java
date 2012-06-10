@@ -4,13 +4,6 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.SAXListener;
-import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
@@ -20,9 +13,12 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
@@ -30,6 +26,11 @@ import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.SAXListener;
+import org.jkiss.utils.xml.SAXReader;
+import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
@@ -379,12 +380,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
         xml.addAttribute(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
         xml.addAttribute(RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
-        if (!CommonUtils.isEmpty(dataSource.getCatalogFilter())) {
-            xml.addAttribute(RegistryConstants.ATTR_FILTER_CATALOG, dataSource.getCatalogFilter());
-        }
-        if (!CommonUtils.isEmpty(dataSource.getSchemaFilter())) {
-            xml.addAttribute(RegistryConstants.ATTR_FILTER_SCHEMA, dataSource.getSchemaFilter());
-        }
 
         {
             // Connection info
@@ -416,6 +411,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
             }
             if (connectionInfo.getProperties() != null) {
+
                 for (Map.Entry<Object, Object> entry : connectionInfo.getProperties().entrySet()) {
                     xml.startElement(RegistryConstants.TAG_PROPERTY);
                     xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
@@ -463,7 +459,25 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
                 xml.endElement();
             }
+
             xml.endElement();
+        }
+
+        {
+            // Filters
+            Collection<DataSourceDescriptor.FilterMapping> filterMappings = dataSource.getObjectFilters();
+            if (!CommonUtils.isEmpty(filterMappings)) {
+                xml.startElement(RegistryConstants.TAG_FILTERS);
+                for (DataSourceDescriptor.FilterMapping filter : filterMappings) {
+                    if (filter.defaultFilter != null) {
+                        saveObjectFiler(xml, filter.type, null, filter.defaultFilter);
+                    }
+                    for (Map.Entry<String,DBSObjectFilter> cf : filter.customFilters.entrySet()) {
+                        saveObjectFiler(xml, filter.type, cf.getKey(), cf.getValue());
+                    }
+                }
+                xml.endElement();
+            }
         }
 
         // Preferences
@@ -487,6 +501,32 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.endElement();
     }
 
+    private void saveObjectFiler(XMLBuilder xml, Class<? extends DBSObject> type, String objectID, DBSObjectFilter filter) throws IOException
+    {
+        xml.startElement(RegistryConstants.TAG_FILTER);
+        xml.addAttribute(RegistryConstants.ATTR_TYPE, type.getName());
+        if (objectID != null) {
+            xml.addAttribute(RegistryConstants.ATTR_ID, objectID);
+        }
+        if (!CommonUtils.isEmpty(filter.getName())) {
+            xml.addAttribute(RegistryConstants.ATTR_NAME, filter.getName());
+        }
+        if (!CommonUtils.isEmpty(filter.getDescription())) {
+            xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
+        }
+        for (String include : CommonUtils.safeCollection(filter.getInclude())) {
+            xml.startElement(RegistryConstants.TAG_INCLUDE);
+            xml.addAttribute(RegistryConstants.ATTR_NAME, include);
+            xml.endElement();
+        }
+        for (String exclude : CommonUtils.safeCollection(filter.getExclude())) {
+            xml.startElement(RegistryConstants.TAG_EXCLUDE);
+            xml.addAttribute(RegistryConstants.ATTR_NAME, exclude);
+            xml.endElement();
+        }
+        xml.endElement();
+    }
+
     @Override
     public IProject getProject()
     {
@@ -500,6 +540,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
         private DBWHandlerConfiguration curNetworkHandler;
+        private DBSObjectFilter curFilter;
 
         private DataSourcesParser(PasswordEncrypter encrypter)
         {
@@ -553,8 +594,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                 curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
                 curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
-                curDataSource.setCatalogFilter(atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG));
-                curDataSource.setSchemaFilter(atts.getValue(RegistryConstants.ATTR_FILTER_SCHEMA));
 
                 dataSources.add(curDataSource);
             } else if (localName.equals(RegistryConstants.TAG_CONNECTION)) {
@@ -609,6 +648,28 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curNetworkHandler.setPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
                     curDataSource.getConnectionInfo().addHandler(curNetworkHandler);
                 }
+            } else if (localName.equals(RegistryConstants.TAG_FILTER)) {
+                if (curDataSource != null) {
+                    String typeName = atts.getValue(RegistryConstants.ATTR_TYPE);
+                    String objectID = atts.getValue(RegistryConstants.ATTR_ID);
+                    Class<? extends DBSObject> objectClass = curDataSource.getDriver().getObjectClass(typeName, DBSObject.class);
+                    if (objectClass != null) {
+                        curFilter = new DBSObjectFilter();
+                        curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                        curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                        curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
+                        curDataSource.setObjectFilter(objectClass, objectID, curFilter);
+
+                    }
+                }
+            } else if (localName.equals(RegistryConstants.TAG_INCLUDE)) {
+                if (curFilter != null) {
+                    curFilter.addInclude(CommonUtils.getString(atts.getValue(RegistryConstants.ATTR_NAME)));
+                }
+            } else if (localName.equals(RegistryConstants.TAG_EXCLUDE)) {
+                if (curFilter != null) {
+                    curFilter.addExclude(CommonUtils.getString(atts.getValue(RegistryConstants.ATTR_NAME)));
+                }
             } else if (localName.equals(RegistryConstants.TAG_DESCRIPTION)) {
                 isDescription = true;
             }
@@ -634,6 +695,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 curDataSource = null;
             } else if (localName.equals(RegistryConstants.TAG_NETWORK_HANDLER)) {
                 curNetworkHandler = null;
+            } else if (localName.equals(RegistryConstants.TAG_FILTER)) {
+                curFilter = null;
             }
             isDescription = false;
         }

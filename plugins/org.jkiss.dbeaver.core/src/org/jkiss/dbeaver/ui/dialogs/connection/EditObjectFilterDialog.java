@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
@@ -20,6 +18,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +27,6 @@ import java.util.List;
  * Object filter edit dialog
  */
 public class EditObjectFilterDialog extends HelpEnabledDialog {
-
-    static final Log log = LogFactory.getLog(EditObjectFilterDialog.class);
 
     private String objectTitle;
     private DBSObjectFilter filter;
@@ -92,8 +89,12 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         final TableColumn valueColumn = UIUtils.createTableColumn( valueTable, SWT.LEFT, "Value");
         valueColumn.setWidth(300);
 
-        for (String value : values) {
-            new TableItem( valueTable, SWT.LEFT).setText(value);
+        if (CommonUtils.isEmpty(values)) {
+            new TableItem( valueTable, SWT.LEFT).setText("");
+        } else {
+            for (String value : values) {
+                new TableItem( valueTable, SWT.LEFT).setText(value);
+            }
         }
 
         final TableEditor tableEditor = new TableEditor( valueTable);
@@ -117,8 +118,12 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
+                if (tableEditor.getItem() != null && !tableEditor.getItem().isDisposed() && tableEditor.getEditor() != null && !tableEditor.getEditor().isDisposed()) {
+                    tableEditor.getItem().setText(((Text)tableEditor.getEditor()).getText());
+                }
+
                 TableItem newItem = new TableItem( valueTable, SWT.LEFT);
-                 valueTable.setSelection(newItem);
+                valueTable.setSelection(newItem);
                 mouseAdapter.closeEditor(tableEditor);
                 mouseAdapter.showEditor(newItem);
             }
@@ -134,7 +139,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 int selectionIndex =  valueTable.getSelectionIndex();
                 if (selectionIndex >= 0) {
                     mouseAdapter.closeEditor(tableEditor);
-                     valueTable.remove(selectionIndex);
+                    valueTable.remove(selectionIndex);
+                    removeButton.setEnabled(valueTable.getSelectionIndex() >= 0);
                 }
             }
         });
@@ -172,7 +178,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private List<String> collectValues(Table table)
     {
         List<String> values = new ArrayList<String>();
-        for (TableItem item : includeTable.getItems()) {
+        for (TableItem item : table.getItems()) {
             String value = item.getText().trim();
             if (value.isEmpty() || value.equals("%")) {
                 continue;

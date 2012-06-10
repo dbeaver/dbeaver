@@ -25,7 +25,9 @@ import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -56,6 +58,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private Button eventsButton;
     private Button catalogFiltersButton;
     private Button schemaFiltersButton;
+    private DBSObjectFilter catalogFilter;
+    private DBSObjectFilter schemaFilter;
 
     ConnectionPageFinal(ConnectionWizard wizard)
     {
@@ -69,6 +73,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
     {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
+        this.catalogFilter = dataSourceDescriptor.getObjectFilter(DBSCatalog.class, null);
+        this.schemaFilter = dataSourceDescriptor.getObjectFilter(DBSSchema.class, null);
     }
 
     @Override
@@ -224,9 +230,12 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    EditObjectFilterDialog dialog = new EditObjectFilterDialog(getShell(), "Catalog", new DBSObjectFilter());
+                    EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                        getShell(),
+                        "Catalog",
+                        catalogFilter != null ? catalogFilter : new DBSObjectFilter());
                     if (dialog.open() == IDialogConstants.OK_ID) {
-
+                        catalogFilter = dialog.getFilter();
                     }
                 }
             });
@@ -240,9 +249,12 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    EditObjectFilterDialog dialog = new EditObjectFilterDialog(getShell(), "Schema/User", new DBSObjectFilter());
+                    EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                        getShell(),
+                        "Schema/User",
+                        schemaFilter != null ? schemaFilter : new DBSObjectFilter());
                     if (dialog.open() == IDialogConstants.OK_ID) {
-
+                        schemaFilter = dialog.getFilter();
                     }
                 }
             });
@@ -321,8 +333,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
         }
-        //dataSource.setCatalogFilter(catFilterText == null || !catFilterText.isEnabled() ? null : catFilterText.getText());
-        //dataSource.setSchemaFilter(schemaFilterText == null || !schemaFilterText.isEnabled() ? null : schemaFilterText.getText());
+        dataSource.setObjectFilter(DBSCatalog.class, null, catalogFilter);
+        dataSource.setObjectFilter(DBSSchema.class, null, schemaFilter);
     }
 
     private void configureEvents()

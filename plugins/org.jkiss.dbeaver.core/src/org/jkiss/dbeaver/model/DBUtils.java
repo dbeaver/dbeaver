@@ -480,7 +480,7 @@ public final class DBUtils {
         if (!identifiers.isEmpty()) {
             // Find PK or unique key
             DBSEntityConstraint uniqueId = null;
-            DBSEntityConstraint uniqueIndex = null;
+            //DBSEntityConstraint uniqueIndex = null;
             for (DBSEntityConstraint id : identifiers) {
                 if (id instanceof DBSEntityReferrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                     return getEntityAttributes(monitor, (DBSEntityReferrer) id);

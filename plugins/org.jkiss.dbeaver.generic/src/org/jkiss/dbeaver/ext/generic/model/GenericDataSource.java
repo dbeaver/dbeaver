@@ -227,7 +227,7 @@ public class GenericDataSource extends JDBCDataSource
                 // Read catalogs
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
-                List<String> catalogFilters = SQLUtils.splitFilter(getContainer().getCatalogFilter());
+                DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null);
                 List<String> catalogNames = new ArrayList<String>();
                 try {
                     JDBCResultSet dbResult = metaData.getCatalogs();
@@ -241,7 +241,7 @@ public class GenericDataSource extends JDBCDataSource
                                     continue;
                                 }
                             }
-                            if (catalogFilters.isEmpty() || SQLUtils.matchesAnyLike(catalogName, catalogFilters)) {
+                            if (catalogFilters == null || catalogFilters.matches(catalogName)) {
                                 catalogNames.add(catalogName);
                                 monitor.subTask("Extract catalogs - " + catalogName);
                             } else {
@@ -322,7 +322,7 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         try {
-            List<String> schemaFilters = SQLUtils.splitFilter(getContainer().getSchemaFilter());
+            DBSObjectFilter schemaFilters = getContainer().getObjectFilter(GenericSchema.class, null);
 
             List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
             JDBCResultSet dbResult;
@@ -330,7 +330,7 @@ public class GenericDataSource extends JDBCDataSource
             try {
                 dbResult = context.getMetaData().getSchemas(
                     catalog == null ? null : catalog.getName(),
-                    schemaFilters.size() == 1 ? schemaFilters.get(0) : null);
+                    schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : null);
                 catalogSchemas = true;
             } catch (Throwable e) {
                 // This method not supported (may be old driver version)
@@ -338,7 +338,6 @@ public class GenericDataSource extends JDBCDataSource
                 dbResult = context.getMetaData().getSchemas();
                 catalogSchemas = false;
             }
-
 
             try {
                 while (dbResult.next()) {
@@ -353,8 +352,8 @@ public class GenericDataSource extends JDBCDataSource
                     if (CommonUtils.isEmpty(schemaName)) {
                         continue;
                     }
-                    if (!schemaFilters.isEmpty() && !SQLUtils.matchesAnyLike(schemaName, schemaFilters)) {
-                        // Check pattern
+                    if (schemaFilters != null && !schemaFilters.matches(schemaName)) {
+                        // Doesn't match filter
                         continue;
                     }
                     String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);

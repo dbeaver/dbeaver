@@ -79,7 +79,12 @@ public class NlExtractorTask extends Task
 
     private void processDirectory(File dir) throws IOException
     {
+        File pluginXml = new File(dir, "plugin.xml");
+        boolean pluginRoot = pluginXml.exists();
         for (File file : dir.listFiles()) {
+            if (pluginRoot && file.getName().equals("bin")) {
+                continue;
+            }
             if (file.isDirectory()) {
                 processDirectory(file);
             }

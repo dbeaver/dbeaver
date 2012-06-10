@@ -7,6 +7,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -16,11 +17,14 @@ import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.List;
 
 /**
  * JDBCUtils
@@ -565,6 +569,54 @@ public class JDBCUtils {
     private static void debugColumnRead(int columnIndex, SQLException error)
     {
         log.debug("Can't get column #" + columnIndex + ": " + error.getMessage());
+    }
+
+    public static void appendFilterClause(StringBuilder sql, DBSObjectFilter filter, String columnAlias, boolean firstClause)
+    {
+        if (filter.isEmpty()) {
+            return;
+        }
+        if (filter.hasSingleMask()) {
+            firstClause = SQLUtils.appendFirstClause(sql, firstClause);
+            sql.append(columnAlias);
+            SQLUtils.appendLikeCondition(sql, filter.getSingleMask(), false);
+            return;
+        }
+        List<String> include = filter.getInclude();
+        if (!CommonUtils.isEmpty(include)) {
+            firstClause = SQLUtils.appendFirstClause(sql, firstClause);
+            sql.append("(");
+            for (int i = 0, includeSize = include.size(); i < includeSize; i++) {
+                if (i > 0) sql.append(" OR ");
+                sql.append(columnAlias);
+                SQLUtils.appendLikeCondition(sql, include.get(i), false);
+            }
+            sql.append(")");
+        }
+        List<String> exclude = filter.getExclude();
+        if (!CommonUtils.isEmpty(exclude)) {
+            SQLUtils.appendFirstClause(sql, firstClause);
+            sql.append("NOT (");
+            for (int i = 0, excludeSize = exclude.size(); i < excludeSize; i++) {
+                if (i > 0) sql.append(" OR ");
+                sql.append(columnAlias);
+                SQLUtils.appendLikeCondition(sql, exclude.get(i), false);
+            }
+            sql.append(")");
+        }
+    }
+
+    public static void setFilterParameters(JDBCPreparedStatement statement, int paramIndex, DBSObjectFilter filter) throws SQLException
+    {
+        if (filter.isEmpty()) {
+            return;
+        }
+        for (String inc : CommonUtils.safeCollection(filter.getInclude())) {
+            statement.setString(paramIndex++, inc);
+        }
+        for (String exc : CommonUtils.safeCollection(filter.getExclude())) {
+            statement.setString(paramIndex++, exc);
+        }
     }
 
 }

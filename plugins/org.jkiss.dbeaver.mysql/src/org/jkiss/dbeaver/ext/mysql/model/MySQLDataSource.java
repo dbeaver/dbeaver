@@ -15,7 +15,6 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -638,19 +637,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLDataSource owner) throws SQLException
         {
             StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
-            List<String> catalogFilters = SQLUtils.splitFilter(owner.getContainer().getCatalogFilter());
-            if (!catalogFilters.isEmpty()) {
-                catalogQuery.append(" WHERE ");
-                for (int i = 0; i < catalogFilters.size(); i++) {
-                    if (i > 0) catalogQuery.append(" OR ");
-                    catalogQuery.append(MySQLConstants.COL_SCHEMA_NAME).append(" LIKE ?");
-                }
+            DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null);
+            if (catalogFilters != null) {
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, MySQLConstants.COL_SCHEMA_NAME, true);
             }
             JDBCPreparedStatement dbStat = context.prepareStatement(catalogQuery.toString());
-            if (!catalogFilters.isEmpty()) {
-                for (int i = 0; i < catalogFilters.size(); i++) {
-                    dbStat.setString(i + 1, catalogFilters.get(i));
-                }
+            if (catalogFilters != null) {
+                JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
             }
             return dbStat;
         }

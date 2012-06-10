@@ -1,15 +1,16 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -33,7 +34,7 @@ public final class SQLUtils {
 
     public static String stripTransformations(String query)
     {
-        if (query.indexOf(TOKEN_TRANSFORM_START) == -1) {
+        if (!query.contains(TOKEN_TRANSFORM_START)) {
             return query;
         } else {
             return PATTERN_XFORM.matcher(query).replaceAll("");
@@ -60,9 +61,9 @@ public final class SQLUtils {
         query = query.trim();
         Pattern stripPattern = Pattern.compile(
             "(\\s*" + Pattern.quote(mlCommentStart) +
-            "[^" + Pattern.quote(mlCommentEnd) +
-            "]*" + Pattern.quote(mlCommentEnd) +
-            "\\s*)[^" + Pattern.quote(mlCommentStart) + "]*");
+                "[^" + Pattern.quote(mlCommentEnd) +
+                "]*" + Pattern.quote(mlCommentEnd) +
+                "\\s*)[^" + Pattern.quote(mlCommentStart) + "]*");
         Matcher matcher = stripPattern.matcher(query);
         if (matcher.matches()) {
             query = query.substring(matcher.end(1));
@@ -147,6 +148,7 @@ public final class SQLUtils {
     /**
      * Removes \\r characters from query.
      * Actually this is done specially for Oracle due to some bug in it's driver
+     *
      * @param query query
      * @return normalized query
      */
@@ -176,4 +178,23 @@ public final class SQLUtils {
         return formatter.format(query);
     }
 
+    public static void appendLikeCondition(StringBuilder sql, String value, boolean not)
+    {
+        if (value.contains("%") || value.contains("_")) {
+            if (not) sql.append(" NOT");
+            sql.append(" LIKE ?");
+        }  else {
+            sql.append(not ? "<>?": "=?");
+        }
+    }
+
+    public static boolean appendFirstClause(StringBuilder sql, boolean firstClause)
+    {
+        if (firstClause) {
+            sql.append(" WHERE ");
+        } else {
+            sql.append(" AND ");
+        }
+        return false;
+    }
 }
