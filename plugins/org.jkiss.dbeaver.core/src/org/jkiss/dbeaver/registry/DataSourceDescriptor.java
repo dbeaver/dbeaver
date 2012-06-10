@@ -64,11 +64,11 @@ public class DataSourceDescriptor
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
     public static class FilterMapping {
-        public final Class<? extends DBSObject> type;
+        public final Class<?> type;
         public DBSObjectFilter defaultFilter;
         public Map<String, DBSObjectFilter> customFilters = new HashMap<String, DBSObjectFilter>();
 
-        FilterMapping(Class<? extends DBSObject> type)
+        FilterMapping(Class<?> type)
         {
             this.type = type;
         }
@@ -249,7 +249,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public <T extends DBSObject> DBSObjectFilter getObjectFilter(Class<T> type, DBSObject parentObject)
+    public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject)
     {
         if (filterMap.isEmpty()) {
             return null;
@@ -279,10 +279,11 @@ public class DataSourceDescriptor
             return filterMapping.defaultFilter;
         }
         String objectID = DBUtils.getObjectUniqueName(parentObject);
-        return filterMapping.customFilters.get(objectID);
+        DBSObjectFilter filter = filterMapping.customFilters.get(objectID);
+        return filter != null ? filter : filterMapping.defaultFilter;
     }
 
-    public void setObjectFilter(Class<? extends DBSObject> type, String objectID, DBSObjectFilter filter)
+    public void setObjectFilter(Class<?> type, String objectID, DBSObjectFilter filter)
     {
         FilterMapping filterMapping = filterMap.get(type);
         if (filterMapping == null) {

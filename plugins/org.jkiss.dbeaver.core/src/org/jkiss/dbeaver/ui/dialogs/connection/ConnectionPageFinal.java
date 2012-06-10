@@ -15,10 +15,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
@@ -28,12 +25,14 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSSchema;
+import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 /**
@@ -56,25 +55,41 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private boolean connectionNameChanged = false;
     private Button tunnelButton;
     private Button eventsButton;
-    private Button catalogFiltersButton;
-    private Button schemaFiltersButton;
-    private DBSObjectFilter catalogFilter;
-    private DBSObjectFilter schemaFilter;
+    private java.util.List<FilterInfo> filters = new ArrayList<FilterInfo>();
 
+    private static class FilterInfo {
+        final Class<?> type;
+        final String title;
+        Link link;
+        DBSObjectFilter filter;
+
+        private FilterInfo(Class<?> type, String title)
+        {
+            this.type = type;
+            this.title = title;
+        }
+    }
+    
     ConnectionPageFinal(ConnectionWizard wizard)
     {
         super("newConnectionFinal"); //$NON-NLS-1$
         this.wizard = wizard;
         setTitle(CoreMessages.dialog_connection_wizard_final_header);
         setDescription(CoreMessages.dialog_connection_wizard_final_description);
+
+        filters.add(new FilterInfo(DBSCatalog.class, "Catalogs / Databases"));
+        filters.add(new FilterInfo(DBSSchema.class, "Schemas / Users"));
+        filters.add(new FilterInfo(DBSTable.class, "Tables / Entities"));
     }
 
     ConnectionPageFinal(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
     {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
-        this.catalogFilter = dataSourceDescriptor.getObjectFilter(DBSCatalog.class, null);
-        this.schemaFilter = dataSourceDescriptor.getObjectFilter(DBSSchema.class, null);
+
+        for (FilterInfo filterInfo : filters) {
+            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null);
+        }
     }
 
     @Override
@@ -135,8 +150,6 @@ class ConnectionPageFinal extends ActiveWizardPage {
             savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
             showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
             readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
-            //catFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getCatalogFilter()));
-            //schemaFilterText.setText(CommonUtils.getString(dataSourceDescriptor.getSchemaFilter()));
         }
         long features = 0;
         try {
@@ -144,8 +157,28 @@ class ConnectionPageFinal extends ActiveWizardPage {
         } catch (DBException e) {
             log.error("Can't obtain data source provider instance", e); //$NON-NLS-1$
         }
-        catalogFiltersButton.setEnabled((features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
-        schemaFiltersButton.setEnabled((features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
+
+        for (FilterInfo filterInfo : filters) {
+            if (DBSCatalog.class.isAssignableFrom(filterInfo.type)) {
+                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
+            } else if (DBSSchema.class.isAssignableFrom(filterInfo.type)) {
+                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
+            } else {
+                enableFilter(filterInfo, true);
+            }
+        }
+    }
+
+    private void enableFilter(FilterInfo filterInfo, boolean enable)
+    {
+        filterInfo.link.setEnabled(enable);
+        if (enable) {
+            //filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
+            filterInfo.link.setToolTipText("Configure filters for " + filterInfo.title);
+        } else {
+            //filterInfo.link.setText("<a>" + filterInfo.title + " (Not Supported)</a>");
+            filterInfo.link.setToolTipText(filterInfo.title + " not supported by " + wizard.getPageSettings().getDriver().getName() + " driver");
+        }
     }
 
     @Override
@@ -218,46 +251,28 @@ class ConnectionPageFinal extends ActiveWizardPage {
             readOnlyConnection.setLayoutData(gd);
         }
         {
-            Group filtersGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_filters, 2, GridData.FILL_HORIZONTAL, 0);
+            // Filters
+            Group filtersGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_filters, 1, GridData.FILL_HORIZONTAL, 0);
             filtersGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
 
-            catalogFiltersButton = new Button(filtersGroup, SWT.PUSH);
-            catalogFiltersButton.setText("Catalog Filters");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.grabExcessVerticalSpace = true;
-            catalogFiltersButton.setLayoutData(gd);
-            catalogFiltersButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    EditObjectFilterDialog dialog = new EditObjectFilterDialog(
-                        getShell(),
-                        "Catalog",
-                        catalogFilter != null ? catalogFilter : new DBSObjectFilter());
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        catalogFilter = dialog.getFilter();
+            for (int i = 0; i < filters.size(); i++) {
+                final FilterInfo filterInfo = filters.get(i);
+                filterInfo.link = new Link(filtersGroup,SWT.NONE);
+                filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
+                filterInfo.link.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        //DBSObjectFilter filter = 
+                        EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                            getShell(),
+                            filterInfo.title,
+                            filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter());
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            filterInfo.filter = dialog.getFilter();
+                        }
                     }
-                }
-            });
-
-            schemaFiltersButton = new Button(filtersGroup, SWT.PUSH);
-            schemaFiltersButton.setText("Schema Filters");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.grabExcessVerticalSpace = true;
-            schemaFiltersButton.setLayoutData(gd);
-            schemaFiltersButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    EditObjectFilterDialog dialog = new EditObjectFilterDialog(
-                        getShell(),
-                        "Schema/User",
-                        schemaFilter != null ? schemaFilter : new DBSObjectFilter());
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        schemaFilter = dialog.getFilter();
-                    }
-                }
-            });
+                });
+            }
         }
 
         {
@@ -333,8 +348,11 @@ class ConnectionPageFinal extends ActiveWizardPage {
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
         }
-        dataSource.setObjectFilter(DBSCatalog.class, null, catalogFilter);
-        dataSource.setObjectFilter(DBSSchema.class, null, schemaFilter);
+        for (FilterInfo filterInfo : filters) {
+            if (filterInfo.filter != null) {
+                dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
+            }
+        }
     }
 
     private void configureEvents()

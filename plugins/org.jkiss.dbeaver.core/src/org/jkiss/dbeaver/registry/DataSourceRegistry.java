@@ -503,7 +503,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.endElement();
     }
 
-    private void saveObjectFiler(XMLBuilder xml, Class<? extends DBSObject> type, String objectID, DBSObjectFilter filter) throws IOException
+    private void saveObjectFiler(XMLBuilder xml, Class<?> type, String objectID, DBSObjectFilter filter) throws IOException
     {
         xml.startElement(RegistryConstants.TAG_FILTER);
         xml.addAttribute(RegistryConstants.ATTR_TYPE, type.getName());

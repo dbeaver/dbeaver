@@ -53,7 +53,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     boolean isConnectionReadOnly();
 
-    <T extends DBSObject> DBSObjectFilter getObjectFilter(Class<T> type, DBSObject parentObject);
+    DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject);
 
     DBPClientHome getClientHome();
 
