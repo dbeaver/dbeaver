@@ -114,6 +114,8 @@ public class RegistryConstants {
     public static final String ATTR_SAVE_PASSWORD = "save-password"; //$NON-NLS-1$
     public static final String ATTR_SHOW_SYSTEM_OBJECTS = "show-system-objects"; //$NON-NLS-1$
     public static final String ATTR_READ_ONLY = "read-only"; //$NON-NLS-1$
+    public static final String ATTR_FILTER_CATALOG = "filter-catalog"; //$NON-NLS-1$
+    public static final String ATTR_FILTER_SCHEMA = "filter-schema"; //$NON-NLS-1$
     public static final String ATTR_HOST = "host"; //$NON-NLS-1$
     public static final String ATTR_SERVER = "server"; //$NON-NLS-1$
     public static final String ATTR_DATABASE = "database"; //$NON-NLS-1$

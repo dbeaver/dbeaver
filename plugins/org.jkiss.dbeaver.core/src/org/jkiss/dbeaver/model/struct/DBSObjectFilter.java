@@ -29,6 +29,16 @@ public class DBSObjectFilter
     {
     }
 
+    public DBSObjectFilter(String includeString, String excludeString)
+    {
+        if (include != null) {
+            this.include = SQLUtils.splitFilter(includeString);
+        }
+        if (exclude != null) {
+            this.exclude = SQLUtils.splitFilter(excludeString);
+        }
+    }
+
     public DBSObjectFilter(DBSObjectFilter filter)
     {
         if (filter != null) {
@@ -112,22 +122,22 @@ public class DBSObjectFilter
 
     public boolean isEmpty()
     {
-        return enabled && (!CommonUtils.isEmpty(include) || !CommonUtils.isEmpty(exclude));
+        return !enabled || (CommonUtils.isEmpty(include) && CommonUtils.isEmpty(exclude));
     }
     
     public boolean hasSingleMask()
     {
-        return include.size() == 1 && exclude.isEmpty();
+        return include != null && include.size() == 1 && exclude.isEmpty();
     }
 
     public String getSingleMask()
     {
-        return include.get(0);
+        return !CommonUtils.isEmpty(include) ? include.get(0) : null;
     }
     
     public boolean matches(String name)
     {
-        if (includePatterns == null && !include.isEmpty()) {
+        if (includePatterns == null && !CommonUtils.isEmpty(include)) {
             includePatterns = new ArrayList<Pattern>(include.size());
             for (String inc : include) {
                 if (!inc.isEmpty()) {
@@ -145,7 +155,7 @@ public class DBSObjectFilter
             }
         }
 
-        if (excludePatterns == null && !exclude.isEmpty()) {
+        if (excludePatterns == null && !CommonUtils.isEmpty(exclude)) {
             excludePatterns = new ArrayList<Pattern>(exclude.size());
             for (String exc : exclude) {
                 if (!exc.isEmpty()) {

@@ -17,8 +17,10 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
+import org.jkiss.dbeaver.model.struct.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
@@ -514,6 +516,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         if (!CommonUtils.isEmpty(filter.getDescription())) {
             xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, filter.getDescription());
         }
+        if (!filter.isEnabled()) {
+            xml.addAttribute(RegistryConstants.ATTR_ENABLED, false);
+        }
         for (String include : CommonUtils.safeCollection(filter.getInclude())) {
             xml.startElement(RegistryConstants.TAG_INCLUDE);
             xml.addAttribute(RegistryConstants.ATTR_NAME, include);
@@ -583,17 +588,28 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 if (!CommonUtils.isEmpty(createDate)) {
                     curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
                 }
-                String udateDate = atts.getValue(RegistryConstants.ATTR_UPDATE_DATE);
-                if (!CommonUtils.isEmpty(udateDate)) {
-                    curDataSource.setUpdateDate(new Date(Long.parseLong(udateDate)));
+                String updateDate = atts.getValue(RegistryConstants.ATTR_UPDATE_DATE);
+                if (!CommonUtils.isEmpty(updateDate)) {
+                    curDataSource.setUpdateDate(new Date(Long.parseLong(updateDate)));
                 }
-                String logineDate = atts.getValue(RegistryConstants.ATTR_LOGIN_DATE);
-                if (!CommonUtils.isEmpty(logineDate)) {
-                    curDataSource.setLoginDate(new Date(Long.parseLong(logineDate)));
+                String loginDate = atts.getValue(RegistryConstants.ATTR_LOGIN_DATE);
+                if (!CommonUtils.isEmpty(loginDate)) {
+                    curDataSource.setLoginDate(new Date(Long.parseLong(loginDate)));
                 }
                 curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                 curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
                 curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
+                {
+                    // Legacy filter settings
+                    String legacyCatalogFilter = atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
+                    if (!CommonUtils.isEmpty(legacyCatalogFilter)) {
+                        curDataSource.setObjectFilter(DBSCatalog.class, null, new DBSObjectFilter(legacyCatalogFilter, null));
+                    }
+                    String legacySchemaFilter = atts.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
+                    if (!CommonUtils.isEmpty(legacySchemaFilter)) {
+                        curDataSource.setObjectFilter(DBSSchema.class, null, new DBSObjectFilter(legacySchemaFilter, null));
+                    }
+                }
 
                 dataSources.add(curDataSource);
             } else if (localName.equals(RegistryConstants.TAG_CONNECTION)) {
@@ -657,7 +673,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curFilter = new DBSObjectFilter();
                         curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
                         curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                        curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
+                        curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
                         curDataSource.setObjectFilter(objectClass, objectID, curFilter);
 
                     }
