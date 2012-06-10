@@ -94,7 +94,7 @@ public class DataSourceDescriptor
     private boolean savePassword;
     private boolean showSystemObjects;
     private boolean connectionReadOnly;
-    private Map<Class<? extends DBSObject>, FilterMapping> filterMap = new HashMap<Class<? extends DBSObject>, FilterMapping>();
+    private Map<Class<?>, FilterMapping> filterMap = new HashMap<Class<?>, FilterMapping>();
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -242,7 +242,7 @@ public class DataSourceDescriptor
 
     public void setObjectFilters(Collection<FilterMapping> mappings)
     {
-        filterMap = new HashMap<Class<? extends DBSObject>, FilterMapping>();
+        filterMap = new HashMap<Class<?>, FilterMapping>();
         for (FilterMapping mapping : mappings) {
             filterMap.put(mapping.type, new FilterMapping(mapping));
         }
@@ -251,10 +251,35 @@ public class DataSourceDescriptor
     @Override
     public <T extends DBSObject> DBSObjectFilter getObjectFilter(Class<T> type, DBSObject parentObject)
     {
+        if (filterMap.isEmpty()) {
+            return null;
+        }
         FilterMapping filterMapping = filterMap.get(type);
-        return filterMapping == null ?
-            null :
-            (parentObject == null ? filterMapping.defaultFilter : filterMapping.customFilters.get(parentObject));
+        if (filterMapping == null) {
+            // Try to find using interfaces and superclasses
+            for (Class<?> it : type.getInterfaces()) {
+                filterMapping = filterMap.get(it);
+                if (filterMapping != null) {
+                    break;
+                }
+            }
+            if (filterMapping == null) {
+                for (Class<?> parent = type.getSuperclass(); parent != null; parent = parent.getSuperclass()) {
+                    filterMapping = filterMap.get(parent);
+                    if (filterMapping != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (filterMapping == null) {
+            return null;
+        }
+        if (parentObject == null) {
+            return filterMapping.defaultFilter;
+        }
+        String objectID = DBUtils.getObjectUniqueName(parentObject);
+        return filterMapping.customFilters.get(objectID);
     }
 
     public void setObjectFilter(Class<? extends DBSObject> type, String objectID, DBSObjectFilter filter)
