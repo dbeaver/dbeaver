@@ -94,7 +94,7 @@ public class DataSourceDescriptor
     private boolean savePassword;
     private boolean showSystemObjects;
     private boolean connectionReadOnly;
-    private Map<Class<?>, FilterMapping> filterMap = new HashMap<Class<?>, FilterMapping>();
+    private final Map<Class<?>, FilterMapping> filterMap = new IdentityHashMap<Class<?>, FilterMapping>();
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -242,7 +242,7 @@ public class DataSourceDescriptor
 
     public void setObjectFilters(Collection<FilterMapping> mappings)
     {
-        filterMap = new HashMap<Class<?>, FilterMapping>();
+        filterMap.clear();
         for (FilterMapping mapping : mappings) {
             filterMap.put(mapping.type, new FilterMapping(mapping));
         }
@@ -254,24 +254,24 @@ public class DataSourceDescriptor
         if (filterMap.isEmpty()) {
             return null;
         }
-        FilterMapping filterMapping = filterMap.get(type);
-        if (filterMapping == null) {
-            // Try to find using interfaces and superclasses
-            for (Class<?> it : type.getInterfaces()) {
-                filterMapping = filterMap.get(it);
-                if (filterMapping != null) {
-                    break;
-                }
-            }
+        FilterMapping filterMapping = null;
+        // Test all super classes
+        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
+            filterMapping = filterMap.get(testType);
             if (filterMapping == null) {
-                for (Class<?> parent = type.getSuperclass(); parent != null; parent = parent.getSuperclass()) {
-                    filterMapping = filterMap.get(parent);
+                // Try to find using interfaces and superclasses
+                for (Class<?> it : testType.getInterfaces()) {
+                    filterMapping = filterMap.get(it);
                     if (filterMapping != null) {
                         break;
                     }
                 }
             }
+            if (filterMapping != null) {
+                break;
+            }
         }
+
         if (filterMapping == null) {
             return null;
         }

@@ -429,6 +429,17 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             // check it
             return false;
         }
+        DBSObjectFilter filter = null;
+        if (this instanceof DBNContainer) {
+            Class<?> childrenClass = this.getChildrenClass(meta);
+            if (childrenClass != null) {
+                DBSObject parentObject = null;
+                if (valueObject instanceof DBSObject) {
+                    parentObject = (DBSObject) valueObject;
+                }
+                filter = getObject().getDataSource().getContainer().getObjectFilter(childrenClass, parentObject);
+            }
+        }
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
@@ -439,6 +450,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             }
             if (childItem instanceof DBSHiddenObject && ((DBSHiddenObject) childItem).isHidden()) {
                 // Skip hidden objects
+                continue;
+            }
+            if (filter != null && !filter.matches(((DBSObject)childItem).getName())) {
+                // Doesn't match filter
                 continue;
             }
             DBSObject object = (DBSObject)childItem;
