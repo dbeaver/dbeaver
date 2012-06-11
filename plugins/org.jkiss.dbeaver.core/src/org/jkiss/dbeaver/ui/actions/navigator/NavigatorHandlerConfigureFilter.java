@@ -54,10 +54,11 @@ public class NavigatorHandlerConfigureFilter extends NavigatorHandlerObjectCreat
                         NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
                         break;
                     case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:
+                        objectFilter = folder.getDataSource().getContainer().getObjectFilter(folder.getChildrenClass(), null, false);
                         dialog = new EditObjectFilterDialog(
                             HandlerUtil.getActiveShell(event),
-                            node.getNodeType(),
-                            objectFilter,
+                            "All " + node.getNodeType(),
+                            objectFilter != null  ?objectFilter : new DBSObjectFilter(),
                             true);
                         if (dialog.open() == IDialogConstants.OK_ID) {
                             folder.setNodeFilter(itemsMeta, dialog.getFilter());

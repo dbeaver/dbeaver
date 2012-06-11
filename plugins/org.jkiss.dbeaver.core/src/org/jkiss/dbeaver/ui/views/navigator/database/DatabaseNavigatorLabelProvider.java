@@ -30,7 +30,9 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
 
     //private DatabaseNavigatorView view;
     private Font normalFont;
-    private Font defaultFont;
+    private Font boldFont;
+    private Font italicFont;
+    private Font boldItalicFont;
     private Color lockedForeground;
     private Color transientForeground;
 
@@ -38,7 +40,9 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     {
         //this.view = view;
         this.normalFont = viewer.getControl().getFont();
-        this.defaultFont = UIUtils.makeBoldFont(normalFont);
+        this.boldFont = UIUtils.makeBoldFont(normalFont);
+        this.italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
+        this.boldItalicFont = UIUtils.modifyFont(normalFont, SWT.BOLD | SWT.ITALIC);
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
         this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
     }
@@ -46,10 +50,12 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     @Override
     public void dispose()
     {
-        if (defaultFont != null) {
-            defaultFont.dispose();
-            defaultFont = null;
-        }
+        UIUtils.dispose(boldFont);
+        boldFont = null;
+        UIUtils.dispose(italicFont);
+        italicFont = null;
+        UIUtils.dispose(boldItalicFont);
+        boldItalicFont = null;
         super.dispose();
     }
 
@@ -71,6 +77,9 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         if (text == null) {
             text = "?";
         }
+        if (isFilteredElement(obj)) {
+            text += " (...)";
+        }
         return text;
     }
 
@@ -90,10 +99,10 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     @Override
     public Font getFont(Object element)
     {
-        if (defaultFont == null || !isDefaultElement(element)) {
+        if (boldFont == null || !isDefaultElement(element)) {
             return normalFont;
         } else {
-            return defaultFont;
+            return boldFont;
         }
     }
 
@@ -131,6 +140,14 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
             if (((DBNProject)element).getProject() == DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    private boolean isFilteredElement(Object element)
+    {
+        if (element instanceof DBNNode) {
+            return ((DBNNode) element).isFiltered();
         }
         return false;
     }

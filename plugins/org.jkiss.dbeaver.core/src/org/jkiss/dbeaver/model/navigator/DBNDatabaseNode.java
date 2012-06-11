@@ -31,6 +31,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     private volatile boolean locked;
     protected volatile List<DBNDatabaseNode> childNodes;
+    private boolean filtered;
 
     protected DBNDatabaseNode(DBNNode parentNode)
     {
@@ -329,6 +330,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         final List<DBNDatabaseNode> toList)
         throws DBException
     {
+        this.filtered = false;
+
         List<DBXTreeNode> childMetas = meta.getChildren(this);
         if (CommonUtils.isEmpty(childMetas)) {
             return;
@@ -382,6 +385,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             monitor.worked(1);
         }
         monitor.done();
+        
+        if (filtered) {
+            DBNModel.getInstance().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
+        }
     }
 
 
@@ -425,6 +432,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             return false;
         }
         DBSObjectFilter filter = getNodeFilter(meta, false);
+        this.filtered = filter != null && !filter.isEmpty();
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
@@ -527,6 +535,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         } else {
             log.error("No active datasource - can't save filter configuration");
         }
+    }
+
+    public boolean isFiltered()
+    {
+        return filtered;
     }
 
     protected void reloadChildren(DBRProgressMonitor monitor)

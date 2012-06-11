@@ -147,11 +147,16 @@ public class DBSObjectFilter
             }
         }
         if (includePatterns != null) {
-            // Match includes
+            // Match includes (at least one should match)
+            boolean matched = false;
             for (Pattern pattern : includePatterns) {
-                if (!pattern.matcher(name).matches()) {
-                    return false;
+                if (pattern.matcher(name).matches()) {
+                    matched = true;
+                    break;
                 }
+            }
+            if (!matched) {
+                return false;
             }
         }
 

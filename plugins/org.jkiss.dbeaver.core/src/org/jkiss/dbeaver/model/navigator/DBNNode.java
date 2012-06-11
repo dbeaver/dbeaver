@@ -179,4 +179,8 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         return false;
     }
 
+    public boolean isFiltered()
+    {
+        return false;
+    }
 }
