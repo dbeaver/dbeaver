@@ -60,7 +60,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      * @param parentObject parent object (in DBS objects hierarchy)
      * @param firstMatch if true then this function will return first found filter
      *   even if it is disabled. Won't return default filter of parent object specified.
-     *   Generally this function used byfilter editors
+     *   Generally this function used by filter editors
      * @return
      */
     DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean firstMatch);

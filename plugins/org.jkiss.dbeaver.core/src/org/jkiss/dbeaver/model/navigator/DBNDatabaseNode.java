@@ -499,7 +499,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             if (childrenClass != null) {
                 Object valueObject = getValueObject();
                 DBSObject parentObject = null;
-                if (valueObject instanceof DBSObject) {
+                if (valueObject instanceof DBSObject && !(valueObject instanceof DBPDataSource)) {
                     parentObject = (DBSObject) valueObject;
                 }
                 return dataSource.getContainer().getObjectFilter(childrenClass, parentObject, firstMatch);
@@ -514,9 +514,13 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         if (dataSource != null && this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenClass(meta);
             if (childrenClass != null) {
+                Object parentObject = getValueObject();
+                if (parentObject instanceof DBPDataSource) {
+                    parentObject = null;
+                }
                 dataSource.getContainer().setObjectFilter(
                     this.getChildrenClass(meta),
-                    (DBSObject) getValueObject(),
+                    (DBSObject)parentObject,
                     filter);
                 dataSource.getContainer().persistConfiguration();
             }

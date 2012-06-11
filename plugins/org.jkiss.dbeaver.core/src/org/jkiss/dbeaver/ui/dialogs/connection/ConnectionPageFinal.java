@@ -280,7 +280,8 @@ class ConnectionPageFinal extends ActiveWizardPage {
                         EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                             getShell(),
                             filterInfo.title,
-                            filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter());
+                            filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter(),
+                            true);
                         if (dialog.open() == IDialogConstants.OK_ID) {
                             filterInfo.filter = dialog.getFilter();
                             if (filterInfo.filter != null && !filterInfo.filter.isEmpty()) {

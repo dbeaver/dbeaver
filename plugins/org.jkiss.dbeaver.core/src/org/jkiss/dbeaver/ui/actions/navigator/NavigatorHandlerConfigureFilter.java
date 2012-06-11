@@ -12,6 +12,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -39,10 +40,24 @@ public class NavigatorHandlerConfigureFilter extends NavigatorHandlerObjectCreat
                 EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                     HandlerUtil.getActiveShell(event),
                     node.getNodeType(),
-                    objectFilter);
-                if (dialog.open() == IDialogConstants.OK_ID) {
-                    folder.setNodeFilter(itemsMeta, dialog.getFilter());
-                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+                    objectFilter,
+                    folder.getValueObject() instanceof DBPDataSource);
+                switch (dialog.open()) {
+                    case IDialogConstants.OK_ID:
+                        folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+                        break;
+                    case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:
+                        dialog = new EditObjectFilterDialog(
+                            HandlerUtil.getActiveShell(event),
+                            node.getNodeType(),
+                            objectFilter,
+                            true);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                            NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+                        }
+                        break;
                 }
             }
         }

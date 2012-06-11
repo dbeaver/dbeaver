@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.MouseAdapter;
@@ -28,18 +29,22 @@ import java.util.List;
  */
 public class EditObjectFilterDialog extends HelpEnabledDialog {
 
+    public static final int SHOW_GLOBAL_FILTERS_ID = 1000;
+    
     private String objectTitle;
     private DBSObjectFilter filter;
+    private boolean globalFilter;
     private Composite blockControl;
     private ControlEnableState blockEnableState;
     private Table includeTable;
     private Table excludeTable;
 
-    public EditObjectFilterDialog(Shell shell, String objectTitle, DBSObjectFilter filter)
+    public EditObjectFilterDialog(Shell shell, String objectTitle, DBSObjectFilter filter, boolean globalFilter)
     {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
         this.objectTitle = objectTitle;
         this.filter = new DBSObjectFilter(filter);
+        this.globalFilter = globalFilter;
     }
 
     public DBSObjectFilter getFilter()
@@ -55,7 +60,9 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
-        final Button enableButton = UIUtils.createCheckbox(composite, "Enable", false);
+        Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
+        topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        final Button enableButton = UIUtils.createCheckbox(topPanel, "Enable", false);
         enableButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -64,7 +71,21 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
                 enableFiltersContent();
             }
         });
+        enableButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         enableButton.setSelection(filter.isEnabled());
+        if (!globalFilter) {
+            Link globalLink = new Link(topPanel, SWT.NONE);
+            globalLink.setText("<a>Show global filter</a>");
+            globalLink.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    setReturnCode(SHOW_GLOBAL_FILTERS_ID);
+                    close();
+                }
+            });
+            globalLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
         blockControl = UIUtils.createPlaceholder(composite, 1);
         blockControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 
