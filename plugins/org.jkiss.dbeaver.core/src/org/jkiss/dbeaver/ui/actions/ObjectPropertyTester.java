@@ -12,10 +12,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
@@ -94,6 +91,9 @@ public class ObjectPropertyTester extends PropertyTester
             }
             return true;
         } else if (property.equals(PROP_CAN_DELETE)) {
+            if (node instanceof DBNDataSource) {
+                return true;
+            }
             if (node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper)node).getObject();
                 return

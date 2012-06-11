@@ -31,7 +31,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             DBNContainer container = null;
             if (element instanceof DBNContainer) {
                 container = (DBNContainer) element;
-            } else if (element instanceof DBNNode) {
+            } else {
                 DBNNode parentNode = element.getParentNode();
                 if (parentNode instanceof DBNContainer) {
                     container = (DBNContainer) parentNode;

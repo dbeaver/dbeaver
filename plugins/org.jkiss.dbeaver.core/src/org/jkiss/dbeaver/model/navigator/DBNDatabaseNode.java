@@ -4,9 +4,7 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
@@ -14,7 +12,6 @@ import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
@@ -429,17 +426,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             // check it
             return false;
         }
-        DBSObjectFilter filter = null;
-        if (this instanceof DBNContainer) {
-            Class<?> childrenClass = this.getChildrenClass(meta);
-            if (childrenClass != null) {
-                DBSObject parentObject = null;
-                if (valueObject instanceof DBSObject) {
-                    parentObject = (DBSObject) valueObject;
-                }
-                filter = getObject().getDataSource().getContainer().getObjectFilter(childrenClass, parentObject);
-            }
-        }
+        DBSObjectFilter filter = getNodeFilter(meta);
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
@@ -504,6 +491,23 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             }
         }
         return true;
+    }
+
+    public DBSObjectFilter getNodeFilter(DBXTreeItem meta)
+    {
+        DBPDataSource dataSource = getObject().getDataSource();
+        if (dataSource != null && this instanceof DBNContainer) {
+            Class<?> childrenClass = this.getChildrenClass(meta);
+            if (childrenClass != null) {
+                Object valueObject = getValueObject();
+                DBSObject parentObject = null;
+                if (valueObject instanceof DBSObject) {
+                    parentObject = (DBSObject) valueObject;
+                }
+                return dataSource.getContainer().getObjectFilter(childrenClass, parentObject);
+            }
+        }
+        return null;
     }
 
     protected void reloadChildren(DBRProgressMonitor monitor)

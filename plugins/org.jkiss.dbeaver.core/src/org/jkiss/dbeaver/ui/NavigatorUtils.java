@@ -43,12 +43,12 @@ import java.util.*;
  * Navigator utils
  */
 public class NavigatorUtils {
-    public static DBNNode getSelectedNode(ISelectionProvider viewer)
+    public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
-        if (viewer == null) {
+        if (selectionProvider == null) {
             return null;
         }
-        return getSelectedNode(viewer.getSelection());
+        return getSelectedNode(selectionProvider.getSelection());
     }
 
     public static DBNNode getSelectedNode(ISelection selection)

@@ -7,6 +7,8 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -18,14 +20,14 @@ import org.jkiss.dbeaver.ui.NavigatorUtils;
 
 import java.util.Map;
 
-public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
+public class NavigatorHandlerConfigureFilter extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
         if (node != null) {
-            createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), node, null);
+
         }
         return null;
     }
@@ -40,13 +42,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (partSite != null) {
             DBNNode node = NavigatorUtils.getSelectedNode(partSite.getSelectionProvider());
             if (node != null) {
-                String objectName;
-                if (node instanceof DBNContainer) {
-                    objectName = ((DBNContainer)node).getChildrenType();
-                } else {
-                    objectName = node.getNodeType();
-                }
-                element.setText(CoreMessages.actions_navigator_create_new + " " + objectName);
+                element.setText("Filter " + node.getNodeType() + " ...");
             }
         }
     }

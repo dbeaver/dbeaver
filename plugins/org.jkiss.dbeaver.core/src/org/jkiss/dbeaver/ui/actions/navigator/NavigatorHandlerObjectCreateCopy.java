@@ -11,6 +11,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 
 import java.util.Collection;
@@ -21,23 +22,17 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
-        if (selection instanceof IStructuredSelection) {
-            final IStructuredSelection structSelection = (IStructuredSelection)selection;
-            Object element = structSelection.getFirstElement();
-            if (element instanceof DBNNode) {
-                DBNNode curNode = (DBNNode)element;
-                Collection<DBNNode> cbNodes = TreeNodeTransfer.getFromClipboard();
-                if (cbNodes == null) {
-                    log.error("Clipboard contains data in unsupported format");
-                    return null;
+        DBNNode curNode = NavigatorUtils.getSelectedNode(selection);
+        if (curNode != null) {
+            Collection<DBNNode> cbNodes = TreeNodeTransfer.getFromClipboard();
+            if (cbNodes == null) {
+                log.error("Clipboard contains data in unsupported format");
+                return null;
+            }
+            for (DBNNode nodeObject : cbNodes) {
+                if (nodeObject instanceof DBNDatabaseNode) {
+                    createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode)nodeObject));
                 }
-                for (DBNNode nodeObject : cbNodes) {
-                    if (nodeObject instanceof DBNDatabaseNode) {
-                        createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode)nodeObject));
-                    }
-                }
-            } else {
-                log.error("Can't paste objects into selected element '" + element + "'");
             }
         }
         return null;
