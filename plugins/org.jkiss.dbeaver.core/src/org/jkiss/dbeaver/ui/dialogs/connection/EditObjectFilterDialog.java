@@ -66,17 +66,19 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         });
         enableButton.setSelection(filter.isEnabled());
         blockControl = UIUtils.createPlaceholder(composite, 1);
+        blockControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         includeTable = createEditableList("Include", filter.getInclude());
         excludeTable = createEditableList("Exclude", filter.getExclude());
+
+        enableFiltersContent();
 
         return composite;
     }
 
     private Table createEditableList(String name, List<String> values)
     {
-        Group group = UIUtils.createControlGroup(blockControl, name, 2, GridData.FILL_HORIZONTAL, 0);
-        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Group group = UIUtils.createControlGroup(blockControl, name, 2, GridData.FILL_BOTH, 0);
 
         final Table valueTable = new Table(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);

@@ -133,12 +133,14 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 connectionNameText.setText(newName);
                 connectionNameChanged = false;
 
+                tunnelButton.setFont(getFont());
                 for (DBWHandlerConfiguration config : connectionInfo.getDeclaredHandlers()) {
                     if (config.isEnabled()) {
                         tunnelButton.setFont(boldFont);
                         break;
                     }
                 }
+                eventsButton.setFont(getFont());
                 for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
                     if (connectionInfo.getEvent(eventType).isEnabled()) {
                         eventsButton.setFont(boldFont);
@@ -177,6 +179,11 @@ class ConnectionPageFinal extends ActiveWizardPage {
         if (enable) {
             filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
             filterInfo.link.setToolTipText("Configure filters for " + filterInfo.title);
+            if (filterInfo.filter != null && !filterInfo.filter.isEmpty()) {
+                filterInfo.link.setFont(boldFont);
+            } else {
+                filterInfo.link.setFont(getFont());
+            }
         } else {
             filterInfo.link.setText("<a>" + filterInfo.title + " (Not Supported)</a>");
             filterInfo.link.setToolTipText(filterInfo.title + " not supported by " + wizard.getPageSettings().getDriver().getName() + " driver");
@@ -276,6 +283,11 @@ class ConnectionPageFinal extends ActiveWizardPage {
                             filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter());
                         if (dialog.open() == IDialogConstants.OK_ID) {
                             filterInfo.filter = dialog.getFilter();
+                            if (filterInfo.filter != null && !filterInfo.filter.isEmpty()) {
+                                filterInfo.link.setFont(boldFont);
+                            } else {
+                                filterInfo.link.setFont(getFont());
+                            }
                         }
                     }
                 });
@@ -364,10 +376,19 @@ class ConnectionPageFinal extends ActiveWizardPage {
 
     private void configureEvents()
     {
+        DBPConnectionInfo connectionInfo = wizard.getPageSettings().getConnectionInfo();
         EditEventsDialog dialog = new EditEventsDialog(
             getShell(),
-            wizard.getPageSettings().getConnectionInfo());
-        dialog.open();
+            connectionInfo);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            eventsButton.setFont(getFont());
+            for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
+                if (connectionInfo.getEvent(eventType).isEnabled()) {
+                    eventsButton.setFont(boldFont);
+                    break;
+                }
+            }
+        }
     }
 
     private void configureTunnels()
@@ -376,7 +397,15 @@ class ConnectionPageFinal extends ActiveWizardPage {
             getShell(),
             wizard.getPageSettings().getDriver(),
             wizard.getPageSettings().getConnectionInfo());
-        dialog.open();
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            tunnelButton.setFont(getFont());
+            for (DBWHandlerConfiguration config : wizard.getPageSettings().getConnectionInfo().getDeclaredHandlers()) {
+                if (config.isEnabled()) {
+                    tunnelButton.setFont(boldFont);
+                    break;
+                }
+            }
+       }
     }
 
 }
