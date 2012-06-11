@@ -55,7 +55,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(objectTitle + " Filter");
+        getShell().setText("Filter: " + objectTitle);
         //getShell().setImage(DBIcon.EVENT.getImage());
 
         Composite composite = (Composite) super.createDialogArea(parent);

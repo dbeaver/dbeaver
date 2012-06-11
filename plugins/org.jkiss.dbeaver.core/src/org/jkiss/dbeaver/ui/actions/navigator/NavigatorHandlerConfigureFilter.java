@@ -15,6 +15,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
@@ -37,11 +38,16 @@ public class NavigatorHandlerConfigureFilter extends NavigatorHandlerObjectCreat
                 if (objectFilter == null) {
                     objectFilter = new DBSObjectFilter();
                 }
+                boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
+                String parentName = "?";
+                if (folder.getValueObject() instanceof DBSObject) {
+                    parentName = ((DBSObject) folder.getValueObject()).getName();
+                }
                 EditObjectFilterDialog dialog = new EditObjectFilterDialog(
                     HandlerUtil.getActiveShell(event),
-                    node.getNodeType(),
+                    globalFilter ? "All " + node.getNodeType() : node.getNodeType() + " of " + parentName,
                     objectFilter,
-                    folder.getValueObject() instanceof DBPDataSource);
+                    globalFilter);
                 switch (dialog.open()) {
                     case IDialogConstants.OK_ID:
                         folder.setNodeFilter(itemsMeta, dialog.getFilter());
