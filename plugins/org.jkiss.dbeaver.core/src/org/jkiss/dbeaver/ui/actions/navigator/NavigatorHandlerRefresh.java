@@ -65,47 +65,52 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
         // Refresh objects
         if (!refreshObjects.isEmpty()) {
-            Job refreshJob = new AbstractJob("Refresh navigator object(s)") {
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-
-                    Set<DBNNode> refreshedSet = new HashSet<DBNNode>();
-                    for (DBNNode node : refreshObjects) {
-                        if (node.isDisposed() || node.isLocked()) {
-                            // Skip locked nodes
-                            continue;
-                        }
-                        // Check this node was already refreshed
-                        if (!refreshedSet.isEmpty()) {
-                            boolean skip = false;
-                            for (DBNNode refreshed : refreshedSet) {
-                                if (node == refreshed || node.isChildOf(refreshed)) {
-                                    skip = true;
-                                    break;
-                                }
-                            }
-                            if (skip) {
-                                continue;
-                            }
-                        }
-                        setName("Refresh '" + node.getNodeName() + "'...");
-                        try {
-                            DBNNode refreshed = node.refreshNode(monitor, NavigatorHandlerRefresh.this);
-                            if (refreshed != null) {
-                                refreshedSet.add(refreshed);
-                            }
-                        }
-                        catch (DBException ex) {
-                            log.error("Could not refresh navigator node", ex);
-                        }
-                    }
-                    return Status.OK_STATUS;
-                }
-            };
-            refreshJob.setUser(true);
-            refreshJob.schedule();
+            refreshNavigator(refreshObjects);
         }
 
         return null;
+    }
+
+    public static void refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
+    {
+        Job refreshJob = new AbstractJob("Refresh navigator object(s)") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+
+                Set<DBNNode> refreshedSet = new HashSet<DBNNode>();
+                for (DBNNode node : refreshObjects) {
+                    if (node.isDisposed() || node.isLocked()) {
+                        // Skip locked nodes
+                        continue;
+                    }
+                    // Check this node was already refreshed
+                    if (!refreshedSet.isEmpty()) {
+                        boolean skip = false;
+                        for (DBNNode refreshed : refreshedSet) {
+                            if (node == refreshed || node.isChildOf(refreshed)) {
+                                skip = true;
+                                break;
+                            }
+                        }
+                        if (skip) {
+                            continue;
+                        }
+                    }
+                    setName("Refresh '" + node.getNodeName() + "'...");
+                    try {
+                        DBNNode refreshed = node.refreshNode(monitor, this);
+                        if (refreshed != null) {
+                            refreshedSet.add(refreshed);
+                        }
+                    }
+                    catch (DBException ex) {
+                        log.error("Could not refresh navigator node", ex);
+                    }
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        refreshJob.setUser(true);
+        refreshJob.schedule();
     }
 }

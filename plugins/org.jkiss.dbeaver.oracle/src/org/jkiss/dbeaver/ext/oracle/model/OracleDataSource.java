@@ -432,7 +432,7 @@ public class OracleDataSource extends JDBCDataSource
             }
 //                }
 
-            DBSObjectFilter schemaFilters = owner.getContainer().getObjectFilter(OracleSchema.class, null);
+            DBSObjectFilter schemaFilters = owner.getContainer().getObjectFilter(OracleSchema.class, null, false);
             if (schemaFilters != null) {
                 JDBCUtils.appendFilterClause(schemasQuery, schemaFilters, "U.USERNAME", false);
             }

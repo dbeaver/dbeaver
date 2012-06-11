@@ -53,7 +53,9 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     boolean isConnectionReadOnly();
 
-    DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject);
+    DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean noDefault);
+
+    void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter);
 
     DBPClientHome getClientHome();
 
@@ -103,4 +105,6 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
     DBPDataSourceRegistry getRegistry();
 
     DBPKeywordManager getKeywordManager();
+
+    void persistConfiguration();
 }

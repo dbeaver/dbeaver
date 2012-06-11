@@ -6,18 +6,20 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.EditObjectFilterDialog;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class NavigatorHandlerConfigureFilter extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
@@ -26,8 +28,23 @@ public class NavigatorHandlerConfigureFilter extends NavigatorHandlerObjectCreat
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node != null) {
-
+        if (node instanceof DBNDatabaseFolder) {
+            final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
+            DBXTreeItem itemsMeta = folder.getItemsMeta();
+            if (itemsMeta != null) {
+                DBSObjectFilter objectFilter = folder.getNodeFilter(itemsMeta, true);
+                if (objectFilter == null) {
+                    objectFilter = new DBSObjectFilter();
+                }
+                EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                    HandlerUtil.getActiveShell(event),
+                    node.getNodeType(),
+                    objectFilter);
+                if (dialog.open() == IDialogConstants.OK_ID) {
+                    folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+                }
+            }
         }
         return null;
     }

@@ -35,7 +35,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     private Table includeTable;
     private Table excludeTable;
 
-    protected EditObjectFilterDialog(Shell shell, String objectTitle, DBSObjectFilter filter)
+    public EditObjectFilterDialog(Shell shell, String objectTitle, DBSObjectFilter filter)
     {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
         this.objectTitle = objectTitle;

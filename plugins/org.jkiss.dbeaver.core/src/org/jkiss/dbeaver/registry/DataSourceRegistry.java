@@ -331,7 +331,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void saveDataSources()
+    void saveDataSources()
     {
         synchronized (dataSources) {
             PasswordEncrypter encrypter = new SimpleStringEncrypter();
@@ -603,11 +603,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     // Legacy filter settings
                     String legacyCatalogFilter = atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
                     if (!CommonUtils.isEmpty(legacyCatalogFilter)) {
-                        curDataSource.setObjectFilter(DBSCatalog.class, null, new DBSObjectFilter(legacyCatalogFilter, null));
+                        curDataSource.updateObjectFilter(DBSCatalog.class, null, new DBSObjectFilter(legacyCatalogFilter, null));
                     }
                     String legacySchemaFilter = atts.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
                     if (!CommonUtils.isEmpty(legacySchemaFilter)) {
-                        curDataSource.setObjectFilter(DBSSchema.class, null, new DBSObjectFilter(legacySchemaFilter, null));
+                        curDataSource.updateObjectFilter(DBSSchema.class, null, new DBSObjectFilter(legacySchemaFilter, null));
                     }
                 }
 
@@ -674,7 +674,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
                         curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
                         curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
-                        curDataSource.setObjectFilter(objectClass, objectID, curFilter);
+                        curDataSource.updateObjectFilter(objectClass, objectID, curFilter);
 
                     }
                 }

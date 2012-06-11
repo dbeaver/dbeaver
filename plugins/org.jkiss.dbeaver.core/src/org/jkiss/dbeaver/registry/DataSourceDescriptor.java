@@ -249,7 +249,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject)
+    public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean noDefault)
     {
         if (filterMap.isEmpty()) {
             return null;
@@ -280,10 +280,15 @@ public class DataSourceDescriptor
         }
         String objectID = DBUtils.getObjectUniqueName(parentObject);
         DBSObjectFilter filter = filterMapping.customFilters.get(objectID);
-        return filter != null ? filter : filterMapping.defaultFilter;
+        return filter != null ? filter : noDefault ? null : filterMapping.defaultFilter;
     }
 
-    public void setObjectFilter(Class<?> type, String objectID, DBSObjectFilter filter)
+    public void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter)
+    {
+        updateObjectFilter(type, parentObject == null ? null : DBUtils.getObjectUniqueName(parentObject), filter);
+    }
+
+    void updateObjectFilter(Class<?> type, String objectID, DBSObjectFilter filter)
     {
         FilterMapping filterMapping = filterMap.get(type);
         if (filterMapping == null) {
@@ -385,6 +390,12 @@ public class DataSourceDescriptor
             keywordManager = new DataSourceKeywordManager(dataSource);
         }
         return keywordManager;
+    }
+
+    @Override
+    public void persistConfiguration()
+    {
+        registry.saveDataSources();
     }
 
     @Override

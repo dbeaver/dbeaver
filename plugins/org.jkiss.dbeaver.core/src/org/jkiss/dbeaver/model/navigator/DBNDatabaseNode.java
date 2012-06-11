@@ -109,11 +109,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     {
         StringBuilder pathName = new StringBuilder(100);
 
-        if (this instanceof DBNDatabaseFolder) {
-            List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
-            if (metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
-                pathName.append(((DBXTreeItem)metaChildren.get(0)).getPath());
-            }
+        DBXTreeItem metaChildren = this.getItemsMeta();
+        if (metaChildren != null) {
+            pathName.append(metaChildren.getPath());
         }
 
         for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
@@ -192,9 +190,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     void addChildItem(DBSObject object)
     {
-        final List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
-        if (!CommonUtils.isEmpty(metaChildren) && metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
-            final DBNDatabaseItem newChild = new DBNDatabaseItem(this, (DBXTreeItem) metaChildren.get(0), object, false);
+        DBXTreeItem metaChildren = getItemsMeta();
+        if (metaChildren != null) {
+            final DBNDatabaseItem newChild = new DBNDatabaseItem(this, metaChildren, object, false);
             synchronized (this) {
                 childNodes.add(newChild);
             }
@@ -426,7 +424,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             // check it
             return false;
         }
-        DBSObjectFilter filter = getNodeFilter(meta);
+        DBSObjectFilter filter = getNodeFilter(meta, false);
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
@@ -439,7 +437,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 // Skip hidden objects
                 continue;
             }
-            if (filter != null && !filter.matches(((DBSObject)childItem).getName())) {
+            if (filter != null && filter.isEnabled() && !filter.matches(((DBSObject)childItem).getName())) {
                 // Doesn't match filter
                 continue;
             }
@@ -493,7 +491,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return true;
     }
 
-    public DBSObjectFilter getNodeFilter(DBXTreeItem meta)
+    public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean noDefault)
     {
         DBPDataSource dataSource = getObject().getDataSource();
         if (dataSource != null && this instanceof DBNContainer) {
@@ -504,10 +502,27 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 if (valueObject instanceof DBSObject) {
                     parentObject = (DBSObject) valueObject;
                 }
-                return dataSource.getContainer().getObjectFilter(childrenClass, parentObject);
+                return dataSource.getContainer().getObjectFilter(childrenClass, parentObject, noDefault);
             }
         }
         return null;
+    }
+
+    public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter)
+    {
+        DBPDataSource dataSource = getObject().getDataSource();
+        if (dataSource != null && this instanceof DBNContainer) {
+            Class<?> childrenClass = this.getChildrenClass(meta);
+            if (childrenClass != null) {
+                dataSource.getContainer().setObjectFilter(
+                    this.getChildrenClass(meta),
+                    (DBSObject) getValueObject(),
+                    filter);
+                dataSource.getContainer().persistConfiguration();
+            }
+        } else {
+            log.error("No active datasource - can't save filter configuration");
+        }
     }
 
     protected void reloadChildren(DBRProgressMonitor monitor)
@@ -565,6 +580,16 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     public abstract Object getValueObject();
 
     public abstract DBXTreeNode getMeta();
+
+    public DBXTreeItem getItemsMeta()
+    {
+        List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
+        if (metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
+            return (DBXTreeItem)metaChildren.get(0);
+        } else {
+            return null;
+        }
+    }
 
     protected abstract void reloadObject(DBRProgressMonitor monitor, DBSObject object);
 

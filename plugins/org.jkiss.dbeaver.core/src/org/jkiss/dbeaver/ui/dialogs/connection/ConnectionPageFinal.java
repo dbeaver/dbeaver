@@ -89,7 +89,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         this.dataSourceDescriptor = dataSourceDescriptor;
 
         for (FilterInfo filterInfo : filters) {
-            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null);
+            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, false);
         }
     }
 
