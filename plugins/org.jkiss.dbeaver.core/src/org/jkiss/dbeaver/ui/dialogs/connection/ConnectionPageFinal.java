@@ -56,6 +56,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private Button tunnelButton;
     private Button eventsButton;
     private java.util.List<FilterInfo> filters = new ArrayList<FilterInfo>();
+    private Group filtersGroup;
 
     private static class FilterInfo {
         final Class<?> type;
@@ -77,9 +78,9 @@ class ConnectionPageFinal extends ActiveWizardPage {
         setTitle(CoreMessages.dialog_connection_wizard_final_header);
         setDescription(CoreMessages.dialog_connection_wizard_final_description);
 
-        filters.add(new FilterInfo(DBSCatalog.class, "Catalogs / Databases"));
+        filters.add(new FilterInfo(DBSCatalog.class, "Catalogs"));
         filters.add(new FilterInfo(DBSSchema.class, "Schemas / Users"));
-        filters.add(new FilterInfo(DBSTable.class, "Tables / Entities"));
+        filters.add(new FilterInfo(DBSTable.class, "Tables"));
     }
 
     ConnectionPageFinal(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
@@ -167,16 +168,17 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 enableFilter(filterInfo, true);
             }
         }
+        filtersGroup.layout();
     }
 
     private void enableFilter(FilterInfo filterInfo, boolean enable)
     {
         filterInfo.link.setEnabled(enable);
         if (enable) {
-            //filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
+            filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
             filterInfo.link.setToolTipText("Configure filters for " + filterInfo.title);
         } else {
-            //filterInfo.link.setText("<a>" + filterInfo.title + " (Not Supported)</a>");
+            filterInfo.link.setText("<a>" + filterInfo.title + " (Not Supported)</a>");
             filterInfo.link.setToolTipText(filterInfo.title + " not supported by " + wizard.getPageSettings().getDriver().getName() + " driver");
         }
     }
@@ -237,13 +239,16 @@ class ConnectionPageFinal extends ActiveWizardPage {
         optionsGroup.setLayoutData(gd);
 
         {
-            Group miscGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_misc, 1, GridData.FILL_HORIZONTAL, 0);
-            miscGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Group miscGroup = UIUtils.createControlGroup(
+                optionsGroup,
+                CoreMessages.dialog_connection_wizard_final_group_misc,
+                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
 
-            showSystemObjects = UIUtils.createCheckbox(miscGroup, CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects, dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            //gd.horizontalSpan = 2;
-            showSystemObjects.setLayoutData(gd);
+            showSystemObjects = UIUtils.createCheckbox(
+                miscGroup,
+                CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
+                dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
+            showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             readOnlyConnection = UIUtils.createCheckbox(miscGroup, CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly, dataSourceDescriptor == null || dataSourceDescriptor.isConnectionReadOnly());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -252,8 +257,10 @@ class ConnectionPageFinal extends ActiveWizardPage {
         }
         {
             // Filters
-            Group filtersGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_filters, 1, GridData.FILL_HORIZONTAL, 0);
-            filtersGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
+            filtersGroup = UIUtils.createControlGroup(
+                optionsGroup,
+                CoreMessages.dialog_connection_wizard_final_group_filters,
+                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
 
             for (int i = 0; i < filters.size(); i++) {
                 final FilterInfo filterInfo = filters.get(i);
