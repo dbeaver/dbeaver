@@ -437,7 +437,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 // Skip hidden objects
                 continue;
             }
-            if (filter != null && filter.isEnabled() && !filter.matches(((DBSObject)childItem).getName())) {
+            if (filter != null && !filter.matches(((DBSObject)childItem).getName())) {
                 // Doesn't match filter
                 continue;
             }
@@ -491,7 +491,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return true;
     }
 
-    public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean noDefault)
+    public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch)
     {
         DBPDataSource dataSource = getObject().getDataSource();
         if (dataSource != null && this instanceof DBNContainer) {
@@ -502,7 +502,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 if (valueObject instanceof DBSObject) {
                     parentObject = (DBSObject) valueObject;
                 }
-                return dataSource.getContainer().getObjectFilter(childrenClass, parentObject, noDefault);
+                return dataSource.getContainer().getObjectFilter(childrenClass, parentObject, firstMatch);
             }
         }
         return null;

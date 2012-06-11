@@ -81,6 +81,22 @@ public class DataSourceDescriptor
                 this.customFilters.put(entry.getKey(), new DBSObjectFilter(entry.getValue()));
             }
         }
+
+        public DBSObjectFilter getFilter(DBSObject parentObject, boolean firstMatch)
+        {
+            if (parentObject == null) {
+                return defaultFilter;
+            }
+            if (!customFilters.isEmpty()) {
+                String objectID = DBUtils.getObjectUniqueName(parentObject);
+                DBSObjectFilter filter = customFilters.get(objectID);
+                if ((filter != null && filter.isEnabled()) || firstMatch) {
+                    return filter;
+                }
+            }
+
+            return firstMatch ? null : defaultFilter;
+        }
     }
 
     private DataSourceRegistry registry;
@@ -249,38 +265,32 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean noDefault)
+    public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean firstMatch)
     {
         if (filterMap.isEmpty()) {
             return null;
         }
-        FilterMapping filterMapping = null;
         // Test all super classes
         for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
-            filterMapping = filterMap.get(testType);
+            FilterMapping filterMapping = filterMap.get(testType);
+            DBSObjectFilter filter;
             if (filterMapping == null) {
                 // Try to find using interfaces and superclasses
                 for (Class<?> it : testType.getInterfaces()) {
                     filterMapping = filterMap.get(it);
                     if (filterMapping != null) {
-                        break;
+                        filter = filterMapping.getFilter(parentObject, firstMatch);
+                        if (filter != null && (firstMatch || filter.isEnabled())) return filter;
                     }
                 }
             }
             if (filterMapping != null) {
-                break;
+                filter = filterMapping.getFilter(parentObject, firstMatch);
+                if (filter != null && (firstMatch || filter.isEnabled())) return filter;
             }
         }
 
-        if (filterMapping == null) {
-            return null;
-        }
-        if (parentObject == null) {
-            return filterMapping.defaultFilter;
-        }
-        String objectID = DBUtils.getObjectUniqueName(parentObject);
-        DBSObjectFilter filter = filterMapping.customFilters.get(objectID);
-        return filter != null ? filter : noDefault ? null : filterMapping.defaultFilter;
+        return null;
     }
 
     public void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter)
