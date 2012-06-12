@@ -4,8 +4,14 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.graphics.Font;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Color;
@@ -52,6 +58,23 @@ public class ItemListControl extends NodeListControl
         this.disabledCellColor = new Color(parent.getDisplay(), 0xEA, 0xEA, 0xEA);
         this.normalFont = parent.getFont();
         this.boldFont = UIUtils.makeBoldFont(normalFont);
+    }
+
+    @Override
+    protected void fillCustomToolbar(ToolBarManager toolbarManager)
+    {
+        if (getRootNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder)getRootNode()).getItemsMeta() != null) {
+            toolbarManager.add(new Action(
+                "Filter",
+                DBIcon.FILTER.getImageDescriptor())
+            {
+                @Override
+                public void run()
+                {
+                    NavigatorHandlerConfigureFilter.configureFilters(getShell(), getRootNode());
+                }
+            });
+        }
     }
 
     @Override

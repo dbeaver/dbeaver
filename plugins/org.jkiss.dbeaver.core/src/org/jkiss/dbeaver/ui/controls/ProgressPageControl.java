@@ -67,6 +67,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private Color searchNotFoundColor;
     private ToolBarManager defaultToolbarManager;
     private ToolBarManager searchToolbarManager;
+    private ToolBarManager customToolbarManager;
+    private Composite customControlsComposite;
 
     public ProgressPageControl(
         Composite parent,
@@ -183,18 +185,22 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         Label ctrlLabel = new Label(controlComposite, SWT.NONE);
         ctrlLabel.setText(" "); //$NON-NLS-1$
 
-        Composite customControls = new Composite(infoGroup, SWT.NONE);
+        customControlsComposite = new Composite(infoGroup, SWT.NONE);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        customControls.setLayoutData(gd);
+        customControlsComposite.setLayoutData(gd);
         gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
-        customControls.setLayout(gl);
+        customControlsComposite.setLayout(gl);
 
-        Label phLabel = new Label(customControls, SWT.NONE);
-        phLabel.setText(""); //$NON-NLS-1$
+        return customControlsComposite;
+    }
 
-        return customControls;
+    protected void fillCustomToolbar(ToolBarManager toolbarManager)
+    {
+        if (childPageControl != null) {
+            childPageControl.fillCustomToolbar(toolbarManager);
+        }
     }
 
     private void hideControls(boolean showDefaultControls)
@@ -235,10 +241,19 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 }
                 ToolBar toolbar = defaultToolbarManager.createControl(controlComposite);
                 toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+
                 controlComposite.layout();
             }
         } finally {
             controlComposite.setRedraw(true);
+        }
+
+        if (customToolbarManager == null) {
+            customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+            fillCustomToolbar(customToolbarManager);
+            ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
+            toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+            customControlsComposite.layout();
         }
     }
 
@@ -373,6 +388,10 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (defaultToolbarManager != null) {
             defaultToolbarManager.dispose();
             defaultToolbarManager = null;
+        }
+        if (customToolbarManager != null) {
+            customToolbarManager.dispose();
+            customToolbarManager = null;
         }
         UIUtils.dispose(searchNotFoundColor);
 

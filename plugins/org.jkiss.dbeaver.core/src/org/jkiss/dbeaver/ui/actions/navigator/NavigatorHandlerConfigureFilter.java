@@ -8,6 +8,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -31,44 +32,49 @@ public class NavigatorHandlerConfigureFilter extends NavigatorHandlerObjectCreat
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBNNode node = NavigatorUtils.getSelectedNode(selection);
         if (node instanceof DBNDatabaseFolder) {
-            final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
-            DBXTreeItem itemsMeta = folder.getItemsMeta();
-            if (itemsMeta != null) {
-                DBSObjectFilter objectFilter = folder.getNodeFilter(itemsMeta, true);
-                if (objectFilter == null) {
-                    objectFilter = new DBSObjectFilter();
-                }
-                boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
-                String parentName = "?";
-                if (folder.getValueObject() instanceof DBSObject) {
-                    parentName = ((DBSObject) folder.getValueObject()).getName();
-                }
-                EditObjectFilterDialog dialog = new EditObjectFilterDialog(
-                    HandlerUtil.getActiveShell(event),
-                    globalFilter ? "All " + node.getNodeType() : node.getNodeType() + " of " + parentName,
-                    objectFilter,
-                    globalFilter);
-                switch (dialog.open()) {
-                    case IDialogConstants.OK_ID:
-                        folder.setNodeFilter(itemsMeta, dialog.getFilter());
-                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
-                        break;
-                    case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:
-                        objectFilter = folder.getDataSource().getContainer().getObjectFilter(folder.getChildrenClass(), null);
-                        dialog = new EditObjectFilterDialog(
-                            HandlerUtil.getActiveShell(event),
-                            "All " + node.getNodeType(),
-                            objectFilter != null  ?objectFilter : new DBSObjectFilter(),
-                            true);
-                        if (dialog.open() == IDialogConstants.OK_ID) {
-                            folder.setNodeFilter(itemsMeta, dialog.getFilter());
-                            NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
-                        }
-                        break;
-                }
-            }
+            configureFilters(HandlerUtil.getActiveShell(event), node);
         }
         return null;
+    }
+
+    public static void configureFilters(Shell shell, DBNNode node)
+    {
+        final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
+        DBXTreeItem itemsMeta = folder.getItemsMeta();
+        if (itemsMeta != null) {
+            DBSObjectFilter objectFilter = folder.getNodeFilter(itemsMeta, true);
+            if (objectFilter == null) {
+                objectFilter = new DBSObjectFilter();
+            }
+            boolean globalFilter = folder.getValueObject() instanceof DBPDataSource;
+            String parentName = "?";
+            if (folder.getValueObject() instanceof DBSObject) {
+                parentName = ((DBSObject) folder.getValueObject()).getName();
+            }
+            EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                shell,
+                globalFilter ? "All " + node.getNodeType() : node.getNodeType() + " of " + parentName,
+                objectFilter,
+                globalFilter);
+            switch (dialog.open()) {
+                case IDialogConstants.OK_ID:
+                    folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                    NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+                    break;
+                case EditObjectFilterDialog.SHOW_GLOBAL_FILTERS_ID:
+                    objectFilter = folder.getDataSource().getContainer().getObjectFilter(folder.getChildrenClass(), null);
+                    dialog = new EditObjectFilterDialog(
+                        shell,
+                        "All " + node.getNodeType(),
+                        objectFilter != null  ?objectFilter : new DBSObjectFilter(),
+                        true);
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        folder.setNodeFilter(itemsMeta, dialog.getFilter());
+                        NavigatorHandlerRefresh.refreshNavigator(Collections.singletonList(folder));
+                    }
+                    break;
+            }
+        }
     }
 
     @Override
