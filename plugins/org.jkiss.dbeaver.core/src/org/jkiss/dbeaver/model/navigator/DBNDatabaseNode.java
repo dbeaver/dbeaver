@@ -5,6 +5,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
@@ -499,9 +500,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return true;
     }
 
-    public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch)
+    public DataSourceDescriptor getDataSourceContainer()
     {
         DBPDataSource dataSource = getObject().getDataSource();
+        if(dataSource == null) {
+            return null;
+        }
+        return (DataSourceDescriptor) dataSource.getContainer();
+    }
+
+    public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch)
+    {
+        DataSourceDescriptor dataSource = getDataSourceContainer();
         if (dataSource != null && this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenClass(meta);
             if (childrenClass != null) {
@@ -510,7 +520,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 if (valueObject instanceof DBSObject && !(valueObject instanceof DBPDataSource)) {
                     parentObject = (DBSObject) valueObject;
                 }
-                return dataSource.getContainer().getObjectFilter(childrenClass, parentObject, firstMatch);
+                return dataSource.getObjectFilter(childrenClass, parentObject, firstMatch);
             }
         }
         return null;
@@ -518,7 +528,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
 
     public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter)
     {
-        DBPDataSource dataSource = getObject().getDataSource();
+        DataSourceDescriptor dataSource = getDataSourceContainer();
         if (dataSource != null && this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenClass(meta);
             if (childrenClass != null) {
@@ -526,11 +536,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 if (parentObject instanceof DBPDataSource) {
                     parentObject = null;
                 }
-                dataSource.getContainer().setObjectFilter(
+                dataSource.setObjectFilter(
                     this.getChildrenClass(meta),
-                    (DBSObject)parentObject,
+                    (DBSObject) parentObject,
                     filter);
-                dataSource.getContainer().persistConfiguration();
+                dataSource.persistConfiguration();
             }
         } else {
             log.error("No active datasource - can't save filter configuration");

@@ -48,7 +48,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 namespace="org.jkiss.dbeaver.core.object"
-                properties="canOpen,canCreate,canPaste,canDelete,canRename,hasTools"
+                properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter,hasTools"
                 type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
@@ -541,7 +541,7 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.navigator.DBNContainer"/>
+                        <test property="org.jkiss.dbeaver.core.object.canFilter"/>
                     </iterate>
                 </with>
             </enabledWhen>

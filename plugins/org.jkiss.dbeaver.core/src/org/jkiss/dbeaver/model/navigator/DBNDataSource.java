@@ -126,7 +126,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     }
 
     @Override
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DataSourceDescriptor getDataSourceContainer()
     {
         return dataSource;
     }

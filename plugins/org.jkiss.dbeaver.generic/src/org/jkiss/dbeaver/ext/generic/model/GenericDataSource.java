@@ -227,7 +227,7 @@ public class GenericDataSource extends JDBCDataSource
                 // Read catalogs
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
-                DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null, false);
+                DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null);
                 List<String> catalogNames = new ArrayList<String>();
                 try {
                     JDBCResultSet dbResult = metaData.getCatalogs();
@@ -322,7 +322,7 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         try {
-            DBSObjectFilter schemaFilters = getContainer().getObjectFilter(GenericSchema.class, null, false);
+            DBSObjectFilter schemaFilters = getContainer().getObjectFilter(GenericSchema.class, null);
 
             List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
             JDBCResultSet dbResult;

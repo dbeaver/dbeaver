@@ -265,6 +265,11 @@ public class DataSourceDescriptor
     }
 
     @Override
+    public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject)
+    {
+        return getObjectFilter(type, parentObject, false);
+    }
+
     public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean firstMatch)
     {
         if (filterMap.isEmpty()) {
@@ -402,7 +407,6 @@ public class DataSourceDescriptor
         return keywordManager;
     }
 
-    @Override
     public void persistConfiguration()
     {
         registry.saveDataSources();

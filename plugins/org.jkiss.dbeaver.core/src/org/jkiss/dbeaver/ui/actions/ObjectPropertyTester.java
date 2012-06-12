@@ -37,6 +37,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_CAN_RENAME = "canRename";
+    public static final String PROP_CAN_FILTER = "canFilter";
     public static final String PROP_HAS_TOOLS = "hasTools";
 
     public ObjectPropertyTester() {
@@ -117,6 +118,10 @@ public class ObjectPropertyTester extends PropertyTester
                     node.getParentNode() instanceof DBNContainer &&
                     object != null &&
                     hasObjectManager(object.getClass(), DBEObjectRenamer.class);
+            }
+        } else if (property.equals(PROP_CAN_FILTER)) {
+            if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
+                return true;
             }
         } else if (property.equals(PROP_HAS_TOOLS)) {
             if (node instanceof DBNDatabaseNode) {

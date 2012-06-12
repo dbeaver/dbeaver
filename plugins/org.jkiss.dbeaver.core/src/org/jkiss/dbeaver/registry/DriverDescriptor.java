@@ -1020,6 +1020,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         connection.setConnectTimeout(10000);
         connection.setRequestMethod("GET"); //$NON-NLS-1$
         connection.setInstanceFollowRedirects(true);
+        connection.setRequestProperty(
+            "User-Agent",  //$NON-NLS-1$
+            "DBeaver " + Platform.getProduct().getDefiningBundle().getVersion()); //$NON-NLS-1$
         connection.connect();
         if (connection.getResponseCode() != 200) {
             throw new IOException("Can't find driver file '" + url + "': " + connection.getResponseMessage());

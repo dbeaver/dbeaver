@@ -63,9 +63,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      *   Generally this function used by filter editors
      * @return
      */
-    DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean firstMatch);
-
-    void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter);
+    DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject);
 
     DBPClientHome getClientHome();
 
@@ -116,5 +114,4 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     DBPKeywordManager getKeywordManager();
 
-    void persistConfiguration();
 }
