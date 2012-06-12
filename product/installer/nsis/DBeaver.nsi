@@ -64,7 +64,7 @@
 ;Pages
 
   !insertmacro MUI_PAGE_WELCOME
-  !insertmacro MUI_PAGE_LICENSE "@product.dir@\..\docs\license.txt"
+  !insertmacro MUI_PAGE_LICENSE "@product.dir@\..\docs\licenses\dbeaver_license.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   
