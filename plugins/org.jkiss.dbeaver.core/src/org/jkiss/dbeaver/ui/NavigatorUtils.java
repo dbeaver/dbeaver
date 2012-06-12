@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
@@ -340,5 +341,22 @@ public class NavigatorUtils {
                 }
             }
         });
+    }
+
+    public static boolean isDefaultElement(Object element)
+    {
+        if (element instanceof DBSWrapper) {
+            DBSObject object = ((DBSWrapper) element).getObject();
+            DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                DBSObjectSelector.class, object);
+            if (activeContainer != null) {
+                return activeContainer.getSelectedObject() == object;
+            }
+        } else if (element instanceof DBNProject) {
+            if (((DBNProject)element).getProject() == DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {
+                return true;
+            }
+        }
+        return false;
     }
 }

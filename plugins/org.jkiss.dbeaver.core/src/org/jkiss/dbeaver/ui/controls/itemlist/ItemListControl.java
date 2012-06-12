@@ -4,6 +4,8 @@
 
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
+import org.eclipse.swt.graphics.Font;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Color;
@@ -33,6 +35,8 @@ public class ItemListControl extends NodeListControl
     private Searcher searcher;
     private Color searchHighlightColor;
     private Color disabledCellColor;
+    private Font normalFont;
+    private Font boldFont;
 
     public ItemListControl(
         Composite parent,
@@ -42,9 +46,12 @@ public class ItemListControl extends NodeListControl
         DBXTreeNode metaNode)
     {
         super(parent, style, workbenchPart, node, metaNode);
-        searcher = new Searcher();
-        searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
-        disabledCellColor = new Color(parent.getDisplay(), 0xEA, 0xEA, 0xEA);
+
+        this.searcher = new Searcher();
+        this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);
+        this.disabledCellColor = new Color(parent.getDisplay(), 0xEA, 0xEA, 0xEA);
+        this.normalFont = parent.getFont();
+        this.boldFont = UIUtils.makeBoldFont(normalFont);
     }
 
     @Override
@@ -56,6 +63,7 @@ public class ItemListControl extends NodeListControl
 //        }
         UIUtils.dispose(searchHighlightColor);
         UIUtils.dispose(disabledCellColor);
+        UIUtils.dispose(boldFont);
         super.dispose();
     }
 
@@ -232,6 +240,12 @@ public class ItemListControl extends NodeListControl
         ItemColorProvider(int columnIndex)
         {
             super(columnIndex);
+        }
+
+        @Override
+        public Font getFont(Object element)
+        {
+            return columnIndex == 0 && NavigatorUtils.isDefaultElement(element) ? boldFont : normalFont;
         }
 
         @Override

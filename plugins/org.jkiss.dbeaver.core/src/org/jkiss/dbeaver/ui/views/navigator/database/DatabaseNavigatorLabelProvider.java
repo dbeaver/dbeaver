@@ -4,21 +4,15 @@
 
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -26,13 +20,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 */
 class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvider, IColorProvider
 {
-    static final Log log = LogFactory.getLog(DatabaseNavigatorLabelProvider.class);
-
-    //private DatabaseNavigatorView view;
     private Font normalFont;
     private Font boldFont;
-    private Font italicFont;
-    private Font boldItalicFont;
+    //private Font italicFont;
+    //private Font boldItalicFont;
     private Color lockedForeground;
     private Color transientForeground;
 
@@ -41,8 +32,8 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         //this.view = view;
         this.normalFont = viewer.getControl().getFont();
         this.boldFont = UIUtils.makeBoldFont(normalFont);
-        this.italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
-        this.boldItalicFont = UIUtils.modifyFont(normalFont, SWT.BOLD | SWT.ITALIC);
+        //this.italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
+        //this.boldItalicFont = UIUtils.modifyFont(normalFont, SWT.BOLD | SWT.ITALIC);
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
         this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
     }
@@ -52,10 +43,10 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     {
         UIUtils.dispose(boldFont);
         boldFont = null;
-        UIUtils.dispose(italicFont);
-        italicFont = null;
-        UIUtils.dispose(boldItalicFont);
-        boldItalicFont = null;
+//        UIUtils.dispose(italicFont);
+//        italicFont = null;
+//        UIUtils.dispose(boldItalicFont);
+//        boldItalicFont = null;
         super.dispose();
     }
 
@@ -99,7 +90,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     @Override
     public Font getFont(Object element)
     {
-        if (boldFont == null || !isDefaultElement(element)) {
+        if (boldFont == null || !NavigatorUtils.isDefaultElement(element)) {
             return normalFont;
         } else {
             return boldFont;
@@ -127,28 +118,8 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         return null;
     }
 
-    private boolean isDefaultElement(Object element)
-    {
-        if (element instanceof DBSWrapper) {
-            DBSObject object = ((DBSWrapper) element).getObject();
-            DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                DBSObjectSelector.class, object);
-            if (activeContainer != null) {
-                return activeContainer.getSelectedObject() == object;
-            }
-        } else if (element instanceof DBNProject) {
-            if (((DBNProject)element).getProject() == DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean isFilteredElement(Object element)
     {
-        if (element instanceof DBNNode) {
-            return ((DBNNode) element).isFiltered();
-        }
-        return false;
+        return element instanceof DBNNode && ((DBNNode) element).isFiltered();
     }
 }

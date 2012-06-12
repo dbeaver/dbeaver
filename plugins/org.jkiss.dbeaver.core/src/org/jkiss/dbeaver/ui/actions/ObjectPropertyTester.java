@@ -16,13 +16,11 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * ObjectPropertyTester

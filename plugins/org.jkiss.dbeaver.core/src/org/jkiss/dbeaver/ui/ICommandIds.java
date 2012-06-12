@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+ * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
 package org.jkiss.dbeaver.ui;
@@ -20,6 +20,7 @@ public interface ICommandIds
     public static final String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete"; //$NON-NLS-1$
     //public static final String CMD_OBJECT_RENAME = "org.jkiss.dbeaver.core.object.rename"; //$NON-NLS-1$
     public static final String CMD_OBJECT_FIND = "org.jkiss.dbeaver.core.object.find"; //$NON-NLS-1$
+    //public static final String CMD_OBJECT_FILTER = "org.jkiss.dbeaver.core.object.filter"; //$NON-NLS-1$
 
     public static final String CMD_EXECUTE_STATEMENT = "org.jkiss.dbeaver.ui.editors.sql.run.statement"; //$NON-NLS-1$
     public static final String CMD_EXECUTE_SCRIPT = "org.jkiss.dbeaver.ui.editors.sql.run.script"; //$NON-NLS-1$
