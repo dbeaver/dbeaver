@@ -346,6 +346,8 @@ public class SQLQueryJob extends DataSourceJob
                 //monitor.subTask("Execute query");
                 boolean hasResultSet = curStatement.executeStatement();
                 // Show results only if we are not in the script execution
+                // Doesn't matter what executeStatement() returned. It seems that some drivers
+                // return messy results here
                 if (fetchResultSets) {
                     fetchQueryData(result, context);
                 }
@@ -415,46 +417,47 @@ public class SQLQueryJob extends DataSourceJob
             // No data pump - skip fetching stage
             return;
         }
-        DBRProgressMonitor monitor = context.getProgressMonitor();
-        monitor.subTask("Fetch result set");
         closeResultSet();
         curResultSet = curStatement.openResultSet();
-        if (curResultSet != null) {
-            rowCount = 0;
+        if (curResultSet == null) {
+            return;
+        }
+        DBRProgressMonitor monitor = context.getProgressMonitor();
+        monitor.subTask("Fetch result set");
+        rowCount = 0;
 
-            dataReceiver.fetchStart(context, curResultSet);
+        dataReceiver.fetchStart(context, curResultSet);
+
+        try {
+            while ((!hasLimits() || rowCount < rsMaxRows) && curResultSet.nextRow()) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+                rowCount++;
+
+                if (rowCount % 100 == 0) {
+                    monitor.subTask(rowCount + " rows fetched");
+                    monitor.worked(100);
+                }
+
+                dataReceiver.fetchRow(context, curResultSet);
+            }
+        }
+        finally {
+            if (!keepStatementOpen()) {
+                closeResultSet();
+            }
 
             try {
-                while ((!hasLimits() || rowCount < rsMaxRows) && curResultSet.nextRow()) {
-                    if (monitor.isCanceled()) {
-                        break;
-                    }
-                    rowCount++;
-
-                    if (rowCount % 100 == 0) {
-                        monitor.subTask(rowCount + " rows fetched");
-                        monitor.worked(100);
-                    }
-
-                    dataReceiver.fetchRow(context, curResultSet);
-                }
+                dataReceiver.fetchEnd(context);
+            } catch (DBCException e) {
+                log.error("Error while handling end of result set fetch", e);
             }
-            finally {
-                if (!keepStatementOpen()) {
-                    closeResultSet();
-                }
-
-                try {
-                    dataReceiver.fetchEnd(context);
-                } catch (DBCException e) {
-                    log.error("Error while handling end of result set fetch", e);
-                }
-                dataReceiver.close();
-            }
-
-            result.setRowCount(rowCount);
-            monitor.subTask(rowCount + " rows fetched");
+            dataReceiver.close();
         }
+
+        result.setRowCount(rowCount);
+        monitor.subTask(rowCount + " rows fetched");
     }
 
     private boolean keepStatementOpen()
