@@ -155,7 +155,7 @@ Section "-DBeaver Core" SecCore
   ; Copy files
   File "..\raw\win32.@arch@\dbeaver\.eclipseproduct"
   File "..\raw\win32.@arch@\dbeaver\readme.txt"
-  File "..\raw\win32.@arch@\dbeaver\license.txt"
+  File "..\raw\win32.@arch@\dbeaver\license\dbeaver_license.txt"
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
   File /r  /x org.jkiss.*.jar "..\raw\win32.@arch@\dbeaver\plugins"
