@@ -211,6 +211,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     private JDBCResultSetImpl makeResultSet(ResultSet resultSet)
         throws SQLException
     {
+        if (resultSet == null) {
+            return null;
+        }
         JDBCResultSetImpl dbResult = new JDBCResultSetImpl(this, resultSet);
         // Scroll original result set if needed
         if (rsOffset > 0) {

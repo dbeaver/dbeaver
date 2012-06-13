@@ -346,7 +346,7 @@ public class SQLQueryJob extends DataSourceJob
                 //monitor.subTask("Execute query");
                 boolean hasResultSet = curStatement.executeStatement();
                 // Show results only if we are not in the script execution
-                if (hasResultSet && fetchResultSets) {
+                if (fetchResultSets) {
                     fetchQueryData(result, context);
                 }
                 long updateCount = curStatement.getUpdateRowCount();
