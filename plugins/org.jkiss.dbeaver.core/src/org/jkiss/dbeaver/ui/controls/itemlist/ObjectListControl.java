@@ -147,7 +147,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     Object selectedNode = selection.getFirstElement();
                     status = ObjectViewerRenderer.getCellString(selectedNode);
                 } else {
-                    status = NLS.bind(String.valueOf(selection.size()), CoreMessages.controls_object_list_status_objects); 
+                    status = NLS.bind(CoreMessages.controls_object_list_status_objects, selection.size());
                 }
                 setInfo(status);
             }

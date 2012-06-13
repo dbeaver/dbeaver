@@ -58,7 +58,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     private int loadCount = 0;
     private ProgressPageControl ownerPageControl = null;
     private ProgressPageControl childPageControl = null;
-    private Composite controlComposite;
+    private Composite searchControlsComposite;
 
     private String curInfo;
     private String curSearchText;
@@ -108,7 +108,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     public void setInfo(String info)
     {
-        this.curInfo = info;
+        if (!CommonUtils.isEmpty(info)) {
+            this.curInfo = info;
+        }
         if (ownerPageControl != null) {
             ownerPageControl.setInfo(info);
         } else if (listInfoLabel != null && !listInfoLabel.isDisposed()) {
@@ -166,7 +168,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         Composite infoGroup = new Composite(container, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoGroup.setLayoutData(gd);
-        GridLayout gl = new GridLayout(4, false);
+        GridLayout gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         infoGroup.setLayout(gl);
@@ -177,21 +179,24 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         gd.minimumWidth = 100;
         listInfoLabel.setLayoutData(gd);
 
-        controlComposite = new Composite(infoGroup, SWT.NONE);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        //gd.heightHint = listInfoLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, false).y + gl.verticalSpacing;
-        controlComposite.setLayoutData(gd);
-        controlComposite.setLayout(new GridLayout(1, false));
-        Label ctrlLabel = new Label(controlComposite, SWT.NONE);
-        ctrlLabel.setText(" "); //$NON-NLS-1$
+        Composite controlsComposite = UIUtils.createPlaceholder(infoGroup, 2, 5);
+        controlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        customControlsComposite = new Composite(infoGroup, SWT.NONE);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        customControlsComposite.setLayoutData(gd);
+        searchControlsComposite = UIUtils.createPlaceholder(controlsComposite, 1);
+        //gd.heightHint = listInfoLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, false).y + gl.verticalSpacing;
+        searchControlsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        // Placeholder toolbar (need to set initial height of search composite)
+        new ToolBar(searchControlsComposite, SWT.NONE);
+
+        customControlsComposite = new Composite(controlsComposite, SWT.NONE);
+        customControlsComposite.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         gl = new GridLayout(2, false);
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         customControlsComposite.setLayout(gl);
+
+        defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
+        customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
 
         return customControlsComposite;
     }
@@ -205,55 +210,54 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private void hideControls(boolean showDefaultControls)
     {
-        if (controlComposite == null || controlComposite.isDisposed()) {
+        if (searchControlsComposite == null || searchControlsComposite.isDisposed()) {
             return;
         }
-        controlComposite.setRedraw(false);
+        searchControlsComposite.getParent().setRedraw(false);
         try {
-// Delete all controls created in controlComposite
-            if (!controlComposite.isDisposed()) {
-                for (Control child : controlComposite.getChildren()) {
-                    child.dispose();
-                }
+            // Delete all controls created in searchControlsComposite
+            for (Control child : searchControlsComposite.getChildren()) {
+                child.dispose();
             }
 
             // Nullify all controls
             progressBar = null;
             searchText = null;
 
-                // Create default controls toolbar
+            // Create default controls toolbar
             if (showDefaultControls) {
-                GridLayout layout = new GridLayout(1, false);
-                layout.marginHeight = 0;
-                layout.marginWidth = 0;
-                layout.verticalSpacing = 0;
-                controlComposite.setLayout(layout);
-
-                if (defaultToolbarManager == null) {
-                    defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-                    if (isSearchPossible() && isSearchEnabled()) {
-                        defaultToolbarManager.add(ActionUtils.makeCommandContribution(
-                                DBeaverCore.getInstance().getWorkbench(),
-                                IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
-                                CoreMessages.controls_progress_page_toolbar_title,
-                                DBIcon.SEARCH.getImageDescriptor()));
-                    }
+                ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
+                defaultToolbarManager.removeAll();
+                if (isSearchPossible() && isSearchEnabled()) {
+                    defaultToolbarManager.add(ActionUtils.makeCommandContribution(
+                            DBeaverCore.getInstance().getWorkbench(),
+                            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
+                            CoreMessages.controls_progress_page_toolbar_title,
+                            DBIcon.SEARCH.getImageDescriptor()));
                 }
-                ToolBar toolbar = defaultToolbarManager.createControl(controlComposite);
-                toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                Label phLabel = new Label(searchControlsComposite, SWT.NONE);
+                phLabel.setText(""); //$NON-NLS-1$
+                phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                ToolBar defaultToolbar = defaultToolbarManager.createControl(searchControlsComposite);
+                defaultToolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
 
-                controlComposite.layout();
+                // Recreate custom controls
+                for (Control child : customControlsComposite.getChildren()) {
+                    child.dispose();
+                }
+
+                customToolbarManager.removeAll();
+                fillCustomToolbar(customToolbarManager);
+                if (!customToolbarManager.isEmpty()) {
+                    ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
+                    toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                }
             }
-        } finally {
-            controlComposite.setRedraw(true);
-        }
 
-        if (customToolbarManager == null) {
-            customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-            fillCustomToolbar(customToolbarManager);
-            ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
-            toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-            customControlsComposite.layout();
+            searchControlsComposite.getParent().layout();
+            //customControlsComposite.layout();
+        } finally {
+            searchControlsComposite.getParent().setRedraw(true);
         }
     }
 
@@ -263,12 +267,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             return;
         }
         hideControls(false);
-        GridLayout layout = new GridLayout(2, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        layout.verticalSpacing = 0;
-        controlComposite.setLayout(layout);
-        progressBar = new ProgressBar(controlComposite, SWT.SMOOTH | SWT.HORIZONTAL);
+        ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
+        progressBar = new ProgressBar(searchControlsComposite, SWT.SMOOTH | SWT.HORIZONTAL);
         progressBar.setSize(300, 16);
         progressBar.setState(SWT.NORMAL);
         progressBar.setMinimum(PROGRESS_MIN);
@@ -276,7 +276,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         progressBar.setToolTipText(CoreMessages.controls_progress_page_progress_bar_loading_tooltip);
         progressBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        ToolBar progressTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
+        ToolBar progressTools = new ToolBar(searchControlsComposite, SWT.HORIZONTAL);
         final ToolItem stopButton = new ToolItem(progressTools, SWT.PUSH);
         stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
         stopButton.setToolTipText(CoreMessages.controls_progress_page_progress_bar_cancel_tooltip);
@@ -293,7 +293,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 }
             }
         });
-        controlComposite.layout();
+        searchControlsComposite.getParent().layout();
     }
 
     private void createSearchControls()
@@ -302,13 +302,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             return;
         }
         hideControls(false);
-        GridLayout layout = new GridLayout(2, false);
-        layout.marginHeight = 0;
-        layout.marginWidth = 0;
-        layout.verticalSpacing = 0;
-        controlComposite.setLayout(layout);
+        ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
 
-        searchText = new Text(controlComposite, SWT.BORDER);
+        searchText = new Text(searchControlsComposite, SWT.BORDER);
         if (curSearchText != null) {
             searchText.setText(curSearchText);
             searchText.setSelection(curSearchText.length());
@@ -349,7 +345,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             }
         });
 
-        //ToolBar searchTools = new ToolBar(controlComposite, SWT.HORIZONTAL);
+        //ToolBar searchTools = new ToolBar(searchControlsComposite, SWT.HORIZONTAL);
         if (searchToolbarManager == null) {
             searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
             searchToolbarManager.add(ActionUtils.makeCommandContribution(
@@ -371,11 +367,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 }
             });
         }
-        searchToolbarManager.createControl(controlComposite);
+        searchToolbarManager.createControl(searchControlsComposite);
 
-
-        controlComposite.layout();
-
+        searchControlsComposite.getParent().layout();
     }
 
     @Override
@@ -463,7 +457,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     public void activate(boolean active)
     {
-        if (curInfo != null) {
+        if (active && curInfo != null) {
             setInfo(curInfo);
         }
 
