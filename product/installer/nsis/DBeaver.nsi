@@ -149,17 +149,22 @@ Section "-DBeaver Core" SecCore
   ; If there is previous version of DBeaver - remove it's configuration and plugins
   RMDir /r $INSTDIR\configuration
   RMDir /r $INSTDIR\plugins
+  RMDir /r $INSTDIR\licenses
 
   SetOutPath "$INSTDIR"
   
   ; Copy files
   File "..\raw\win32.@arch@\dbeaver\.eclipseproduct"
   File "..\raw\win32.@arch@\dbeaver\readme.txt"
-  File "..\raw\win32.@arch@\dbeaver\licenses\dbeaver_license.txt"
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
   File /r  /x org.jkiss.*.jar "..\raw\win32.@arch@\dbeaver\plugins"
-  
+
+  CreateDirectory $INSTDIR\licenses
+  SetOutPath "$INSTDIR\licenses"
+
+  File "..\raw\win32.@arch@\dbeaver\licenses\*.*"
+
   SetOutPath "$INSTDIR\plugins"
   
   File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core_*.jar"
