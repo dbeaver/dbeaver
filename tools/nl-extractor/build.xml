@@ -7,6 +7,11 @@
 <project name="extractor" default="do-extract">
     <property file="build.properties"/>
 
+    <target name="clean">
+        <delete dir="${targetLocation}"/>
+        <mkdir dir="${targetLocation}"/>
+    </target>
+
     <target name="build">
         <mkdir dir="build"/>
         <javac srcdir="src" destdir="build" includeantruntime="true"/>
@@ -18,8 +23,7 @@
                  classpath="build"/>
     </target>
 
-    <target name="do-extract" depends="declare">
-        <mkdir dir="${targetLocation}"/>
-        <nl-extractor baseLocation="${baseLocation}" targetLocation="${targetLocation}"/>
+    <target name="do-extract" depends="clean, declare">
+        <nl-extractor baseLocation="${baseLocation}" targetLocation="${targetLocation}" locales="${locales}"/>
     </target>
 </project>
