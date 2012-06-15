@@ -133,6 +133,7 @@ FunctionEnd
 !insertmacro MUI_LANGUAGE "Russian"
 !insertmacro MUI_LANGUAGE "SimpChinese"
 !insertmacro MUI_LANGUAGE "Spanish"
+!insertmacro MUI_LANGUAGE "Turkish"
 
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -335,6 +336,8 @@ Function .onInit
         StrCpy $JAVA_LOCALE ru
     StrCmp $LANGUAGE 1053 0 +2
         StrCpy $JAVA_LOCALE sv
+    StrCmp $LANGUAGE 1055 0 +2
+        StrCpy $JAVA_LOCALE tr
     StrCmp $LANGUAGE 1066 0 +2
         StrCpy $JAVA_LOCALE vi
     StrCmp $LANGUAGE 2052 0 +2
