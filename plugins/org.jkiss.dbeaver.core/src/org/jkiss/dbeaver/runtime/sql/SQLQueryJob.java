@@ -4,28 +4,27 @@
 
 package org.jkiss.dbeaver.runtime.sql;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -346,9 +345,9 @@ public class SQLQueryJob extends DataSourceJob
                 //monitor.subTask("Execute query");
                 boolean hasResultSet = curStatement.executeStatement();
                 // Show results only if we are not in the script execution
-                // Doesn't matter what executeStatement() returned. It seems that some drivers
+                // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
                 // return messy results here
-                if (fetchResultSets) {
+                if (hasResultSet && fetchResultSets) {
                     fetchQueryData(result, context);
                 }
                 long updateCount = curStatement.getUpdateRowCount();
