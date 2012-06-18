@@ -24,6 +24,6 @@
     </target>
 
     <target name="do-extract" depends="clean, declare">
-        <nl-extractor baseLocation="${baseLocation}" targetLocation="${targetLocation}" locales="${locales}"/>
+        <nl-extractor baseLocation="${baseLocation}" targetLocation="${targetLocation}" locales="${locales}" encoding="${encoding}"/>
     </target>
 </project>
