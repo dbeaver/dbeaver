@@ -1,9 +1,13 @@
 package org.jkiss.tools.ant.packer;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
@@ -11,7 +15,7 @@ import java.util.zip.ZipOutputStream;
 
 public class Packager
 {
-    public static void packZip(File output, List<File> sources) throws IOException
+    public static void packZip(File output, List<File> sources, String encoding) throws IOException
     {
         //System.out.println("Packaging to " + output.getName());
         ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(output));
@@ -19,9 +23,9 @@ public class Packager
 
         for (File source : sources) {
             if (source.isDirectory()) {
-                zipDir(zipOut, "", source);
+                zipDir(zipOut, "", source, encoding);
             } else {
-                zipFile(zipOut, "", source);
+                zipFile(zipOut, "", source, encoding);
             }
         }
         zipOut.flush();
@@ -38,7 +42,7 @@ public class Packager
         }
     }
 
-    private static void zipDir(ZipOutputStream zos, String path, File dir) throws IOException
+    private static void zipDir(ZipOutputStream zos, String path, File dir, String encoding) throws IOException
     {
         if (!dir.canRead()) {
             System.out.println("Cannot read " + dir.getCanonicalPath() + " (maybe because of permissions)");
@@ -51,16 +55,16 @@ public class Packager
 
         for (File source : files) {
             if (source.isDirectory()) {
-                zipDir(zos, path, source);
+                zipDir(zos, path, source, encoding);
             } else {
-                zipFile(zos, path, source);
+                zipFile(zos, path, source, encoding);
             }
         }
 
         //System.out.println("Leaving Directory " + path);
     }
 
-    private static void zipFile(ZipOutputStream zos, String path, File file) throws IOException
+    private static void zipFile(ZipOutputStream zos, String path, File file, String encoding) throws IOException
     {
         if (!file.canRead()) {
             System.out.println("Cannot read " + file.getCanonicalPath() + " (maybe because of permissions)");
@@ -70,18 +74,103 @@ public class Packager
         //System.out.println("Compressing " + file.getName());
         zos.putNextEntry(new ZipEntry(buildPath(path, file.getName())));
 
-        FileInputStream fis = new FileInputStream(file);
-
-        byte[] buffer = new byte[4092];
-        int byteCount = 0;
-        while ((byteCount = fis.read(buffer)) != -1) {
-            zos.write(buffer, 0, byteCount);
-            //System.out.print('.');
-            //System.out.flush();
+        boolean doEncode = encoding != null && encoding.length() > 0;
+        BufferedReader reader;
+        if (doEncode) {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
+        } else {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
         }
-        //System.out.println();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(zos));
 
-        fis.close();
+        String line = null;
+        while ((line=reader.readLine()) != null) {
+            if (doEncode) {
+                line = saveConvert(line, false, true);
+            }
+            writer.write(line);
+            writer.newLine();   // Write system dependent end of line.
+        }
+        reader.close();  // Close to unlock.
+        writer.flush();
         zos.closeEntry();
+        //writer.close();  // Close to unlock and flush to disk.
     }
+
+    /*
+     * Converts unicodes to encoded &#92;uxxxx and escapes
+     * special characters with a preceding slash
+     * 
+     * Got from the java.util.Properties class.
+     */
+    private static String saveConvert(String theString,
+                               boolean escapeSpace,
+                               boolean escapeUnicode) {
+        int len = theString.length();
+        int bufLen = len * 2;
+        if (bufLen < 0) {
+            bufLen = Integer.MAX_VALUE;
+        }
+        StringBuffer outBuffer = new StringBuffer(bufLen);
+
+        for(int x=0; x<len; x++) {
+            char aChar = theString.charAt(x);
+            // Handle common case first, selecting largest block that
+            // avoids the specials below
+            if ((aChar > 61) && (aChar < 127)) {
+                if (aChar == '\\') {
+                    outBuffer.append('\\'); outBuffer.append('\\');
+                    continue;
+                }
+                outBuffer.append(aChar);
+                continue;
+            }
+            switch(aChar) {
+                case ' ':
+                    if (x == 0 || escapeSpace)
+                        outBuffer.append('\\');
+                    outBuffer.append(' ');
+                    break;
+/*
+                case '\t':outBuffer.append('\\'); outBuffer.append('t');
+                    break;
+                case '\n':outBuffer.append('\\'); outBuffer.append('n');
+                    break;
+                case '\r':outBuffer.append('\\'); outBuffer.append('r');
+                    break;
+                case '\f':outBuffer.append('\\'); outBuffer.append('f');
+                    break;
+                case '=': // Fall through
+                case ':': // Fall through
+                case '#': // Fall through
+                case '!':
+                    outBuffer.append('\\'); outBuffer.append(aChar);
+                    break;
+*/
+                default:
+                    if (((aChar < 0x0020) || (aChar > 0x007e)) & escapeUnicode ) {
+                        outBuffer.append('\\');
+                        outBuffer.append('u');
+                        outBuffer.append(toHex((aChar >> 12) & 0xF));
+                        outBuffer.append(toHex((aChar >>  8) & 0xF));
+                        outBuffer.append(toHex((aChar >>  4) & 0xF));
+                        outBuffer.append(toHex( aChar        & 0xF));
+                    } else {
+                        outBuffer.append(aChar);
+                    }
+            }
+        }
+        return outBuffer.toString();
+    }
+    /**
+     * Convert a nibble to a hex character
+     * @param	nibble	the nibble to convert.
+     */
+    private static char toHex(int nibble) {
+        return hexDigit[(nibble & 0xF)];
+    }
+    /** A table of hex digits */
+    private static final char[] hexDigit = {
+            '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
+    };
 }

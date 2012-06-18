@@ -20,6 +20,6 @@
     </target>
 
     <target name="do-pack" depends="declare">
-        <nl-packer dbeaverLocation="${dbeaverLocation}" nlPropertiesLocation="${nlPropertiesLocation}"/>
+        <nl-packer dbeaverLocation="${dbeaverLocation}" nlPropertiesLocation="${nlPropertiesLocation}" sourceEncoding="${sourceEncoding}"/>
     </target>
 </project>

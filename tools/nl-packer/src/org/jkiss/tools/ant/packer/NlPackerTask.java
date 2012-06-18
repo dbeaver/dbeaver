@@ -56,6 +56,7 @@ public class NlPackerTask extends Task
 
     private String dbeaverLocation;
     private String nlPropertiesLocation;
+    private String sourceEncoding;
 
     // The method executing the task
     @Override
@@ -104,7 +105,7 @@ public class NlPackerTask extends Task
                         filesToPack.addAll(Arrays.asList(srcDir.listFiles()));
                         File pluginZipFile = new File(nlPropertiesLocation, pluginName + ".zip");
 
-                        Packager.packZip(pluginZipFile, filesToPack);
+                        Packager.packZip(pluginZipFile, filesToPack, sourceEncoding);
 
                         localizePlugin(Arrays.asList(pluginZipFile), dbeaverPlugin);
 
@@ -237,5 +238,10 @@ public class NlPackerTask extends Task
     public void setNlPropertiesLocation(String nlPropertiesLocation)
     {
         this.nlPropertiesLocation = nlPropertiesLocation;
+    }
+
+    public void setSourceEncoding(String sourceEncoding)
+    {
+        this.sourceEncoding = sourceEncoding;
     }
 }
