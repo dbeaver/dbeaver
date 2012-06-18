@@ -7,32 +7,18 @@ package org.jkiss.tools.ant.extractor;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Extract resources properties files from the project for localization.
@@ -62,7 +48,11 @@ public class NlExtractorTask extends Task
      * English locale is always extracted.
      */
     private String locales;
-    private String encoding;
+    /**
+     * A charset name of target properties files. 
+     * Can be empty (then standard ISO-8859-1 charset is used) 
+     */
+    private String targetEncoding;
 
     private File baseDir;
     private File targetDir;
@@ -83,9 +73,9 @@ public class NlExtractorTask extends Task
         this.locales = locales;
     }
 
-    public void setEncoding(String encoding)
+    public void setTargetEncoding(String targetEncoding)
     {
-        this.encoding = encoding;
+        this.targetEncoding = targetEncoding;
     }
 
     // The method executing the task
@@ -144,7 +134,7 @@ public class NlExtractorTask extends Task
                         File targetBase = new File(targetDir, relativeDir);
                         targetBase.mkdirs();
                         for (File propertiesFile : dir.listFiles(new LocalPropertiesFilenameFilter(basePropertiesName))) {
-                            copyFile(propertiesFile, new File(targetBase, propertiesFile.getName()), encoding);
+                            copyFile(propertiesFile, new File(targetBase, propertiesFile.getName()), targetEncoding);
                         }
                     }
                 }
