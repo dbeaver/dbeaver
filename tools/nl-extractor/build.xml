@@ -14,7 +14,7 @@
 
     <target name="build">
         <mkdir dir="build"/>
-        <javac srcdir="src" destdir="build" includeantruntime="true"/>
+        <javac srcdir="src" destdir="build" includeantruntime="true" debug="true"/>
     </target>
 
     <target name="declare" depends="build">

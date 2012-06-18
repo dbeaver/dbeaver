@@ -169,11 +169,14 @@ public class NlExtractorTask extends Task
         @Override
         public boolean accept(File dir, String name)
         {
-            return name.equalsIgnoreCase(basePropertiesName + PROPERTIES_EXT) ||
-                    (name.startsWith(basePropertiesName) && isPropertiesAccepted(name));
+            return name.endsWith(PROPERTIES_EXT) && 
+                    (name.startsWith(basePropertiesName) || (name.startsWith(basePropertiesName) && isPropertiesAccepted(name)));
         }
 
         private boolean isPropertiesAccepted(String fileName) {
+            if (localesSet.isEmpty()) {
+                return true;
+            }
             for (String locale : localesSet) {
                 if (fileName.contains("_" + locale)) {
                     return true;
