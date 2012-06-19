@@ -2,15 +2,10 @@
  * Copyright (c) 2012, Serge Rieder and others. All Rights Reserved.
  */
 
-package org.jkiss.tools.ant.packer;
-
-import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Task;
+package org.jkiss.tools.packer;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -26,7 +21,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * Extract resources properties files from the project for localization.
  */
-public class NlPackerTask extends Task
+public class NlPackerTask
 {
     public static final FilenameFilter PROPERTIES_FILTER = new FilenameFilter()
     {
@@ -59,30 +54,21 @@ public class NlPackerTask extends Task
     private String sourceEncoding;
 
     // The method executing the task
-    @Override
-    public void execute() throws BuildException
+    public void execute() throws IOException
     {
 /*
-        Project prj = this.getProject();
-        File baseDir = prj.getBaseDir();
-        String defaultTarget = prj.getDefaultTarget();
-        String dscrptn = prj.getDescription();
-        Hashtable inheritedProperties = prj.getInheritedProperties();
-        Hashtable userProperties = prj.getUserProperties();
-        Target owningTarget = this.getOwningTarget();
-        Hashtable properties = prj.getProperties();
-*/
         System.out.println("dbeaverLocation = " + dbeaverLocation);
         System.out.println("nlPropertiesLocation = " + nlPropertiesLocation);
+*/
 
         File dbeaverDir = new File(dbeaverLocation);
         if (!dbeaverDir.exists() || !dbeaverDir.isDirectory()) {
-            throw new BuildException("Can't find DBeaver directory " + dbeaverLocation);
+            throw new IOException("Can't find DBeaver directory " + dbeaverLocation);
         }
 
         File nlPropertiesDir = new File(nlPropertiesLocation);
         if (!nlPropertiesDir.exists() || !nlPropertiesDir.isDirectory()) {
-            throw new BuildException("Can't find nl-properties directory " + nlPropertiesLocation);
+            throw new IOException("Can't find nl-properties directory " + nlPropertiesLocation);
         }
 
         File pluginsDir = new File(dbeaverDir, "plugins");
@@ -119,9 +105,10 @@ public class NlPackerTask extends Task
                 }
             }
         }
+        System.out.println("DBeaver at " + dbeaverLocation + " is successfully localized from " + nlPropertiesLocation + ".");
     }
 
-    public static void localizePlugin(List<File> babelFiles, File pluginFile)
+    public static void localizePlugin(List<File> babelFiles, File pluginFile) throws IOException
     {
         if (!pluginFile.exists() || babelFiles == null || babelFiles.isEmpty()) {
             return;
@@ -130,13 +117,13 @@ public class NlPackerTask extends Task
         File tempFile = new File(pluginFile.getName() + ".tmp");
 
         ZipFile destZip = null;
+        ZipOutputStream out = null;
         try {
             boolean renameOk = pluginFile.renameTo(tempFile);
             if (!renameOk) {
-                throw new BuildException("could not rename the file " + pluginFile.getAbsolutePath() + " to " + tempFile.getAbsolutePath());
+                throw new IOException("could not rename the file " + pluginFile.getAbsolutePath() + " to " + tempFile.getAbsolutePath());
             }
 
-            ZipOutputStream out;
             try {
                 out = new ZipOutputStream(new FileOutputStream(pluginFile));
             } catch (FileNotFoundException e) {
@@ -176,7 +163,7 @@ public class NlPackerTask extends Task
                         out.closeEntry();
                         bis.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                         System.out.println("Can't copy " + entryName + " from " + sourceZipFile.getAbsolutePath() +
                                 " to " + pluginFile.getAbsolutePath() + ". " + e.getMessage());
                         //break;
@@ -206,21 +193,27 @@ public class NlPackerTask extends Task
                     out.closeEntry();
                     bis.close();
                 } catch (IOException e) {
-                    System.out.println("Can't copy " + entryName + " from temporary file to " +
-                            pluginFile.getAbsolutePath() + ". " + e.getMessage());
+                    // do nothing
+                    //e.printStackTrace();
+                    //System.out.println("Can't copy " + entryName + " from temporary file to " +
+                    //        pluginFile.getAbsolutePath() + ". " + e.getMessage());
                     //break;
                 }
             }
 
-            // Complete the ZIP file
-            try {
-                out.close();
-            } catch (IOException e) {
-                System.out.println("Can't close output stream for destination " + pluginFile.getAbsolutePath());
-            }
         } finally {
             try {
-                destZip.close();
+                if (out != null) {
+                    // Complete the ZIP file
+                    try {
+                        out.close();
+                    } catch (IOException e) {
+                        System.out.println("Can't close output stream for destination " + pluginFile.getAbsolutePath());
+                    }
+                }
+                if (destZip != null) {
+                    destZip.close();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -230,18 +223,19 @@ public class NlPackerTask extends Task
         }
     }
 
-    public void setDbeaverLocation(String dbeaverLocation)
+    public static final void main(String[] args) throws IOException
     {
-        this.dbeaverLocation = dbeaverLocation;
-    }
-
-    public void setNlPropertiesLocation(String nlPropertiesLocation)
-    {
-        this.nlPropertiesLocation = nlPropertiesLocation;
-    }
-
-    public void setSourceEncoding(String sourceEncoding)
-    {
-        this.sourceEncoding = sourceEncoding;
+        if (args == null || args.length < 2) {
+            System.out.println("Run the utility with parameters: java -cp . org.jkiss.tools.packer.NlPackerTask <dbeaver location> <NL properties location> [<charset (encoding) name>]");
+        }
+        else {
+            NlPackerTask nlPackerTask = new NlPackerTask();
+            nlPackerTask.dbeaverLocation = args[0];
+            nlPackerTask.nlPropertiesLocation = args[1];
+            if (args.length > 2) {
+                nlPackerTask.sourceEncoding = args[2];
+            }
+            nlPackerTask.execute();
+        }
     }
 }

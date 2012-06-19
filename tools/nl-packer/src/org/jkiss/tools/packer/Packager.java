@@ -1,4 +1,4 @@
-package org.jkiss.tools.ant.packer;
+package org.jkiss.tools.packer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

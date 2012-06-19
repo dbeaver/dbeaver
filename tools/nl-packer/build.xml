@@ -15,7 +15,7 @@
 
     <target name="declare" depends="build">
         <taskdef name="nl-packer"
-                 classname="org.jkiss.tools.ant.packer.NlPackerTask"
+                 classname="org.jkiss.tools.packer.NlPackerTask"
                  classpath="build"/>
     </target>
 
