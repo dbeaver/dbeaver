@@ -59,7 +59,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         super();
 
         setDocumentProvider(new ObjectDocumentProvider());
-        setHasVerticalRuler(false);
+        //setHasVerticalRuler(false);
     }
 
     @Override
