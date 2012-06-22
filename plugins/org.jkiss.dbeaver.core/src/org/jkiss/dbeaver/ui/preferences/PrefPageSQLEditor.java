@@ -7,7 +7,12 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
+import org.eclipse.ui.texteditor.rulers.RulerColumnPreferenceAdapter;
+import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -16,6 +21,9 @@ import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * PrefPageSQL
@@ -35,6 +43,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Spinner csAutoActivationDelaySpinner;
     private Button csAutoInsertCheck;
     private Combo csInsertCase;
+    private Map<RulerColumnDescriptor, Button> rulerChecks = new HashMap<RulerColumnDescriptor, Button>();
 
     public PrefPageSQLEditor()
     {
@@ -117,9 +126,13 @@ public class PrefPageSQLEditor extends TargetPrefPage
             fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
         }
 
+        Composite composite2 = UIUtils.createPlaceholder(composite, 2);
+        ((GridLayout)composite2.getLayout()).horizontalSpacing = 5;
+        composite2.setLayoutData(new GridData(GridData.FILL_BOTH));
         // Content assistant
         {
-            Composite assistGroup = UIUtils.createControlGroup(composite, "Content assistant", 2, GridData.FILL_HORIZONTAL, 0);
+            Composite assistGroup = UIUtils.createControlGroup(composite2, "Content assistant", 2, GridData.FILL_HORIZONTAL, 0);
+            assistGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
 
             csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", "Enables the content assistant's auto activation", false);
             UIUtils.createControlLabel(assistGroup, "Auto activation delay");
@@ -139,6 +152,18 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csInsertCase.add("Default");
             csInsertCase.add("Upper case");
             csInsertCase.add("Lower case");
+        }
+        {
+            Composite rulersGroup = UIUtils.createControlGroup(composite2, "Rulers", 2, GridData.FILL_HORIZONTAL, 0);
+            rulersGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
+
+            for (Object obj : RulerColumnRegistry.getDefault().getColumnDescriptors()) {
+                final RulerColumnDescriptor descriptor = (RulerColumnDescriptor)obj;
+                if (!descriptor.isGlobal())
+                    continue;
+                Button checkbox = UIUtils.createCheckbox(rulersGroup, descriptor.getName(), false);
+                rulerChecks.put(descriptor, checkbox);
+            }
         }
 
         // Scripts
@@ -165,6 +190,14 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
             csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
+
+            final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
+                store,
+                AbstractTextEditor.PREFERENCE_RULER_CONTRIBUTIONS);
+            for (Map.Entry<RulerColumnDescriptor, Button> entry : rulerChecks.entrySet()) {
+                entry.getValue().setSelection(adapter.isEnabled(entry.getKey()));
+            }
+
         } catch (Exception e) {
             log.warn(e);
         }
@@ -186,6 +219,13 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.fromOrdinal(errorHandlingCombo.getSelectionIndex()).name());
             store.setValue(PrefConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
             store.setValue(PrefConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
+
+            final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
+                    store,
+                    AbstractTextEditor.PREFERENCE_RULER_CONTRIBUTIONS);
+            for (Map.Entry<RulerColumnDescriptor, Button> entry : rulerChecks.entrySet()) {
+                adapter.setEnabled(entry.getKey(), entry.getValue().getSelection());
+            }
         } catch (Exception e) {
             log.warn(e);
         }
