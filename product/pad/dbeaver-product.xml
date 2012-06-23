@@ -32,6 +32,25 @@
 
     <versions>
         <version>
+            <number>1.6.0</number>
+            <type>ea</type>
+            <date>30.06.2012</date>
+
+            <release-notes>
+                - DBeaver is under GPL license
+                - Metadata tree filters
+                - ResultSet editor improvements. Support of copy/paste for cells.
+                - BLOB editor fix (save)
+                - Oracle cursors viewer
+                - Read-only connections support
+                - HTTP proxy authentication support
+                - SSH support for external (native) utilities
+                - Line numbers ruler configuration
+                - A lot of minor UI fixes and improvements
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.5.7</number>
             <type>ea</type>
             <date>30.05.2012</date>
