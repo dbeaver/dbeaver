@@ -4,10 +4,10 @@
 
 package org.jkiss.dbeaver.ui.export.project;
 
-import org.jkiss.utils.xml.XMLException;
-import org.jkiss.utils.xml.XMLUtils;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 
 import java.io.File;

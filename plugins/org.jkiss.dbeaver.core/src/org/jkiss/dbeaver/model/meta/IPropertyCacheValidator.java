@@ -1,7 +1,5 @@
 package org.jkiss.dbeaver.model.meta;
 
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
-
 /**
  * Property cache validator
  */

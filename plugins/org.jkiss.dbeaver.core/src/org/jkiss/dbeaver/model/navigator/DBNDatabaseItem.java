@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.navigator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * DBNDatabaseItem

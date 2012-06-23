@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;

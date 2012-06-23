@@ -18,10 +18,10 @@
  */
 package org.jkiss.dbeaver.ui.help;
 
+import org.eclipse.help.IHelpContentProducer;
+
 import java.io.InputStream;
 import java.util.Locale;
-
-import org.eclipse.help.IHelpContentProducer;
 
 public class HelpContentProducer implements IHelpContentProducer {
 

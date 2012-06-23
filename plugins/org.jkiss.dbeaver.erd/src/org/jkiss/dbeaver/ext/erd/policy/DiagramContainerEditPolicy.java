@@ -21,8 +21,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.policy;
 
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.EditPart;
 import org.eclipse.gef.Request;
@@ -33,8 +31,10 @@ import org.eclipse.gef.requests.CreateRequest;
 import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
 import org.jkiss.dbeaver.ext.erd.command.NoteCreateCommand;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Collections;

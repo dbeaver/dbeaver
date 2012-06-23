@@ -4,12 +4,12 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.ui.export.data.IDataExporter;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;

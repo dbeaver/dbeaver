@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -33,6 +32,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadVisualizer;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;

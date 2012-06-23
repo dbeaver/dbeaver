@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.jkiss.utils.BeanUtils;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.IFilter;
@@ -29,6 +27,8 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

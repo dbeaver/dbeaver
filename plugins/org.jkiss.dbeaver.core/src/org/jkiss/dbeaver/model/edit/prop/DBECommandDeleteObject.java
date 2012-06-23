@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.model.edit.prop;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;

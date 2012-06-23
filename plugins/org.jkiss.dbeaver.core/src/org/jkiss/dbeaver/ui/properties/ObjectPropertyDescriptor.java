@@ -18,9 +18,10 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.jkiss.utils.BeanUtils;
-import org.jkiss.utils.CommonUtils;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.IFontProvider;
+import org.eclipse.jface.viewers.ILabelProvider;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -39,6 +40,8 @@ import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomTextCellEditor;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

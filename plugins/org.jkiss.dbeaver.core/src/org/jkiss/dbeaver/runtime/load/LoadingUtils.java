@@ -4,12 +4,12 @@
 
 package org.jkiss.dbeaver.runtime.load;
 
-import org.jkiss.utils.BeanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.utils.BeanUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

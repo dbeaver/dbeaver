@@ -4,10 +4,10 @@
 
 package org.jkiss.dbeaver;
 
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 

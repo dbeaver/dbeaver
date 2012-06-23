@@ -1,13 +1,6 @@
 package org.jkiss.tools.packer;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.List;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;

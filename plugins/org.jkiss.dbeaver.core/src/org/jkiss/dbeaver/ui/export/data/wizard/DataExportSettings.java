@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.export.data.wizard;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.program.Program;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -27,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;

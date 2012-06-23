@@ -18,12 +18,12 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;

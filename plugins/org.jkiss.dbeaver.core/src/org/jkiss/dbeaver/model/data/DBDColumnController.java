@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 
 /**

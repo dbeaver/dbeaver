@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;
@@ -28,6 +27,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.text.MessageFormat;
 

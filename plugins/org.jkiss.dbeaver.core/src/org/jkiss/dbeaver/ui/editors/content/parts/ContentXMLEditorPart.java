@@ -23,10 +23,10 @@ import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
-import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.utils.MimeTypes;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;

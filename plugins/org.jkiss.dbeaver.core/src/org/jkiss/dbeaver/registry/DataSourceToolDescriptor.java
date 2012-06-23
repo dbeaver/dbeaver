@@ -7,12 +7,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPTool;
-import org.osgi.framework.Bundle;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * DataSourceToolDescriptor

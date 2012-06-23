@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

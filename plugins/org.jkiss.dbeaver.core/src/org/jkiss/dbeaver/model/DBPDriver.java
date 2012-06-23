@@ -9,7 +9,6 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**

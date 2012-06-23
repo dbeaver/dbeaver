@@ -21,12 +21,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import org.eclipse.draw2d.geometry.Rectangle;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
@@ -36,8 +34,13 @@ import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 

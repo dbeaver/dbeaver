@@ -18,9 +18,9 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;

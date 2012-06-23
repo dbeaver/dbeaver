@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.model.exec.plan;
 
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 
 import java.util.Collection;

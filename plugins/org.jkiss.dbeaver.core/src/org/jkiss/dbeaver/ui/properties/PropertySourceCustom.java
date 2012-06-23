@@ -18,8 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 

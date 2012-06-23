@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.HashMap;

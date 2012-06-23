@@ -10,7 +10,6 @@ import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
-
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.core.DBeaverCore;
 

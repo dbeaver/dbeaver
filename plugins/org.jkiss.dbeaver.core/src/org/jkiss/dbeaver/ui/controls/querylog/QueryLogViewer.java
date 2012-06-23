@@ -18,10 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.querylog;
 
-import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.LongKeyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
@@ -39,6 +35,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.*;
@@ -52,10 +49,10 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.swt.IFocusService;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -71,6 +68,8 @@ import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TableToolTip;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.LongKeyMap;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

@@ -8,11 +8,6 @@
 package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.FreeformLayer;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.Orientable;
-import org.eclipse.draw2d.geometry.Rectangle;
-
-import java.util.List;
 
 /**
  * Figure which represents the whole diagram - the view which corresponds to the

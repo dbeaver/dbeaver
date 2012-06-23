@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.export.scripts;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 

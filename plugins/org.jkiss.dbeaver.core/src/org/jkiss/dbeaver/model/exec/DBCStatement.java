@@ -8,8 +8,6 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.sql.SQLException;
-
 /**
  * DBCStatement
  */

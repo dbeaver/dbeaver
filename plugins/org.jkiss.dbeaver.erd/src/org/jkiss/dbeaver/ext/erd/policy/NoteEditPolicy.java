@@ -25,10 +25,8 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.ComponentEditPolicy;
 import org.eclipse.gef.requests.GroupRequest;
-import org.jkiss.dbeaver.ext.erd.command.EntityDeleteCommand;
 import org.jkiss.dbeaver.ext.erd.command.NoteDeleteCommand;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ext.erd.part.NotePart;
 
 /**

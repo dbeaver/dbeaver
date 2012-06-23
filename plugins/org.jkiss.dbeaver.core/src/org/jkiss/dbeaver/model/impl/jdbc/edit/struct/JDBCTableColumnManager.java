@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * JDBC table column manager

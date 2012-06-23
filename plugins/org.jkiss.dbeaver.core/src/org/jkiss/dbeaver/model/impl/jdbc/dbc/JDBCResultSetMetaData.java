@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

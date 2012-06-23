@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.utils.sampledb;
 
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 

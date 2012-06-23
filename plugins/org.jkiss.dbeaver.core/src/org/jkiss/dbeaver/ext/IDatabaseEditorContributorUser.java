@@ -6,8 +6,6 @@ package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorActionBarContributor;
 
-import java.util.List;
-
 /**
  * ISection which provides action contributions
  */

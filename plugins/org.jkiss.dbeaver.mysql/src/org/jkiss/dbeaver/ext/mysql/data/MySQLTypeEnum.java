@@ -18,9 +18,9 @@
  */
 package org.jkiss.dbeaver.ext.mysql.data;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Enum type

@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCStateType;
-import org.jkiss.wmi.service.WMIService;
 
 import java.util.Collection;
 import java.util.Collections;

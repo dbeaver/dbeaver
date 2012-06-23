@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary.pref;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.graphics.FontData;
@@ -29,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.utils.CommonUtils;
 
 
 /**

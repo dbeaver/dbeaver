@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.export.project;
 
-import org.eclipse.osgi.util.NLS;
-import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.xml.XMLBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
@@ -29,6 +26,7 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -40,6 +38,8 @@ import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.IOUtils;
+import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;

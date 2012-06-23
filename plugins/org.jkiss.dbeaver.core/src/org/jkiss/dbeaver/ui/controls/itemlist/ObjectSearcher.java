@@ -18,9 +18,9 @@
  */
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;

@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
-import org.jkiss.dbeaver.ext.oracle.model.source.*;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -60,7 +60,10 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class CompileHandler extends AbstractHandler implements IElementUpdater
 {

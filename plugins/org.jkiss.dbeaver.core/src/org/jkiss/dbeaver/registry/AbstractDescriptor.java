@@ -20,20 +20,20 @@ package org.jkiss.dbeaver.registry;
 
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverIcons;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 import java.io.IOException;

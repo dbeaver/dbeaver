@@ -18,18 +18,18 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.model.impl.project.DefaultResourceHandlerImpl;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.impl.project.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;

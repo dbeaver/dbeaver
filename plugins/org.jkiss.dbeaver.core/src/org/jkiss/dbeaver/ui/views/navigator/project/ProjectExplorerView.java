@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
-import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 
 /**

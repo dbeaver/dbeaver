@@ -18,11 +18,11 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * EntityEditorInput

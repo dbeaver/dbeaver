@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.ScrollBarAdapter;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
 import java.util.*;

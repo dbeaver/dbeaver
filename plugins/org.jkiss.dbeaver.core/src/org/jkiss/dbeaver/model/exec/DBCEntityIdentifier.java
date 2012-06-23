@@ -18,9 +18,9 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.DBSTableIndex;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 import java.util.List;
 

@@ -21,9 +21,7 @@ package org.jkiss.dbeaver.ext.erd;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.osgi.framework.BundleContext;
 
 import java.util.MissingResourceException;

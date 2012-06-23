@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ui.controls.itemlist;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;

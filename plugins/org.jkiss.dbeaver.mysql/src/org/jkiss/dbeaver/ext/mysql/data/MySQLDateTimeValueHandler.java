@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDValueHandler2;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 

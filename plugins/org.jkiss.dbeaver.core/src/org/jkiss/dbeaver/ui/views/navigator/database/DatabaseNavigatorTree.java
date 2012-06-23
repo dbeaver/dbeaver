@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
@@ -42,7 +40,9 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.IDBNListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
+import org.jkiss.utils.CommonUtils;
 
 public class DatabaseNavigatorTree extends Composite implements IDBNListener
 {

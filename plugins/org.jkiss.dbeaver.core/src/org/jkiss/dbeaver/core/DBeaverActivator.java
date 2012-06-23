@@ -19,7 +19,8 @@
 package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;

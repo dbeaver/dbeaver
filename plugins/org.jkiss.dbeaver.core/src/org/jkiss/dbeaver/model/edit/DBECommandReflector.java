@@ -5,7 +5,6 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Database Object Command reflector.

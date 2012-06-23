@@ -4,10 +4,6 @@
 
 package org.jkiss.dbeaver.model.impl.project;
 
-import org.jkiss.utils.Base64;
-import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
-import org.jkiss.utils.xml.XMLUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;
@@ -16,6 +12,10 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.Base64;
+import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

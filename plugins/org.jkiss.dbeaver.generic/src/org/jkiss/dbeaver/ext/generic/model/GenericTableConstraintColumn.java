@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraintColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * GenericTableConstraintColumn

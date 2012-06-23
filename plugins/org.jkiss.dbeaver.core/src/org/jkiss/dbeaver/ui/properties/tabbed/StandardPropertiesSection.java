@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.properties.tabbed;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -36,7 +35,10 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.properties.*;
+import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
+import org.jkiss.dbeaver.ui.properties.IPropertyDescriptorEx;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * StandardPropertiesSection

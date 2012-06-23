@@ -24,8 +24,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter;
+import org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart;
 
 public class ERDHandlerRedo extends AbstractHandler {
 

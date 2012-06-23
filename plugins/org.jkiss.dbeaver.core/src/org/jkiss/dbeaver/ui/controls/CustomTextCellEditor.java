@@ -4,9 +4,9 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Common text cell editor.

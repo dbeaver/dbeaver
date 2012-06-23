@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.model.impl.project;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;

@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -31,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;

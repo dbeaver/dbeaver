@@ -10,7 +10,6 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 /**

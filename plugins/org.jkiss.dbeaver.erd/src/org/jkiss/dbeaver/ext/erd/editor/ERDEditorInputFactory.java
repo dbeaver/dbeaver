@@ -18,14 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.utils.CommonUtils;
 
 public class ERDEditorInputFactory implements IElementFactory
 {

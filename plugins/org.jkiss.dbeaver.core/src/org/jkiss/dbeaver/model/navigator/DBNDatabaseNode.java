@@ -18,22 +18,22 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.utils.BeanUtils;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;

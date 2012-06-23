@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.model.edit.prop;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
@@ -28,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Calendar;
 import java.util.Date;

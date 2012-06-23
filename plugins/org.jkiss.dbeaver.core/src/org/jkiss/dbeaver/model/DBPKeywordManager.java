@@ -4,7 +4,8 @@
 
 package org.jkiss.dbeaver.model;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Keyword manager.

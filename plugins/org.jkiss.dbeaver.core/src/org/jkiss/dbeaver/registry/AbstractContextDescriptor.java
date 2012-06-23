@@ -7,9 +7,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IContributor;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPTool;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.osgi.framework.Bundle;
 
 import java.util.ArrayList;
 import java.util.List;

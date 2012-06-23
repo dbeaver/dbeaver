@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 

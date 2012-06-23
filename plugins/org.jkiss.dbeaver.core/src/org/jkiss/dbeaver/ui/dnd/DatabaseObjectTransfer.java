@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.ui.dnd;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
 

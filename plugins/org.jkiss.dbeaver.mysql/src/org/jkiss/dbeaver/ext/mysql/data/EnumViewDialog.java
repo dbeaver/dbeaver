@@ -4,7 +4,6 @@
 
 package org.jkiss.dbeaver.ext.mysql.data;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -14,6 +13,7 @@ import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Enum editor dialog

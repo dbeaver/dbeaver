@@ -5,9 +5,6 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.ui.IEditorActionBarContributor;
-import org.eclipse.ui.IEditorPart;
-
-import java.util.Collection;
 
 /**
  * Contributor manager

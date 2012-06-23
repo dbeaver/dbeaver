@@ -7,9 +7,13 @@
  */
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.draw2d.CompoundBorder;
+import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.text.*;
+import org.eclipse.draw2d.text.FlowPage;
+import org.eclipse.draw2d.text.TextFlow;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 
 /**

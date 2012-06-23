@@ -18,19 +18,22 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
-import org.jkiss.dbeaver.ext.oracle.model.*;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.oracle.OracleMessages;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndexColumn;
+import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
 

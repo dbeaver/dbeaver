@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.utils.CommonUtils;
-
 /**
 * Object status
 */

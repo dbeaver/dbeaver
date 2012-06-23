@@ -18,13 +18,13 @@
  */
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
-import org.jkiss.utils.CommonUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 

@@ -5,9 +5,8 @@
 package org.jkiss.dbeaver.utils.sampledb;
 
 import java.sql.*;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.*;
+import java.util.Properties;
+import java.util.Random;
 
 /*
 select

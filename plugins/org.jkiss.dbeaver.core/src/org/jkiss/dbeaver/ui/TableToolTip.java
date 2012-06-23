@@ -18,11 +18,11 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Fake table tooltip provider

@@ -4,8 +4,8 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
+import org.jkiss.utils.CommonUtils;
 
 /**
 * Parameter/argument mode

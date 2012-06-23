@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.export.project;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -27,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 
 class ProjectCreateWizardPageSettings extends WizardPage {

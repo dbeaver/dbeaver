@@ -52,7 +52,10 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.*;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.util.ArrayList;
 import java.util.List;
 

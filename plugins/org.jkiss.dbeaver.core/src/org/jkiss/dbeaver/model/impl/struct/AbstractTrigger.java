@@ -18,9 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.DBSManipulationType;
 import org.jkiss.dbeaver.model.struct.DBSTrigger;

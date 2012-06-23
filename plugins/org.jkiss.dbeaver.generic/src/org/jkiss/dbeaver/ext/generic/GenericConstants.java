@@ -4,8 +4,6 @@
 
 package org.jkiss.dbeaver.ext.generic;
 
-import org.jkiss.dbeaver.ext.generic.model.MetaDataNameConverter;
-
 /**
  * Generic provider constants
  */

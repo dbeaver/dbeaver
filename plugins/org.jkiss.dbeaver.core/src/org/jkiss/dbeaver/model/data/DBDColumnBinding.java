@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 /**
  * Column value binding info

@@ -21,15 +21,7 @@ package org.jkiss.tools.ant.extractor;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.StringTokenizer;

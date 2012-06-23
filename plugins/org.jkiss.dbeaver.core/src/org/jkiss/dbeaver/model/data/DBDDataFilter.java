@@ -6,8 +6,8 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.data.query.DBQCondition;
+import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

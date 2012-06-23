@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -32,6 +29,9 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.xml.SAXReader;
+import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
 
 import java.io.*;
 import java.util.ArrayList;

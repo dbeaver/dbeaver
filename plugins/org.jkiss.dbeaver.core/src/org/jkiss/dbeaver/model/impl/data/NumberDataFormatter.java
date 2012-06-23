@@ -18,8 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.RoundingMode;
 import java.text.NumberFormat;

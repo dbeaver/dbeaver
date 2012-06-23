@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -32,6 +31,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 
 public abstract class ConfigImportWizardPage extends WizardPage {

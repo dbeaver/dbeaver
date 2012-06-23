@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.jkiss.utils.CommonUtils;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.jobs.Job;
@@ -26,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.utils.CommonUtils;
 
 public class DataSourceInvalidateHandler extends DataSourceHandler
 {
