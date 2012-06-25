@@ -31,9 +31,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordManager;
 import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLParameterToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 
 import java.util.*;
@@ -165,6 +163,10 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), backgroundColor, SWT.BOLD));
         final IToken otherToken = new Token(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_TEXT)));
+        final SQLBlockBeginToken blockBeginToken = new SQLBlockBeginToken(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_KEYWORD), backgroundColor, SWT.BOLD));
+        final SQLBlockEndToken blockEndToken = new SQLBlockEndToken(
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_KEYWORD), backgroundColor, SWT.BOLD));
 
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<IRule>();
@@ -205,6 +207,8 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         for (String type : keywordManager.getTypes()) {
             wordRule.addWord(type, typeToken);
         }
+        wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);
+        wordRule.addWord(SQLConstants.BLOCK_END, blockBeginToken);
         rules.add(wordRule);
 
         {

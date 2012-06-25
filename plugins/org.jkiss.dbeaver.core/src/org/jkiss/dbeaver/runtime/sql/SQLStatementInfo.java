@@ -10,6 +10,8 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.rules.IToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockBeginToken;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLBlockEndToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLParameterToken;
 
 import java.util.ArrayList;
@@ -91,6 +93,7 @@ public class SQLStatementInfo {
     public void parseParameters(IDocument document, SQLSyntaxManager syntaxManager)
     {
         syntaxManager.setRange(document, offset, length);
+        int blockDepth = 0;
         for (;;) {
             IToken token = syntaxManager.nextToken();
             int tokenOffset = syntaxManager.getTokenOffset();
@@ -98,16 +101,22 @@ public class SQLStatementInfo {
             if (token.isEOF() || tokenOffset > offset + length) {
                 break;
             }
-
-            if (token instanceof SQLParameterToken && tokenLength > 0) {
+            // Handle only parameters which are not in SQL blocks
+            if (token instanceof SQLBlockBeginToken) {
+                blockDepth++;
+            }else if (token instanceof SQLBlockEndToken) {
+                blockDepth--;
+            }
+            if (token instanceof SQLParameterToken && tokenLength > 0 && blockDepth <= 0) {
                 try {
+                    String paramName = document.get(tokenOffset, tokenLength);
                     if (parameters == null) {
                         parameters = new ArrayList<SQLStatementParameter>();
                     }
                     parameters.add(
                         new SQLStatementParameter(
                             parameters.size(),
-                            document.get(tokenOffset, tokenLength)));
+                            paramName));
                 } catch (BadLocationException e) {
                     log.warn("Can't extract query parameter", e);
                 }

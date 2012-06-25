@@ -298,4 +298,15 @@ public class SQLConstants {
         "CLOB",
         "BLOB",
     };
+
+    public static final String BLOCK_BEGIN = "BEGIN";
+    public static final String BLOCK_END = "END";
+
+    /**
+     * Pseudo variables - these are not dynamic parameters
+     */
+    public static final String[] PSEUDO_VARIABLES = {
+        ":NEW",
+        ":OLD",
+    };
 }
