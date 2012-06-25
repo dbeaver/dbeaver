@@ -208,7 +208,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             wordRule.addWord(type, typeToken);
         }
         wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);
-        wordRule.addWord(SQLConstants.BLOCK_END, blockBeginToken);
+        wordRule.addWord(SQLConstants.BLOCK_END, blockEndToken);
         rules.add(wordRule);
 
         {
