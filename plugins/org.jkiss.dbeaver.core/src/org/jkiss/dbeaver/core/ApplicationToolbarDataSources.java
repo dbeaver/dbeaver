@@ -290,6 +290,8 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
 
         // Update controls and actions
         updateControls(false);
+
+        UIUtils.updateMainWindowTitle(workbenchWindow);
     }
 
     public void fillToolBar(IToolBarManager manager)

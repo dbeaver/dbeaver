@@ -46,6 +46,7 @@
                 - HTTP proxy authentication support
                 - SSH support for external (native) utilities
                 - Line numbers ruler configuration
+                - Fixed handling of dynamic SQL parameters
                 - A lot of minor UI fixes and improvements
             </release-notes>
         </version>

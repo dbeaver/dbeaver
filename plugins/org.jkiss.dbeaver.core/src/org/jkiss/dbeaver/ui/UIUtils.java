@@ -20,8 +20,10 @@ package org.jkiss.dbeaver.ui;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
@@ -972,6 +974,23 @@ public class UIUtils {
             new Object[]{contents},
             new Transfer[]{transfer});
         clipboard.dispose();
+    }
+
+    public static void updateMainWindowTitle(IWorkbenchWindow window)
+    {
+        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        String title = Platform.getProduct().getName();
+        if (activeProject != null) {
+            title += " - " + activeProject.getName(); //$NON-NLS-1$
+        }
+        IWorkbenchPage activePage = window.getActivePage();
+        if (activePage != null) {
+            IEditorPart activeEditor = activePage.getActiveEditor();
+            if (activeEditor != null) {
+                title += " - [ " + activeEditor.getTitle() + " ]";
+            }
+        }
+        window.getShell().setText(title);
     }
 
     public interface TableEditorController {

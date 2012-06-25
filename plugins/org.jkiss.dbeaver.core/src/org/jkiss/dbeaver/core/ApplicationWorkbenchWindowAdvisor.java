@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
@@ -90,7 +89,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         if (activeShell != null) {
             activeShell.setMaximized(true);
         }
-        updateWindowTitle();
+        UIUtils.updateMainWindowTitle(getWindowConfigurer().getWindow());
     }
 
     @Override
@@ -150,20 +149,10 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         super.postWindowClose();
     }
 
-    private void updateWindowTitle()
-    {
-        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        String title = Platform.getProduct().getName();
-        if (activeProject != null) {
-            title += " - " + activeProject.getName(); //$NON-NLS-1$
-        }
-        getWindowConfigurer().getWindow().getShell().setText(title);
-    }
-
     @Override
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
-        updateWindowTitle();
+        UIUtils.updateMainWindowTitle(getWindowConfigurer().getWindow());
     }
 
     public class EditorAreaDropAdapter extends DropTargetAdapter
