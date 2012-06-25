@@ -65,7 +65,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private TableEditor tableEditor;
     private Table paramTable;
 
-    private static Map<String, Object> savedParamValues = new HashMap<String, Object>();
+    private static Map<String, String> savedParamValues = new HashMap<String, String>();
 
     protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBPDataSource dataSource, List<SQLStatementParameter> parameters)
     {
@@ -95,14 +95,15 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 return o1.getName().compareTo(o2.getName());
             }
         });
-
+        // Restore saved values from registry
+        SQLQueryParameterRegistry registry = SQLQueryParameterRegistry.getInstance();
         for (SQLStatementParameter param : this.parameters) {
             final DBSDataType dataType = DBUtils.findBestDataType(validDataTypes, DBConstants.DEFAULT_DATATYPE_NAMES);
             if (dataType != null) {
                 param.setParamType(dataType);
                 param.resolve();
             }
-            Object value = savedParamValues.get(param.getName());
+            String value = registry.getParameter(param.getName());
             if (value != null) {
                 param.setValue(value);
             }
@@ -137,7 +138,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         tableEditor.grabVertical = true;
 
         final TableColumn indexColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "#");
-        indexColumn.setWidth(30);
+        indexColumn.setWidth(40);
         final TableColumn nameColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Name");
         nameColumn.setWidth(100);
         final TableColumn typeColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Type");
@@ -158,6 +159,17 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         paramTable.addMouseListener(new ParametersMouseListener());
 
         return composite;
+    }
+
+    @Override
+    protected void okPressed()
+    {
+        SQLQueryParameterRegistry registry = SQLQueryParameterRegistry.getInstance();
+        for (Map.Entry<String, String> param : savedParamValues.entrySet()) {
+            registry.setParameter(param.getKey(), param.getValue());
+        }
+        registry.save();
+        super.okPressed();
     }
 
     private void disposeOldEditor()
@@ -297,7 +309,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         public void updateValue(Object value)
         {
             parameter.setValue(value);
-            item.setText(3, getValueHandler().getValueDisplayString(parameter, value));
+            String displayString = getValueHandler().getValueDisplayString(parameter, value);
+            item.setText(3, displayString);
             String paramName = parameter.getName().trim();
             boolean isNumber = true;
             try {
@@ -306,7 +319,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 isNumber = false;
             }
             if (!isNumber && !paramName.equals("?")) {
-                savedParamValues.put(paramName, value);
+                savedParamValues.put(paramName, displayString);
             }
             //parameter.getIndex()
 

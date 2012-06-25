@@ -40,6 +40,7 @@ public class SQLQueryParameterRegistry
     static final Log log = LogFactory.getLog(SQLQueryParameterRegistry.class);
 
     public static final String CONFIG_FILE_NAME = "parameter-bindings.xml"; //$NON-NLS-1$
+    public static final String TAG_PARAMETER = "parameter";
 
     private static SQLQueryParameterRegistry registry;
     private final Map<String, String> parameterMap = new HashMap<String, String>();
@@ -60,6 +61,11 @@ public class SQLQueryParameterRegistry
     public String getParameter(String name)
     {
         return parameterMap.get(name.toUpperCase());
+    }
+
+    public void setParameter(String name, String value)
+    {
+        parameterMap.put(name.toUpperCase(), value);
     }
 
     private void loadProfiles()
@@ -109,7 +115,7 @@ public class SQLQueryParameterRegistry
                 xml.setButify(true);
                 xml.startElement("bindings");
                 for (Map.Entry<String, String> binding : parameterMap.entrySet()) {
-                    xml.startElement("parameter");
+                    xml.startElement(TAG_PARAMETER);
                     xml.addAttribute(RegistryConstants.ATTR_NAME, binding.getKey());
                     xml.addText(binding.getValue());
                     xml.endElement();
@@ -135,7 +141,7 @@ public class SQLQueryParameterRegistry
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
             throws XMLException
         {
-            if (localName.equals("binding")) {
+            if (localName.equals(TAG_PARAMETER)) {
                 curParameterName = atts.getValue(RegistryConstants.ATTR_NAME);
             }
         }
@@ -153,8 +159,8 @@ public class SQLQueryParameterRegistry
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
             throws XMLException
         {
-            if (localName.equals("binding") && curParameterName != null) {
-                parameterMap.put(curParameterName, curParameterValue.toString());
+            if (localName.equals(TAG_PARAMETER) && curParameterName != null) {
+                parameterMap.put(curParameterName.toUpperCase(), curParameterValue.toString());
                 curParameterName = null;
                 curParameterValue.setLength(0);
             }
