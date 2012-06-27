@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2010-2012 Serge Rieder serge@jkiss.org
+ * Copyright (C) 2012 Eugene Fradkin eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,9 @@ import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * An utility class. Performs packaging operations.
+ */
 public class Packager
 {
     public static void packZip(File output, List<File> sources, String encoding) throws IOException
