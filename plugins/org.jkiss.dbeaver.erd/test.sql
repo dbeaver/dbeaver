@@ -1,1 +1,0 @@
-select p.price_id from sa.tprice p limit 300
