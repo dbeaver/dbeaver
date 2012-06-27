@@ -43,18 +43,26 @@ Command line parameters
 
 Licensing
 ==========================
-  DBeaver is freeware. You can use it for any purpose with no limitations.
-  This software is provided "as is" without express or implied warranty.
+  DBeaver is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
 
-Home Page:
+Home Page
 ==========
   http://dbeaver.jkiss.org
+
+Authors
+==========
+  Architect, main programmer, team leader - Serge Rieder (serge@jkiss.org)
+  Programmer, localizations manager, Russian localization - Eugene Fradkin (eugene.fradkin@gmail.com)
+  Chinese localization - Brook (c.zhiwu@gmail.com)
+  Italian localization - Roberto Rossi (impiastro@gmail.com)
 
 Support
 =======
   For technical support and assistance, you may find necessary information at the Support page
   (http://dbeaver.jkiss.org/forum) or contact us at support@jkiss.org.
-
 
 Bug Reporting:
 ==============
