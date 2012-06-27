@@ -56,7 +56,7 @@ Authors
 ==========
   Architect, main programmer, team leader - Serge Rieder (serge@jkiss.org)
   Programmer, localizations manager, Russian localization - Eugene Fradkin (eugene.fradkin@gmail.com)
-  Chinese localization - Brook (c.zhiwu@gmail.com)
+  Chinese localization - Brook.Tran (Brook.Tran.C@gmail.com)
   Italian localization - Roberto Rossi (impiastro@gmail.com)
 
 Support
@@ -67,7 +67,6 @@ Support
 Bug Reporting:
 ==============
   Send emails to bugs@jkiss.org
-
 
 Contacting us:
 ==============
