@@ -40,12 +40,12 @@
             <fileset dir="../plugins">
                 <include name="**" />
                 <exclude name="**/.svn" />
-				<exclude name="**/*.class" />
+                <exclude name="**/*.class" />
             </fileset>
             <fileset dir="../modules">
                 <include name="**" />
                 <exclude name="**/.svn" />
-				<exclude name="**/*.class" />
+                <exclude name="**/*.class" />
             </fileset>
         </copy>
         <mkdir dir="${distDirectory}" />
@@ -314,14 +314,14 @@
         </copy>
     </target>
 
-	<!-- Versions -->
-	
+    <!-- Versions -->
+    
     <target name="generate-version">
         <ant dir="../tools/product-manager" antfile="build.xml" target="generate-version" />
     </target>
 
-	<!-- Localization -->
-	
+    <!-- Localization -->
+    
     <target name="copy-eclipse">
         <mkdir dir="${baseLocation}" />
         <copy todir="${baseLocation}">
@@ -338,6 +338,37 @@
 
     <target name="babel-repack" depends="copy-eclipse">
         <ant dir="../tools/babel-packer" antfile="build.xml" target="babel-repack" />
+    </target>
+
+
+    <!-- ===================================================================== -->
+    <!-- Source Dist -->
+    <!-- ===================================================================== -->
+
+    <target name="source-dist" depends="init">
+<!--
+        <typedef resource="org/tigris/subversion/svnant/svnantlib.xml"/> 
+        <svn javahl="false">
+            <export srcPath="." destPath="dist/sources"/>
+        </svn>
+-->
+        <!--delete dir="${buildDirectory}/sources"/-->
+        <exec executable="svn.exe">
+            <arg value="export"/>
+			<arg value="--force"/>
+			<arg value="-q"/>
+            <arg value=".."/>
+            <arg value="${buildDirectory}/sources"/>
+        </exec>
+        <zip destfile="${distDirectory}/dbeaver-sources-${productVersion}.zip">
+			<fileset dir="${buildDirectory}/sources">
+				<include name="modules/**"/>
+				<include name="plugins/**"/>
+				<include name="product/**"/>
+				<include name="tools/**"/>
+			</fileset>
+        </zip>
+        <!--delete dir="${buildDirectory}/sources"/-->
     </target>
 
 </project>

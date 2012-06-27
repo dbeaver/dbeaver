@@ -38,10 +38,4 @@ rm -rf $RPM_BUILD_ROOT
 /usr/man/man1/eject.1
 
 %changelog
-* Sun Mar 21 1999 Cristian Gafton <gafton@redhat.com> 
-- auto rebuild in the new build environment (release 3)
-
-* Wed Feb 24 1999 Preston Brown <pbrown@redhat.com> 
-- Injected new description and group.
-
 [ Some changelog entries trimmed for brevity.  -Editor. ]
