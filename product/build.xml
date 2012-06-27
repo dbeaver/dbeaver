@@ -368,7 +368,7 @@
         </svn>
 -->
         <!--delete dir="${buildDirectory}/sources"/-->
-        <exec executable="svn.exe">
+        <exec executable="svn">
             <arg value="export"/>
 			<arg value="--force"/>
 			<arg value="-q"/>
