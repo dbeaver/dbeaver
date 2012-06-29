@@ -347,7 +347,7 @@ public class GenericDataSource extends JDBCDataSource
             try {
                 dbResult = context.getMetaData().getSchemas(
                     catalog == null ? null : catalog.getName(),
-                    schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : null);
+                    schemaFilters != null && schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : null);
                 catalogSchemas = true;
             } catch (Throwable e) {
                 // This method not supported (may be old driver version)
