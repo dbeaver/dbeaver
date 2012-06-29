@@ -1,8 +1,6 @@
 Major:
 
 Eclipse plugin
-Proxy config
-Object filters
 Data filters (http://dbeaver.jkiss.org/forum/viewtopic.php?f=3&p=1025)
 Search refactoring (scripts search)
 Localizations
