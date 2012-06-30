@@ -53,6 +53,7 @@
 
             <release-notes>
                 - DBeaver is under GPL license
+                - Chinese, Russian and Italian translations
                 - Metadata tree filters
                 - ResultSet editor improvements. Support of copy/paste for cells.
                 - BLOB editor fix (save)

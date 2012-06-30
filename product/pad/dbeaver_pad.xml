@@ -44,9 +44,9 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.5.6</Program_Version>
-    <Program_Release_Month>05</Program_Release_Month>
-    <Program_Release_Day>22</Program_Release_Day>
+    <Program_Version>1.6.0</Program_Version>
+    <Program_Release_Month>06</Program_Release_Month>
+    <Program_Release_Day>30</Program_Release_Day>
     <Program_Release_Year>2012</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -55,10 +55,18 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - SSH tunnels settings fix
-        - External tools fix (support of SSH tunnels)
-        - ERD color schema fix
-        - Hyperlinks fix
+        - DBeaver is under GPL license
+        - Chinese, Russian and Italian translations
+        - Metadata tree filters
+        - ResultSet editor improvements. Support of copy/paste for cells.
+        - BLOB editor fix (save)
+        - Oracle cursors viewer
+        - Read-only connections support
+        - HTTP proxy authentication support
+        - SSH support for external (native) utilities
+        - Line numbers ruler configuration
+        - Fixed handling of dynamic SQL parameters
+        - A lot of minor UI fixes and improvements
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -107,8 +115,21 @@
   </Web_Info>
   <Permissions>
     <Distribution_Permissions>DBeaver is freeware. You can use it for any purpose with no limitations.</Distribution_Permissions>
-    <EULA>DBeaver is freeware. You can use it for any purpose with no limitations.
-This software is provided "as is" without express or implied warranty.</EULA>
+    <EULA>Copyright (C) 2010-2012 Serge Rieder serge@jkiss.org
+
+        DBeaver is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Lesser General Public
+        License as published by the Free Software Foundation; either
+        version 2.1 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+        Lesser General Public License for more details.
+
+        You should have received a copy of the GNU Lesser General Public
+        License along with this library; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.</EULA>
   </Permissions>
   <Program_Descriptions>
     <English>

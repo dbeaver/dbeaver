@@ -301,7 +301,7 @@
         </zip>
     </target>
 
-    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,dist-plugin,driver-pack">
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,dist-plugin,dist-source,driver-pack">
 
     </target>
 
@@ -360,7 +360,7 @@
     <!-- Source Dist -->
     <!-- ===================================================================== -->
 
-    <target name="source-dist" depends="init">
+    <target name="dist-source" depends="init">
 <!--
         <typedef resource="org/tigris/subversion/svnant/svnantlib.xml"/> 
         <svn javahl="false">
@@ -375,7 +375,7 @@
             <arg value=".."/>
             <arg value="${buildDirectory}/sources"/>
         </exec>
-        <zip destfile="${distDirectory}/dbeaver-sources-${productVersion}.zip">
+        <zip destfile="${distDirectory}/dbeaver-${productVersion}-sources.zip">
 			<fileset dir="${buildDirectory}/sources">
 				<include name="modules/**"/>
 				<include name="plugins/**"/>
