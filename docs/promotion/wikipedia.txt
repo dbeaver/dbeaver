@@ -1,12 +1,12 @@
 {{Infobox software
 |name                   = DBeaver
 |developer              = Serge Rieder and others
-|latest_release_version = 1.4.5
-|latest_release_date    = November 28, 2011
+|latest_release_version = 1.6.0
+|latest_release_date    = June 30, 2012
 |operating_system       = [[Cross-platform]]
 |platform               = [[Java platform|Java]]
 |genre                  = Database administration tool
-|license                = [[Freeware]]
+|license                = [[GPL]]
 |website                = [http://dbeaver.jkiss.org/ dbeaver.jkiss.org]
 }}
 
@@ -17,7 +17,7 @@ Also it has a set of tools and plugins which allows to view/edit ER diagrams, pe
 DBeaver has a plugin architecture that allows to create custom plugins for certain databases to provide non-standard database features (like tablespaces, stored procedures, security management, etc).
 As DBeaver is written entirely in [[Java platform|Java]] with [[SWT (Java)|SWT]] UI components, it should run on any platform that has a [[JVM]].
 
-DBeaver is freeware but not open-source. According to it's licence it can be used for any purpose with no limitations.
+DBeaver is freeware and open-source. It is released under terms of [[GPL]] license.
 
 ==Feature Summary==
 
@@ -52,29 +52,29 @@ The SQuirreL SQL project was developed by a team of Java developers around the w
 
 ==Supported databases==
 
-* Axion Java RDBMS.
 * [[Apache Derby]]
 * [[Daffodil database|Daffodil (One$DB)]]
 * [[Firebird (database server)|Firebird]] with the JayBird JCA/JDBC Driver
 * [[FrontBase]]
 * [[HSQLDB]]
 * [[H2 (DBMS)]]
-* [[IBM DB2]] for Linux, OS/400 and Windows
+* [[IBM DB2]]
 * [[Informix]]
 * [[Ingres (database)|Ingres]] (and [[Ingres (database)|OpenIngres]])
-* InstantDB
 * [[InterBase]]
+* [[Linter SQL RDBMS]]
 * Mckoi SQL Database
 * [[Microsoft Access]] with the JDBC/ODBC bridge.
 * [[Microsoft SQL Server]]
 * [[Mimer SQL]]
 * [[MySQL]]
 * [[Oracle Database]]
-* Pointbase
-* [[PostgreSQL]] 7.1.3 and higher
-* SAPDB
+* [[PostgreSQL]]
+* [[MaxDB]] / SAPDB
+* [[SQLite]]
 * [[Sybase]]
 * [[Teradata]]
+* [[Windows Management Instrumentation]] (WMI) interface
 
 ==See also==
 *[[SQL]]
