@@ -1,3 +1,7 @@
+<!-- Please do not remove or change this AfD message until the issue is settled -->
+{{Article for deletion/dated|page=DBeaver|timestamp=20120702135332|year=2012|month=July|day=2|substed=yes|help=off}}
+<!-- For administrator use only: {{Old AfD multi|page=DBeaver|date=2 July 2012|result='''keep'''}} -->
+<!-- End of AfD message, feel free to edit beyond this point -->
 {{Infobox software
 |name                   = DBeaver
 |developer              = Serge Rieder and others
@@ -10,18 +14,16 @@
 |website                = [http://dbeaver.jkiss.org/ dbeaver.jkiss.org]
 }}
 
-The '''DBeaver''' is a universal database administration tool and SQL client.
-Generally it uses [[JDBC]] drivers to allow users to work with databases.
-It provides an SQL editor that offers code completion and syntax highlighting for standard [[SQL]] and database metadata browser which allows to view database structure and settings.
-Also it has a set of tools and plugins which allows to view/edit ER diagrams, perform export and import of tables and databases, etc.
-DBeaver has a plugin architecture that allows to create custom plugins for certain databases to provide non-standard database features (like tablespaces, stored procedures, security management, etc).
-As DBeaver is written entirely in [[Java platform|Java]] with [[SWT (Java)|SWT]] UI components, it should run on any platform that has a [[JVM]].
+The '''DBeaver''' is a universal database administration tool and SQL client. Generally it uses [[JDBC]] drivers to allow users to work with databases. It provides an SQL editor that offers code completion and syntax highlighting for standard [[SQL]] and database metadata browser which allows to view database structure and settings. Also it has a set of tools and plugins which allows to view/edit ER diagrams, perform export and import of tables and databases, etc. DBeaver has a plugin architecture that allows to create custom plugins for certain databases to provide non-standard database features (like tablespaces, stored procedures, security management, etc). 
+As DBeaver is written entirely in [[Java platform|Java]] with [[Standard Widget Toolkit|SWT]] UI components, it has to run on any platform that has a [[JVM]].
 
 DBeaver is freeware and open-source. It is released under terms of [[GPL]] license.
 
 ==Feature Summary==
 
-* Database metadata browse -  allows for browsing database objects such as catalogs, schemas, tables, view, triggers, sequences, procedures, indexes, security objects, etc
+* Database metadata browse -  allows for browsing database objects such as catalogs, schemas, tables, view, triggers, sequences, procedures, indexes, 
+
+security objects, etc
 * Metadata editor - allows for editing database objects.
 * SQL statements/scripts execution
 * SQL highlighting (specific for each database engine)
@@ -35,18 +37,18 @@ DBeaver is freeware and open-source. It is released under terms of [[GPL]] licen
 * ERD (Entity Relational Diagrams)
 * Database object bookmarks
 * SQL scripts management
-* Projects (connections, SQL scripts and bookmarks)
+* Projects support (connections, SQL scripts and bookmarks)
 
 ==History==
 
-The SQuirreL SQL project was developed by a team of Java developers around the world and led by Colin Bell.  It has been hosted as a [[SourceForge]] project since 2001, and is still being developed today.
+The DBeaver project was started by Serge Rieder in 2011 and became an open source in June 2012.
 
 ==Supported operation systems==
 
 * [[Microsoft Windows]]
 * [[Linux]]
 * [[Mac OS]]
-* [[Solaris]]
+* [[Solaris (operating system)|Solaris]]
 * [[AIX]]
 * [[HPUX]]
 
@@ -63,7 +65,7 @@ The SQuirreL SQL project was developed by a team of Java developers around the w
 * [[Ingres (database)|Ingres]] (and [[Ingres (database)|OpenIngres]])
 * [[InterBase]]
 * [[Linter SQL RDBMS]]
-* Mckoi SQL Database
+* [[Mckoi SQL Database]]
 * [[Microsoft Access]] with the JDBC/ODBC bridge.
 * [[Microsoft SQL Server]]
 * [[Mimer SQL]]
@@ -81,6 +83,7 @@ The SQuirreL SQL project was developed by a team of Java developers around the w
 *[[Comparison of database tools]]
 
 ==References==
+*[http://dbeaver.jkiss.org/ DBeaver project home site]
 <references/>
 
 {{Portal|Free software}}
