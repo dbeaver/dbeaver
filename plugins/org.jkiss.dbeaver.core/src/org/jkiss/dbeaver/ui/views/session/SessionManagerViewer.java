@@ -144,23 +144,15 @@ public class SessionManagerViewer
         }
 
         @Override
-        public Composite createProgressPanel(Composite container)
-        {
-            Composite infoGroup = super.createProgressPanel(container);
-
-            ToolBarManager toolBar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-            contributeToToolbar(sessionManager, toolBar);
-            toolBar.add(new Action("Refresh sessions", DBIcon.REFRESH.getImageDescriptor()) {
+        protected void fillCustomToolbar(ToolBarManager toolbarManager) {
+            contributeToToolbar(sessionManager, toolbarManager);
+            toolbarManager.add(new Action("Refresh sessions", DBIcon.REFRESH.getImageDescriptor()) {
                 @Override
                 public void run()
                 {
                     refreshSessions();
                 }
             });
-
-            toolBar.createControl(infoGroup);
-
-            return infoGroup;
         }
     }
 }
