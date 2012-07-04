@@ -107,20 +107,13 @@ public abstract class SQLEditorNested<T extends DBSObject>
     {
         pageControl = new EditorPageControl(parent, SWT.SHEET);
 
-//        ProgressPageControl progressControl = null;
-//        if (getSite() instanceof MultiPageEditorSite) {
-//            MultiPageEditorPart ownerEditor = ((MultiPageEditorSite) getSite()).getMultiPageEditor();
-//            if (ownerEditor instanceof IProgressControlProvider) {
-//                progressControl = ((IProgressControlProvider)ownerEditor).getProgressControl();
-//            }
-//        }
-
         editorSash = new SashForm(pageControl.createContentContainer(), SWT.VERTICAL | SWT.SMOOTH);
         super.createPartControl(editorSash);
 
         editorControl = editorSash.getChildren()[0];
         compileLog = new ObjectCompilerLogViewer(editorSash);
 
+        // Create new or substitute progress control
         ProgressPageControl progressControl = null;
         if (getSite() instanceof MultiPageEditorSite && ((MultiPageEditorSite) getSite()).getMultiPageEditor() instanceof IProgressControlProvider) {
             progressControl = ((IProgressControlProvider)((MultiPageEditorSite) getSite()).getMultiPageEditor()).getProgressControl();
@@ -130,7 +123,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         } else {
             pageControl.createProgressPanel();
         }
-        //pageControl.createProgressPanel();
+        pageControl.setInfo("Source");
 
         editorSash.setWeights(new int[] {70, 30});
         editorSash.setMaximizedControl(editorControl);
