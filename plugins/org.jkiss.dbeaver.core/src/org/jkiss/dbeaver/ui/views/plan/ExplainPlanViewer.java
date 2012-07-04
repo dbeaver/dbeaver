@@ -76,17 +76,9 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         }
         this.planTree = new PlanNodesTree(planPanel, SWT.SHEET) {
             @Override
-            public Composite createProgressPanel(Composite container)
-            {
-                Composite infoGroup = super.createProgressPanel(container);
-
-                ToolBarManager toolBar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
-                toolBar.add(toggleViewAction);
-                toolBar.add(refreshPlanAction);
-
-                toolBar.createControl(infoGroup);
-
-                return infoGroup;
+            protected void fillCustomToolbar(ToolBarManager toolbarManager) {
+                toolbarManager.add(toggleViewAction);
+                toolbarManager.add(refreshPlanAction);
             }
         };
         this.planTree.setShowDivider(true);
