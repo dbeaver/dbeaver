@@ -34,9 +34,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -119,12 +121,16 @@ public abstract class SQLEditorNested<T extends DBSObject>
         editorControl = editorSash.getChildren()[0];
         compileLog = new ObjectCompilerLogViewer(editorSash);
 
-//        if (progressControl != null) {
-//            pageControl.substituteProgressPanel(progressControl);
-//        } else {
-//            pageControl.createProgressPanel();
-//        }
-        pageControl.createProgressPanel();
+        ProgressPageControl progressControl = null;
+        if (getSite() instanceof MultiPageEditorSite && ((MultiPageEditorSite) getSite()).getMultiPageEditor() instanceof IProgressControlProvider) {
+            progressControl = ((IProgressControlProvider)((MultiPageEditorSite) getSite()).getMultiPageEditor()).getProgressControl();
+        }
+        if (progressControl != null) {
+            pageControl.substituteProgressPanel(progressControl);
+        } else {
+            pageControl.createProgressPanel();
+        }
+        //pageControl.createProgressPanel();
 
         editorSash.setWeights(new int[] {70, 30});
         editorSash.setMaximizedControl(editorControl);
@@ -157,10 +163,16 @@ public abstract class SQLEditorNested<T extends DBSObject>
                 log.error(e);
             }
         }
+        if (pageControl != null && !pageControl.isDisposed()) {
+            pageControl.activate(true);
+        }
     }
 
     @Override
     public void deactivatePart() {
+        if (pageControl != null && !pageControl.isDisposed()) {
+            pageControl.activate(false);
+        }
     }
 
     @Override
@@ -270,27 +282,13 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     private class EditorPageControl extends ProgressPageControl {
 
-        private ToolBarManager toolBarManager;
-
         public EditorPageControl(Composite parent, int style)
         {
             super(parent, style);
         }
 
         @Override
-        public void dispose()
-        {
-            toolBarManager.dispose();
-            super.dispose();
-        }
-
-        @Override
-        public Composite createProgressPanel(Composite container)
-        {
-            Composite infoGroup = super.createProgressPanel(container);
-
-            toolBarManager = new ToolBarManager(SWT.HORIZONTAL | SWT.FLAT);
-
+        protected void fillCustomToolbar(ToolBarManager toolBarManager) {
             toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
             toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
             String compileCommandId = getCompileCommandId();
@@ -299,10 +297,6 @@ public abstract class SQLEditorNested<T extends DBSObject>
                 toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), compileCommandId));
                 toolBarManager.add(new ViewLogAction());
             }
-
-            toolBarManager.createControl(infoGroup);
-
-            return infoGroup;
         }
     }
 

@@ -44,7 +44,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     {
         super();
 
-        infoTable = new Table(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
+        infoTable = new Table(parent, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
         infoTable.setHeaderVisible(true);
         infoTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         TableColumn messageColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, "Message");

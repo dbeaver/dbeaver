@@ -144,6 +144,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     private void setChildControl(ProgressPageControl progressPageControl)
     {
+        if (progressPageControl == this.childPageControl) {
+            return;
+        }
         if (this.childPageControl != null && progressPageControl != null) {
             log.warn("Overwrite of child page control '" + this.childPageControl); //$NON-NLS-1$
         }
