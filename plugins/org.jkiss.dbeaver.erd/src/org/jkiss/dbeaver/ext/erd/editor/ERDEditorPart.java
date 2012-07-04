@@ -838,20 +838,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected class ProgressControl extends ProgressPageControl {
 
         private Searcher searcher;
-        private ToolBarManager toolBarManager;
         private ZoomComboContributionItem zoomCombo;
 
         private ProgressControl(Composite parent, int style)
         {
             super(parent, style);
             searcher = new Searcher();
-        }
-
-        @Override
-        public void dispose()
-        {
-            toolBarManager.dispose();
-            super.dispose();
         }
 
         @Override
@@ -870,13 +862,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
-        public Composite createProgressPanel(Composite container)
-        {
-            Composite infoGroup = super.createProgressPanel(container);
-
+        protected void fillCustomToolbar(ToolBarManager toolBarManager) {
             ZoomManager zoomManager = rootPart.getZoomManager();
-
-            toolBarManager = new ToolBarManager(SWT.HORIZONTAL | SWT.FLAT);
 
             String[] zoomStrings = new String[]{
                 ZoomManager.FIT_ALL,
@@ -957,11 +944,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 configAction.setImageDescriptor(DBIcon.CONFIGURATION.getImageDescriptor());
                 toolBarManager.add(configAction);
             }
-
-            toolBarManager.createControl(infoGroup);
-            toolBarManager.getControl().setEnabled(false);
-
-            return infoGroup;
         }
 
         @Override
@@ -975,6 +957,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             public void completeLoading(EntityDiagram entityDiagram)
             {
                 super.completeLoading(entityDiagram);
+                isLoaded = true;
                 Control control = getGraphicalViewer().getControl();
                 if (control == null || control.isDisposed()) {
                     return;
@@ -996,8 +979,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 getCommandStack().flush();
                 getGraphicalViewer().setContents(entityDiagram);
                 zoomCombo.setZoomManager(rootPart.getZoomManager());
-                toolBarManager.getControl().setEnabled(true);
-                isLoaded = true;
+                //toolBarManager.getControl().setEnabled(true);
             }
         }
 
