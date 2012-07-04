@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.*;
@@ -468,19 +470,13 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         }
 
         @Override
-        public Composite createProgressPanel(Composite container)
-        {
-            Composite panel = super.createProgressPanel(container);
-
-            Button closeButton = new Button(panel, SWT.PUSH);
-            closeButton.setText(CoreMessages.dialog_search_objects_button_close);
-            closeButton.addSelectionListener(new SelectionAdapter() {
+        protected void fillCustomToolbar(ToolBarManager toolbarManager) {
+            toolbarManager.add(new Action(CoreMessages.dialog_search_objects_button_close, Action.AS_PUSH_BUTTON) {
                 @Override
-                public void widgetSelected(SelectionEvent e) {
+                public void run() {
                     SearchObjectsDialog.this.close();
                 }
             });
-            return panel;
         }
 
         public ObjectsLoadVisualizer createVisualizer(final ControlEnableState blockEnableState)
