@@ -24,6 +24,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -56,20 +57,20 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
         composite.setLayout(new GridLayout(2, false));
-        hostText = UIUtils.createLabelText(composite, "Host/IP", "");
+        hostText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_host_ip, ""); //$NON-NLS-2$
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        portText = UIUtils.createLabelSpinner(composite, "Port", SSHConstants.DEFAULT_SSH_PORT, 0, 65535);
-        userNameText = UIUtils.createLabelText(composite, "User Name", "");
+        portText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, 0, 65535);
+        userNameText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_user_name, ""); //$NON-NLS-2$
         userNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        authMethodCombo = UIUtils.createLabelCombo(composite, "Authentication Method", SWT.DROP_DOWN | SWT.READ_ONLY);
+        authMethodCombo = UIUtils.createLabelCombo(composite, CoreMessages.model_ssh_configurator_combo_auth_method, SWT.DROP_DOWN | SWT.READ_ONLY);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.minimumWidth = 130;
         authMethodCombo.setLayoutData(gd);
-        authMethodCombo.add("Password");
-        authMethodCombo.add("Public Key");
+        authMethodCombo.add(CoreMessages.model_ssh_configurator_combo_password);
+        authMethodCombo.add(CoreMessages.model_ssh_configurator_combo_pub_key);
 
-        privateKeyLabel = UIUtils.createControlLabel(composite, "Private Key");
+        privateKeyLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_private_key);
         privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         pkControlGroup = UIUtils.createPlaceholder(composite, 2);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -85,7 +86,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             public void widgetSelected(SelectionEvent e)
             {
                 FileDialog fd = new FileDialog(composite.getShell(), SWT.OPEN | SWT.SINGLE);
-                fd.setText("Choose private key file");
+                fd.setText(CoreMessages.model_ssh_configurator_dialog_choose_private_key);
                 String[] filterExt = {"*.*", "*.ssh"}; //$NON-NLS-1$ //$NON-NLS-2$
                 fd.setFilterExtensions(filterExt);
                 String selected = ContentUtils.openFileDialog(fd);
@@ -95,7 +96,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             }
         });
 
-        passwordText = UIUtils.createLabelText(composite, "Password", "", SWT.BORDER | SWT.PASSWORD);
+        passwordText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_password, "", SWT.BORDER | SWT.PASSWORD); //$NON-NLS-2$
 
         authMethodCombo.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -107,7 +108,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         });
         
         UIUtils.createPlaceholder(composite,1);
-        savePasswordCheckbox = UIUtils.createCheckbox(composite, "Save Password", false);
+        savePasswordCheckbox = UIUtils.createCheckbox(composite, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
     }
 
     @Override

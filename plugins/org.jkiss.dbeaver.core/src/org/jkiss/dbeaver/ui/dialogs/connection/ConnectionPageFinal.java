@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -92,9 +93,9 @@ class ConnectionPageFinal extends ActiveWizardPage {
         setTitle(CoreMessages.dialog_connection_wizard_final_header);
         setDescription(CoreMessages.dialog_connection_wizard_final_description);
 
-        filters.add(new FilterInfo(DBSCatalog.class, "Catalogs"));
-        filters.add(new FilterInfo(DBSSchema.class, "Schemas / Users"));
-        filters.add(new FilterInfo(DBSTable.class, "Tables"));
+        filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));
+        filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
+        filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
     }
 
     ConnectionPageFinal(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
@@ -192,15 +193,15 @@ class ConnectionPageFinal extends ActiveWizardPage {
         filterInfo.link.setEnabled(enable);
         if (enable) {
             filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
-            filterInfo.link.setToolTipText("Configure filters for " + filterInfo.title);
+            filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_tooltip, filterInfo.title));
             if (filterInfo.filter != null && !filterInfo.filter.isEmpty()) {
                 filterInfo.link.setFont(boldFont);
             } else {
                 filterInfo.link.setFont(getFont());
             }
         } else {
-            filterInfo.link.setText("<a>" + filterInfo.title + " (Not Supported)</a>");
-            filterInfo.link.setToolTipText(filterInfo.title + " not supported by " + wizard.getPageSettings().getDriver().getName() + " driver");
+            filterInfo.link.setText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
+            filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip, filterInfo.title, wizard.getPageSettings().getDriver().getName()));
         }
     }
 
@@ -332,7 +333,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
 
             {
                 tunnelButton = new Button(buttonsGroup, SWT.PUSH);
-                tunnelButton.setText("Tunneling ...");
+                tunnelButton.setText(CoreMessages.dialog_connection_wizard_final_button_tunneling);
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.grabExcessVerticalSpace = true;
                 tunnelButton.setLayoutData(gd);

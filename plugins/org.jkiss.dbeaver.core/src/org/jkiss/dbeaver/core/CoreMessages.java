@@ -370,6 +370,9 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_auth_label_username;
 
 	public static String dialog_connection_auth_title;
+	public static String dialog_connection_auth_title_for_handler;
+
+	public static String dialog_connection_button_test;
 
 	public static String dialog_connection_events_checkbox_show_process;
 
@@ -392,6 +395,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_events_title;
 
 	public static String dialog_connection_message;
+	public static String dialog_connection_description;
 
 	public static String dialog_connection_wizard_final_button_test;
 
@@ -420,6 +424,14 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_header;
 
 	public static String dialog_connection_wizard_final_label_connection_name;
+
+	public static String dialog_connection_wizard_final_filter_catalogs;
+	public static String dialog_connection_wizard_final_filter_schemas_users;
+	public static String dialog_connection_wizard_final_filter_tables;
+	public static String dialog_connection_wizard_final_filter_link_tooltip;
+	public static String dialog_connection_wizard_final_filter_link_not_supported_text;
+	public static String dialog_connection_wizard_final_filter_link_not_supported_tooltip;
+	public static String dialog_connection_wizard_final_button_tunneling;
 
 	public static String dialog_connection_wizard_start_connection_monitor_close;
 
@@ -649,6 +661,22 @@ public class CoreMessages extends NLS {
 	public static String dialog_export_wizard_settings_name;
 
 	public static String dialog_export_wizard_settings_title;
+
+	public static String dialog_filter_button_add;
+
+	public static String dialog_filter_button_enable;
+
+	public static String dialog_filter_button_remove;
+
+	public static String dialog_filter_global_link;
+
+	public static String dialog_filter_list_exclude;
+
+	public static String dialog_filter_list_include;
+
+	public static String dialog_filter_table_column_value;
+
+	public static String dialog_filter_title;
 
 	public static String dialog_find_replace_1_replacement;
 
@@ -889,6 +917,9 @@ public class CoreMessages extends NLS {
 	public static String dialog_struct_edit_fk_title;
 	public static String dialog_struct_edit_index_label_type;
 
+	public static String dialog_tunnel_checkbox_use_handler;
+	public static String dialog_tunnel_title;
+
 	public static String dialog_value_view_button_cancel;
 	public static String dialog_value_view_button_sat_null;
 	public static String dialog_value_view_button_save;
@@ -1056,6 +1087,26 @@ public class CoreMessages extends NLS {
 	public static String model_project_open_bookmark;
 	public static String model_project_Script;
 	public static String model_project_Scripts;
+
+	public static String model_ssh_configurator_checkbox_save_pass;
+
+	public static String model_ssh_configurator_combo_auth_method;
+
+	public static String model_ssh_configurator_combo_password;
+
+	public static String model_ssh_configurator_combo_pub_key;
+
+	public static String model_ssh_configurator_dialog_choose_private_key;
+
+	public static String model_ssh_configurator_label_host_ip;
+
+	public static String model_ssh_configurator_label_password;
+
+	public static String model_ssh_configurator_label_port;
+
+	public static String model_ssh_configurator_label_private_key;
+
+	public static String model_ssh_configurator_label_user_name;
 
 	public static String model_struct_Cascade;
 	public static String model_struct_Check;

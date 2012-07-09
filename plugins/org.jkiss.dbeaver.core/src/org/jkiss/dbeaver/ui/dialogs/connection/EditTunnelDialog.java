@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -28,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -79,7 +81,7 @@ public class EditTunnelDialog extends HelpEnabledDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Configure connection handlers");
+        getShell().setText(CoreMessages.dialog_tunnel_title);
         //getShell().setImage(DBIcon.EVENT.getImage());
 
         Composite composite = (Composite) super.createDialogArea(parent);
@@ -117,7 +119,7 @@ public class EditTunnelDialog extends HelpEnabledDialog {
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        final Button useHandlerCheck = UIUtils.createCheckbox(composite, "Use " + descriptor.getLabel(), false);
+        final Button useHandlerCheck = UIUtils.createCheckbox(composite, NLS.bind(CoreMessages.dialog_tunnel_checkbox_use_handler, descriptor.getLabel()), false);
         useHandlerCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -36,7 +37,7 @@ public class ConnectionAuthDialog extends BaseAuthDialog
     {
         super(parentShell,
             networkHandler != null ?
-                    "Specify password for " + networkHandler.getTitle() :
+                    NLS.bind(CoreMessages.dialog_connection_auth_title_for_handler, networkHandler.getTitle()) :
                     "'" + dataSource.getName() + CoreMessages.dialog_connection_auth_title, //$NON-NLS-1$
             dataSource.getDriver().getIcon());
 

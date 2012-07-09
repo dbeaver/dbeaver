@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.MouseAdapter;
@@ -28,6 +29,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
@@ -68,14 +70,14 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Filter: " + objectTitle);
+        getShell().setText(NLS.bind(CoreMessages.dialog_filter_title, objectTitle));
         //getShell().setImage(DBIcon.EVENT.getImage());
 
         Composite composite = (Composite) super.createDialogArea(parent);
 
         Composite topPanel = UIUtils.createPlaceholder(composite, globalFilter ? 1 : 2);
         topPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        final Button enableButton = UIUtils.createCheckbox(topPanel, "Enable", false);
+        final Button enableButton = UIUtils.createCheckbox(topPanel, CoreMessages.dialog_filter_button_enable, false);
         enableButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -88,7 +90,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         enableButton.setSelection(filter.isEnabled());
         if (!globalFilter) {
             Link globalLink = new Link(topPanel, SWT.NONE);
-            globalLink.setText("<a>Show global filter</a>");
+            globalLink.setText(CoreMessages.dialog_filter_global_link);
             globalLink.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -102,8 +104,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         blockControl = UIUtils.createPlaceholder(composite, 1);
         blockControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        includeTable = createEditableList("Include", filter.getInclude());
-        excludeTable = createEditableList("Exclude", filter.getExclude());
+        includeTable = createEditableList(CoreMessages.dialog_filter_list_include, filter.getInclude());
+        excludeTable = createEditableList(CoreMessages.dialog_filter_list_exclude, filter.getExclude());
 
         enableFiltersContent();
 
@@ -122,11 +124,11 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         // valueTable.setHeaderVisible(true);
          valueTable.setLinesVisible(true);
 
-        final TableColumn valueColumn = UIUtils.createTableColumn( valueTable, SWT.LEFT, "Value");
+        final TableColumn valueColumn = UIUtils.createTableColumn( valueTable, SWT.LEFT, CoreMessages.dialog_filter_table_column_value);
         valueColumn.setWidth(300);
 
         if (CommonUtils.isEmpty(values)) {
-            new TableItem( valueTable, SWT.LEFT).setText("");
+            new TableItem( valueTable, SWT.LEFT).setText(""); //$NON-NLS-1$
         } else {
             for (String value : values) {
                 new TableItem( valueTable, SWT.LEFT).setText(value);
@@ -148,7 +150,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         Composite buttonsGroup = UIUtils.createPlaceholder(group, 1, 5);
         buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         final Button addButton = new Button(buttonsGroup, SWT.PUSH);
-        addButton.setText("Add");
+        addButton.setText(CoreMessages.dialog_filter_button_add);
         addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         addButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -166,7 +168,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         });
 
         final Button removeButton = new Button(buttonsGroup, SWT.PUSH);
-        removeButton.setText("Remove");
+        removeButton.setText(CoreMessages.dialog_filter_button_remove);
         removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         removeButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -216,7 +218,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         List<String> values = new ArrayList<String>();
         for (TableItem item : table.getItems()) {
             String value = item.getText().trim();
-            if (value.isEmpty() || value.equals("%")) {
+            if (value.isEmpty() || value.equals("%")) { //$NON-NLS-1$
                 continue;
             }
             values.add(value);

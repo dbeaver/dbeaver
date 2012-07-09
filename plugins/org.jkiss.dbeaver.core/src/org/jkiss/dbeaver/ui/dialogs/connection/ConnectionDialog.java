@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
@@ -55,7 +56,7 @@ public class ConnectionDialog extends ActiveWizardDialog
     protected void createButtonsForButtonBar(Composite parent)
     {
         super.createButtonsForButtonBar(parent);
-        testButton = createButton(parent, TEST_BUTTON_ID, "&Test Connection ...", false);
+        testButton = createButton(parent, TEST_BUTTON_ID, CoreMessages.dialog_connection_button_test, false);
         testButton.setEnabled(false);
         testButton.moveAbove(getButton(IDialogConstants.BACK_ID));
     }

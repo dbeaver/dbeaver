@@ -69,7 +69,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         this.viewDescriptor = viewDescriptor;
 
         setTitle(viewDescriptor.getLabel());
-        setDescription("Driver specific settings.");
+        setDescription(CoreMessages.dialog_connection_description);
     }
 
     /**
