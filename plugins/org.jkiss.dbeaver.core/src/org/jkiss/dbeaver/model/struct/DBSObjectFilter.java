@@ -141,7 +141,7 @@ public class DBSObjectFilter
     
     public boolean hasSingleMask()
     {
-        return include != null && include.size() == 1 && exclude.isEmpty();
+        return include != null && include.size() == 1 && CommonUtils.isEmpty(exclude);
     }
 
     public String getSingleMask()
