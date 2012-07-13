@@ -695,6 +695,11 @@ public class CoreMessages extends NLS {
 	public static String dialog_find_replace_find_literal;
 
 	public static String dialog_find_replace_find_replace;
+	public static String dialog_find_replace_copy;
+	public static String dialog_find_replace_paste;
+	public static String dialog_find_replace_goto_line;
+	public static String dialog_find_replace_undo;
+	public static String dialog_find_replace_redo;
 
 	public static String dialog_find_replace_forward;
 

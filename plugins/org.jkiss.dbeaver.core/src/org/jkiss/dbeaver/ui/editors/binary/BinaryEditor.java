@@ -42,6 +42,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.WorkbenchPart;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
@@ -393,14 +394,14 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void menuAboutToShow(IMenuManager manager)
     {
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_COPY, "Copy"));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, "Paste"));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, "Select All"));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, "Find/Replace"));
-        manager.add(new EditorAction(ITextEditorActionDefinitionIds.LINE_GOTO, "Go to line"));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_COPY, CoreMessages.dialog_find_replace_copy));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_PASTE, CoreMessages.dialog_find_replace_paste));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, CoreMessages.controls_querylog_action_select_all));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, CoreMessages.dialog_find_replace_find_replace));
+        manager.add(new EditorAction(ITextEditorActionDefinitionIds.LINE_GOTO, CoreMessages.dialog_find_replace_goto_line));
         manager.add(new Separator());
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, "Undo"));
-        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, "Redo"));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_UNDO, CoreMessages.dialog_find_replace_undo));
+        manager.add(new EditorAction(IWorkbenchCommandConstants.EDIT_REDO, CoreMessages.dialog_find_replace_redo));
     }
 
     class EditorAction extends Action {
