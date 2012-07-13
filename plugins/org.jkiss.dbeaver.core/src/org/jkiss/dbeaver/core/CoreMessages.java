@@ -962,6 +962,16 @@ public class CoreMessages extends NLS {
 	public static String editor_binary_hex_label_size;
 	public static String editor_binary_hex_sample_text;
 
+	public static String editor_binary_hex_status_line_offset;
+
+	public static String editor_binary_hex_status_line_selection;
+
+	public static String editor_binary_hex_status_line_text_insert;
+
+	public static String editor_binary_hex_status_line_text_ovewrite;
+
+	public static String editor_binary_hex_status_line_value;
+
 	public static String editors_entity_dialog_persist_title;
 	public static String editors_entity_dialog_preview_title;
 	public static String editors_entity_monitor_add_folder;
