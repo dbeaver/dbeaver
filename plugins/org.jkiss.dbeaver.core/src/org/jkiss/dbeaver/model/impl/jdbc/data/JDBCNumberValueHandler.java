@@ -44,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * JDBC number value handler
@@ -164,6 +165,13 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             case java.sql.Types.TINYINT:
             case java.sql.Types.BIT:
                 statement.setByte(paramIndex, number.byteValue());
+                break;
+            case java.sql.Types.NUMERIC:
+                if (number instanceof BigDecimal) {
+                    statement.setBigDecimal(paramIndex, (BigDecimal)number);
+                } else {
+                    statement.setDouble(paramIndex, number.doubleValue());
+                }
                 break;
             default:
                 if (paramType.getScale() > 0) {
@@ -289,6 +297,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             case java.sql.Types.BIT:
                 value = Byte.valueOf(strValue);
                 break;
+            case Types.NUMERIC:
+                value = new BigDecimal(strValue);
+                break;
             default:
                 // Here may be any numeric value. BigDecimal or BigInteger for example
                 value = new BigDecimal(strValue);
@@ -351,6 +362,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     return Short.valueOf(text);
                 case java.sql.Types.TINYINT:
                     return Byte.valueOf(text);
+                case java.sql.Types.NUMERIC:
+                    return new BigDecimal(text);
                 default:
                     if (type.getScale() > 0) {
                         return toDouble(text);
