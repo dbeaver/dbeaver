@@ -272,7 +272,10 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
             showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            readOnlyConnection = UIUtils.createCheckbox(miscGroup, CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly, dataSourceDescriptor == null || dataSourceDescriptor.isConnectionReadOnly());
+            readOnlyConnection = UIUtils.createCheckbox(
+                miscGroup,
+                CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
+                dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             //gd.horizontalSpan = 2;
             readOnlyConnection.setLayoutData(gd);
