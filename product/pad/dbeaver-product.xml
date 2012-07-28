@@ -47,6 +47,21 @@
 
     <versions>
         <version>
+            <number>1.6.1</number>
+            <type>stable</type>
+            <date>29.07.2012</date>
+
+            <release-notes>
+                - Toolbar actions fix (ERD, SQL editor, etc)
+                - Search dialog fix
+                - Object filters fix
+                - Numeric data types (Oracle) handle fix
+                - Read-only connections fix (all new connections were read-only by default)
+                - A few minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.6.0</number>
             <type>ea</type>
             <date>30.06.2012</date>
