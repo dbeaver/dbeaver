@@ -83,6 +83,7 @@ public class ConnectionDialog extends ActiveWizardDialog
     private void testConnection()
     {
         ConnectionWizard wizard = (ConnectionWizard) getWizard();
+        wizard.getPageSettings().saveSettings();
         wizard.testConnection(wizard.getPageSettings().getConnectionInfo());
     }
 
