@@ -142,7 +142,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         Composite composite2 = UIUtils.createPlaceholder(composite, 2);
         ((GridLayout)composite2.getLayout()).horizontalSpacing = 5;
-        composite2.setLayoutData(new GridData(GridData.FILL_BOTH));
+        composite2.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         // Content assistant
         {
             Composite assistGroup = UIUtils.createControlGroup(composite2, "Content assistant", 2, GridData.FILL_HORIZONTAL, 0);
