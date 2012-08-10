@@ -158,6 +158,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         paramTable.addMouseListener(new ParametersMouseListener());
 
+        if (!parameters.isEmpty()) {
+            paramTable.select(0);
+            showEditor(paramTable.getItem(0));
+        }
         return composite;
     }
 
@@ -176,6 +180,30 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     {
         Control oldEditor = tableEditor.getEditor();
         if (oldEditor != null) oldEditor.dispose();
+    }
+
+    private void showEditor(final TableItem item) {
+        SQLStatementParameter param = (SQLStatementParameter)item.getData();
+        if (!param.isResolved()) {
+            return;
+        }
+        final DBDValueHandler valueHandler = param.getValueHandler();
+        Composite placeholder = new Composite(paramTable, SWT.NONE);
+        placeholder.setLayout(new FillLayout());
+        //placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
+        ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
+        try {
+            if (valueHandler.editValue(valueController)) {
+                tableEditor.minimumHeight = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+                tableEditor.setEditor(placeholder, item, 3);
+            } else {
+                // No editor was created so just drop placeholder
+                placeholder.dispose();
+            }
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getShell(), "Can't open editor", null, e);
+            placeholder.dispose();
+        }
     }
 
     private class ParametersMouseListener implements MouseListener {
@@ -248,30 +276,6 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             tableEditor.minimumHeight = typeSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
             tableEditor.setEditor(typeSelector, item, 2);
         }
-
-        private void showEditor(final TableItem item) {
-            SQLStatementParameter param = (SQLStatementParameter)item.getData();
-            if (!param.isResolved()) {
-                return;
-            }
-            final DBDValueHandler valueHandler = param.getValueHandler();
-            Composite placeholder = new Composite(paramTable, SWT.NONE);
-            placeholder.setLayout(new FillLayout());
-            //placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
-            ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
-            try {
-                if (valueHandler.editValue(valueController)) {
-                    tableEditor.minimumHeight = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-                    tableEditor.setEditor(placeholder, item, 3);
-                } else {
-                    // No editor was created so just drop placeholder
-                    placeholder.dispose();
-                }
-            } catch (DBException e) {
-                UIUtils.showErrorDialog(getShell(), "Can't open editor", null, e);
-                placeholder.dispose();
-            }
-        }
     }
 
     private class ParameterValueController implements DBDValueController {
@@ -324,6 +328,19 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             //parameter.getIndex()
 
             updateStatus(Status.OK_STATUS);
+
+            final int curRow = paramTable.indexOf(item);
+            final int maxRows = paramTable.getItemCount();
+            if (curRow < maxRows - 1) {
+                paramTable.getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        paramTable.select(curRow + 1);
+                        TableItem newItem = paramTable.getItem(curRow + 1);
+                        showEditor(newItem);
+                    }
+                });
+            }
         }
 
         @Override
