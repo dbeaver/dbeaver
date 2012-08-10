@@ -119,6 +119,7 @@ public class DefaultCellRenderer extends GridCellRenderer {
             }
         }
 
+        gc.setFont(grid.getFont());
         gc.drawString(
             text,
             getBounds().x + x,
