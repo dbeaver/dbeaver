@@ -47,6 +47,18 @@
 
     <versions>
         <version>
+            <number>1.6.2</number>
+            <type>minor</type>
+            <date>11.08.2012</date>
+
+            <release-notes>
+                - Test connection button fix
+                - Parameters binding dialog improvement
+                - Minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.6.1</number>
             <type>stable</type>
             <date>29.07.2012</date>
