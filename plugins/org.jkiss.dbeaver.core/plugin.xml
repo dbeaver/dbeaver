@@ -1304,7 +1304,7 @@
 
         <!-- Navigation menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-            <menu id="navigate">
+            <menu id="navigate" label="%command.org.jkiss.dbeaver.core.object.find.name">
                 <command commandId="org.jkiss.dbeaver.core.object.find"/>
             </menu>
         </menuContribution>
