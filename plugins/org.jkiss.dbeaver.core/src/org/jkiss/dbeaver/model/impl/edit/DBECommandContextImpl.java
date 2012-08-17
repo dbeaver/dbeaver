@@ -75,7 +75,7 @@ public class DBECommandContextImpl implements DBECommandContext {
     @Override
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
         if (!dataSourceContainer.isConnected()) {
-            throw new DBException("Not connected to database");
+            throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
         }
         List<CommandQueue> commandQueues = getCommandQueues();
 

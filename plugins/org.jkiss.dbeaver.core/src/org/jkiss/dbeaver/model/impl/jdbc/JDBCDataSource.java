@@ -200,7 +200,7 @@ public abstract class JDBCDataSource
     public JDBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         if (connection == null) {
-            throw new IllegalStateException("Not connected to database");
+            throw new IllegalStateException(CoreMessages.editors_sql_status_not_connected_to_database);
         }
         return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, false);
     }

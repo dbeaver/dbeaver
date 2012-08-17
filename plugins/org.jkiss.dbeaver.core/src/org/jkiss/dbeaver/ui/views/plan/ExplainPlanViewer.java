@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -108,7 +109,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
                     if (getDataSource() != null) {
                         message = "Data provider doesn't support execution plan";
                     } else {
-                        message = "Not connected to database";
+                        message = CoreMessages.editors_sql_status_not_connected_to_database;
                     }
                     Point ext = e.gc.textExtent(message);
                     e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
