@@ -41,6 +41,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,7 +80,7 @@ public class OracleDataType extends OracleObject
         PREDEFINED_TYPES.put("CHAR", new TypeDesc(java.sql.Types.CHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("CLOB", new TypeDesc(java.sql.Types.CLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("CONTIGUOUS ARRAY", new TypeDesc(java.sql.Types.ARRAY, 0, 0, 0));
-        PREDEFINED_TYPES.put("DATE", new TypeDesc(java.sql.Types.DATE, 0, 0, 0));
+        PREDEFINED_TYPES.put("DATE", new TypeDesc(Types.TIMESTAMP, 0, 0, 0));
         PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(java.sql.Types.DECIMAL, 63, 127, -84));
         PREDEFINED_TYPES.put("DOUBLE PRECISION", new TypeDesc(java.sql.Types.DOUBLE, 63, 127, -84));
         PREDEFINED_TYPES.put("FLOAT", new TypeDesc(java.sql.Types.FLOAT, 63, 127, -84));
@@ -99,8 +100,8 @@ public class OracleDataType extends OracleObject
         PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(java.sql.Types.INTEGER, 63, 127, -84));
         PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(java.sql.Types.SMALLINT, 63, 127, -84));
         PREDEFINED_TYPES.put("TABLE", new TypeDesc(java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIME", new TypeDesc(java.sql.Types.TIME, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIME WITH TZ", new TypeDesc(java.sql.Types.TIME, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIME", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIME WITH TZ", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TZ", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
         PREDEFINED_TYPES.put("TIMESTAMP WITH TZ", new TypeDesc(java.sql.Types.TIMESTAMP, 0, 0, 0));
