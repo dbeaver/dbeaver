@@ -130,7 +130,7 @@ public class ColumnInfoPanel extends Composite {
         @Override
         public String toString()
         {
-            return valueController.getValueLocator().getKeyKind();
+            return valueController.getValueLocator().getKeyType();//valueController.getValueLocator().getKeyKind();
         }
     }
 

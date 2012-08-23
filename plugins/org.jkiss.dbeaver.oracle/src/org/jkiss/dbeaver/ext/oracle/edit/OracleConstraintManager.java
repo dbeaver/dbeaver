@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
@@ -61,7 +62,7 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleTableCo
             OracleObjectStatus.ENABLED);
         constraint.setName(DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
         int colIndex = 1;
-        for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
             constraint.addColumn(
                 new OracleTableConstraintColumn(
                     constraint,

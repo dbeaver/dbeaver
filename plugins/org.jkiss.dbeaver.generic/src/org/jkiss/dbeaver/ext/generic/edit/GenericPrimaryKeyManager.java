@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableConstraintColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -61,7 +61,7 @@ public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrima
             false);
         primaryKey.setName(DBObjectNameCaseTransformer.transformName(primaryKey, CommonUtils.escapeIdentifier(parent.getName()) + "_PK"));
         int colIndex = 1;
-        for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
             primaryKey.addColumn(
                 new GenericTableConstraintColumn(
                     primaryKey,

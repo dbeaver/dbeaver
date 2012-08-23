@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,7 +67,7 @@ public class GenericIndexManager extends JDBCIndexManager<GenericTableIndex, Gen
         StringBuilder idxName = new StringBuilder(64);
         idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
         int colIndex = 1;
-        for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
             if (colIndex == 1) {
                 idxName.append("_").append(CommonUtils.escapeIdentifier(tableColumn.getName()));
             }

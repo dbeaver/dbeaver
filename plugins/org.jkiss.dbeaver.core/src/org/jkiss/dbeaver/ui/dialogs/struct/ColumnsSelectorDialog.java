@@ -35,8 +35,8 @@ import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -73,7 +73,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     public ColumnsSelectorDialog(
         Shell shell,
         String title,
-        DBSTable table) {
+        DBSEntity table) {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
         this.title = title;
@@ -135,17 +135,17 @@ public abstract class ColumnsSelectorDialog extends Dialog {
                         for (DBNDatabaseNode node : folders) {
                             if (node instanceof DBNContainer) {
                                 final Class<?> itemsClass = ((DBNContainer) node).getChildrenClass();
-                                if (itemsClass != null && DBSTableColumn.class.isAssignableFrom(itemsClass)) {
+                                if (itemsClass != null && DBSEntityAttribute.class.isAssignableFrom(itemsClass)) {
                                     final List<DBNDatabaseNode> children = node.getChildren(monitor);
                                     if (!CommonUtils.isEmpty(children)) {
                                         for (DBNDatabaseNode child : children) {
-                                            if (child.getObject() instanceof DBSTableColumn) {
+                                            if (child.getObject() instanceof DBSEntityAttribute) {
                                                 columnNodes.add(child);
                                             }
                                         }
                                     }
                                 }
-                            } else if (node.getObject() instanceof DBSTableColumn) {
+                            } else if (node.getObject() instanceof DBSEntityAttribute) {
                                 columnNodes.add(node);
                             }
                         }
@@ -179,16 +179,6 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         return dialogGroup;
     }
 
-    protected void createContentsBeforeColumns(Composite panel)
-    {
-
-    }
-
-    protected void createContentsAfterColumns(Composite panel)
-    {
-
-    }
-
     private void handleItemSelect(TableItem item)
     {
         final ColumnInfo col = (ColumnInfo) item.getData();
@@ -219,6 +209,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
                 break;
             }
         }
+        handleColumnsChange();
         getButton(IDialogConstants.OK_ID).setEnabled(hasCheckedColumns);
     }
 
@@ -242,15 +233,30 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         shell.setImage(tableNode.getNodeIcon());
     }
 
-    public Collection<DBSTableColumn> getSelectedColumns()
+    public Collection<DBSEntityAttribute> getSelectedColumns()
     {
-        List<DBSTableColumn> tableColumns = new ArrayList<DBSTableColumn>();
+        List<DBSEntityAttribute> tableColumns = new ArrayList<DBSEntityAttribute>();
         for (ColumnInfo col : columns) {
             if (col.position >= 0) {
-                tableColumns.add((DBSTableColumn) col.columnNode.getObject());
+                tableColumns.add((DBSEntityAttribute) col.columnNode.getObject());
             }
         }
         return tableColumns;
+    }
+
+    protected void createContentsBeforeColumns(Composite panel)
+    {
+
+    }
+
+    protected void createContentsAfterColumns(Composite panel)
+    {
+
+    }
+
+    protected void handleColumnsChange()
+    {
+
     }
 
 }

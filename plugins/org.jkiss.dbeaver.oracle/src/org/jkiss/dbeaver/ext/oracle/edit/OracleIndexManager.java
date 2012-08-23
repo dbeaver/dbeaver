@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSIndexType;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -68,7 +68,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, Oracl
             false,
             editDialog.getIndexType());
         int colIndex = 1;
-        for (DBSTableColumn tableColumn : editDialog.getSelectedColumns()) {
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
             index.addColumn(
                 new OracleTableIndexColumn(
                     index,

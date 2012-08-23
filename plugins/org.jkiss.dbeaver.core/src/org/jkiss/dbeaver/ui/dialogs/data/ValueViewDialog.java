@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
+import org.jkiss.dbeaver.ui.dialogs.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -231,31 +232,46 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
         this.editor = control;
 
-        Link label = new Link(parent, SWT.NONE);
-        label.setText(NLS.bind(CoreMessages.dialog_value_view_label_dictionary, ((DBSEntityAssociation)refConstraint).getReferencedConstraint().getParentObject().getName()));
-        label.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                // Open
-                final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
-                DBeaverCore.getInstance().runInUI(window, new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
-                            monitor,
-                            ((DBSEntityAssociation)refConstraint).getReferencedConstraint().getParentObject(),
-                            true);
-                        if (tableNode != null) {
-                            NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
+        if (refConstraint instanceof DBSEntityAssociation) {
+            final DBSEntityAssociation association = (DBSEntityAssociation)refConstraint;
+            final DBSEntity refTable = association.getReferencedConstraint().getParentObject();
+            Composite labelGroup = UIUtils.createPlaceholder(parent, 2);
+            labelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_HORIZONTAL));
+            Link dictLabel = new Link(labelGroup, SWT.NONE);
+            dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            dictLabel.setText(NLS.bind(CoreMessages.dialog_value_view_label_dictionary, refTable.getName()));
+            dictLabel.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    // Open
+                    final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
+                    DBeaverCore.getInstance().runInUI(window, new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor)
+                            throws InvocationTargetException, InterruptedException {
+                            DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
+                                monitor,
+                                refTable,
+                                true);
+                            if (tableNode != null) {
+                                NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
+                            }
                         }
-                    }
-                });
-            }
-        });
-        
+                    });
+                }
+            });
+
+            Link hintLabel = new Link(labelGroup, SWT.NONE);
+            hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+            hintLabel.setText("(<a>Define Description</a>)");
+            hintLabel.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    EditDictionaryDialog dialog = new EditDictionaryDialog(getShell(), "Dictionary structure", refTable);
+                    dialog.open();
+                }
+            });
+        }
 
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         editorSelector.setLinesVisible(true);
@@ -348,13 +364,13 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 if (refColumn == null) {
                     return Status.OK_STATUS;
                 }
-                java.util.List<DBDColumnValue> preceedingKeys = null;
+                java.util.List<DBDColumnValue> precedingKeys = null;
                 Collection<? extends DBSEntityAttributeRef> allColumns = refConstraint.getAttributeReferences(monitor);
                 if (allColumns.size() > 1) {
                     if (allColumns.iterator().next() != fkColumn) {
                         // Our column is not a first on in foreign key.
                         // So, fill uo preceeding keys
-                        preceedingKeys = new ArrayList<DBDColumnValue>();
+                        precedingKeys = new ArrayList<DBDColumnValue>();
                         for (DBSEntityAttributeRef precColumn : allColumns) {
                             if (precColumn == fkColumn) {
                                 // Enough
@@ -364,7 +380,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                                 columnController.getColumnMetaData().getTable(), precColumn.getAttribute().getName());
                             if (precMeta != null) {
                                 Object precValue = columnController.getRow().getColumnValue(precMeta);
-                                preceedingKeys.add(new DBDColumnValue(precColumn.getAttribute(), precValue));
+                                precedingKeys.add(new DBDColumnValue(precColumn.getAttribute(), precValue));
                             }
                         }
                     }
@@ -380,7 +396,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                         context,
                         refColumn,
                         pattern,
-                        preceedingKeys,
+                        precedingKeys,
                         100);
                     for (DBDLabelValuePair pair : enumValues) {
                         keyValues.put(pair.getValue(), pair.getLabel());
