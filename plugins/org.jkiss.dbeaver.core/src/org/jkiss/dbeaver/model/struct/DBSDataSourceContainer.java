@@ -72,12 +72,16 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      * Search filter which match any super class or interface implemented by specified type.
      * @param type object type
      * @param parentObject parent object (in DBS objects hierarchy)
-     * @param firstMatch if true then this function will return first found filter
-     *   even if it is disabled. Won't return default filter of parent object specified.
-     *   Generally this function used by filter editors
-     * @return
+     * @return object filter or null if not filter was set for specified type
      */
     DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject);
+
+    /**
+     * Search for dictionary descriptor for specified entity
+     * @param entity entity
+     * @return dictionary descriptor
+     */
+    DBSDictionary getDictionary(DBSEntity entity);
 
     DBPClientHome getClientHome();
 

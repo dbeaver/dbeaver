@@ -284,6 +284,12 @@ public class DataSourceDescriptor
         return getObjectFilter(type, parentObject, false);
     }
 
+    @Override
+    public DBSDictionary getDictionary(DBSEntity entity)
+    {
+        return null;
+    }
+
     public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean firstMatch)
     {
         if (filterMap.isEmpty()) {
