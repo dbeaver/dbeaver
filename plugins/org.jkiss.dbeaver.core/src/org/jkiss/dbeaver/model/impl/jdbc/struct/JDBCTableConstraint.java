@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -25,21 +27,19 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.struct.DBSDictionary;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * JDBC abstract constraint
@@ -48,7 +48,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
     extends AbstractTableConstraint<TABLE>
     implements DBSConstraintEnumerable, DBPSaveableObject
 {
-    private static final int MAX_DESC_COLUMN_LENGTH = 1000;
+    static final Log log = LogFactory.getLog(JDBCTableConstraint.class);
 
     private boolean persisted;
 
@@ -106,32 +106,59 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         if (keyColumn.getParentObject() != this.getTable()) {
             throw new IllegalArgumentException("Bad key column argument");
         }
-        DBPDataSource dataSource = keyColumn.getDataSource();
+        DBPDataSource dataSource = context.getDataSource();
+        DBSDictionary dictionary = dataSource.getContainer().getDictionary(getTable());
+        if (dictionary != null && !CommonUtils.isEmpty(dictionary.getDescriptionColumns())) {
+            // Try to use dictionary description
+            try {
+                return readKeyEnumeration(context, keyColumn, keyPattern, preceedingKeys, dictionary, maxResults);
+            } catch (DBException e) {
+                log.warn("Can't query with redefined dictionary columns (" + dictionary.getDescriptionColumns() + ")", e);
+            }
+        }
+        return readKeyEnumeration(
+            context,
+            keyColumn,
+            keyPattern,
+            preceedingKeys,
+            new DBSDictionary(context.getProgressMonitor(), keyColumn),
+            maxResults);
+    }
+
+    private Collection<DBDLabelValuePair> readKeyEnumeration(
+        DBCExecutionContext context,
+        DBSEntityAttribute keyColumn,
+        Object keyPattern,
+        List<DBDColumnValue> preceedingKeys,
+        DBSDictionary dictionary,
+        int maxResults)
+        throws DBException
+    {
         DBDValueHandler keyValueHandler = DBUtils.getColumnValueHandler(context, keyColumn);
         StringBuilder query = new StringBuilder();
-        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()));
-        DBSEntityAttribute descColumn = getKeyDescriptionColumn(context.getProgressMonitor(), keyColumn);
-        if (descColumn != null) {
-            query.append(", ").append(DBUtils.getQuotedIdentifier(dataSource, descColumn.getName()));
+        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
+        String descColumns = dictionary.getDescriptionColumns();
+        if (descColumns != null) {
+            query.append(", ").append(descColumns);
         }
         query.append(" FROM ").append(DBUtils.getObjectFullName(keyColumn.getParentObject()));
         List<String> conditions = new ArrayList<String>();
         if (keyPattern != null) {
             if (keyPattern instanceof CharSequence) {
                 if (((CharSequence)keyPattern).length() > 0) {
-                    conditions.add(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()) + " LIKE ?");
+                    conditions.add(DBUtils.getQuotedIdentifier(keyColumn) + " LIKE ?");
                 } else {
                     keyPattern = null;
                 }
             } else if (keyPattern instanceof Number) {
-                conditions.add(DBUtils.getQuotedIdentifier(dataSource, keyColumn.getName()) + " >= ?");
+                conditions.add(DBUtils.getQuotedIdentifier(keyColumn) + " >= ?");
             } else {
                 // not supported
             }
         }
         if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
             for (DBDColumnValue precColumn : preceedingKeys) {
-                conditions.add(DBUtils.getQuotedIdentifier(dataSource, precColumn.getAttribute().getName()) + " = ?");
+                conditions.add(DBUtils.getQuotedIdentifier(precColumn.getAttribute()) + " = ?");
             }
         }
         if (!conditions.isEmpty()) {
@@ -160,14 +187,15 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                     precValueHandler.bindValueObject(context, dbStat, precColumn.getAttribute(), paramPos++, precColumn.getValue());
                 }
             }
-            dbStat.setLimit(0, 100);
+            dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
                 DBCResultSet dbResult = dbStat.openResultSet();
                 try {
                     List<DBDLabelValuePair> values = new ArrayList<DBDLabelValuePair>();
-                    DBDValueHandler descValueHandler = null;
-                    if (descColumn != null) {
-                        descValueHandler = DBUtils.getColumnValueHandler(context, descColumn);
+                    List<DBCColumnMetaData> metaColumns = dbResult.getResultSetMetaData().getColumns();
+                    List<DBDValueHandler> colHandlers = new ArrayList<DBDValueHandler>(metaColumns.size());
+                    for (DBCColumnMetaData col : metaColumns) {
+                        colHandlers.add(DBUtils.getColumnValueHandler(context, col));
                     }
                     // Extract enumeration values and (optionally) their descriptions
                     while (dbResult.nextRow()) {
@@ -181,9 +209,15 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                             continue;
                         }
                         String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue);
-                        if (descValueHandler != null) {
-                            Object descValue = descValueHandler.getValueObject(context, dbResult, descColumn, 1);
-                            keyLabel = descValueHandler.getValueDisplayString(descColumn, descValue);
+                        if (descColumns != null) {
+                            keyLabel = "";
+                            for (int i = 1; i < colHandlers.size(); i++) {
+                                Object descValue = colHandlers.get(i).getValueObject(context, dbResult, metaColumns.get(i), i);
+                                if (!keyLabel.isEmpty()) {
+                                    keyLabel += " ";
+                                }
+                                keyLabel += colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue);
+                            }
                         }
                         values.add(new DBDLabelValuePair(keyLabel, keyValue));
                     }
@@ -200,47 +234,5 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             dbStat.close();
         }
     }
-
-    private static final String[] DESC_COLUMN_PATTERNS = {
-        "title",
-        "name",
-        "label",
-        "display",
-        "description",
-        "comment",
-        "remark",
-    };
-
-    private DBSEntityAttribute getKeyDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn)
-        throws DBException
-    {
-        Collection<? extends DBSEntityAttribute> allColumns = keyColumn.getParentObject().getAttributes(monitor);
-        if (allColumns.size() == 1) {
-            return null;
-        }
-        // Find all string columns
-        Map<String, DBSEntityAttribute> stringColumns = new TreeMap<String, DBSEntityAttribute>();
-        for (DBSEntityAttribute column : allColumns) {
-            if (column != keyColumn && JDBCUtils.getDataKind(column) == DBSDataKind.STRING && column.getMaxLength() < MAX_DESC_COLUMN_LENGTH) {
-                stringColumns.put(column.getName().toLowerCase(), column);
-            }
-        }
-        if (stringColumns.isEmpty()) {
-            return null;
-        }
-        if (stringColumns.size() > 1) {
-            // Make some tests
-            for (String pattern : DESC_COLUMN_PATTERNS) {
-                for (String columnName : stringColumns.keySet()) {
-                    if (columnName.contains(pattern)) {
-                        return stringColumns.get(columnName);
-                    }
-                }
-            }
-        }
-        // No columns match pattern
-        return stringColumns.values().iterator().next();
-    }
-
 
 }
