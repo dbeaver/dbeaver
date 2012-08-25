@@ -22,10 +22,20 @@ package org.jkiss.dbeaver.ui.dialogs.struct;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSDictionary;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 
 /**
  * EditDictionaryDialog
@@ -34,15 +44,43 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class EditDictionaryDialog extends ColumnsSelectorDialog {
 
-    private String customDescription;
     private Text criteriaText;
+    private DBSDictionary dictionary;
+    private Collection<DBSEntityAttribute> descColumns;
+    private DBSEntity entity;
 
     public EditDictionaryDialog(
         Shell shell,
         String title,
-        DBSEntity table)
+        final DBSEntity entity)
     {
-        super(shell, title, table);
+        super(shell, title, entity);
+        this.entity = entity;
+        this.dictionary = entity.getDataSource().getContainer().getDictionary(entity);
+        DBeaverCore.getInstance().runInUI(DBeaverCore.getInstance().getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                try {
+                    if (dictionary == null) {
+                        Collection<? extends DBSEntityAttribute> tablePK = DBUtils.getBestTableIdentifier(monitor, entity);
+                        if (tablePK != null && !tablePK.isEmpty()) {
+                            dictionary = new DBSDictionary(monitor, tablePK.iterator().next());
+                        } else {
+                            dictionary = new DBSDictionary(DBUtils.getObjectUniqueName(entity), entity.getName(), null);
+                        }
+                    }
+                    descColumns = dictionary.getDescriptionColumns(monitor, entity);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }});
+    }
+
+    public DBSDictionary getDictionary()
+    {
+        return dictionary;
     }
 
     @Override
@@ -63,12 +101,22 @@ public class EditDictionaryDialog extends ColumnsSelectorDialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 50;
         criteriaText.setLayoutData(gd);
+        if (!CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
+            criteriaText.setText(dictionary.getDescriptionColumnNames());
+        }
+    }
+
+    @Override
+    public boolean isColumnSelected(DBSEntityAttribute attribute)
+    {
+        return descColumns.contains(attribute);
     }
 
     @Override
     protected void handleColumnsChange() {
+        descColumns = getSelectedColumns();
         StringBuilder custom = new StringBuilder();
-        for (DBSEntityAttribute column : getSelectedColumns()) {
+        for (DBSEntityAttribute column : descColumns) {
             if (custom.length() > 0) {
                 custom.append(",");
             }
@@ -76,4 +124,15 @@ public class EditDictionaryDialog extends ColumnsSelectorDialog {
         }
         criteriaText.setText(custom.toString());
     }
+
+    @Override
+    protected void okPressed()
+    {
+        dictionary.setDescriptionColumnNames(criteriaText.getText());
+        DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) entity.getDataSource().getContainer();
+        dataSourceDescriptor.setDictionary(dictionary);
+        dataSourceDescriptor.persistConfiguration();
+        super.okPressed();
+    }
+
 }

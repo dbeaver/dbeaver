@@ -108,12 +108,12 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         }
         DBPDataSource dataSource = context.getDataSource();
         DBSDictionary dictionary = dataSource.getContainer().getDictionary(getTable());
-        if (dictionary != null && !CommonUtils.isEmpty(dictionary.getDescriptionColumns())) {
+        if (dictionary != null && !CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
             // Try to use dictionary description
             try {
                 return readKeyEnumeration(context, keyColumn, keyPattern, preceedingKeys, dictionary, maxResults);
             } catch (DBException e) {
-                log.warn("Can't query with redefined dictionary columns (" + dictionary.getDescriptionColumns() + ")", e);
+                log.warn("Can't query with redefined dictionary columns (" + dictionary.getDescriptionColumnNames() + ")", e);
             }
         }
         return readKeyEnumeration(
@@ -137,7 +137,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         DBDValueHandler keyValueHandler = DBUtils.getColumnValueHandler(context, keyColumn);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
-        String descColumns = dictionary.getDescriptionColumns();
+        String descColumns = dictionary.getDescriptionColumnNames();
         if (descColumns != null) {
             query.append(", ").append(descColumns);
         }

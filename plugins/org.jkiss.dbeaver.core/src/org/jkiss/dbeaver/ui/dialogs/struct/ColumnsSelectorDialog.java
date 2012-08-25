@@ -37,12 +37,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -110,7 +110,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    handleItemSelect((TableItem) e.item);
+                    handleItemSelect((TableItem) e.item, true);
                 }
             });
             TableColumn colName = new TableColumn(columnsTable, SWT.NONE);
@@ -173,13 +173,17 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             columnItem.setImage(0, columnNode.getNodeIcon());
             columnItem.setText(0, columnNode.getNodeName());
             columnItem.setData(col);
+            if (isColumnSelected((DBSEntityAttribute) columnNode.getObject())) {
+                columnItem.setChecked(true);
+                handleItemSelect(columnItem, false);
+            }
         }
         //columnsTable.set
 
         return dialogGroup;
     }
 
-    private void handleItemSelect(TableItem item)
+    private void handleItemSelect(TableItem item, boolean notify)
     {
         final ColumnInfo col = (ColumnInfo) item.getData();
         if (item.getChecked() && col.position < 0) {
@@ -202,6 +206,14 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             }
             col.position = -1;
         }
+        if (notify) {
+            handleColumnsChange();
+            getButton(IDialogConstants.OK_ID).setEnabled(hasCheckedColumns());
+        }
+    }
+
+    private boolean hasCheckedColumns()
+    {
         boolean hasCheckedColumns = false;
         for (ColumnInfo tmp : columns) {
             if (tmp.position >= 0) {
@@ -209,15 +221,14 @@ public abstract class ColumnsSelectorDialog extends Dialog {
                 break;
             }
         }
-        handleColumnsChange();
-        getButton(IDialogConstants.OK_ID).setEnabled(hasCheckedColumns);
+        return hasCheckedColumns;
     }
 
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
         super.createButtonsForButtonBar(parent);
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
+        getButton(IDialogConstants.OK_ID).setEnabled(hasCheckedColumns());
     }
 
     @Override
@@ -236,7 +247,15 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     public Collection<DBSEntityAttribute> getSelectedColumns()
     {
         List<DBSEntityAttribute> tableColumns = new ArrayList<DBSEntityAttribute>();
-        for (ColumnInfo col : columns) {
+        Set<ColumnInfo> orderedColumns = new TreeSet<ColumnInfo>(new Comparator<ColumnInfo>() {
+            @Override
+            public int compare(ColumnInfo o1, ColumnInfo o2)
+            {
+                return o1.position - o2.position;
+            }
+        });
+        orderedColumns.addAll(columns);
+        for (ColumnInfo col : orderedColumns) {
             if (col.position >= 0) {
                 tableColumns.add((DBSEntityAttribute) col.columnNode.getObject());
             }
@@ -252,6 +271,11 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     protected void createContentsAfterColumns(Composite panel)
     {
 
+    }
+
+    public boolean isColumnSelected(DBSEntityAttribute attribute)
+    {
+        return false;
     }
 
     protected void handleColumnsChange()

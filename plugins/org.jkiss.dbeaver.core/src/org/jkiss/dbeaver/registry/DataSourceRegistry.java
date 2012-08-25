@@ -502,7 +502,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     xml.startElement(RegistryConstants.TAG_DICTIONARY);
                     xml.addAttribute(RegistryConstants.ATTR_ID, dict.getEntityReference());
                     xml.addAttribute(RegistryConstants.ATTR_NAME, dict.getName());
-                    xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, dict.getDescriptionColumns());
+                    xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, dict.getDescriptionColumnNames());
                     xml.endElement();
                 }
                 xml.endElement();

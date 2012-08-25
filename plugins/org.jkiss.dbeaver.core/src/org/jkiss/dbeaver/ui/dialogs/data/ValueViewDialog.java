@@ -248,7 +248,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     DBeaverCore.getInstance().runInUI(window, new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException {
+                            throws InvocationTargetException, InterruptedException
+                        {
                             DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
                                 monitor,
                                 refTable,
@@ -268,7 +269,9 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     EditDictionaryDialog dialog = new EditDictionaryDialog(getShell(), "Dictionary structure", refTable);
-                    dialog.open();
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        loaderJob.schedule();
+                    }
                 }
             });
         }

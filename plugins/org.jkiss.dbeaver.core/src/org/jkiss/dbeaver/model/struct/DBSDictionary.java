@@ -4,10 +4,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Dictionary descriptor
@@ -29,26 +28,26 @@ public class DBSDictionary {
     private String entityReference;
     private String name;
     private String uniqueColumns;
-    private String descriptionColumns;
+    private String descriptionColumnNames;
 
-    public DBSDictionary(String entityReference, String name, String descriptionColumns) {
+    public DBSDictionary(String entityReference, String name, String descriptionColumnNames) {
         this.entityReference = entityReference;
         this.name = name;
-        this.descriptionColumns = descriptionColumns;
+        this.descriptionColumnNames = descriptionColumnNames;
     }
 
     public DBSDictionary(DBSDictionary dictionary)
     {
         this.entityReference = dictionary.entityReference;
         this.name = dictionary.name;
-        this.descriptionColumns = dictionary.descriptionColumns;
+        this.descriptionColumnNames = dictionary.descriptionColumnNames;
     }
 
     public DBSDictionary(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn) throws DBException
     {
         this.entityReference = DBUtils.getObjectUniqueName(keyColumn.getParentObject());
         this.name = keyColumn.getParentObject().getName();
-        this.descriptionColumns = getDefaultDescriptionColumn(monitor, keyColumn);
+        this.descriptionColumnNames = getDefaultDescriptionColumn(monitor, keyColumn);
     }
 
     public String getEntityReference()
@@ -60,8 +59,33 @@ public class DBSDictionary {
         return name;
     }
 
-    public String getDescriptionColumns() {
-        return descriptionColumns;
+    public String getDescriptionColumnNames() {
+        return descriptionColumnNames;
+    }
+
+    public void setDescriptionColumnNames(String descriptionColumnNames)
+    {
+        this.descriptionColumnNames = descriptionColumnNames;
+    }
+
+    public Collection<DBSEntityAttribute> getDescriptionColumns(DBRProgressMonitor monitor, DBSEntity entity)
+        throws DBException
+    {
+        if (CommonUtils.isEmpty(descriptionColumnNames)) {
+            return Collections.emptyList();
+        }
+        java.util.List<DBSEntityAttribute> result = new ArrayList<DBSEntityAttribute>();
+        Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
+        StringTokenizer st = new StringTokenizer(descriptionColumnNames, ",");
+        while (st.hasMoreTokens()) {
+            String colName = st.nextToken();
+            for (DBSEntityAttribute attr : attributes) {
+                if (colName.equalsIgnoreCase(attr.getName())) {
+                    result.add(attr);
+                }
+            }
+        }
+        return result;
     }
 
     public static String getDefaultDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn)
