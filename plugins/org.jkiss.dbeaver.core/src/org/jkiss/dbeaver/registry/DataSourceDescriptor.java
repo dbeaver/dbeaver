@@ -125,6 +125,7 @@ public class DataSourceDescriptor
     private boolean showSystemObjects;
     private boolean connectionReadOnly;
     private final Map<Class<?>, FilterMapping> filterMap = new IdentityHashMap<Class<?>, FilterMapping>();
+    private final Map<String, DBSDictionary> dictionaries = new HashMap<String, DBSDictionary>();
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -284,12 +285,6 @@ public class DataSourceDescriptor
         return getObjectFilter(type, parentObject, false);
     }
 
-    @Override
-    public DBSDictionary getDictionary(DBSEntity entity)
-    {
-        return null;
-    }
-
     public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject, boolean firstMatch)
     {
         if (filterMap.isEmpty()) {
@@ -335,6 +330,37 @@ public class DataSourceDescriptor
         } else {
             filterMapping.customFilters.put(objectID, filter);
         }
+    }
+
+    @Override
+    public DBSDictionary getDictionary(DBSEntity entity)
+    {
+        String objectID = DBUtils.getObjectUniqueName(entity);
+        return dictionaries.get(objectID);
+    }
+
+    Collection<DBSDictionary> getDictionaries()
+    {
+        return dictionaries.values();
+    }
+
+    void setDictionaries(Collection<DBSDictionary> copy)
+    {
+        dictionaries.clear();
+        for (DBSDictionary dict : copy) {
+            dictionaries.put(dict.getEntityReference(), new DBSDictionary(dict));
+        }
+    }
+
+    public void setDictionary(DBSDictionary dictionary)
+    {
+        dictionaries.put(dictionary.getEntityReference(), dictionary);
+    }
+
+    public void removeDictionary(DBSEntity entity)
+    {
+        String objectID = DBUtils.getObjectUniqueName(entity);
+        dictionaries.remove(objectID);
     }
 
     @Override

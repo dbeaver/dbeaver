@@ -54,6 +54,7 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
                 dsTpl.getDriver(),
                 new DBPConnectionInfo(dsTpl.getConnectionInfo()));
             dataSource.setObjectFilters(dsTpl.getObjectFilters());
+            dataSource.setDictionaries(dsTpl.getDictionaries());
             dataSource.setDescription(dsTpl.getDescription());
             dataSource.setSavePassword(dsTpl.isSavePassword());
             dataSource.setShowSystemObjects(dsTpl.isShowSystemObjects());

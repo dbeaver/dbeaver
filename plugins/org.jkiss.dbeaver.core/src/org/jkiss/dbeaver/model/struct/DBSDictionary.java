@@ -15,6 +15,18 @@ public class DBSDictionary {
         this.descriptionColumns = descriptionColumns;
     }
 
+    public DBSDictionary(DBSDictionary dictionary)
+    {
+        this.entityReference = dictionary.entityReference;
+        this.name = dictionary.name;
+        this.descriptionColumns = dictionary.descriptionColumns;
+    }
+
+    public String getEntityReference()
+    {
+        return entityReference;
+    }
+
     public String getName() {
         return name;
     }

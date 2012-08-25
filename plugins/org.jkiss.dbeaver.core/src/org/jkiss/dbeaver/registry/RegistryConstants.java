@@ -143,4 +143,7 @@ public class RegistryConstants {
     public static final String TAG_FILTER = "filter"; //$NON-NLS-1$
     public static final String TAG_INCLUDE = "include"; //$NON-NLS-1$
     public static final String TAG_EXCLUDE = "exclude"; //$NON-NLS-1$
+    public static final String TAG_DICTIONARIES = "dictionaries"; //$NON-NLS-1$
+    public static final String TAG_DICTIONARY = "dictionary"; //$NON-NLS-1$
+
 }

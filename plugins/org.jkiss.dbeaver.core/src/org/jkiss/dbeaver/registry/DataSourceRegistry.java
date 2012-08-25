@@ -31,10 +31,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.struct.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSSchema;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
@@ -496,6 +493,22 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         }
 
+        {
+            // Dictionaries
+            Collection<DBSDictionary> dictionaries = dataSource.getDictionaries();
+            if (!CommonUtils.isEmpty(dictionaries)) {
+                xml.startElement(RegistryConstants.TAG_DICTIONARIES);
+                for (DBSDictionary dict : dictionaries) {
+                    xml.startElement(RegistryConstants.TAG_DICTIONARY);
+                    xml.addAttribute(RegistryConstants.ATTR_ID, dict.getEntityReference());
+                    xml.addAttribute(RegistryConstants.ATTR_NAME, dict.getName());
+                    xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, dict.getDescriptionColumns());
+                    xml.endElement();
+                }
+                xml.endElement();
+            }
+        }
+
         // Preferences
         {
             // Save only properties who are differs from default values
@@ -691,6 +704,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curDataSource.updateObjectFilter(objectClass, objectID, curFilter);
 
                     }
+                }
+            } else if (localName.equals(RegistryConstants.TAG_DICTIONARY)) {
+                if (curDataSource != null) {
+                    DBSDictionary dictionary = new DBSDictionary(
+                        atts.getValue(RegistryConstants.ATTR_ID),
+                        atts.getValue(RegistryConstants.ATTR_NAME),
+                        atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                    curDataSource.setDictionary(dictionary);
                 }
             } else if (localName.equals(RegistryConstants.TAG_INCLUDE)) {
                 if (curFilter != null) {
