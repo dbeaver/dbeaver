@@ -21,6 +21,7 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.scroll;
 
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.ScrollBar;
 
 /**
  * Used by Grid to externalize the scrollbars from the table itself.
@@ -31,6 +32,7 @@ import org.eclipse.swt.widgets.Event;
 public interface IGridScrollBar
 {
 
+    public ScrollBar getControl();
     /**
      * Returns the scrollbar's visibility.
      * 

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
@@ -495,10 +496,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
         {
             // Dictionaries
-            Collection<DBSDictionary> dictionaries = dataSource.getDictionaries();
+            Collection<DBVEntity> dictionaries = dataSource.getDictionaries();
             if (!CommonUtils.isEmpty(dictionaries)) {
                 xml.startElement(RegistryConstants.TAG_DICTIONARIES);
-                for (DBSDictionary dict : dictionaries) {
+                for (DBVEntity dict : dictionaries) {
                     xml.startElement(RegistryConstants.TAG_DICTIONARY);
                     xml.addAttribute(RegistryConstants.ATTR_ID, dict.getEntityReference());
                     xml.addAttribute(RegistryConstants.ATTR_NAME, dict.getName());
@@ -707,7 +708,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
             } else if (localName.equals(RegistryConstants.TAG_DICTIONARY)) {
                 if (curDataSource != null) {
-                    DBSDictionary dictionary = new DBSDictionary(
+                    DBVEntity dictionary = new DBVEntity(
                         atts.getValue(RegistryConstants.ATTR_ID),
                         atts.getValue(RegistryConstants.ATTR_NAME),
                         atts.getValue(RegistryConstants.ATTR_DESCRIPTION));

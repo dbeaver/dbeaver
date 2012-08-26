@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 
 import java.util.Collection;
 
@@ -81,7 +82,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      * @param entity entity
      * @return dictionary descriptor
      */
-    DBSDictionary getDictionary(DBSEntity entity);
+    DBVEntity getDictionary(DBSEntity entity);
 
     DBPClientHome getClientHome();
 

@@ -535,10 +535,29 @@ public class LightGrid extends Canvas {
             if (getColumnCount() == 1) {
                 getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x);
             } else {
-                for (GridColumn curColumn : getColumns()) {
+                int totalWidth = 0;
+                for (GridColumn curColumn : columns) {
                     curColumn.pack();
-                    if (curColumn.getWidth() > maxColumnDefWidth) {
-                        curColumn.setWidth(maxColumnDefWidth);
+                    totalWidth += curColumn.getWidth();
+                }
+                // If grid width more than screen - lets narrow too long columns
+                int clientWidth = getClientArea().width;
+                if (totalWidth > clientWidth) {
+                    int normalWidth = 0;
+                    List<GridColumn> fatColumns = new ArrayList<GridColumn>();
+                    for (GridColumn curColumn : columns) {
+                        if (curColumn.getWidth() > maxColumnDefWidth) {
+                            fatColumns.add(curColumn);
+                        } else {
+                            normalWidth += curColumn.getWidth();
+                        }
+                    }
+                    // Narrow fat columns on decWidth
+                    int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - (vScroll.getControl() == null ? 0 : vScroll.getControl().getSize().x))
+                        / fatColumns.size();
+                    int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
+                    for (GridColumn curColumn : fatColumns) {
+                        curColumn.setWidth(newFatWidth);
                     }
                 }
             }
@@ -825,23 +844,10 @@ public class LightGrid extends Canvas {
         return columns.size();
     }
 
-    /**
-     * Returns an array of {@code GridColumn}s which are the columns in the
-     * receiver. If no {@code GridColumn}s were created by the programmer,
-     * the array is empty, despite the fact that visually, one column of items
-     * may be visible. This occurs when the programmer uses the table like a
-     * list, adding items but never creating a column.
-     * <p>
-     * Note: This is not the actual structure used by the receiver to maintain
-     * its list of items, so modifying the array will not affect the receiver.
-     * </p>
-     *
-     * @return the items in the receiver
-     */
-    public GridColumn[] getColumns()
+    public Collection<GridColumn> getColumns()
     {
         checkWidget();
-        return columns.toArray(new GridColumn[columns.size()]);
+        return columns;
     }
 
     /**

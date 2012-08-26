@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
-import org.jkiss.dbeaver.model.struct.DBSDictionary;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
@@ -107,7 +107,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             throw new IllegalArgumentException("Bad key column argument");
         }
         DBPDataSource dataSource = context.getDataSource();
-        DBSDictionary dictionary = dataSource.getContainer().getDictionary(getTable());
+        DBVEntity dictionary = dataSource.getContainer().getDictionary(getTable());
         if (dictionary != null && !CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
             // Try to use dictionary description
             try {
@@ -121,7 +121,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             keyColumn,
             keyPattern,
             preceedingKeys,
-            new DBSDictionary(context.getProgressMonitor(), keyColumn),
+            new DBVEntity(context.getProgressMonitor(), keyColumn),
             maxResults);
     }
 
@@ -130,7 +130,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         DBSEntityAttribute keyColumn,
         Object keyPattern,
         List<DBDColumnValue> preceedingKeys,
-        DBSDictionary dictionary,
+        DBVEntity dictionary,
         int maxResults)
         throws DBException
     {

@@ -1,9 +1,12 @@
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -11,7 +14,7 @@ import java.util.*;
 /**
  * Dictionary descriptor
  */
-public class DBSDictionary {
+public class DBVEntity {
 
     private static final String[] DESC_COLUMN_PATTERNS = {
         "title",
@@ -30,20 +33,20 @@ public class DBSDictionary {
     private String uniqueColumns;
     private String descriptionColumnNames;
 
-    public DBSDictionary(String entityReference, String name, String descriptionColumnNames) {
+    public DBVEntity(String entityReference, String name, String descriptionColumnNames) {
         this.entityReference = entityReference;
         this.name = name;
         this.descriptionColumnNames = descriptionColumnNames;
     }
 
-    public DBSDictionary(DBSDictionary dictionary)
+    public DBVEntity(DBVEntity dictionary)
     {
         this.entityReference = dictionary.entityReference;
         this.name = dictionary.name;
         this.descriptionColumnNames = dictionary.descriptionColumnNames;
     }
 
-    public DBSDictionary(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn) throws DBException
+    public DBVEntity(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn) throws DBException
     {
         this.entityReference = DBUtils.getObjectUniqueName(keyColumn.getParentObject());
         this.name = keyColumn.getParentObject().getName();

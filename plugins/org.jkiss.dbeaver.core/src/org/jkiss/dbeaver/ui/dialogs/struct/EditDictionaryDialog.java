@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDictionary;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -45,7 +45,7 @@ import java.util.Collection;
 public class EditDictionaryDialog extends ColumnsSelectorDialog {
 
     private Text criteriaText;
-    private DBSDictionary dictionary;
+    private DBVEntity dictionary;
     private Collection<DBSEntityAttribute> descColumns;
     private DBSEntity entity;
 
@@ -66,9 +66,9 @@ public class EditDictionaryDialog extends ColumnsSelectorDialog {
                     if (dictionary == null) {
                         Collection<? extends DBSEntityAttribute> tablePK = DBUtils.getBestTableIdentifier(monitor, entity);
                         if (tablePK != null && !tablePK.isEmpty()) {
-                            dictionary = new DBSDictionary(monitor, tablePK.iterator().next());
+                            dictionary = new DBVEntity(monitor, tablePK.iterator().next());
                         } else {
-                            dictionary = new DBSDictionary(DBUtils.getObjectUniqueName(entity), entity.getName(), null);
+                            dictionary = new DBVEntity(DBUtils.getObjectUniqueName(entity), entity.getName(), null);
                         }
                     }
                     descColumns = dictionary.getDescriptionColumns(monitor, entity);
@@ -78,7 +78,7 @@ public class EditDictionaryDialog extends ColumnsSelectorDialog {
             }});
     }
 
-    public DBSDictionary getDictionary()
+    public DBVEntity getDictionary()
     {
         return dictionary;
     }

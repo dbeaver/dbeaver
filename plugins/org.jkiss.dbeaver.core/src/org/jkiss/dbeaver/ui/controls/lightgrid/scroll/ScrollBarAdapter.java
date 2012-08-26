@@ -100,7 +100,13 @@ public class ScrollBarAdapter implements IGridScrollBar
         return scrollBar.getThumb();
     }
 
-    /** 
+    @Override
+    public ScrollBar getControl()
+    {
+        return scrollBar;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override

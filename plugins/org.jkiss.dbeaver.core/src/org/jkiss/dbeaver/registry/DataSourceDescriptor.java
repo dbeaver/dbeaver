@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
@@ -125,7 +126,7 @@ public class DataSourceDescriptor
     private boolean showSystemObjects;
     private boolean connectionReadOnly;
     private final Map<Class<?>, FilterMapping> filterMap = new IdentityHashMap<Class<?>, FilterMapping>();
-    private final Map<String, DBSDictionary> dictionaries = new HashMap<String, DBSDictionary>();
+    private final Map<String, DBVEntity> dictionaries = new HashMap<String, DBVEntity>();
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -333,26 +334,26 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public DBSDictionary getDictionary(DBSEntity entity)
+    public DBVEntity getDictionary(DBSEntity entity)
     {
         String objectID = DBUtils.getObjectUniqueName(entity);
         return dictionaries.get(objectID);
     }
 
-    Collection<DBSDictionary> getDictionaries()
+    Collection<DBVEntity> getDictionaries()
     {
         return dictionaries.values();
     }
 
-    void setDictionaries(Collection<DBSDictionary> copy)
+    void setDictionaries(Collection<DBVEntity> copy)
     {
         dictionaries.clear();
-        for (DBSDictionary dict : copy) {
-            dictionaries.put(dict.getEntityReference(), new DBSDictionary(dict));
+        for (DBVEntity dict : copy) {
+            dictionaries.put(dict.getEntityReference(), new DBVEntity(dict));
         }
     }
 
-    public void setDictionary(DBSDictionary dictionary)
+    public void setDictionary(DBVEntity dictionary)
     {
         dictionaries.put(dictionary.getEntityReference(), dictionary);
     }
