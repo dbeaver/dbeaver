@@ -552,12 +552,14 @@ public class LightGrid extends Canvas {
                             normalWidth += curColumn.getWidth();
                         }
                     }
-                    // Narrow fat columns on decWidth
-                    int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - (vScroll.getControl() == null ? 0 : vScroll.getControl().getSize().x))
-                        / fatColumns.size();
-                    int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
-                    for (GridColumn curColumn : fatColumns) {
-                        curColumn.setWidth(newFatWidth);
+                    if (!fatColumns.isEmpty()) {
+                        // Narrow fat columns on decWidth
+                        int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - (vScroll.getControl() == null ? 0 : vScroll.getControl().getSize().x))
+                            / fatColumns.size();
+                        int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
+                        for (GridColumn curColumn : fatColumns) {
+                            curColumn.setWidth(newFatWidth);
+                        }
                     }
                 }
             }
