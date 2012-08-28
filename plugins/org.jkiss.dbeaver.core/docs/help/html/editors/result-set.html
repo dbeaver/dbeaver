@@ -48,7 +48,7 @@
         <p>Note: ordering/filtering of huge result set could take a lot of time, especially if you order/filter by non-indexed columns. Be careful when specifying order/filter criteria.</p>
 
         <h2>Edit</h2>
-        <p>Table content and the result of some queries can be edited.</p>
+        <p>Table content and the result of some queries can be edited. Double click on grid cell opens cell editor dialog or LOB editor window. Pressing ENTER key on certain cell opens inline editor, another ENTER in cell editor saves changed value. You may navigate cell editors with TAB and SHIFT+TAB keys. Resultset grid fully supports clipboard operations - you may paste value into certain cell directly from clipboard.</p>
         <p>Query result set edits are supported only if the database driver supports additional result set metadata (at the moment it was found and tested only in MySQL) and query results contain a combination of columns which constructs a unique key.</p>
         <p>Table content edit is enabled if table has at least one unique key or index.</p>
         <p>Cell edit dialog is accessible from the context menu. In-line editing is accessible from the toolbar (or press CTRL+ALT+S). To revert changes press the "Reject Changes" button (or press CTRL+ALT+R).</p>
