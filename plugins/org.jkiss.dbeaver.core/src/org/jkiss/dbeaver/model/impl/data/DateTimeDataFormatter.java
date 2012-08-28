@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -36,7 +37,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     @Override
     public void init(Locale locale, Map<Object, Object> properties)
     {
-        dateFormat = new SimpleDateFormat(
+        dateFormat = new ExtendedDateFormat(
             CommonUtils.toString(properties.get(PROP_PATTERN)),
             locale);
     }
