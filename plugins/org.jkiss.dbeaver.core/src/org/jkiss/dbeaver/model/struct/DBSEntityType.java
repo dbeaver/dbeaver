@@ -32,6 +32,9 @@ public class DBSEntityType
     public static final DBSEntityType CLASS = new DBSEntityType("class", "Class", DBIcon.TREE_CLASS.getImage(), false); //$NON-NLS-1$
     public static final DBSEntityType ASSOCIATION = new DBSEntityType("association", "Association", DBIcon.TREE_ASSOCIATION.getImage(), false); //$NON-NLS-1$
 
+    public static final DBSEntityType VIRTUAL_ENTITY = new DBSEntityType("virtual_entity", "Virtual Entity", DBIcon.TREE_TABLE.getImage(), true); //$NON-NLS-1$
+    public static final DBSEntityType VIRTUAL_ASSOCIATION = new DBSEntityType("virtual_association", "Virtual Association", DBIcon.TREE_ASSOCIATION.getImage(), false); //$NON-NLS-1$
+
     private final String id;
     private final String name;
     private final Image icon;

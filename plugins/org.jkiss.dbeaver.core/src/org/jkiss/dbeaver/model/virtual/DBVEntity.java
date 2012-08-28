@@ -5,10 +5,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -16,7 +13,7 @@ import java.util.*;
 /**
  * Dictionary descriptor
  */
-public class DBVEntity implements DBSObject {
+public class DBVEntity implements DBSEntity {
 
     private static final String[] DESC_COLUMN_PATTERNS = {
         "title",
@@ -30,40 +27,86 @@ public class DBVEntity implements DBSObject {
     private static final int MIN_DESC_COLUMN_LENGTH = 4;
     private static final int MAX_DESC_COLUMN_LENGTH = 1000;
 
-    private DBVContainer container;
-    private String entityReference;
+    private final DBVContainer container;
     private String name;
     private String description;
     private String uniqueColumns;
     private String descriptionColumnNames;
 
-    public DBVEntity(String entityReference, String name, String descriptionColumnNames) {
-        this.entityReference = entityReference;
+    public DBVEntity(DBVContainer container, String name, String descriptionColumnNames) {
+        this.container = container;
         this.name = name;
         this.descriptionColumnNames = descriptionColumnNames;
     }
 
-    public DBVEntity(DBVEntity dictionary)
+    public DBVEntity(DBVEntity copy)
     {
-        this.entityReference = dictionary.entityReference;
-        this.name = dictionary.name;
-        this.descriptionColumnNames = dictionary.descriptionColumnNames;
-    }
-
-    public DBVEntity(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn) throws DBException
-    {
-        this.entityReference = DBUtils.getObjectUniqueName(keyColumn.getParentObject());
-        this.name = keyColumn.getParentObject().getName();
-        this.descriptionColumnNames = getDefaultDescriptionColumn(monitor, keyColumn);
-    }
-
-    public String getEntityReference()
-    {
-        return entityReference;
+        this.container = copy.container;
+        this.name = copy.name;
+        this.descriptionColumnNames = copy.descriptionColumnNames;
     }
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return description;
+    }
+
+    @Override
+    public DBSObject getParentObject()
+    {
+        return container;
+    }
+
+    @Override
+    public DBPDataSource getDataSource()
+    {
+        return container.getDataSource();
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    @Override
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
+    @Override
+    public DBSEntityType getEntityType()
+    {
+        return DBSEntityType.VIRTUAL_ENTITY;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
+    {
+        return null;
     }
 
     public String getDescriptionColumnNames() {
@@ -130,32 +173,4 @@ public class DBVEntity implements DBSObject {
         return DBUtils.getQuotedIdentifier(stringColumns.values().iterator().next());
     }
 
-    @Override
-    public String getDescription()
-    {
-        return description;
-    }
-
-    @Override
-    public DBSObject getParentObject()
-    {
-        return container;
-    }
-
-    @Override
-    public DBPDataSource getDataSource()
-    {
-        return container.getDataSource();
-    }
-
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
-
-    @Override
-    public boolean isPersisted()
-    {
-        return true;
-    }
 }

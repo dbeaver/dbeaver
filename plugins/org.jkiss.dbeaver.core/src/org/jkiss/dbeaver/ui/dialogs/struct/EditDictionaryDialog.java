@@ -63,12 +63,10 @@ public class EditDictionaryDialog extends ColumnsSelectorDialog {
                 throws InvocationTargetException, InterruptedException
             {
                 try {
-                    if (dictionary == null) {
+                    if (dictionary.getDescriptionColumnNames() == null) {
                         Collection<? extends DBSEntityAttribute> tablePK = DBUtils.getBestTableIdentifier(monitor, entity);
                         if (tablePK != null && !tablePK.isEmpty()) {
-                            dictionary = new DBVEntity(monitor, tablePK.iterator().next());
-                        } else {
-                            dictionary = new DBVEntity(DBUtils.getObjectUniqueName(entity), entity.getName(), null);
+                            dictionary.setDescriptionColumnNames(DBVEntity.getDefaultDescriptionColumn(monitor, tablePK.iterator().next()));
                         }
                     }
                     descColumns = dictionary.getDescriptionColumns(monitor, entity);

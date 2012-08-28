@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVModel;
 
 import java.util.Collection;
 
@@ -83,6 +84,8 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      * @return dictionary descriptor
      */
     DBVEntity getDictionary(DBSEntity entity);
+
+    DBVModel getVirtualModel();
 
     DBPClientHome getClientHome();
 

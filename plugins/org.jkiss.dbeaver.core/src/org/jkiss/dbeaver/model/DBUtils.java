@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -349,6 +350,20 @@ public final class DBUtils {
             return null;
         }
         return getAdapter(i, object.getParentObject());
+    }
+
+    /**
+     * Search for virtual entity descriptor
+     * @param object object
+     * @return object path
+     */
+    public static List<DBSObject> getObjectPath(DBSObject object, boolean includeSelf)
+    {
+        List<DBSObject> path = new ArrayList<DBSObject>();
+        for (DBSObject obj = includeSelf ? object : object.getParentObject(); obj != null; obj = obj.getParentObject()) {
+            path.add(0, obj);
+        }
+        return path;
     }
 
     public static boolean isNullValue(Object value)

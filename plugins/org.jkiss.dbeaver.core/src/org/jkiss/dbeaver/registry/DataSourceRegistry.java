@@ -501,7 +501,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.startElement(RegistryConstants.TAG_DICTIONARIES);
                 for (DBVEntity dict : dictionaries) {
                     xml.startElement(RegistryConstants.TAG_DICTIONARY);
-                    xml.addAttribute(RegistryConstants.ATTR_ID, dict.getEntityReference());
                     xml.addAttribute(RegistryConstants.ATTR_NAME, dict.getName());
                     xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, dict.getDescriptionColumnNames());
                     xml.endElement();
@@ -709,7 +708,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             } else if (localName.equals(RegistryConstants.TAG_DICTIONARY)) {
                 if (curDataSource != null) {
                     DBVEntity dictionary = new DBVEntity(
-                        atts.getValue(RegistryConstants.ATTR_ID),
+                        null,
                         atts.getValue(RegistryConstants.ATTR_NAME),
                         atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
                     curDataSource.setDictionary(dictionary);

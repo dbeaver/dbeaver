@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
@@ -340,6 +341,12 @@ public class DataSourceDescriptor
         return dictionaries.get(objectID);
     }
 
+    @Override
+    public DBVModel getVirtualModel()
+    {
+        return null;
+    }
+
     Collection<DBVEntity> getDictionaries()
     {
         return dictionaries.values();
@@ -349,13 +356,13 @@ public class DataSourceDescriptor
     {
         dictionaries.clear();
         for (DBVEntity dict : copy) {
-            dictionaries.put(dict.getEntityReference(), new DBVEntity(dict));
+            dictionaries.put(dict.getName(), new DBVEntity(dict));
         }
     }
 
     public void setDictionary(DBVEntity dictionary)
     {
-        dictionaries.put(dictionary.getEntityReference(), dictionary);
+        dictionaries.put(dictionary.getName(), dictionary);
     }
 
     public void removeDictionary(DBSEntity entity)
