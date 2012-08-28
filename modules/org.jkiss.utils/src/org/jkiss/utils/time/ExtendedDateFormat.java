@@ -69,13 +69,12 @@ public class ExtendedDateFormat extends SimpleDateFormat {
                 nanoOptional = false;
                 for (int k = i + 1; k < pattern.length(); k++) {
                     if (pattern.charAt(k) != 'f') {
-                        i = k + 1;
                         break;
                     }
                     nanoLength++;
                 }
                 nanoLength++;
-                i = pattern.length();
+                i = nanoStart + nanoLength;
             }
         }
     }

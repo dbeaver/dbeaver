@@ -1,12 +1,14 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -14,7 +16,7 @@ import java.util.*;
 /**
  * Dictionary descriptor
  */
-public class DBVEntity {
+public class DBVEntity implements DBSObject {
 
     private static final String[] DESC_COLUMN_PATTERNS = {
         "title",
@@ -28,8 +30,10 @@ public class DBVEntity {
     private static final int MIN_DESC_COLUMN_LENGTH = 4;
     private static final int MAX_DESC_COLUMN_LENGTH = 1000;
 
+    private DBVContainer container;
     private String entityReference;
     private String name;
+    private String description;
     private String uniqueColumns;
     private String descriptionColumnNames;
 
@@ -126,4 +130,32 @@ public class DBVEntity {
         return DBUtils.getQuotedIdentifier(stringColumns.values().iterator().next());
     }
 
+    @Override
+    public String getDescription()
+    {
+        return description;
+    }
+
+    @Override
+    public DBSObject getParentObject()
+    {
+        return container;
+    }
+
+    @Override
+    public DBPDataSource getDataSource()
+    {
+        return container.getDataSource();
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    @Override
+    public boolean isPersisted()
+    {
+        return true;
+    }
 }
