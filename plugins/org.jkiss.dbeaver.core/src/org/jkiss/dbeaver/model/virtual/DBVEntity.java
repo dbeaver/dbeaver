@@ -35,6 +35,7 @@ public class DBVEntity extends DBVObject implements DBSEntity {
     private String description;
     private String uniqueColumns;
     private String descriptionColumnNames;
+    private List<DBVUniqueConstraint> uniqueConstraints;
 
     public DBVEntity(DBVContainer container, String name, String descriptionColumnNames) {
         this.container = container;
@@ -94,10 +95,20 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         return null;
     }
 
-    @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    public DBSEntityAttribute getAttribute(String attributeName)
     {
         return null;
+    }
+
+    @Override
+    public Collection<? extends DBVUniqueConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    {
+        return uniqueConstraints;
+    }
+
+    public DBVUniqueConstraint getBestIdentifier()
+    {
+        return uniqueConstraints == null || uniqueConstraints.isEmpty() ? null : uniqueConstraints.get(0);
     }
 
     @Override

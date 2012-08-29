@@ -33,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -139,7 +140,7 @@ public class OraclePlanNode implements DBCPlanNode {
     }
 
     @Override
-    public List<OraclePlanNode> getNested()
+    public Collection<OraclePlanNode> getNested()
     {
         return nested;
     }

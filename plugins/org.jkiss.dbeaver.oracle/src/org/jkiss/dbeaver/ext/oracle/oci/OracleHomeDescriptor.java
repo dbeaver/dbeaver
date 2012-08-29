@@ -112,7 +112,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
         }
     }
 
-    public List<String> getOraServiceNames()
+    public Collection<String> getOraServiceNames()
     {
         if (tnsNames == null) {
             tnsNames = OCIUtils.readTnsNames(getHomePath(), true);

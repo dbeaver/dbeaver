@@ -96,7 +96,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
     @Override
     @Association
-    public List<OracleTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<OracleTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (indexes == null) {

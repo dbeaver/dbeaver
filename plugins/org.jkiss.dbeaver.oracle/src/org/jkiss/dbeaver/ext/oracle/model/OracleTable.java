@@ -114,7 +114,7 @@ public class OracleTable extends OracleTablePhysical
     }
 
     @Override
-    public List<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor)
+    public Collection<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         List<OracleTableForeignKey> refs = new ArrayList<OracleTableForeignKey>();
@@ -132,7 +132,7 @@ public class OracleTable extends OracleTablePhysical
 
     @Override
     @Association
-    public List<OracleTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public Collection<OracleTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {

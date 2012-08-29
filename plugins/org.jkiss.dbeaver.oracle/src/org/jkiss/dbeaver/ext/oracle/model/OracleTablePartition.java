@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -41,7 +42,7 @@ public class OracleTablePartition extends OraclePartitionBase<OracleTablePhysica
     }
 
     @Association
-    public List<OracleTablePartition> getSubPartitions()
+    public Collection<OracleTablePartition> getSubPartitions()
     {
         return subPartitions;
     }

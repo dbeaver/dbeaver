@@ -25,10 +25,10 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 /**
  * GenericConstraintColumn
  */
-public class OracleTableForeignKeyColumnTable extends OracleTableConstraintColumn implements DBSTableForeignKeyColumn
+public class OracleTableForeignKeyColumn extends OracleTableConstraintColumn implements DBSTableForeignKeyColumn
 {
 
-    public OracleTableForeignKeyColumnTable(
+    public OracleTableForeignKeyColumn(
         OracleTableForeignKey constraint,
         OracleTableColumn tableColumn,
         int ordinalPosition)
@@ -40,7 +40,8 @@ public class OracleTableForeignKeyColumnTable extends OracleTableConstraintColum
     @Property(id = "reference", name = "Reference Column", viewable = true, order = 4)
     public OracleTableColumn getReferencedColumn()
     {
-        return ((OracleTableForeignKey) getParentObject()).getReferencedConstraint().getColumns(VoidProgressMonitor.INSTANCE).get(getOrdinalPosition() - 1).getAttribute();
+        return ((OracleTableForeignKey)getParentObject()).getReferencedConstraint().getColumns(VoidProgressMonitor.INSTANCE)
+            .get(getOrdinalPosition() - 1).getAttribute();
     }
 
 }

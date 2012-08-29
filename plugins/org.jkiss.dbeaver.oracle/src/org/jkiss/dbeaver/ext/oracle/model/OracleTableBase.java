@@ -192,14 +192,14 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
     @Association
-    public List<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)
+    public Collection<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {
@@ -230,13 +230,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public List<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

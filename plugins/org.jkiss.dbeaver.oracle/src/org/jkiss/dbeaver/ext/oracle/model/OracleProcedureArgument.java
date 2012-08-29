@@ -29,6 +29,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -200,7 +201,7 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     }
 
     @Association
-    public List<OracleProcedureArgument> getAttributes()
+    public Collection<OracleProcedureArgument> getAttributes()
     {
         return attributes;
     }

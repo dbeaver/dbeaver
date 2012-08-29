@@ -65,7 +65,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleTableFo
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(
-                new OracleTableForeignKeyColumnTable(
+                new OracleTableForeignKeyColumn(
                     foreignKey,
                     (OracleTableColumn) tableColumn.getOwnColumn(),
                     colIndex++));

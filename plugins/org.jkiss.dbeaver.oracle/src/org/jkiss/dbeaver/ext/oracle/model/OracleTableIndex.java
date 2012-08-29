@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -106,7 +107,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
     }
 
     @Override
-    public List<OracleTableIndexColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<OracleTableIndexColumn> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }

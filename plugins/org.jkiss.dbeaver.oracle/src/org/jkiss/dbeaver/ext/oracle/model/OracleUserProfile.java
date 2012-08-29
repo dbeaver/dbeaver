@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -51,7 +52,7 @@ public class OracleUserProfile extends OracleGlobalObject
     }
 
     @Association
-    public List<ProfileResource> getResources(DBRProgressMonitor monitor) throws DBException
+    public Collection<ProfileResource> getResources(DBRProgressMonitor monitor) throws DBException
     {
         if (resources == null) {
             getDataSource().profileCache.loadChildren(monitor, getDataSource(), this);

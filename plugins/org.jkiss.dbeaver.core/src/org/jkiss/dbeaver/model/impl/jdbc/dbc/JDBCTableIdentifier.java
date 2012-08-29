@@ -55,6 +55,16 @@ public class JDBCTableIdentifier implements DBCEntityIdentifier {
         }
     }
 
+//    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSObject object, DBSEntityReferrer referrer)
+//    {
+//        this.index = (DBSTableIndex) object;
+//        this.columns = columns;
+//        this.tableColumns = new ArrayList<DBSTableColumn>();
+//        for (DBSEntityAttributeRef cColumn : referrer.getAttributeReferences(monitor)) {
+//            tableColumns.add(cColumn.getAttribute());
+//        }
+//    }
+
     @Override
     public DBSTableConstraint getConstraint()
     {

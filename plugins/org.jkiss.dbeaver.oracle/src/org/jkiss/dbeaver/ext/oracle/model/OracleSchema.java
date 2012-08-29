@@ -484,7 +484,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
     }
 
-    class ForeignKeyCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleTableForeignKey, OracleTableForeignKeyColumnTable> {
+    class ForeignKeyCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleTableForeignKey, OracleTableForeignKeyColumn> {
         protected ForeignKeyCache()
         {
             super(tableCache, OracleTable.class, "TABLE_NAME", "CONSTRAINT_NAME");
@@ -535,12 +535,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTableForeignKeyColumnTable fetchObjectRow(
+        protected OracleTableForeignKeyColumn fetchObjectRow(
             JDBCExecutionContext context,
             OracleTable parent, OracleTableForeignKey object, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleTableForeignKeyColumnTable(
+            return new OracleTableForeignKeyColumn(
                 object,
                 getTableColumn(context, parent, dbResult),
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
@@ -560,7 +560,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
         @Override
         @SuppressWarnings("unchecked")
-        protected void cacheChildren(OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumnTable> rows)
+        protected void cacheChildren(OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumn> rows)
         {
             foreignKey.setColumns((List)rows);
         }
