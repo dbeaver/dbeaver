@@ -6,14 +6,17 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLBuilder;
 
+import java.io.IOException;
 import java.util.*;
 
 /**
  * Dictionary descriptor
  */
-public class DBVEntity implements DBSEntity {
+public class DBVEntity extends DBVObject implements DBSEntity {
 
     private static final String[] DESC_COLUMN_PATTERNS = {
         "title",
@@ -57,7 +60,7 @@ public class DBVEntity implements DBSEntity {
     }
 
     @Override
-    public DBSObject getParentObject()
+    public DBVContainer getParentObject()
     {
         return container;
     }
@@ -171,6 +174,22 @@ public class DBVEntity implements DBSEntity {
         }
         // No columns match pattern
         return DBUtils.getQuotedIdentifier(stringColumns.values().iterator().next());
+    }
+
+    public void persist(XMLBuilder xml) throws IOException
+    {
+        xml.startElement(RegistryConstants.TAG_ENTITY);
+        xml.addAttribute(RegistryConstants.ATTR_NAME, getName());
+        xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, getDescriptionColumnNames());
+        xml.endElement();
+    }
+
+    public boolean hasValuableData() {
+        return !CommonUtils.isEmpty(descriptionColumnNames);
+    }
+
+    void copyFrom(DBVEntity entity) {
+
     }
 
 }

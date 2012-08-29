@@ -87,7 +87,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
 
     /**
      * Returns prepared statements for enumeration fetch
-     * @param context
+     * @param context execution context
      * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
@@ -107,7 +107,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             throw new IllegalArgumentException("Bad key column argument");
         }
         DBPDataSource dataSource = context.getDataSource();
-        DBVEntity dictionary = dataSource.getContainer().getDictionary(getTable());
+        DBVEntity dictionary = dataSource.getContainer().getVirtualModel().findEntity(getTable());
         if (!CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
             // Try to use dictionary description
             try {

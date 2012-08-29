@@ -31,8 +31,10 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.struct.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSSchema;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
@@ -494,21 +496,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         }
 
-        {
-            // Dictionaries
-            Collection<DBVEntity> dictionaries = dataSource.getDictionaries();
-            if (!CommonUtils.isEmpty(dictionaries)) {
-                xml.startElement(RegistryConstants.TAG_DICTIONARIES);
-                for (DBVEntity dict : dictionaries) {
-                    xml.startElement(RegistryConstants.TAG_DICTIONARY);
-                    xml.addAttribute(RegistryConstants.ATTR_NAME, dict.getName());
-                    xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, dict.getDescriptionColumnNames());
-                    xml.endElement();
-                }
-                xml.endElement();
-            }
-        }
-
         // Preferences
         {
             // Save only properties who are differs from default values
@@ -524,6 +511,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.addAttribute(RegistryConstants.ATTR_VALUE, propValue);
                 xml.endElement();
             }
+        }
+
+        // Virtual model
+        if (dataSource.getVirtualModel().hasValuableData()) {
+            xml.startElement(RegistryConstants.TAG_VIRTUAL_META_DATA);
+            dataSource.getVirtualModel().persist(xml);
+            xml.endElement();
         }
 
         //xml.addText(CommonUtils.getString(dataSource.getDescription()));
@@ -705,14 +699,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
                     }
                 }
-            } else if (localName.equals(RegistryConstants.TAG_DICTIONARY)) {
-                if (curDataSource != null) {
-                    DBVEntity dictionary = new DBVEntity(
-                        null,
-                        atts.getValue(RegistryConstants.ATTR_NAME),
-                        atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                    curDataSource.setDictionary(dictionary);
-                }
             } else if (localName.equals(RegistryConstants.TAG_INCLUDE)) {
                 if (curFilter != null) {
                     curFilter.addInclude(CommonUtils.getString(atts.getValue(RegistryConstants.ATTR_NAME)));
@@ -723,6 +709,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
             } else if (localName.equals(RegistryConstants.TAG_DESCRIPTION)) {
                 isDescription = true;
+            } else if (localName.equals(RegistryConstants.TAG_VIRTUAL_META_DATA)) {
+                if (curDataSource != null) {
+                    reader.setListener(curDataSource.getVirtualModel().getModelParser());
+                }
             }
         }
 

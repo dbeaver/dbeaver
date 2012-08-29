@@ -78,13 +78,6 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      */
     DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject);
 
-    /**
-     * Search for dictionary descriptor for specified entity
-     * @param entity entity
-     * @return dictionary descriptor
-     */
-    DBVEntity getDictionary(DBSEntity entity);
-
     DBVModel getVirtualModel();
 
     DBPClientHome getClientHome();

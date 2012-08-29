@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
@@ -78,6 +77,19 @@ public class DataSourceDescriptor
         DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
+
+    void copyFrom(DataSourceDescriptor descriptor) {
+        filterMap.clear();
+        for (FilterMapping mapping : descriptor.getObjectFilters()) {
+            filterMap.put(mapping.type, new FilterMapping(mapping));
+        }
+        virtualModel.copyFrom(descriptor.getVirtualModel());
+
+        setDescription(descriptor.getDescription());
+        setSavePassword(descriptor.isSavePassword());
+        setShowSystemObjects(descriptor.isShowSystemObjects());
+        setConnectionReadOnly(descriptor.isConnectionReadOnly());
+    }
 
     public static class FilterMapping {
         public final Class<?> type;
@@ -127,7 +139,6 @@ public class DataSourceDescriptor
     private boolean showSystemObjects;
     private boolean connectionReadOnly;
     private final Map<Class<?>, FilterMapping> filterMap = new IdentityHashMap<Class<?>, FilterMapping>();
-    private final Map<String, DBVEntity> dictionaries = new HashMap<String, DBVEntity>();
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -146,6 +157,8 @@ public class DataSourceDescriptor
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<DBRProcessDescriptor>();
     private DBWTunnel tunnel;
 
+    private DBVModel virtualModel;
+
     public DataSourceDescriptor(
         DataSourceRegistry registry,
         String id,
@@ -161,6 +174,7 @@ public class DataSourceDescriptor
             this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
         }
         this.preferenceStore = new DataSourcePreferenceStore(this);
+        this.virtualModel = new DBVModel(this);
 
         this.driver.addUser(this);
     }
@@ -273,14 +287,6 @@ public class DataSourceDescriptor
         return filterMap.values();
     }
 
-    public void setObjectFilters(Collection<FilterMapping> mappings)
-    {
-        filterMap.clear();
-        for (FilterMapping mapping : mappings) {
-            filterMap.put(mapping.type, new FilterMapping(mapping));
-        }
-    }
-
     @Override
     public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject)
     {
@@ -335,40 +341,9 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public DBVEntity getDictionary(DBSEntity entity)
-    {
-        String objectID = DBUtils.getObjectUniqueName(entity);
-        return dictionaries.get(objectID);
-    }
-
-    @Override
     public DBVModel getVirtualModel()
     {
-        return null;
-    }
-
-    Collection<DBVEntity> getDictionaries()
-    {
-        return dictionaries.values();
-    }
-
-    void setDictionaries(Collection<DBVEntity> copy)
-    {
-        dictionaries.clear();
-        for (DBVEntity dict : copy) {
-            dictionaries.put(dict.getName(), new DBVEntity(dict));
-        }
-    }
-
-    public void setDictionary(DBVEntity dictionary)
-    {
-        dictionaries.put(dictionary.getName(), dictionary);
-    }
-
-    public void removeDictionary(DBSEntity entity)
-    {
-        String objectID = DBUtils.getObjectUniqueName(entity);
-        dictionaries.remove(objectID);
+        return virtualModel;
     }
 
     @Override

@@ -18,390 +18,352 @@
  */
 package org.jkiss.utils.xml;
 
+import java.util.*;
+
 /**
-	SAX document reader
-*/
+ * SAX document reader
+ */
 public final class SAXReader implements org.xml.sax.ContentHandler {
-	public static final int				DEFAULT_POOL_SIZE	= 10;
+    public static final int DEFAULT_POOL_SIZE = 10;
 
-	private static javax.xml.parsers.SAXParserFactory 	saxParserFactory = null;
-	private static java.util.List		parsersPool = new java.util.ArrayList();
+    private static javax.xml.parsers.SAXParserFactory saxParserFactory = null;
+    private static List<Parser> parsersPool = new ArrayList<Parser>();
 
-	private org.xml.sax.InputSource		inputSource;
-	private org.xml.sax.Locator			locator;
+    private org.xml.sax.InputSource inputSource;
+    private org.xml.sax.Locator locator;
 
-	private java.util.HashMap			attributes = new java.util.HashMap();
-	private java.util.Stack			    elementLayers = new java.util.Stack();
-	private SAXListener 			    curListener;
-	private StringBuilder				textValue = new StringBuilder();
-	private int							depth = 0;
-	private boolean						handleWhiteSpaces = false;
+    private Map<String, Object> attributes = new HashMap<String, Object>();
+    private List<SAXListener> elementLayers = new ArrayList<SAXListener>();
+    private SAXListener curListener;
+    private StringBuilder textValue = new StringBuilder();
+    private int depth = 0;
+    private boolean handleWhiteSpaces = false;
 
-	/**
-		Private constructor.
-		Initialize parser.
-	*/
-	private SAXReader()
-	{
-	}
+    /**
+     * Private constructor.
+     * Initialize parser.
+     */
+    private SAXReader() {
+    }
 
-	/**
-		Standard constructor.
-		Initialize parser and prepare input stream for reading.
-	*/
-	public SAXReader(
-		java.io.InputStream stream)
-	{
-		this();
-		inputSource = new org.xml.sax.InputSource(stream);
-	}
+    /**
+     * Standard constructor.
+     * Initialize parser and prepare input stream for reading.
+     */
+    public SAXReader(
+        java.io.InputStream stream) {
+        this();
+        inputSource = new org.xml.sax.InputSource(stream);
+    }
 
-	/**
-		Standard constructor.
-		Initialize parser and prepare input stream for reading.
-	*/
-	public SAXReader(
-		java.io.Reader reader)
-	{
-		this();
-		inputSource = new org.xml.sax.InputSource(reader);
-	}
+    /**
+     * Standard constructor.
+     * Initialize parser and prepare input stream for reading.
+     */
+    public SAXReader(
+        java.io.Reader reader) {
+        this();
+        inputSource = new org.xml.sax.InputSource(reader);
+    }
 
-	public boolean isHandleWhiteSpaces()
-	{
-		return handleWhiteSpaces;
-	}
+    public boolean isHandleWhiteSpaces() {
+        return handleWhiteSpaces;
+    }
 
-	public void setHandleWhiteSpaces(
-		boolean flag)
-	{
-		handleWhiteSpaces = flag;
-	}
+    public void setHandleWhiteSpaces(
+        boolean flag) {
+        handleWhiteSpaces = flag;
+    }
 
-	public org.xml.sax.Locator getLocator()
-	{
-		return locator;
-	}
-	/**
-		Parse input stream and handle XML tags.
-	*/
-	public void parse(
-		SAXListener listener)
-		throws java.io.IOException, XMLException
-	{
-		// Initialize SAX parser
-		Parser parser = acquireParser();
+    public org.xml.sax.Locator getLocator() {
+        return locator;
+    }
 
-		// Get reader and parse using SAX2 API
-		try {
-			org.xml.sax.XMLReader saxReader = parser.getSAXParser().getXMLReader();
-			saxReader.setErrorHandler(new ParseErrorHandler());
-			saxReader.setContentHandler(this);
+    /**
+     * Parse input stream and handle XML tags.
+     */
+    public void parse(
+        SAXListener listener)
+        throws java.io.IOException, XMLException {
+        // Initialize SAX parser
+        Parser parser = acquireParser();
 
-			curListener = listener;
+        // Get reader and parse using SAX2 API
+        try {
+            org.xml.sax.XMLReader saxReader = parser.getSAXParser().getXMLReader();
+            saxReader.setErrorHandler(new ParseErrorHandler());
+            saxReader.setContentHandler(this);
 
-			elementLayers.push(listener);
+            curListener = listener;
 
-			saxReader.parse(inputSource);
-		}
-		catch (org.xml.sax.SAXParseException toCatch) {
-			throw new XMLException(
-				"Document parse error (line " + toCatch.getLineNumber() + ", pos " + toCatch.getColumnNumber(),
-				toCatch);
-		}
-		catch (org.xml.sax.SAXException toCatch) {
-			throw new XMLException(
-				"Document reading SAX exception",
-				XMLUtils.adaptSAXException(toCatch));
-		}
-		finally {
-			parser.close();
-		}
-	}
+            elementLayers.add(listener);
 
-	public synchronized static Parser acquireParser()
-		throws XMLException
-	{
-		try {
-			if (saxParserFactory == null) {
-				try {
-					saxParserFactory = javax.xml.parsers.SAXParserFactory.newInstance();
-					saxParserFactory.setNamespaceAware(true);
-					saxParserFactory.setValidating(false);
-				}
-				catch (javax.xml.parsers.FactoryConfigurationError toCatch) {
-					throw new XMLException(
-						"SAX factory configuration error",
-						toCatch);
-				}
-			}
+            saxReader.parse(inputSource);
+        } catch (org.xml.sax.SAXParseException toCatch) {
+            throw new XMLException(
+                "Document parse error (line " + toCatch.getLineNumber() + ", pos " + toCatch.getColumnNumber(),
+                toCatch);
+        } catch (org.xml.sax.SAXException toCatch) {
+            throw new XMLException(
+                "Document reading SAX exception",
+                XMLUtils.adaptSAXException(toCatch));
+        } finally {
+            parser.close();
+        }
+    }
 
-			for (int i = 0; i < parsersPool.size(); i++) {
-				Parser parser = (Parser)parsersPool.get(i);
-				if (parser != null) {
-					if (!parser.isAcquired()) {
-						parser.acquire();
-						return parser;
-					}
-				} else {
-					parsersPool.remove(i);
-					parser = new Parser(saxParserFactory.newSAXParser(), true);
-					parsersPool.add(parser);
-					return parser;
-				}
-			}
-			if (parsersPool.size() == DEFAULT_POOL_SIZE)
-			{
-				throw new XMLException(
-					"Maximum SAX Parsers Number Exceeded (" + DEFAULT_POOL_SIZE + ")");
-			}
-			Parser parser = new Parser(saxParserFactory.newSAXParser(), true);
-			parsersPool.add(parser);
-			return parser;
-		}
-		catch (javax.xml.parsers.ParserConfigurationException toCatch) {
-			throw new XMLException(
-				"SAX Parser Configuration error",
-				toCatch);
-		}
-		catch (org.xml.sax.SAXException toCatch) {
-			throw new XMLException(
-				"SAX Parser error",
-				toCatch);
-		}
-	}
+    public synchronized static Parser acquireParser()
+        throws XMLException {
+        try {
+            if (saxParserFactory == null) {
+                try {
+                    saxParserFactory = javax.xml.parsers.SAXParserFactory.newInstance();
+                    saxParserFactory.setNamespaceAware(true);
+                    saxParserFactory.setValidating(false);
+                } catch (javax.xml.parsers.FactoryConfigurationError toCatch) {
+                    throw new XMLException(
+                        "SAX factory configuration error",
+                        toCatch);
+                }
+            }
 
-	/**
-		Closes parser and frees all resources.
-	*/
-	public void close()
-	{
-		if (elementLayers != null) {
-			elementLayers.clear();
-			elementLayers = null;
-		}
-		inputSource = null;
-		curListener = null;
-	}
+            for (int i = 0; i < parsersPool.size(); i++) {
+                Parser parser = parsersPool.get(i);
+                if (parser != null) {
+                    if (!parser.isAcquired()) {
+                        parser.acquire();
+                        return parser;
+                    }
+                } else {
+                    parsersPool.remove(i);
+                    parser = new Parser(saxParserFactory.newSAXParser(), true);
+                    parsersPool.add(parser);
+                    return parser;
+                }
+            }
+            if (parsersPool.size() == DEFAULT_POOL_SIZE) {
+                throw new XMLException(
+                    "Maximum SAX Parsers Number Exceeded (" + DEFAULT_POOL_SIZE + ")");
+            }
+            Parser parser = new Parser(saxParserFactory.newSAXParser(), true);
+            parsersPool.add(parser);
+            return parser;
+        } catch (javax.xml.parsers.ParserConfigurationException toCatch) {
+            throw new XMLException(
+                "SAX Parser Configuration error",
+                toCatch);
+        } catch (org.xml.sax.SAXException toCatch) {
+            throw new XMLException(
+                "SAX Parser error",
+                toCatch);
+        }
+    }
 
-	/**
-		Set listener for next event.
-	*/
-	public void setListener(
-		SAXListener listener)
-	{
-		curListener = listener;
-	}
+    /**
+     * Closes parser and frees all resources.
+     */
+    public void close() {
+        if (elementLayers != null) {
+            elementLayers.clear();
+            elementLayers = null;
+        }
+        inputSource = null;
+        curListener = null;
+    }
 
-	public boolean hasAttribute(
-		String name)
-	{
-		return attributes.get(name) != null;
-	}
+    /**
+     * Set listener for next event.
+     */
+    public void setListener(
+        SAXListener listener) {
+        curListener = listener;
+    }
 
-	public Object getAttribute(
-		String name)
-	{
-		return attributes.get(name);
-	}
+    public boolean hasAttribute(
+        String name) {
+        return attributes.get(name) != null;
+    }
 
-	public void setAttribute(
-		String name,
-		Object value)
-	{
-		attributes.put(name, value);
-	}
+    public Object getAttribute(
+        String name) {
+        return attributes.get(name);
+    }
 
-	public Object removeAttribute(
-		String name)
-	{
-		return attributes.remove(name);
-	}
+    public void setAttribute(
+        String name,
+        Object value) {
+        attributes.put(name, value);
+    }
 
-	private void handleText()
-		throws org.xml.sax.SAXException
-	{
-		curListener = (SAXListener)elementLayers.peek();
-		try {
-			String value = textValue.toString();
+    public Object removeAttribute(
+        String name) {
+        return attributes.remove(name);
+    }
+
+    private void handleText()
+        throws org.xml.sax.SAXException {
+        curListener = elementLayers.get(elementLayers.size() - 1);
+        try {
+            String value = textValue.toString();
 //			String data = value.length() == 0 ? value : new String(value.getBytes(), "UTF-8");
 
-			curListener.saxText(this, value);
-		}
-		catch (Exception toCatch) {
-			throw new org.xml.sax.SAXException(toCatch);
-		}
-		finally {
-			textValue.setLength(0);
-		}
-	}
+            curListener.saxText(this, value);
+        } catch (Exception toCatch) {
+            throw new org.xml.sax.SAXException(toCatch);
+        } finally {
+            textValue.setLength(0);
+        }
+    }
 
-	///////////////////////////////////////////////////////////////
-	// SAX Context Handler overrides
-	///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////
+    // SAX Context Handler overrides
+    ///////////////////////////////////////////////////////////////
 
-	@Override
-    public void startDocument()
-	{
-		// just do-nothing
-	}
+    @Override
+    public void startDocument() {
+        // just do-nothing
+    }
 
-	@Override
-    public void endDocument()
-	{
-		this.close();
-	}
+    @Override
+    public void endDocument() {
+        this.close();
+    }
 
-	@Override
+    @Override
     public void startElement(
-		String namespaceURI,
-		String localName,
-		String qName,
-		org.xml.sax.Attributes attributes)
-		throws org.xml.sax.SAXException
-	{
-		if (depth++ > 0) {
-			this.handleText();
-		}
+        String namespaceURI,
+        String localName,
+        String qName,
+        org.xml.sax.Attributes attributes)
+        throws org.xml.sax.SAXException {
+        if (depth++ > 0) {
+            this.handleText();
+        }
 
-		curListener = (SAXListener)elementLayers.peek();
+        curListener = elementLayers.get(elementLayers.size() - 1);
 
-		try {
-			curListener.saxStartElement(this, namespaceURI, localName, attributes);
-		}
-		catch (XMLException toCatch) {
-			throw new org.xml.sax.SAXException(toCatch);
-		}
+        try {
+            curListener.saxStartElement(this, namespaceURI, localName, attributes);
+        } catch (XMLException toCatch) {
+            throw new org.xml.sax.SAXException(toCatch);
+        }
 
-		elementLayers.push(curListener);
-	}
+        elementLayers.add(curListener);
+    }
 
-	@Override
+    @Override
     public void endElement(
-		String namespaceURI,
-		String localName,
-		String qName)
-		throws org.xml.sax.SAXException
-	{
-		this.handleText();
+        String namespaceURI,
+        String localName,
+        String qName)
+        throws org.xml.sax.SAXException {
+        this.handleText();
 
-		elementLayers.pop();
+        elementLayers.remove(elementLayers.size() - 1);
 
-		curListener = (SAXListener)elementLayers.peek();
-		try {
-			curListener.saxEndElement(this, namespaceURI, localName);
-		}
-		catch (XMLException toCatch) {
-			throw new org.xml.sax.SAXException(toCatch);
-		}
-		depth--;
-	}
+        curListener = elementLayers.get(elementLayers.size() - 1);
+        try {
+            curListener.saxEndElement(this, namespaceURI, localName);
+        } catch (XMLException toCatch) {
+            throw new org.xml.sax.SAXException(toCatch);
+        }
+        depth--;
+    }
 
-	@Override
+    @Override
     public void startPrefixMapping(
-		String prefix,
-		String uri)
-	{
-		// just do-nothing
-	}
+        String prefix,
+        String uri) {
+        // just do-nothing
+    }
 
-	@Override
+    @Override
     public void endPrefixMapping(
-		String prefix)
-	{
-		// just do-nothing
-	}
+        String prefix) {
+        // just do-nothing
+    }
 
-	@Override
+    @Override
     public void characters(
-		char[] ch,
-		int start,
-		int length)
-	{
-		textValue.append(ch, start, length);
-	}
+        char[] ch,
+        int start,
+        int length) {
+        textValue.append(ch, start, length);
+    }
 
-	@Override
+    @Override
     public void ignorableWhitespace(
-		char[] ch,
-		int start,
-		int length)
-	{
-		if (handleWhiteSpaces) {
-			textValue.append(ch, start, length);
-		}
-	}
+        char[] ch,
+        int start,
+        int length) {
+        if (handleWhiteSpaces) {
+            textValue.append(ch, start, length);
+        }
+    }
 
-	@Override
+    @Override
     public void processingInstruction(
-		String target,
-		String data)
-	{
-		// just do-nothing
-	}
+        String target,
+        String data) {
+        // just do-nothing
+    }
 
-	@Override
+    @Override
     public void setDocumentLocator(
-		org.xml.sax.Locator locator)
-	{
-		this.locator = locator;
-	}
+        org.xml.sax.Locator locator) {
+        this.locator = locator;
+    }
 
-	@Override
+    @Override
     public void skippedEntity(
-		String name)
-	{
-		// just do-nothing
-	}
+        String name) {
+        // just do-nothing
+    }
 
-	static public class Parser {
-		private javax.xml.parsers.SAXParser saxParser;
-		private boolean 					isAcquired;
+    static public class Parser {
+        private javax.xml.parsers.SAXParser saxParser;
+        private boolean isAcquired;
 
-		public Parser(javax.xml.parsers.SAXParser saxParser, boolean isAcquired)
-		{
-			this.saxParser = saxParser;
-			this.isAcquired = isAcquired;
-		}
-		public void setSAXParser(javax.xml.parsers.SAXParser saxParser)
-		{
-			this.saxParser = saxParser;
-		}
-		public void acquire()
-		{
-			isAcquired = true;
-		}
-		public void close()
-		{
-			isAcquired = false;
-		}
-		public javax.xml.parsers.SAXParser getSAXParser()
-		{
-			return saxParser;
-		}
-		public boolean isAcquired()
-		{
-			return isAcquired;
-		}
-	}
+        public Parser(javax.xml.parsers.SAXParser saxParser, boolean isAcquired) {
+            this.saxParser = saxParser;
+            this.isAcquired = isAcquired;
+        }
+
+        public void setSAXParser(javax.xml.parsers.SAXParser saxParser) {
+            this.saxParser = saxParser;
+        }
+
+        public void acquire() {
+            isAcquired = true;
+        }
+
+        public void close() {
+            isAcquired = false;
+        }
+
+        public javax.xml.parsers.SAXParser getSAXParser() {
+            return saxParser;
+        }
+
+        public boolean isAcquired() {
+            return isAcquired;
+        }
+    }
 
     static class ParseErrorHandler implements org.xml.sax.ErrorHandler {
 
         @Override
-        public void error(org.xml.sax.SAXParseException exception)
-        {
+        public void error(org.xml.sax.SAXParseException exception) {
 
         }
 
         @Override
-        public void fatalError(org.xml.sax.SAXParseException exception)
-        {
+        public void fatalError(org.xml.sax.SAXParseException exception) {
 
         }
 
         @Override
-        public void warning(org.xml.sax.SAXParseException exception)
-        {
+        public void warning(org.xml.sax.SAXParseException exception) {
 
         }
 
