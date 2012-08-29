@@ -121,7 +121,7 @@ public class GenericDataSource extends JDBCDataSource
         return tableTypeCache.getObjects(monitor, this);
     }
 
-    public List<GenericCatalog> getCatalogs()
+    public Collection<GenericCatalog> getCatalogs()
     {
         return catalogs;
     }
@@ -131,7 +131,7 @@ public class GenericDataSource extends JDBCDataSource
         return DBUtils.findObject(getCatalogs(), name);
     }
 
-    public List<GenericSchema> getSchemas()
+    public Collection<GenericSchema> getSchemas()
     {
         return schemas;
     }
@@ -542,14 +542,14 @@ public class GenericDataSource extends JDBCDataSource
     public DBSObject getSelectedObject()
     {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
-            if (!CommonUtils.isEmpty(getCatalogs())) {
+            if (!CommonUtils.isEmpty(catalogs)) {
                 if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
                     return getCatalog(selectedEntityName);
-                } else if (getCatalogs().size() == 1) {
+                } else if (catalogs.size() == 1) {
                     // Return the only catalog as selected [DBSPEC: PostgreSQL]
-                    return getCatalogs().get(0);
+                    return catalogs.get(0);
                 }
-            } else if (!CommonUtils.isEmpty(getSchemas())) {
+            } else if (!CommonUtils.isEmpty(schemas)) {
                 if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_SCHEMA)) {
                     return getSchema(selectedEntityName);
                 }

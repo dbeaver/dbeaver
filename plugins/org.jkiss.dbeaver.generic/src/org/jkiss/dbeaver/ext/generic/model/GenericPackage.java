@@ -91,14 +91,14 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return procedures;
     }
 
     @Override
-    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
+    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return DBUtils.findObjects(procedures, name);

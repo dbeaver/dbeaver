@@ -118,7 +118,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
                 return null;
             }
 
-            List<GenericPrimaryKey> uniqueKeys = pkTable.getConstraints(context.getProgressMonitor());
+            Collection<GenericPrimaryKey> uniqueKeys = pkTable.getConstraints(context.getProgressMonitor());
             if (uniqueKeys != null) {
                 for (GenericPrimaryKey pkConstraint : uniqueKeys) {
                     if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintColumn(context.getProgressMonitor(), pkConstraint, pkColumn) != null) {

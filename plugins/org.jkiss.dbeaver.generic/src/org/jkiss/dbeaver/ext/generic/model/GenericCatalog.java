@@ -66,7 +66,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return this;
     }
 
-    public List<GenericSchema> getSchemas(DBRProgressMonitor monitor)
+    public Collection<GenericSchema> getSchemas(DBRProgressMonitor monitor)
         throws DBException
     {
         if (schemas == null && !isInitialized) {

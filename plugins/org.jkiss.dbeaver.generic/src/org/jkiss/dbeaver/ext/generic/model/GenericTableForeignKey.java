@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -63,7 +64,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
     }
 
     @Override
-    public List<GenericTableForeignKeyColumnTable> getColumns(DBRProgressMonitor monitor)
+    public Collection<GenericTableForeignKeyColumnTable> getColumns(DBRProgressMonitor monitor)
     {
         return columns;
     }

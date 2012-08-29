@@ -168,7 +168,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return DBUtils.findObject(getColumns(monitor), columnName);
     }
 
-    public List<GenericTableColumn> getColumnsCache()
+    List<GenericTableColumn> getColumnsCache()
     {
         return columns;
     }
@@ -184,7 +184,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public List<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (indexes == null && getDataSource().getInfo().supportsIndexes()) {
@@ -211,7 +211,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public List<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
+    public Collection<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (uniqueKeys == null) {
@@ -241,14 +241,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public List<GenericTableForeignKey> getReferences(DBRProgressMonitor monitor)
+    public Collection<GenericTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         return loadReferences(monitor);
     }
 
     @Override
-    public List<GenericTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public Collection<GenericTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null && getDataSource().getInfo().supportsReferentialIntegrity()) {
@@ -262,7 +262,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         this.foreignKeys = foreignKeys;
     }
 
-    public List<GenericTable> getSubTables()
+    public Collection<GenericTable> getSubTables()
     {
         return null;
     }
@@ -374,7 +374,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         try {
 // Try to get cardinality from some unique index
             // Cardinality
-            final List<GenericTableIndex> indexList = getIndexes(monitor);
+            final Collection<GenericTableIndex> indexList = getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexList)) {
                 for (GenericTableIndex index : indexList) {
                     if (index.isUnique() || index.getIndexType() == DBSIndexType.STATISTIC) {
@@ -487,7 +487,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     }
                 }
                 if (pk == null) {
-                    List<GenericPrimaryKey> uniqueKeys = this.getConstraints(monitor);
+                    Collection<GenericPrimaryKey> uniqueKeys = this.getConstraints(monitor);
                     if (uniqueKeys != null) {
                         for (GenericPrimaryKey pkConstraint : uniqueKeys) {
                             if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintColumn(monitor, pkConstraint, pkColumn) != null) {

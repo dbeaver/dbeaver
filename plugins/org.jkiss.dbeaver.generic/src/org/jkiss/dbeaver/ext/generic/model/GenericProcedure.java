@@ -99,7 +99,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     }
 
     @Override
-    public List<GenericProcedureColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<GenericProcedureColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
