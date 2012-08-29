@@ -160,7 +160,7 @@
                     webURL="http://jtds.sourceforge.net/"
                     description="jTDS SQL Server driver">
                     <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use ?"/>
+                    <parameter name="query-set-active-db" value="use [?]"/>
                     <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x86/ntlmauth.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x64/ntlmauth.dll"/>
@@ -177,7 +177,7 @@
                     webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
                     description="Microsoft JDBC Driver for SQL Server ">
                     <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use ?"/>
+                    <parameter name="query-set-active-db" value="use [?]"/>
                     <file type="jar" path="drivers/mssql/sqljdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/sqljdbc4.jar"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/auth/x86/sqljdbc_auth.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/auth/x64/sqljdbc_auth.dll"/>
