@@ -136,24 +136,8 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                 if (!CommonUtils.isEmpty(uniqueKeys)) {
                     for (DBSTableConstraint constraint : uniqueKeys) {
                         if (constraint.getConstraintType().isUnique()) {
-                            // We need ALL columns from this constraint
-                            Collection<? extends DBSTableConstraintColumn> constrColumns = constraint.getColumns(monitor);
-                            if (!CommonUtils.isEmpty(constrColumns)) {
-                                List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                                for (DBSTableConstraintColumn constrColumn : constrColumns) {
-                                    JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, constrColumn.getAttribute());
-                                    if (rsColumn == null) {
-                                        break;
-                                    }
-                                    rsColumns.add(rsColumn);
-                                }
-                                if (rsColumns.isEmpty() || rsColumns.size() < constrColumns.size()) {
-                                    // Not all columns are here
-                                    continue;
-                                }
-                                identifiers.add(
-                                    new JDBCTableIdentifier(monitor, constraint, rsColumns));
-                            }
+                            identifiers.add(
+                                new JDBCTableIdentifier(monitor, constraint, this));
                         }
                     }
                 }
@@ -163,24 +147,8 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                     if (!CommonUtils.isEmpty(indexes)) {
                         for (DBSTableIndex index : indexes) {
                             if (index.isUnique()) {
-                                // We need ALL columns from this constraint
-                                Collection<? extends DBSTableIndexColumn> constrColumns = index.getColumns(monitor);
-                                if (!CommonUtils.isEmpty(constrColumns)) {
-                                    List<JDBCColumnMetaData> rsColumns = new ArrayList<JDBCColumnMetaData>();
-                                    for (DBSTableIndexColumn indexColumn : constrColumns) {
-                                        JDBCColumnMetaData rsColumn = getColumnMetaData(monitor, indexColumn.getTableColumn());
-                                        if (rsColumn == null) {
-                                            break;
-                                        }
-                                        rsColumns.add(rsColumn);
-                                    }
-                                    if (rsColumns.isEmpty() || rsColumns.size() < constrColumns.size()) {
-                                        // Not all columns are here
-                                        continue;
-                                    }
-                                    identifiers.add(
-                                        new JDBCTableIdentifier(monitor, index, rsColumns));
-                                }
+                                identifiers.add(
+                                    new JDBCTableIdentifier(monitor, index, this));
                             }
                         }
                     }
@@ -191,7 +159,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                 // Probably there is virtual one
                 DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table);
                 DBVUniqueConstraint bestIdentifier = virtualEntity.getBestIdentifier();
-                //identifiers.add(new JDBCTableIdentifier())bestIdentifier);
+                //identifiers.add(new JDBCTableIdentifier(monitor, bestIdentifier, this));
             }
         }
         if (!CommonUtils.isEmpty(identifiers)) {
@@ -199,10 +167,10 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
             DBCEntityIdentifier uniqueId = null;
             DBCEntityIdentifier uniqueIndex = null;
             for (DBCEntityIdentifier id : identifiers) {
-                if (id.getConstraint() != null) {
-                    if (id.getConstraint().getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                if (id.getReferrer() != null) {
+                    if (id.getReferrer().getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                         return id;
-                    } else if (id.getConstraint().getConstraintType().isUnique()) {
+                    } else if (id.getReferrer().getConstraintType().isUnique()) {
                         uniqueId = id;
                     }
                 } else {
@@ -215,7 +183,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         }
     }
 
-    private JDBCColumnMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSTableColumn column)
+    public JDBCColumnMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
         throws DBException
     {
         for (JDBCColumnMetaData meta : columns) {

@@ -60,10 +60,7 @@ import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSManipulationType;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -1595,7 +1592,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         return -1;
     }
 
-    private int getMetaColumnIndex(DBSTableColumn column)
+    private int getMetaColumnIndex(DBSEntityAttribute column)
     {
         for (int i = 0; i < metaColumns.length; i++) {
             if (column == metaColumns[i].getTableColumn()) {
@@ -1974,8 +1971,8 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (RowInfo rowNum : removedRows) {
                 DBSEntity table = metaColumns[0].getValueLocator().getEntity();
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
-                List<? extends DBSTableColumn> keyColumns = metaColumns[0].getValueLocator().getTableColumns();
-                for (DBSTableColumn column : keyColumns) {
+                Collection<? extends DBSEntityAttribute> keyColumns = metaColumns[0].getValueLocator().getTableColumns();
+                for (DBSEntityAttribute column : keyColumns) {
                     int colIndex = getMetaColumnIndex(column);
                     if (colIndex < 0) {
                         throw new DBCException("Can't find meta column for ID column " + column.getName());

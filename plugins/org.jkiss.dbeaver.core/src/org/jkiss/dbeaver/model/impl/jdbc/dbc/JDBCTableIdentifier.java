@@ -18,11 +18,13 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -30,61 +32,39 @@ import java.util.List;
  */
 public class JDBCTableIdentifier implements DBCEntityIdentifier {
 
-    private DBSTableConstraint constraint;
-    private DBSTableIndex index;
+    private DBSEntityReferrer referrer;
+
+    //private DBSTableIndex index;
     private List<JDBCColumnMetaData> columns;
-    private List<DBSTableColumn> tableColumns;
+    private List<DBSEntityAttribute> tableColumns;
 
-    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSTableConstraint constraint, List<JDBCColumnMetaData> columns)
+    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSEntityReferrer referrer, JDBCTableMetaData metaData) throws DBException
     {
-        this.constraint = constraint;
-        this.columns = columns;
-        this.tableColumns = new ArrayList<DBSTableColumn>();
-        for (DBSTableConstraintColumn cColumn : constraint.getColumns(monitor)) {
-            tableColumns.add(cColumn.getAttribute());
+        this.referrer = referrer;
+        this.columns = new ArrayList<JDBCColumnMetaData>();
+        this.tableColumns = new ArrayList<DBSEntityAttribute>();
+        for (DBSEntityAttributeRef cColumn : referrer.getAttributeReferences(monitor)) {
+            JDBCColumnMetaData rsColumn = metaData.getColumnMetaData(monitor, cColumn.getAttribute());
+            if (rsColumn != null) {
+                columns.add(rsColumn);
+                tableColumns.add(cColumn.getAttribute());
+            }
         }
     }
 
-    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSTableIndex index, List<JDBCColumnMetaData> columns)
+    public DBSEntityReferrer getReferrer()
     {
-        this.index = index;
-        this.columns = columns;
-        this.tableColumns = new ArrayList<DBSTableColumn>();
-        for (DBSTableIndexColumn cColumn : index.getColumns(monitor)) {
-            tableColumns.add(cColumn.getTableColumn());
-        }
-    }
-
-//    public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSObject object, DBSEntityReferrer referrer)
-//    {
-//        this.index = (DBSTableIndex) object;
-//        this.columns = columns;
-//        this.tableColumns = new ArrayList<DBSTableColumn>();
-//        for (DBSEntityAttributeRef cColumn : referrer.getAttributeReferences(monitor)) {
-//            tableColumns.add(cColumn.getAttribute());
-//        }
-//    }
-
-    @Override
-    public DBSTableConstraint getConstraint()
-    {
-        return constraint;
+        return referrer;
     }
 
     @Override
-    public DBSTableIndex getIndex()
-    {
-        return index;
-    }
-
-    @Override
-    public List<JDBCColumnMetaData> getResultSetColumns()
+    public Collection<JDBCColumnMetaData> getResultSetColumns()
     {
         return columns;
     }
 
     @Override
-    public List<? extends DBSTableColumn> getTableColumns()
+    public Collection<? extends DBSEntityAttribute> getAttributes()
     {
         return tableColumns;
     }

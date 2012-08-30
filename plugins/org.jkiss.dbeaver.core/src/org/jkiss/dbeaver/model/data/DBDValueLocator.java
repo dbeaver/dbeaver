@@ -23,11 +23,11 @@ import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Value locator.
@@ -47,7 +47,7 @@ public class DBDValueLocator implements DBPObject {
     public String getKeyId(DBDRowController rowController)
     {
         StringBuilder keyId = new StringBuilder();
-        List<? extends DBCColumnMetaData> keyColumns = getResultSetColumns();
+        Collection<? extends DBCColumnMetaData> keyColumns = getResultSetColumns();
         for (DBCColumnMetaData keyColumn : keyColumns) {
             keyId.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getName()));
             Object keyValue = rowController.getColumnValue(keyColumn);
@@ -64,7 +64,7 @@ public class DBDValueLocator implements DBPObject {
 
     @Property(name = "Key", viewable = true, order = 2)
     public DBSEntityConstraint getUniqueKey() {
-        return entityIdentifier.getConstraint() != null ? entityIdentifier.getConstraint() : entityIdentifier.getIndex();
+        return entityIdentifier.getReferrer();
     }
 
     public DBCEntityIdentifier getEntityIdentifier()
@@ -72,32 +72,19 @@ public class DBDValueLocator implements DBPObject {
         return entityIdentifier;
     }
 
-    public String getKeyKind()
-    {
-        if (entityIdentifier.getConstraint() != null) {
-            return "CONSTRAINT";
-        } else {
-            return "INDEX";
-        }
-    }
-
     public String getKeyType()
     {
-        if (entityIdentifier.getConstraint() != null) {
-            return entityIdentifier.getConstraint().getConstraintType().getName();
-        } else {
-            return entityIdentifier.getIndex().getIndexType().getName();
-        }
+        return entityIdentifier.getReferrer().getConstraintType().getName();
     }
 
-    public List<? extends DBCColumnMetaData> getResultSetColumns()
+    public Collection<? extends DBCColumnMetaData> getResultSetColumns()
     {
         return entityIdentifier.getResultSetColumns();
     }
 
-    public List<? extends DBSTableColumn> getTableColumns()
+    public Collection<? extends DBSEntityAttribute> getTableColumns()
     {
-        return entityIdentifier.getTableColumns();
+        return entityIdentifier.getAttributes();
     }
 
 /*

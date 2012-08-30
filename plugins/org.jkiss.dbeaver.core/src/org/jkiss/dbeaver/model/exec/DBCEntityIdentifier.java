@@ -18,11 +18,10 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
-import org.jkiss.dbeaver.model.struct.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Result set table metadata
@@ -30,23 +29,21 @@ import java.util.List;
 public interface DBCEntityIdentifier {
 
     /**
-     * Table unique constraint
-     * @return constraint
+     * entity referrer (constraint or index)
+     * @return referrer
      */
-    DBSTableConstraint getConstraint();
-
-    /**
-     * Table unique index
-     * @return constraint
-     */
-    DBSTableIndex getIndex();
+    DBSEntityReferrer getReferrer();
 
     /**
      * Result set columns
      * @return list of result set columns.
      */
-    List<? extends DBCColumnMetaData> getResultSetColumns();
+    Collection<? extends DBCColumnMetaData> getResultSetColumns();
 
-    List<? extends DBSTableColumn> getTableColumns();
+    /**
+     * Identifier attributes (columns)
+     * @return
+     */
+    Collection<? extends DBSEntityAttribute> getAttributes();
 
 }
