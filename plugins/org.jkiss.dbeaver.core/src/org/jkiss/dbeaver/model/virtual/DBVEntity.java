@@ -108,7 +108,13 @@ public class DBVEntity extends DBVObject implements DBSEntity {
 
     public DBVUniqueConstraint getBestIdentifier()
     {
-        return uniqueConstraints == null || uniqueConstraints.isEmpty() ? null : uniqueConstraints.get(0);
+        if (uniqueConstraints == null) {
+            uniqueConstraints = new ArrayList<DBVUniqueConstraint>();
+        }
+        if (uniqueConstraints.isEmpty()) {
+            uniqueConstraints.add(new DBVUniqueConstraint(this));
+        }
+        return uniqueConstraints.get(0);
     }
 
     @Override

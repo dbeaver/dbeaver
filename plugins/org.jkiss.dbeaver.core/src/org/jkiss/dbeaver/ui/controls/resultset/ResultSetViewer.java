@@ -1335,6 +1335,19 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
      */
     public void applyChanges(DBRProgressMonitor monitor, DBDValueListener listener)
     {
+        if (!singleSourceCells) {
+            log.error("Can't save data for resultset from multiple sources");
+            return;
+        }
+        // Check for value locators
+        // Probably we have only virtual one with empty column set
+        DBDValueLocator valueLocator = metaColumns[0].getValueLocator();
+        DBSEntityReferrer identifier = valueLocator.getEntityIdentifier().getReferrer();
+        if (CommonUtils.isEmpty(identifier.getAttributeReferences(monitor))) {
+            UIUtils.showErrorDialog(null, "Error", "Empty identifier");
+            return;
+        }
+
         try {
             new DataUpdater().applyChanges(monitor, listener);
         } catch (DBException e) {
@@ -1971,7 +1984,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             for (RowInfo rowNum : removedRows) {
                 DBSEntity table = metaColumns[0].getValueLocator().getEntity();
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
-                Collection<? extends DBSEntityAttribute> keyColumns = metaColumns[0].getValueLocator().getTableColumns();
+                Collection<? extends DBSEntityAttribute> keyColumns = metaColumns[0].getValueLocator().getEntityIdentifier().getAttributes();
                 for (DBSEntityAttribute column : keyColumns) {
                     int colIndex = getMetaColumnIndex(column);
                     if (colIndex < 0) {

@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,7 +46,7 @@ public class DBDValueLocator implements DBPObject {
     public String getKeyId(DBDRowController rowController)
     {
         StringBuilder keyId = new StringBuilder();
-        Collection<? extends DBCColumnMetaData> keyColumns = getResultSetColumns();
+        Collection<? extends DBCColumnMetaData> keyColumns = getEntityIdentifier().getResultSetColumns();
         for (DBCColumnMetaData keyColumn : keyColumns) {
             keyId.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getName()));
             Object keyValue = rowController.getColumnValue(keyColumn);
@@ -75,16 +74,6 @@ public class DBDValueLocator implements DBPObject {
     public String getKeyType()
     {
         return entityIdentifier.getReferrer().getConstraintType().getName();
-    }
-
-    public Collection<? extends DBCColumnMetaData> getResultSetColumns()
-    {
-        return entityIdentifier.getResultSetColumns();
-    }
-
-    public Collection<? extends DBSEntityAttribute> getTableColumns()
-    {
-        return entityIdentifier.getAttributes();
     }
 
 /*

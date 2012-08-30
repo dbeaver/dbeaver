@@ -156,10 +156,9 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
             }
             if (CommonUtils.isEmpty(identifiers)) {
                 // No physical identifiers
-                // Probably there is virtual one
+                // Make new or use existing virtual identifier
                 DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table);
-                DBVUniqueConstraint bestIdentifier = virtualEntity.getBestIdentifier();
-                //identifiers.add(new JDBCTableIdentifier(monitor, bestIdentifier, this));
+                identifiers.add(new JDBCTableIdentifier(monitor, virtualEntity.getBestIdentifier(), this));
             }
         }
         if (!CommonUtils.isEmpty(identifiers)) {
