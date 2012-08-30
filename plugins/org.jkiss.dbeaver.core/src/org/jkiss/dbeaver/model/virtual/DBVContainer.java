@@ -115,7 +115,9 @@ public class DBVContainer extends DBVObject implements DBSObject {
         }
 
         for (DBVEntity entity : getEntities()) {
-            entity.persist(xml);
+            if (entity.hasValuableData()) {
+                entity.persist(xml);
+            }
         }
 
         xml.endElement();

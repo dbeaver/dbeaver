@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -350,11 +350,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         synchronized (dataSources) {
             PasswordEncrypter encrypter = new SimpleStringEncrypter();
             IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
-            File projectConfig = configFile.getLocation().toFile();
             try {
-                OutputStream os = new FileOutputStream(projectConfig);
+                // Save in temp memory to be safe (any error during direct write will corrupt configuration)
+                ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
                 try {
-                    XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
+                    XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET);
                     xml.setButify(true);
                     xml.startElement("data-sources");
                     for (DataSourceDescriptor dataSource : dataSources) {
@@ -362,18 +362,16 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     }
                     xml.endElement();
                     xml.flush();
-                    os.close();
                 }
                 catch (IOException ex) {
                     log.warn("IO error while saving datasources", ex);
                 }
-            } catch (FileNotFoundException ex) {
-                log.error("Can't open config file " + projectConfig.getPath(), ex);
-            }
-            try {
-                configFile.refreshLocal(IFile.DEPTH_ZERO, new NullProgressMonitor());
-            } catch (CoreException e) {
-                log.error("Can't refresh datasources configuration");
+                InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+                configFile.setContents(ifs, true, false, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+
+                //configFile.refreshLocal(IFile.DEPTH_ZERO, new NullProgressMonitor());
+            } catch (CoreException ex) {
+                log.error("Error saving datasources configuration", ex);
             }
         }
     }
