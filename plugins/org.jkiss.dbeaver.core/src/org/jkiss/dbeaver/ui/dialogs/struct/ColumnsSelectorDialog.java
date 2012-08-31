@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.struct;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
@@ -31,17 +30,16 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.text.Collator;
 import java.util.*;
 import java.util.List;
 
@@ -53,19 +51,18 @@ import java.util.List;
 public abstract class ColumnsSelectorDialog extends Dialog {
 
     private String title;
-    private DBNDatabaseNode tableNode;
+    private DBSEntity entity;
+    //private TableViewer columnsViewer;
     private Table columnsTable;
     private List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
 
     private static class ColumnInfo {
-        TableItem item;
-        DBNDatabaseNode columnNode;
+        DBSEntityAttribute attribute;
         int position;
 
-        public ColumnInfo(TableItem columnItem, DBNDatabaseNode columnNode)
+        public ColumnInfo(DBSEntityAttribute attribute)
         {
-            this.item = columnItem;
-            this.columnNode = columnNode;
+            this.attribute = attribute;
             this.position = -1;
         }
     }
@@ -73,12 +70,12 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     public ColumnsSelectorDialog(
         Shell shell,
         String title,
-        DBSEntity table) {
+        DBSEntity entity)
+    {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
         this.title = title;
-        this.tableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(table);
-        Assert.isNotNull(this.tableNode);
+        this.entity = entity;
     }
 
     @Override
@@ -90,65 +87,67 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            final Composite tableGroup = new Composite(panel, SWT.NONE);
-            tableGroup.setLayout(new GridLayout(2, false));
-            tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createLabelText(tableGroup, CoreMessages.dialog_struct_columns_select_label_table, tableNode.getNodeName(), SWT.BORDER | SWT.READ_ONLY);
+            final Composite tableGroup = createTableNameInput(panel);
 
             createContentsBeforeColumns(tableGroup);
         }
 
-        {
-            Composite columnsGroup = UIUtils.createControlGroup(panel, CoreMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
-            columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
-            columnsTable.setHeaderVisible(true);
-            final GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 200;
-            gd.heightHint = 200;
-            columnsTable.setLayoutData(gd);
-            columnsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    handleItemSelect((TableItem) e.item, true);
-                }
-            });
-            TableColumn colName = new TableColumn(columnsTable, SWT.NONE);
-            colName.setText(CoreMessages.dialog_struct_columns_select_column);
-            colName.setWidth(170);
-
-            TableColumn colPosition = new TableColumn(columnsTable, SWT.CENTER);
-            colPosition.setText("#"); //$NON-NLS-1$
-            colPosition.setWidth(30);
-        }
+        createColumnsGroup(panel);
         createContentsAfterColumns(panel);
+        fillColumns(entity);
 
+
+        //columnsTable.set
+
+        return dialogGroup;
+    }
+
+    protected void createColumnsGroup(Composite panel)
+    {
+        Composite columnsGroup = UIUtils.createControlGroup(panel, CoreMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
+        //columnsViewer = new TableViewer(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
+        columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
+        columnsTable.setHeaderVisible(true);
+        final GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 300;
+        gd.heightHint = 200;
+        columnsTable.setLayoutData(gd);
+        columnsTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                handleItemSelect((TableItem) e.item, true);
+            }
+        });
+
+        TableColumn colName = new TableColumn(columnsTable, SWT.NONE);
+        colName.setText(CoreMessages.dialog_struct_columns_select_column);
+        colName.setWidth(170);
+        colName.addListener(SWT.Selection, new SortListener(0));
+
+        TableColumn colPosition = new TableColumn(columnsTable, SWT.CENTER);
+        colPosition.setText("#"); //$NON-NLS-1$
+        colPosition.setWidth(30);
+        colPosition.addListener(SWT.Selection, new SortListener(1));
+
+        TableColumn colType = new TableColumn(columnsTable, SWT.RIGHT);
+        colType.setText("Type"); //$NON-NLS-1$
+        colType.setWidth(100);
+        colType.addListener(SWT.Selection, new SortListener(2));
+
+    }
+
+    protected void fillColumns(final DBSEntity entity)
+    {
         // Collect columns
-        final List<DBNDatabaseNode> columnNodes = new ArrayList<DBNDatabaseNode>();
+        final List<DBSEntityAttribute> attributes = new ArrayList<DBSEntityAttribute>();
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        final List<DBNDatabaseNode> folders = tableNode.getChildren(monitor);
-                        for (DBNDatabaseNode node : folders) {
-                            if (node instanceof DBNContainer) {
-                                final Class<?> itemsClass = ((DBNContainer) node).getChildrenClass();
-                                if (itemsClass != null && DBSEntityAttribute.class.isAssignableFrom(itemsClass)) {
-                                    final List<DBNDatabaseNode> children = node.getChildren(monitor);
-                                    if (!CommonUtils.isEmpty(children)) {
-                                        for (DBNDatabaseNode child : children) {
-                                            if (child.getObject() instanceof DBSEntityAttribute) {
-                                                columnNodes.add(child);
-                                            }
-                                        }
-                                    }
-                                }
-                            } else if (node.getObject() instanceof DBSEntityAttribute) {
-                                columnNodes.add(node);
-                            }
-                        }
+                        attributes.addAll(CommonUtils.safeCollection(entity.getAttributes(monitor)));
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -156,31 +155,40 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             });
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(
-                    getShell(),
-                    CoreMessages.dialog_struct_columns_select_error_load_columns_title,
-                    CoreMessages.dialog_struct_columns_select_error_load_columns_message,
-                    e.getTargetException());
+                getShell(),
+                CoreMessages.dialog_struct_columns_select_error_load_columns_title,
+                CoreMessages.dialog_struct_columns_select_error_load_columns_message,
+                e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
 
-        for (DBNDatabaseNode columnNode : columnNodes) {
+        for (DBSEntityAttribute attribute : attributes) {
             TableItem columnItem = new TableItem(columnsTable, SWT.NONE);
 
-            ColumnInfo col = new ColumnInfo(columnItem, columnNode);
+            ColumnInfo col = new ColumnInfo(attribute);
             columns.add(col);
 
-            columnItem.setImage(0, columnNode.getNodeIcon());
-            columnItem.setText(0, columnNode.getNodeName());
+            DBNDatabaseNode attributeNode = DBeaverCore.getInstance().getNavigatorModel().findNode(attribute);
+            if (attributeNode != null) {
+                columnItem.setImage(0, attributeNode.getNodeIcon());
+            }
+            columnItem.setText(0, attribute.getName());
+            columnItem.setText(2, attribute.getTypeName());
             columnItem.setData(col);
-            if (isColumnSelected((DBSEntityAttribute) columnNode.getObject())) {
+            if (isColumnSelected(attribute)) {
                 columnItem.setChecked(true);
                 handleItemSelect(columnItem, false);
             }
         }
-        //columnsTable.set
+    }
 
-        return dialogGroup;
+    private Composite createTableNameInput(Composite panel) {
+        final Composite tableGroup = new Composite(panel, SWT.NONE);
+        tableGroup.setLayout(new GridLayout(2, false));
+        tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createLabelText(tableGroup, CoreMessages.dialog_struct_columns_select_label_table, entity.getName(), SWT.BORDER | SWT.READ_ONLY);
+        return tableGroup;
     }
 
     private void handleItemSelect(TableItem item, boolean notify)
@@ -198,10 +206,16 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         } else if (!item.getChecked() && col.position >= 0) {
             // Unchecked
             item.setText(1, ""); //$NON-NLS-1$
+            TableItem[] allItems = columnsTable.getItems();
             for (ColumnInfo tmp : columns) {
                 if (tmp != col && tmp.position >= col.position) {
                     tmp.position--;
-                    tmp.item.setText(1, String.valueOf(tmp.position + 1));
+                    for (TableItem ai : allItems) {
+                        if (ai.getData() == tmp) {
+                            ai.setText(1, String.valueOf(tmp.position + 1));
+                            break;
+                        }
+                    }
                 }
             }
             col.position = -1;
@@ -240,8 +254,8 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, tableNode.getNodeName()));
-        shell.setImage(tableNode.getNodeIcon());
+        shell.setText(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, entity.getName()));
+        //shell.setImage(entity.getNodeIcon());
     }
 
     public Collection<DBSEntityAttribute> getSelectedColumns()
@@ -257,7 +271,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         orderedColumns.addAll(columns);
         for (ColumnInfo col : orderedColumns) {
             if (col.position >= 0) {
-                tableColumns.add((DBSEntityAttribute) col.columnNode.getObject());
+                tableColumns.add(col.attribute);
             }
         }
         return tableColumns;
@@ -281,6 +295,36 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     protected void handleColumnsChange()
     {
 
+    }
+
+    private class SortListener implements Listener
+    {
+        int columnIndex;
+        int sortDirection = SWT.DOWN;
+        TableColumn prevColumn = null;
+
+        private SortListener(int columnIndex) {
+            this.columnIndex = columnIndex;
+        }
+
+        @Override
+        public void handleEvent(Event e) {
+            final Collator collator = Collator.getInstance(Locale.getDefault());
+            TableColumn column = (TableColumn)e.widget;
+            if (prevColumn == column) {
+                // Set reverse order
+                sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
+            }
+            prevColumn = column;
+            columnsTable.setSortColumn(column);
+            columnsTable.setSortDirection(sortDirection);
+            UIUtils.sortTable(columnsTable, new Comparator<TableItem>() {
+                @Override
+                public int compare(TableItem e1, TableItem e2) {
+                    return collator.compare(e1.getText(columnIndex), e2.getText(columnIndex)) * (sortDirection == SWT.UP ? 1 : -1);
+                }
+            });
+        }
     }
 
 }

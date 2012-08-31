@@ -58,10 +58,7 @@ import org.jkiss.utils.CommonUtils;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.SortedMap;
+import java.util.*;
 
 /**
  * UI Utils
@@ -340,6 +337,33 @@ public class UIUtils {
             }
         }
         return -1;
+    }
+
+    public static void sortTable(Table table, Comparator<TableItem> comparator)
+    {
+        int columnCount = table.getColumnCount();
+        TableItem[] items = table.getItems();
+        for (int i = 1; i < items.length; i++) {
+            for (int j = 0; j < i; j++) {
+                TableItem item = items[i];
+                if (comparator.compare(item, items[j]) < 0) {
+                    String[] values = new String[columnCount];
+                    for (int k = 0; k < columnCount; k++) {
+                        values[k] = item.getText(k);
+                    }
+                    Object data = item.getData();
+                    boolean checked = item.getChecked();
+                    item.dispose();
+
+                    item = new TableItem(table, SWT.NONE, j);
+                    item.setText(values);
+                    item.setData(data);
+                    item.setChecked(checked);
+                    items = table.getItems();
+                    break;
+                }
+            }
+        }
     }
 
     public static void dispose(Widget widget)

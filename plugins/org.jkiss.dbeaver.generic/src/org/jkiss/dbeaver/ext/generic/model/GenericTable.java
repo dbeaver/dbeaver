@@ -143,7 +143,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public Collection<GenericTableColumn> getColumns(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
@@ -184,7 +184,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (indexes == null && getDataSource().getInfo().supportsIndexes()) {
@@ -211,7 +211,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public Collection<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (uniqueKeys == null) {
@@ -248,7 +248,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public Collection<GenericTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null && getDataSource().getInfo().supportsReferentialIntegrity()) {
@@ -303,7 +303,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 */
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;
         indexes = null;
@@ -315,7 +315,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
     @Property(name = "Row Count", viewable = true, expensive = true, order = 5)
-    public Long getRowCount(DBRProgressMonitor monitor)
+    public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {
             return rowCount;
@@ -405,7 +405,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         int defferabilityNum;
     }
 
-    private List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
+    private synchronized List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
