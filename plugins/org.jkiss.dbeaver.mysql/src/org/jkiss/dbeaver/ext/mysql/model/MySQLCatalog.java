@@ -254,7 +254,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope)
+    public synchronized void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         monitor.subTask("Cache tables");
@@ -270,7 +270,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public synchronized boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         tableCache.clearCache();

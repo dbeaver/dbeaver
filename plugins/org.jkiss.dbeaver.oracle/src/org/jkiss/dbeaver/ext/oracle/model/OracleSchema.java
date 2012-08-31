@@ -263,7 +263,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope)
+    public synchronized void cacheStructure(DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         monitor.subTask("Cache tables");
@@ -282,7 +282,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public synchronized boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         tableCache.clearCache();

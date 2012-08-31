@@ -202,7 +202,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
         throws DBException
     {
         if (procedures == null) {
@@ -218,7 +218,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         if (procedures == null) {
@@ -249,7 +249,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public synchronized boolean refreshObject(DBRProgressMonitor monitor)
         throws DBException
     {
         this.tableCache.clearCache();

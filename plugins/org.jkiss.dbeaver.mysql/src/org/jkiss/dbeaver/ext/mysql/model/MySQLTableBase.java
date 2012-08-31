@@ -70,7 +70,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     @Override
-    public Collection<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
+    public synchronized Collection<MySQLTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
@@ -87,22 +87,21 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;
         return true;
     }
 
-    public boolean isColumnsCached()
+    boolean isColumnsCached()
     {
         return columns != null;
     }
 
-    public void setColumns(List<MySQLTableColumn> columns)
+    void setColumns(List<MySQLTableColumn> columns)
     {
         this.columns = columns;
     }
-
 
     public String getDDL(DBRProgressMonitor monitor)
         throws DBException

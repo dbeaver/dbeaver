@@ -125,7 +125,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     @Property(name = "Comments", viewable = true, editable = true, order = 100)
     @LazyProperty(cacheValidator = CommentsValidator.class)
-    public String getComment(DBRProgressMonitor monitor)
+    public synchronized String getComment(DBRProgressMonitor monitor)
         throws DBException
     {
         if (comment == null) {
@@ -150,7 +150,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public Collection<OracleTableColumn> getColumns(DBRProgressMonitor monitor)
+    public synchronized Collection<OracleTableColumn> getColumns(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
@@ -167,19 +167,19 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         columns = null;
         constraints = null;
         return true;
     }
 
-    public boolean isColumnsCached()
+    boolean isColumnsCached()
     {
         return columns != null;
     }
 
-    public void setColumns(List<OracleTableColumn> columns)
+    void setColumns(List<OracleTableColumn> columns)
     {
         this.columns = columns;
     }
@@ -199,7 +199,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     @Override
     @Association
-    public Collection<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)
+    public synchronized Collection<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {

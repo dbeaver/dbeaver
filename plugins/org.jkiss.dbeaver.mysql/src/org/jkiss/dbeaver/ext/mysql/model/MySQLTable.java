@@ -126,7 +126,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public List<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public synchronized Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (indexes == null) {
@@ -148,7 +148,7 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public List<MySQLTableConstraint> getConstraints(DBRProgressMonitor monitor)
+    public synchronized Collection<MySQLTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
         if (constraints == null) {
@@ -165,14 +165,14 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public List<MySQLTableForeignKey> getReferences(DBRProgressMonitor monitor)
+    public Collection<MySQLTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
         return loadForeignKeys(monitor, true);
     }
 
     @Override
-    public List<MySQLTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public synchronized Collection<MySQLTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
         if (foreignKeys == null) {
@@ -410,7 +410,7 @@ public class MySQLTable extends MySQLTableBase
                         }
                     }
                     if (pk == null) {
-                        List<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
+                        Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
                             for (MySQLTableConstraint pkConstraint : constraints) {
                                 if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintColumn(monitor, pkConstraint, pkColumn) != null) {
