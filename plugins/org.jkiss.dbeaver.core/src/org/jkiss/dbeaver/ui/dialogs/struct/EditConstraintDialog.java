@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,9 +46,10 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
     public EditConstraintDialog(
         Shell shell,
         String title,
-        DBSTable table,
-        DBSEntityConstraintType[] constraintTypes) {
-        super(shell, title, table);
+        DBSEntity entity,
+        DBSEntityConstraintType[] constraintTypes)
+    {
+        super(shell, title, entity);
         this.constraintTypes = constraintTypes;
         Assert.isTrue(!CommonUtils.isEmpty(this.constraintTypes));
     }

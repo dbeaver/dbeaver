@@ -178,7 +178,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
     }
 
     @Override
-    public synchronized List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
+    public List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (childNodes == null && allowsChildren()) {
@@ -204,7 +204,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return childNodes;
     }
 
-    synchronized void addChildItem(DBSObject object)
+    void addChildItem(DBSObject object)
     {
         DBXTreeItem metaChildren = getItemsMeta();
         if (metaChildren != null) {
@@ -218,7 +218,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
     }
 
-    synchronized void removeChildItem(DBSObject object)
+    void removeChildItem(DBSObject object)
     {
         DBNNode childNode = null;
         synchronized (this) {
@@ -296,7 +296,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
     }
 
-    private synchronized void refreshNodeContent(final DBRProgressMonitor monitor, Object source)
+    private void refreshNodeContent(final DBRProgressMonitor monitor, Object source)
         throws DBException
     {
         if (isDisposed()) {
@@ -323,7 +323,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         //new RefreshJob("Refresh node " + getNodeName()).schedule();
     }
 
-    protected synchronized void clearChildren(boolean reflect)
+    protected void clearChildren(boolean reflect)
     {
         List<DBNDatabaseNode> childrenCopy;
         synchronized (this) {

@@ -55,6 +55,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     //private TableViewer columnsViewer;
     private Table columnsTable;
     private List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
+    private Button toggleButton;
 
     private static class ColumnInfo {
         DBSEntityAttribute attribute;
@@ -106,11 +107,11 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     {
         Composite columnsGroup = UIUtils.createControlGroup(panel, CoreMessages.dialog_struct_columns_select_group_columns, 1, GridData.FILL_BOTH, 0);
         //columnsViewer = new TableViewer(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
-        columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
+        columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
         columnsTable.setHeaderVisible(true);
         final GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 300;
-        gd.heightHint = 200;
+        //gd.widthHint = 300;
+        //gd.heightHint = 200;
         columnsTable.setLayoutData(gd);
         columnsTable.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -122,19 +123,47 @@ public abstract class ColumnsSelectorDialog extends Dialog {
 
         TableColumn colName = new TableColumn(columnsTable, SWT.NONE);
         colName.setText(CoreMessages.dialog_struct_columns_select_column);
-        colName.setWidth(170);
         colName.addListener(SWT.Selection, new SortListener(0));
 
         TableColumn colPosition = new TableColumn(columnsTable, SWT.CENTER);
         colPosition.setText("#"); //$NON-NLS-1$
-        colPosition.setWidth(30);
         colPosition.addListener(SWT.Selection, new SortListener(1));
 
         TableColumn colType = new TableColumn(columnsTable, SWT.RIGHT);
         colType.setText("Type"); //$NON-NLS-1$
-        colType.setWidth(100);
         colType.addListener(SWT.Selection, new SortListener(2));
 
+        TableColumn lengthType = new TableColumn(columnsTable, SWT.RIGHT);
+        lengthType.setText("Length"); //$NON-NLS-1$
+        lengthType.addListener(SWT.Selection, new SortListener(3));
+
+        toggleButton = new Button(columnsGroup, SWT.PUSH);
+        toggleButton.setText("Select All");
+        toggleButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        toggleButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                TableItem[] items = columnsTable.getItems();
+                if (hasCheckedColumns()) {
+                    // Clear all checked
+                    for (TableItem item : items) {
+                        if (item.getChecked()) {
+                            item.setChecked(false);
+                            handleItemSelect(item, true);
+                        }
+                    }
+                } else {
+                    // Check all
+                    for (TableItem item : items) {
+                        if (!item.getChecked()) {
+                            item.setChecked(true);
+                            handleItemSelect(item, true);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     protected void fillColumns(final DBSEntity entity)
@@ -175,12 +204,15 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             }
             columnItem.setText(0, attribute.getName());
             columnItem.setText(2, attribute.getTypeName());
+            columnItem.setText(3, String.valueOf(attribute.getMaxLength()));
             columnItem.setData(col);
             if (isColumnSelected(attribute)) {
                 columnItem.setChecked(true);
                 handleItemSelect(columnItem, false);
             }
         }
+        UIUtils.packColumns(columnsTable);
+        updateToggleButton();
     }
 
     private Composite createTableNameInput(Composite panel) {
@@ -222,6 +254,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         }
         if (notify) {
             handleColumnsChange();
+            updateToggleButton();
             getButton(IDialogConstants.OK_ID).setEnabled(hasCheckedColumns());
         }
     }
@@ -236,6 +269,15 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             }
         }
         return hasCheckedColumns;
+    }
+
+    private void updateToggleButton()
+    {
+        if (hasCheckedColumns()) {
+            toggleButton.setText("Clear All");
+        } else {
+            toggleButton.setText("Select All");
+        }
     }
 
     @Override
@@ -321,7 +363,14 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             UIUtils.sortTable(columnsTable, new Comparator<TableItem>() {
                 @Override
                 public int compare(TableItem e1, TableItem e2) {
-                    return collator.compare(e1.getText(columnIndex), e2.getText(columnIndex)) * (sortDirection == SWT.UP ? 1 : -1);
+                    int mul = (sortDirection == SWT.UP ? 1 : -1);
+                    String text1 = e1.getText(columnIndex);
+                    String text2 = e2.getText(columnIndex);
+                    try {
+                        return (int)(Double.parseDouble(text1) - Double.parseDouble(text2)) * mul;
+                    } catch (NumberFormatException e3) {
+                        return collator.compare(text1, text2) * mul;
+                    }
                 }
             });
         }

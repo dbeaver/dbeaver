@@ -95,7 +95,7 @@ public class EditDictionaryDialog extends ColumnsSelectorDialog {
     protected void createContentsAfterColumns(Composite panel)
     {
         Group group = UIUtils.createControlGroup(panel, "Custom criteria", 1, GridData.FILL_HORIZONTAL, 0);
-        criteriaText = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL);
+        criteriaText = new Text(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 50;
         criteriaText.setLayoutData(gd);

@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
+import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
@@ -1342,10 +1343,11 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         // Check for value locators
         // Probably we have only virtual one with empty column set
         DBDValueLocator valueLocator = metaColumns[0].getValueLocator();
-        DBSEntityReferrer identifier = valueLocator.getEntityIdentifier().getReferrer();
-        if (CommonUtils.isEmpty(identifier.getAttributeReferences(monitor))) {
-            UIUtils.showErrorDialog(null, "Error", "Empty identifier");
-            return;
+        DBCEntityIdentifier identifier = valueLocator.getEntityIdentifier();
+        if (CommonUtils.isEmpty(identifier.getReferrer().getAttributeReferences(monitor))) {
+            if (!editEntityIdentifier(monitor, identifier)) {
+                return;
+            }
         }
 
         try {
@@ -1353,6 +1355,22 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         } catch (DBException e) {
             log.error("Could not obtain result set meta data", e);
         }
+    }
+
+    private boolean editEntityIdentifier(DBRProgressMonitor monitor, DBCEntityIdentifier identifier)
+    {
+/*
+        EditConstraintDialog dialog = new EditConstraintDialog(
+            getControl().getShell(),
+            "Edit unique identifier",
+            identifier.getReferrer().getParentObject(),
+            new DBSEntityConstraintType[] { DBSEntityConstraintType.PRIMARY_KEY } );
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return false;
+        }
+*/
+        UIUtils.showErrorDialog(null, "Error", "Empty identifier");
+        return true;
     }
 
     public void rejectChanges()
