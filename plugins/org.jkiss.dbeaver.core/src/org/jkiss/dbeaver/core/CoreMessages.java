@@ -1137,6 +1137,7 @@ public class CoreMessages extends NLS {
 	public static String model_struct_Set_NULL;
 	public static String model_struct_Statistic;
 	public static String model_struct_Unique_Key;
+    public static String model_struct_Virtual_Key;
 	public static String model_struct_Unknown;
 
 	public static String pref_page_confirmations_combo_always;

@@ -1359,16 +1359,15 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private boolean editEntityIdentifier(DBRProgressMonitor monitor, DBCEntityIdentifier identifier)
     {
-/*
+
         EditConstraintDialog dialog = new EditConstraintDialog(
             getControl().getShell(),
-            "Edit unique identifier",
-            identifier.getReferrer().getParentObject(),
-            new DBSEntityConstraintType[] { DBSEntityConstraintType.PRIMARY_KEY } );
+            "Define virtual unique identifier",
+            identifier.getReferrer());
         if (dialog.open() != IDialogConstants.OK_ID) {
             return false;
         }
-*/
+
         UIUtils.showErrorDialog(null, "Error", "Empty identifier");
         return true;
     }

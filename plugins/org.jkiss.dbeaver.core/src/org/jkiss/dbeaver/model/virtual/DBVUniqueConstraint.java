@@ -48,13 +48,13 @@ public class DBVUniqueConstraint implements DBSEntityConstraint, DBSEntityReferr
     @Override
     public DBSEntityConstraintType getConstraintType()
     {
-        return DBSEntityConstraintType.PRIMARY_KEY;
+        return DBSEntityConstraintType.VIRTUAL_KEY;
     }
 
     @Override
     public String getName()
     {
-        return "PRIMARY";
+        return "VIRTUAL";
     }
 
     @Override

@@ -29,7 +29,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,6 +44,7 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
 
     private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
+    private DBSEntityReferrer constraint;
 
     public EditConstraintDialog(
         Shell shell,
@@ -52,6 +55,16 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
         super(shell, title, entity);
         this.constraintTypes = constraintTypes;
         Assert.isTrue(!CommonUtils.isEmpty(this.constraintTypes));
+    }
+
+    public EditConstraintDialog(
+        Shell shell,
+        String title,
+        DBSEntityReferrer constraint)
+    {
+        super(shell, title, constraint.getParentObject());
+        this.constraint = constraint;
+        this.constraintTypes = new DBSEntityConstraintType[] {constraint.getConstraintType()};
     }
 
     @Override
