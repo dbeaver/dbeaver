@@ -11,12 +11,12 @@ import java.util.List;
 /**
  * Virtual unique constraint
  */
-public class DBVUniqueConstraint implements DBSEntityConstraint, DBSEntityReferrer
+public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferrer
 {
     private final DBVEntity entity;
-    private final List<DBVUniqueConstraintColumn> attributes = new ArrayList<DBVUniqueConstraintColumn>();
+    private final List<DBVEntityConstraintColumn> attributes = new ArrayList<DBVEntityConstraintColumn>();
 
-    public DBVUniqueConstraint(DBVEntity entity)
+    public DBVEntityConstraint(DBVEntity entity)
     {
         this.entity = entity;
     }

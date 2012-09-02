@@ -56,7 +56,7 @@ public class EditDictionaryDialog extends ColumnsSelectorDialog {
     {
         super(shell, title, entity);
         this.entity = entity;
-        this.dictionary = entity.getDataSource().getContainer().getVirtualModel().findEntity(entity);
+        this.dictionary = entity.getDataSource().getContainer().getVirtualModel().findEntity(entity, true);
         DBeaverCore.getInstance().runInUI(DBeaverCore.getInstance().getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor)

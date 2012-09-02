@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.model.virtual.DBVUniqueConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -157,7 +156,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
             if (CommonUtils.isEmpty(identifiers)) {
                 // No physical identifiers
                 // Make new or use existing virtual identifier
-                DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table);
+                DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table, true);
                 identifiers.add(new JDBCTableIdentifier(monitor, virtualEntity.getBestIdentifier(), this));
             }
         }

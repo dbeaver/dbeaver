@@ -1,12 +1,13 @@
 package org.jkiss.dbeaver.model.virtual;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -22,13 +23,22 @@ import java.util.List;
  */
 public class DBVModel extends DBVContainer {
 
-    static final Log log = LogFactory.getLog(DBVModel.class);
     private DBSDataSourceContainer dataSourceContainer;
 
     public DBVModel(DBSDataSourceContainer dataSourceContainer)
     {
         super(null, "model");
         this.dataSourceContainer = dataSourceContainer;
+    }
+
+    public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException
+    {
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (dataSource instanceof DBSObjectContainer) {
+            return (DBSObjectContainer) dataSource;
+        }
+        log.warn("Datasource '" + dataSource.getClass().getName() + "' is not an object container");
+        return null;
     }
 
     @Override
@@ -39,10 +49,12 @@ public class DBVModel extends DBVContainer {
 
     /**
      * Search for virtual entity descriptor
+     *
      * @param entity entity
+     * @param createNew
      * @return entity virtual entity
      */
-    public DBVEntity findEntity(DBSEntity entity)
+    public DBVEntity findEntity(DBSEntity entity, boolean createNew)
     {
         List<DBSObject> path = DBUtils.getObjectPath(entity, false);
         if (path.isEmpty()) {
@@ -56,9 +68,12 @@ public class DBVModel extends DBVContainer {
         DBVContainer container = this;
         for (int i = 1; i < path.size(); i++) {
             DBSObject item = path.get(i);
-            container = container.getContainer(item.getName());
+            container = container.getContainer(item.getName(), createNew);
+            if (container == null) {
+                return null;
+            }
         }
-        return container.getEntity(entity.getName());
+        return container.getEntity(entity.getName(), createNew);
     }
 
     public void persist(XMLBuilder xml) throws IOException {

@@ -7,6 +7,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -33,9 +34,8 @@ public class DBVEntity extends DBVObject implements DBSEntity {
     private final DBVContainer container;
     private String name;
     private String description;
-    private String uniqueColumns;
     private String descriptionColumnNames;
-    private List<DBVUniqueConstraint> uniqueConstraints;
+    private List<DBVEntityConstraint> entityConstraints;
 
     public DBVEntity(DBVContainer container, String name, String descriptionColumnNames) {
         this.container = container;
@@ -48,6 +48,20 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         this.container = copy.container;
         this.name = copy.name;
         this.descriptionColumnNames = copy.descriptionColumnNames;
+    }
+
+    public DBSEntity getRealEntity(DBRProgressMonitor monitor) throws DBException
+    {
+        DBSObjectContainer realContainer = container.getRealContainer(monitor);
+        if (realContainer == null) {
+            return null;
+        }
+        DBSObject realObject = realContainer.getChild(monitor, name);
+        if (realObject instanceof DBSEntity) {
+            return (DBSEntity) realObject;
+        }
+        log.warn("Entity '" + name + "' not found in '" + realContainer.getName() + "'");
+        return null;
     }
 
     public String getName() {
@@ -92,29 +106,41 @@ public class DBVEntity extends DBVObject implements DBSEntity {
     @Override
     public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
     {
-        return null;
+        DBSEntity realEntity = getRealEntity(monitor);
+        if (realEntity == null) {
+            return Collections.emptyList();
+        }
+        return realEntity.getAttributes(monitor);
     }
 
     public DBSEntityAttribute getAttribute(String attributeName)
     {
-        return null;
+        // Here we use void monitor.
+        // In real life entity columns SHOULD be already read so it doesn't matter
+        // But I'm afraid that in some very special cases it does. Thant's too bad.
+        try {
+            return DBUtils.findObject(getAttributes(VoidProgressMonitor.INSTANCE), attributeName);
+        } catch (DBException e) {
+            log.error("Can't obtain real entity's attributes", e);
+            return null;
+        }
     }
 
     @Override
-    public Collection<? extends DBVUniqueConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBVEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
     {
-        return uniqueConstraints;
+        return entityConstraints;
     }
 
-    public DBVUniqueConstraint getBestIdentifier()
+    public DBVEntityConstraint getBestIdentifier()
     {
-        if (uniqueConstraints == null) {
-            uniqueConstraints = new ArrayList<DBVUniqueConstraint>();
+        if (entityConstraints == null) {
+            entityConstraints = new ArrayList<DBVEntityConstraint>();
         }
-        if (uniqueConstraints.isEmpty()) {
-            uniqueConstraints.add(new DBVUniqueConstraint(this));
+        if (entityConstraints.isEmpty()) {
+            entityConstraints.add(new DBVEntityConstraint(this));
         }
-        return uniqueConstraints.get(0);
+        return entityConstraints.get(0);
     }
 
     @Override

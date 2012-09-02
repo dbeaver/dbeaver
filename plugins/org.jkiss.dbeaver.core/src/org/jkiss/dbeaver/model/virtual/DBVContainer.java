@@ -1,7 +1,10 @@
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -13,7 +16,7 @@ import java.util.Map;
 /**
  * Virtual container
  */
-public class DBVContainer extends DBVObject implements DBSObject {
+public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     private final DBVContainer parent;
     private String name;
@@ -25,6 +28,20 @@ public class DBVContainer extends DBVObject implements DBSObject {
     {
         this.parent = parent;
         this.name = name;
+    }
+
+    public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException
+    {
+        DBSObjectContainer realParent = parent.getRealContainer(monitor);
+        if (realParent == null) {
+            return null;
+        }
+        DBSObject child = realParent.getChild(monitor, name);
+        if (child instanceof DBSObjectContainer) {
+            return (DBSObjectContainer) child;
+        }
+        log.warn("Child '" + name + "' of '" + realParent.getName() + "' is not an object container");
+        return null;
     }
 
     @Override
@@ -66,10 +83,10 @@ public class DBVContainer extends DBVObject implements DBSObject {
         return containers.values();
     }
 
-    public DBVContainer getContainer(String name)
+    public DBVContainer getContainer(String name, boolean createNew)
     {
         DBVContainer container = containers.get(name.toLowerCase());
-        if (container == null) {
+        if (container == null && createNew) {
             container = new DBVContainer(this, name);
             addContainer(container);
         }
@@ -85,11 +102,11 @@ public class DBVContainer extends DBVObject implements DBSObject {
         return entities.values();
     }
 
-    public DBVEntity getEntity(String name)
+    public DBVEntity getEntity(String name, boolean createNew)
     {
         String dictName = name.toLowerCase();
         DBVEntity entity = entities.get(dictName);
-        if (entity == null) {
+        if (entity == null && createNew) {
             entity = new DBVEntity(this, name, null);
             entities.put(dictName, entity);
         }
@@ -154,6 +171,30 @@ public class DBVContainer extends DBVObject implements DBSObject {
             myChild.copyFrom(child);
             entities.put(myChild.getName().toLowerCase(), myChild);
         }
+    }
+
+    @Override
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException
+    {
+        return !containers.isEmpty() ? containers.values() : entities.values();
+    }
+
+    @Override
+    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    {
+        return !containers.isEmpty() ? containers.get(childName) : entities.get(childName);
+    }
+
+    @Override
+    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException
+    {
+        return !containers.isEmpty() ? DBVContainer.class : DBVEntity.class;
+    }
+
+    @Override
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    {
+        // do nothing
     }
 
 }

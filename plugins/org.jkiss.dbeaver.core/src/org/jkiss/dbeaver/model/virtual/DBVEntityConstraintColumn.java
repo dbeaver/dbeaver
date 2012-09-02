@@ -2,16 +2,17 @@ package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
  * Constraint column
  */
-public class DBVUniqueConstraintColumn implements DBSEntityAttributeRef {
+public class DBVEntityConstraintColumn implements DBSEntityAttributeRef {
 
-    private final DBVUniqueConstraint constraint;
+    private final DBVEntityConstraint constraint;
     private final String attributeName;
 
-    public DBVUniqueConstraintColumn(String attributeName, DBVUniqueConstraint constraint)
+    public DBVEntityConstraintColumn(String attributeName, DBVEntityConstraint constraint)
     {
         this.attributeName = attributeName;
         this.constraint = constraint;

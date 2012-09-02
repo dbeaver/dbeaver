@@ -107,8 +107,8 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             throw new IllegalArgumentException("Bad key column argument");
         }
         DBPDataSource dataSource = context.getDataSource();
-        DBVEntity dictionary = dataSource.getContainer().getVirtualModel().findEntity(getTable());
-        if (!CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
+        DBVEntity dictionary = dataSource.getContainer().getVirtualModel().findEntity(getTable(), false);
+        if (dictionary != null && !CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
             // Try to use dictionary description
             try {
                 return readKeyEnumeration(context, keyColumn, keyPattern, preceedingKeys, dictionary, maxResults);
