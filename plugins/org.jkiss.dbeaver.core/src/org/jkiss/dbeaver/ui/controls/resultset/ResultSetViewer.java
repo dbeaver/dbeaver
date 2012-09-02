@@ -60,7 +60,11 @@ import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSManipulationType;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -1340,35 +1344,42 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             log.error("Can't save data for resultset from multiple sources");
             return;
         }
-        // Check for value locators
-        // Probably we have only virtual one with empty column set
-        DBDValueLocator valueLocator = metaColumns[0].getValueLocator();
-        DBCEntityIdentifier identifier = valueLocator.getEntityIdentifier();
-        if (CommonUtils.isEmpty(identifier.getReferrer().getAttributeReferences(monitor))) {
-            if (!editEntityIdentifier(monitor, identifier)) {
-                return;
-            }
-        }
-
         try {
+            // Check for value locators
+            // Probably we have only virtual one with empty column set
+            DBDValueLocator valueLocator = metaColumns[0].getValueLocator();
+            DBCEntityIdentifier identifier = valueLocator.getEntityIdentifier();
+            if (CommonUtils.isEmpty(identifier.getReferrer().getAttributeReferences(monitor))) {
+                if (identifier.getReferrer() instanceof DBVEntityConstraint) {
+                    if (!editEntityIdentifier(monitor, (DBVEntityConstraint) identifier.getReferrer())) {
+                        return;
+                    }
+                    identifier.reloadAttributes(monitor, metaColumns[0].getColumn().getTable());
+                } else {
+                    throw new DBCException("Empty unique identifier");
+                }
+            }
+
             new DataUpdater().applyChanges(monitor, listener);
         } catch (DBException e) {
-            log.error("Could not obtain result set meta data", e);
+            UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Error saving changes in database", e);
         }
     }
 
-    private boolean editEntityIdentifier(DBRProgressMonitor monitor, DBCEntityIdentifier identifier)
+    private boolean editEntityIdentifier(DBRProgressMonitor monitor, DBVEntityConstraint virtualConstraint)
     {
-
         EditConstraintDialog dialog = new EditConstraintDialog(
             getControl().getShell(),
             "Define virtual unique identifier",
-            identifier.getReferrer());
+            virtualConstraint,
+            monitor);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return false;
         }
 
-        UIUtils.showErrorDialog(null, "Error", "Empty identifier");
+        Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
+        virtualConstraint.setAttributes(uniqueColumns);
+
         return true;
     }
 

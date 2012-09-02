@@ -19,8 +19,10 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 /**
  * Result set table metadata
@@ -67,4 +69,6 @@ public interface DBCEntityMetaData {
     DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException;
 
+    DBCColumnMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
+        throws DBException;
 }

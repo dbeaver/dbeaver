@@ -28,12 +28,12 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
 
 /**
  * EditConstraintDialog
@@ -45,6 +45,7 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
     private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;
     private DBSEntityReferrer constraint;
+    private Collection<? extends DBSEntityAttributeRef> attributes;
 
     public EditConstraintDialog(
         Shell shell,
@@ -60,11 +61,13 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
     public EditConstraintDialog(
         Shell shell,
         String title,
-        DBSEntityReferrer constraint)
+        DBSEntityReferrer constraint,
+        DBRProgressMonitor monitor)
     {
         super(shell, title, constraint.getParentObject());
         this.constraint = constraint;
         this.constraintTypes = new DBSEntityConstraintType[] {constraint.getConstraintType()};
+        attributes = constraint.getAttributeReferences(monitor);
     }
 
     @Override
@@ -94,6 +97,19 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
     public DBSEntityConstraintType getConstraintType()
     {
         return selectedConstraintType;
+    }
+
+    @Override
+    public boolean isColumnSelected(DBSEntityAttribute attribute)
+    {
+        if (!CommonUtils.isEmpty(attributes)) {
+            for (DBSEntityAttributeRef ref : attributes) {
+                if (ref.getAttribute() == attribute) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 }

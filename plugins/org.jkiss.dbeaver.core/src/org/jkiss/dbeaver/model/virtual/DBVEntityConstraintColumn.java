@@ -12,10 +12,10 @@ public class DBVEntityConstraintColumn implements DBSEntityAttributeRef {
     private final DBVEntityConstraint constraint;
     private final String attributeName;
 
-    public DBVEntityConstraintColumn(String attributeName, DBVEntityConstraint constraint)
+    public DBVEntityConstraintColumn(DBVEntityConstraint constraint, String attributeName)
     {
-        this.attributeName = attributeName;
         this.constraint = constraint;
+        this.attributeName = attributeName;
     }
 
     @Override

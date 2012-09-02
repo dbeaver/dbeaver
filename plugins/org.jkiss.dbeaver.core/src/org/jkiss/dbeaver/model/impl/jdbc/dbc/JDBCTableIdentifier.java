@@ -19,7 +19,9 @@
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
@@ -35,16 +37,21 @@ public class JDBCTableIdentifier implements DBCEntityIdentifier {
     private DBSEntityReferrer referrer;
 
     //private DBSTableIndex index;
-    private List<JDBCColumnMetaData> columns;
+    private List<DBCColumnMetaData> columns;
     private List<DBSEntityAttribute> tableColumns;
 
     public JDBCTableIdentifier(DBRProgressMonitor monitor, DBSEntityReferrer referrer, JDBCTableMetaData metaData) throws DBException
     {
         this.referrer = referrer;
-        this.columns = new ArrayList<JDBCColumnMetaData>();
+        reloadAttributes(monitor, metaData);
+    }
+
+    public void reloadAttributes(DBRProgressMonitor monitor, DBCEntityMetaData metaData) throws DBException
+    {
+        this.columns = new ArrayList<DBCColumnMetaData>();
         this.tableColumns = new ArrayList<DBSEntityAttribute>();
         for (DBSEntityAttributeRef cColumn : referrer.getAttributeReferences(monitor)) {
-            JDBCColumnMetaData rsColumn = metaData.getColumnMetaData(monitor, cColumn.getAttribute());
+            DBCColumnMetaData rsColumn = metaData.getColumnMetaData(monitor, cColumn.getAttribute());
             if (rsColumn != null) {
                 columns.add(rsColumn);
                 tableColumns.add(cColumn.getAttribute());
@@ -58,7 +65,7 @@ public class JDBCTableIdentifier implements DBCEntityIdentifier {
     }
 
     @Override
-    public Collection<JDBCColumnMetaData> getResultSetColumns()
+    public Collection<DBCColumnMetaData> getResultSetColumns()
     {
         return columns;
     }

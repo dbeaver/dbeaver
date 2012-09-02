@@ -109,7 +109,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         //columnsViewer = new TableViewer(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
         columnsTable = new Table(columnsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
         columnsTable.setHeaderVisible(true);
-        final GridData gd = new GridData(GridData.FILL_BOTH);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         //gd.widthHint = 300;
         //gd.heightHint = 200;
         columnsTable.setLayoutData(gd);
@@ -139,7 +139,9 @@ public abstract class ColumnsSelectorDialog extends Dialog {
 
         toggleButton = new Button(columnsGroup, SWT.PUSH);
         toggleButton.setText("Select All");
-        toggleButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.widthHint = 120;
+        toggleButton.setLayoutData(gd);
         toggleButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)

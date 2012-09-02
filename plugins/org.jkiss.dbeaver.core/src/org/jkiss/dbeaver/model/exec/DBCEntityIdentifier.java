@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
@@ -46,4 +48,5 @@ public interface DBCEntityIdentifier {
      */
     Collection<? extends DBSEntityAttribute> getAttributes();
 
+    void reloadAttributes(DBRProgressMonitor monitor, DBCEntityMetaData metaData) throws DBException;
 }

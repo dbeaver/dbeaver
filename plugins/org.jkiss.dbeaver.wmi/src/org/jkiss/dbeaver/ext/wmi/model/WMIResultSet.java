@@ -193,6 +193,17 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         return null;
     }
 
+    @Override
+    public DBCColumnMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column) throws DBException
+    {
+        for (DBCColumnMetaData cmd : properties) {
+            if (cmd.getTableColumn(monitor) == column) {
+                return cmd;
+            }
+        }
+        return null;
+    }
+
     /////////////////////////////////////////////////////////////
     // Meta property
 

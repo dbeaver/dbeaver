@@ -62,4 +62,12 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     {
         return true;
     }
+
+    public void setAttributes(Collection<DBSEntityAttribute> realAttributes)
+    {
+        attributes.clear();
+        for (DBSEntityAttribute attr : realAttributes) {
+            attributes.add(new DBVEntityConstraintColumn(this, attr.getName()));
+        }
+    }
 }
