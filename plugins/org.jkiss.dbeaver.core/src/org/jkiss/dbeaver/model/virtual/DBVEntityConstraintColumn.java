@@ -24,4 +24,8 @@ public class DBVEntityConstraintColumn implements DBSEntityAttributeRef {
         return constraint.getParentObject().getAttribute(attributeName);
     }
 
+    public String getAttributeName()
+    {
+        return attributeName;
+    }
 }

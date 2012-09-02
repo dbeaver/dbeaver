@@ -223,12 +223,35 @@ public class DBVEntity extends DBVObject implements DBSEntity {
     {
         xml.startElement(RegistryConstants.TAG_ENTITY);
         xml.addAttribute(RegistryConstants.ATTR_NAME, getName());
-        xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, getDescriptionColumnNames());
+        if (!CommonUtils.isEmpty(getDescriptionColumnNames())) {
+            xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, getDescriptionColumnNames());
+        }
+        for (DBVEntityConstraint c : CommonUtils.safeCollection(entityConstraints)) {
+            if (c.hasAttributes()) {
+                xml.startElement(RegistryConstants.TAG_CONSTRAINT);
+                for (DBVEntityConstraintColumn cc : c.getAttributeReferences(null)) {
+                    xml.startElement(RegistryConstants.TAG_ATTRIBUTE);
+                    xml.addAttribute(RegistryConstants.ATTR_NAME, cc.getAttributeName());
+                    xml.endElement();
+                }
+                xml.endElement();
+            }
+        }
         xml.endElement();
     }
 
     public boolean hasValuableData() {
-        return !CommonUtils.isEmpty(descriptionColumnNames);
+        if (!CommonUtils.isEmpty(descriptionColumnNames)) {
+            return true;
+        }
+        if (!CommonUtils.isEmpty(entityConstraints)) {
+            for (DBVEntityConstraint c : entityConstraints) {
+                if (c.hasAttributes()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     void copyFrom(DBVEntity entity) {

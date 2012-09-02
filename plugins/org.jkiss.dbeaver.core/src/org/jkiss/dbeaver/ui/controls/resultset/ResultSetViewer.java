@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSManipulationType;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -1379,6 +1380,9 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
         Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
         virtualConstraint.setAttributes(uniqueColumns);
+
+        DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) getDataContainer().getDataSource().getContainer();
+        dataSourceDescriptor.persistConfiguration();
 
         return true;
     }

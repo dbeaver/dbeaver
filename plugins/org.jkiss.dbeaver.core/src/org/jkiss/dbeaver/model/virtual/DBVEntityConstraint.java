@@ -22,7 +22,7 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     }
 
     @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
+    public Collection<DBVEntityConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return attributes;
     }
@@ -61,6 +61,11 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     public boolean isPersisted()
     {
         return true;
+    }
+
+    public boolean hasAttributes()
+    {
+        return !attributes.isEmpty();
     }
 
     public void setAttributes(Collection<DBSEntityAttribute> realAttributes)

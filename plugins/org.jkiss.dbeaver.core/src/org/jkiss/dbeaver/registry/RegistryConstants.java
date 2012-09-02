@@ -148,5 +148,7 @@ public class RegistryConstants {
     public static final String TAG_MODEL = "model"; //$NON-NLS-1$
     public static final String TAG_CONTAINER = "container"; //$NON-NLS-1$
     public static final String TAG_ENTITY = "entity"; //$NON-NLS-1$
+    public static final String TAG_CONSTRAINT = "constraint"; //$NON-NLS-1$
+    public static final String TAG_ATTRIBUTE = "attribute"; //$NON-NLS-1$
 
 }
