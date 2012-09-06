@@ -138,9 +138,17 @@ public class DBVEntity extends DBVObject implements DBSEntity {
             entityConstraints = new ArrayList<DBVEntityConstraint>();
         }
         if (entityConstraints.isEmpty()) {
-            entityConstraints.add(new DBVEntityConstraint(this));
+            entityConstraints.add(new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, "PRIMARY"));
         }
         return entityConstraints.get(0);
+    }
+
+    public void addConstraint(DBVEntityConstraint constraint)
+    {
+        if (entityConstraints == null) {
+            entityConstraints = new ArrayList<DBVEntityConstraint>();
+        }
+        entityConstraints.add(constraint);
     }
 
     @Override
@@ -229,6 +237,8 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         for (DBVEntityConstraint c : CommonUtils.safeCollection(entityConstraints)) {
             if (c.hasAttributes()) {
                 xml.startElement(RegistryConstants.TAG_CONSTRAINT);
+                xml.addAttribute(RegistryConstants.ATTR_NAME, c.getName());
+                xml.addAttribute(RegistryConstants.ATTR_TYPE, c.getConstraintType().getName());
                 for (DBVEntityConstraintColumn cc : c.getAttributeReferences(null)) {
                     xml.startElement(RegistryConstants.TAG_ATTRIBUTE);
                     xml.addAttribute(RegistryConstants.ATTR_NAME, cc.getAttributeName());

@@ -4,10 +4,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -93,6 +90,7 @@ public class DBVModel extends DBVContainer {
     {
         private DBVContainer curContainer = null;
         private DBVEntity curEntity = null;
+        private DBVEntityConstraint curConstraint;
 
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
@@ -114,6 +112,18 @@ public class DBVModel extends DBVContainer {
                     atts.getValue(RegistryConstants.ATTR_NAME),
                     atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
                 curContainer.addEntity(curEntity);
+            } else if (localName.equals(RegistryConstants.TAG_CONSTRAINT)) {
+                if (curEntity != null) {
+                    curConstraint = new DBVEntityConstraint(
+                        curEntity,
+                        DBSEntityConstraintType.VIRTUAL_KEY,
+                        atts.getValue(RegistryConstants.ATTR_NAME));
+                    curEntity.addConstraint(curConstraint);
+                }
+            } else if (localName.equals(RegistryConstants.TAG_ATTRIBUTE)) {
+                if (curConstraint != null) {
+                    curConstraint.addAttribute(atts.getValue(RegistryConstants.ATTR_NAME));
+                }
             }
         }
 
@@ -126,6 +136,8 @@ public class DBVModel extends DBVContainer {
                 curContainer = curContainer.getParentObject();
             } else if (localName.equals(RegistryConstants.TAG_ENTITY)) {
                 curEntity = null;
+            } else if (localName.equals(RegistryConstants.TAG_CONSTRAINT)) {
+                curConstraint = null;
             }
 
         }

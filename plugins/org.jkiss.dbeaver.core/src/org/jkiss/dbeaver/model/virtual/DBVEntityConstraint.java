@@ -9,16 +9,20 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Virtual unique constraint
+ * Virtual constraint
  */
 public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferrer
 {
     private final DBVEntity entity;
     private final List<DBVEntityConstraintColumn> attributes = new ArrayList<DBVEntityConstraintColumn>();
+    private DBSEntityConstraintType type;
+    private String name;
 
-    public DBVEntityConstraint(DBVEntity entity)
+    public DBVEntityConstraint(DBVEntity entity, DBSEntityConstraintType type, String name)
     {
         this.entity = entity;
+        this.type = type;
+        this.name = (name == null ? type.getName() : name);
     }
 
     @Override
@@ -48,13 +52,18 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     @Override
     public DBSEntityConstraintType getConstraintType()
     {
-        return DBSEntityConstraintType.VIRTUAL_KEY;
+        return type;
     }
 
     @Override
     public String getName()
     {
-        return "VIRTUAL";
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     @Override
@@ -74,5 +83,10 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         for (DBSEntityAttribute attr : realAttributes) {
             attributes.add(new DBVEntityConstraintColumn(this, attr.getName()));
         }
+    }
+
+    public void addAttribute(String name)
+    {
+        attributes.add(new DBVEntityConstraintColumn(this, name));
     }
 }
