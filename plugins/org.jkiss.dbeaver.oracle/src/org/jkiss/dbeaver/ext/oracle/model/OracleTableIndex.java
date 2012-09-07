@@ -50,7 +50,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
     {
         super(table, indexName, null, true);
         String indexTypeName = JDBCUtils.safeGetString(dbResult, "INDEX_TYPE");
-        this.nonUnique = JDBCUtils.safeGetInt(dbResult, "UNIQUENESS") != 0;
+        this.nonUnique = !"UNIQUE".equals(JDBCUtils.safeGetString(dbResult, "UNIQUENESS"));
         if (OracleConstants.INDEX_TYPE_NORMAL.getId().equals(indexTypeName)) {
             indexType = OracleConstants.INDEX_TYPE_NORMAL;
         } else if (OracleConstants.INDEX_TYPE_BITMAP.getId().equals(indexTypeName)) {
