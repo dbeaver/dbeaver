@@ -194,7 +194,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="%command.org.jkiss.dbeaver.core.export.data.name" description="%command.org.jkiss.dbeaver.core.export.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
-        <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="%command.org.jkiss.dbeaver.core.resultset.toggleMode.name" description="%command.org.jkiss.dbeaver.core.resultset.toggleMode.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="%command.org.jkiss.dbeaver.core.resultset.toggleMode.name" description="%command.org.jkiss.dbeaver.core.resultset.toggleMode.description" style="toggle" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.first" name="%command.org.jkiss.dbeaver.core.resultset.row.first.name" description="%command.org.jkiss.dbeaver.core.resultset.row.first.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.previous" name="%command.org.jkiss.dbeaver.core.resultset.row.previous.name" description="%command.org.jkiss.dbeaver.core.resultset.row.previous.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.row.next" name="%command.org.jkiss.dbeaver.core.resultset.row.next.name" description="%command.org.jkiss.dbeaver.core.resultset.row.next.description" categoryId="org.jkiss.dbeaver.core.rs"/>
@@ -228,7 +228,7 @@
         <image commandId="org.jkiss.dbeaver.core.disconnect" icon="icons/sql/disconnect.png"/>
         <image commandId="org.jkiss.dbeaver.core.commit" icon="icons/sql/commit.png"/>
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="icons/sql/rollback.png"/>
-        <image commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png"/>
+        <!--image commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png"/-->
 
         <image commandId="org.jkiss.dbeaver.core.project.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="icons/refresh.png"/>
@@ -253,7 +253,7 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="IMG_OBJ_FOLDER"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="IMG_ETOOL_SAVEAS_EDIT"/>
 
-        <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/resultset_record.png"/>
+        <!--image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/resultset_record.png"/-->
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="icons/sql/resultset_first.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.next" icon="icons/sql/resultset_next.png"/>
@@ -775,7 +775,7 @@
         <!-- ResultSet handlers
             Handle both row and text editor commands
         -->
-        <handler commandId="org.jkiss.dbeaver.core.resultset.toggleMode" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+        <handler commandId="org.jkiss.dbeaver.core.resultset.toggleMode" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetModeToggleHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.row.first" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
@@ -1113,7 +1113,7 @@
             <toolbar id="txn" label="Transactions">
                 <command commandId="org.jkiss.dbeaver.core.commit"/>
                 <command commandId="org.jkiss.dbeaver.core.rollback"/>
-                <command commandId="org.jkiss.dbeaver.core.txn.autocommit" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn"/>
+                <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn"/>
             </toolbar>
             <toolbar id="datasource-settings" label="Transactions">
 

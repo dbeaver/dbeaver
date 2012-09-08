@@ -107,8 +107,10 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
             try {
                 DBCTransactionManager txnManager = context.getTransactionManager();
                 // Change auto-commit mode
-                element.setChecked(txnManager.isAutoCommit());
+                boolean autoCommit = txnManager.isAutoCommit();
+                element.setChecked(autoCommit);
                 // Update command image
+                //element.setIcon(autoCommit ? DBIcon.DATABASES.getImageDescriptor() : DBIcon.BOOKMARK.getImageDescriptor());
             } catch (DBCException e) {
                 log.warn(e);
             } finally {

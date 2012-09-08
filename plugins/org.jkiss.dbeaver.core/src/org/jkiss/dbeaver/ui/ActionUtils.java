@@ -59,6 +59,17 @@ public class ActionUtils
             style));
     }
 
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, int style, ImageDescriptor icon)
+    {
+        CommandContributionItemParameter parameters = new CommandContributionItemParameter(
+            serviceLocator,
+            null,
+            commandId,
+            style);
+        parameters.icon = icon;
+        return new CommandContributionItem(parameters);
+    }
+
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, ImageDescriptor imageDescriptor)
     {
         return makeCommandContribution(serviceLocator, commandId, name, imageDescriptor, null, false);

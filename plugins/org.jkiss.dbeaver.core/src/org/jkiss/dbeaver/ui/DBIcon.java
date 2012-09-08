@@ -108,6 +108,8 @@ public enum DBIcon
     RS_NEXT("rs_next", "/icons/sql/resultset_next.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_PREV("rs_prev", "/icons/sql/resultset_previous.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_REFRESH("rs_refresh", "/icons/sql/resultset_refresh.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    RS_TOGGLE_RECORD("rs_toggle_record", "icons/sql/resultset_record.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    RS_TOGGLE_GRID("rs_toggle_grid", "icons/sql/resultset_grid.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     FIND("find", "/icons/misc/find.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SEARCH("search", "/icons/misc/search.png"), //$NON-NLS-1$ //$NON-NLS-2$

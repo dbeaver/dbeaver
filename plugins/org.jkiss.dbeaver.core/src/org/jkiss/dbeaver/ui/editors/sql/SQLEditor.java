@@ -701,6 +701,12 @@ public class SQLEditor extends SQLEditorBase
     }
 
     @Override
+    public ResultSetViewer getResultSetViewer()
+    {
+        return resultsView;
+    }
+
+    @Override
     public DBSDataContainer getDataContainer()
     {
         return dataContainer;

@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
  */
 public interface ResultSetProvider {
 
+    ResultSetViewer getResultSetViewer();
+
     DBSDataContainer getDataContainer();
 
     boolean isReadyToRun();

@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -46,7 +45,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
@@ -338,7 +338,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         };
 */
 
-
         toolBarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
         //toolBarManager.add(viewMessageAction);
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
@@ -365,7 +364,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         };
         toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGLE_MODE));
+        toolBarManager.add(ActionUtils.makeCommandContribution(
+            site,
+            ResultSetCommandHandler.CMD_TOGGLE_MODE,
+            CommandContributionItem.STYLE_PUSH,
+            DBIcon.RS_TOGGLE_RECORD.getImageDescriptor()));
         toolBarManager.add(new ConfigAction());
 
         toolBarManager.createControl(statusBar);
@@ -451,6 +454,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public void toggleMode()
     {
         changeMode(mode == ResultSetMode.GRID ? ResultSetMode.RECORD : ResultSetMode.GRID);
+        // Refresh elements
+        ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_MODE, null);
+        }
     }
 
     private void changeMode(ResultSetMode resultSetMode)
@@ -2692,6 +2700,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Menu getMenu(Control parent)
         {
+            ResultSetViewer.this.getControl().setFocus();
             MenuManager menuManager = new MenuManager();
             menuManager.add(new ShowFiltersAction());
             menuManager.add(new Separator());
@@ -2699,9 +2708,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             });
             menuManager.add(new Action("Clear virtual unique key") {
             });
-            menuManager.add(new Separator());
             menuManager.add(new Action("Define dictionary") {
             });
+            menuManager.add(new Separator());
+            menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
             menuManager.add(new Separator());
             menuManager.add(new Action("Preferences") {
                 @Override

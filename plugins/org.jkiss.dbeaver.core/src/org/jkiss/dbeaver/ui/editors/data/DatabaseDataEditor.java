@@ -77,6 +77,12 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     }
 
     @Override
+    public ResultSetViewer getResultSetViewer()
+    {
+        return resultSetView;
+    }
+
+    @Override
     public DBSDataContainer getDataContainer()
     {
         return (DBSDataContainer)getEditorInput().getDatabaseObject();

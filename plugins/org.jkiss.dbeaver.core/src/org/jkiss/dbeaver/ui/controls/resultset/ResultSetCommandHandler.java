@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
  * ResultSetCommandHandler
  */
 public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
-    public static final String CMD_TOGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
+    public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
     public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
     public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
     public static final String CMD_ROW_NEXT = "org.jkiss.dbeaver.core.resultset.row.next";
@@ -56,7 +57,7 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         String actionId = event.getCommand().getId();
         if (actionId.equals(IWorkbenchCommandConstants.FILE_REFRESH)) {
             resultSet.refresh();
-        } else if (actionId.equals(CMD_TOGLE_MODE)) {
+        } else if (actionId.equals(CMD_TOGGLE_MODE)) {
             resultSet.toggleMode();
         } else if (actionId.equals(CMD_ROW_PREVIOUS) || actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.PREVIOUS);
