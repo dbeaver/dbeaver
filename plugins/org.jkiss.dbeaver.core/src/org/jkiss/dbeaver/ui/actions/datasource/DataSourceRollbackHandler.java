@@ -40,7 +40,7 @@ public class DataSourceRollbackHandler extends DataSourceHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true, false);
+        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true);
         if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
             execute(HandlerUtil.getActiveShell(event), dataSourceContainer);
         }

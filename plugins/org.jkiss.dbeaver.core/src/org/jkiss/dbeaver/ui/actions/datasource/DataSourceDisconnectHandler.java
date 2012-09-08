@@ -34,7 +34,7 @@ public class DataSourceDisconnectHandler extends DataSourceHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false, false);
+        final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false);
         if (dataSourceContainer != null) {
             execute(dataSourceContainer, null);
         }

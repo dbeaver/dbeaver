@@ -34,13 +34,12 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 
 public abstract class DataSourceHandler extends AbstractHandler {
 
     static protected final Log log = LogFactory.getLog(DataSourceHandler.class);
 
-    protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor, boolean chooseOnNoSelection)
+    protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor)
     {
         if (useEditor) {
             IEditorPart editor = HandlerUtil.getActiveEditor(event);
@@ -66,9 +65,6 @@ public abstract class DataSourceHandler extends AbstractHandler {
                 DBPDataSource dataSource = selectedObject.getDataSource();
                 return dataSource == null ? null : dataSource.getContainer();
             }
-        }
-        if (chooseOnNoSelection) {
-            return SelectDataSourceDialog.selectDataSource(HandlerUtil.getActiveShell(event));
         }
         return null;
     }

@@ -25,6 +25,8 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -45,13 +47,24 @@ public abstract class DataSourceMenuContributor extends CompoundContributionItem
     @Override
     protected IContributionItem[] getContributionItems()
     {
+        DBSDataSourceContainer container = null;
         DBPDataSource dataSource = null;
         DBSObject selectedObject = null;
-        IWorkbenchPart activePart = DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart();
-        if (activePart == null) {
-            return makeEmptyList();
+        IWorkbenchPart activePart = null;
+        IWorkbenchPage activePage = DBeaverCore.getActiveWorkbenchWindow().getActivePage();
+        IEditorPart activeEditor = activePage.getActiveEditor();
+        if (activeEditor != null) {
+            activePart = activeEditor;
+            container = DataSourceHandler.getDataSourceContainer(activeEditor);
         }
-        DBSDataSourceContainer container = DataSourceHandler.getDataSourceContainer(activePart);
+        if (container == null) {
+            activePart = activePage.getActivePart();
+            if (activePart == null) {
+                return makeEmptyList();
+            }
+            container = DataSourceHandler.getDataSourceContainer(activePart);
+        }
+
         if (container != null) {
             dataSource = container.getDataSource();
         }

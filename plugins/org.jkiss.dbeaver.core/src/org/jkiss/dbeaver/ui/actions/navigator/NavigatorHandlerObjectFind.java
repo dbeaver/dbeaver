@@ -39,7 +39,7 @@ public class NavigatorHandlerObjectFind extends DataSourceHandler {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
         SearchObjectsDialog.open(
                 activeShell,
-                getDataSourceContainer(event, true, false));
+                getDataSourceContainer(event, false));
 
         return null;
     }

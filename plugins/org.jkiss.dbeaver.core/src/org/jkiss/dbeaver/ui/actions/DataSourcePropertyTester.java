@@ -21,7 +21,9 @@ package org.jkiss.dbeaver.ui.actions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -104,4 +106,18 @@ public class DataSourcePropertyTester extends PropertyTester
         service.requestEvaluation(NAMESPACE + "." + propName);
     }
 
+    public static void fireCommandRefresh(final String commandID)
+    {
+        // Update commands
+        final ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run()
+                {
+                    commandService.refreshElements(commandID, null);
+                }
+            });
+        }
+    }
 }

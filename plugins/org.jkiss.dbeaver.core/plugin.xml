@@ -1113,7 +1113,7 @@
             <toolbar id="txn" label="Transactions">
                 <command commandId="org.jkiss.dbeaver.core.commit"/>
                 <command commandId="org.jkiss.dbeaver.core.rollback"/>
-                <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_config.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn"/>
+                <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn"/>
             </toolbar>
             <toolbar id="datasource-settings" label="Transactions">
 

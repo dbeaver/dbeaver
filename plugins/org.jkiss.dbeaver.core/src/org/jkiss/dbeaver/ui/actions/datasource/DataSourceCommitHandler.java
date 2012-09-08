@@ -40,7 +40,7 @@ public class DataSourceCommitHandler extends DataSourceHandler
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true, false);
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true);
         if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
             execute(HandlerUtil.getActiveShell(event), dataSourceContainer);
         }

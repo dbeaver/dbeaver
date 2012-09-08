@@ -57,7 +57,7 @@ public abstract class BaseSQLEditorHandler extends DataSourceHandler {
 
     protected DBSDataSourceContainer getCurrentConnection(ExecutionEvent event)
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false, false);
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
         final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : projectRegistry.getActiveProject();
         if (dataSourceContainer == null) {

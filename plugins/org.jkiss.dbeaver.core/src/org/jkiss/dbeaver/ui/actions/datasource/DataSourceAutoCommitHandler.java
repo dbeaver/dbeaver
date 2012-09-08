@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -48,7 +50,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true, false);
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, true);
         if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
             execute(HandlerUtil.getActiveShell(event), dataSourceContainer);
         }
@@ -74,8 +76,6 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                         IPreferenceStore preferenceStore = dataSourceContainer.getPreferenceStore();
                         preferenceStore.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, newAutoCommit);
                         dataSourceContainer.getRegistry().flushConfig();
-
-                        // Update command image
                     } catch (DBCException e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -97,7 +97,11 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
         if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
             return;
         }
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(workbenchWindow.getActivePage().getActivePart());
+        IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+        if (activeEditor == null) {
+            return;
+        }
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(activeEditor);
         if (dataSourceContainer != null && dataSourceContainer.isConnected()) {
             final DBPDataSource dataSource = dataSourceContainer.getDataSource();
             DBCExecutionContext context = dataSource.openContext(
@@ -110,7 +114,8 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                 boolean autoCommit = txnManager.isAutoCommit();
                 element.setChecked(autoCommit);
                 // Update command image
-                //element.setIcon(autoCommit ? DBIcon.DATABASES.getImageDescriptor() : DBIcon.BOOKMARK.getImageDescriptor());
+                element.setIcon(autoCommit ? DBIcon.TXN_COMMIT_AUTO.getImageDescriptor() : DBIcon.TXN_COMMIT_MANUAL.getImageDescriptor());
+                element.setText(autoCommit ? "Switch to manual commit mode" : "Switch to auto commit mode");
             } catch (DBCException e) {
                 log.warn(e);
             } finally {
