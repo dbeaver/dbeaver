@@ -271,6 +271,15 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
 
     public void setActivePart(IWorkbenchPart part)
     {
+        if (!(part instanceof IEditorPart)) {
+            if (part == null || part.getSite() == null || part.getSite().getPage() == null) {
+                part = null;
+            } else {
+                // Toolbar works only with active editor
+                // Other parts just doesn't matter
+                part = part.getSite().getPage().getActiveEditor();
+            }
+        }
         if (activePart == part) {
             return;
         }
