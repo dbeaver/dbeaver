@@ -167,6 +167,7 @@ public enum DBIcon
     EDIT_DATABSE("edit_database", "/icons/misc/edit_database.png"), //$NON-NLS-1$ //$NON-NLS-2$
     EDIT_TABLE("edit_table", "/icons/misc/edit_table.png"), //$NON-NLS-1$ //$NON-NLS-2$
     EDIT_COLUMN("edit_column", "/icons/misc/edit_column.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    CONFIG_TABLE("edit_table", "/icons/misc/config_table.png"), //$NON-NLS-1$ //$NON-NLS-2$
     LOCKED("locked", "/icons/misc/locked.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     TYPE_BOOLEAN("boolean", "/icons/sql/types/boolean.png"), //$NON-NLS-1$ //$NON-NLS-2$

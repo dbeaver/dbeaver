@@ -39,7 +39,6 @@ import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -60,7 +59,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.services.IEvaluationService;
@@ -649,19 +647,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         refreshDiagram();
     }
 
-    public void showPreferences()
-    {
-        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
-            getSite().getShell(),
-            this,
-            ERDPreferencePage.PAGE_ID,
-            null,//new String[]{pageId},
-            null);
-        if (propDialog != null) {
-            propDialog.open();
-        }
-    }
-
     public void saveDiagramAsImage()
     {
         final Shell shell = getSite().getShell();
@@ -938,7 +923,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     @Override
                     public void run()
                     {
-                        showPreferences();
+                        UIUtils.showPreferencesFor(
+                            getSite().getShell(),
+                            ERDEditorPart.this,
+                            ERDPreferencePage.PAGE_ID);
                     }
                 };
                 configAction.setImageDescriptor(DBIcon.CONFIGURATION.getImageDescriptor());

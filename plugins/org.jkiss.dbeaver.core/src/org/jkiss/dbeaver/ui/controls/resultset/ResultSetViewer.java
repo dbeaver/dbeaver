@@ -20,17 +20,16 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -47,11 +46,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -86,6 +87,7 @@ import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -95,12 +97,11 @@ import java.util.List;
 /**
  * ResultSetViewer
  */
-public class ResultSetViewer extends Viewer implements ISpreadsheetController, IPropertyChangeListener, ISaveablePart2
+public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpreadsheetController, IPropertyChangeListener, ISaveablePart2, IAdaptable
 {
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
-    private ToolBarManager toolBarManager;
 
     public enum ResultSetMode {
         GRID,
@@ -122,6 +123,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
     private ResultSetProvider resultSetProvider;
     private ResultSetDataReceiver dataReceiver;
     private IThemeManager themeManager;
+    private ToolBarManager toolBarManager;
 
     // columns
     private DBDColumnBinding[] metaColumns = new DBDColumnBinding[0];
@@ -218,6 +220,18 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         });
         this.spreadsheet.getGrid().setTopLeftRenderer(new ResultSetTopLeftRenderer(this));
         applyThemeSettings();
+    }
+
+    @Override
+    public DBPDataSource getDataSource()
+    {
+        return getDataContainer().getDataSource();
+    }
+
+    @Override
+    public Object getAdapter(Class adapter)
+    {
+        return null;
     }
 
     public void addListener(ResultSetListener listener)
@@ -340,7 +354,6 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
         toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGLE_MODE));
         //toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH, "Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()));
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
         Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBIcon.RS_REFRESH.getImageDescriptor()) {
@@ -351,6 +364,10 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
             }
         };
         toolBarManager.add(refreshAction);
+        toolBarManager.add(new Separator());
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGLE_MODE));
+        toolBarManager.add(new ConfigAction());
+
         toolBarManager.createControl(statusBar);
 
         updateEditControls();
@@ -394,7 +411,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
     private void updateFiltersText()
     {
-        String where = dataFilter.generateWhereClause(resultSetProvider.getDataContainer().getDataSource());
+        String where = dataFilter.generateWhereClause(getDataSource());
         boolean show = false;
         if (!CommonUtils.isEmpty(where)) {
             filtersText.setText(where);
@@ -977,13 +994,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (!CommonUtils.isEmpty(metaColumns)) {
             // Export and other utility methods
             manager.add(new Separator());
-            manager.add(new Action(CoreMessages.controls_resultset_viewer_action_order_filter, DBIcon.FILTER.getImageDescriptor()) {
-                @Override
-                public void run()
-                {
-                    new ResultSetFilterDialog(ResultSetViewer.this).open();
-                }
-            });
+            manager.add(new ShowFiltersAction());
             manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
                 @Override
                 public void run()
@@ -1245,7 +1256,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         if (getDataContainer() == null) {
             return 0;
         }
-        IPreferenceStore preferenceStore = getDataContainer().getDataSource().getContainer().getPreferenceStore();
+        IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
         return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
     }
 
@@ -1381,7 +1392,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
         virtualConstraint.setAttributes(uniqueColumns);
 
-        DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) getDataContainer().getDataSource().getContainer();
+        DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) getDataSource().getContainer();
         dataSourceDescriptor.persistConfiguration();
 
         return true;
@@ -1456,7 +1467,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
                     throws InvocationTargetException, InterruptedException
                 {
                     // Copy cell values in new context
-                    DBCExecutionContext context = getDataContainer().getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
+                    DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
                     try {
                         if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < curRows.size()) {
                             Object[] origRow = curRows.get(currentRowNumber);
@@ -1677,7 +1688,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         @Override
         public DBPDataSource getDataSource()
         {
-            return getDataContainer().getDataSource();
+            return ResultSetViewer.this.getDataSource();
         }
 
         @Override
@@ -2203,7 +2214,7 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
 
             protected DataUpdaterJob(DBDValueListener listener)
             {
-                super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), getDataContainer().getDataSource());
+                super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), ResultSetViewer.this.getDataSource());
                 this.listener = listener;
             }
 
@@ -2647,4 +2658,81 @@ public class ResultSetViewer extends Viewer implements ISpreadsheetController, I
         }
     }
 
+    private class ConfigAction extends Action implements IMenuCreator {
+        public ConfigAction()
+        {
+            super(CoreMessages.controls_resultset_viewer_action_options, IAction.AS_DROP_DOWN_MENU);
+            setImageDescriptor(DBIcon.CONFIGURATION.getImageDescriptor());
+        }
+
+        @Override
+        public IMenuCreator getMenuCreator()
+        {
+            return this;
+        }
+
+        @Override
+        public void runWithEvent(Event event)
+        {
+            Menu menu = getMenu(getControl());
+            if (menu != null && event.widget instanceof ToolItem) {
+                Rectangle bounds = ((ToolItem) event.widget).getBounds();
+                Point point = ((ToolItem) event.widget).getParent().toDisplay(bounds.x, bounds.y + bounds.height);
+                menu.setLocation(point.x, point.y);
+                menu.setVisible(true);
+            }
+        }
+
+        @Override
+        public void dispose()
+        {
+
+        }
+
+        @Override
+        public Menu getMenu(Control parent)
+        {
+            MenuManager menuManager = new MenuManager();
+            menuManager.add(new ShowFiltersAction());
+            menuManager.add(new Separator());
+            menuManager.add(new Action("Define virtual unique key") {
+            });
+            menuManager.add(new Action("Clear virtual unique key") {
+            });
+            menuManager.add(new Separator());
+            menuManager.add(new Action("Define dictionary") {
+            });
+            menuManager.add(new Separator());
+            menuManager.add(new Action("Preferences") {
+                @Override
+                public void run()
+                {
+                    UIUtils.showPreferencesFor(
+                        getControl().getShell(),
+                        ResultSetViewer.this,
+                        PrefPageDatabaseGeneral.PAGE_ID);
+                }
+            });
+            return menuManager.createContextMenu(parent);
+        }
+
+        @Override
+        public Menu getMenu(Menu parent)
+        {
+            return null;
+        }
+    }
+
+    private class ShowFiltersAction extends Action {
+        public ShowFiltersAction()
+        {
+            super(CoreMessages.controls_resultset_viewer_action_order_filter, DBIcon.FILTER.getImageDescriptor());
+        }
+
+        @Override
+        public void run()
+        {
+            new ResultSetFilterDialog(ResultSetViewer.this).open();
+        }
+    }
 }

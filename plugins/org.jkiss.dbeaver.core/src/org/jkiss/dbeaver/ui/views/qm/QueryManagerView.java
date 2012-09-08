@@ -57,15 +57,10 @@ public class QueryManagerView extends ViewPart
 
     public void openFilterDialog()
     {
-        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
+        UIUtils.showPreferencesFor(
             getSite().getShell(),
             this,
-            PrefPageQueryManager.PAGE_ID,
-            null,//new String[]{pageId},
-            null);
-        if (propDialog != null) {
-            propDialog.open();
-        }
+            PrefPageQueryManager.PAGE_ID);
     }
 
     @Override
@@ -80,6 +75,6 @@ public class QueryManagerView extends ViewPart
                 }
             };
         }
-        return super.getAdapter(adapter);    //To change body of overridden methods use File | Settings | File Templates.
+        return super.getAdapter(adapter);
     }
 }
