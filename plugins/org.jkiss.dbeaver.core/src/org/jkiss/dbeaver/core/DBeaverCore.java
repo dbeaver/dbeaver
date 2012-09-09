@@ -446,9 +446,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         });
     }
 
-    public static void runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
+    public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
     {
-        new AbstractUIJob(jobName) {
+        AbstractUIJob job = new AbstractUIJob(jobName) {
             @Override
             public IStatus runInUIThread(DBRProgressMonitor monitor)
             {
@@ -461,7 +461,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 }
                 return Status.OK_STATUS;
             }
-        }.schedule();
+        };
+        job.schedule();
+        return job;
     }
 
     public void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable)

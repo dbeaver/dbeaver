@@ -129,4 +129,5 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     DBPKeywordManager getKeywordManager();
 
+    void persistConfiguration();
 }

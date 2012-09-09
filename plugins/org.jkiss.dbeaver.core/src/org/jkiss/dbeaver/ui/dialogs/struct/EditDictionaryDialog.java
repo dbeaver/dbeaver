@@ -27,10 +27,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -127,8 +126,7 @@ public class EditDictionaryDialog extends ColumnsSelectorDialog {
     protected void okPressed()
     {
         dictionary.setDescriptionColumnNames(criteriaText.getText());
-        DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) entity.getDataSource().getContainer();
-        dataSourceDescriptor.persistConfiguration();
+        entity.getDataSource().getContainer().persistConfiguration();
         super.okPressed();
     }
 

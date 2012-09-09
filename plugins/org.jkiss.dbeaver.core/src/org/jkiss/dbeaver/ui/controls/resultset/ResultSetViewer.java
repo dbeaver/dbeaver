@@ -63,8 +63,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -1365,7 +1365,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (!checkEntityIdentifier()) {
                 return;
             }
+            if (getVirtualEntityIdentifier() != null) {
+                // Ask user
 
+            }
             new DataUpdater().applyChanges(monitor, listener);
         } catch (DBException e) {
             UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Error saving changes in database", e);
@@ -1668,22 +1671,23 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         final DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
         if (identifier != null) {
             if (CommonUtils.isEmpty(identifier.getAttributes())) {
-                DBeaverCore.runUIJob("Edit virtual key", new DBRRunnableWithProgress() {
+                UIUtils.runInUI(getControl().getShell(), new Runnable() {
                     @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    public void run()
                     {
+                        // It is safe to use void monitor cos' it is virtual constraint
                         DBVEntityConstraint constraint = (DBVEntityConstraint)identifier.getReferrer();
-                        if (editEntityIdentifier(monitor, constraint)) {
+                        if (editEntityIdentifier(VoidProgressMonitor.INSTANCE, constraint)) {
                             try {
-                                identifier.reloadAttributes(monitor, metaColumns[0].getColumn().getTable());
+                                identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, metaColumns[0].getColumn().getTable());
                             } catch (DBException e) {
-                                throw new InvocationTargetException(e);
+                                log.error(e);
                             }
                         }
                     }
                 });
-                return !CommonUtils.isEmpty(identifier.getAttributes());
             }
+            return !CommonUtils.isEmpty(identifier.getAttributes());
         }
         return false;
     }
@@ -1702,15 +1706,18 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
         virtualConstraint.setAttributes(uniqueColumns);
 
-        DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) getDataSource().getContainer();
-        dataSourceDescriptor.persistConfiguration();
+        getDataSource().getContainer().persistConfiguration();
 
         return true;
     }
 
-    private void clearEntityIdentifier(DBRProgressMonitor monitor, DBVEntityConstraint virtualConstraint)
+    private void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
+        DBCEntityIdentifier identifier = metaColumns[0].getValueLocator().getEntityIdentifier();
+        ((DBVEntityConstraint) identifier.getReferrer()).setAttributes(Collections.<DBSEntityAttribute>emptyList());
+        identifier.reloadAttributes(monitor, metaColumns[0].getColumn().getTable());
 
+        getDataSource().getContainer().persistConfiguration();
     }
 
     /////////////////////////////
@@ -2743,8 +2750,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             menuManager.add(new Separator());
             menuManager.add(new VirtualKeyEditAction(true));
             menuManager.add(new VirtualKeyEditAction(false));
-            menuManager.add(new Action("Define dictionary") {
-            });
+            menuManager.add(new DictionaryEditAction());
             menuManager.add(new Separator());
             menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
             menuManager.add(new Separator());
@@ -2805,14 +2811,39 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
-                    DBVEntityConstraint constraint = (DBVEntityConstraint) metaColumns[0].getValueLocator().getEntityIdentifier().getReferrer();
-                    if (define) {
-                        editEntityIdentifier(monitor, constraint);
-                    } else {
-                        clearEntityIdentifier(monitor, constraint);
+                    try {
+                        if (define) {
+                            editEntityIdentifier(
+                                monitor,
+                                (DBVEntityConstraint) metaColumns[0].getValueLocator().getEntityIdentifier().getReferrer());
+                        } else {
+                            clearEntityIdentifier(monitor);
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
                 }
             });
         }
     }
+
+    private class DictionaryEditAction extends Action {
+        public DictionaryEditAction()
+        {
+            super("Define dictionary");
+        }
+
+        @Override
+        public void run()
+        {
+
+        }
+
+        @Override
+        public boolean isEnabled()
+        {
+            return false;
+        }
+    }
+
 }
