@@ -43,12 +43,14 @@ public class ResultSetModeToggleHandler extends ResultSetCommandHandler implemen
         if (partSite != null) {
             if (partSite.getPart() instanceof ResultSetProvider) {
                 ResultSetViewer rsv = ((ResultSetProvider) partSite.getPart()).getResultSetViewer();
-                if (rsv.getMode() == ResultSetViewer.ResultSetMode.GRID) {
-                    element.setText("Switch to record mode");
-                    element.setIcon(DBIcon.RS_TOGGLE_RECORD.getImageDescriptor());
-                } else {
-                    element.setText("Switch to grid mode");
-                    element.setIcon(DBIcon.RS_TOGGLE_GRID.getImageDescriptor());
+                if (rsv != null) {
+                    if (rsv.getMode() == ResultSetViewer.ResultSetMode.GRID) {
+                        element.setText("Switch to record mode");
+                        element.setIcon(DBIcon.RS_TOGGLE_RECORD.getImageDescriptor());
+                    } else {
+                        element.setText("Switch to grid mode");
+                        element.setIcon(DBIcon.RS_TOGGLE_GRID.getImageDescriptor());
+                    }
                 }
             }
         }
