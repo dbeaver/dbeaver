@@ -3127,7 +3127,7 @@ public class LightGrid extends Canvas {
                 if (col != null)
                     isSelectedCell = selectedCells.contains(new GridPos(col.getIndex(), row));
 
-                if (e.button == 1 || (e.button == 3 && col != null && !isSelectedCell)) {
+                if (e.button == 1 || e.button == 2 || (e.button == 3 && col != null && !isSelectedCell)) {
                     if (col != null) {
                         selectionEvent = updateCellSelection(new GridPos(col.getIndex(), row), e.stateMask, false, true, EventSource.MOUSE);
                         cellSelectedOnLastMouseDown = (getCellSelectionCount() > 0);

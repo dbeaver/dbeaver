@@ -433,7 +433,9 @@ public class Spreadsheet extends Composite implements Listener {
                 }
                 break;
             case SWT.MouseDown:
-                //cancelInlineEditor();
+                if (event.button == 2) {
+                    openCellViewer(true);
+                }
                 break;
             case LightGrid.Event_ChangeSort:
                 spreadsheetController.changeSorting((GridColumn) event.data, event.stateMask);

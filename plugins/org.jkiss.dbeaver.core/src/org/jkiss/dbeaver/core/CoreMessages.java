@@ -317,6 +317,8 @@ public class CoreMessages extends NLS {
 
 	public static String controls_resultset_viewer_action_order_filter;
 
+    public static String controls_resultset_viewer_action_custom_filter;
+
 	public static String controls_resultset_viewer_action_refresh;
 
     public static String controls_resultset_viewer_action_options;

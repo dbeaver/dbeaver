@@ -170,6 +170,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                     @Override
                     public void run()
                     {
+                        if (control.isDisposed()) {
+                            return;
+                        }
                         Control newFocus = control.getDisplay().getFocusControl();
                         if (newFocus != null) {
                             for (Control fc = newFocus.getParent(); fc != null; fc = fc.getParent()) {

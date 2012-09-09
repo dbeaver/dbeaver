@@ -958,13 +958,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (isCellEditable(cell)) {
                 // Standard items
                 manager.add(new Separator());
-                manager.add(new Action(CoreMessages.controls_resultset_viewer_action_edit) {
-                    @Override
-                    public void run()
-                    {
-                        showCellEditor(cell, false, null);
-                    }
-                });
+                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
+                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
                 if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)) {
                     manager.add(new Action(CoreMessages.controls_resultset_viewer_action_set_to_null) {
                         @Override
@@ -1001,7 +996,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (!CommonUtils.isEmpty(metaColumns)) {
             // Export and other utility methods
             manager.add(new Separator());
-            manager.add(new ShowFiltersAction());
+            manager.add(createFiltersMenu());
             manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
                 @Override
                 public void run()
@@ -1016,6 +1011,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             });
         }
+    }
+
+    private MenuManager createFiltersMenu()
+    {
+        MenuManager filtersMenu = new MenuManager(
+            CoreMessages.controls_resultset_viewer_action_order_filter,
+            DBIcon.FILTER.getImageDescriptor(),
+            "filters"); //$NON-NLS-1$
+        filtersMenu.add(new ShowFiltersAction());
+        return filtersMenu;
     }
 
     boolean supportsDataFilter()
@@ -1426,11 +1431,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private boolean isRowAdded(int row)
     {
         return addedRows.contains(new RowInfo(row));
-    }
-
-    void editCurrentRow()
-    {
-        showCellEditor(spreadsheet.getCursorPosition(), false, null);
     }
 
     void addNewRow(final boolean copyCurrent)
@@ -2794,7 +2794,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private class ShowFiltersAction extends Action {
         public ShowFiltersAction()
         {
-            super(CoreMessages.controls_resultset_viewer_action_order_filter, DBIcon.FILTER.getImageDescriptor());
+            super(CoreMessages.controls_resultset_viewer_action_custom_filter);
         }
 
         @Override
