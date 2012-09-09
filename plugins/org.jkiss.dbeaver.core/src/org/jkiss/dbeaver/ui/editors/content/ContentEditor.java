@@ -165,7 +165,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
             return;
         }
         // Execute save in UI thread
-        getSite().getShell().getDisplay().syncExec(new Runnable() {
+        UIUtils.runInUI(getSite().getShell(), new Runnable() {
             @Override
             public void run()
             {

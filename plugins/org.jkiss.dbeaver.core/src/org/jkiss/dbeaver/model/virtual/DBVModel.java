@@ -112,6 +112,12 @@ public class DBVModel extends DBVContainer {
                     atts.getValue(RegistryConstants.ATTR_NAME),
                     atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
                 curContainer.addEntity(curEntity);
+            } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
+                if (curEntity != null) {
+                    curEntity.setProperty(
+                        atts.getValue(RegistryConstants.ATTR_NAME),
+                        atts.getValue(RegistryConstants.ATTR_VALUE));
+                }
             } else if (localName.equals(RegistryConstants.TAG_CONSTRAINT)) {
                 if (curEntity != null) {
                     curConstraint = new DBVEntityConstraint(

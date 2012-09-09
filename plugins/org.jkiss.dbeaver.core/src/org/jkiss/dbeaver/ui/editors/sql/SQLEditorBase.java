@@ -525,11 +525,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         curAnnotations.putAll(newAnnotations);
     }
 
-    protected void syncExec(Runnable runnable)
-    {
-        Display.getDefault().syncExec(runnable);
-    }
-
     protected void asyncExec(Runnable runnable)
     {
         Display.getDefault().asyncExec(runnable);
@@ -591,7 +586,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 @Override
                 public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
-                    getSite().getShell().getDisplay().syncExec(new Runnable() {
+                    UIUtils.runInUI(getSite().getShell(), new Runnable() {
                         @Override
                         public void run()
                         {

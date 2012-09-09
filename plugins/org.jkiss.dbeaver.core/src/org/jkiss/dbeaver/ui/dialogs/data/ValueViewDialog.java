@@ -407,7 +407,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                     if (monitor.isCanceled()) {
                         return Status.CANCEL_STATUS;
                     }
-                    getShell().getDisplay().syncExec(new Runnable() {
+                    UIUtils.runInUI(getShell(), new Runnable() {
                         @Override
                         public void run()
                         {

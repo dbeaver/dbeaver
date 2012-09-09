@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
@@ -334,7 +333,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 command.validateCommand();
             } catch (final DBException e) {
-                Display.getDefault().syncExec(new Runnable() {
+                UIUtils.runInUI(null, new Runnable() {
                     @Override
                     public void run()
                     {
@@ -357,7 +356,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
-        getSite().getShell().getDisplay().syncExec(changesPreviewer);
+        UIUtils.runInUI(getSite().getShell(), changesPreviewer);
         return changesPreviewer.getResult();
 /*
 

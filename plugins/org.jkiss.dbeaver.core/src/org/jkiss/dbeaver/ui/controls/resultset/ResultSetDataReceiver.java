@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDColumnBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +39,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     static final Log log = LogFactory.getLog(ResultSetDataReceiver.class);
 
     private ResultSetViewer resultSetViewer;
-    private Display display;
     private int columnsCount;
     private DBDColumnBinding[] metaColumns;
     private List<Object[]> rows = new ArrayList<Object[]>();
@@ -52,7 +51,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
         this.resultSetViewer = resultSetViewer;
-        this.display = resultSetViewer.getControl().getShell().getDisplay();
     }
 
     boolean isHasMoreData() {
@@ -135,7 +133,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             DBUtils.findValueLocators(context.getProgressMonitor(), metaColumns);
         }
 
-        display.syncExec(new Runnable() {
+        UIUtils.runInUI(null, new Runnable() {
             @Override
             public void run()
             {

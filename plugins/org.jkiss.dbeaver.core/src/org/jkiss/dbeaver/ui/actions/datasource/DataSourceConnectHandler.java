@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -143,7 +142,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
     public static boolean askForPassword(final DataSourceDescriptor dataSourceContainer, final DBWHandlerConfiguration handler)
     {
         final boolean[] authResult = new boolean[] { false };
-        Display.getDefault().syncExec(new Runnable() {
+        UIUtils.runInUI(null, new Runnable() {
             @Override
             public void run()
             {

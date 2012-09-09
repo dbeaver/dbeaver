@@ -468,7 +468,7 @@ public class SQLEditor extends SQLEditorBase
                 {
                     final long curTime = System.currentTimeMillis();
                     if (lastUIUpdateTime <= 0 || (curTime - lastUIUpdateTime >= SCRIPT_UI_UPDATE_PERIOD)) {
-                        syncExec(new Runnable() {
+                        UIUtils.runInUI(null, new Runnable() {
                             @Override
                             public void run()
                             {
@@ -487,7 +487,7 @@ public class SQLEditor extends SQLEditorBase
                         return;
                     }
                     if (isSingleQuery) {
-                        syncExec(new Runnable() {
+                        UIUtils.runInUI(null, new Runnable() {
                             @Override
                             public void run()
                             {

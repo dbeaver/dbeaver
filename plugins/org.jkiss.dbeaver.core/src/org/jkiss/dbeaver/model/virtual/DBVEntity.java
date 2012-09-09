@@ -36,18 +36,12 @@ public class DBVEntity extends DBVObject implements DBSEntity {
     private String description;
     private String descriptionColumnNames;
     private List<DBVEntityConstraint> entityConstraints;
+    private Map<String, String> properties;
 
     public DBVEntity(DBVContainer container, String name, String descriptionColumnNames) {
         this.container = container;
         this.name = name;
         this.descriptionColumnNames = descriptionColumnNames;
-    }
-
-    public DBVEntity(DBVEntity copy)
-    {
-        this.container = copy.container;
-        this.name = copy.name;
-        this.descriptionColumnNames = copy.descriptionColumnNames;
     }
 
     public DBSEntity getRealEntity(DBRProgressMonitor monitor) throws DBException
@@ -101,6 +95,23 @@ public class DBVEntity extends DBVObject implements DBSEntity {
     public DBSEntityType getEntityType()
     {
         return DBSEntityType.VIRTUAL_ENTITY;
+    }
+
+    public String getProperty(String name)
+    {
+        return CommonUtils.isEmpty(properties) ? null : properties.get(name);
+    }
+
+    public void setProperty(String name, String value)
+    {
+        if (properties == null) {
+            properties = new LinkedHashMap<String, String>();
+        }
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.put(name, value);
+        }
     }
 
     @Override
@@ -234,6 +245,14 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         if (!CommonUtils.isEmpty(getDescriptionColumnNames())) {
             xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, getDescriptionColumnNames());
         }
+        if (!CommonUtils.isEmpty(properties)) {
+            for (Map.Entry<String, String> prop : properties.entrySet()) {
+                xml.startElement(RegistryConstants.TAG_PROPERTY);
+                xml.addAttribute(RegistryConstants.ATTR_NAME, prop.getKey());
+                xml.addAttribute(RegistryConstants.ATTR_VALUE, prop.getValue());
+                xml.endElement();
+            }
+        }
         for (DBVEntityConstraint c : CommonUtils.safeCollection(entityConstraints)) {
             if (c.hasAttributes()) {
                 xml.startElement(RegistryConstants.TAG_CONSTRAINT);
@@ -251,7 +270,7 @@ public class DBVEntity extends DBVObject implements DBSEntity {
     }
 
     public boolean hasValuableData() {
-        if (!CommonUtils.isEmpty(descriptionColumnNames)) {
+        if (!CommonUtils.isEmpty(descriptionColumnNames) || !CommonUtils.isEmpty(properties)) {
             return true;
         }
         if (!CommonUtils.isEmpty(entityConstraints)) {
@@ -264,8 +283,18 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         return false;
     }
 
-    void copyFrom(DBVEntity entity) {
-
+    public void copyFrom(DBVEntity copy)
+    {
+        if (!CommonUtils.isEmpty(copy.entityConstraints)) {
+            this.entityConstraints = new ArrayList<DBVEntityConstraint>(copy.entityConstraints.size());
+            for (DBVEntityConstraint c : copy.entityConstraints) {
+                DBVEntityConstraint constraint = new DBVEntityConstraint(this, c.getConstraintType(), c.getName());
+                constraint.copyFrom(c);
+                this.entityConstraints.add(constraint);
+            }
+        }
+        if (!CommonUtils.isEmpty(copy.properties)) {
+            this.properties = new LinkedHashMap<String, String>(copy.properties);
+        }
     }
-
 }

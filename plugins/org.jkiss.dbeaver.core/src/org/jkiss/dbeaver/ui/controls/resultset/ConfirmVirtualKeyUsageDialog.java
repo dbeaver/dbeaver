@@ -3,7 +3,10 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.model.virtual.DBVConstants;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Confirm virtual key usage dialog
@@ -41,6 +44,11 @@ class ConfirmVirtualKeyUsageDialog extends MessageDialogWithToggle {
         {
             case IDialogConstants.OK_ID:
             case IDialogConstants.CANCEL_ID:
+                if (getToggleState()) {
+                    // Save toggle state
+                    DBVEntity entity = (DBVEntity) viewer.getVirtualEntityIdentifier().getReferrer().getParentObject();
+                    entity.setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, Boolean.TRUE.toString());
+                }
                 super.buttonPressed(buttonId);
                 break;
             default:
@@ -49,5 +57,15 @@ class ConfirmVirtualKeyUsageDialog extends MessageDialogWithToggle {
                 }
                 break;
         }
+    }
+
+    @Override
+    public int open()
+    {
+        DBVEntity entity = (DBVEntity) viewer.getVirtualEntityIdentifier().getReferrer().getParentObject();
+        if (CommonUtils.getBoolean(entity.getProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET))) {
+            return IDialogConstants.OK_ID;
+        }
+        return super.open();
     }
 }

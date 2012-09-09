@@ -89,4 +89,12 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     {
         attributes.add(new DBVEntityConstraintColumn(this, name));
     }
+
+    void copyFrom(DBVEntityConstraint constraint)
+    {
+        this.attributes.clear();
+        for (DBVEntityConstraintColumn col : constraint.attributes) {
+            this.attributes.add(new DBVEntityConstraintColumn(this, col.getAttributeName()));
+        }
+    }
 }

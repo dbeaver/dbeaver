@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -1727,8 +1728,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
         DBCEntityIdentifier identifier = metaColumns[0].getValueLocator().getEntityIdentifier();
-        ((DBVEntityConstraint) identifier.getReferrer()).setAttributes(Collections.<DBSEntityAttribute>emptyList());
+        DBVEntityConstraint virtualKey = (DBVEntityConstraint) identifier.getReferrer();
+        virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
         identifier.reloadAttributes(monitor, metaColumns[0].getColumn().getTable());
+        virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
 
         getDataSource().getContainer().persistConfiguration();
     }
@@ -2290,7 +2293,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 try {
                     final Throwable error = executeStatements(monitor);
 
-                    ResultSetViewer.this.site.getShell().getDisplay().syncExec(new Runnable() {
+                    UIUtils.runInUI(ResultSetViewer.this.site.getShell(), new Runnable() {
                         @Override
                         public void run() {
                             boolean rowsChanged = false;

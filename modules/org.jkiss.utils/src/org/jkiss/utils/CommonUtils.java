@@ -140,10 +140,15 @@ public class CommonUtils {
 		return arr == null || arr.length == 0;
 	}
 
-	public static boolean isEmpty(Collection value)
+	public static boolean isEmpty(Collection<?> value)
 	{
 		return value == null || value.isEmpty();
 	}
+
+    public static boolean isEmpty(Map<?,?> value)
+    {
+        return value == null || value.isEmpty();
+    }
 
     public static <T> Collection<T> safeCollection(Collection<T> theList)
     {

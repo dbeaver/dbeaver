@@ -25,7 +25,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -129,7 +128,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 public void run()
                 {
                     if (dsNode.getDataSourceContainer().isConnected()) {
-                        Display.getDefault().syncExec(new Runnable() {
+                        UIUtils.runInUI(null, new Runnable() {
                             @Override
                             public void run()
                             {
@@ -178,7 +177,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
                             // Open entity editor
                             final DBNDatabaseNode databaseNode = (DBNDatabaseNode) currentNode;
-                            Display.getDefault().syncExec(new Runnable() {
+                            UIUtils.runInUI(null, new Runnable() {
                                 @Override
                                 public void run()
                                 {

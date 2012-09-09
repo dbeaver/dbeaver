@@ -31,7 +31,6 @@ import org.eclipse.osgi.framework.internal.core.BundleHost;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -900,7 +900,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 if (libNames.length() > 0) libNames.append(", ");
                 libNames.append(lib.getPath());
             }
-            Display.getDefault().syncExec(new Runnable() {
+            UIUtils.runInUI(null, new Runnable() {
                 @Override
                 public void run()
                 {
@@ -910,8 +910,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                         ConfirmationDialog.QUESTION,
                         ConfirmationDialog.WARNING,
                         getName(),
-                        libNames) == IDialogConstants.YES_ID)
-                    {
+                        libNames) == IDialogConstants.YES_ID) {
                         // Download drivers
                         downloadLibraryFiles(downloadCandidates);
                     }

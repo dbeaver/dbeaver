@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -53,6 +52,7 @@ import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
@@ -606,10 +606,7 @@ public class DataSourceDescriptor
                 if (sp != null && (sp.getPrevious() != null || sp.hasUserExecutions())) {
                     // Ask for confirmation
                     TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
-                    Display display = Display.getDefault();
-                    if (display != null) {
-                        display.syncExec(closeConfirmer);
-                    }
+                    UIUtils.runInUI(null, closeConfirmer);
                     switch (closeConfirmer.result) {
                         case IDialogConstants.YES_ID:
                             context.getTransactionManager().commit();

@@ -29,7 +29,6 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
@@ -331,7 +330,7 @@ public class RuntimeUtils {
             return true;
         }
         SaveRunner saveRunner = new SaveRunner(monitor, saveable);
-        Display.getDefault().syncExec(saveRunner);
+        UIUtils.runInUI(null, saveRunner);
         return saveRunner.getResult();
     }
 
