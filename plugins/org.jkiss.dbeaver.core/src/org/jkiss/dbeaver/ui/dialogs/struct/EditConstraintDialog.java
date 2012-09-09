@@ -67,7 +67,7 @@ public class EditConstraintDialog extends ColumnsSelectorDialog {
         super(shell, title, constraint.getParentObject());
         this.constraint = constraint;
         this.constraintTypes = new DBSEntityConstraintType[] {constraint.getConstraintType()};
-        attributes = constraint.getAttributeReferences(monitor);
+        this.attributes = constraint.getAttributeReferences(monitor);
     }
 
     @Override

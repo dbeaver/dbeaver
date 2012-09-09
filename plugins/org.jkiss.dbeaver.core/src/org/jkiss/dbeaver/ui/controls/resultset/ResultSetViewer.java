@@ -61,10 +61,7 @@ import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSManipulationType;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -1365,45 +1362,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return;
         }
         try {
-            // Check for value locators
-            // Probably we have only virtual one with empty column set
-            DBDValueLocator valueLocator = metaColumns[0].getValueLocator();
-            DBCEntityIdentifier identifier = valueLocator.getEntityIdentifier();
-            if (CommonUtils.isEmpty(identifier.getReferrer().getAttributeReferences(monitor))) {
-                if (identifier.getReferrer() instanceof DBVEntityConstraint) {
-                    if (!editEntityIdentifier(monitor, (DBVEntityConstraint) identifier.getReferrer())) {
-                        return;
-                    }
-                    identifier.reloadAttributes(monitor, metaColumns[0].getColumn().getTable());
-                } else {
-                    throw new DBCException("Empty unique identifier");
-                }
+            if (!checkEntityIdentifier()) {
+                return;
             }
 
             new DataUpdater().applyChanges(monitor, listener);
         } catch (DBException e) {
             UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Error saving changes in database", e);
         }
-    }
-
-    private boolean editEntityIdentifier(DBRProgressMonitor monitor, DBVEntityConstraint virtualConstraint)
-    {
-        EditConstraintDialog dialog = new EditConstraintDialog(
-            getControl().getShell(),
-            "Define virtual unique identifier",
-            virtualConstraint,
-            monitor);
-        if (dialog.open() != IDialogConstants.OK_ID) {
-            return false;
-        }
-
-        Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
-        virtualConstraint.setAttributes(uniqueColumns);
-
-        DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) getDataSource().getContainer();
-        dataSourceDescriptor.persistConfiguration();
-
-        return true;
     }
 
     public void rejectChanges()
@@ -1678,6 +1644,77 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         return -1;
     }
+
+    //////////////////////////////////
+    // Virtual identifier management
+
+    private DBCEntityIdentifier getVirtualEntityIdentifier()
+    {
+        if (!singleSourceCells || CommonUtils.isEmpty(metaColumns)) {
+            return null;
+        }
+        DBCEntityIdentifier identifier = metaColumns[0].getValueLocator().getEntityIdentifier();
+        if (identifier.getReferrer() instanceof DBVEntityConstraint) {
+            return identifier;
+        } else {
+            return null;
+        }
+    }
+
+    private boolean checkEntityIdentifier() throws DBException
+    {
+        // Check for value locators
+        // Probably we have only virtual one with empty column set
+        final DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
+        if (identifier != null) {
+            if (CommonUtils.isEmpty(identifier.getAttributes())) {
+                DBeaverCore.runUIJob("Edit virtual key", new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        DBVEntityConstraint constraint = (DBVEntityConstraint)identifier.getReferrer();
+                        if (editEntityIdentifier(monitor, constraint)) {
+                            try {
+                                identifier.reloadAttributes(monitor, metaColumns[0].getColumn().getTable());
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }
+                    }
+                });
+                return !CommonUtils.isEmpty(identifier.getAttributes());
+            }
+        }
+        return false;
+    }
+
+    private boolean editEntityIdentifier(DBRProgressMonitor monitor, DBVEntityConstraint virtualConstraint)
+    {
+        EditConstraintDialog dialog = new EditConstraintDialog(
+            getControl().getShell(),
+            "Define virtual unique identifier",
+            virtualConstraint,
+            monitor);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return false;
+        }
+
+        Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
+        virtualConstraint.setAttributes(uniqueColumns);
+
+        DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) getDataSource().getContainer();
+        dataSourceDescriptor.persistConfiguration();
+
+        return true;
+    }
+
+    private void clearEntityIdentifier(DBRProgressMonitor monitor, DBVEntityConstraint virtualConstraint)
+    {
+
+    }
+
+    /////////////////////////////
+    // Value controller
 
     private class ResultSetValueController implements DBDColumnController, DBDRowController {
 
@@ -2704,10 +2741,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             MenuManager menuManager = new MenuManager();
             menuManager.add(new ShowFiltersAction());
             menuManager.add(new Separator());
-            menuManager.add(new Action("Define virtual unique key") {
-            });
-            menuManager.add(new Action("Clear virtual unique key") {
-            });
+            menuManager.add(new VirtualKeyEditAction(true));
+            menuManager.add(new VirtualKeyEditAction(false));
             menuManager.add(new Action("Define dictionary") {
             });
             menuManager.add(new Separator());
@@ -2731,6 +2766,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             return null;
         }
+
     }
 
     private class ShowFiltersAction extends Action {
@@ -2743,6 +2779,40 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public void run()
         {
             new ResultSetFilterDialog(ResultSetViewer.this).open();
+        }
+    }
+
+    private class VirtualKeyEditAction extends Action {
+        private boolean define;
+
+        public VirtualKeyEditAction(boolean define)
+        {
+            super(define ? "Define virtual unique key" : "Clear virtual unique key");
+            this.define = define;
+        }
+
+        @Override
+        public boolean isEnabled()
+        {
+            DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
+            return identifier != null && (define || !CommonUtils.isEmpty(identifier.getAttributes()));
+        }
+
+        @Override
+        public void run()
+        {
+            DBeaverCore.runUIJob("Edit virtual key", new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    DBVEntityConstraint constraint = (DBVEntityConstraint) metaColumns[0].getValueLocator().getEntityIdentifier().getReferrer();
+                    if (define) {
+                        editEntityIdentifier(monitor, constraint);
+                    } else {
+                        clearEntityIdentifier(monitor, constraint);
+                    }
+                }
+            });
         }
     }
 }

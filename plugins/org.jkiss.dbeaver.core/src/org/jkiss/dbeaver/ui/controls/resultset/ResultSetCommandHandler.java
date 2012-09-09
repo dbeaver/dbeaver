@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
