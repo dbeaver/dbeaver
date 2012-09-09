@@ -299,7 +299,6 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
         shell.setText(NLS.bind(CoreMessages.dialog_struct_columns_select_title, title, entity.getName()));
-        //shell.setImage(entity.getNodeIcon());
     }
 
     public Collection<DBSEntityAttribute> getSelectedColumns()

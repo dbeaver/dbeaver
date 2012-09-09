@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -1367,7 +1368,18 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             if (getVirtualEntityIdentifier() != null) {
                 // Ask user
-
+                RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
+                    @Override
+                    public void run()
+                    {
+                        ConfirmVirtualKeyUsageDialog dialog = new ConfirmVirtualKeyUsageDialog(ResultSetViewer.this);
+                        result = (dialog.open() == IDialogConstants.OK_ID);
+                    }
+                };
+                UIUtils.runInUI(getControl().getShell(), confirmer);
+                if (!confirmer.getResult()) {
+                    return;
+                }
             }
             new DataUpdater().applyChanges(monitor, listener);
         } catch (DBException e) {
@@ -1651,7 +1663,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     //////////////////////////////////
     // Virtual identifier management
 
-    private DBCEntityIdentifier getVirtualEntityIdentifier()
+    DBCEntityIdentifier getVirtualEntityIdentifier()
     {
         if (!singleSourceCells || CommonUtils.isEmpty(metaColumns)) {
             return null;
@@ -1664,7 +1676,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private boolean checkEntityIdentifier() throws DBException
+    boolean checkEntityIdentifier() throws DBException
     {
         // Check for value locators
         // Probably we have only virtual one with empty column set
@@ -1676,8 +1688,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     public void run()
                     {
                         // It is safe to use void monitor cos' it is virtual constraint
-                        DBVEntityConstraint constraint = (DBVEntityConstraint)identifier.getReferrer();
-                        if (editEntityIdentifier(VoidProgressMonitor.INSTANCE, constraint)) {
+                        if (editEntityIdentifier(VoidProgressMonitor.INSTANCE)) {
                             try {
                                 identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, metaColumns[0].getColumn().getTable());
                             } catch (DBException e) {
@@ -1692,26 +1703,28 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return false;
     }
 
-    private boolean editEntityIdentifier(DBRProgressMonitor monitor, DBVEntityConstraint virtualConstraint)
+    boolean editEntityIdentifier(DBRProgressMonitor monitor)
     {
+        DBVEntityConstraint constraint = (DBVEntityConstraint)getVirtualEntityIdentifier().getReferrer();
+
         EditConstraintDialog dialog = new EditConstraintDialog(
             getControl().getShell(),
             "Define virtual unique identifier",
-            virtualConstraint,
+            constraint,
             monitor);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return false;
         }
 
         Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
-        virtualConstraint.setAttributes(uniqueColumns);
+        constraint.setAttributes(uniqueColumns);
 
         getDataSource().getContainer().persistConfiguration();
 
         return true;
     }
 
-    private void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
+    void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
         DBCEntityIdentifier identifier = metaColumns[0].getValueLocator().getEntityIdentifier();
         ((DBVEntityConstraint) identifier.getReferrer()).setAttributes(Collections.<DBSEntityAttribute>emptyList());
@@ -2813,9 +2826,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 {
                     try {
                         if (define) {
-                            editEntityIdentifier(
-                                monitor,
-                                (DBVEntityConstraint) metaColumns[0].getValueLocator().getEntityIdentifier().getReferrer());
+                            editEntityIdentifier(monitor);
                         } else {
                             clearEntityIdentifier(monitor);
                         }
