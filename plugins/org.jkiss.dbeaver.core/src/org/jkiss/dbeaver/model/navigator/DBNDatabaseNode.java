@@ -423,6 +423,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         final List<DBNDatabaseNode> toList)
         throws DBException
     {
+        if (this.isDisposed()) {
+            // Property reading can take really long time so this node can be disposed at this moment -
+            // check it
+            return false;
+        }
         // Read property using reflection
         Object valueObject = getValueObject();
         if (valueObject == null) {
@@ -437,6 +442,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             log.warn("Bad property '" + propertyName + "' value: " + propertyValue.getClass().getName()); //$NON-NLS-1$ //$NON-NLS-2$
             return false;
         }
+
+        DBSObjectFilter filter = getNodeFilter(meta, false);
+        this.filtered = filter != null && !filter.isEmpty();
+
         Collection<?> itemList = (Collection<?>) propertyValue;
         if (itemList.isEmpty()) {
             return false;
@@ -446,8 +455,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             // check it
             return false;
         }
-        DBSObjectFilter filter = getNodeFilter(meta, false);
-        this.filtered = filter != null && !filter.isEmpty();
+
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
