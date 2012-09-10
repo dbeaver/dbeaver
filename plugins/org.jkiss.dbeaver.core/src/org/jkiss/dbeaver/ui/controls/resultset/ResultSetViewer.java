@@ -1117,6 +1117,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public void setSelection(ISelection selection, boolean reveal)
     {
+        fireSelectionChanged(new SelectionChangedEvent(this, selection));
     }
 
     public DBDDataReceiver getDataReceiver() {

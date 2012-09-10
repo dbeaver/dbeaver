@@ -61,7 +61,9 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
                 loaded = true;
             }
         }
+        // Set selection provider from resultset
         getSite().setSelectionProvider(resultSetView);
+        resultSetView.setSelection(resultSetView.getSelection());
     }
 
     @Override
