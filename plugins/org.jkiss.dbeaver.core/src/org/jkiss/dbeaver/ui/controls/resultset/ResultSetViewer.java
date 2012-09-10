@@ -600,9 +600,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    static boolean isColumnReadOnly(DBDColumnBinding column)
+    boolean isColumnReadOnly(GridPos pos)
     {
-        if (column.getValueLocator() == null || !(column.getValueLocator().getEntity() instanceof DBSDataContainer)) {
+        int column;
+        if (mode == ResultSetMode.GRID) {
+            column = pos.col;
+        } else {
+            column = curRowNum;
+        }
+        return column < 0 || column >= metaColumns.length || isColumnReadOnly(metaColumns[column]);
+    }
+
+    boolean isColumnReadOnly(DBDColumnBinding column)
+    {
+        if (isReadOnly() || column.getValueLocator() == null || !(column.getValueLocator().getEntity() instanceof DBSDataContainer)) {
             return true;
         }
         DBSDataContainer dataContainer = (DBSDataContainer) column.getValueLocator().getEntity();
@@ -831,36 +842,29 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
-    public boolean isEditable()
+    public boolean isReadOnly()
     {
         if (updateInProgress) {
             return true;
         }
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
-            return false;
+            return true;
         }
         DBPDataSource dataSource = dataContainer.getDataSource();
-        return dataSource != null &&
-            dataSource.isConnected() &&
-            !dataSource.getContainer().isConnectionReadOnly() &&
-            !dataSource.getInfo().isReadOnlyData();
+        return dataSource == null ||
+            !dataSource.isConnected() ||
+            dataSource.getContainer().isConnectionReadOnly() ||
+            dataSource.getInfo().isReadOnlyData();
     }
 
     @Override
     public boolean isCellEditable(GridPos pos) {
-        if (!isEditable()) {
-            return false;
-        }
-        pos = translateGridPos(pos);
-        boolean validPosition;
         if (mode == ResultSetMode.GRID) {
-            validPosition = (pos.col >= 0 && pos.row >= 0);
+            return (pos.col >= 0 && pos.row >= 0);
         } else {
-            validPosition = curRowNum >= 0;
+            return curRowNum >= 0;
         }
-
-        return validPosition;
     }
 
     GridPos translateGridPos(GridPos pos)
@@ -879,10 +883,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public boolean isInsertable()
     {
-        if (!isEditable()) {
-            return false;
-        }
-        return singleSourceCells && !CommonUtils.isEmpty(metaColumns);
+        return
+            !isReadOnly() &&
+            singleSourceCells &&
+            !CommonUtils.isEmpty(metaColumns);
     }
 
     @Override

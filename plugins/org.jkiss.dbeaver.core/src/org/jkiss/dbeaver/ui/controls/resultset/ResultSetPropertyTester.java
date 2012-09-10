@@ -59,7 +59,7 @@ public class ResultSetPropertyTester extends PropertyTester
             return currentPosition != null && currentPosition.isValid();
         } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
             final GridPos currentPosition = rsv.getCurrentPosition();
-            return currentPosition != null && rsv.isCellEditable(currentPosition);
+            return currentPosition != null && !rsv.isColumnReadOnly(currentPosition);
         } else if (PROP_CAN_MOVE.equals(property)) {
             int currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {
@@ -71,6 +71,9 @@ public class ResultSetPropertyTester extends PropertyTester
             if ("edit".equals(expectedValue)) {
                 GridPos pos = rsv.getCurrentPosition();
                 return pos != null && rsv.isCellEditable(pos);
+            } else if ("inline".equals(expectedValue)) {
+                GridPos pos = rsv.getCurrentPosition();
+                return pos != null && !rsv.isColumnReadOnly(pos);
             } else if ("add".equals(expectedValue) || "copy".equals(expectedValue)) {
                 return rsv.isInsertable();
             } else if ("delete".equals(expectedValue)) {

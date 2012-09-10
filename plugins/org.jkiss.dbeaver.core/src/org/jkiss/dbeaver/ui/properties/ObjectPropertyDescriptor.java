@@ -376,7 +376,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         public Image getImage(Object element)
         {
 //            if (getSource() instanceof IPropertySourceEditable) {
-//                if (isEditable()) {
+//                if (isReadOnly()) {
 //                    return DBIcon.BULLET_GREEN.getImage();
 //                } else {
 //                    return DBIcon.BULLET_BLACK.getImage();

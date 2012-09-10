@@ -168,7 +168,9 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                 if (referrer != null && isGoodReferrer(monitor, referrer)) {
                     if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                         return id;
-                    } else if (referrer.getConstraintType().isUnique()) {
+                    } else if (referrer.getConstraintType().isUnique() ||
+                        (referrer instanceof DBSTableIndex && ((DBSTableIndex) referrer).isUnique()))
+                    {
                         uniqueId = id;
                     }
                 }

@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
  */
 public interface ISpreadsheetController {
 
-    boolean isEditable();
+    boolean isReadOnly();
 
     boolean isCellEditable(GridPos pos);
 

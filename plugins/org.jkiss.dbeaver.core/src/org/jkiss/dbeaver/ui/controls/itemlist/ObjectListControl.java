@@ -548,7 +548,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (prop == null) {
             return null;
         }
-        //if (!prop.isEditable(objectValue) && isNewObject(object)) {
+        //if (!prop.isReadOnly(objectValue) && isNewObject(object)) {
             // Non-editable properties are empty for new objects
             //return null;
         //}

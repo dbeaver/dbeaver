@@ -634,13 +634,16 @@ public class Spreadsheet extends Composite implements Listener {
         if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
             return;
         }
-        if (!spreadsheetController.isEditable() || !spreadsheetController.isCellEditable(focusCell)) {
+        if (!spreadsheetController.isCellEditable(focusCell)) {
             return;
         }
         //GridItem item = grid.getItem(focusCell.y);
 
         Composite placeholder = null;
         if (inline) {
+            if (spreadsheetController.isReadOnly()) {
+                return;
+            }
             cancelInlineEditor();
 
             placeholder = new Composite(grid, SWT.NONE);
