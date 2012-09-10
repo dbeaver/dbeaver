@@ -23,13 +23,13 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 /**
 * DB connection type
 */
-public enum OracleDbType
+public enum OracleConnectionType
 {
     SID(OracleMessages.dialog_connection_sid),
     SERVICE(OracleMessages.dialog_connection_service);
     private final String title;
 
-    OracleDbType(String title)
+    OracleConnectionType(String title)
     {
         this.title = title;
     }
@@ -39,9 +39,9 @@ public enum OracleDbType
         return title;
     }
 
-    public static OracleDbType getTypeForTitle(String title)
+    public static OracleConnectionType getTypeForTitle(String title)
     {
-        for (OracleDbType odt : values()) {
+        for (OracleConnectionType odt : values()) {
             if (title.equals(odt.getTitle())) {
                 return odt;
             }

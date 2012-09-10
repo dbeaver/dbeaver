@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
-import org.jkiss.dbeaver.ext.oracle.model.dict.OracleDbType;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.*;
@@ -89,7 +89,8 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             url.append(connectionInfo.getDatabaseName());
         } else {
             // Basic connection info specified
-            if (!isOCI) {
+            boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE));
+            if (!isOCI && !isSID) {
                 url.append("//"); //$NON-NLS-1$
             }
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
@@ -99,8 +100,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
                 url.append(":"); //$NON-NLS-1$
                 url.append(connectionInfo.getHostPort());
             }
-            Object sidService = connectionInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE);
-            if (isOCI || OracleDbType.SID.name().equals(sidService)) {
+            if (isOCI || isSID) {
                 url.append(":"); //$NON-NLS-1$
             } else {
                 url.append("/"); //$NON-NLS-1$

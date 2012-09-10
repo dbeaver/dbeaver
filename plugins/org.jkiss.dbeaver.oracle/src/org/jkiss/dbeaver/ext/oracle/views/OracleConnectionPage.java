@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
-import org.jkiss.dbeaver.ext.oracle.model.dict.OracleDbType;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
@@ -201,16 +201,17 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
         UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_database);
 
-        sidServiceCombo = new Combo(targetContainer, SWT.DROP_DOWN | SWT.READ_ONLY);
-        sidServiceCombo.add(OracleDbType.SID.getTitle());
-        sidServiceCombo.add(OracleDbType.SERVICE.getTitle());
-        sidServiceCombo.select(1);
-
         serviceNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 3;
         serviceNameCombo.setLayoutData(gd);
         serviceNameCombo.addModifyListener(controlModifyListener);
+
+        sidServiceCombo = new Combo(targetContainer, SWT.DROP_DOWN | SWT.READ_ONLY);
+        sidServiceCombo.add(OracleConnectionType.SID.getTitle());
+        sidServiceCombo.add(OracleConnectionType.SERVICE.getTitle());
+        sidServiceCombo.select(1);
+
     }
 
     private void createTNSConnectionControls(CTabFolder protocolFolder)
@@ -456,7 +457,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
             final Object sidService = connectionProperties.get(OracleConstants.PROP_SID_SERVICE);
             if (sidService != null) {
-                sidServiceCombo.setText(OracleDbType.valueOf(sidService.toString()).getTitle());
+                sidServiceCombo.setText(OracleConnectionType.valueOf(sidService.toString()).getTitle());
             }
 
             if (isOCI) {
@@ -574,7 +575,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
             connectionInfo.setUserPassword(passwordText.getText());
         }
 
-        connectionProperties.put(OracleConstants.PROP_SID_SERVICE, OracleDbType.getTypeForTitle(sidServiceCombo.getText()).name());
+        connectionProperties.put(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());
 
         if (userRoleCombo.getSelectionIndex() > 0) {
             connectionProperties.put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase());
