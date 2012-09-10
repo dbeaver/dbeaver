@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -184,7 +185,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     {
         Collection<? extends DBSEntityAttributeRef> references = referrer.getAttributeReferences(monitor);
         if (CommonUtils.isEmpty(references)) {
-            return false;
+            return referrer instanceof DBVEntityConstraint;
         }
         for (DBSEntityAttributeRef ref : references) {
             if (getColumnMetaData(monitor, ref.getAttribute()) == null) {
