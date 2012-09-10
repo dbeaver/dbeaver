@@ -1820,8 +1820,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     if (!isRowAdded(rowIndex) && !isRowDeleted(rowIndex)) {
                         // Save old value
                         GridPos cell = new GridPos(columnIndex, rowIndex);
+                        boolean cellWasEdited = editedValues.containsKey(cell); // use "contains" cos' old value may be "null".
                         Object oldOldValue = editedValues.get(cell);
-                        if (oldOldValue != null && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
+                        if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
                             // Value rewrite - release previous stored old value
                             releaseValue(oldValue);
                         } else {
