@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -60,6 +61,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
                 loaded = true;
             }
         }
+        getSite().setSelectionProvider(resultSetView);
     }
 
     @Override
