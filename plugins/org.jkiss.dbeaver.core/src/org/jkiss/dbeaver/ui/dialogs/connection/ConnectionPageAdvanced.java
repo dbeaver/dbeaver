@@ -98,7 +98,7 @@ public abstract class ConnectionPageAdvanced extends DialogPage implements IData
         }
     }
 
-    private void saveConnectionURL(DBPConnectionInfo connectionInfo)
+    protected void saveConnectionURL(DBPConnectionInfo connectionInfo)
     {
         if (!isCustomURL()) {
             try {

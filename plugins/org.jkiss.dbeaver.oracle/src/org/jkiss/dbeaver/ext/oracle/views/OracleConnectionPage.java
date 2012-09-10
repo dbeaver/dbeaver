@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleDbType;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
@@ -53,6 +54,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
     private Text hostText;
     private Text portText;
+    private Combo sidServiceCombo;
     private Combo serviceNameCombo;
     private Text userNameText;
     private Combo userRoleCombo;
@@ -174,26 +176,35 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         protocolTabBasic.setData(OracleConstants.ConnectionType.BASIC);
 
         Composite targetContainer = new Composite(protocolFolder, SWT.NONE);
-        targetContainer.setLayout(new GridLayout(4, false));
+        targetContainer.setLayout(new GridLayout(5, false));
         targetContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         protocolTabBasic.setControl(targetContainer);
 
-        UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_host);
+        Label hostLabel = UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_host);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        hostLabel.setLayoutData(gd);
 
         hostText = new Text(targetContainer, SWT.BORDER);
-        hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        hostText.setLayoutData(gd);
         hostText.addModifyListener(controlModifyListener);
 
         UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_port);
 
         portText = new Text(targetContainer, SWT.BORDER);
-        GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
         gd.widthHint = 40;
         portText.setLayoutData(gd);
         portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
         portText.addModifyListener(controlModifyListener);
 
-        UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_sid_service);
+        UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_database);
+
+        sidServiceCombo = new Combo(targetContainer, SWT.DROP_DOWN | SWT.READ_ONLY);
+        sidServiceCombo.add(OracleDbType.SID.getTitle());
+        sidServiceCombo.add(OracleDbType.SERVICE.getTitle());
+        sidServiceCombo.select(1);
 
         serviceNameCombo = new Combo(targetContainer, SWT.DROP_DOWN);
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -443,6 +454,11 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         if (connectionInfo != null) {
             Map<Object,Object> connectionProperties = connectionInfo.getProperties();
 
+            final Object sidService = connectionProperties.get(OracleConstants.PROP_SID_SERVICE);
+            if (sidService != null) {
+                sidServiceCombo.setText(OracleDbType.valueOf(sidService.toString()).getTitle());
+            }
+
             if (isOCI) {
                 oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
             }
@@ -557,6 +573,9 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
             connectionInfo.setUserName(userNameText.getText());
             connectionInfo.setUserPassword(passwordText.getText());
         }
+
+        connectionProperties.put(OracleConstants.PROP_SID_SERVICE, OracleDbType.getTypeForTitle(sidServiceCombo.getText()).name());
+
         if (userRoleCombo.getSelectionIndex() > 0) {
             connectionProperties.put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase());
         } else {
@@ -585,7 +604,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
                 OracleConstants.PROP_ALWAYS_SHOW_DBA,
                 String.valueOf(showDBAAlwaysCheckbox.getSelection()));
         }
-        super.saveSettings(connectionInfo);
+        saveConnectionURL(connectionInfo);
     }
 
     private void updateUI()

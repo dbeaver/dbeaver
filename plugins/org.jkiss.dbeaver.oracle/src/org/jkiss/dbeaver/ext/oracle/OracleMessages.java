@@ -48,6 +48,9 @@ public class OracleMessages extends NLS {
 	public static String dialog_connection_security_group;
 	public static String dialog_connection_select_ora_home_msg;
 	public static String dialog_connection_sid_service;
+	public static String dialog_connection_sid;
+	public static String dialog_connection_service;
+	public static String dialog_connection_database;
 	public static String dialog_connection_test_connection;
 	public static String dialog_connection_tns_tab;
 	public static String dialog_connection_user_name;

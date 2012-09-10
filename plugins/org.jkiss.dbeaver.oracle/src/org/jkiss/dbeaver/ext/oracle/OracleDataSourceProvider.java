@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleDbType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.*;
@@ -98,7 +99,8 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
                 url.append(":"); //$NON-NLS-1$
                 url.append(connectionInfo.getHostPort());
             }
-            if (isOCI) {
+            Object sidService = connectionInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE);
+            if (isOCI || OracleDbType.SID.name().equals(sidService)) {
                 url.append(":"); //$NON-NLS-1$
             } else {
                 url.append("/"); //$NON-NLS-1$
