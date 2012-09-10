@@ -163,22 +163,33 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         if (!CommonUtils.isEmpty(identifiers)) {
             // Find PK or unique key
             DBCEntityIdentifier uniqueId = null;
-            DBCEntityIdentifier uniqueIndex = null;
             for (DBCEntityIdentifier id : identifiers) {
-                if (id.getReferrer() != null) {
-                    if (id.getReferrer().getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+                DBSEntityReferrer referrer = id.getReferrer();
+                if (referrer != null && isGoodReferrer(monitor, referrer)) {
+                    if (referrer.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
                         return id;
-                    } else if (id.getReferrer().getConstraintType().isUnique()) {
+                    } else if (referrer.getConstraintType().isUnique()) {
                         uniqueId = id;
                     }
-                } else {
-                    uniqueIndex = id;
                 }
             }
-            return uniqueId != null ? uniqueId : uniqueIndex;
-        } else {
-            return null;
+            return uniqueId;
         }
+        return null;
+    }
+
+    private boolean isGoodReferrer(DBRProgressMonitor monitor, DBSEntityReferrer referrer) throws DBException
+    {
+        Collection<? extends DBSEntityAttributeRef> references = referrer.getAttributeReferences(monitor);
+        if (CommonUtils.isEmpty(references)) {
+            return false;
+        }
+        for (DBSEntityAttributeRef ref : references) {
+            if (getColumnMetaData(monitor, ref.getAttribute()) == null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public JDBCColumnMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column)
