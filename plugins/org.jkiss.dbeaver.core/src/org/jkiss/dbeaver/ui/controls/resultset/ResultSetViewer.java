@@ -1373,7 +1373,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return;
         }
         try {
-            if (!checkEntityIdentifier()) {
+            if (!checkVirtualEntityIdentifier()) {
                 return;
             }
             if (getVirtualEntityIdentifier() != null) {
@@ -1681,7 +1681,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    boolean checkEntityIdentifier() throws DBException
+    boolean checkVirtualEntityIdentifier() throws DBException
     {
         // Check for value locators
         // Probably we have only virtual one with empty column set
@@ -1705,7 +1705,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             return !CommonUtils.isEmpty(identifier.getAttributes());
         }
-        return false;
+        return true;
     }
 
     boolean editEntityIdentifier(DBRProgressMonitor monitor)
