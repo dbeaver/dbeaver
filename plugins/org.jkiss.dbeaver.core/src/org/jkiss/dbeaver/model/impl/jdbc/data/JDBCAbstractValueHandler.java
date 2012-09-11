@@ -26,7 +26,6 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.swt.IFocusService;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -81,7 +80,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard) throws DBException
+    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
     {
         // By default handler doesn't support any clipboard format
         return null;

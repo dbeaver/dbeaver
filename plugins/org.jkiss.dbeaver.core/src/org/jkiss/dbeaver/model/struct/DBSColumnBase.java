@@ -25,5 +25,5 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public interface DBSColumnBase extends DBSTypedObject, DBPNamedObject
 {
-
+    boolean isRequired();
 }

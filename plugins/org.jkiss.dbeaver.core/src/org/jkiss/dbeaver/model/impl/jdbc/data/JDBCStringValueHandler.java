@@ -119,7 +119,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler
     }
 
     @Override
-    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard) throws DBException
+    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
     {
         return clipboard.getContents(TextTransfer.getInstance());
     }

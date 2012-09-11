@@ -25,12 +25,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -833,6 +834,44 @@ public final class DBUtils {
             return ((DBPQualifiedObject) object).getFullQualifiedName();
         } else {
             return object.getName();
+        }
+    }
+
+    public static DBSDataKind getDataKind(DBSTypedObject type)
+    {
+        return JDBCUtils.getDataKind(type.getTypeName(), type.getTypeID());
+    }
+
+    public static DBIcon getDataIcon(DBSTypedObject type)
+    {
+        switch (getDataKind(type)) {
+            case BOOLEAN:
+                return DBIcon.TYPE_BOOLEAN;
+            case STRING:
+                return DBIcon.TYPE_STRING;
+            case NUMERIC:
+                if (type.getTypeID() == java.sql.Types.BIT) {
+                    return DBIcon.TYPE_BOOLEAN;
+                } else {
+                    return DBIcon.TYPE_NUMBER;
+                }
+            case DATETIME:
+                return DBIcon.TYPE_DATETIME;
+            case BINARY:
+                return DBIcon.TYPE_BINARY;
+            case LOB:
+                return DBIcon.TYPE_LOB;
+            case ARRAY:
+                return DBIcon.TYPE_ARRAY;
+            case STRUCT:
+                return DBIcon.TYPE_STRUCT;
+            case OBJECT:
+                return DBIcon.TYPE_OBJECT;
+            default:
+                if (type.getTypeID() == java.sql.Types.SQLXML) {
+                    return DBIcon.TYPE_XML;
+                }
+                return DBIcon.TYPE_UNKNOWN;
         }
     }
 

@@ -444,12 +444,12 @@ public class CommonUtils {
         }
     }
 
-    public static String truncateString(String query, int maxLength)
+    public static String truncateString(String str, int maxLength)
     {
-        if (query.length() > maxLength) {
-            return query.substring(0, maxLength);
+        if (str != null && str.length() > maxLength) {
+            return str.substring(0, maxLength);
         }
-        return query;
+        return str;
     }
 
     public static boolean isEmptyTrimmed(String str)

@@ -325,6 +325,12 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         {
             return WMIClassAttribute.getPropertyImage(attribute.getType());
         }
+
+        @Override
+        public boolean isRequired()
+        {
+            return false;
+        }
     }
 
 }

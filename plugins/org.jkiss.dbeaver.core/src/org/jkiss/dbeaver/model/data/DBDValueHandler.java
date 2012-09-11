@@ -102,13 +102,14 @@ public interface DBDValueHandler
      * Get value from clipboard. If clipboard doesn't contain data in appropriate format
      * or value cannot be parsed then this function should return null
      *
+     *
      * @param column column descriptor
      * @param clipboard clipboard
      * @return value (return null only in case of NULL value in clipboard)
      * @throws org.jkiss.dbeaver.DBException on unexpected error (IO, etc)
      */
     Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
-        throws DBException;
+    ;
 
     /**
      * Release any internal resources associated with this value.

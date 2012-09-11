@@ -3,7 +3,6 @@ package org.jkiss.dbeaver.model.virtual;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -214,7 +213,7 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         Map<String, DBSEntityAttribute> stringColumns = new TreeMap<String, DBSEntityAttribute>();
         for (DBSEntityAttribute column : allColumns) {
             if (column != keyColumn &&
-                JDBCUtils.getDataKind(column) == DBSDataKind.STRING &&
+                DBUtils.getDataKind(column) == DBSDataKind.STRING &&
                 column.getMaxLength() < MAX_DESC_COLUMN_LENGTH &&
                 column.getMaxLength() >= MIN_DESC_COLUMN_LENGTH)
             {

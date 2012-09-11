@@ -141,4 +141,10 @@ public class SQLStatementParameter implements DBSColumnBase {
     {
         return paramType == null ? 0 : paramType.getPrecision();
     }
+
+    @Override
+    public boolean isRequired()
+    {
+        return false;
+    }
 }

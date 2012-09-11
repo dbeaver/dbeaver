@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
@@ -199,7 +198,8 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         return index;
     }
 
-    public boolean isNotNull()
+    @Override
+    public boolean isRequired()
     {
         return notNull;
     }
@@ -349,7 +349,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         if (tableColumn instanceof IObjectImageProvider) {
             return ((IObjectImageProvider) tableColumn).getObjectImage();
         }
-        return JDBCUtils.getDataIcon(this).getImage();
+        return DBUtils.getDataIcon(this).getImage();
     }
 
     @Override

@@ -31,7 +31,7 @@ public interface ISpreadsheetController {
 
     boolean isReadOnly();
 
-    boolean isCellEditable(GridPos pos);
+    boolean isValidCell(GridPos pos);
 
     boolean isInsertable();
 

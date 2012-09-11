@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -68,10 +69,7 @@ import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.ThemeConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -859,7 +857,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
-    public boolean isCellEditable(GridPos pos) {
+    public boolean isValidCell(GridPos pos) {
         if (mode == ResultSetMode.GRID) {
             return (pos.col >= 0 && pos.row >= 0);
         } else {
@@ -959,7 +957,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 null);
             final Object value = valueController.getValue();
 
-            if (isCellEditable(cell)) {
+            if (isValidCell(cell)) {
                 // Standard items
                 manager.add(new Separator());
                 manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
@@ -1000,7 +998,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (!CommonUtils.isEmpty(metaColumns)) {
             // Export and other utility methods
             manager.add(new Separator());
-            manager.add(createFiltersMenu());
+            MenuManager filtersMenu = new MenuManager(
+                CoreMessages.controls_resultset_viewer_action_order_filter,
+                DBIcon.FILTER.getImageDescriptor(),
+                "filters"); //$NON-NLS-1$
+            filtersMenu.setRemoveAllWhenShown(true);
+            filtersMenu.addMenuListener(new IMenuListener() {
+                @Override
+                public void menuAboutToShow(IMenuManager manager)
+                {
+                    fillFiltersMenu(manager);
+                }
+            });
+            manager.add(filtersMenu);
+
             manager.add(new Action(CoreMessages.controls_resultset_viewer_action_export, DBIcon.EXPORT.getImageDescriptor()) {
                 @Override
                 public void run()
@@ -1017,14 +1028,51 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private MenuManager createFiltersMenu()
+    private void fillFiltersMenu(IMenuManager filtersMenu)
     {
-        MenuManager filtersMenu = new MenuManager(
-            CoreMessages.controls_resultset_viewer_action_order_filter,
-            DBIcon.FILTER.getImageDescriptor(),
-            "filters"); //$NON-NLS-1$
+        GridPos currentPosition = getCurrentPosition();
+        if (isValidCell(currentPosition)) {
+            int columnIndex = translateGridPos(currentPosition).col;
+            DBDColumnBinding column = metaColumns[columnIndex];
+            DBSDataKind dataKind = DBUtils.getDataKind(column.getColumn());
+            if (!column.getColumn().isRequired()) {
+                filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.VALUE, column));
+                filtersMenu.add(new FilterByColumnAction("IS NOT NULL", FilterByColumnType.VALUE, column));
+            }
+            for (FilterByColumnType type : FilterByColumnType.values()) {
+                filtersMenu.add(new Separator());
+                if (type.getDefaultValue(this, column) == null) {
+                    continue;
+                }
+                if (dataKind == DBSDataKind.BOOLEAN) {
+                    filtersMenu.add(new FilterByColumnAction("= ?", type, column));
+                    filtersMenu.add(new FilterByColumnAction("<> ?", type, column));
+                } else if (dataKind == DBSDataKind.NUMERIC || dataKind == DBSDataKind.DATETIME) {
+                    filtersMenu.add(new FilterByColumnAction("= ?", type, column));
+                    filtersMenu.add(new FilterByColumnAction("<> ?", type, column));
+                    filtersMenu.add(new FilterByColumnAction("> ?", type, column));
+                    filtersMenu.add(new FilterByColumnAction("< ?", type, column));
+                } else if (dataKind == DBSDataKind.STRING) {
+                    filtersMenu.add(new FilterByColumnAction("= '?'", type, column));
+                    filtersMenu.add(new FilterByColumnAction("<> '?'", type, column));
+                    filtersMenu.add(new FilterByColumnAction("> '?'", type, column));
+                    filtersMenu.add(new FilterByColumnAction("< '?'", type, column));
+                    filtersMenu.add(new FilterByColumnAction("LIKE '%?%'", type, column));
+                    filtersMenu.add(new FilterByColumnAction("NOT LIKE '%?%'", type, column));
+                }
+            }
+        }
+        filtersMenu.add(new Separator());
         filtersMenu.add(new ShowFiltersAction());
-        return filtersMenu;
+    }
+
+    private String translateFilterPattern(String pattern, FilterByColumnType type, DBDColumnBinding column)
+    {
+        String value = CommonUtils.truncateString(
+            CommonUtils.toString(
+                type.getDefaultValue(this, column)),
+            30);
+        return pattern.replace("?", value);
     }
 
     boolean supportsDataFilter()
@@ -2807,6 +2855,60 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public void run()
         {
             new ResultSetFilterDialog(ResultSetViewer.this).open();
+        }
+    }
+
+    private enum FilterByColumnType {
+        VALUE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
+            @Override
+            Object getDefaultValue(ResultSetViewer viewer, DBDColumnBinding column)
+            {
+                return column.getValueHandler().getValueDisplayString(
+                    column.getColumn(),
+                    viewer.curRows.get(viewer.getCurrentRow())[viewer.getMetaColumnIndex(column.getColumn())]);
+            }
+        },
+        INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
+            @Override
+            Object getDefaultValue(ResultSetViewer viewer, DBDColumnBinding column)
+            {
+                return "..";
+            }
+        },
+        CLIPBOARD(DBIcon.FILTER_CLIPBOARD.getImageDescriptor()) {
+            @Override
+            Object getDefaultValue(ResultSetViewer viewer, DBDColumnBinding column)
+            {
+                return column.getValueHandler().getValueFromClipboard(
+                    column.getColumn(),
+                    viewer.getSpreadsheet().getClipboard());
+            }
+        };
+
+        final ImageDescriptor icon;
+
+        private FilterByColumnType(ImageDescriptor icon)
+        {
+            this.icon = icon;
+        }
+        abstract Object getDefaultValue(ResultSetViewer viewer, DBDColumnBinding column);
+    }
+
+    private class FilterByColumnAction extends Action {
+        private final String pattern;
+        private final FilterByColumnType type;
+        private final DBDColumnBinding column;
+        public FilterByColumnAction(String pattern, FilterByColumnType type, DBDColumnBinding column)
+        {
+            super(column.getColumnName() + " " + translateFilterPattern(pattern, type, column), type.icon);
+            this.pattern = pattern;
+            this.type = type;
+            this.column = column;
+        }
+
+        @Override
+        public void run()
+        {
         }
     }
 

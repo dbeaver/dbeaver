@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractColumn;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
@@ -47,7 +47,7 @@ public abstract class JDBCColumn extends AbstractColumn implements IObjectImageP
     @Override
     public Image getObjectImage()
     {
-        Image columnImage = JDBCUtils.getDataIcon(this).getImage();
+        Image columnImage = DBUtils.getDataIcon(this).getImage();
         JDBCColumnKeyType keyType = getKeyType();
         if (keyType != null) {
             columnImage = getOverlayImage(columnImage, keyType);

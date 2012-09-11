@@ -634,7 +634,7 @@ public class Spreadsheet extends Composite implements Listener {
         if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
             return;
         }
-        if (!spreadsheetController.isCellEditable(focusCell)) {
+        if (!spreadsheetController.isValidCell(focusCell)) {
             return;
         }
         //GridItem item = grid.getItem(focusCell.y);

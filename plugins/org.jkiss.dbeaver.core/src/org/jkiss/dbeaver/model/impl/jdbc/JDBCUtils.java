@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -238,11 +236,6 @@ public class JDBCUtils {
         return valueType;
     }
 
-    public static DBSDataKind getDataKind(DBSTypedObject type)
-    {
-        return getDataKind(type.getTypeName(), type.getTypeID());
-    }
-
     public static DBSDataKind getDataKind(String typeName, int valueType)
     {
         switch (getValueTypeByTypeName(typeName, valueType)) {
@@ -293,39 +286,6 @@ public class JDBCUtils {
                 return DBSDataKind.STRING;
         }
         return DBSDataKind.UNKNOWN;
-    }
-
-    public static DBIcon getDataIcon(DBSTypedObject type)
-    {
-        switch (JDBCUtils.getDataKind(type)) {
-            case BOOLEAN:
-                return DBIcon.TYPE_BOOLEAN;
-            case STRING:
-                return DBIcon.TYPE_STRING;
-            case NUMERIC:
-                if (type.getTypeID() == java.sql.Types.BIT) {
-                    return DBIcon.TYPE_BOOLEAN;
-                } else {
-                    return DBIcon.TYPE_NUMBER;
-                }
-            case DATETIME:
-                return DBIcon.TYPE_DATETIME;
-            case BINARY:
-                return DBIcon.TYPE_BINARY;
-            case LOB:
-                return DBIcon.TYPE_LOB;
-            case ARRAY:
-                return DBIcon.TYPE_ARRAY;
-            case STRUCT:
-                return DBIcon.TYPE_STRUCT;
-            case OBJECT:
-                return DBIcon.TYPE_OBJECT;
-            default:
-                if (type.getTypeID() == java.sql.Types.SQLXML) {
-                    return DBIcon.TYPE_XML;
-                }
-                return DBIcon.TYPE_UNKNOWN;
-        }
     }
 
     public static Object getParameter(ResultSet dbResult, int columnIndex, int columnType)
