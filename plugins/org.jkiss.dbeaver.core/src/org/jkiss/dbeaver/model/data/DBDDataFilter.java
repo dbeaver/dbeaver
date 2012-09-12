@@ -151,20 +151,19 @@ public class DBDDataFilter {
         return !filters.isEmpty() || !CommonUtils.isEmpty(this.order) || !CommonUtils.isEmpty(this.where);
     }
 
-    public String generateWhereClause(DBPDataSource dataSource)
+    public boolean hasConditions()
     {
-        if (CommonUtils.isEmpty(getFilters()) && CommonUtils.isEmpty(where)) {
-            return ""; //$NON-NLS-1$
-        }
-        StringBuilder query = new StringBuilder();
+        return !CommonUtils.isEmpty(getFilters()) || !CommonUtils.isEmpty(where);
+    }
+
+    public void appendConditionString(DBPDataSource dataSource, StringBuilder query)
+    {
         boolean hasWhere = false;
         if (!CommonUtils.isEmpty(getFilters())) {
             for (DBQCondition filter : getFilters()) {
                 if (hasWhere) query.append(" AND "); //$NON-NLS-1$
                 hasWhere = true;
-                query
-                    .append(DBUtils.getQuotedIdentifier(dataSource, filter.getColumnName()));
-
+                query.append(DBUtils.getQuotedIdentifier(dataSource, filter.getColumnName()));
                 final String condition = filter.getCondition();
                 final char firstChar = condition.trim().charAt(0);
                 if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
@@ -178,7 +177,11 @@ public class DBDDataFilter {
             if (hasWhere) query.append(" AND "); //$NON-NLS-1$
             query.append(getWhere());
         }
-        return query.toString();
+    }
+
+    public int setConditionParameters(DBPDataSource dataSource, int paramIndex)
+    {
+        return paramIndex;
     }
 
     @Override

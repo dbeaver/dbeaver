@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -411,10 +412,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void updateFiltersText()
     {
-        String where = dataFilter.generateWhereClause(getDataSource());
+        StringBuilder where = new StringBuilder();
+        dataFilter.appendConditionString(getDataSource(), where);
         boolean show = false;
-        if (!CommonUtils.isEmpty(where)) {
-            filtersText.setText(where);
+        if (where.length() > 0) {
+            filtersText.setText(where.toString());
             show = true;
         }
         if (filtersText.getVisible() == show) {
@@ -1031,9 +1033,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void fillFiltersMenu(IMenuManager filtersMenu)
     {
         GridPos currentPosition = getCurrentPosition();
-        if (isValidCell(currentPosition)) {
+        if (!singleSourceCells || isValidCell(currentPosition)) {
             int columnIndex = translateGridPos(currentPosition).col;
             DBDColumnBinding column = metaColumns[columnIndex];
+            if (column.getTableColumn() == null) {
+                return;
+            }
             DBSDataKind dataKind = DBUtils.getDataKind(column.getColumn());
             if (!column.getColumn().isRequired()) {
                 filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.VALUE, column));
@@ -1041,7 +1046,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             for (FilterByColumnType type : FilterByColumnType.values()) {
                 filtersMenu.add(new Separator());
-                if (type.getDefaultValue(this, column) == null) {
+                if (type.getValue(this, column, true) == null) {
                     continue;
                 }
                 if (dataKind == DBSDataKind.BOOLEAN) {
@@ -1061,16 +1066,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     filtersMenu.add(new FilterByColumnAction("NOT LIKE '%?%'", type, column));
                 }
             }
+            filtersMenu.add(new Separator());
+            if (getDataFilter().getFilterColumn(column.getColumnName()) != null) {
+                filtersMenu.add(new FilterResetColumnAction(column));
+            }
         }
-        filtersMenu.add(new Separator());
         filtersMenu.add(new ShowFiltersAction());
     }
 
-    private String translateFilterPattern(String pattern, FilterByColumnType type, DBDColumnBinding column)
+    private String translateFilterPattern(String pattern, FilterByColumnType type, DBDColumnBinding column, boolean useDefault)
     {
         String value = CommonUtils.truncateString(
             CommonUtils.toString(
-                type.getDefaultValue(this, column)),
+                type.getValue(this, column, useDefault)),
             30);
         return pattern.replace("?", value);
     }
@@ -2861,7 +2869,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private enum FilterByColumnType {
         VALUE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
             @Override
-            Object getDefaultValue(ResultSetViewer viewer, DBDColumnBinding column)
+            Object getValue(ResultSetViewer viewer, DBDColumnBinding column, boolean useDefault)
             {
                 return column.getValueHandler().getValueDisplayString(
                     column.getColumn(),
@@ -2870,14 +2878,18 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         },
         INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
             @Override
-            Object getDefaultValue(ResultSetViewer viewer, DBDColumnBinding column)
+            Object getValue(ResultSetViewer viewer, DBDColumnBinding column, boolean useDefault)
             {
-                return "..";
+                if (useDefault) {
+                    return "..";
+                } else {
+                    return null;
+                }
             }
         },
         CLIPBOARD(DBIcon.FILTER_CLIPBOARD.getImageDescriptor()) {
             @Override
-            Object getDefaultValue(ResultSetViewer viewer, DBDColumnBinding column)
+            Object getValue(ResultSetViewer viewer, DBDColumnBinding column, boolean useDefault)
             {
                 return column.getValueHandler().getValueFromClipboard(
                     column.getColumn(),
@@ -2891,7 +2903,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             this.icon = icon;
         }
-        abstract Object getDefaultValue(ResultSetViewer viewer, DBDColumnBinding column);
+        abstract Object getValue(ResultSetViewer viewer, DBDColumnBinding column, boolean useDefault);
     }
 
     private class FilterByColumnAction extends Action {
@@ -2900,7 +2912,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private final DBDColumnBinding column;
         public FilterByColumnAction(String pattern, FilterByColumnType type, DBDColumnBinding column)
         {
-            super(column.getColumnName() + " " + translateFilterPattern(pattern, type, column), type.icon);
+            super(DBUtils.getQuotedIdentifier(column.getTableColumn()) + " " + translateFilterPattern(pattern, type, column, true), type.icon);
             this.pattern = pattern;
             this.type = type;
             this.column = column;
@@ -2909,6 +2921,39 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public void run()
         {
+            String value = translateFilterPattern(pattern, type, column, false);
+            if (value == null) {
+                return;
+            }
+            DBDDataFilter filter = getDataFilter();
+            DBQCondition filterColumn = filter.getFilterColumn(column.getColumnName());
+            if (filterColumn == null) {
+                filterColumn = new DBQCondition(column.getColumnName(), value);
+                filter.addFilterColumn(filterColumn);
+            } else {
+                filterColumn.setCondition(value);
+            }
+            refresh();
+        }
+    }
+
+    private class FilterResetColumnAction extends Action {
+        private final DBDColumnBinding column;
+        public FilterResetColumnAction(DBDColumnBinding column)
+        {
+            super("Remove filter", DBIcon.REVERT.getImageDescriptor());
+            this.column = column;
+        }
+
+        @Override
+        public void run()
+        {
+            DBDDataFilter filter = getDataFilter();
+            DBQCondition filterColumn = filter.getFilterColumn(column.getColumnName());
+            if (filterColumn != null) {
+                filter.removeFilterColumn(filterColumn);
+            }
+            refresh();
         }
     }
 

@@ -378,12 +378,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     private void appendQueryConditions(StringBuilder query, DBDDataFilter dataFilter)
     {
-        if (dataFilter != null) {
-            String where = dataFilter.generateWhereClause(getDataSource());
-            if (!CommonUtils.isEmpty(where)) {
-                query.append(" WHERE "); //$NON-NLS-1$
-                query.append(where);
-            }
+        if (dataFilter != null && dataFilter.hasConditions()) {
+            query.append(" WHERE "); //$NON-NLS-1$
+            dataFilter.appendConditionString(getDataSource(), query);
         }
     }
 

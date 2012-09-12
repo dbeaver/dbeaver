@@ -27,8 +27,9 @@ import org.jkiss.utils.CommonUtils;
 public class DBQCondition {
 
     private final String columnName;
-    private DBQCriterion criterion;
+    //private DBQCriterion criterion;
     private String condition;
+    private Object columnValue;
 
     public DBQCondition(String columnName, String condition)
     {
@@ -47,16 +48,6 @@ public class DBQCondition {
         return columnName;
     }
 
-    public DBQCriterion getCriterion()
-    {
-        return criterion;
-    }
-
-    public void setCriterion(DBQCriterion criterion)
-    {
-        this.criterion = criterion;
-    }
-
     public String getCondition()
     {
         return condition;
@@ -67,6 +58,16 @@ public class DBQCondition {
         this.condition = condition;
     }
 
+    public Object getColumnValue()
+    {
+        return columnValue;
+    }
+
+    public void setColumnValue(Object columnValue)
+    {
+        this.columnValue = columnValue;
+    }
+
     @Override
     public boolean equals(Object obj)
     {
@@ -75,6 +76,7 @@ public class DBQCondition {
         }
         DBQCondition source = (DBQCondition)obj;
         return CommonUtils.equalObjects(this.columnName, source.columnName) &&
-            CommonUtils.equalObjects(this.condition, source.condition);
+            CommonUtils.equalObjects(this.condition, source.condition) &&
+            CommonUtils.equalObjects(this.columnValue, source.columnValue);
     }
 }
