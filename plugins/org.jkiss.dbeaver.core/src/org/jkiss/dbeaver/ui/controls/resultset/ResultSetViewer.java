@@ -79,7 +79,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.ViewTextDialog;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportProvider;
 import org.jkiss.dbeaver.ui.export.data.wizard.DataExportWizard;
@@ -324,7 +324,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             @Override
             public void mouseDoubleClick(MouseEvent e)
             {
-                ViewTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
+                EditTextDialog.showText(site.getShell(), CoreMessages.controls_resultset_viewer_dialog_status_title, statusLabel.getText());
             }
         });
 

@@ -110,4 +110,11 @@ public class EditTextDialog extends Dialog {
         }
     }
 
+    public static void showText(Shell parentShell, String title, String text)
+    {
+        EditTextDialog dialog = new EditTextDialog(parentShell, title, text);
+        dialog.setReadonly(true);
+        dialog.open();
+    }
+
 }

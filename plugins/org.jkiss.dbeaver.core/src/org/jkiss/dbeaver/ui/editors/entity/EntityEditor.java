@@ -361,7 +361,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 /*
 
         Shell shell = getSite().getShell();
-        ViewTextDialog dialog = new ViewTextDialog(shell, "Script", script.toString());
+        EditTextDialog dialog = new EditTextDialog(shell, "Script", script.toString());
         dialog.setTextWidth(0);
         dialog.setTextHeight(0);
         dialog.setImage(DBIcon.SQL_PREVIEW.getImage());
