@@ -1033,7 +1033,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void fillFiltersMenu(IMenuManager filtersMenu)
     {
         GridPos currentPosition = getCurrentPosition();
-        if (!singleSourceCells || isValidCell(currentPosition)) {
+        if (supportsDataFilter() && isValidCell(currentPosition)) {
             int columnIndex = translateGridPos(currentPosition).col;
             DBDColumnBinding column = metaColumns[columnIndex];
             if (column.getTableColumn() == null) {
@@ -1074,11 +1074,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         filtersMenu.add(new ShowFiltersAction());
     }
 
-    private String translateFilterPattern(String pattern, FilterByColumnType type, DBDColumnBinding column, boolean useDefault)
+    private String translateFilterPattern(String pattern, FilterByColumnType type, DBDColumnBinding column)
     {
         String value = CommonUtils.truncateString(
             CommonUtils.toString(
-                type.getValue(this, column, useDefault)),
+                type.getValue(this, column, true)),
             30);
         return pattern.replace("?", value);
     }
@@ -2883,7 +2883,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (useDefault) {
                     return "..";
                 } else {
-                    return null;
+                    return EditTextDialog.editText(
+                        viewer.getControl().getShell(),
+                        "Enter value",
+                        "");
                 }
             }
         },
@@ -2912,7 +2915,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private final DBDColumnBinding column;
         public FilterByColumnAction(String pattern, FilterByColumnType type, DBDColumnBinding column)
         {
-            super(DBUtils.getQuotedIdentifier(column.getTableColumn()) + " " + translateFilterPattern(pattern, type, column, true), type.icon);
+            super(DBUtils.getQuotedIdentifier(column.getTableColumn()) + " " + translateFilterPattern(pattern, type, column), type.icon);
             this.pattern = pattern;
             this.type = type;
             this.column = column;
@@ -2921,17 +2924,18 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public void run()
         {
-            String value = translateFilterPattern(pattern, type, column, false);
+            Object value = type.getValue(ResultSetViewer.this, column, false);
             if (value == null) {
                 return;
             }
+            String stringValue = pattern.replace("?", value.toString());
             DBDDataFilter filter = getDataFilter();
             DBQCondition filterColumn = filter.getFilterColumn(column.getColumnName());
             if (filterColumn == null) {
-                filterColumn = new DBQCondition(column.getColumnName(), value);
+                filterColumn = new DBQCondition(column.getColumnName(), stringValue);
                 filter.addFilterColumn(filterColumn);
             } else {
-                filterColumn.setCondition(value);
+                filterColumn.setCondition(stringValue);
             }
             refresh();
         }
