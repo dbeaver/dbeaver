@@ -47,6 +47,29 @@
 
     <versions>
         <version>
+            <number>1.6.3</number>
+            <type>stable</type>
+            <date>15.09.2012</date>
+
+            <release-notes>
+                - Support of data edit for tables without unique key
+                - Support of custom descriptions for dictionary tables
+                - Quick filter of ResultSets
+                - ResultSet controls improved
+                - Transactions management improved
+                - Columns width fixed in ResultSet grid
+                - Support of nanoseconds for TIMESTAMP data types
+                - Oracle connection settings improved (SID/Service Name)
+                - Oracle metadata load fix
+                - Oracle DATE type handle fix
+                - MSSQL active database selection fix
+                - MySQL SELECT INTO fix
+                - SQL formatter improvements
+                - Many bugfixes and minor UI improvements
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.6.2</number>
             <type>minor</type>
             <date>11.08.2012</date>
