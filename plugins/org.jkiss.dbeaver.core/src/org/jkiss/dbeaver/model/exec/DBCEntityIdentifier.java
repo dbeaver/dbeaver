@@ -40,7 +40,7 @@ public interface DBCEntityIdentifier {
      * Result set columns
      * @return list of result set columns.
      */
-    Collection<? extends DBCColumnMetaData> getResultSetColumns();
+    Collection<? extends DBCAttributeMetaData> getResultSetColumns();
 
     /**
      * Identifier attributes (columns)

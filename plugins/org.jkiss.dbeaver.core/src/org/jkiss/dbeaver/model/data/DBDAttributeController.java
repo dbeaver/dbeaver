@@ -18,35 +18,33 @@
  */
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 
 /**
- * Column value
+ * DBD Value Controller
  */
-public class DBDColumnValue {
+public interface DBDAttributeController extends DBDValueController
+{
 
-    private DBSEntityAttribute attribute;
-    private Object value;
+    /**
+     * Row controller
+     * @return row controller
+     */
+    DBDRowController getRow();
 
-    public DBDColumnValue(DBSEntityAttribute attribute, Object value) {
-        this.attribute = attribute;
-        this.value = value;
-    }
+    /**
+     * Attribute meta data
+     * @return meta data
+     */
+    @Override
+    DBCAttributeMetaData getAttributeMetaData();
 
-    public DBSEntityAttribute getAttribute() {
-        return attribute;
-    }
+    /**
+     * Column unique ID string
+     * @return string
+     */
+    String getColumnId();
 
-    public void setAttribute(DBSTableColumn attribute) {
-        this.attribute = attribute;
-    }
+    DBDValueLocator getValueLocator();
 
-    public Object getValue() {
-        return value;
-    }
-
-    public void setValue(Object value) {
-        this.value = value;
-    }
 }

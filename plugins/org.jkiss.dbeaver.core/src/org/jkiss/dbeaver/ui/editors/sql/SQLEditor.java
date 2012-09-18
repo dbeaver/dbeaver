@@ -45,7 +45,7 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -745,19 +745,19 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
+        public long insertData(DBCExecutionContext context, List<DBDAttributeValue> attributes, DBDDataReceiver keysReceiver) throws DBException
         {
             throw new DBException("Not Implemented");
         }
 
         @Override
-        public long updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
+        public long updateData(DBCExecutionContext context, List<DBDAttributeValue> keyAttributes, List<DBDAttributeValue> updateAttributes, DBDDataReceiver keysReceiver) throws DBException
         {
             throw new DBException("Not Implemented");
         }
 
         @Override
-        public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
+        public long deleteData(DBCExecutionContext context, List<DBDAttributeValue> keyAttributes) throws DBException
         {
             throw new DBException("Not Implemented");
         }

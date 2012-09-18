@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,12 +40,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
     private ResultSetViewer resultSetViewer;
     private int columnsCount;
-    private DBDColumnBinding[] metaColumns;
+    private DBDAttributeBinding[] metaColumns;
     private List<Object[]> rows = new ArrayList<Object[]>();
     private boolean hasMoreData;
     private boolean nextSegmentRead;
 
-    Map<DBCColumnMetaData, List<DBCException>> errors = new HashMap<DBCColumnMetaData, List<DBCException>>();
+    Map<DBCAttributeMetaData, List<DBCException>> errors = new HashMap<DBCAttributeMetaData, List<DBCException>>();
     private boolean updateMetaData;
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
@@ -75,16 +75,16 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             // Get columns metadata
             DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
-            List<DBCColumnMetaData> rsColumns = metaData.getColumns();
-            columnsCount = rsColumns.size();
+            List<DBCAttributeMetaData> rsAttributes = metaData.getColumns();
+            columnsCount = rsAttributes.size();
 
             // Determine type handlers for all columns
             //DBPDataSource dataSource = resultSet.getContext().getDataSource();
 
             // Extract column info
-            metaColumns = new DBDColumnBinding[columnsCount];
+            metaColumns = new DBDAttributeBinding[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
-                metaColumns[i] = DBUtils.getColumnBinding(context, rsColumns.get(i));
+                metaColumns[i] = DBUtils.getColumnBinding(context, rsAttributes.get(i));
             }
 
             updateMetaData = resultSetViewer.setMetaData(metaColumns);
@@ -103,20 +103,20 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 row[i] = metaColumns[i].getValueHandler().getValueObject(
                     context,
                     resultSet,
-                    metaColumns[i].getColumn(),
+                    metaColumns[i].getAttribute(),
                     i);
             }
             catch (DBCException e) {
                 // Do not reports the same error multiple times
                 // There are a lot of error could occur during result set fetch
                 // We report certain error only once
-                List<DBCException> errorList = errors.get(metaColumns[i].getColumn());
+                List<DBCException> errorList = errors.get(metaColumns[i].getAttribute());
                 if (errorList == null) {
                     errorList = new ArrayList<DBCException>();
-                    errors.put(metaColumns[i].getColumn(), errorList);
+                    errors.put(metaColumns[i].getAttribute(), errorList);
                 }
                 if (!errorList.contains(e)) {
-                    log.warn("Could not read column '" + metaColumns[i].getColumn().getName() + "' value", e);
+                    log.warn("Could not read column '" + metaColumns[i].getAttribute().getName() + "' value", e);
                     errorList.add(e);
                 }
             }

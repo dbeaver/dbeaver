@@ -58,7 +58,7 @@ public class NumberViewDialog extends ValueViewDialog {
         if (getValueController().isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
-        int valueType = getValueController().getColumnMetaData().getTypeID();
+        int valueType = getValueController().getAttributeMetaData().getTypeID();
         if (valueType == Types.BIT || valueType == Types.BOOLEAN) {
             // Bit (boolean)
             style |= SWT.READ_ONLY;
@@ -84,7 +84,7 @@ public class NumberViewDialog extends ValueViewDialog {
         } else {
             // Numbers
             textEdit = new Text(dialogGroup, style);
-            switch (getValueController().getColumnMetaData().getTypeID()) {
+            switch (getValueController().getAttributeMetaData().getTypeID()) {
             case java.sql.Types.BIGINT:
             case java.sql.Types.INTEGER:
             case java.sql.Types.SMALLINT:
@@ -102,7 +102,7 @@ public class NumberViewDialog extends ValueViewDialog {
                 String textValue = value.toString();
                 textEdit.setText(textValue);
             }
-            int maxSize = getValueController().getColumnMetaData().getPrecision();
+            int maxSize = getValueController().getAttributeMetaData().getPrecision();
             if (maxSize > 0) {
                 textEdit.setTextLimit(maxSize + 2);
             }
@@ -128,7 +128,7 @@ public class NumberViewDialog extends ValueViewDialog {
             return JDBCNumberValueHandler.convertStringToNumber(
                 textEdit.getText(),
                 value,
-                getValueController().getColumnMetaData());
+                getValueController().getAttributeMetaData());
         } else if (bitEdit != null) {
             if (isBoolean) {
                 return bitEdit.getSelectionIndex() == 0 ? Boolean.FALSE : Boolean.TRUE;

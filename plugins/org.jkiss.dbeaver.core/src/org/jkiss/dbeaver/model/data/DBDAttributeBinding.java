@@ -18,35 +18,35 @@
  */
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 /**
  * Column value binding info
  */
-public class DBDColumnBinding {
-    private final DBCColumnMetaData column;
+public class DBDAttributeBinding {
+    private final DBCAttributeMetaData attribute;
     private final DBDValueHandler valueHandler;
     private DBSEntityAttribute tableColumn;
     private DBDValueLocator valueLocator;
 
-    public DBDColumnBinding(DBCColumnMetaData column, DBDValueHandler valueHandler) {
-        this.column = column;
+    public DBDAttributeBinding(DBCAttributeMetaData attribute, DBDValueHandler valueHandler) {
+        this.attribute = attribute;
         this.valueHandler = valueHandler;
     }
 
     public String getColumnName()
     {
-        return column.getName();
+        return attribute.getName();
     }
 
     public int getColumnIndex()
     {
-        return column.getIndex();
+        return attribute.getIndex();
     }
 
-    public DBCColumnMetaData getColumn() {
-        return column;
+    public DBCAttributeMetaData getAttribute() {
+        return attribute;
     }
 
     public DBDValueHandler getValueHandler() {

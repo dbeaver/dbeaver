@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSEntityAttribute
  */
-public interface DBSEntityAttribute extends DBSEntityElement, DBSColumnBase {
+public interface DBSEntityAttribute extends DBSEntityElement, DBSAttributeBase {
 
     boolean isRequired();
 

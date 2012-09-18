@@ -381,11 +381,11 @@ public final class DBUtils {
         }
     }
 
-    public static DBDColumnBinding getColumnBinding(DBCExecutionContext context, DBCColumnMetaData columnMeta)
+    public static DBDAttributeBinding getColumnBinding(DBCExecutionContext context, DBCAttributeMetaData attributeMeta)
     {
-        return new DBDColumnBinding(
-            columnMeta,
-            getColumnValueHandler(context, columnMeta));
+        return new DBDAttributeBinding(
+                attributeMeta,
+            getColumnValueHandler(context, attributeMeta));
     }
 
     public static DBDValueHandler getColumnValueHandler(DBCExecutionContext context, DBSTypedObject column)
@@ -409,32 +409,32 @@ public final class DBUtils {
 
     public static void findValueLocators(
         DBRProgressMonitor monitor,
-        DBDColumnBinding[] bindings)
+        DBDAttributeBinding[] bindings)
     {
         Map<DBSEntity, DBDValueLocator> locatorMap = new HashMap<DBSEntity, DBDValueLocator>();
         try {
-            for (DBDColumnBinding column : bindings) {
-                DBCColumnMetaData meta = column.getColumn();
-                if (meta.getTable() == null || !meta.getTable().isIdentified(monitor)) {
+            for (DBDAttributeBinding column : bindings) {
+                DBCAttributeMetaData meta = column.getAttribute();
+                if (meta.getEntity() == null || !meta.getEntity().isIdentified(monitor)) {
                     continue;
                 }
-                DBSEntityAttribute tableColumn = meta.getTableColumn(monitor);
+                DBSEntityAttribute tableColumn = meta.getAttribute(monitor);
                 if (tableColumn == null) {
                     continue;
                 }
                 // We got table name and column name
                 // To be editable we need this result set contain set of columns from the same table
                 // which construct any unique key
-                DBDValueLocator valueLocator = locatorMap.get(meta.getTable().getEntity(monitor));
+                DBDValueLocator valueLocator = locatorMap.get(meta.getEntity().getEntity(monitor));
                 if (valueLocator == null) {
-                    DBCEntityIdentifier entityIdentifier = meta.getTable().getBestIdentifier(monitor);
+                    DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(monitor);
                     if (entityIdentifier == null) {
                         continue;
                     }
                     valueLocator = new DBDValueLocator(
-                        meta.getTable().getEntity(monitor),
+                        meta.getEntity().getEntity(monitor),
                         entityIdentifier);
-                    locatorMap.put(meta.getTable().getEntity(monitor), valueLocator);
+                    locatorMap.put(meta.getEntity().getEntity(monitor), valueLocator);
                 }
                 column.initValueLocator(tableColumn, valueLocator);
             }
@@ -444,14 +444,14 @@ public final class DBUtils {
         }
     }
 
-    public static DBSEntityReferrer getUniqueForeignConstraint(DBCColumnMetaData column)
+    public static DBSEntityReferrer getUniqueForeignConstraint(DBCAttributeMetaData attribute)
     {
-        return getUniqueForeignConstraint(null, column);
+        return getUniqueForeignConstraint(null, attribute);
     }
 
-    public static DBSEntityReferrer getUniqueForeignConstraint(DBRProgressMonitor monitor, DBCColumnMetaData column)
+    public static DBSEntityReferrer getUniqueForeignConstraint(DBRProgressMonitor monitor, DBCAttributeMetaData attribute)
     {
-        RefColumnFinder finder = new RefColumnFinder(column);
+        RefColumnFinder finder = new RefColumnFinder(attribute);
         try {
             if (monitor != null) {
                 finder.run(monitor);
@@ -876,12 +876,12 @@ public final class DBUtils {
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {
-        private DBCColumnMetaData column;
+        private DBCAttributeMetaData attribute;
         private DBSEntityReferrer refConstraint;
 
-        private RefColumnFinder(DBCColumnMetaData column)
+        private RefColumnFinder(DBCAttributeMetaData attribute)
         {
-            this.column = column;
+            this.attribute = attribute;
         }
 
         @Override
@@ -889,7 +889,7 @@ public final class DBUtils {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                List<DBSEntityReferrer> refs = column.getReferrers(monitor);
+                List<DBSEntityReferrer> refs = attribute.getReferrers(monitor);
                 if (refs != null && !refs.isEmpty()) {
                     refConstraint = refs.get(0);
                 }

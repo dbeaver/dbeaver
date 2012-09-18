@@ -16,35 +16,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DBD Value Controller
+ * DBSColumnBase
  */
-public interface DBDColumnController extends DBDValueController
+public interface DBSAttributeBase extends DBSTypedObject, DBPNamedObject
 {
-
-    /**
-     * Row controller
-     * @return row controller
-     */
-    DBDRowController getRow();
-
-    /**
-     * Column meta data
-     * @return meta data
-     */
-    @Override
-    DBCColumnMetaData getColumnMetaData();
-
-    /**
-     * Column unique ID string
-     * @return string
-     */
-    String getColumnId();
-
-    DBDValueLocator getValueLocator();
-
+    boolean isRequired();
 }

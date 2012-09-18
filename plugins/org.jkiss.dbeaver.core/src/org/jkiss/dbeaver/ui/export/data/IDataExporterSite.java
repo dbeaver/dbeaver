@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ui.export.data;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +39,7 @@ public interface IDataExporterSite {
 
     Map<Object, Object> getProperties();
 
-    List<DBDColumnBinding> getColumns();
+    List<DBDAttributeBinding> getColumns();
 
     OutputStream getOutputStream();
 

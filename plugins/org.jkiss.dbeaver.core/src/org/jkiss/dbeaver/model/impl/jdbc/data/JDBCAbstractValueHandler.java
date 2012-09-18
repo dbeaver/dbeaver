@@ -100,7 +100,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)
+    public DBDValueAnnotation[] getValueAnnotations(DBCAttributeMetaData column)
         throws DBCException
     {
         return null;
@@ -119,7 +119,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         propertySource.addProperty(
             "column_size", //$NON-NLS-1$
             CoreMessages.model_jdbc_column_size,
-            controller.getColumnMetaData().getMaxLength());
+            controller.getAttributeMetaData().getMaxLength());
     }
 
     protected static interface ValueExtractor <T extends Control> {

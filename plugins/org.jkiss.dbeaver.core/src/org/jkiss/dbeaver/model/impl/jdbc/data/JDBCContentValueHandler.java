@@ -251,7 +251,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         propertySource.addProperty(
             "max_length", //$NON-NLS-1$
             CoreMessages.model_jdbc_max_length,
-            controller.getColumnMetaData().getMaxLength());
+            controller.getAttributeMetaData().getMaxLength());
     }
 
     @Override
@@ -275,7 +275,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 });
                 editor.setText(value.getData() == null ? "" : value.getData()); //$NON-NLS-1$
                 editor.setEditable(!controller.isReadOnly());
-                long maxLength = controller.getColumnMetaData().getMaxLength();
+                long maxLength = controller.getAttributeMetaData().getMaxLength();
                 if (maxLength <= 0) {
                     maxLength = MAX_STRING_LENGTH;
                 } else {
@@ -292,7 +292,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         // Open LOB editor
         Object value = controller.getValue();
-        if (value instanceof DBDContent && controller instanceof DBDColumnController) {
+        if (value instanceof DBDContent && controller instanceof DBDAttributeController) {
             DBDContent content = (DBDContent)value;
             boolean isText = ContentUtils.isTextContent(content);
             List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
@@ -307,7 +307,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 parts.add(new ContentImageEditorPart());
             }
             return ContentEditor.openEditor(
-                (DBDColumnController)controller,
+                (DBDAttributeController)controller,
                 parts.toArray(new IContentEditorPart[parts.size()]) );
         } else {
             controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);

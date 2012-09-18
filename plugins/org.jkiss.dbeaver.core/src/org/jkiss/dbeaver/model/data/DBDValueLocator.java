@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityIdentifier;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -46,10 +46,10 @@ public class DBDValueLocator implements DBPObject {
     public String getKeyId(DBDRowController rowController)
     {
         StringBuilder keyId = new StringBuilder();
-        Collection<? extends DBCColumnMetaData> keyColumns = getEntityIdentifier().getResultSetColumns();
-        for (DBCColumnMetaData keyColumn : keyColumns) {
-            keyId.append('.').append(CommonUtils.escapeIdentifier(keyColumn.getName()));
-            Object keyValue = rowController.getColumnValue(keyColumn);
+        Collection<? extends DBCAttributeMetaData> keyColumns = getEntityIdentifier().getResultSetColumns();
+        for (DBCAttributeMetaData keyAttribute : keyColumns) {
+            keyId.append('.').append(CommonUtils.escapeIdentifier(keyAttribute.getName()));
+            Object keyValue = rowController.getColumnValue(keyAttribute);
             keyId.append('-');
             keyId.append(CommonUtils.escapeIdentifier(keyValue == null ? "NULL" : keyValue.toString()));
         }

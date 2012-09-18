@@ -16,14 +16,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTableColumn;
 
 /**
- * DBSColumnBase
+ * Column value
  */
-public interface DBSColumnBase extends DBSTypedObject, DBPNamedObject
-{
-    boolean isRequired();
+public class DBDAttributeValue {
+
+    private DBSEntityAttribute attribute;
+    private Object value;
+
+    public DBDAttributeValue(DBSEntityAttribute attribute, Object value) {
+        this.attribute = attribute;
+        this.value = value;
+    }
+
+    public DBSEntityAttribute getAttribute() {
+        return attribute;
+    }
+
+    public void setAttribute(DBSTableColumn attribute) {
+        this.attribute = attribute;
+    }
+
+    public Object getValue() {
+        return value;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
+    }
 }

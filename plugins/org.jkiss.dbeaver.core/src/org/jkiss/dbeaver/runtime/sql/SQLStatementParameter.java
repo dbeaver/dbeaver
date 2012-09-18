@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
  * SQL statement parameter info
  */
-public class SQLStatementParameter implements DBSColumnBase {
+public class SQLStatementParameter implements DBSAttributeBase {
     private DBDValueHandler valueHandler;
     private DBSDataType paramType;
     private int index;

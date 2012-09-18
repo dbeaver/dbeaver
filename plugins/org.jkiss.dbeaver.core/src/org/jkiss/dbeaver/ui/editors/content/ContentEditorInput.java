@@ -51,13 +51,13 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
-    private DBDColumnController valueController;
+    private DBDAttributeController valueController;
     private IContentEditorPart[] editorParts;
     private IFile contentFile;
     private boolean contentDetached = false;
 
     ContentEditorInput(
-        DBDColumnController valueController,
+        DBDAttributeController valueController,
         IContentEditorPart[] editorParts,
         DBRProgressMonitor monitor)
         throws DBException
@@ -92,10 +92,10 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     @Override
     public String getName()
     {
-        String tableName = valueController.getColumnMetaData().getTableName();
+        String tableName = valueController.getAttributeMetaData().getTableName();
         String inputName = CommonUtils.isEmpty(tableName) ?
-            valueController.getColumnMetaData().getName() :
-            tableName + "." + valueController.getColumnMetaData().getName();
+            valueController.getAttributeMetaData().getName() :
+            tableName + "." + valueController.getAttributeMetaData().getName();
         if (isReadOnly()) {
             inputName += " [Read Only]";
         }

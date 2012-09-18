@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -464,19 +464,19 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public long insertData(DBCExecutionContext context, List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
+    public long insertData(DBCExecutionContext context, List<DBDAttributeValue> attributes, DBDDataReceiver keysReceiver) throws DBException
     {
         throw new DBException("Not implemented");
     }
 
     @Override
-    public long updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
+    public long updateData(DBCExecutionContext context, List<DBDAttributeValue> keyAttributes, List<DBDAttributeValue> updateAttributes, DBDDataReceiver keysReceiver) throws DBException
     {
         throw new DBException("Not implemented");
     }
 
     @Override
-    public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
+    public long deleteData(DBCExecutionContext context, List<DBDAttributeValue> keyAttributes) throws DBException
     {
         throw new DBException("Not implemented");
     }

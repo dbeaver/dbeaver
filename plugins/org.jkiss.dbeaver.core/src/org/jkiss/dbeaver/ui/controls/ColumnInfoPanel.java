@@ -25,10 +25,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.data.DBDColumnController;
+import org.jkiss.dbeaver.model.data.DBDAttributeController;
 import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
@@ -44,17 +44,17 @@ public class ColumnInfoPanel extends Composite {
 
     public ColumnInfoPanel(Composite parent, int style, DBDValueController valueController) {
         super(parent, style);
-        if (valueController instanceof DBDColumnController) {
-            this.createPanel((DBDColumnController) valueController);
+        if (valueController instanceof DBDAttributeController) {
+            this.createPanel((DBDAttributeController) valueController);
         }
     }
 
-    protected void createPanel(DBDColumnController valueController)
+    protected void createPanel(DBDAttributeController valueController)
     {
-        PropertyCollector infoItem = new PropertyCollector(valueController.getColumnMetaData(), false);
-        infoItem.addProperty("Table_Name", CoreMessages.controls_column_info_panel_property_table_name, valueController.getColumnMetaData().getTableName()); //$NON-NLS-1$
-        infoItem.addProperty("Column_Name", CoreMessages.controls_column_info_panel_property_column_name, valueController.getColumnMetaData().getName() ); //$NON-NLS-1$
-        infoItem.addProperty("Column_Type", CoreMessages.controls_column_info_panel_property_column_type, valueController.getColumnMetaData().getTypeName() ); //$NON-NLS-1$
+        PropertyCollector infoItem = new PropertyCollector(valueController.getAttributeMetaData(), false);
+        infoItem.addProperty("Table_Name", CoreMessages.controls_column_info_panel_property_table_name, valueController.getAttributeMetaData().getTableName()); //$NON-NLS-1$
+        infoItem.addProperty("Column_Name", CoreMessages.controls_column_info_panel_property_column_name, valueController.getAttributeMetaData().getName() ); //$NON-NLS-1$
+        infoItem.addProperty("Column_Type", CoreMessages.controls_column_info_panel_property_column_type, valueController.getAttributeMetaData().getTypeName() ); //$NON-NLS-1$
         valueController.getValueHandler().fillProperties(infoItem, valueController);
         if (valueController.getValueLocator() != null) {
             infoItem.addProperty("Key", CoreMessages.controls_column_info_panel_property_key, new CellKeyInfo(valueController) ); //$NON-NLS-1$
@@ -78,17 +78,17 @@ public class ColumnInfoPanel extends Composite {
     }
 
     public static class KeyColumnValue implements DBPNamedObject {
-        private DBCColumnMetaData column;
+        private DBCAttributeMetaData attribute;
         private Object value;
-        public KeyColumnValue(DBCColumnMetaData column, Object value)
+        public KeyColumnValue(DBCAttributeMetaData attribute, Object value)
         {
-            this.column = column;
+            this.attribute = attribute;
             this.value = value;
         }
         @Override
         public String getName()
         {
-            return column.getName();
+            return attribute.getName();
         }
         public String toString()
         {
@@ -97,9 +97,9 @@ public class ColumnInfoPanel extends Composite {
     }
 
     public static class CellKeyInfo implements DBPObject {
-        private DBDColumnController valueController;
+        private DBDAttributeController valueController;
 
-        private CellKeyInfo(DBDColumnController valueController)
+        private CellKeyInfo(DBDAttributeController valueController)
         {
             this.valueController = valueController;
         }
@@ -121,7 +121,7 @@ public class ColumnInfoPanel extends Composite {
         {
             List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();
             DBDRowController row = valueController.getRow();
-            for (DBCColumnMetaData col : valueController.getValueLocator().getEntityIdentifier().getResultSetColumns()) {
+            for (DBCAttributeMetaData col : valueController.getValueLocator().getEntityIdentifier().getResultSetColumns()) {
                 columns.add(new KeyColumnValue(col, row.getColumnValue(col)));
             }
             return columns;

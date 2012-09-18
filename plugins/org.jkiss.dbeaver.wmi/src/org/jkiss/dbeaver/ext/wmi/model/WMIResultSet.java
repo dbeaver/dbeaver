@@ -43,7 +43,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     private Collection<WMIObject> rows;
     private Iterator<WMIObject> iterator;
     private WMIObject row;
-    private List<DBCColumnMetaData> properties;
+    private List<DBCAttributeMetaData> properties;
 
     public WMIResultSet(DBCExecutionContext context, WMIClass classObject, Collection<WMIObject> rows) throws WMIException
     {
@@ -66,7 +66,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
                 properties = Collections.emptyList();
             } else {
                 Collection<WMIObjectAttribute> props = metaObject.getAttributes(WMIConstants.WBEM_FLAG_ALWAYS);
-                properties = new ArrayList<DBCColumnMetaData>(props.size());
+                properties = new ArrayList<DBCAttributeMetaData>(props.size());
                 int index = 0;
                 for (WMIObjectAttribute prop : props) {
                     if (!prop.isSystem()) {
@@ -155,7 +155,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public List<DBCColumnMetaData> getColumns()
+    public List<DBCAttributeMetaData> getColumns()
     {
         return properties;
     }
@@ -194,10 +194,10 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public DBCColumnMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column) throws DBException
+    public DBCAttributeMetaData getColumnMetaData(DBRProgressMonitor monitor, DBSEntityAttribute column) throws DBException
     {
-        for (DBCColumnMetaData cmd : properties) {
-            if (cmd.getTableColumn(monitor) == column) {
+        for (DBCAttributeMetaData cmd : properties) {
+            if (cmd.getAttribute(monitor) == column) {
                 return cmd;
             }
         }
@@ -207,7 +207,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     /////////////////////////////////////////////////////////////
     // Meta property
 
-    private class MetaProperty implements DBCColumnMetaData,IObjectImageProvider
+    private class MetaProperty implements DBCAttributeMetaData,IObjectImageProvider
     {
         private final WMIObjectAttribute attribute;
         private final int index;
@@ -291,25 +291,19 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         }
 
         @Override
-        public boolean isWritable()
-        {
-            return false;
-        }
-
-        @Override
-        public DBSEntityAttribute getTableColumn(DBRProgressMonitor monitor) throws DBException
+        public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException
         {
             return classObject == null ? null : classObject.getAttribute(monitor, getName());
         }
 
         @Override
-        public DBCEntityMetaData getTable()
+        public DBCEntityMetaData getEntity()
         {
-            return null;
+            return WMIResultSet.this;
         }
 
         @Override
-        public boolean isForeignKey(DBRProgressMonitor monitor) throws DBException
+        public boolean isReference(DBRProgressMonitor monitor) throws DBException
         {
             return false;
         }

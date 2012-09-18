@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDColumnController;
+import org.jkiss.dbeaver.model.data.DBDAttributeController;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -62,7 +62,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         return (ContentEditorInput)super.getEditorInput();
     }
 
-    public static boolean openEditor(DBDColumnController valueController, IContentEditorPart[] editorParts)
+    public static boolean openEditor(DBDAttributeController valueController, IContentEditorPart[] editorParts)
     {
         ContentEditorInput editorInput;
         // Save data to file
@@ -111,11 +111,11 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
     }
 
     private static class LOBInitializer implements IRunnableWithProgress {
-        DBDColumnController valueController;
+        DBDAttributeController valueController;
         IContentEditorPart[] editorParts;
         ContentEditorInput editorInput;
 
-        private LOBInitializer(DBDColumnController valueController, IContentEditorPart[] editorParts)
+        private LOBInitializer(DBDAttributeController valueController, IContentEditorPart[] editorParts)
         {
             this.valueController = valueController;
             this.editorParts = editorParts;

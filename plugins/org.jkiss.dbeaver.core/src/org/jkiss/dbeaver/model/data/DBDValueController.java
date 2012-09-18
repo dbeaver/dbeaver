@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.data;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**
  * DBD Value Controller
@@ -39,7 +39,7 @@ public interface DBDValueController
      * Column meta data
      * @return meta data
      */
-    DBSColumnBase getColumnMetaData();
+    DBSAttributeBase getAttributeMetaData();
 
     /**
      * Column value

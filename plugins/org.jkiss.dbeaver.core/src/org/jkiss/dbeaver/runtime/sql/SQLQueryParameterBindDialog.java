@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -298,7 +298,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public DBSColumnBase getColumnMetaData()
+        public DBSAttributeBase getAttributeMetaData()
         {
             return parameter;
         }

@@ -19,12 +19,12 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**
  * AbstractColumn
  */
-public abstract class AbstractColumn implements DBSColumnBase
+public abstract class AbstractColumn implements DBSAttributeBase
 {
     protected String name;
     protected int valueType;

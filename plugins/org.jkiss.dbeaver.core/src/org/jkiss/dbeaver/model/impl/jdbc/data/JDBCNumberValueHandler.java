@@ -191,7 +191,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         if (controller.isInlineEdit()) {
             final Object value = controller.getValue();
 
-            if (controller.getColumnMetaData().getTypeID() == java.sql.Types.BIT) {
+            if (controller.getAttributeMetaData().getTypeID() == java.sql.Types.BIT) {
                 CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
                 initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
                     @Override
@@ -218,7 +218,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         if (CommonUtils.isEmpty(text)) {
                             return null;
                         }
-                        return convertStringToNumber(text, value, controller.getColumnMetaData());
+                        return convertStringToNumber(text, value, controller.getAttributeMetaData());
                     }
                 });
                 editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
@@ -226,7 +226,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 editor.setTextLimit(MAX_NUMBER_LENGTH);
                 editor.selectAll();
                 editor.setFocus();
-                switch (controller.getColumnMetaData().getTypeID()) {
+                switch (controller.getAttributeMetaData().getTypeID()) {
                 case java.sql.Types.BIGINT:
                 case java.sql.Types.INTEGER:
                 case java.sql.Types.SMALLINT:
@@ -317,11 +317,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         propertySource.addProperty(
             "precision", //$NON-NLS-1$
             CoreMessages.model_jdbc_precision,
-            controller.getColumnMetaData().getPrecision());
+            controller.getAttributeMetaData().getPrecision());
         propertySource.addProperty(
             "scale", //$NON-NLS-1$
             CoreMessages.model_jdbc_scale,
-            controller.getColumnMetaData().getScale());
+            controller.getAttributeMetaData().getScale());
     }
 
     public static Number convertStringToNumber(String text, Object originalValue, DBSTypedObject type)

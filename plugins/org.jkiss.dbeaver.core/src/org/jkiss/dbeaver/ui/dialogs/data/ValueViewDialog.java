@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -200,7 +200,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        DBSColumnBase meta = valueController.getColumnMetaData();
+        DBSAttributeBase meta = valueController.getAttributeMetaData();
         shell.setText(meta.getName());
     }
 
@@ -208,8 +208,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     private DBSEntityReferrer getEnumerableConstraint()
     {
-        if (valueController instanceof DBDColumnController) {
-            DBSEntityReferrer constraint = DBUtils.getUniqueForeignConstraint(((DBDColumnController)valueController).getColumnMetaData());
+        if (valueController instanceof DBDAttributeController) {
+            DBSEntityReferrer constraint = DBUtils.getUniqueForeignConstraint(((DBDAttributeController)valueController).getAttributeMetaData());
             if (constraint instanceof DBSEntityAssociation &&
                 ((DBSEntityAssociation)constraint).getReferencedConstraint() instanceof DBSConstraintEnumerable &&
                 ((DBSConstraintEnumerable)((DBSEntityAssociation)constraint).getReferencedConstraint()).supportsEnumeration())
@@ -222,7 +222,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     protected void createEditorSelector(Composite parent, Text control)
     {
-        if (!(valueController instanceof DBDColumnController) || valueController.isReadOnly()) {
+        if (!(valueController instanceof DBDAttributeController) || valueController.isReadOnly()) {
             return;
         }
         refConstraint = getEnumerableConstraint();
@@ -335,7 +335,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         private SelectorLoaderJob()
         {
             super(
-                CoreMessages.dialog_value_view_job_selector_name + valueController.getColumnMetaData().getName() + " possible values",
+                CoreMessages.dialog_value_view_job_selector_name + valueController.getAttributeMetaData().getName() + " possible values",
                 DBIcon.SQL_EXECUTE.getImageDescriptor(),
                 valueController.getDataSource());
             setUser(false);
@@ -351,8 +351,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         {
             final Map<Object, String> keyValues = new TreeMap<Object, String>();
             try {
-                DBDColumnController columnController = (DBDColumnController)valueController;
-                final DBSEntityAttribute tableColumn = columnController.getColumnMetaData().getTableColumn(monitor);
+                DBDAttributeController attributeController = (DBDAttributeController)valueController;
+                final DBSEntityAttribute tableColumn = attributeController.getAttributeMetaData().getAttribute(monitor);
                 final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintColumn(monitor, refConstraint, tableColumn);
                 if (fkColumn == null) {
                     return Status.OK_STATUS;
@@ -367,23 +367,23 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 if (refColumn == null) {
                     return Status.OK_STATUS;
                 }
-                java.util.List<DBDColumnValue> precedingKeys = null;
+                java.util.List<DBDAttributeValue> precedingKeys = null;
                 Collection<? extends DBSEntityAttributeRef> allColumns = refConstraint.getAttributeReferences(monitor);
                 if (allColumns.size() > 1) {
                     if (allColumns.iterator().next() != fkColumn) {
                         // Our column is not a first on in foreign key.
                         // So, fill uo preceeding keys
-                        precedingKeys = new ArrayList<DBDColumnValue>();
+                        precedingKeys = new ArrayList<DBDAttributeValue>();
                         for (DBSEntityAttributeRef precColumn : allColumns) {
                             if (precColumn == fkColumn) {
                                 // Enough
                                 break;
                             }
-                            DBCColumnMetaData precMeta = columnController.getRow().getColumnMetaData(
-                                columnController.getColumnMetaData().getTable(), precColumn.getAttribute().getName());
+                            DBCAttributeMetaData precMeta = attributeController.getRow().getColumnMetaData(
+                                attributeController.getAttributeMetaData().getEntity(), precColumn.getAttribute().getName());
                             if (precMeta != null) {
-                                Object precValue = columnController.getRow().getColumnValue(precMeta);
-                                precedingKeys.add(new DBDColumnValue(precColumn.getAttribute(), precValue));
+                                Object precValue = attributeController.getRow().getColumnValue(precMeta);
+                                precedingKeys.add(new DBDAttributeValue(precColumn.getAttribute(), precValue));
                             }
                         }
                     }

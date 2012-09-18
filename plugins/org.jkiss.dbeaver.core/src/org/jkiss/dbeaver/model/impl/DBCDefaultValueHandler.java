@@ -103,7 +103,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column) throws DBCException {
+    public DBDValueAnnotation[] getValueAnnotations(DBCAttributeMetaData attribute) throws DBCException {
         return null;
     }
 

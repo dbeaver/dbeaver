@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ui.export.data.impl;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandler2;
 import org.jkiss.dbeaver.ui.export.data.IDataExporter;
@@ -50,14 +50,14 @@ public abstract class DataExporterAbstract implements IDataExporter {
     }
 
     protected String getValueDisplayString(
-        DBDColumnBinding column,
+        DBDAttributeBinding column,
         Object value)
     {
         final DBDValueHandler valueHandler = column.getValueHandler();
         if (valueHandler instanceof DBDValueHandler2) {
-            return ((DBDValueHandler2)valueHandler).getValueDisplayString(column.getColumn(), getSite().getExportFormat(), value);
+            return ((DBDValueHandler2)valueHandler).getValueDisplayString(column.getAttribute(), getSite().getExportFormat(), value);
         } else {
-            return valueHandler.getValueDisplayString(column.getColumn(), value);
+            return valueHandler.getValueDisplayString(column.getAttribute(), value);
         }
     }
 

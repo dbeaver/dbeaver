@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.export.data.impl;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -53,7 +53,7 @@ public class DataExporterCSV extends DataExporterAbstract {
     private String rowDelimiter;
     private HeaderPosition headerPosition;
     private PrintWriter out;
-    private List<DBDColumnBinding> columns;
+    private List<DBDAttributeBinding> columns;
 
     @Override
     public void init(IDataExporterSite site) throws DBException
@@ -102,8 +102,8 @@ public class DataExporterCSV extends DataExporterAbstract {
     private void printHeader()
     {
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            DBDColumnBinding column = columns.get(i);
-            writeCellValue(column.getColumn().getName(), true);
+            DBDAttributeBinding column = columns.get(i);
+            writeCellValue(column.getAttribute().getName(), true);
             if (i < columnsSize - 1) {
                 writeDelimiter();
             }
@@ -115,7 +115,7 @@ public class DataExporterCSV extends DataExporterAbstract {
     public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
     {
         for (int i = 0; i < row.length; i++) {
-            DBDColumnBinding column = columns.get(i);
+            DBDAttributeBinding column = columns.get(i);
             if (DBUtils.isNullValue(row[i])) {
                 // just skip it
             } else if (row[i] instanceof DBDContent) {

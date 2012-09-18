@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 
 import java.util.Collection;
@@ -32,7 +32,7 @@ public interface DBDRowController
      * Column meta data
      * @return meta data
      */
-    Collection<DBCColumnMetaData> getColumnsMetaData();
+    Collection<DBCAttributeMetaData> getColumnsMetaData();
 
     /**
      * Find column metadata by specified table and column name
@@ -40,13 +40,13 @@ public interface DBDRowController
      * @param columnName column name
      * @return column meta data or null
      */
-    DBCColumnMetaData getColumnMetaData(DBCEntityMetaData entity, String columnName);
+    DBCAttributeMetaData getColumnMetaData(DBCEntityMetaData entity, String columnName);
 
     /**
      * Tries to read value of certain column from result set.
-     * @param column column, must belong to the same result set as controller's value
+     * @param attribute column, must belong to the same result set as controller's value
      * @return value or null
      */
-    Object getColumnValue(DBCColumnMetaData column);
+    Object getColumnValue(DBCAttributeMetaData attribute);
 
 }

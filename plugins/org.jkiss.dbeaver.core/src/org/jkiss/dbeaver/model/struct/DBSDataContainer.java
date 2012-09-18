@@ -20,7 +20,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -58,20 +58,20 @@ public interface DBSDataContainer extends DBSObject {
 
     long insertData(
         DBCExecutionContext context,
-        List<DBDColumnValue> columns,
+        List<DBDAttributeValue> attributes,
         DBDDataReceiver keysReceiver)
         throws DBException;
 
     long updateData(
         DBCExecutionContext context,
-        List<DBDColumnValue> keyColumns,
-        List<DBDColumnValue> updateColumns,
+        List<DBDAttributeValue> keyAttributes,
+        List<DBDAttributeValue> updateAttributes,
         DBDDataReceiver keysReceiver)
         throws DBException;
 
     long deleteData(
         DBCExecutionContext context,
-        List<DBDColumnValue> keyColumns)
+        List<DBDAttributeValue> keyAttributes)
         throws DBException;
 
 }

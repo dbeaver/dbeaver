@@ -196,7 +196,7 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		LongEntry e = table[i];
+		LongEntry<VALUE> e = table[i];
 		while (e != null) {
 			if (e.hash == hash && key == e.key)
 				return true;
@@ -210,10 +210,10 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 * LongKeyMap.  Returns null if the LongKeyMap contains no mapping
 	 * for this key.
 	 */
-	LongEntry getEntry(long key) {
+	LongEntry<VALUE> getEntry(long key) {
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		LongEntry e = table[i];
+		LongEntry<VALUE> e = table[i];
 		while (e != null && !(e.hash == hash && key == e.key))
 			e = e.next;
 		return e;
@@ -289,14 +289,14 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 */
 	void resize(int newCapacity) {
 		// assert (newCapacity & -newCapacity) == newCapacity; // power of 2
-		LongEntry[] oldTable = table;
+		LongEntry<VALUE>[] oldTable = table;
 		int oldCapacity = oldTable.length;
 
 		// check if needed
 		if (size < threshold || oldCapacity > newCapacity)
 			return;
 
-		LongEntry<VALUE>[] newTable = new LongEntry[newCapacity];
+		LongEntry[] newTable = new LongEntry[newCapacity];
 		transfer(newTable);
 		table = newTable;
 		threshold = (int)(newCapacity * loadFactor);
@@ -306,14 +306,14 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 * Transfer all entries from current table to newTable.
 	 */
 	void transfer(LongEntry[] newTable) {
-		LongEntry[] src = table;
+		LongEntry<VALUE>[] src = table;
 		int newCapacity = newTable.length;
 		for (int j = 0; j < src.length; j++) {
-			LongEntry e = src[j];
+			LongEntry<VALUE> e = src[j];
 			if (e != null) {
 				src[j] = null;
 				do {
-					LongEntry next = e.next;
+					LongEntry<VALUE> next = e.next;
 					int i = indexFor(e.hash, newCapacity);
 					e.next = newTable[i];
 					newTable[i] = e;

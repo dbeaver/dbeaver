@@ -199,7 +199,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         throws DBException
     {
         for (JDBCColumnMetaData meta : columns) {
-            if (meta.getTableColumn(monitor) == column) {
+            if (meta.getAttribute(monitor) == column) {
                 return meta;
             }
         }

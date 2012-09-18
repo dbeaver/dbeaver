@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
@@ -99,7 +99,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         DBCExecutionContext context,
         DBSEntityAttribute keyColumn,
         Object keyPattern,
-        List<DBDColumnValue> preceedingKeys,
+        List<DBDAttributeValue> preceedingKeys,
         int maxResults)
         throws DBException
     {
@@ -130,7 +130,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         DBCExecutionContext context,
         DBSEntityAttribute keyColumn,
         Object keyPattern,
-        List<DBDColumnValue> preceedingKeys,
+        List<DBDAttributeValue> preceedingKeys,
         DBVEntity dictionary,
         int maxResults)
         throws DBException
@@ -163,8 +163,8 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             }
         }
         if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
-            for (DBDColumnValue precColumn : preceedingKeys) {
-                conditions.add(DBUtils.getQuotedIdentifier(precColumn.getAttribute()) + " = ?");
+            for (DBDAttributeValue precAttribute : preceedingKeys) {
+                conditions.add(DBUtils.getQuotedIdentifier(precAttribute.getAttribute()) + " = ?");
             }
         }
         if (!conditions.isEmpty()) {
@@ -188,9 +188,9 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             }
 
             if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
-                for (DBDColumnValue precColumn : preceedingKeys) {
-                    DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(context, precColumn.getAttribute());
-                    precValueHandler.bindValueObject(context, dbStat, precColumn.getAttribute(), paramPos++, precColumn.getValue());
+                for (DBDAttributeValue precAttribute : preceedingKeys) {
+                    DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(context, precAttribute.getAttribute());
+                    precValueHandler.bindValueObject(context, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
                 }
             }
             dbStat.setLimit(0, maxResults);
@@ -198,9 +198,9 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                 DBCResultSet dbResult = dbStat.openResultSet();
                 try {
                     List<DBDLabelValuePair> values = new ArrayList<DBDLabelValuePair>();
-                    List<DBCColumnMetaData> metaColumns = dbResult.getResultSetMetaData().getColumns();
+                    List<DBCAttributeMetaData> metaColumns = dbResult.getResultSetMetaData().getColumns();
                     List<DBDValueHandler> colHandlers = new ArrayList<DBDValueHandler>(metaColumns.size());
-                    for (DBCColumnMetaData col : metaColumns) {
+                    for (DBCAttributeMetaData col : metaColumns) {
                         colHandlers.add(DBUtils.getColumnValueHandler(context, col));
                     }
                     // Extract enumeration values and (optionally) their descriptions

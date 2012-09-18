@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSColumnBase;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * DBCColumnMetaData
  */
-public interface DBCColumnMetaData extends DBSColumnBase
+public interface DBCAttributeMetaData extends DBSAttributeBase
 {
     int getIndex();
 
@@ -43,32 +43,29 @@ public interface DBCColumnMetaData extends DBSColumnBase
 
     boolean isReadOnly();
 
-    boolean isWritable();
-
 
     /**
      * Column metadata
      * @return column metadata
      * @throws DBCException on any DB error
-     * @param monitor
+     * @param monitor progress monitor
      */
-    DBSEntityAttribute getTableColumn(DBRProgressMonitor monitor) throws DBException;
+    DBSEntityAttribute getAttribute(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Owner table metadata
      * @return table metadata
-     * @throws DBCException on any DB error
      */
-    DBCEntityMetaData getTable();
+    DBCEntityMetaData getEntity();
 
     /**
-     * Check this column is a foreign key.
+     * Check this column is a reference.
      * Reference columns are included in one or more foreign keys. 
      * @return true or false.
      * @throws DBCException on any DB error
-     * @param monitor
+     * @param monitor progress monitor
      */
-    boolean isForeignKey(DBRProgressMonitor monitor) throws DBException;
+    boolean isReference(DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets list of foreign keys in which this column is contained.

@@ -128,11 +128,11 @@ public interface DBDValueHandler
 
     /**
      * Returns any additional annotations of value
-     * @param column column info
+     * @param attribute column info
      * @return annotations array or null
      * @throws DBCException on error
      */
-    DBDValueAnnotation[] getValueAnnotations(DBCColumnMetaData column)
+    DBDValueAnnotation[] getValueAnnotations(DBCAttributeMetaData attribute)
         throws DBCException;
 
     /**

@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ui.export.data.impl;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -50,7 +50,7 @@ public class DataExporterSQL extends DataExporterAbstract {
     private int rowsInStatement;
     private PrintWriter out;
     private String tableName;
-    private List<DBDColumnBinding> columns;
+    private List<DBDAttributeBinding> columns;
 
     private transient StringBuilder sqlBuffer = new StringBuilder(100);
     private transient long rowCount;
@@ -116,11 +116,11 @@ public class DataExporterSQL extends DataExporterAbstract {
             }
             sqlBuffer.append("INSERT INTO ").append(tableName).append(" (");
             for (int i = 0; i < columnsSize; i++) {
-                DBDColumnBinding column = columns.get(i);
+                DBDAttributeBinding column = columns.get(i);
                 if (i > 0) {
                     sqlBuffer.append(',');
                 }
-                sqlBuffer.append(column.getColumn().getName());
+                sqlBuffer.append(column.getAttribute().getName());
             }
             sqlBuffer.append(") VALUES (");
             if (rowsInStatement > 1) {
@@ -136,7 +136,7 @@ public class DataExporterSQL extends DataExporterAbstract {
             }
             Object value = row[i];
 
-            DBDColumnBinding column = columns.get(i);
+            DBDAttributeBinding column = columns.get(i);
             if (DBUtils.isNullValue(value)) {
                 // just skip it
                 out.write("NULL");

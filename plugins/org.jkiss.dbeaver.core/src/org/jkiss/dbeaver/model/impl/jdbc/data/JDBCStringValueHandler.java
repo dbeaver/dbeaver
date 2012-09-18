@@ -130,7 +130,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler
         propertySource.addProperty(
             "max_length", //$NON-NLS-1$
             CoreMessages.model_jdbc_max_length,
-            controller.getColumnMetaData().getMaxLength());
+            controller.getAttributeMetaData().getMaxLength());
     }
 
 }

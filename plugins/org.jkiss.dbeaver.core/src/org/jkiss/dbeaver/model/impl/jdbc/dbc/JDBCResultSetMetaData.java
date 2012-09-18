@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.dbc;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
@@ -44,7 +44,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
 {
     private JDBCResultSetImpl resultSet;
     private ResultSetMetaData jdbcMetaData;
-    private List<DBCColumnMetaData> columns = new ArrayList<DBCColumnMetaData>();
+    private List<DBCAttributeMetaData> columns = new ArrayList<DBCAttributeMetaData>();
     private Map<String, JDBCTableMetaData> tables = new HashMap<String, JDBCTableMetaData>();
 
     public JDBCResultSetMetaData(JDBCResultSetImpl resultSet)
@@ -81,7 +81,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
     }
 
     @Override
-    public List<DBCColumnMetaData> getColumns()
+    public List<DBCAttributeMetaData> getColumns()
     {
         return columns;
     }

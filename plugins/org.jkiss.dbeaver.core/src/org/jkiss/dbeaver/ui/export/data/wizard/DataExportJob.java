@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -117,7 +117,7 @@ public class DataExportJob extends AbstractJob {
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
-        private List<DBDColumnBinding> metaColumns;
+        private List<DBDAttributeBinding> metaColumns;
         private Object[] row;
         private File lobDirectory;
         private long lobCount;
@@ -147,7 +147,7 @@ public class DataExportJob extends AbstractJob {
         }
 
         @Override
-        public List<DBDColumnBinding> getColumns()
+        public List<DBDAttributeBinding> getColumns()
         {
             return metaColumns;
         }
@@ -205,10 +205,10 @@ public class DataExportJob extends AbstractJob {
         public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
         {
             // Prepare columns
-            metaColumns = new ArrayList<DBDColumnBinding>();
-            List<DBCColumnMetaData> columns = resultSet.getResultSetMetaData().getColumns();
-            for (DBCColumnMetaData column : columns) {
-                DBDColumnBinding columnBinding = DBUtils.getColumnBinding(context, column);
+            metaColumns = new ArrayList<DBDAttributeBinding>();
+            List<DBCAttributeMetaData> attributes = resultSet.getResultSetMetaData().getColumns();
+            for (DBCAttributeMetaData attribute : attributes) {
+                DBDAttributeBinding columnBinding = DBUtils.getColumnBinding(context, attribute);
 /*
                 if (settings.getLobExtractType() == DataExportSettings.LobExtractType.SKIP &&
                     DBDContent.class.isAssignableFrom(columnBinding.getValueHandler().getValueObjectType()))
@@ -235,8 +235,8 @@ public class DataExportJob extends AbstractJob {
             try {
                 // Get values
                 for (int i = 0; i < metaColumns.size(); i++) {
-                    DBDColumnBinding column = metaColumns.get(i);
-                    Object value = column.getValueHandler().getValueObject(context, resultSet, column.getColumn(), i);
+                    DBDAttributeBinding column = metaColumns.get(i);
+                    Object value = column.getValueHandler().getValueObject(context, resultSet, column.getAttribute(), i);
                     if (value instanceof DBDContent) {
                         // Check for binary type export
                         if (!ContentUtils.isTextContent((DBDContent)value)) {

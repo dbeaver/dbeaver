@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -65,9 +65,9 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         DBSEntityAttribute attribute = null;
         if (column instanceof DBSTableColumn) {
             attribute = (DBSTableColumn)column;
-        } else if (column instanceof DBCColumnMetaData) {
+        } else if (column instanceof DBCAttributeMetaData) {
             try {
-                attribute = ((DBCColumnMetaData)column).getTableColumn(context.getProgressMonitor());
+                attribute = ((DBCAttributeMetaData)column).getAttribute(context.getProgressMonitor());
             }
             catch (DBException e) {
                 throw new SQLException(e);
@@ -166,7 +166,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         propertySource.addProperty(
             "max_length",
             "Max Length",
-            controller.getColumnMetaData().getMaxLength());
+            controller.getAttributeMetaData().getMaxLength());
     }
 */
 

@@ -178,19 +178,19 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         }
 
         @Override
-        public long insertData(DBCExecutionContext context, java.util.List<DBDColumnValue> columns, DBDDataReceiver keysReceiver) throws DBException
+        public long insertData(DBCExecutionContext context, java.util.List<DBDAttributeValue> attributes, DBDDataReceiver keysReceiver) throws DBException
         {
             return -1;
         }
 
         @Override
-        public long updateData(DBCExecutionContext context, List<DBDColumnValue> keyColumns, List<DBDColumnValue> updateColumns, DBDDataReceiver keysReceiver) throws DBException
+        public long updateData(DBCExecutionContext context, List<DBDAttributeValue> keyAttributes, List<DBDAttributeValue> updateAttributes, DBDDataReceiver keysReceiver) throws DBException
         {
             return -1;
         }
 
         @Override
-        public long deleteData(DBCExecutionContext context, List<DBDColumnValue> keyColumns) throws DBException
+        public long deleteData(DBCExecutionContext context, List<DBDAttributeValue> keyAttributes) throws DBException
         {
             return -1;
         }

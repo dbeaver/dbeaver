@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDColumnValue;
+import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
@@ -51,7 +51,7 @@ public interface DBSConstraintEnumerable extends DBSTableConstraint
         DBCExecutionContext context,
         DBSEntityAttribute keyColumn,
         Object keyPattern,
-        List<DBDColumnValue> preceedingKeys,
+        List<DBDAttributeValue> preceedingKeys,
         int maxResults)
         throws DBException;
 

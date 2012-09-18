@@ -124,9 +124,9 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
 
             final Composite dateTimeGroup = controller.getInlinePlaceholder();
 
-            boolean isDate = controller.getColumnMetaData().getTypeID() == java.sql.Types.DATE;
-            boolean isTime = controller.getColumnMetaData().getTypeID() == java.sql.Types.TIME;
-            boolean isTimeStamp = controller.getColumnMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
+            boolean isDate = controller.getAttributeMetaData().getTypeID() == java.sql.Types.DATE;
+            boolean isTime = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIME;
+            boolean isTimeStamp = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
 
             final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN) : null;
             final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;

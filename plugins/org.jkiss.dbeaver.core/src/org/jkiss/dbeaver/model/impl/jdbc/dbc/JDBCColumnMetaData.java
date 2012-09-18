@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCColumnMetaData;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * JDBCColumnMetaData
  */
-public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvider
+public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImageProvider
 {
     static final Log log = LogFactory.getLog(JDBCColumnMetaData.class);
 
@@ -271,19 +271,13 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
     }
 
     @Override
-    public boolean isWritable()
-    {
-        return writable;
-    }
-
-    @Override
-    public JDBCTableMetaData getTable()
+    public JDBCTableMetaData getEntity()
     {
         return tableMetaData;
     }
 
     @Override
-    public DBSEntityAttribute getTableColumn(DBRProgressMonitor monitor)
+    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor)
         throws DBException
     {
         if (tableColumn != null) {
@@ -297,10 +291,10 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
     }
 
     @Override
-    public boolean isForeignKey(DBRProgressMonitor monitor)
+    public boolean isReference(DBRProgressMonitor monitor)
         throws DBException
     {
-        DBSEntityAttribute tableColumn = getTableColumn(monitor);
+        DBSEntityAttribute tableColumn = getAttribute(monitor);
         if (tableColumn == null) {
             return false;
         }
@@ -324,7 +318,7 @@ public class JDBCColumnMetaData implements DBCColumnMetaData, IObjectImageProvid
         throws DBException
     {
         List<DBSEntityReferrer> refs = new ArrayList<DBSEntityReferrer>();
-        DBSEntityAttribute tableColumn = getTableColumn(monitor);
+        DBSEntityAttribute tableColumn = getAttribute(monitor);
         if (tableColumn == null) {
             return refs;
         }

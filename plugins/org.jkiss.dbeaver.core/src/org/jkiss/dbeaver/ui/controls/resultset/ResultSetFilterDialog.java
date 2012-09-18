@@ -36,7 +36,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.data.DBDColumnBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
@@ -216,9 +216,9 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         @Override
         public Image getColumnImage(Object element, int columnIndex)
         {
-            DBDColumnBinding column = (DBDColumnBinding) element;
-            if (columnIndex == 0 && column.getColumn() instanceof IObjectImageProvider) {
-                return ((IObjectImageProvider)column.getColumn()).getObjectImage();
+            DBDAttributeBinding column = (DBDAttributeBinding) element;
+            if (columnIndex == 0 && column.getAttribute() instanceof IObjectImageProvider) {
+                return ((IObjectImageProvider)column.getAttribute()).getObjectImage();
             }
             if (columnIndex == 1) {
                 DBQOrderColumn orderColumn = dataFilter.getOrderColumn(column.getColumnName());
@@ -232,7 +232,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         @Override
         public String getColumnText(Object element, int columnIndex)
         {
-            DBDColumnBinding column = (DBDColumnBinding) element;
+            DBDAttributeBinding column = (DBDAttributeBinding) element;
             switch (columnIndex) {
                 case 0: return column.getColumnName();
                 case 1: {
@@ -320,7 +320,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
 
         private void toggleColumnOrder(TableItem item)
         {
-            DBDColumnBinding column = (DBDColumnBinding) item.getData();
+            DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
             DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getColumnName());
             if (columnOrder == null) {
                 dataFilter.addOrderColumn(new DBQOrderColumn(column.getColumnName(), false));
@@ -342,7 +342,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                 public void modifyText(ModifyEvent e) {
                     Text text = (Text) tableEditor.getEditor();
                     String criteria = text.getText().trim();
-                    DBDColumnBinding column = (DBDColumnBinding) item.getData();
+                    DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
                     DBQCondition filterColumn = dataFilter.getFilterColumn(column.getColumnName());
                     if (CommonUtils.isEmpty(criteria)) {
                         if (filterColumn != null) {
