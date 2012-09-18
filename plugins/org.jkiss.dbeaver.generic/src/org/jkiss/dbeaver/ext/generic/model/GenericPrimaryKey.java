@@ -52,7 +52,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
     }
 
     @Override
-    public Collection<GenericTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<GenericTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

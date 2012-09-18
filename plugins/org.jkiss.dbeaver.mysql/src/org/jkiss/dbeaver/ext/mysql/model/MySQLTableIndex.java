@@ -92,7 +92,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLTable>
     }
 
     @Override
-    public List<MySQLTableIndexColumn> getColumns(DBRProgressMonitor monitor)
+    public List<MySQLTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

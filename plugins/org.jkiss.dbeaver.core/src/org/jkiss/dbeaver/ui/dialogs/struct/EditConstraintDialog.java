@@ -40,7 +40,7 @@ import java.util.Collection;
  *
  * @author Serge Rider
  */
-public class EditConstraintDialog extends ColumnsSelectorDialog {
+public class EditConstraintDialog extends AttributesSelectorDialog {
 
     private DBSEntityConstraintType[] constraintTypes;
     private DBSEntityConstraintType selectedConstraintType;

@@ -6,7 +6,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLBuilder;
 
@@ -123,13 +122,11 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         return realEntity.getAttributes(monitor);
     }
 
-    public DBSEntityAttribute getAttribute(String attributeName)
+    @Override
+    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName)
     {
-        // Here we use void monitor.
-        // In real life entity columns SHOULD be already read so it doesn't matter
-        // But I'm afraid that in some very special cases it does. Thant's too bad.
         try {
-            return DBUtils.findObject(getAttributes(VoidProgressMonitor.INSTANCE), attributeName);
+            return DBUtils.findObject(getAttributes(monitor), attributeName);
         } catch (DBException e) {
             log.error("Can't obtain real entity's attributes", e);
             return null;

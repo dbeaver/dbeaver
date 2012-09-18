@@ -64,7 +64,7 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericTable
             false);
         foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
                 CommonUtils.escapeIdentifier(table.getName()) + "_" +
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK"));
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK"));
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(

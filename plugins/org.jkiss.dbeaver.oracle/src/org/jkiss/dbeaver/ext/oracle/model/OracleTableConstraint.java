@@ -90,7 +90,7 @@ public class OracleTableConstraint extends JDBCTableConstraint<OracleTableBase> 
     }
 
     @Override
-    public List<OracleTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
+    public List<OracleTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

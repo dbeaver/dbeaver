@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -398,8 +395,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             Collection<? extends DBSObject> children = null;
             if (parent instanceof DBSObjectContainer) {
                 children = ((DBSObjectContainer)parent).getChildren(monitor);
-            } else if (parent instanceof DBSTable) {
-                children = ((DBSTable)parent).getColumns(monitor);
+            } else if (parent instanceof DBSEntity) {
+                children = ((DBSEntity)parent).getAttributes(monitor);
             }
             if (children != null && !children.isEmpty()) {
                 for (DBSObject child : children) {

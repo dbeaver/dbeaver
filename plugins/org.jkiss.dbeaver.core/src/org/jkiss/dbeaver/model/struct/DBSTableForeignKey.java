@@ -32,6 +32,6 @@ public interface DBSTableForeignKey extends DBSTableConstraint, DBSEntityAssocia
 
     //Collection<? extends DBSTableForeignKeyColumn> getColumns(DBRProgressMonitor monitor);
 
-    //DBSTableForeignKeyColumn getColumn(DBRProgressMonitor monitor, DBSTableColumn tableColumn);
+    //DBSTableForeignKeyColumn getAttribute(DBRProgressMonitor monitor, DBSTableColumn tableColumn);
 
 }

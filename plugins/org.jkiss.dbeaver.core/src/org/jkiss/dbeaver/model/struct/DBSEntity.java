@@ -39,6 +39,14 @@ public interface DBSEntity extends DBSObject
     Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException;
 
     /**
+     * Retrieve attribute by it's name (case insensitive)
+     * @param monitor
+     *@param attributeName column name  @return column or null
+     * @throws DBException on any DB error
+     */
+    DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException;
+
+    /**
      * Gets this entity constraints
      * @return association list
      * @throws org.jkiss.dbeaver.DBException on any DB error

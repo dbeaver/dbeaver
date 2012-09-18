@@ -99,7 +99,7 @@ public abstract class AbstractTable<
     public DBSObject getChild(DBRProgressMonitor monitor, String childName)
         throws DBException
     {
-        return getColumn(monitor, childName);
+        return getAttribute(monitor, childName);
     }
 
 */

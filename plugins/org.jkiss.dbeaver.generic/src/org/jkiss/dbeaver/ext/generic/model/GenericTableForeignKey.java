@@ -64,7 +64,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
     }
 
     @Override
-    public Collection<GenericTableForeignKeyColumnTable> getColumns(DBRProgressMonitor monitor)
+    public Collection<GenericTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

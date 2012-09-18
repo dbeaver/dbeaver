@@ -143,7 +143,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public synchronized Collection<GenericTableColumn> getColumns(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericTableColumn> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
@@ -162,18 +162,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public GenericTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
+    public GenericTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
         throws DBException
     {
-        return DBUtils.findObject(getColumns(monitor), columnName);
+        return DBUtils.findObject(getAttributes(monitor), attributeName);
     }
 
-    List<GenericTableColumn> getColumnsCache()
-    {
-        return columns;
-    }
-
-    boolean isColumnsCached()
+    synchronized boolean isColumnsCached()
     {
         return this.columns != null;
     }
@@ -217,7 +212,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         if (uniqueKeys == null) {
             if (columns == null) {
                 // ensure all columns are already cached
-                getColumns(monitor);
+                getAttributes(monitor);
             }
             getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
         }
@@ -467,12 +462,12 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     log.warn("Can't find FK table " + info.fkTableName);
                     continue;
                 }
-                GenericTableColumn pkColumn = this.getColumn(monitor, info.pkColumnName);
+                GenericTableColumn pkColumn = this.getAttribute(monitor, info.pkColumnName);
                 if (pkColumn == null) {
                     log.warn("Can't find PK column " + info.pkColumnName);
                     continue;
                 }
-                GenericTableColumn fkColumn = fkTable.getColumn(monitor, info.fkColumnName);
+                GenericTableColumn fkColumn = fkTable.getAttribute(monitor, info.fkColumnName);
                 if (fkColumn == null) {
                     log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + info.fkColumnName);
                     continue;

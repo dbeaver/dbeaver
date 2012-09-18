@@ -38,7 +38,7 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
     }
 
     @Override
-    public List<MySQLTableConstraintColumn> getColumns(DBRProgressMonitor monitor)
+    public List<MySQLTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

@@ -41,7 +41,7 @@ import java.util.Collection;
  *
  * @author Serge Rider
  */
-public class EditDictionaryDialog extends ColumnsSelectorDialog {
+public class EditDictionaryDialog extends AttributesSelectorDialog {
 
     private Text criteriaText;
     private DBVEntity dictionary;

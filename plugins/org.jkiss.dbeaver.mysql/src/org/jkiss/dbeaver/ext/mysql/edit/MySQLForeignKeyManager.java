@@ -62,7 +62,7 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLTableFore
             false);
         foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
                 CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getTable().getName()) + "_FK")); //$NON-NLS-1$
+                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(

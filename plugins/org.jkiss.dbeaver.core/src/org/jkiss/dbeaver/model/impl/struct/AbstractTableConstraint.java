@@ -19,13 +19,9 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSTable;
 import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
-
-import java.util.Collection;
 
 /**
  * GenericConstraint
@@ -45,17 +41,10 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         this.constraintType = constraintType;
     }
 
-    @Override
     @Property(id = "owner", name = "Owner", viewable = true, order = 2)
     public TABLE getTable()
     {
         return table;
-    }
-
-    @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
-    {
-        return getColumns(monitor);
     }
 
     @Override

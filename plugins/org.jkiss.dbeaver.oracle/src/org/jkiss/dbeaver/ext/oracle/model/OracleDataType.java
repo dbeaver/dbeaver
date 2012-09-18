@@ -400,9 +400,9 @@ public class OracleDataType extends OracleObject
         return null;
     }
 
-    public OracleDataTypeAttribute getAttribute(DBRProgressMonitor monitor, String name) throws DBException
+    public OracleDataTypeAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
     {
-        return attributeCache != null ? attributeCache.getObject(monitor, this, name) : null;
+        return attributeCache != null ? attributeCache.getObject(monitor, this, attributeName) : null;
     }
 
     @Association

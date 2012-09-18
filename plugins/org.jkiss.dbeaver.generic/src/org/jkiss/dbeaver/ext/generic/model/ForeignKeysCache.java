@@ -112,7 +112,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
         if (pk == null) {
             String pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
-            GenericTableColumn pkColumn = pkTable.getColumn(context.getProgressMonitor(), pkColumnName);
+            GenericTableColumn pkColumn = pkTable.getAttribute(context.getProgressMonitor(), pkColumnName);
             if (pkColumn == null) {
                 log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
                 return null;
@@ -160,7 +160,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
 
         String fkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKCOLUMN_NAME);
-        GenericTableColumn fkColumn = foreignKey.getTable().getColumn(context.getProgressMonitor(), fkColumnName);
+        GenericTableColumn fkColumn = foreignKey.getTable().getAttribute(context.getProgressMonitor(), fkColumnName);
         if (fkColumn == null) {
             log.warn("Can't find FK table " + foreignKey.getTable().getFullQualifiedName() + " column " + fkColumnName);
             return null;

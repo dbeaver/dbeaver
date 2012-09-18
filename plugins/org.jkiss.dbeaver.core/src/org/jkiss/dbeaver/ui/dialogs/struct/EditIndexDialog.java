@@ -42,7 +42,7 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class EditIndexDialog extends ColumnsSelectorDialog {
+public class EditIndexDialog extends AttributesSelectorDialog {
 
     private List<DBSIndexType> indexTypes;
     private DBSIndexType selectedIndexType;

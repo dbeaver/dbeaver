@@ -63,7 +63,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private boolean readOnly;
     private boolean writable;
     private JDBCTableMetaData tableMetaData;
-    private DBSTableColumn tableColumn;
+    private DBSEntityAttribute tableColumn;
 
     JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
         throws SQLException
@@ -112,7 +112,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         if (ownerTable != null) {
             // Get column using void monitor because all columns MUST be already read
             try {
-                this.tableColumn = ownerTable.getColumn(VoidProgressMonitor.INSTANCE, name);
+                this.tableColumn = ownerTable.getAttribute(VoidProgressMonitor.INSTANCE, name);
             }
             catch (DBException e) {
                 log.warn(e);
@@ -286,7 +286,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         if (tableMetaData == null) {
             return null;
         }
-        tableColumn = tableMetaData.getEntity(monitor).getColumn(monitor, name);
+        tableColumn = tableMetaData.getEntity(monitor).getAttribute(monitor, name);
         return tableColumn;
     }
 

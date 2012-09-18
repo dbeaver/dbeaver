@@ -87,7 +87,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
         int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
 
-        GenericTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
+        GenericTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
         if (tableColumn == null) {
             log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "' for PK '" + object.getFullQualifiedName() + "'");
             return null;

@@ -33,22 +33,6 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
     boolean isView();
 
     /**
-     * Table columns
-     * @return list of columns
-     * @throws DBException on any DB error
-     * @param monitor
-     */
-    Collection<? extends DBSTableColumn> getColumns(DBRProgressMonitor monitor) throws DBException;
-
-    /**
-     * Retrieve table column by it's name (case insensitive)
-     * @param monitor
-     *@param columnName column name  @return column or null
-     * @throws DBException on any DB error
-     */
-    DBSTableColumn getColumn(DBRProgressMonitor monitor, String columnName) throws DBException;
-
-    /**
      * Table indices
      * @return list of indices
      * @throws DBException  on any DB error

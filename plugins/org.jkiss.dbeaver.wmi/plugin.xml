@@ -36,7 +36,7 @@
                 <!--folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" description="WMI classes">
                     <items label="Classes" itemLabel="Class" path="allClass" property="allClasses" iconId="icons/class.png">
                         <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassProperty" label="Properties" iconId="#columns" description="Class properties" navigable="false" id="ClassAttributes">
-                            <items label="Properties" itemLabel="Property" path="property" property="columns"/>
+                            <items label="Properties" itemLabel="Property" path="property" property="attributes"/>
                         </folder>
                     </items>
                 </folder-->

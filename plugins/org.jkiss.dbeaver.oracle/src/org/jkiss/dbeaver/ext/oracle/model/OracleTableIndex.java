@@ -107,7 +107,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
     }
 
     @Override
-    public Collection<OracleTableIndexColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<OracleTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

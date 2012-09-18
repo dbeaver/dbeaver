@@ -257,34 +257,6 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
 
     }
 
-/*
-    class ColumnPaintListener implements Listener {
-
-        public void handleEvent(Event event) {
-            Table table = columnsViewer.getTable();
-            if (table.isDisposed()) {
-                return;
-            }
-            switch(event.type) {
-                case SWT.PaintItem: {
-                    if (event.index == 1) {
-                        TableItem tableItem = (TableItem) event.item;
-                        DBDColumnBinding columnBinding = (DBDColumnBinding)tableItem.getData();
-                        DBQOrderColumn orderColumn = dataFilter.getOrderColumn(columnBinding.getColumnName());
-                        if (orderColumn != null) {
-                            int columnWidth = table.getColumn(1).getWidth();
-                            Image image = orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
-                            event.gc.drawImage(image, event.x + (columnWidth - image.getBounds().width) / 2, event.y);
-                            event.doit = false;
-                        }
-                    }
-                    break;
-                }
-            }
-        }
-    }
-*/
-
     private class ColumnsMouseListener extends MouseAdapter implements UIUtils.TableEditorController {
         private final TableEditor tableEditor;
         private final Table columnsTable;

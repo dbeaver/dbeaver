@@ -150,7 +150,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public synchronized Collection<OracleTableColumn> getColumns(DBRProgressMonitor monitor)
+    public synchronized Collection<OracleTableColumn> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
@@ -160,10 +160,10 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public OracleTableColumn getColumn(DBRProgressMonitor monitor, String columnName)
+    public OracleTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
         throws DBException
     {
-        return DBUtils.findObject(getColumns(monitor), columnName);
+        return DBUtils.findObject(getAttributes(monitor), attributeName);
     }
 
     @Override

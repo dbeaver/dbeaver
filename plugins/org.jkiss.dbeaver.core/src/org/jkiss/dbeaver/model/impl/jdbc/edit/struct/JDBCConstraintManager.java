@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraintColumn;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**
@@ -79,10 +79,10 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCTableConstra
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         boolean firstColumn = true;
-        for (DBSTableConstraintColumn constraintColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
+        for (DBSEntityAttributeRef constraintColumn : command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
-            decl.append(constraintColumn.getName());
+            decl.append(constraintColumn.getAttribute().getName());
         }
         decl.append(")"); //$NON-NLS-1$
         return decl;

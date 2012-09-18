@@ -65,20 +65,20 @@ import java.util.List;
 public class EditForeignKeyDialog extends Dialog {
 
     public static class FKColumnInfo {
-        final DBSTableColumn refColumn;
-        DBSTableColumn ownColumn;
+        final DBSEntityAttribute refColumn;
+        DBSEntityAttribute ownColumn;
 
-        FKColumnInfo(DBSTableColumn refColumn)
+        FKColumnInfo(DBSEntityAttribute refColumn)
         {
             this.refColumn = refColumn;
         }
 
-        public DBSTableColumn getRefColumn()
+        public DBSEntityAttribute getRefColumn()
         {
             return refColumn;
         }
 
-        public DBSTableColumn getOwnColumn()
+        public DBSEntityAttribute getOwnColumn()
         {
             return ownColumn;
         }
@@ -95,7 +95,7 @@ public class EditForeignKeyDialog extends Dialog {
     private Table columnsTable;
 
     private DBSTableConstraint curConstraint;
-    private List<? extends DBSTableColumn> ownColumns;
+    private List<? extends DBSEntityAttribute> ownColumns;
     private List<FKColumnInfo> fkColumns = new ArrayList<FKColumnInfo>();
     private DBSConstraintModifyRule onDeleteRule;
     private DBSConstraintModifyRule onUpdateRule;
@@ -268,10 +268,10 @@ public class EditForeignKeyDialog extends Dialog {
                     {
                         try {
                             // Cache own table columns
-                            ownTable.getColumns(monitor);
+                            ownTable.getAttributes(monitor);
 
                             // Cache ref table columns
-                            refTable.getColumns(monitor);
+                            refTable.getAttributes(monitor);
                             // Get constraints
                             final Collection<? extends DBSTableConstraint> constraints = refTable.getConstraints(monitor);
                             if (!CommonUtils.isEmpty(constraints)) {
@@ -317,15 +317,15 @@ public class EditForeignKeyDialog extends Dialog {
         curConstraint = curConstraints.get(uniqueKeyCombo.getSelectionIndex());
         try {
             // Read column nodes with void monitor because we already cached them above
-            for (DBSTableConstraintColumn pkColumn : curConstraint.getColumns(VoidProgressMonitor.INSTANCE)) {
+            for (DBSEntityAttributeRef pkColumn : curConstraint.getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
                 FKColumnInfo fkColumnInfo = new FKColumnInfo(pkColumn.getAttribute());
                 // Try to find matched column in own table
-                Collection<? extends DBSTableColumn> tmpColumns = ownTable.getColumns(VoidProgressMonitor.INSTANCE);
+                Collection<? extends DBSEntityAttribute> tmpColumns = ownTable.getAttributes(VoidProgressMonitor.INSTANCE);
                 ownColumns = tmpColumns == null ?
                     Collections.<DBSTableColumn>emptyList() :
-                    new ArrayList<DBSTableColumn>(ownTable.getColumns(VoidProgressMonitor.INSTANCE));
+                    new ArrayList<DBSEntityAttribute>(ownTable.getAttributes(VoidProgressMonitor.INSTANCE));
                 if (!CommonUtils.isEmpty(ownColumns)) {
-                    for (DBSTableColumn ownColumn : ownColumns) {
+                    for (DBSEntityAttribute ownColumn : ownColumns) {
                         if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && ownTable != pkColumn.getAttribute().getParentObject()) {
                             fkColumnInfo.ownColumn = ownColumn;
                             break;
@@ -351,7 +351,7 @@ public class EditForeignKeyDialog extends Dialog {
         UIUtils.packColumns(columnsTable, true);
     }
 
-    private Image getColumnIcon(DBSTableColumn column)
+    private Image getColumnIcon(DBSEntityAttribute column)
     {
         if (column instanceof IObjectImageProvider) {
             return ((IObjectImageProvider) column).getObjectImage();
@@ -450,7 +450,7 @@ public class EditForeignKeyDialog extends Dialog {
             // Identify the selected row
             final CCombo columnsCombo = new CCombo(columnsTable, SWT.DROP_DOWN | SWT.READ_ONLY);
             if (!CommonUtils.isEmpty(ownColumns)) {
-                for (DBSTableColumn ownColumn : ownColumns) {
+                for (DBSEntityAttribute ownColumn : ownColumns) {
                     columnsCombo.add(ownColumn.getName());
                     if (fkInfo.ownColumn == ownColumn) {
                         columnsCombo.select(columnsCombo.getItemCount() - 1);

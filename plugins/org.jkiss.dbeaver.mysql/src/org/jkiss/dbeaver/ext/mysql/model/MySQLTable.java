@@ -390,12 +390,12 @@ public class MySQLTable extends MySQLTableBase
                         log.warn("Can't find FK table " + fkTableName);
                         continue;
                     }
-                    MySQLTableColumn pkColumn = pkTable.getColumn(monitor, pkColumnName);
+                    MySQLTableColumn pkColumn = pkTable.getAttribute(monitor, pkColumnName);
                     if (pkColumn == null) {
                         log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
                         continue;
                     }
-                    MySQLTableColumn fkColumn = fkTable.getColumn(monitor, fkColumnName);
+                    MySQLTableColumn fkColumn = fkTable.getAttribute(monitor, fkColumnName);
                     if (fkColumn == null) {
                         log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + fkColumnName);
                         continue;

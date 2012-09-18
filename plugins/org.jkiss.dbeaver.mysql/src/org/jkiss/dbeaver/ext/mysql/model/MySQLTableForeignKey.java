@@ -46,7 +46,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     }
 
     @Override
-    public List<MySQLTableForeignKeyColumnTable> getColumns(DBRProgressMonitor monitor)
+    public List<MySQLTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

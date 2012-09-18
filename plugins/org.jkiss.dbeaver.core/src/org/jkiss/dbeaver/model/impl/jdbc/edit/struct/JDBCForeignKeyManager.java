@@ -83,14 +83,14 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCTableConstra
             .append(" ").append(foreignKey.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
-        final Collection<? extends DBSTableConstraintColumn> columns = command.getObject().getColumns(VoidProgressMonitor.INSTANCE);
+        final Collection<? extends DBSEntityAttributeRef> columns = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
         boolean firstColumn = true;
-        for (DBSTableConstraintColumn constraintColumn : columns) {
+        for (DBSEntityAttributeRef constraintColumn : columns) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
-            decl.append(constraintColumn.getName());
+            decl.append(constraintColumn.getAttribute().getName());
         }
-        decl.append(") REFERENCES ").append(foreignKey.getReferencedConstraint().getTable().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
+        decl.append(") REFERENCES ").append(foreignKey.getReferencedConstraint().getParentObject().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         firstColumn = true;
         for (DBSEntityAttributeRef constraintColumn : foreignKey.getReferencedConstraint().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$

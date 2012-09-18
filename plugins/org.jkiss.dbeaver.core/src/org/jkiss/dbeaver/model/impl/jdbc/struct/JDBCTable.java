@@ -39,13 +39,11 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -88,12 +86,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public void setPersisted(boolean persisted)
     {
         this.persisted = persisted;
-    }
-
-    @Override
-    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
-    {
-        return getColumns(monitor);
     }
 
     @Override
@@ -447,7 +439,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         throws DBException
     {
         try {
-            getColumns(monitor);
+            getAttributes(monitor);
         }
         catch (DBException e) {
             throw new DBException("Could not cache table columns", e);

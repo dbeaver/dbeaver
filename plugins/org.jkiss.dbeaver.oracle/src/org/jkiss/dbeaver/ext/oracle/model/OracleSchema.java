@@ -319,7 +319,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     protected static OracleTableColumn getTableColumn(JDBCExecutionContext context, OracleTableBase parent, ResultSet dbResult) throws DBException
     {
         String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");
-        OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
+        OracleTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
         if (tableColumn == null) {
             log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
         }
@@ -618,7 +618,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_POSITION");
             boolean isAscending = "ASC".equals(JDBCUtils.safeGetStringTrimmed(dbResult, "DESCEND"));
 
-            OracleTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
+            OracleTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
                 log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
                 return null;
@@ -878,7 +878,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
             if (refTable != null) {
                 final String columnName = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
-                OracleTableColumn tableColumn = refTable.getColumn(context.getProgressMonitor(), columnName);
+                OracleTableColumn tableColumn = refTable.getAttribute(context.getProgressMonitor(), columnName);
                 if (tableColumn == null) {
                     log.debug("Column '" + columnName + "' not found in table '" + refTable.getFullQualifiedName() + "' for trigger '" + parent.getName() + "'");
                 }

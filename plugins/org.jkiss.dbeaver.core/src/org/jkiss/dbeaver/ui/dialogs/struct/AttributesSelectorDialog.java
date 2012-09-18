@@ -44,31 +44,31 @@ import java.util.*;
 import java.util.List;
 
 /**
- * ColumnsSelectorDialog
+ * AttributesSelectorDialog
  *
  * @author Serge Rider
  */
-public abstract class ColumnsSelectorDialog extends Dialog {
+public abstract class AttributesSelectorDialog extends Dialog {
 
     private String title;
     private DBSEntity entity;
     //private TableViewer columnsViewer;
     private Table columnsTable;
-    private List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
+    private List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
     private Button toggleButton;
 
-    private static class ColumnInfo {
+    private static class AttributeInfo {
         DBSEntityAttribute attribute;
         int position;
 
-        public ColumnInfo(DBSEntityAttribute attribute)
+        public AttributeInfo(DBSEntityAttribute attribute)
         {
             this.attribute = attribute;
             this.position = -1;
         }
     }
 
-    public ColumnsSelectorDialog(
+    public AttributesSelectorDialog(
         Shell shell,
         String title,
         DBSEntity entity)
@@ -95,7 +95,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
 
         createColumnsGroup(panel);
         createContentsAfterColumns(panel);
-        fillColumns(entity);
+        fillAttributes(entity);
 
 
         //columnsTable.set
@@ -168,9 +168,9 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         });
     }
 
-    protected void fillColumns(final DBSEntity entity)
+    protected void fillAttributes(final DBSEntity entity)
     {
-        // Collect columns
+        // Collect attributes
         final List<DBSEntityAttribute> attributes = new ArrayList<DBSEntityAttribute>();
         try {
             DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
@@ -197,8 +197,8 @@ public abstract class ColumnsSelectorDialog extends Dialog {
         for (DBSEntityAttribute attribute : attributes) {
             TableItem columnItem = new TableItem(columnsTable, SWT.NONE);
 
-            ColumnInfo col = new ColumnInfo(attribute);
-            columns.add(col);
+            AttributeInfo col = new AttributeInfo(attribute);
+            this.attributes.add(col);
 
             DBNDatabaseNode attributeNode = DBeaverCore.getInstance().getNavigatorModel().findNode(attribute);
             if (attributeNode != null) {
@@ -227,11 +227,11 @@ public abstract class ColumnsSelectorDialog extends Dialog {
 
     private void handleItemSelect(TableItem item, boolean notify)
     {
-        final ColumnInfo col = (ColumnInfo) item.getData();
+        final AttributeInfo col = (AttributeInfo) item.getData();
         if (item.getChecked() && col.position < 0) {
             // Checked
             col.position = 0;
-            for (ColumnInfo tmp : columns) {
+            for (AttributeInfo tmp : attributes) {
                 if (tmp != col && tmp.position >= col.position) {
                     col.position = tmp.position + 1;
                 }
@@ -241,7 +241,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
             // Unchecked
             item.setText(1, ""); //$NON-NLS-1$
             TableItem[] allItems = columnsTable.getItems();
-            for (ColumnInfo tmp : columns) {
+            for (AttributeInfo tmp : attributes) {
                 if (tmp != col && tmp.position >= col.position) {
                     tmp.position--;
                     for (TableItem ai : allItems) {
@@ -264,7 +264,7 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     private boolean hasCheckedColumns()
     {
         boolean hasCheckedColumns = false;
-        for (ColumnInfo tmp : columns) {
+        for (AttributeInfo tmp : attributes) {
             if (tmp.position >= 0) {
                 hasCheckedColumns = true;
                 break;
@@ -304,15 +304,15 @@ public abstract class ColumnsSelectorDialog extends Dialog {
     public Collection<DBSEntityAttribute> getSelectedColumns()
     {
         List<DBSEntityAttribute> tableColumns = new ArrayList<DBSEntityAttribute>();
-        Set<ColumnInfo> orderedColumns = new TreeSet<ColumnInfo>(new Comparator<ColumnInfo>() {
+        Set<AttributeInfo> orderedAttributes = new TreeSet<AttributeInfo>(new Comparator<AttributeInfo>() {
             @Override
-            public int compare(ColumnInfo o1, ColumnInfo o2)
+            public int compare(AttributeInfo o1, AttributeInfo o2)
             {
                 return o1.position - o2.position;
             }
         });
-        orderedColumns.addAll(columns);
-        for (ColumnInfo col : orderedColumns) {
+        orderedAttributes.addAll(attributes);
+        for (AttributeInfo col : orderedAttributes) {
             if (col.position >= 0) {
                 tableColumns.add(col.attribute);
             }

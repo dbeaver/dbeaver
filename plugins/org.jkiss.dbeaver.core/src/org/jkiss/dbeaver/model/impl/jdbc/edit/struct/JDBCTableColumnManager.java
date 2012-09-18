@@ -84,7 +84,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
             final String name = "Column" + i;
             try {
                 // check for existing columns
-                boolean exists = table.getColumn(VoidProgressMonitor.INSTANCE, name) != null;
+                boolean exists = table.getAttribute(VoidProgressMonitor.INSTANCE, name) != null;
                 if (!exists) {
                     // Check for new columns (they are present only within command context)
                     for (DBPObject contextObject : context.getEditedObjects()) {

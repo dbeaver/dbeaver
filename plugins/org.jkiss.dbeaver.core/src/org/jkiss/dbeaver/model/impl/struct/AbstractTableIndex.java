@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.Collection;
 
@@ -32,12 +29,6 @@ import java.util.Collection;
  */
 public abstract class AbstractTableIndex implements DBSTableIndex
 {
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return getColumns(monitor);
-    }
-
     @Override
     public boolean isPersisted()
     {
@@ -50,9 +41,4 @@ public abstract class AbstractTableIndex implements DBSTableIndex
         return DBSEntityConstraintType.INDEX;
     }
 
-    @Override
-    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
-    {
-        return getColumns(monitor);
-    }
 }

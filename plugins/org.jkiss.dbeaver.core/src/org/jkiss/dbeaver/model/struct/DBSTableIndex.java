@@ -34,6 +34,6 @@ public interface DBSTableIndex extends DBSEntityConstraint, DBSEntityReferrer, D
 
     DBSIndexType getIndexType();
 
-    Collection<? extends DBSTableIndexColumn> getColumns(DBRProgressMonitor monitor);
+    Collection<? extends DBSTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor);
 
 }

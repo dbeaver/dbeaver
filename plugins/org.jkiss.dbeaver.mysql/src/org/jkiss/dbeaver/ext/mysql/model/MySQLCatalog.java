@@ -428,7 +428,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_COLLATION);
             boolean nullable = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, MySQLConstants.COL_NULLABLE));
 
-            MySQLTableColumn tableColumn = parent.getColumn(context.getProgressMonitor(), columnName);
+            MySQLTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
             if (tableColumn == null) {
                 log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
                 return null;
@@ -511,7 +511,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
-            MySQLTableColumn column = parent.getColumn(context.getProgressMonitor(), columnName);
+            MySQLTableColumn column = parent.getAttribute(context.getProgressMonitor(), columnName);
             if (column == null) {
                 log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "'");
                 return null;

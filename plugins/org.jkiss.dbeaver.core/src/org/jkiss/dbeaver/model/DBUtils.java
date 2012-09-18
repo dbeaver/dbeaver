@@ -497,7 +497,7 @@ public final class DBUtils {
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable)entity).getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
                     for (DBSTableIndex index : indexes) {
-                        if (index.isUnique() && !CommonUtils.isEmpty(index.getColumns(monitor))) {
+                        if (index.isUnique() && !CommonUtils.isEmpty(index.getAttributeReferences(monitor))) {
                             identifiers.add(index);
                         }
                     }

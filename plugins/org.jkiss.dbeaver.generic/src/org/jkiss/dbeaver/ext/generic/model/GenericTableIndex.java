@@ -104,7 +104,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericTable>
     }
 
     @Override
-    public Collection<GenericTableIndexColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<GenericTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }

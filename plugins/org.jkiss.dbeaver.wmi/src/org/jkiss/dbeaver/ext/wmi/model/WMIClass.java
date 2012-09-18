@@ -239,9 +239,9 @@ public class WMIClass extends WMIContainer
         return constraints;
     }
 
-    public WMIClassAttribute getAttribute(DBRProgressMonitor monitor, String name) throws DBException
+    public WMIClassAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
     {
-        return DBUtils.findObject(getAttributes(monitor), name);
+        return DBUtils.findObject(getAttributes(monitor), attributeName);
     }
 
     @Association

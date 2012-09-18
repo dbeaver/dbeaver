@@ -57,7 +57,7 @@ public abstract class JDBCIndexManager<OBJECT_TYPE extends JDBCTableIndex<TABLE_
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         boolean firstColumn = true;
-        for (DBSTableIndexColumn indexColumn : command.getObject().getColumns(VoidProgressMonitor.INSTANCE)) {
+        for (DBSTableIndexColumn indexColumn : command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
             if (!firstColumn) decl.append(","); //$NON-NLS-1$
             firstColumn = false;
             decl.append(indexColumn.getName());

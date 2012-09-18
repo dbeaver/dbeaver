@@ -264,7 +264,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                         log.debug("Column table '" + tableName + "' not found in catalog '" + tableCatalog.getName() + "'");
                         continue;
                     }
-                    MySQLTableColumn column = table.getColumn(monitor, columnName);
+                    MySQLTableColumn column = table.getAttribute(monitor, columnName);
                     if (column == null) {
                         log.debug("Column '" + columnName + "' not found in table '" + table.getFullQualifiedName() + "'");
                     } else {
