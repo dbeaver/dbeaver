@@ -32,8 +32,6 @@ public interface DBSTable extends DBSEntity, DBPQualifiedObject
 
     boolean isView();
 
-    DBSObjectContainer getContainer();
-
     /**
      * Table columns
      * @return list of columns

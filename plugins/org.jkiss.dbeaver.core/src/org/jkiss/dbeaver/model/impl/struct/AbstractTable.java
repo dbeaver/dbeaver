@@ -47,16 +47,15 @@ public abstract class AbstractTable<
         this.tableName = tableName;
     }
 
+    public CONTAINER getContainer()
+    {
+        return container;
+    }
+
     @Override
     public DBSEntityType getEntityType()
     {
         return isView() ? DBSEntityType.VIEW : DBSEntityType.TABLE;
-    }
-
-    @Override
-    public CONTAINER getContainer()
-    {
-        return container;
     }
 
     @Override
