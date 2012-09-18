@@ -117,9 +117,8 @@ public abstract class JDBCCompositeCache<
     public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
-        if (!isCached()) {
-            loadObjects(monitor, owner, forParent);
-        }
+        loadObjects(monitor, owner, forParent);
+
         return getCachedObjects();
     }
 

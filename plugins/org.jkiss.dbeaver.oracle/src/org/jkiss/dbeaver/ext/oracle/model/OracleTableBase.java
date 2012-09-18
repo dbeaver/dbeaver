@@ -171,6 +171,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     {
         columns = null;
         constraints = null;
+
         return true;
     }
 
