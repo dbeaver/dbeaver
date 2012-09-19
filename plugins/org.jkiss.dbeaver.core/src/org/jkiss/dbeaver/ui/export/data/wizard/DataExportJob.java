@@ -148,7 +148,7 @@ public class DataExportJob extends AbstractJob {
         }
 
         @Override
-        public List<DBDAttributeBinding> getColumns()
+        public List<DBDAttributeBinding> getAttributes()
         {
             return metaColumns;
         }
@@ -207,7 +207,7 @@ public class DataExportJob extends AbstractJob {
         {
             // Prepare columns
             metaColumns = new ArrayList<DBDAttributeBinding>();
-            List<DBCAttributeMetaData> attributes = resultSet.getResultSetMetaData().getColumns();
+            List<DBCAttributeMetaData> attributes = resultSet.getResultSetMetaData().getAttributes();
             for (DBCAttributeMetaData attribute : attributes) {
                 DBDAttributeBinding columnBinding = DBUtils.getColumnBinding(context, attribute);
 /*

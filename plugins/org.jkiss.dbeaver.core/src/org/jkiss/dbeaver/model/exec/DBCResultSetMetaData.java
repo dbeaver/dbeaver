@@ -28,5 +28,5 @@ public interface DBCResultSetMetaData
 {
     DBCResultSet getResultSet();
 
-    List<DBCAttributeMetaData> getColumns();
+    List<DBCAttributeMetaData> getAttributes();
 }

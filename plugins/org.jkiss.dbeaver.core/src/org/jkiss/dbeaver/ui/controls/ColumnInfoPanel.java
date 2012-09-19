@@ -122,7 +122,7 @@ public class ColumnInfoPanel extends Composite {
             List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();
             DBDRowController row = valueController.getRow();
             for (DBCAttributeMetaData col : valueController.getValueLocator().getEntityIdentifier().getResultSetColumns()) {
-                columns.add(new KeyColumnValue(col, row.getColumnValue(col)));
+                columns.add(new KeyColumnValue(col, row.getAttributeValue(col)));
             }
             return columns;
         }

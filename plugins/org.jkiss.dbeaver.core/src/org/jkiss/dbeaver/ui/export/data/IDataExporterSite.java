@@ -39,7 +39,7 @@ public interface IDataExporterSite {
 
     Map<Object, Object> getProperties();
 
-    List<DBDAttributeBinding> getColumns();
+    List<DBDAttributeBinding> getAttributes();
 
     OutputStream getOutputStream();
 

@@ -93,7 +93,7 @@ public class DataExporterCSV extends DataExporterAbstract {
     @Override
     public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
     {
-        columns = getSite().getColumns();
+        columns = getSite().getAttributes();
         if (headerPosition == HeaderPosition.top || headerPosition == HeaderPosition.both) {
             printHeader();
         }

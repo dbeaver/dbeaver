@@ -89,20 +89,6 @@ public abstract class AbstractTable<
         return container;
     }
 
-/*
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return getColumns(monitor);
-    }
-
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
-        throws DBException
-    {
-        return getAttribute(monitor, childName);
-    }
-
-*/
     public String toString()
     {
         return getFullQualifiedName();

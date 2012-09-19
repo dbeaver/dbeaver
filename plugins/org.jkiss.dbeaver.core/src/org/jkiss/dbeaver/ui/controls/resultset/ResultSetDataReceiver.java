@@ -75,7 +75,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             // Get columns metadata
             DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
 
-            List<DBCAttributeMetaData> rsAttributes = metaData.getColumns();
+            List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
             columnsCount = rsAttributes.size();
 
             // Determine type handlers for all columns

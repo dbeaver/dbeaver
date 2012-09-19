@@ -30,8 +30,4 @@ public interface DBSTableForeignKey extends DBSTableConstraint, DBSEntityAssocia
 
     DBSConstraintModifyRule getUpdateRule();
 
-    //Collection<? extends DBSTableForeignKeyColumn> getColumns(DBRProgressMonitor monitor);
-
-    //DBSTableForeignKeyColumn getAttribute(DBRProgressMonitor monitor, DBSTableColumn tableColumn);
-
 }

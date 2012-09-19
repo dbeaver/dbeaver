@@ -155,7 +155,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public List<DBCAttributeMetaData> getColumns()
+    public List<DBCAttributeMetaData> getAttributes()
     {
         return properties;
     }

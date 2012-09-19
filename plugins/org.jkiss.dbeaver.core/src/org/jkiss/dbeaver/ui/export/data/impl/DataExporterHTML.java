@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,7 +59,7 @@ public class DataExporterHTML extends DataExporterAbstract {
     @Override
     public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
     {
-        columns = getSite().getColumns();
+        columns = getSite().getAttributes();
         printHeader();
     }
 

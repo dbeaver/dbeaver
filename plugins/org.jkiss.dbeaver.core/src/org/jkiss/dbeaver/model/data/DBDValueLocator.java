@@ -49,7 +49,7 @@ public class DBDValueLocator implements DBPObject {
         Collection<? extends DBCAttributeMetaData> keyColumns = getEntityIdentifier().getResultSetColumns();
         for (DBCAttributeMetaData keyAttribute : keyColumns) {
             keyId.append('.').append(CommonUtils.escapeIdentifier(keyAttribute.getName()));
-            Object keyValue = rowController.getColumnValue(keyAttribute);
+            Object keyValue = rowController.getAttributeValue(keyAttribute);
             keyId.append('-');
             keyId.append(CommonUtils.escapeIdentifier(keyValue == null ? "NULL" : keyValue.toString()));
         }

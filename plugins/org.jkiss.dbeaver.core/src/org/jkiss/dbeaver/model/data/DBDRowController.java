@@ -32,7 +32,7 @@ public interface DBDRowController
      * Column meta data
      * @return meta data
      */
-    Collection<DBCAttributeMetaData> getColumnsMetaData();
+    Collection<DBCAttributeMetaData> getAttributesMetaData();
 
     /**
      * Find column metadata by specified table and column name
@@ -40,13 +40,13 @@ public interface DBDRowController
      * @param columnName column name
      * @return column meta data or null
      */
-    DBCAttributeMetaData getColumnMetaData(DBCEntityMetaData entity, String columnName);
+    DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName);
 
     /**
      * Tries to read value of certain column from result set.
      * @param attribute column, must belong to the same result set as controller's value
      * @return value or null
      */
-    Object getColumnValue(DBCAttributeMetaData attribute);
+    Object getAttributeValue(DBCAttributeMetaData attribute);
 
 }

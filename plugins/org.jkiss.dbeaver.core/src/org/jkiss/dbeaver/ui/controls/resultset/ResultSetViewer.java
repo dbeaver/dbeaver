@@ -1976,7 +1976,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public Collection<DBCAttributeMetaData> getColumnsMetaData() {
+        public Collection<DBCAttributeMetaData> getAttributesMetaData() {
             List<DBCAttributeMetaData> attributes = new ArrayList<DBCAttributeMetaData>();
             for (DBDAttributeBinding column : this.columns) {
                 attributes.add(column.getAttribute());
@@ -1985,7 +1985,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public DBCAttributeMetaData getColumnMetaData(DBCEntityMetaData entity, String columnName)
+        public DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName)
         {
             for (DBDAttributeBinding column : columns) {
                 if (column.getAttribute().getEntity() == entity && column.getColumnName().equals(columnName)) {
@@ -1996,7 +1996,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public Object getColumnValue(DBCAttributeMetaData attribute)
+        public Object getAttributeValue(DBCAttributeMetaData attribute)
         {
             for (int i = 0; i < columns.length; i++) {
                 DBDAttributeBinding metaColumn = columns[i];
@@ -2510,7 +2510,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             throws DBCException
         {
             DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
-            List<DBCAttributeMetaData> keyAttributes = rsMeta.getColumns();
+            List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
             for (int i = 0; i < keyAttributes.size(); i++) {
                 DBCAttributeMetaData keyAttribute = keyAttributes.get(i);
                 DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, keyAttribute);

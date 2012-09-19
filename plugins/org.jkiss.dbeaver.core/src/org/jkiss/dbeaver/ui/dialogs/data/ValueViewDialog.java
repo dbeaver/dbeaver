@@ -379,10 +379,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                                 // Enough
                                 break;
                             }
-                            DBCAttributeMetaData precMeta = attributeController.getRow().getColumnMetaData(
-                                attributeController.getAttributeMetaData().getEntity(), precColumn.getAttribute().getName());
+                            DBCAttributeMetaData precMeta = attributeController.getRow().getAttributeMetaData(
+                                    attributeController.getAttributeMetaData().getEntity(), precColumn.getAttribute().getName());
                             if (precMeta != null) {
-                                Object precValue = attributeController.getRow().getColumnValue(precMeta);
+                                Object precValue = attributeController.getRow().getAttributeValue(precMeta);
                                 precedingKeys.add(new DBDAttributeValue(precColumn.getAttribute(), precValue));
                             }
                         }

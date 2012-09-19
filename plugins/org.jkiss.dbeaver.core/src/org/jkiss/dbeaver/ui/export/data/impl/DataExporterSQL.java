@@ -93,7 +93,7 @@ public class DataExporterSQL extends DataExporterAbstract {
     @Override
     public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
     {
-        columns = getSite().getColumns();
+        columns = getSite().getAttributes();
         DBPNamedObject source = getSite().getSource();
         if (source instanceof DBSTable) {
             tableName = ((DBSTable)source).getFullQualifiedName();
