@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010-2012 Serge Rieder
  * serge@jkiss.org
+ * eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -302,7 +303,9 @@ public class DataExportJob extends AbstractJob {
                 }
             }
             lobCount++;
-            File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + ".data"); //$NON-NLS-1$ //$NON-NLS-2$
+            Boolean extractImages = (Boolean) settings.getExtractorProperties().get("extractImages");
+            String fileExt = (extractImages != null && extractImages) ? ".jpg" : ".data";
+            File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + fileExt); //$NON-NLS-1$ //$NON-NLS-2$
             ContentUtils.saveContentToFile(contents.getContentStream(), lobFile, monitor);
             return lobFile;
         }

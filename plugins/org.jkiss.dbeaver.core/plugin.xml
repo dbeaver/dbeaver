@@ -1848,6 +1848,17 @@
 
     <extension point="org.jkiss.dbeaver.dataExportProvider">
         <export
+                id="org.jkiss.dbeaver.core.dataExport.html"
+                class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterHTML"
+                description="Export to HTML file(s)"
+                extension="html"
+                icon="icons/misc/html.png"
+                label="HTML">
+            <propertyGroup label="General">
+                <property id="extractImages" label="Images" type="boolean" description="Extract images to graphic files" defaultValue="true"/>
+            </propertyGroup>
+        </export>
+        <export
                 id="org.jkiss.dbeaver.core.dataExport.csv"
                 class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterCSV"
                 description="Export to CSV file(s)"

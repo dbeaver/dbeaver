@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010-2012 Serge Rieder
  * serge@jkiss.org
+ * eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -412,8 +413,11 @@ public class DataExportSettings {
                     Map<Object, Object> expProps = new HashMap<Object, Object>();
                     exporterPropsHistory.put(exporter, expProps);
                     for (IPropertyDescriptor prop : exporter.getProperties()) {
-                        String value = expSection.get(prop.getId().toString());
+                        Object value = expSection.get(prop.getId().toString());
                         if (value != null) {
+                            if ("extractImages".equals(prop.getId())) {
+                                value = Boolean.parseBoolean((String) value);
+                            }
                             expProps.put(prop.getId(), value);
                         }
                     }
