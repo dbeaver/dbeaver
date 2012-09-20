@@ -575,18 +575,6 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected boolean isChildrenCached(OracleUserProfile parent)
-        {
-            return parent.isResourcesCached();
-        }
-
-        @Override
-        protected void cacheChildren(OracleUserProfile parent, List<OracleUserProfile.ProfileResource> resources)
-        {
-            parent.setResources(resources);
-        }
-
-        @Override
         protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OracleDataSource dataSource, OracleUserProfile forObject) throws SQLException
         {
             final JDBCPreparedStatement dbStat = context.prepareStatement(

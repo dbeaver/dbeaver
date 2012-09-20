@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -45,13 +47,9 @@ public abstract class JDBCStructCache<
 {
     static final Log log = LogFactory.getLog(JDBCStructCache.class);
 
-    private volatile boolean childrenCached = false;
-
     private final String objectNameColumn;
-
-    abstract protected boolean isChildrenCached(OBJECT parent);
-
-    abstract protected void cacheChildren(OBJECT parent, List<CHILD> children);
+    private volatile boolean childrenCached = false;
+    private final Map<OBJECT, NestedCache> childrenCache = new IdentityHashMap<OBJECT, NestedCache>();
 
     abstract protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OWNER owner, OBJECT forObject)
         throws SQLException;
@@ -170,20 +168,79 @@ public abstract class JDBCStructCache<
     @Override
     public void clearCache()
     {
-        this.clearChildrenCache();
+        this.clearChildrenCache(null);
         super.clearCache();
     }
 
-    public void clearChildrenCache()
+    public DBSObjectCache<OBJECT, CHILD> getChildrenCache(final OBJECT forObject)
     {
-        synchronized (this) {
-            final Collection<OBJECT> cachedObjects = getCachedObjects();
-            if (cachedObjects != null) {
-                for (OBJECT object : cachedObjects) {
-                    cacheChildren(object, null);
-                }
+        synchronized (childrenCache) {
+            return childrenCache.get(forObject);
+        }
+    }
+
+    public Collection<CHILD> getChildren(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject)
+        throws DBException
+    {
+        loadChildren(monitor, owner, forObject);
+        synchronized (childrenCache) {
+            NestedCache nestedCache = childrenCache.get(forObject);
+            return nestedCache == null ? null : nestedCache.getObjects(monitor, null);
+        }
+    }
+
+    public CHILD getChild(DBRProgressMonitor monitor, OWNER owner, final OBJECT forObject, String objectName)
+        throws DBException
+    {
+        loadChildren(monitor, owner, forObject);
+        synchronized (childrenCache) {
+            NestedCache nestedCache = childrenCache.get(forObject);
+            return nestedCache == null ? null : nestedCache.getObject(monitor, null, objectName);
+        }
+    }
+
+    public void clearChildrenCache(OBJECT forParent)
+    {
+        synchronized (childrenCache) {
+            if (forParent != null) {
+                this.childrenCache.remove(forParent);
+            } else {
+                this.childrenCache.clear();
             }
-            this.childrenCached = false;
+        }
+    }
+
+    private boolean isChildrenCached(OBJECT parent)
+    {
+        synchronized (childrenCache) {
+            return childrenCache.containsKey(parent);
+        }
+    }
+
+    private void cacheChildren(OBJECT parent, List<CHILD> children)
+    {
+        synchronized (childrenCache) {
+            NestedCache nestedCache = childrenCache.get(parent);
+            if (nestedCache == null) {
+                nestedCache = new NestedCache();
+                childrenCache.put(parent, nestedCache);
+            }
+            nestedCache.setCache(children);
+        }
+    }
+
+    private class NestedCache extends AbstractObjectCache<OBJECT, CHILD> {
+
+        @Override
+        public Collection<CHILD> getObjects(DBRProgressMonitor monitor, OBJECT object) throws DBException
+        {
+            return getCachedObjects();
+        }
+
+        @Override
+        public CHILD getObject(DBRProgressMonitor monitor, OBJECT object, String name) throws DBException
+        {
+            return getCachedObject(name);
         }
     }
 

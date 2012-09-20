@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.Collection;
 
 /**
- * Abstract objects cache
+ * Objects cache
  */
 public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> {
 

@@ -33,7 +33,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -61,7 +62,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     private GenericSchema typeSchema;
 */
 
-    private List<GenericTableColumn> columns;
     private List<GenericTableIndex> indexes;
     private List<GenericPrimaryKey> uniqueKeys;
     private List<GenericTableForeignKey> foreignKeys;
@@ -84,11 +84,18 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         this.tableType = tableType;
         this.description = remarks;
         if (!CommonUtils.isEmpty(this.getTableType())) {
-            this.isView = (this.getTableType().toUpperCase().indexOf("VIEW") != -1);
+            String type = this.getTableType().toUpperCase();
+            this.isView = (type.contains("VIEW"));
             this.isSystem =
-                (this.getTableType().toUpperCase().indexOf("SYSTEM") != -1) || // general rule
-                tableName.indexOf("RDB$") != -1;    // Firebird
+                (type.contains("SYSTEM")) || // general rule
+                tableName.contains("RDB$");    // Firebird
         }
+    }
+
+    @Override
+    public TableCache getCache()
+    {
+        return getContainer().getTableCache();
     }
 
     @Override
@@ -149,36 +156,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public synchronized Collection<GenericTableColumn> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (columns == null) {
-            // Read columns using container
-            this.getContainer().getTableCache().loadChildren(monitor, getContainer(), this);
-            if (columns != null && uniqueKeys == null) {
-                // Cache unique keys (they are used by columns to detect key flag)
-                try {
-                    getConstraints(monitor);
-                } catch (DBException e) {
-                    log.warn(e);
-                }
-            }
-        }
-        return columns;
+        return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
     @Override
     public GenericTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
         throws DBException
     {
-        return DBUtils.findObject(getAttributes(monitor), attributeName);
-    }
-
-    synchronized boolean isColumnsCached()
-    {
-        return this.columns != null;
-    }
-
-    synchronized void setColumns(List<GenericTableColumn> columns)
-    {
-        this.columns = columns;
+        return this.getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
@@ -190,12 +175,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
         }
         return indexes;
-    }
-
-    public GenericTableIndex getIndex(DBRProgressMonitor monitor, String indexName)
-        throws DBException
-    {
-        return DBUtils.findObject(getIndexes(monitor), indexName);
     }
 
     synchronized void setIndexes(List<GenericTableIndex> indexes)
@@ -213,10 +192,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         throws DBException
     {
         if (uniqueKeys == null) {
-            if (columns == null) {
-                // ensure all columns are already cached
-                getAttributes(monitor);
-            }
+            // ensure all columns are already cached
+            getAttributes(monitor);
             getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
         }
         return uniqueKeys;
@@ -303,7 +280,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     @Override
     public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        columns = null;
+        this.getContainer().getTableCache().clearChildrenCache(this);
         indexes = null;
         uniqueKeys = null;
         foreignKeys = null;

@@ -27,7 +27,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.UnsupportedEncodingException;
@@ -35,7 +37,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * MySQLTable base
@@ -44,8 +45,6 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     implements DBPNamedObject2,DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(MySQLTableBase.class);
-
-    private List<MySQLTableColumn> columns;
 
     protected MySQLTableBase(MySQLCatalog catalog)
     {
@@ -57,8 +56,12 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         ResultSet dbResult)
     {
         super(catalog, JDBCUtils.safeGetString(dbResult, 1), true);
+    }
 
-        this.columns = null;
+    @Override
+    public JDBCStructCache<MySQLCatalog, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
+    {
+        return getContainer().getTableCache();
     }
 
     @Override
@@ -70,37 +73,24 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
     }
 
     @Override
-    public synchronized Collection<MySQLTableColumn> getAttributes(DBRProgressMonitor monitor)
+    public Collection<MySQLTableColumn> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (columns == null) {
-            getContainer().tableCache.loadChildren(monitor, getContainer(), this);
-        }
-        return columns;
+        return getContainer().tableCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
     public MySQLTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
         throws DBException
     {
-        return DBUtils.findObject(getAttributes(monitor), attributeName);
+        return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
-    public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        columns = null;
+        getContainer().tableCache.clearChildrenCache(this);
         return true;
-    }
-
-    boolean isColumnsCached()
-    {
-        return columns != null;
-    }
-
-    void setColumns(List<MySQLTableColumn> columns)
-    {
-        this.columns = columns;
     }
 
     public String getDDL(DBRProgressMonitor monitor)

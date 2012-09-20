@@ -52,7 +52,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 {
     static final Log log = LogFactory.getLog(OracleSchema.class);
 
-    final TableCache tableCache = new TableCache();
+    final public TableCache tableCache = new TableCache();
     final MViewCache mviewCache = new MViewCache();
     final ConstraintCache constraintCache = new ConstraintCache();
     final ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
@@ -326,7 +326,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return tableColumn;
     }
 
-    static class TableCache extends JDBCStructCache<OracleSchema, OracleTableBase, OracleTableColumn> {
+    public static class TableCache extends JDBCStructCache<OracleSchema, OracleTableBase, OracleTableColumn> {
         
         protected TableCache()
         {
@@ -362,18 +362,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             } else {
                 return new OracleView(owner, dbResult);
             }
-        }
-
-        @Override
-        protected boolean isChildrenCached(OracleTableBase table)
-        {
-            return table.isColumnsCached();
-        }
-
-        @Override
-        protected void cacheChildren(OracleTableBase table, List<OracleTableColumn> columns)
-        {
-            table.setColumns(columns);
         }
 
         @Override
@@ -885,18 +873,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 return new OracleTriggerColumn(context.getProgressMonitor(), parent, tableColumn, dbResult);
             }
             return null;
-        }
-
-        @Override
-        protected boolean isChildrenCached(OracleTrigger parent)
-        {
-            return parent.isColumnsCached();
-        }
-
-        @Override
-        protected void cacheChildren(OracleTrigger oracleTrigger, List<OracleTriggerColumn> rows)
-        {
-            oracleTrigger.setColumns(rows);
         }
 
     }

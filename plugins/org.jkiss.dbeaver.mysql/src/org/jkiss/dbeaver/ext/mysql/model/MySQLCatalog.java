@@ -295,7 +295,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return name + " [" + dataSource.getContainer().getName() + "]";
     }
 
-    class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> {
+    public class TableCache extends JDBCStructCache<MySQLCatalog, MySQLTableBase, MySQLTableColumn> {
         
         protected TableCache()
         {
@@ -314,23 +314,11 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
-            if (tableType.indexOf("VIEW") != -1) {
+            if (tableType.contains("VIEW")) {
                 return new MySQLView(MySQLCatalog.this, dbResult);
             } else {
                 return new MySQLTable(MySQLCatalog.this, dbResult);
             }
-        }
-
-        @Override
-        protected boolean isChildrenCached(MySQLTableBase table)
-        {
-            return table.isColumnsCached();
-        }
-
-        @Override
-        protected void cacheChildren(MySQLTableBase table, List<MySQLTableColumn> columns)
-        {
-            table.setColumns(columns);
         }
 
         @Override
@@ -577,22 +565,10 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected boolean isChildrenCached(MySQLProcedure parent)
-        {
-            return parent.isColumnsCached();
-        }
-
-        @Override
-        protected void cacheChildren(MySQLProcedure parent, List<MySQLProcedureParameter> columns)
-        {
-            parent.cacheColumns(columns);
-        }
-
-        @Override
         protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure procedure)
             throws SQLException
         {
-            // Load procedure columns thru MySQL metadata
+            // Load procedure columns through MySQL metadata
             // There is no metadata table about proc/func columns -
             // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
             // Lets driver do it instead of me

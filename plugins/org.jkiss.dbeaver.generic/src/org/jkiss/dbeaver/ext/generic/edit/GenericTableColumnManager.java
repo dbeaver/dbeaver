@@ -26,9 +26,11 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.Types;
 
@@ -36,6 +38,12 @@ import java.sql.Types;
  * Generic table column manager
  */
 public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTableColumn, GenericTable> {
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, GenericTableColumn> getObjectsCache(GenericTableColumn object)
+    {
+        return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
+    }
 
     @Override
     protected GenericTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, GenericTable parent, Object copyFrom)

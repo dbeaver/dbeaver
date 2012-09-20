@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
@@ -106,7 +108,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return indexes;
     }
 
-    public OracleTableIndex getIndexe(DBRProgressMonitor monitor, String name)
+    public OracleTableIndex getIndex(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return DBUtils.findObject(getIndexes(monitor), name);
@@ -230,18 +232,6 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         protected OracleTablePartition fetchChild(JDBCExecutionContext context, OracleTablePhysical table, OracleTablePartition parent, ResultSet dbResult) throws SQLException, DBException
         {
             return new OracleTablePartition(table, true, dbResult);
-        }
-
-        @Override
-        protected boolean isChildrenCached(OracleTablePartition parent)
-        {
-            return parent.getSubPartitions() != null;
-        }
-
-        @Override
-        protected void cacheChildren(OracleTablePartition parent, List<OracleTablePartition> subpartitions)
-        {
-            parent.setSubPartitions(subpartitions);
         }
 
     }

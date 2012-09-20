@@ -32,13 +32,12 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Tables cache implementation
  */
-class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> {
+public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> {
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects
@@ -85,7 +84,7 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
             return null;
         }
 
-        boolean isSystemTable = tableType != null && tableType.toUpperCase().indexOf("SYSTEM") != -1;
+        boolean isSystemTable = tableType != null && tableType.toUpperCase().contains("SYSTEM");
         if (isSystemTable && !owner.getDataSource().getContainer().isShowSystemObjects()) {
             return null;
         }
@@ -116,18 +115,6 @@ class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, G
             tableType,
             remarks,
             true);
-    }
-
-    @Override
-    protected boolean isChildrenCached(GenericTable table)
-    {
-        return table.isColumnsCached();
-    }
-
-    @Override
-    protected void cacheChildren(GenericTable table, List<GenericTableColumn> columns)
-    {
-        table.setColumns(columns);
     }
 
     @Override

@@ -20,8 +20,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -36,6 +39,13 @@ import java.util.List;
 public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSObjectContainer>
     extends JDBCStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
 {
+/*
+    @Override
+    protected DBSObjectCache<CONTAINER_TYPE, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object)
+    {
+        return object.getCache();
+    }
+*/
 
     @Override
     public long getMakerOptions()

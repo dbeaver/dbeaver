@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
@@ -80,7 +82,6 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     protected boolean valid;
     private String comment;
-    private List<OracleTableColumn> columns;
     private List<OracleTableConstraint> constraints;
 
     protected OracleTableBase(OracleSchema schema, String name, boolean persisted)
@@ -94,6 +95,12 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         setName(JDBCUtils.safeGetString(dbResult, "TABLE_NAME"));
         this.valid = "VALID".equals(JDBCUtils.safeGetString(dbResult, "STATUS"));
         //this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
+    }
+
+    @Override
+    public JDBCStructCache<OracleSchema, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
+    {
+        return getContainer().tableCache;
     }
 
     @Override
@@ -150,39 +157,26 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public synchronized Collection<OracleTableColumn> getAttributes(DBRProgressMonitor monitor)
+    public Collection<OracleTableColumn> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (columns == null) {
-            getContainer().tableCache.loadChildren(monitor, getContainer(), this);
-        }
-        return columns;
+        return getContainer().tableCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
     public OracleTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
         throws DBException
     {
-        return DBUtils.findObject(getAttributes(monitor), attributeName);
+        return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
-    public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        columns = null;
+        getContainer().tableCache.clearChildrenCache(this);
         constraints = null;
 
         return true;
-    }
-
-    boolean isColumnsCached()
-    {
-        return columns != null;
-    }
-
-    void setColumns(List<OracleTableColumn> columns)
-    {
-        this.columns = columns;
     }
 
     @Association

@@ -196,7 +196,7 @@ public class OraclePlanNode implements DBCPlanNode {
             for (OraclePlanNode parentNode = parent; parentNode != null; parentNode = parentNode.getParent()) {
                 final Object parentObject = parentNode.getObject(monitor);
                 if (parentObject instanceof OracleTablePhysical) {
-                    return ((OracleTablePhysical) parentObject).getIndexe(monitor, objectName);
+                    return ((OracleTablePhysical) parentObject).getIndex(monitor, objectName);
                 }
             }
             return objectName;
