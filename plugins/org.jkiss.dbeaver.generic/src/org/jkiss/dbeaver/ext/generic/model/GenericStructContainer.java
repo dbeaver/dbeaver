@@ -28,7 +28,7 @@ import java.util.Collection;
 /**
  * Generic struct container
  */
-public interface GenericStructContainer extends DBSObject, DBSObjectContainer
+public interface GenericStructContainer extends DBSObjectContainer
 {
 
     @Override

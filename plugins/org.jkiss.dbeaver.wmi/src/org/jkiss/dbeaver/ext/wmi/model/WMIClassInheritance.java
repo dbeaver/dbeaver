@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
 
 /**
  * Inheritance
@@ -81,7 +81,7 @@ public class WMIClassInheritance implements DBSEntityAssociation
     }
 
     @Override
-    public DBSTableConstraint getReferencedConstraint()
+    public DBSEntityConstraint getReferencedConstraint()
     {
         return null;
     }

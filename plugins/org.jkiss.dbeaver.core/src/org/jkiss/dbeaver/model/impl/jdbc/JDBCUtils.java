@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.utils.CommonUtils;
@@ -489,15 +489,15 @@ public class JDBCUtils {
     }
 */
 
-    public static DBSConstraintModifyRule getCascadeFromNum(int num)
+    public static DBSForeignKeyModifyRule getCascadeFromNum(int num)
     {
         switch (num) {
-            case DatabaseMetaData.importedKeyNoAction: return DBSConstraintModifyRule.NO_ACTION;
-            case DatabaseMetaData.importedKeyCascade: return DBSConstraintModifyRule.CASCADE;
-            case DatabaseMetaData.importedKeySetNull: return DBSConstraintModifyRule.SET_NULL;
-            case DatabaseMetaData.importedKeySetDefault: return DBSConstraintModifyRule.SET_DEFAULT;
-            case DatabaseMetaData.importedKeyRestrict: return DBSConstraintModifyRule.RESTRICT;
-            default: return DBSConstraintModifyRule.UNKNOWN;
+            case DatabaseMetaData.importedKeyNoAction: return DBSForeignKeyModifyRule.NO_ACTION;
+            case DatabaseMetaData.importedKeyCascade: return DBSForeignKeyModifyRule.CASCADE;
+            case DatabaseMetaData.importedKeySetNull: return DBSForeignKeyModifyRule.SET_NULL;
+            case DatabaseMetaData.importedKeySetDefault: return DBSForeignKeyModifyRule.SET_DEFAULT;
+            case DatabaseMetaData.importedKeyRestrict: return DBSForeignKeyModifyRule.RESTRICT;
+            default: return DBSForeignKeyModifyRule.UNKNOWN;
         }
     }
 

@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.sql.DatabaseMetaData;
@@ -81,14 +81,14 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         String pkName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PK_NAME);
         int defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
 
-        DBSConstraintModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-        DBSConstraintModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
-        DBSConstraintDefferability defferability;
+        DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
+        DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+        DBSForeignKeyDefferability defferability;
         switch (defferabilityNum) {
-            case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSConstraintDefferability.INITIALLY_DEFERRED; break;
-            case DatabaseMetaData.importedKeyInitiallyImmediate: defferability = DBSConstraintDefferability.INITIALLY_IMMEDIATE; break;
-            case DatabaseMetaData.importedKeyNotDeferrable: defferability = DBSConstraintDefferability.NOT_DEFERRABLE; break;
-            default: defferability = DBSConstraintDefferability.UNKNOWN; break;
+            case DatabaseMetaData.importedKeyInitiallyDeferred: defferability = DBSForeignKeyDefferability.INITIALLY_DEFERRED; break;
+            case DatabaseMetaData.importedKeyInitiallyImmediate: defferability = DBSForeignKeyDefferability.INITIALLY_IMMEDIATE; break;
+            case DatabaseMetaData.importedKeyNotDeferrable: defferability = DBSForeignKeyDefferability.NOT_DEFERRABLE; break;
+            default: defferability = DBSForeignKeyDefferability.UNKNOWN; break;
         }
 
         if (pkTableName == null) {

@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.utils.CommonUtils;
 

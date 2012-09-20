@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
-import org.jkiss.dbeaver.model.struct.DBSTableIndexColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 /**

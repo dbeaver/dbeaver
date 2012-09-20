@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTable;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
 /**
  * GenericConstraint

@@ -16,24 +16,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+package org.jkiss.dbeaver.model.struct.rdb;
 
-import java.util.Collection;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 /**
- * DBSTableIndex
+ * Catalog is a simple entity container.
+ * Do not provides any additional attributes but may be used in some JDBC specific issues
+ * to determine difference in catalog/schema containment.
  */
-public interface DBSTableIndex extends DBSEntityConstraint, DBSEntityReferrer, DBPQualifiedObject
+public interface DBSCatalog extends DBSObjectContainer
 {
-    DBSTable getTable();
-
-    boolean isUnique();
-
-    DBSIndexType getIndexType();
-
-    Collection<? extends DBSTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor);
 
 }

@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
 /**
  * Column value

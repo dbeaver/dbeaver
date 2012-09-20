@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
-import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.ResultSet;
 

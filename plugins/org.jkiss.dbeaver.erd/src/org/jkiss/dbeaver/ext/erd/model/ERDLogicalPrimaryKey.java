@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
 import java.util.ArrayList;
 import java.util.Collection;

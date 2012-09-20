@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;

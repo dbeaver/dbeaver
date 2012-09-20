@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.util.ArrayList;
 import java.util.Collection;

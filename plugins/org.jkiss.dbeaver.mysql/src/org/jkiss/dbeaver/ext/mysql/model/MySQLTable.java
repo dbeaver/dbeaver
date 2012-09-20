@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 import org.jkiss.utils.CommonUtils;
@@ -377,8 +377,8 @@ public class MySQLTable extends MySQLTableBase
                     String fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
                     String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
 
-                    DBSConstraintModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-                    DBSConstraintModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
+                    DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
+                    DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
 
                     MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
                     if (pkTable == null) {

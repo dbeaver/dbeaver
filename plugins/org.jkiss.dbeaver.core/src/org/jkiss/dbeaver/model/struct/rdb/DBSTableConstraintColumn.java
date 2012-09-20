@@ -16,20 +16,21 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+package org.jkiss.dbeaver.model.struct.rdb;
 
-package org.jkiss.dbeaver.model.struct;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * DBSTrigger
+ * DBSTableConstraintColumn
  */
-public interface DBSTrigger extends DBSObject
+public interface DBSTableConstraintColumn extends DBSObject, DBSEntityAttributeRef
 {
-    DBSTable getTable();
+    @Override
+    DBSTableConstraint getParentObject();
 
-//    DBSActionTiming getActionTiming();
-//
-//    DBSManipulationType getManipulationType();
-//
-//    int getOrdinalPosition();
+    @Override
+    DBSTableColumn getAttribute();
 
+    int getOrdinalPosition();
 }

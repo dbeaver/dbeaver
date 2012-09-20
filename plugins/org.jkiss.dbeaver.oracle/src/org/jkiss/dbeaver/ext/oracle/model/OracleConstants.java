@@ -20,7 +20,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.struct.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
  * Oracle constants

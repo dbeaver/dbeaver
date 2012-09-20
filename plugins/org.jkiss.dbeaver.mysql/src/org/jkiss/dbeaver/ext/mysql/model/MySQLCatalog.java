@@ -37,6 +37,9 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -546,7 +549,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureColumn> {
+    class ProceduresCache extends JDBCStructCache<MySQLCatalog, MySQLProcedure, MySQLProcedureParameter> {
 
         ProceduresCache()
         {
@@ -580,7 +583,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected void cacheChildren(MySQLProcedure parent, List<MySQLProcedureColumn> columns)
+        protected void cacheChildren(MySQLProcedure parent, List<MySQLProcedureParameter> columns)
         {
             parent.cacheColumns(columns);
         }
@@ -601,7 +604,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLProcedureColumn fetchChild(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure parent, ResultSet dbResult)
+        protected MySQLProcedureParameter fetchChild(JDBCExecutionContext context, MySQLCatalog owner, MySQLProcedure parent, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
@@ -615,19 +618,19 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
             //int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
             //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
-            DBSProcedureColumnType columnType;
+            DBSProcedureParameterType parameterType;
             switch (columnTypeNum) {
-                case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;
-                case DatabaseMetaData.procedureColumnInOut: columnType = DBSProcedureColumnType.INOUT; break;
-                case DatabaseMetaData.procedureColumnOut: columnType = DBSProcedureColumnType.OUT; break;
-                case DatabaseMetaData.procedureColumnReturn: columnType = DBSProcedureColumnType.RETURN; break;
-                case DatabaseMetaData.procedureColumnResult: columnType = DBSProcedureColumnType.RESULTSET; break;
-                default: columnType = DBSProcedureColumnType.UNKNOWN; break;
+                case DatabaseMetaData.procedureColumnIn: parameterType = DBSProcedureParameterType.IN; break;
+                case DatabaseMetaData.procedureColumnInOut: parameterType = DBSProcedureParameterType.INOUT; break;
+                case DatabaseMetaData.procedureColumnOut: parameterType = DBSProcedureParameterType.OUT; break;
+                case DatabaseMetaData.procedureColumnReturn: parameterType = DBSProcedureParameterType.RETURN; break;
+                case DatabaseMetaData.procedureColumnResult: parameterType = DBSProcedureParameterType.RESULTSET; break;
+                default: parameterType = DBSProcedureParameterType.UNKNOWN; break;
             }
-            if (CommonUtils.isEmpty(columnName) && columnType == DBSProcedureColumnType.RETURN) {
+            if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterType.RETURN) {
                 columnName = "RETURN";
             }
-            return new MySQLProcedureColumn(
+            return new MySQLProcedureParameter(
                 parent,
                 columnName,
                 typeName,
@@ -635,7 +638,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 position,
                 columnSize,
                 scale, precision, notNull,
-                columnType);
+                    parameterType);
         }
     }
 

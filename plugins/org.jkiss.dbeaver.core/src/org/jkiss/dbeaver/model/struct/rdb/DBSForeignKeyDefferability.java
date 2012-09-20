@@ -17,14 +17,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.struct.rdb;
 
 /**
- * Schema is a simple entity container.
- * Do not provides any additional attributes but may be used in some JDBC specific issues
- * to determine difference in catalog/schema containment.
+ * DBSForeignKeyModifyRule
  */
-public interface DBSSchema extends DBSObject, DBSObjectContainer
+public enum DBSForeignKeyDefferability
 {
-
+    UNKNOWN,
+    INITIALLY_DEFERRED,
+    INITIALLY_IMMEDIATE,
+    NOT_DEFERRABLE,
 }

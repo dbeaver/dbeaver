@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
 import org.jkiss.wmi.service.WMIObjectAttribute;
 
 /**
@@ -50,7 +50,7 @@ public class WMIClassReference extends WMIClassAttribute implements DBSEntityAss
     }
 
     @Override
-    public DBSTableConstraint getReferencedConstraint()
+    public DBSEntityConstraint getReferencedConstraint()
     {
         return null;
     }

@@ -1028,6 +1028,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         }
         URL url = new URL(file.getExternalURL());
+        monitor.beginTask("Check file " + url.toString() + "...", 1);
+        monitor.subTask("Connecting to the server");
         final HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
         connection.setReadTimeout(10000);
         connection.setConnectTimeout(10000);
@@ -1040,6 +1042,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         if (connection.getResponseCode() != 200) {
             throw new IOException("Can't find driver file '" + url + "': " + connection.getResponseMessage());
         }
+        monitor.worked(1);
+        monitor.done();
+
         final int contentLength = connection.getContentLength();
         //final String contentType = connection.getContentType();
         monitor.beginTask("Download " + file.getExternalURL(), contentLength);

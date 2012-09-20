@@ -16,16 +16,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.struct;
+
+package org.jkiss.dbeaver.model.struct.rdb;
+
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 /**
- * DBSTableIndex
+ * Schema is a simple entity container.
+ * Do not provides any additional attributes but may be used in some JDBC specific issues
+ * to determine difference in catalog/schema containment.
  */
-public interface DBSProcedureColumn extends DBSTypedObject, DBSObject
+public interface DBSSchema extends DBSObjectContainer
 {
-
-    DBSProcedure getProcedure();
-
-    DBSProcedureColumnType getColumnType();
 
 }

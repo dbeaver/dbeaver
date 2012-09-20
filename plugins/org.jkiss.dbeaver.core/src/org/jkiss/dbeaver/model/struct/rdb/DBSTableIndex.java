@@ -16,17 +16,26 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.struct.rdb;
+
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+
+import java.util.Collection;
 
 /**
- * DBSTableColumn
+ * DBSTableIndex
  */
-public interface DBSTableColumn extends DBSEntityAttribute
+public interface DBSTableIndex extends DBSEntityConstraint, DBSEntityReferrer, DBPQualifiedObject
 {
-    @Override
-    DBSTable getParentObject();
+    DBSTable getTable();
 
-    int getOrdinalPosition();
+    boolean isUnique();
 
+    DBSIndexType getIndexType();
+
+    Collection<? extends DBSTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor);
 
 }

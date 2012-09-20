@@ -22,9 +22,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -35,7 +34,7 @@ import java.util.List;
 /**
  * OracleProcedureArgument
  */
-public class OracleProcedureArgument implements DBSProcedureColumn
+public class OracleProcedureArgument implements DBSProcedureParameter
 {
     private final OracleProcedureBase procedure;
     private String name;
@@ -92,19 +91,13 @@ public class OracleProcedureArgument implements DBSProcedureColumn
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
-        return getProcedure();
-    }
-
-    @Override
     public OracleDataSource getDataSource()
     {
         return procedure.getDataSource();
     }
 
     @Override
-    public OracleProcedureBase getProcedure()
+    public OracleProcedureBase getParentObject()
     {
         return procedure;
     }
@@ -139,9 +132,9 @@ public class OracleProcedureArgument implements DBSProcedureColumn
 
     @Override
     @Property(name = "In/Out", viewable = true, order = 20)
-    public DBSProcedureColumnType getColumnType()
+    public DBSProcedureParameterType getParameterType()
     {
-        return mode == null ? null : mode.getColumnType();
+        return mode == null ? null : mode.getParameterType();
     }
 
     @Property(name = "Type", viewable = true, order = 21)

@@ -21,9 +21,9 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 /**
@@ -36,16 +36,16 @@ public abstract class JDBCTableForeignKey<
     implements DBSTableForeignKey
 {
     protected PRIMARY_KEY referencedKey;
-    protected DBSConstraintModifyRule deleteRule;
-    protected DBSConstraintModifyRule updateRule;
+    protected DBSForeignKeyModifyRule deleteRule;
+    protected DBSForeignKeyModifyRule updateRule;
 
     public JDBCTableForeignKey(
         TABLE table,
         String name,
         String description,
         PRIMARY_KEY referencedKey,
-        DBSConstraintModifyRule deleteRule,
-        DBSConstraintModifyRule updateRule,
+        DBSForeignKeyModifyRule deleteRule,
+        DBSForeignKeyModifyRule updateRule,
         boolean persisted)
     {
         super(table, name, description, DBSEntityConstraintType.FOREIGN_KEY, persisted);
@@ -69,24 +69,24 @@ public abstract class JDBCTableForeignKey<
 
     @Override
     @Property(name = "On Delete", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
-    public DBSConstraintModifyRule getDeleteRule()
+    public DBSForeignKeyModifyRule getDeleteRule()
     {
         return deleteRule;
     }
 
-    public void setDeleteRule(DBSConstraintModifyRule deleteRule)
+    public void setDeleteRule(DBSForeignKeyModifyRule deleteRule)
     {
         this.deleteRule = deleteRule;
     }
 
     @Override
     @Property(name = "On Update", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 6)
-    public DBSConstraintModifyRule getUpdateRule()
+    public DBSForeignKeyModifyRule getUpdateRule()
     {
         return updateRule;
     }
 
-    public void setUpdateRule(DBSConstraintModifyRule updateRule)
+    public void setUpdateRule(DBSForeignKeyModifyRule updateRule)
     {
         this.updateRule = updateRule;
     }
@@ -108,12 +108,12 @@ public abstract class JDBCTableForeignKey<
         @Override
         public Object[] getPossibleValues(JDBCTableForeignKey foreignKey)
         {
-            return new DBSConstraintModifyRule[] {
-                DBSConstraintModifyRule.NO_ACTION,
-                DBSConstraintModifyRule.CASCADE,
-                DBSConstraintModifyRule.RESTRICT,
-                DBSConstraintModifyRule.SET_NULL,
-                DBSConstraintModifyRule.SET_DEFAULT };
+            return new DBSForeignKeyModifyRule[] {
+                DBSForeignKeyModifyRule.NO_ACTION,
+                DBSForeignKeyModifyRule.CASCADE,
+                DBSForeignKeyModifyRule.RESTRICT,
+                DBSForeignKeyModifyRule.SET_NULL,
+                DBSForeignKeyModifyRule.SET_DEFAULT };
         }
     }
 

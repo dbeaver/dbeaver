@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.model.impl.struct;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSTableIndexColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 
 /**
  * AbstractTableIndexColumn

@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.ResultSet;
@@ -73,7 +73,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
     public abstract Integer getOverloadNumber();
 
     @Override
-    public Collection<OracleProcedureArgument> getColumns(DBRProgressMonitor monitor) throws DBException
+    public Collection<OracleProcedureArgument> getParameters(DBRProgressMonitor monitor) throws DBException
     {
         return argumentsCache.getObjects(monitor, this);
     }
@@ -121,7 +121,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
                     objectIter.remove();
                     OracleProcedureArgument parentArgument = argStack.get(curDataLevel - 1);
                     if (parentArgument == null) {
-                        log.error("Broken arguments structure for '" + argument.getProcedure().getFullQualifiedName() + "' - no parent argument for argument " + argument.getSequence());
+                        log.error("Broken arguments structure for '" + argument.getParentObject().getFullQualifiedName() + "' - no parent argument for argument " + argument.getSequence());
                     } else {
                         parentArgument.addAttribute(argument);
                     }

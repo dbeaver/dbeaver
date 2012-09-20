@@ -18,11 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-
-import java.util.Collection;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 /**
  * AbstractTableIndex

@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
-import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.ResultSet;
@@ -47,7 +47,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     private boolean deterministic;
     private transient String clientBody;
     private String charset;
-    private List<MySQLProcedureColumn> columns;
+    private List<MySQLProcedureParameter> columns;
 
     public MySQLProcedure(MySQLCatalog catalog)
     {
@@ -124,23 +124,23 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
             cb.append(procedureType).append(' ').append(getFullQualifiedName()).append(" (");
 
             int colIndex = 0;
-            for (MySQLProcedureColumn column : getColumns(monitor)) {
-                if (column.getColumnType() == DBSProcedureColumnType.RETURN) {
+            for (MySQLProcedureParameter column : getParameters(monitor)) {
+                if (column.getParameterType() == DBSProcedureParameterType.RETURN) {
                     continue;
                 }
                 if (colIndex > 0) {
                     cb.append(", ");
                 }
                 if (getProcedureType() == DBSProcedureType.PROCEDURE) {
-                    cb.append(column.getColumnType()).append(' ');
+                    cb.append(column.getParameterType()).append(' ');
                 }
                 cb.append(column.getName()).append(' ');
                 appendParameterType(cb, column);
                 colIndex++;
             }
             cb.append(")").append(ContentUtils.getDefaultLineSeparator());
-            for (MySQLProcedureColumn column : getColumns(monitor)) {
-                if (column.getColumnType() == DBSProcedureColumnType.RETURN) {
+            for (MySQLProcedureParameter column : getParameters(monitor)) {
+                if (column.getParameterType() == DBSProcedureParameterType.RETURN) {
                     cb.append("RETURNS ");
                     appendParameterType(cb, column);
                     cb.append(ContentUtils.getDefaultLineSeparator());
@@ -166,7 +166,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         this.deterministic = deterministic;
     }
 
-    private static void appendParameterType(StringBuilder cb, MySQLProcedureColumn column)
+    private static void appendParameterType(StringBuilder cb, MySQLProcedureParameter column)
     {
         cb.append(column.getTypeName());
         if (column.getMaxLength() > 0) {
@@ -191,12 +191,12 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     }
 
     @Override
-    public List<MySQLProcedureColumn> getColumns(DBRProgressMonitor monitor)
+    public List<MySQLProcedureParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
             if (!isPersisted()) {
-                columns = new ArrayList<MySQLProcedureColumn>();
+                columns = new ArrayList<MySQLProcedureParameter>();
             }
             getContainer().proceduresCache.loadChildren(monitor, getContainer(), this);
         }
@@ -208,7 +208,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return this.columns != null;
     }
 
-    public void cacheColumns(List<MySQLProcedureColumn> columns)
+    public void cacheColumns(List<MySQLProcedureParameter> columns)
     {
         this.columns = columns;
     }

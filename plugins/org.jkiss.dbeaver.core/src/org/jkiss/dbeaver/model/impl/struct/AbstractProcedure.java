@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 
 /**
  * AbstractProcedure

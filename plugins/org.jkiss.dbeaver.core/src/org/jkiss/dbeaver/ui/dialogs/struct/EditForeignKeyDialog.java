@@ -45,6 +45,10 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
@@ -86,7 +90,7 @@ public class EditForeignKeyDialog extends Dialog {
 
     private String title;
     private IProgressControlProvider progressProvider;
-    private DBSConstraintModifyRule[] supportedModifyRules;
+    private DBSForeignKeyModifyRule[] supportedModifyRules;
     private DBSTable ownTable;
     private DBSTable curRefTable;
     private List<DBSTableConstraint> curConstraints;
@@ -97,15 +101,15 @@ public class EditForeignKeyDialog extends Dialog {
     private DBSTableConstraint curConstraint;
     private List<? extends DBSEntityAttribute> ownColumns;
     private List<FKColumnInfo> fkColumns = new ArrayList<FKColumnInfo>();
-    private DBSConstraintModifyRule onDeleteRule;
-    private DBSConstraintModifyRule onUpdateRule;
+    private DBSForeignKeyModifyRule onDeleteRule;
+    private DBSForeignKeyModifyRule onUpdateRule;
 
     public EditForeignKeyDialog(
         Shell shell,
         String title,
         IEditorPart curEditor,
         DBSTable table,
-        DBSConstraintModifyRule[] supportedModifyRules)
+        DBSForeignKeyModifyRule[] supportedModifyRules)
     {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
@@ -207,7 +211,7 @@ public class EditForeignKeyDialog extends Dialog {
             onDeleteCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             final Combo onUpdateCombo = UIUtils.createLabelCombo(cascadeGroup, CoreMessages.dialog_struct_edit_fk_combo_on_update, SWT.DROP_DOWN | SWT.READ_ONLY);
             onUpdateCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            for (DBSConstraintModifyRule modifyRule : supportedModifyRules) {
+            for (DBSForeignKeyModifyRule modifyRule : supportedModifyRules) {
                 onDeleteCombo.add(modifyRule.getName());
                 onUpdateCombo.add(modifyRule.getName());
             }
@@ -397,12 +401,12 @@ public class EditForeignKeyDialog extends Dialog {
         return fkColumns;
     }
 
-    public DBSConstraintModifyRule getOnDeleteRule()
+    public DBSForeignKeyModifyRule getOnDeleteRule()
     {
         return onDeleteRule;
     }
 
-    public DBSConstraintModifyRule getOnUpdateRule()
+    public DBSForeignKeyModifyRule getOnUpdateRule()
     {
         return onUpdateRule;
     }

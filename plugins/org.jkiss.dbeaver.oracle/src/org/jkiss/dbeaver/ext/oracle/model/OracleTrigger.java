@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.model.struct.DBSTrigger;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;

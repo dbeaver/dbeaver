@@ -30,7 +30,7 @@ import java.util.List;
  * Enumerable Constraint.
  * May return possible values for one of constraint's key.
  */
-public interface DBSConstraintEnumerable extends DBSTableConstraint
+public interface DBSConstraintEnumerable extends DBSEntityConstraint
 {
     /**
      * Checks that this constrain supports key enumerations.

@@ -16,35 +16,32 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.generic.model;
+package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumn;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 
 /**
- * GenericTable
+ * MySQLProcedureParameter
  */
-public class GenericProcedureColumn extends JDBCColumn implements DBSProcedureColumn
+public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureParameter
 {
-    private String remarks;
-    private GenericProcedure procedure;
-    private DBSProcedureColumnType columnType;
+    private MySQLProcedure procedure;
+    private DBSProcedureParameterType parameterType;
 
-    public GenericProcedureColumn(
-        GenericProcedure procedure,
-        String columnName,
-        String typeName,
-        int valueType,
-        int ordinalPosition,
-        int columnSize,
-        int scale,
-        int precision,
-        boolean notNull,
-        String remarks,
-        DBSProcedureColumnType columnType)
+    public MySQLProcedureParameter(
+            MySQLProcedure procedure,
+            String columnName,
+            String typeName,
+            int valueType,
+            int ordinalPosition,
+            long columnSize,
+            int scale,
+            int precision,
+            boolean notNull,
+            DBSProcedureParameterType parameterType)
     {
         super(columnName,
             typeName,
@@ -54,39 +51,27 @@ public class GenericProcedureColumn extends JDBCColumn implements DBSProcedureCo
             scale,
             precision,
             notNull);
-        this.remarks = remarks;
         this.procedure = procedure;
-        this.columnType = columnType;
+        this.parameterType = parameterType;
     }
 
     @Override
-    public DBSObject getParentObject()
-    {
-        return getProcedure();
-    }
-
-    @Override
-    public GenericDataSource getDataSource()
+    public MySQLDataSource getDataSource()
     {
         return procedure.getDataSource();
     }
 
     @Override
-    public GenericProcedure getProcedure()
+    public MySQLProcedure getParentObject()
     {
         return procedure;
     }
 
     @Override
     @Property(name = "Column Type", viewable = true, order = 10)
-    public DBSProcedureColumnType getColumnType()
+    public DBSProcedureParameterType getParameterType()
     {
-        return columnType;
+        return parameterType;
     }
 
-    @Override
-    public String getDescription()
-    {
-        return remarks;
-    }
 }

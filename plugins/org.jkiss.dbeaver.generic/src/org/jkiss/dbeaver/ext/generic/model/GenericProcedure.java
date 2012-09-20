@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
-import org.jkiss.dbeaver.model.struct.DBSProcedureColumnType;
-import org.jkiss.dbeaver.model.struct.DBSProcedureType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -51,7 +51,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
     private String specificName;
     private DBSProcedureType procedureType;
-    private List<GenericProcedureColumn> columns;
+    private List<GenericProcedureParameter> columns;
 
     public GenericProcedure(
         GenericStructContainer container,
@@ -99,7 +99,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     }
 
     @Override
-    public Collection<GenericProcedureColumn> getColumns(DBRProgressMonitor monitor)
+    public Collection<GenericProcedureParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
         if (columns == null) {
@@ -139,16 +139,16 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
                     int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
                     //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
-                    DBSProcedureColumnType columnType;
+                    DBSProcedureParameterType parameterType;
                     switch (columnTypeNum) {
-                        case DatabaseMetaData.procedureColumnIn: columnType = DBSProcedureColumnType.IN; break;
-                        case DatabaseMetaData.procedureColumnInOut: columnType = DBSProcedureColumnType.INOUT; break;
-                        case DatabaseMetaData.procedureColumnOut: columnType = DBSProcedureColumnType.OUT; break;
-                        case DatabaseMetaData.procedureColumnReturn: columnType = DBSProcedureColumnType.RETURN; break;
-                        case DatabaseMetaData.procedureColumnResult: columnType = DBSProcedureColumnType.RESULTSET; break;
-                        default: columnType = DBSProcedureColumnType.UNKNOWN; break;
+                        case DatabaseMetaData.procedureColumnIn: parameterType = DBSProcedureParameterType.IN; break;
+                        case DatabaseMetaData.procedureColumnInOut: parameterType = DBSProcedureParameterType.INOUT; break;
+                        case DatabaseMetaData.procedureColumnOut: parameterType = DBSProcedureParameterType.OUT; break;
+                        case DatabaseMetaData.procedureColumnReturn: parameterType = DBSProcedureParameterType.RETURN; break;
+                        case DatabaseMetaData.procedureColumnResult: parameterType = DBSProcedureParameterType.RESULTSET; break;
+                        default: parameterType = DBSProcedureParameterType.UNKNOWN; break;
                     }
-                    if (CommonUtils.isEmpty(columnName) && columnType == DBSProcedureColumnType.RETURN) {
+                    if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterType.RETURN) {
                         columnName = "RETURN";
                     }
                     if (position == 0) {
@@ -163,7 +163,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     if (procedure == null || (previousPosition >= 0 && position <= previousPosition && procIter.hasNext())) {
                         procedure = procIter.next();
                     }
-                    GenericProcedureColumn column = new GenericProcedureColumn(
+                    GenericProcedureParameter column = new GenericProcedureParameter(
                         procedure,
                         columnName,
                         typeName,
@@ -172,7 +172,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                         columnSize,
                         scale, precision, notNull,
                         remarks,
-                        columnType);
+                            parameterType);
 
                     procedure.addColumn(column);
 
@@ -190,10 +190,10 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
     }
 
-    private void addColumn(GenericProcedureColumn column)
+    private void addColumn(GenericProcedureParameter column)
     {
         if (this.columns == null) {
-            this.columns = new ArrayList<GenericProcedureColumn>();
+            this.columns = new ArrayList<GenericProcedureParameter>();
         }
         this.columns.add(column);
     }

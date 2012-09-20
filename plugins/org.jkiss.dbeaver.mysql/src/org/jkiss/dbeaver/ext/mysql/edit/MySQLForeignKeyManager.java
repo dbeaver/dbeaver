@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCForeignKeyManager;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,11 +43,11 @@ public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLTableFore
             MySQLMessages.edit_foreign_key_manager_title,
             activeEditor,
             table,
-            new DBSConstraintModifyRule[] {
-                DBSConstraintModifyRule.NO_ACTION,
-                DBSConstraintModifyRule.CASCADE, DBSConstraintModifyRule.RESTRICT,
-                DBSConstraintModifyRule.SET_NULL,
-                DBSConstraintModifyRule.SET_DEFAULT });
+            new DBSForeignKeyModifyRule[] {
+                DBSForeignKeyModifyRule.NO_ACTION,
+                DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                DBSForeignKeyModifyRule.SET_NULL,
+                DBSForeignKeyModifyRule.SET_DEFAULT });
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }

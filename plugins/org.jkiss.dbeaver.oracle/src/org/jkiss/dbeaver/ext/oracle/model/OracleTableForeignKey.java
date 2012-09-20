@@ -24,9 +24,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.sql.ResultSet;
@@ -37,14 +37,14 @@ import java.sql.ResultSet;
 public class OracleTableForeignKey extends OracleTableConstraint implements DBSTableForeignKey
 {
     private OracleTableConstraint referencedKey;
-    private DBSConstraintModifyRule deleteRule;
+    private DBSForeignKeyModifyRule deleteRule;
 
     public OracleTableForeignKey(
         OracleTableBase oracleTable,
         String name,
         OracleObjectStatus status,
         OracleTableConstraint referencedKey,
-        DBSConstraintModifyRule deleteRule)
+        DBSForeignKeyModifyRule deleteRule)
     {
         super(oracleTable, name, DBSEntityConstraintType.FOREIGN_KEY, null, status);
         this.referencedKey = referencedKey;
@@ -71,7 +71,7 @@ public class OracleTableForeignKey extends OracleTableConstraint implements DBST
         }
 
         String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
-        this.deleteRule = "CASCADE".equals(deleteRuleName) ? DBSConstraintModifyRule.CASCADE : DBSConstraintModifyRule.NO_ACTION;
+        this.deleteRule = "CASCADE".equals(deleteRuleName) ? DBSForeignKeyModifyRule.CASCADE : DBSForeignKeyModifyRule.NO_ACTION;
     }
 
     @Property(name = "Ref Table", viewable = true, order = 3)
@@ -89,16 +89,16 @@ public class OracleTableForeignKey extends OracleTableConstraint implements DBST
 
     @Override
     @Property(name = "On Delete", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
-    public DBSConstraintModifyRule getDeleteRule()
+    public DBSForeignKeyModifyRule getDeleteRule()
     {
         return deleteRule;
     }
 
     // Update rule is not supported by Oracle
     @Override
-    public DBSConstraintModifyRule getUpdateRule()
+    public DBSForeignKeyModifyRule getUpdateRule()
     {
-        return DBSConstraintModifyRule.NO_ACTION;
+        return DBSForeignKeyModifyRule.NO_ACTION;
     }
 
     @Override
@@ -127,12 +127,12 @@ public class OracleTableForeignKey extends OracleTableConstraint implements DBST
         @Override
         public Object[] getPossibleValues(JDBCTableForeignKey foreignKey)
         {
-            return new DBSConstraintModifyRule[] {
-                DBSConstraintModifyRule.NO_ACTION,
-                DBSConstraintModifyRule.CASCADE,
-                DBSConstraintModifyRule.RESTRICT,
-                DBSConstraintModifyRule.SET_NULL,
-                DBSConstraintModifyRule.SET_DEFAULT };
+            return new DBSForeignKeyModifyRule[] {
+                DBSForeignKeyModifyRule.NO_ACTION,
+                DBSForeignKeyModifyRule.CASCADE,
+                DBSForeignKeyModifyRule.RESTRICT,
+                DBSForeignKeyModifyRule.SET_NULL,
+                DBSForeignKeyModifyRule.SET_DEFAULT };
         }
     }
 }

@@ -22,9 +22,9 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**
- * AbstractColumn
+ * AbstractAttribute
  */
-public abstract class AbstractColumn implements DBSAttributeBase
+public abstract class AbstractAttribute implements DBSAttributeBase
 {
     protected String name;
     protected int valueType;
@@ -35,19 +35,19 @@ public abstract class AbstractColumn implements DBSAttributeBase
     protected String typeName;
     protected int ordinalPosition;
 
-    protected AbstractColumn()
+    protected AbstractAttribute()
     {
     }
 
-    protected AbstractColumn(
-        String name,
-        String typeName,
-        int valueType,
-        int ordinalPosition,
-        long maxLength,
-        int scale,
-        int precision,
-        boolean required)
+    protected AbstractAttribute(
+            String name,
+            String typeName,
+            int valueType,
+            int ordinalPosition,
+            long maxLength,
+            int scale,
+            int precision,
+            boolean required)
     {
         this.name = name;
         this.valueType = valueType;

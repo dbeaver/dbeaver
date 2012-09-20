@@ -26,8 +26,7 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraintColumn;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 

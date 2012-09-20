@@ -17,17 +17,17 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.struct.rdb;
 
 /**
- * DBSTriggerColumn
+ * DBSProcedureParameterType
  */
-public interface DBSTriggerColumn extends DBSObject
+public enum DBSProcedureParameterType
 {
-    DBSTrigger getTrigger();
-
-    int getOrdinalPosition();
-
-    DBSTableColumn getTableColumn();
-
+    UNKNOWN,
+    IN,
+    OUT,
+    INOUT,
+    RETURN,
+    RESULTSET,
 }

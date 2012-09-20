@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCForeignKeyManager;
-import org.jkiss.dbeaver.model.struct.DBSConstraintDefferability;
-import org.jkiss.dbeaver.model.struct.DBSConstraintModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,11 +44,11 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericTable
             "Create foreign key",
             activeEditor,
             table,
-            new DBSConstraintModifyRule[] {
-                DBSConstraintModifyRule.NO_ACTION,
-                DBSConstraintModifyRule.CASCADE, DBSConstraintModifyRule.RESTRICT,
-                DBSConstraintModifyRule.SET_NULL,
-                DBSConstraintModifyRule.SET_DEFAULT });
+            new DBSForeignKeyModifyRule[] {
+                DBSForeignKeyModifyRule.NO_ACTION,
+                DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
+                DBSForeignKeyModifyRule.SET_NULL,
+                DBSForeignKeyModifyRule.SET_DEFAULT });
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -60,7 +60,7 @@ public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericTable
             (GenericPrimaryKey) editDialog.getUniqueConstraint(),
             editDialog.getOnDeleteRule(),
             editDialog.getOnUpdateRule(),
-            DBSConstraintDefferability.NOT_DEFERRABLE,
+            DBSForeignKeyDefferability.NOT_DEFERRABLE,
             false);
         foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
                 CommonUtils.escapeIdentifier(table.getName()) + "_" +

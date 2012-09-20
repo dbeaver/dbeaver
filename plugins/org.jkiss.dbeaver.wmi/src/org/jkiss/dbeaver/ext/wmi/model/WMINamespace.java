@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSSchema;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.wmi.service.*;
 
@@ -37,7 +37,7 @@ import java.util.List;
 /**
  * WMI Namespace
  */
-public class WMINamespace extends WMIContainer implements DBSSchema, DBPCloseableObject {
+public class WMINamespace extends WMIContainer implements DBSObjectContainer, DBPCloseableObject {
 
     protected WMIDataSource dataSource;
     private String name;

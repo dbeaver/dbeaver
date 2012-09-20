@@ -16,11 +16,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model.struct.rdb;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 import java.util.Collection;
 
@@ -33,6 +35,6 @@ public interface DBSProcedure extends DBSObject, DBPQualifiedObject
 
     DBSProcedureType getProcedureType();
 
-    Collection<? extends DBSProcedureColumn> getColumns(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSProcedureParameter> getParameters(DBRProgressMonitor monitor) throws DBException;
 
 }

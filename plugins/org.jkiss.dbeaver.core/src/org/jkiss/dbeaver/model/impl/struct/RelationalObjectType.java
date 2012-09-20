@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**

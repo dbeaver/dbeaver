@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSTableConstraint;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKey;
-import org.jkiss.dbeaver.model.struct.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -22,7 +22,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.struct.AbstractColumn;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 
@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * JDBC abstract column
  */
-public abstract class JDBCColumn extends AbstractColumn implements IObjectImageProvider {
+public abstract class JDBCColumn extends AbstractAttribute implements IObjectImageProvider {
     protected JDBCColumn()
     {
     }

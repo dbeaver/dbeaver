@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSTableForeignKeyColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
 /**
  * GenericConstraintColumn
