@@ -74,6 +74,7 @@ public class DataSourceDescriptor
         IAdaptable,
         DBEPrivateObjectEditor,
         DBSObjectStateful,
+        DBSObjectGuarded,
         DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
@@ -800,6 +801,19 @@ public class DataSourceDescriptor
     {
         // just do nothing
     }
+
+    @Override
+    public boolean isObjectLocked()
+    {
+        return isConnectionReadOnly();
+    }
+
+    @Override
+    public void setObjectLock(DBRProgressMonitor monitor, boolean locked) throws DBCException
+    {
+        // just do nothing
+    }
+
 
     public static String generateNewId(DriverDescriptor driver)
     {

@@ -180,11 +180,13 @@ public abstract class AbstractDescriptor {
             try {
                 objectClass = getContributorBundle().loadClass(className);
             } catch (Throwable ex) {
-                throw new IllegalStateException("Can't determine object class '" + className + "'", ex);
+                log.error("Can't determine object class '" + className + "'", ex);
+                return null;
             }
         }
         if (!type.isAssignableFrom(objectClass)) {
-            throw new IllegalStateException("Object class '" + className + "' doesn't match requested type '" + type.getName() + "'");
+            log.error("Object class '" + className + "' doesn't match requested type '" + type.getName() + "'");
+            return null;
         }
         return (Class<T>) objectClass;
     }

@@ -82,8 +82,11 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor
     public <T extends DBWNetworkHandler> T createHandler(Class<T> handlerType)
         throws DBException
     {
+        Class<T> toolClass = getObjectClass(handlerClassName, handlerType);
+        if (toolClass == null) {
+            throw new DBException("Handler class '" + toolClass + "' not found");
+        }
         try {
-            Class<T> toolClass = getObjectClass(handlerClassName, handlerType);
             return toolClass.newInstance();
         }
         catch (Throwable ex) {
@@ -94,8 +97,11 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor
     public IObjectPropertyConfigurator<DBWHandlerConfiguration> createConfigurator()
         throws DBException
     {
+        Class<? extends IObjectPropertyConfigurator> toolClass = getObjectClass(uiClassName, IObjectPropertyConfigurator.class);
+        if (toolClass == null) {
+            throw new DBException("Handler class '" + toolClass + "' not found");
+        }
         try {
-            Class<? extends IObjectPropertyConfigurator> toolClass = getObjectClass(uiClassName, IObjectPropertyConfigurator.class);
             return toolClass.newInstance();
         }
         catch (Throwable ex) {

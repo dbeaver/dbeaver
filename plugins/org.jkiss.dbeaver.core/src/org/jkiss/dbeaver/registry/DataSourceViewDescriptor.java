@@ -65,8 +65,11 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
 
     public <T> T createView(Class<T> implementsClass)
     {
+        Class<T> viewClass = getObjectClass(viewClassName, implementsClass);
+        if (viewClass == null) {
+            throw new IllegalStateException("View class '" + viewClassName + "' not found");
+        }
         try {
-            Class<T> viewClass = getObjectClass(viewClassName, implementsClass);
             return viewClass.newInstance();
         }
         catch (Throwable ex) {

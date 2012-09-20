@@ -69,8 +69,11 @@ public class DataSourceToolDescriptor extends AbstractContextDescriptor
     public DBPTool createTool()
         throws DBException
     {
+        Class<DBPTool> toolClass = getObjectClass(toolClassName, DBPTool.class);
+        if (toolClass == null) {
+            throw new DBException("Tool class '" + toolClassName + "' not found");
+        }
         try {
-            Class<DBPTool> toolClass = getObjectClass(toolClassName, DBPTool.class);
             return toolClass.newInstance();
         }
         catch (Throwable ex) {

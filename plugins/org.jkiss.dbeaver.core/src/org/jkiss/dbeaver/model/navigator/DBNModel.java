@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,7 +53,8 @@ import java.util.*;
 public class DBNModel implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(DBNModel.class);
 
-    private static Map<Image, Map<DBSObjectState, Image>> overlayImageCache = new IdentityHashMap<Image, Map<DBSObjectState, Image>>();
+    private static Map<Image, Map<DBSObjectState, Image>> overlayStateImageCache = new IdentityHashMap<Image, Map<DBSObjectState, Image>>();
+    private static Map<Image, Image> overlayLockImageCache = new IdentityHashMap<Image, Image>();
 
     private DBNRoot root;
     private final List<IDBNListener> listeners = new ArrayList<IDBNListener>();
@@ -114,7 +116,18 @@ public class DBNModel implements IResourceChangeListener {
         this.root = null;
 
         synchronized (DBNModel.class) {
-            overlayImageCache.clear();
+            // Clear images cache
+            for (Map<DBSObjectState, Image> state : overlayStateImageCache.values()) {
+                for (Image img : state.values()) {
+                    img.dispose();
+                }
+            }
+            overlayStateImageCache.clear();
+
+            for (Image img : overlayLockImageCache.values()) {
+                img.dispose();
+            }
+            overlayLockImageCache.clear();
         }
     }
 
@@ -289,11 +302,6 @@ public class DBNModel implements IResourceChangeListener {
         }
     }
 
-    void removeNode(DBNDatabaseNode node)
-    {
-        removeNode(node, false);
-    }
-
     void removeNode(DBNDatabaseNode node, boolean reflect)
     {
         boolean badNode = false;
@@ -413,10 +421,10 @@ public class DBNModel implements IResourceChangeListener {
             // No overlay
             return image;
         }
-        Map<DBSObjectState, Image> stateOverlays = overlayImageCache.get(image);
+        Map<DBSObjectState, Image> stateOverlays = overlayStateImageCache.get(image);
         if (stateOverlays == null) {
             stateOverlays = new IdentityHashMap<DBSObjectState, Image>();
-            overlayImageCache.put(image, stateOverlays);
+            overlayStateImageCache.put(image, stateOverlays);
         }
         Image result = stateOverlays.get(state);
         if (result == null) {
@@ -428,5 +436,17 @@ public class DBNModel implements IResourceChangeListener {
         return result;
     }
 
+    public static synchronized Image getLockedOverlayImage(Image image)
+    {
+        final ImageDescriptor overlayImage = DBIcon.OVER_LOCK.getImageDescriptor();
+        Image result = overlayLockImageCache.get(image);
+        if (result == null) {
+            OverlayImageDescriptor oid = new OverlayImageDescriptor(image.getImageData());
+            oid.setBottomLeft(new ImageDescriptor[] {overlayImage} );
+            result = oid.createImage();
+            overlayLockImageCache.put(image, result);
+        }
+        return result;
+    }
 
 }
