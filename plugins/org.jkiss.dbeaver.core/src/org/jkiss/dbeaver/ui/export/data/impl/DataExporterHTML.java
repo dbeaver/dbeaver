@@ -27,6 +27,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.export.data.IDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
+import javax.imageio.ImageIO;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -37,6 +40,8 @@ import java.util.List;
  * CSV Exporter
  */
 public class DataExporterHTML extends DataExporterAbstract {
+
+    public static final int IMAGE_FRAME_SIZE = 200;
 
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
@@ -75,7 +80,7 @@ public class DataExporterHTML extends DataExporterAbstract {
         out.write("<body><table>");
         out.write("<tr>");
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            writeCellValue(columns.get(i).getAttribute().getName(), true, false);
+            writeTextCell(columns.get(i).getAttribute().getName(), true);
         }
         out.write("</tr>");
     }
@@ -87,7 +92,7 @@ public class DataExporterHTML extends DataExporterAbstract {
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
             if (DBUtils.isNullValue(row[i])) {
-                writeCellValue(null, false, false);
+                writeTextCell(null, false);
             } else if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
@@ -109,36 +114,78 @@ public class DataExporterHTML extends DataExporterAbstract {
                 String stringValue = super.getValueDisplayString(column, row[i]);
                 boolean isImage = row[i] instanceof File && stringValue != null && stringValue.endsWith(".jpg");
                 if (isImage) {
-                    stringValue = "files/" + stringValue.substring(stringValue.lastIndexOf(File.separator));
+                    writeImageCell((File) row[i]);
                 }
-                writeCellValue(stringValue, false, isImage);
+                else {
+                    writeTextCell(stringValue, false);
+                }
             }
         }
         out.write("</tr>");
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws DBException, IOException
+    public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
         out.write("</table></body></html>");
     }
 
-    private void writeCellValue(String value, boolean header, boolean image)
+    private void writeTextCell(String value, boolean header)
     {
         out.write(header ? "<th>" : "<td>");
         if (value == null) {
             out.write("&nbsp;");
         }
         else {
-            if (image) {
-                out.write("<img src=\"" + value + "\" hspace=\"10\" vspace=\"10\" />");
-            }
-            else {
-                value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
-                out.write(value);
-            }
+            value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
+            out.write(value);
         }
         out.write(header ? "</th>" : "</td>");
+    }
+
+    private void writeImageCell(File file) throws DBException
+    {
+        out.write("<td>");
+        if (file == null || !file.exists()) {
+            out.write("&nbsp;");
+        }
+        else {
+            Image image = null;
+            try {
+                image = ImageIO.read(file);
+            } catch (IOException e) {
+                throw new DBException("Can't read an exported image " + image, e);
+            }
+
+            if (image != null) {
+                String imagePath = file.getAbsolutePath();
+                imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
+
+                int width = ((BufferedImage) image).getWidth();
+                int height = ((BufferedImage) image).getHeight();
+                int rwidth = width;
+                int rheight = height;
+
+                if (width > IMAGE_FRAME_SIZE || height > IMAGE_FRAME_SIZE) {
+                    float scale = 1;
+                    if (width > height) {
+                        scale = IMAGE_FRAME_SIZE /(float)width;
+                    }
+                    else {
+                        scale = IMAGE_FRAME_SIZE /(float)height;
+                    }
+                    rwidth = (int) (rwidth * scale);
+                    rheight = (int) (rheight * scale);
+                }
+                out.write("<a href=\"" + imagePath + "\">");
+                out.write("<img src=\"" + imagePath + "\" width=\"" + rwidth + "\" height=\"" + rheight + "\" hspace=\"10\" vspace=\"10\" />");
+                out.write("</a>");
+            }
+            else {
+                out.write("&nbsp;");
+            }
+        }
+        out.write("</td>");
     }
 
     private void writeCellValue(Reader reader) throws IOException
