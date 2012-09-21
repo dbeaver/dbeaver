@@ -54,12 +54,23 @@ public abstract class JDBCCompositeCache<
 {
     protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 
+    private class ObjectInfo {
+        final OBJECT object;
+        final List<ROW_REF> rows = new ArrayList<ROW_REF>();
+        public ObjectInfo(OBJECT object)
+        {
+            this.object = object;
+        }
+    }
+
     private final Map<String, ObjectInfo> PRECACHED_MARK = new HashMap<String, ObjectInfo>();
 
     private JDBCStructCache<OWNER,?,?> parentCache;
     private Class<PARENT> parentType;
     private final String parentColumnName;
     private final String objectColumnName;
+
+    //private final Map<PARENT, Map<OBJECT, JDBCSimpleCache<OBJECT, ROW_REF>>> deepCache = new IdentityHashMap<PARENT, Map<OBJECT, JDBCSimpleCache<OBJECT, ROW_REF>>>();
 
     protected JDBCCompositeCache(
         JDBCStructCache<OWNER,?,?> parentCache,
@@ -88,15 +99,6 @@ public abstract class JDBCCompositeCache<
 
     abstract protected void cacheChildren(OBJECT object, List<ROW_REF> rows);
 
-    private class ObjectInfo {
-        final OBJECT object;
-        final List<ROW_REF> rows = new ArrayList<ROW_REF>();
-        public ObjectInfo(OBJECT object)
-        {
-            this.object = object;
-        }
-    }
-
     @Override
     public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
@@ -108,9 +110,8 @@ public abstract class JDBCCompositeCache<
     public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String objectName)
         throws DBException
     {
-        if (!isCached()) {
-            loadObjects(monitor, owner, null);
-        }
+        loadObjects(monitor, owner, null);
+
         return getCachedObject(objectName);
     }
 
