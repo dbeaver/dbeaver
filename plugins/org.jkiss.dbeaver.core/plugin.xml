@@ -1850,38 +1850,38 @@
         <export
                 id="org.jkiss.dbeaver.core.dataExport.html"
                 class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterHTML"
-                description="Export to HTML file(s)"
+                description="%command.org.jkiss.dbeaver.core.resultset.export.html.description"
                 extension="html"
                 icon="icons/misc/html.png"
-                label="HTML">
+                label="%command.org.jkiss.dbeaver.core.resultset.export.html.name">
             <propertyGroup label="General">
-                <property id="extractImages" label="Images" type="boolean" description="Extract images to graphic files" defaultValue="true"/>
+                <property id="extractImages" label="%command.org.jkiss.dbeaver.core.resultset.export.html.property.images.name" type="boolean" description="%command.org.jkiss.dbeaver.core.resultset.export.html.property.images.description" defaultValue="true"/>
             </propertyGroup>
         </export>
         <export
                 id="org.jkiss.dbeaver.core.dataExport.csv"
                 class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterCSV"
-                description="Export to CSV file(s)"
+                description="%command.org.jkiss.dbeaver.core.resultset.export.csv.description"
                 extension="csv"
                 icon="icons/misc/csv.png"
-                label="CSV">
+                label="%command.org.jkiss.dbeaver.core.resultset.export.csv.name">
             <propertyGroup label="General">
-                <property id="delimiter" label="Delimiter" type="string" description="Columns delimiter" defaultValue="," required="true"/>
-                <property id="header" label="Header" type="string" description="CSV header settings" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
-                <property id="escape" label="Characters escape" type="string" description="Bad characters escaping model (surrounded with quotes or escaped with '\' character)" defaultValue="quotes" required="true" validValues="quotes,escape"/>
+                <property id="delimiter" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.delimiter.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.delimiter.description" defaultValue="," required="true"/>
+                <property id="header" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.header.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
+                <property id="escape" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.escape.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
             </propertyGroup>
         </export>
         <export
                 id="org.jkiss.dbeaver.core.dataExport.sql"
                 class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterSQL"
-                description="Export to SQL INSERT statements"
+                description="%command.org.jkiss.dbeaver.core.resultset.export.sql.description"
                 extension="sql"
                 icon="icons/misc/sql.png"
-                label="SQL">
+                label="%command.org.jkiss.dbeaver.core.resultset.export.sql.name">
             <sourceType type="org.jkiss.dbeaver.model.struct.rdb.DBSTable"/>
             <propertyGroup label="General">
-                <property id="escape" label="Escape character" type="string" description="Character which escapes single quote character" defaultValue="\" required="true"/>
-                <property id="rowsInStatement" label="Data rows per statement" type="integer" description="Number of data rows per single insert statement" defaultValue="10" required="true"/>
+                <property id="escape" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.escape.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.escape.description" required="true"/>
+                <property id="rowsInStatement" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.name" type="integer" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
             </propertyGroup>
         </export>
     </extension>
