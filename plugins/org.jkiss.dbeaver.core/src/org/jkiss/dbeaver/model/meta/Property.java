@@ -34,29 +34,33 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Property
 {
+    public static final String DEFAULT_LOCAL_STRING = "#"; //NON-NLS-1
+    public static final String RESOURCE_TYPE_NAME = "name"; //NON-NLS-1
+    public static final String RESOURCE_TYPE_DESCRIPTION = "description"; //NON-NLS-1
+
     /**
      * Property unique ID (unique within class)
      * @return id
      */
-    String id() default "";
+    String id() default ""; //NON-NLS-1
 
     /**
      * Property human readable name
      * @return name
      */
-    String name();
+    String name() default DEFAULT_LOCAL_STRING;
 
     /**
      * Property category (optional). A human readable string
      * @return category
      */
-    String category() default "";
+    String category() default ""; //NON-NLS-1
 
     /**
      * Property description (optional)
      * @return description
      */
-    String description() default "";
+    String description() default DEFAULT_LOCAL_STRING;
 
     /**
      * Editable flag. If set to true then property may be edited for new objects.
@@ -90,7 +94,7 @@ public @interface Property
 
     int order() default Integer.MAX_VALUE;
 
-    String helpContextId() default "";
+    String helpContextId() default ""; //NON-NLS-1
 
     Class<? extends ILabelProvider> labelProvider() default ILabelProvider.class;
 

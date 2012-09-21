@@ -133,14 +133,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return this.isSystem;
     }
 
-    @Property(name = "Table Type", viewable = true, order = 2)
-    private String getTableType()
+    @Property(viewable = true, order = 2)
+    public String getTableType()
     {
         return tableType;
     }
 
-
-    @Property(name = "Catalog", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public GenericCatalog getCatalog()
     {
         return getContainer().getCatalog();

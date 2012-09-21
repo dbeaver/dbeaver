@@ -18,16 +18,20 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.meta.IPropertyValueEditorProvider;
@@ -42,9 +46,12 @@ import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomTextCellEditor;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ResourceBundle;
 
 /**
  * ObjectPropertyDescriptor
@@ -52,6 +59,8 @@ import java.lang.reflect.Method;
 public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implements IPropertyDescriptorEx, IPropertyValueListProvider<Object>
 {
     private final Property propInfo;
+    private final String propName;
+    private final String propDescription;
     private Method setter;
     private ILabelProvider labelProvider;
     private IPropertyValueEditorProvider valueEditor;
@@ -66,6 +75,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     {
         super(source, parent, getter, propInfo.id(), propInfo.order());
         this.propInfo = propInfo;
+
         final String propertyName = BeanUtils.getPropertyNameFromGetter(getter.getName());
         declaringClass = parent == null ? getter.getDeclaringClass() : parent.getDeclaringClass();
         Class<?> c = declaringClass;
@@ -110,6 +120,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 log.warn("Can't create value transformer", e);
             }
         }
+
+        this.propName = getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId());
+        this.propDescription = CommonUtils.isEmpty(propInfo.description()) ?
+                propName :
+                getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName);
     }
 
     @Override
@@ -187,13 +202,13 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     @Override
     public String getDescription()
     {
-        return CommonUtils.isEmpty(propInfo.description()) ? getDisplayName() : propInfo.description();
+        return propDescription;
     }
 
     @Override
     public String getDisplayName()
     {
-        return propInfo.name();
+        return propName;
     }
 
     @Override
@@ -368,6 +383,25 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return obj instanceof ObjectPropertyDescriptor &&
             propInfo.equals(((ObjectPropertyDescriptor)obj).propInfo) &&
             CommonUtils.equalObjects(getGetter(), ((ObjectPropertyDescriptor)obj).getGetter());
+    }
+
+    private String getLocalizedString(String string, String type, String defaultValue) {
+        if (Property.DEFAULT_LOCAL_STRING.equals(string)) {
+            Bundle bundle = FrameworkUtil.getBundle(declaringClass);
+            ResourceBundle resourceBundle = Platform.getResourceBundle(bundle);
+            String messageID = "meta." + declaringClass.getName() + "." + getId() + "." + type;
+            String result;
+            try {
+                result = resourceBundle.getString(messageID);
+            } catch (Exception e) {
+                return defaultValue;
+            }
+            if (!result.equals(messageID)) {
+                return result;
+            }
+            return defaultValue;
+        }
+        return string;
     }
 
     private class DefaultLabelProvider extends LabelProvider implements IFontProvider {
