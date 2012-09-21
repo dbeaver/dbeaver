@@ -76,6 +76,7 @@ public class DataExporterHTML extends DataExporterAbstract {
                 "th{font-size:14px;font-weight:normal;color:#039;padding:10px 8px;} " +
                 "td{color:#669;padding:8px;}" +
                 ".odd{background:#e8edff;}" +
+                "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
                 "</style></head>");
         out.write("<body><table>");
         out.write("<tr>");
@@ -178,7 +179,7 @@ public class DataExporterHTML extends DataExporterAbstract {
                     rheight = (int) (rheight * scale);
                 }
                 out.write("<a href=\"" + imagePath + "\">");
-                out.write("<img src=\"" + imagePath + "\" width=\"" + rwidth + "\" height=\"" + rheight + "\" hspace=\"10\" vspace=\"10\" />");
+                out.write("<img src=\"" + imagePath + "\" width=\"" + rwidth + "\" height=\"" + rheight + "\" />");
                 out.write("</a>");
             }
             else {
