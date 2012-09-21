@@ -191,6 +191,7 @@ public class DataExporterSQL extends DataExporterAbstract {
                 }
                 buf.append(c);
             }
+            value = buf.toString();
         }
         out.write(STRING_QUOTE);
         out.write(value);
