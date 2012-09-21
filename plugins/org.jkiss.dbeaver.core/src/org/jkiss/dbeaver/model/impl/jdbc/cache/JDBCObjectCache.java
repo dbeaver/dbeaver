@@ -34,7 +34,8 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * Various objects cache
+ * Various objects cache.
+ * Simple cache which may read objects from database and keep them.
  */
 public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT>
 {

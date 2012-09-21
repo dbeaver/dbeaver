@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.DBSStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -37,19 +37,20 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * JDBC structured objects cache
+ * JDBC structured objects cache.
+ * Stores objects themselves and their child objects.
  */
 public abstract class JDBCStructCache<
     OWNER extends DBSObject,
     OBJECT extends DBSObject,
     CHILD extends DBSObject>
-    extends JDBCObjectCache<OWNER, OBJECT>
+    extends JDBCObjectCache<OWNER, OBJECT> implements DBSStructCache<OWNER, OBJECT, CHILD>
 {
     static final Log log = LogFactory.getLog(JDBCStructCache.class);
 
     private final String objectNameColumn;
     private volatile boolean childrenCached = false;
-    private final Map<OBJECT, NestedCache> childrenCache = new IdentityHashMap<OBJECT, NestedCache>();
+    private final Map<OBJECT, JDBCSimpleCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<OBJECT, JDBCSimpleCache<OBJECT, CHILD>>();
 
     abstract protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OWNER owner, OBJECT forObject)
         throws SQLException;
@@ -184,7 +185,7 @@ public abstract class JDBCStructCache<
     {
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
-            NestedCache nestedCache = childrenCache.get(forObject);
+            JDBCSimpleCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
             return nestedCache == null ? null : nestedCache.getObjects(monitor, null);
         }
     }
@@ -194,7 +195,7 @@ public abstract class JDBCStructCache<
     {
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
-            NestedCache nestedCache = childrenCache.get(forObject);
+            JDBCSimpleCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
             return nestedCache == null ? null : nestedCache.getObject(monitor, null, objectName);
         }
     }
@@ -220,27 +221,12 @@ public abstract class JDBCStructCache<
     private void cacheChildren(OBJECT parent, List<CHILD> children)
     {
         synchronized (childrenCache) {
-            NestedCache nestedCache = childrenCache.get(parent);
+            JDBCSimpleCache<OBJECT, CHILD> nestedCache = childrenCache.get(parent);
             if (nestedCache == null) {
-                nestedCache = new NestedCache();
+                nestedCache = new JDBCSimpleCache<OBJECT, CHILD>();
                 childrenCache.put(parent, nestedCache);
             }
             nestedCache.setCache(children);
-        }
-    }
-
-    private class NestedCache extends AbstractObjectCache<OBJECT, CHILD> {
-
-        @Override
-        public Collection<CHILD> getObjects(DBRProgressMonitor monitor, OBJECT object) throws DBException
-        {
-            return getCachedObjects();
-        }
-
-        @Override
-        public CHILD getObject(DBRProgressMonitor monitor, OBJECT object, String name) throws DBException
-        {
-            return getCachedObject(name);
         }
     }
 

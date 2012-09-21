@@ -38,7 +38,7 @@ import java.util.*;
 
 /**
  * Composite objects cache.
- * Each composite object contains from several rows.
+ * Each composite object consists from several rows.
  * Each row object refers to some other DB objects.
  * Each composite object belongs to some parent object (table usually) and it's name is unique within it's parent.
  * Each row object name is unique within main object.
