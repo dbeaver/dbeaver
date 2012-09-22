@@ -170,18 +170,6 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     @Override
-    protected Collection<GenericTableForeignKey> getObjectsCache(GenericTable parent)
-    {
-        return parent.getForeignKeysCache();
-    }
-
-    @Override
-    protected void cacheObjects(GenericTable parent, List<GenericTableForeignKey> foreignKeys)
-    {
-        parent.setForeignKeys(foreignKeys);
-    }
-
-    @Override
     protected void cacheChildren(GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
         foreignKey.setColumns(rows);

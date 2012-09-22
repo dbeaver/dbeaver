@@ -45,8 +45,6 @@ public class OracleTable extends OracleTablePhysical
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
-    private List<OracleTableForeignKey> foreignKeys;
-
     public OracleTable(OracleSchema schema, String name)
     {
         super(schema, name);
@@ -135,40 +133,15 @@ public class OracleTable extends OracleTablePhysical
     public Collection<OracleTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (foreignKeys == null) {
-            getContainer().foreignKeyCache.getObjects(monitor, getContainer(), this);
-        }
-        return foreignKeys;
+        return getContainer().foreignKeyCache.getObjects(monitor, getContainer(), this);
     }
-
-    void setForeignKeys(List<OracleTableForeignKey> constraints)
-    {
-        this.foreignKeys = constraints;
-    }
-
-    List<OracleTableForeignKey> getForeignKeysCache()
-    {
-        return foreignKeys;
-    }
-
-//    public OracleTableForeignKey getForeignKey(DBRProgressMonitor monitor, String fkName)
-//        throws DBException
-//    {
-//        return DBUtils.findObject(getForeignKeys(monitor), fkName);
-//    }
-
-//    public OracleTrigger getTrigger(DBRProgressMonitor monitor, String triggerName)
-//        throws DBException
-//    {
-//        return DBUtils.findObject(getTriggers(monitor), triggerName);
-//    }
 
     @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
+        getContainer().foreignKeyCache.clearObjectCache(this);
 
-        foreignKeys = null;
         return true;
     }
 

@@ -32,12 +32,14 @@ import java.util.Collection;
 class JDBCSimpleCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT> {
 
     @Override
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner) throws DBException {
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
+    {
         return getCachedObjects();
     }
 
     @Override
-    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name) throws DBException {
+    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
+    {
         return getCachedObject(name);
     }
 }

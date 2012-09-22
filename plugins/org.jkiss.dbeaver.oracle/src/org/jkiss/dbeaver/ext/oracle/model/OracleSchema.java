@@ -454,18 +454,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected Collection<OracleTableConstraint> getObjectsCache(OracleTableBase parent)
-        {
-            return parent.getConstraintsCache();
-        }
-
-        @Override
-        protected void cacheObjects(OracleTableBase parent, List<OracleTableConstraint> constraints)
-        {
-            parent.setConstraints(constraints);
-        }
-
-        @Override
         protected void cacheChildren(OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
         {
             constraint.setColumns(rows);
@@ -532,18 +520,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 object,
                 getTableColumn(context, parent, dbResult),
                 JDBCUtils.safeGetInt(dbResult, "POSITION"));
-        }
-
-        @Override
-        protected Collection<OracleTableForeignKey> getObjectsCache(OracleTable parent)
-        {
-            return parent.getForeignKeysCache();
-        }
-
-        @Override
-        protected void cacheObjects(OracleTable parent, List<OracleTableForeignKey> constraints)
-        {
-            parent.setForeignKeys(constraints);
         }
 
         @Override
@@ -617,18 +593,6 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 tableColumn,
                 ordinalPosition,
                 isAscending);
-        }
-
-        @Override
-        protected Collection<OracleTableIndex> getObjectsCache(OracleTablePhysical parent)
-        {
-            return parent.getIndexesCache();
-        }
-
-        @Override
-        protected void cacheObjects(OracleTablePhysical parent, List<OracleTableIndex> indexes)
-        {
-            parent.setIndexes(indexes);
         }
 
         @Override

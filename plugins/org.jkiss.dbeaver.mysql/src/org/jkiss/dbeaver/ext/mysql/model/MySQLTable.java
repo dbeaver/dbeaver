@@ -87,8 +87,6 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
-    private List<MySQLTableIndex> indexes;
-    private List<MySQLTableConstraint> constraints;
     private List<MySQLTableForeignKey> foreignKeys;
     private final PartitionCache partitionCache = new PartitionCache();
 
@@ -129,21 +127,8 @@ public class MySQLTable extends MySQLTableBase
     public synchronized Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (indexes == null) {
-            // Read indexes using cache
-            this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
-        }
-        return indexes;
-    }
-
-    Collection<MySQLTableIndex> getIndexesCache()
-    {
-        return indexes;
-    }
-
-    void setIndexes(List<MySQLTableIndex> indexes)
-    {
-        this.indexes = indexes;
+        // Read indexes using cache
+        return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 
     @Override
@@ -151,16 +136,13 @@ public class MySQLTable extends MySQLTableBase
     public synchronized Collection<MySQLTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (constraints == null) {
-            getContainer().constraintCache.getObjects(monitor, getContainer(), this);
-        }
-        return constraints;
+        return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
     }
 
     public MySQLTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return DBUtils.findObject(getConstraints(monitor), ukName);
+        return getContainer().constraintCache.getObject(monitor, getContainer(), this, ukName);
     }
 
     @Override
@@ -263,8 +245,8 @@ public class MySQLTable extends MySQLTableBase
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
-        indexes = null;
-        constraints = null;
+        getContainer().indexCache.clearObjectCache(this);
+        getContainer().constraintCache.clearObjectCache(this);
         foreignKeys = null;
         partitionCache.clearCache();
         synchronized (additionalInfo) {
@@ -326,16 +308,6 @@ public class MySQLTable extends MySQLTableBase
         } finally {
             context.close();
         }
-    }
-
-    List<MySQLTableConstraint> getUniqueKeysCache()
-    {
-        return this.constraints;
-    }
-
-    void cacheUniqueKeys(List<MySQLTableConstraint> constraints)
-    {
-        this.constraints = constraints;
     }
 
     private List<MySQLTableForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)

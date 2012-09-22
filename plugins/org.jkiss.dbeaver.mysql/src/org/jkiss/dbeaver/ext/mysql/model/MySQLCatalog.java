@@ -434,18 +434,6 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected Collection<MySQLTableIndex> getObjectsCache(MySQLTable parent)
-        {
-            return parent.getIndexesCache();
-        }
-
-        @Override
-        protected void cacheObjects(MySQLTable parent, List<MySQLTableIndex> indexes)
-        {
-            parent.setIndexes(indexes);
-        }
-
-        @Override
         protected void cacheChildren(MySQLTableIndex index, List<MySQLTableIndexColumn> rows)
         {
             index.setColumns(rows);
@@ -513,18 +501,6 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 object,
                 column,
                 ordinalPosition);
-        }
-
-        @Override
-        protected Collection<MySQLTableConstraint> getObjectsCache(MySQLTable parent)
-        {
-            return parent.getUniqueKeysCache();
-        }
-
-        @Override
-        protected void cacheObjects(MySQLTable parent, List<MySQLTableConstraint> constraints)
-        {
-            parent.cacheUniqueKeys(constraints);
         }
 
         @Override

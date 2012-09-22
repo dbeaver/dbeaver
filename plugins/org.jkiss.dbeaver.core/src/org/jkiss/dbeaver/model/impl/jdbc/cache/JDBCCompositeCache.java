@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -54,23 +55,12 @@ public abstract class JDBCCompositeCache<
 {
     protected static final Log log = LogFactory.getLog(JDBCCompositeCache.class);
 
-    private class ObjectInfo {
-        final OBJECT object;
-        final List<ROW_REF> rows = new ArrayList<ROW_REF>();
-        public ObjectInfo(OBJECT object)
-        {
-            this.object = object;
-        }
-    }
-
-    private final Map<String, ObjectInfo> PRECACHED_MARK = new HashMap<String, ObjectInfo>();
-
-    private JDBCStructCache<OWNER,?,?> parentCache;
-    private Class<PARENT> parentType;
+    private final JDBCStructCache<OWNER,?,?> parentCache;
+    private final Class<PARENT> parentType;
     private final String parentColumnName;
     private final String objectColumnName;
 
-    //private final Map<PARENT, Map<OBJECT, JDBCSimpleCache<OBJECT, ROW_REF>>> deepCache = new IdentityHashMap<PARENT, Map<OBJECT, JDBCSimpleCache<OBJECT, ROW_REF>>>();
+    private final Map<PARENT, List<OBJECT>> objectCache = new IdentityHashMap<PARENT, List<OBJECT>>();
 
     protected JDBCCompositeCache(
         JDBCStructCache<OWNER,?,?> parentCache,
@@ -93,17 +83,36 @@ public abstract class JDBCCompositeCache<
     abstract protected ROW_REF fetchObjectRow(JDBCExecutionContext context, PARENT parent, OBJECT forObject, ResultSet resultSet)
         throws SQLException, DBException;
 
-    abstract protected Collection<OBJECT> getObjectsCache(PARENT parent);
-    
-    abstract protected void cacheObjects(PARENT parent, List<OBJECT> objects);
+    protected PARENT getParent(OBJECT object)
+    {
+        return (PARENT) object.getParentObject();
+    }
 
-    abstract protected void cacheChildren(OBJECT object, List<ROW_REF> rows);
+    abstract protected void cacheChildren(OBJECT object, List<ROW_REF> children);
 
     @Override
     public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
         return getObjects(monitor, owner, null);
+    }
+
+    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+        throws DBException
+    {
+        loadObjects(monitor, owner, forParent);
+        return getCachedObjects(forParent);
+    }
+
+    public Collection<OBJECT> getCachedObjects(PARENT forParent)
+    {
+        if (forParent == null) {
+            return getCachedObjects();
+        } else {
+            synchronized (objectCache) {
+                return objectCache.get(forParent);
+            }
+        }
     }
 
     @Override
@@ -115,21 +124,65 @@ public abstract class JDBCCompositeCache<
         return getCachedObject(objectName);
     }
 
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, String objectName)
         throws DBException
     {
         loadObjects(monitor, owner, forParent);
+        if (forParent == null) {
+            return getCachedObject(objectName);
+        } else {
+            synchronized (objectCache) {
+                return DBUtils.findObject(objectCache.get(forParent), objectName);
+            }
+        }
+    }
 
-        return getCachedObjects();
+    @Override
+    public void cacheObject(OBJECT object)
+    {
+        super.cacheObject(object);
+        synchronized (objectCache) {
+            List<OBJECT> objects = objectCache.get(getParent(object));
+            if (!CommonUtils.isEmpty(objects)) {
+                objects.add(object);
+            }
+        }
+    }
+
+    @Override
+    public void removeObject(OBJECT object)
+    {
+        super.removeObject(object);
+        objectCache.remove(getParent(object));
+    }
+
+    public void clearObjectCache(PARENT forParent)
+    {
+        if (forParent == null) {
+            super.clearCache();
+        } else {
+            objectCache.remove(forParent);
+        }
+    }
+
+    private class ObjectInfo {
+        final OBJECT object;
+        final List<ROW_REF> rows = new ArrayList<ROW_REF>();
+        public ObjectInfo(OBJECT object)
+        {
+            this.object = object;
+        }
     }
 
     protected void loadObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
-        if ((forParent == null && isCached()) ||
-            (forParent != null && (!forParent.isPersisted() || getObjectsCache(forParent) != null)))
-        {
-            return;
+        synchronized (objectCache) {
+            if ((forParent == null && isCached()) ||
+                (forParent != null && (!forParent.isPersisted() || objectCache.containsKey(forParent))))
+            {
+                return;
+            }
         }
 
         // Load tables and columns first
@@ -170,12 +223,14 @@ public abstract class JDBCCompositeCache<
                                 continue;
                             }
                         }
-                        final Collection<OBJECT> objectsCache = getObjectsCache(parent);
-                        if (objectsCache != null) {
-                            // Already read
-                            parentObjectMap.put(parent, PRECACHED_MARK);
-                            precachedObjects.addAll(objectsCache);
-                            continue;
+                        synchronized (objectCache) {
+                            final Collection<OBJECT> objectsCache = objectCache.get(parent);
+                            if (objectsCache != null) {
+                                // Already read
+                                parentObjectMap.put(parent, null);
+                                precachedObjects.addAll(objectsCache);
+                                continue;
+                            }
                         }
                         // Add to map
                         Map<String, ObjectInfo> objectMap = parentObjectMap.get(parent);
@@ -227,8 +282,10 @@ public abstract class JDBCCompositeCache<
                     // Cache global object list
                     List<OBJECT> globalCache = new ArrayList<OBJECT>();
                     for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
-                        for (ObjectInfo info : objMap.values()) {
-                            globalCache.add(info.object);
+                        if (objMap != null) {
+                            for (ObjectInfo info : objMap.values()) {
+                                globalCache.add(info.object);
+                            }
                         }
                     }
                     // Add precached objects to global cache too
@@ -239,32 +296,34 @@ public abstract class JDBCCompositeCache<
             }
         }
 
-        // Cache data in individual objects only if we have read something or have certain parent object
-        // Otherwise we assume that this function is not supported for mass data reading
+        synchronized (objectCache) {
+            // Cache data in individual objects only if we have read something or have certain parent object
+            // Otherwise we assume that this function is not supported for mass data reading
 
-        // All objects are read. Now assign them to parents
-        for (Map.Entry<PARENT,Map<String,ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
-            if (colEntry.getValue() == PRECACHED_MARK) {
-                // Do not overwrite this object's cache
-                continue;
-            }
-            Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
-            ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
-            for (ObjectInfo objectInfo : objectInfos) {
-                cacheChildren(objectInfo.object, objectInfo.rows);
-                objects.add(objectInfo.object);
-            }
-            cacheObjects(colEntry.getKey(), objects);
-        }
-        // Now set empty object list for other parents
-        if (forParent == null) {
-            for (PARENT tmpParent : parentCache.getTypedObjects(monitor, owner, parentType)) {
-                if (!parentObjectMap.containsKey(tmpParent)) {
-                    cacheObjects(tmpParent, new ArrayList<OBJECT>());
+            // All objects are read. Now assign them to parents
+            for (Map.Entry<PARENT,Map<String,ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                if (colEntry.getValue() == null) {
+                    // Do not overwrite this object's cache
+                    continue;
                 }
+                Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
+                ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
+                for (ObjectInfo objectInfo : objectInfos) {
+                    cacheChildren(objectInfo.object, objectInfo.rows);
+                    objects.add(objectInfo.object);
+                }
+                objectCache.put(colEntry.getKey(), objects);
             }
-        } else if (!parentObjectMap.containsKey(forParent)) {
-            cacheObjects(forParent, new ArrayList<OBJECT>());
+            // Now set empty object list for other parents
+            if (forParent == null) {
+                for (PARENT tmpParent : parentCache.getTypedObjects(monitor, owner, parentType)) {
+                    if (!parentObjectMap.containsKey(tmpParent)) {
+                        objectCache.put(tmpParent, new ArrayList<OBJECT>());
+                    }
+                }
+            } else if (!parentObjectMap.containsKey(forParent)) {
+                objectCache.put(forParent, new ArrayList<OBJECT>());
+            }
         }
 
     }

@@ -55,16 +55,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     private boolean isView;
     private boolean isSystem;
     private String description;
-
-/*
-    private String typeName;
-    private GenericCatalog typeCatalog;
-    private GenericSchema typeSchema;
-*/
-
-    private List<GenericTableIndex> indexes;
-    private List<GenericPrimaryKey> uniqueKeys;
-    private List<GenericTableForeignKey> foreignKeys;
     private Long rowCount;
 
     public GenericTable(
@@ -169,49 +159,21 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public synchronized Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (indexes == null && getDataSource().getInfo().supportsIndexes()) {
-            // Read indexes using cache
-            this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
-        }
-        return indexes;
-    }
-
-    synchronized void setIndexes(List<GenericTableIndex> indexes)
-    {
-        this.indexes = indexes;
-    }
-
-    Collection<GenericTableIndex> getIndexesCache()
-    {
-        return this.indexes;
+        // Read indexes using cache
+        return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
     }
 
     @Override
     public synchronized Collection<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (uniqueKeys == null) {
-            // ensure all columns are already cached
-            getAttributes(monitor);
-            getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
-        }
-        return uniqueKeys;
-    }
-
-    List<GenericPrimaryKey> getUniqueKeysCache()
-    {
-        return uniqueKeys;
-    }
-
-    synchronized void setUniqueKeys(List<GenericPrimaryKey> uniqueKeys)
-    {
-        this.uniqueKeys = uniqueKeys;
+        // ensure all columns are already cached
+        getAttributes(monitor);
+        return getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
     }
 
     synchronized void addUniqueKey(GenericPrimaryKey constraint) {
-        if (uniqueKeys != null) {
-            uniqueKeys.add(constraint);
-        }
+        getContainer().getPrimaryKeysCache().cacheObject(constraint);
     }
 
     @Override
@@ -225,15 +187,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public synchronized Collection<GenericTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (foreignKeys == null && getDataSource().getInfo().supportsReferentialIntegrity()) {
-            getContainer().getForeignKeysCache().getObjects(monitor, getContainer(), this);
+        if (getDataSource().getInfo().supportsReferentialIntegrity()) {
+            return getContainer().getForeignKeysCache().getObjects(monitor, getContainer(), this);
         }
-        return foreignKeys;
-    }
-
-    synchronized void setForeignKeys(List<GenericTableForeignKey> foreignKeys)
-    {
-        this.foreignKeys = foreignKeys;
+        return null;
     }
 
     public Collection<GenericTable> getSubTables()
@@ -248,41 +205,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return description;
     }
 
-    public Collection<GenericTableForeignKey> getForeignKeysCache()
-    {
-        return foreignKeys;
-    }
-
-    public Collection<GenericPrimaryKey> getConstraintsCache()
-    {
-        return uniqueKeys;
-    }
-
-/*
-    public String getTypeName()
-    {
-        return typeName;
-    }
-
-    public GenericCatalog getTypeCatalog()
-    {
-        return typeCatalog;
-    }
-
-    public GenericSchema getTypeSchema()
-    {
-        return typeSchema;
-    }
-
-*/
-
     @Override
     public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         this.getContainer().getTableCache().clearChildrenCache(this);
-        indexes = null;
-        uniqueKeys = null;
-        foreignKeys = null;
+        this.getContainer().getIndexCache().clearObjectCache(this);
+        this.getContainer().getPrimaryKeysCache().clearObjectCache(this);
+        this.getContainer().getForeignKeysCache().clearObjectCache(this);
         rowCount = null;
         return true;
     }
@@ -299,9 +228,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             return null;
         }
 
-        if (indexes != null) {
-            rowCount = getRowCountFromIndexes(monitor);
-        }
+//        if (indexes != null) {
+//            rowCount = getRowCountFromIndexes(monitor);
+//        }
 
         if (rowCount == null) {
             // Query row count
@@ -328,9 +257,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 //throw new DBCException(e);
                 // do not throw this error - row count is optional info and some providers may fail
                 log.debug("Can't fetch row count: " + e.getMessage());
-                if (indexes != null) {
-                    rowCount = getRowCountFromIndexes(monitor);
-                }
+//                if (indexes != null) {
+//                    rowCount = getRowCountFromIndexes(monitor);
+//                }
             }
             finally {
                 context.close();
@@ -343,10 +272,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return rowCount;
     }
 
-    private Long getRowCountFromIndexes(DBRProgressMonitor monitor)
+    public Long getRowCountFromIndexes(DBRProgressMonitor monitor)
     {
         try {
-// Try to get cardinality from some unique index
+            // Try to get cardinality from some unique index
             // Cardinality
             final Collection<GenericTableIndex> indexList = getIndexes(monitor);
             if (!CommonUtils.isEmpty(indexList)) {

@@ -29,7 +29,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -94,18 +93,6 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
 
         return new GenericTableConstraintColumn(object, tableColumn, keySeq);
-    }
-
-    @Override
-    protected Collection<GenericPrimaryKey> getObjectsCache(GenericTable parent)
-    {
-        return parent.getConstraintsCache();
-    }
-
-    @Override
-    protected void cacheObjects(GenericTable parent, List<GenericPrimaryKey> primaryKeys)
-    {
-        parent.setUniqueKeys(primaryKeys);
     }
 
     @Override

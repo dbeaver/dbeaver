@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -28,8 +27,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
@@ -37,7 +34,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Oracle physical table
@@ -48,7 +44,6 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     //private boolean valid;
     private long rowCount;
     private Object tablespace;
-    private List<OracleTableIndex> indexes;
     private boolean partitioned;
     private PartitionInfo partitionInfo;
     private PartitionCache partitionCache;
@@ -101,27 +96,14 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public Collection<OracleTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (indexes == null) {
-            // Read indexes using cache
-            this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
-        }
-        return indexes;
+        // Read indexes using cache
+        return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 
     public OracleTableIndex getIndex(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return DBUtils.findObject(getIndexes(monitor), name);
-    }
-
-    Collection<OracleTableIndex> getIndexesCache()
-    {
-        return indexes;
-    }
-
-    void setIndexes(List<OracleTableIndex> indexes)
-    {
-        this.indexes = indexes;
+        return this.getContainer().indexCache.getObject(monitor, getContainer(), this, name);
     }
 
     @PropertyGroup
@@ -172,8 +154,8 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
+        this.getContainer().indexCache.clearObjectCache(this);
 
-        indexes = null;
         partitionInfo = null;
         if (partitionCache != null) {
             partitionCache.clearCache();

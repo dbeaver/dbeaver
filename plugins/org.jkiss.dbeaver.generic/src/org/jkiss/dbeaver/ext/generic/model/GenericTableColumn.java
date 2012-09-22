@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * GenericTable
@@ -128,7 +128,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     @Property(name = "Key", viewable = true, order = 80)
     public boolean isInUniqueKey()
     {
-        final List<GenericPrimaryKey> uniqueKeysCache = getTable().getUniqueKeysCache();
+        final Collection<GenericPrimaryKey> uniqueKeysCache = getTable().getContainer().getPrimaryKeysCache().getCachedObjects(getTable());
         if (!CommonUtils.isEmpty(uniqueKeysCache)) {
             for (GenericPrimaryKey key : uniqueKeysCache) {
                 if (key.hasColumn(this)) {

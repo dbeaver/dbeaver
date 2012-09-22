@@ -82,7 +82,6 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
 
     protected boolean valid;
     private String comment;
-    private List<OracleTableConstraint> constraints;
 
     protected OracleTableBase(OracleSchema schema, String name, boolean persisted)
     {
@@ -174,7 +173,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         getContainer().tableCache.clearChildrenCache(this);
-        constraints = null;
+        getContainer().constraintCache.clearObjectCache(this);
 
         return true;
     }
@@ -197,26 +196,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     public synchronized Collection<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (constraints == null) {
-            getContainer().constraintCache.getObjects(monitor, getContainer(), this);
-        }
-        return constraints;
+        return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
     }
 
     public OracleTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return DBUtils.findObject(getConstraints(monitor), ukName);
-    }
-
-    void setConstraints(List<OracleTableConstraint> constraints)
-    {
-        this.constraints = constraints;
-    }
-
-    List<OracleTableConstraint> getConstraintsCache()
-    {
-        return constraints;
+        return getContainer().constraintCache.getObject(monitor, getContainer(), this, ukName);
     }
 
     public DBSTableForeignKey getForeignKey(DBRProgressMonitor monitor, String ukName) throws DBException
@@ -225,13 +211,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public Collection<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public Collection<OracleTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    public Collection<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
