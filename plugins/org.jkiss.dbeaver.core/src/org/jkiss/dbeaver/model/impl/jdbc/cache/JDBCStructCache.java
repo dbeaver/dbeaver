@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.DBSStructCache;
+import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -50,7 +51,7 @@ public abstract class JDBCStructCache<
 
     private final String objectNameColumn;
     private volatile boolean childrenCached = false;
-    private final Map<OBJECT, JDBCSimpleCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<OBJECT, JDBCSimpleCache<OBJECT, CHILD>>();
+    private final Map<OBJECT, SimpleObjectCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<OBJECT, SimpleObjectCache<OBJECT, CHILD>>();
 
     abstract protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, OWNER owner, OBJECT forObject)
         throws SQLException;
@@ -185,7 +186,7 @@ public abstract class JDBCStructCache<
     {
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
-            JDBCSimpleCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
+            SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
             return nestedCache == null ? null : nestedCache.getObjects(monitor, null);
         }
     }
@@ -195,7 +196,7 @@ public abstract class JDBCStructCache<
     {
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
-            JDBCSimpleCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
+            SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
             return nestedCache == null ? null : nestedCache.getObject(monitor, null, objectName);
         }
     }
@@ -221,9 +222,9 @@ public abstract class JDBCStructCache<
     private void cacheChildren(OBJECT parent, List<CHILD> children)
     {
         synchronized (childrenCache) {
-            JDBCSimpleCache<OBJECT, CHILD> nestedCache = childrenCache.get(parent);
+            SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(parent);
             if (nestedCache == null) {
-                nestedCache = new JDBCSimpleCache<OBJECT, CHILD>();
+                nestedCache = new SimpleObjectCache<OBJECT, CHILD>();
                 childrenCache.put(parent, nestedCache);
             }
             nestedCache.setCache(children);

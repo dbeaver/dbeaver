@@ -29,8 +29,10 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
@@ -41,6 +43,12 @@ import java.util.Collections;
  * Oracle index manager
  */
 public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, OracleTablePhysical> {
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, OracleTableIndex> getObjectsCache(OracleTableIndex object)
+    {
+        return object.getParentObject().getSchema().indexCache;
+    }
 
     @Override
     protected OracleTableIndex createDatabaseObject(

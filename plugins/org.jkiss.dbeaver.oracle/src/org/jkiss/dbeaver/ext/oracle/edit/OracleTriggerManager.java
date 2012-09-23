@@ -28,8 +28,10 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,6 +56,12 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Trigger name cannot be empty");
         }
+    }
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, OracleTrigger> getObjectsCache(OracleTrigger object)
+    {
+        return object.getSchema().triggerCache;
     }
 
     @Override

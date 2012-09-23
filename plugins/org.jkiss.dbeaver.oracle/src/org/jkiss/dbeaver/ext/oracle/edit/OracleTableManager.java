@@ -28,8 +28,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Oracle table manager
@@ -42,6 +44,12 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
         OracleTableForeignKey.class,
         OracleTableIndex.class
     };
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, OracleTable> getObjectsCache(OracleTable object)
+    {
+        return (DBSObjectCache) object.getSchema().tableCache;
+    }
 
     @Override
     protected OracleTable createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)

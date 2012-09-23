@@ -25,9 +25,11 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,6 +37,12 @@ import org.jkiss.utils.CommonUtils;
  * Oracle constraint manager
  */
 public class OracleConstraintManager extends JDBCConstraintManager<OracleTableConstraint, OracleTableBase> {
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, OracleTableConstraint> getObjectsCache(OracleTableConstraint object)
+    {
+        return object.getParentObject().getSchema().constraintCache;
+    }
 
     @Override
     protected OracleTableConstraint createDatabaseObject(

@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 
 import java.util.ArrayList;
@@ -38,6 +40,12 @@ import java.util.List;
  * OracleProcedureManager
  */
 public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStandalone, OracleSchema> {
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, OracleProcedureStandalone> getObjectsCache(OracleProcedureStandalone object)
+    {
+        return object.getSchema().proceduresCache;
+    }
 
     @Override
     protected OracleProcedureStandalone createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)

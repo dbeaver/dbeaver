@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -87,7 +89,7 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
-    private List<MySQLTableForeignKey> foreignKeys;
+    private SimpleObjectCache<MySQLTable, MySQLTableForeignKey> foreignKeys = new SimpleObjectCache<MySQLTable, MySQLTableForeignKey>();
     private final PartitionCache partitionCache = new PartitionCache();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
@@ -157,16 +159,22 @@ public class MySQLTable extends MySQLTableBase
     public synchronized Collection<MySQLTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (foreignKeys == null) {
-            foreignKeys = loadForeignKeys(monitor, false);
+        if (!foreignKeys.isCached()) {
+            List<MySQLTableForeignKey> fkList = loadForeignKeys(monitor, false);
+            foreignKeys.setCache(fkList);
         }
-        return foreignKeys;
+        return foreignKeys.getCachedObjects();
     }
 
     public MySQLTableForeignKey getAssociation(DBRProgressMonitor monitor, String fkName)
         throws DBException
     {
         return DBUtils.findObject(getAssociations(monitor), fkName);
+    }
+
+    public DBSObjectCache<MySQLTable, MySQLTableForeignKey> getForeignKeyCache()
+    {
+        return foreignKeys;
     }
 
     @Association
@@ -247,7 +255,7 @@ public class MySQLTable extends MySQLTableBase
         super.refreshObject(monitor);
         getContainer().indexCache.clearObjectCache(this);
         getContainer().constraintCache.clearObjectCache(this);
-        foreignKeys = null;
+        foreignKeys.clearCache();
         partitionCache.clearCache();
         synchronized (additionalInfo) {
             additionalInfo.loaded = false;

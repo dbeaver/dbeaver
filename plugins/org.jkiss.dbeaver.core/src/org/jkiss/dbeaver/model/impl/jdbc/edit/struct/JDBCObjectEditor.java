@@ -61,10 +61,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
      * @param object contained object
      * @return objects cache or null
      */
-    protected DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object)
-    {
-        return null;
-    }
+    protected abstract DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object);
 
     @Override
     public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)

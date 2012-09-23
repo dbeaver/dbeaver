@@ -67,7 +67,7 @@ public class OracleDataSource extends JDBCDataSource
 
     private final static Map<String, ClassLoader> ociClassLoadersCache = new HashMap<String, ClassLoader>();
 
-    final SchemaCache schemaCache = new SchemaCache();
+    final public SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
     final TablespaceCache tablespaceCache = new TablespaceCache();
     final UserCache userCache = new UserCache();

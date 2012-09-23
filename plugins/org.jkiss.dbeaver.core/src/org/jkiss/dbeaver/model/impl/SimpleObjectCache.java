@@ -16,9 +16,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.jdbc.cache;
+package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -26,10 +25,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.util.Collection;
 
 /**
- * JDBC simple objects cache.
+ * Simple objects cache.
  * Doesn't provide any reading facilities, just stores objects
  */
-class JDBCSimpleCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT> {
+public class SimpleObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT> {
 
     @Override
     public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)

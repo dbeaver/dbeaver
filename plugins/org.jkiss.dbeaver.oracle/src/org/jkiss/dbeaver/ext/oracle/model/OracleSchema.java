@@ -53,19 +53,19 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     static final Log log = LogFactory.getLog(OracleSchema.class);
 
     final public TableCache tableCache = new TableCache();
-    final MViewCache mviewCache = new MViewCache();
-    final ConstraintCache constraintCache = new ConstraintCache();
-    final ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
-    final TriggerCache triggerCache = new TriggerCache();
-    final IndexCache indexCache = new IndexCache();
-    final DataTypeCache dataTypeCache = new DataTypeCache();
-    final SequenceCache sequenceCache = new SequenceCache();
-    final PackageCache packageCache = new PackageCache();
-    final SynonymCache synonymCache = new SynonymCache();
-    final DBLinkCache dbLinkCache = new DBLinkCache();
-    final ProceduresCache proceduresCache = new ProceduresCache();
-    final JavaCache javaCache = new JavaCache();
-    final RecycleBin recycleBin = new RecycleBin();
+    final public MViewCache mviewCache = new MViewCache();
+    final public ConstraintCache constraintCache = new ConstraintCache();
+    final public ForeignKeyCache foreignKeyCache = new ForeignKeyCache();
+    final public TriggerCache triggerCache = new TriggerCache();
+    final public IndexCache indexCache = new IndexCache();
+    final public DataTypeCache dataTypeCache = new DataTypeCache();
+    final public SequenceCache sequenceCache = new SequenceCache();
+    final public PackageCache packageCache = new PackageCache();
+    final public SynonymCache synonymCache = new SynonymCache();
+    final public DBLinkCache dbLinkCache = new DBLinkCache();
+    final public ProceduresCache proceduresCache = new ProceduresCache();
+    final public JavaCache javaCache = new JavaCache();
+    final public RecycleBin recycleBin = new RecycleBin();
 
     private long id;
     private String name;

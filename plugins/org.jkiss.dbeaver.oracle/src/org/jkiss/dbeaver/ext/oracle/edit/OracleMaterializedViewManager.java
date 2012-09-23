@@ -26,8 +26,10 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,6 +54,12 @@ public class OracleMaterializedViewManager extends JDBCObjectEditor<OracleMateri
         if (CommonUtils.isEmpty(command.getObject().getSourceDeclaration(null))) {
             throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
         }
+    }
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, OracleMaterializedView> getObjectsCache(OracleMaterializedView object)
+    {
+        return object.getSchema().mviewCache;
     }
 
     @Override

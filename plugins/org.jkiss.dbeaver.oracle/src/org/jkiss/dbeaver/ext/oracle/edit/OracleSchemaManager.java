@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,6 +43,12 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
     public long getMakerOptions()
     {
         return FEATURE_SAVE_IMMEDIATELY;
+    }
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, OracleSchema> getObjectsCache(OracleSchema object)
+    {
+        return object.getDataSource().schemaCache;
     }
 
     @Override

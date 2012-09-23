@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -39,6 +41,12 @@ import java.util.List;
  * OracleDataTypeManager
  */
 public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, OracleSchema> {
+
+    @Override
+    protected DBSObjectCache<? extends DBSObject, OracleDataType> getObjectsCache(OracleDataType object)
+    {
+        return object.getSchema().dataTypeCache;
+    }
 
     @Override
     protected OracleDataType createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
