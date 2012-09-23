@@ -34,7 +34,7 @@ import java.sql.ResultSet;
 /**
  * OracleTableForeignKey
  */
-public class OracleTableForeignKey extends OracleTableConstraint implements DBSTableForeignKey
+public class OracleTableForeignKey extends OracleTableConstraintBase implements DBSTableForeignKey
 {
     private OracleTableConstraint referencedKey;
     private DBSForeignKeyModifyRule deleteRule;
@@ -57,7 +57,12 @@ public class OracleTableForeignKey extends OracleTableConstraint implements DBST
         ResultSet dbResult)
         throws DBException
     {
-        super(table, dbResult);
+        super(
+            table,
+            JDBCUtils.safeGetString(dbResult, "CONSTRAINT_NAME"),
+            null,
+            DBSEntityConstraintType.FOREIGN_KEY,
+            true);
 
         String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
         OracleTableBase refTable = OracleTableBase.findTable(
