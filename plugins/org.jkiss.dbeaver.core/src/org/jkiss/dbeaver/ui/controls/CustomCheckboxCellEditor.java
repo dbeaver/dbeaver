@@ -56,7 +56,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
         placeholder.setLayout(gl);
 
         checkbox = new Button(placeholder, SWT.CHECK);
-        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER);
+        gd.verticalIndent = 2;
         gd.horizontalIndent = 4;
         gd.grabExcessHorizontalSpace = true;
         checkbox.setLayoutData(gd);
@@ -89,7 +90,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
     @Override
     protected void doSetFocus() {
         checkbox.setFocus();
-        checkbox.setSelection(!checkbox.getSelection());
+        //checkbox.setSelection(!checkbox.getSelection());
 //        checkbox.getDisplay().asyncExec(new Runnable() {
 //            public void run()
 //            {
