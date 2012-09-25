@@ -89,8 +89,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         try {
             for (IResource resource : folder.members()) {
                 if (resource instanceof IFile) {
-                    SQLEditorInput input = new SQLEditorInput((IFile) resource);
-                    if (input.getDataSourceContainer() == container) {
+                    if (SQLEditorInput.getScriptDataSource((IFile) resource) == container) {
                         result.add((IFile) resource);
                     }
                 } else if (resource instanceof IFolder) {
@@ -129,7 +128,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
         // Save ds container reference
         if (dataSourceContainer != null) {
-            new SQLEditorInput(tempFile, dataSourceContainer);
+            SQLEditorInput.setScriptDataSource(tempFile, dataSourceContainer);
         }
 
         return tempFile;

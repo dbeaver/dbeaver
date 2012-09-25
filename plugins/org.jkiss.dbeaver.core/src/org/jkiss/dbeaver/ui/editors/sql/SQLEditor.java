@@ -645,6 +645,7 @@ public class SQLEditor extends SQLEditorBase
 
         super.dispose();
 
+/*
         if (fileToDelete != null) {
             try {
                 fileToDelete.delete(true, new NullProgressMonitor());
@@ -652,6 +653,7 @@ public class SQLEditor extends SQLEditorBase
                 log.error("Can't delete empty script file", e); //$NON-NLS-1$
             }
         }
+*/
     }
 
     @Override

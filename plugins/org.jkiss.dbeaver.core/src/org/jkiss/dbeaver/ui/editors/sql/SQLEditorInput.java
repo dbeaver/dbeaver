@@ -45,29 +45,14 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     private DBSDataSourceContainer dataSourceContainer;
     private String scriptName;
 
-    public SQLEditorInput(IFile file, DBSDataSourceContainer dataSourceContainer)
-    {
-        super(file);
-        if (dataSourceContainer != null) {
-            this.setDataSourceContainer(dataSourceContainer);
-        }
-        this.scriptName = file.getFullPath().removeFileExtension().lastSegment();
-    }
-
     public SQLEditorInput(IFile file)
     {
         super(file);
         this.scriptName = file.getFullPath().removeFileExtension().lastSegment();
         try {
-            String dataSourceId = getFile().getPersistentProperty(PROP_DATA_SOURCE_ID);
-            if (dataSourceId != null) {
-                DBSDataSourceContainer container = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject()).getDataSource(dataSourceId);
-                if (container == null) {
-                    log.warn("Data source '" + dataSourceId + "' not found in project '" + file.getProject().getName() + "'");
-                    setScriptDataSource(getFile(), null);
-                } else {
-                    setDataSourceContainer(container);
-                }
+            dataSourceContainer = getScriptDataSource(file);
+            if (dataSourceContainer == null) {
+                setScriptDataSource(getFile(), null);
             }
         } catch (CoreException e) {
             log.error(e);
@@ -147,6 +132,17 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     public DBPDataSource getDataSource()
     {
         return getDataSourceContainer().getDataSource();
+    }
+
+    public static DBSDataSourceContainer getScriptDataSource(IFile file)
+            throws CoreException
+    {
+        String dataSourceId = file.getPersistentProperty(PROP_DATA_SOURCE_ID);
+        if (dataSourceId != null) {
+            return DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject()).getDataSource(dataSourceId);
+        } else {
+            return null;
+        }
     }
 
     public static void setScriptDataSource(IFile file, DBSDataSourceContainer dataSourceContainer)
