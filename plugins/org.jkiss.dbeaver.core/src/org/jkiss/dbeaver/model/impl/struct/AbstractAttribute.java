@@ -129,7 +129,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(name = "Scale", viewable = false, order = 60)
+    @Property(viewable = false, order = 60)
     public int getScale()
     {
         return scale;
