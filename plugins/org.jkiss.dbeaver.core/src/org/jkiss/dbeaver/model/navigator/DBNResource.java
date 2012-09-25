@@ -83,7 +83,7 @@ public class DBNResource extends DBNNode
     }
 
     @Override
-    @Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getNodeName()
     {
         if (resource == null) {

@@ -89,7 +89,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     }
 
     @Override
-    @Property(name = "Name", viewable = true)
+    @Property(viewable = true)
     public String getName()
     {
         return meta.getChildrenType(getDataSource());

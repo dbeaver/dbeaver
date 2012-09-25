@@ -64,28 +64,28 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     }
 
 
-    @Property(name = "Column Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 10)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 10)
     @Override
     public String getName()
     {
         return super.getName();
     }
 
-    @Property(name = "Data Type", viewable = true, editable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @Property(viewable = true, editable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
     {
         return super.getTypeName();
     }
 
-    @Property(name = "Length", viewable = true, editable = true, order = 40)
+    @Property(viewable = true, editable = true, order = 40)
     @Override
     public long getMaxLength()
     {
         return super.getMaxLength();
     }
 
-    @Property(name = "Not Null", viewable = true, editable = true, order = 50)
+    @Property(viewable = true, editable = true, order = 50)
     @Override
     public boolean isRequired()
     {

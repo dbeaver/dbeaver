@@ -48,7 +48,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
     }
 
     @Override
-    @Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;

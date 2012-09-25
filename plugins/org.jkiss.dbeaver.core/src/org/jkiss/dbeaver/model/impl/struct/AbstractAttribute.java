@@ -60,7 +60,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(name = "Column Name", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public String getName()
     {
         return name;
@@ -72,7 +72,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(name = "Data Type", viewable = true, order = 20)
+    @Property(viewable = true, order = 20)
     public String getTypeName()
     {
         return typeName;
@@ -83,7 +83,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
         this.typeName = typeName;
     }
 
-    @Property(name = "Ordinal Position", viewable = true, order = 30)
+    @Property(viewable = true, order = 30)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
@@ -106,7 +106,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(name = "Length", viewable = true, order = 40)
+    @Property(viewable = true, order = 40)
     public long getMaxLength()
     {
         return maxLength;
@@ -117,7 +117,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
         this.maxLength = maxLength;
     }
 
-    @Property(name = "Not Null", viewable = true, order = 50)
+    @Property(viewable = true, order = 50)
     public boolean isRequired()
     {
         return required;
@@ -141,7 +141,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(name = "Precision", viewable = false, order = 61)
+    @Property(viewable = false, order = 61)
     public int getPrecision()
     {
         return precision;

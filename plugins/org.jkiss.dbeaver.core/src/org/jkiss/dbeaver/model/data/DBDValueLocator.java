@@ -56,12 +56,12 @@ public class DBDValueLocator implements DBPObject {
         return keyId.toString();
     }
 
-    @Property(name = "Table", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public DBSEntity getEntity() {
         return entity;
     }
 
-    @Property(name = "Key", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public DBSEntityConstraint getUniqueKey() {
         return entityIdentifier.getReferrer();
     }

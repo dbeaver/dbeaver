@@ -104,19 +104,19 @@ public class ColumnInfoPanel extends Composite {
             this.valueController = valueController;
         }
 
-        @Property(name = "Type", viewable = true, order = 1, category = "general")
+        @Property(viewable = true, order = 1, category = "general")
         public String getType()
         {
             return valueController.getValueLocator().getKeyType();
         }
 
-        @Property(name = "Name", viewable = true, order = 2, category = "general")
+        @Property(viewable = true, order = 2, category = "general")
         public String getName()
         {
             return valueController.getValueLocator().getUniqueKey().getName();
         }
 
-        @Property(name = "Columns", viewable = true, order = 3, category = "columns")
+        @Property(viewable = true, order = 3, category = "columns")
         public List<KeyColumnValue> getColumns()
         {
             List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();

@@ -59,7 +59,7 @@ public abstract class AbstractTable<
     }
 
     @Override
-    @Property(name = "Table Name", viewable = true, editable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName()
     {
         return tableName;

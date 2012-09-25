@@ -358,7 +358,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return id;
     }
 
-    @Property(name = "Driver Category", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public String getCategory()
     {
         return category;
@@ -370,7 +370,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    @Property(name = "Driver Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -382,7 +382,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    @Property(name = "Description", viewable = true, order = 100)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return description;
@@ -461,7 +461,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    @Property(name = "Driver Class", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public String getDriverClassName()
     {
         return driverClassName;
@@ -519,7 +519,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    @Property(name = "URL", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public String getSampleURL()
     {
         return sampleURL;

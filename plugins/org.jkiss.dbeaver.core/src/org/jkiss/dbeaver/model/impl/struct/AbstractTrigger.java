@@ -44,7 +44,7 @@ public abstract class AbstractTrigger implements DBSTrigger
     }
 
     @Override
-    @Property(name = "Trigger Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -55,7 +55,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.name = tableName;
     }
 
-    @Property(name = "Timing", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public DBSActionTiming getActionTiming()
     {
         return actionTiming;
@@ -66,7 +66,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.actionTiming = actionTiming;
     }
 
-    @Property(name = "Type", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public DBSManipulationType getManipulationType()
     {
         return manipulationType;
@@ -78,7 +78,7 @@ public abstract class AbstractTrigger implements DBSTrigger
     }
 
     @Override
-    @Property(name = "Trigger Description", viewable = true, order = 100)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return description;

@@ -233,7 +233,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    @Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -245,7 +245,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    @Property(name = "Description", order = 100)
+    @Property(order = 100)
     public String getDescription()
     {
         return description;
@@ -826,13 +826,13 @@ public class DataSourceDescriptor
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
     }
 
-    @Property(name = "Driver Type", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public String getPropertyDriverType()
     {
         return driver.getName();
     }
 
-    @Property(name = "Address", order = 3)
+    @Property(order = 3)
     public String getPropertyAddress()
     {
         StringBuilder addr = new StringBuilder();
@@ -845,19 +845,19 @@ public class DataSourceDescriptor
         return addr.toString();
     }
 
-    @Property(name = "Database", order = 4)
+    @Property(order = 4)
     public String getPropertyDatabase()
     {
         return connectionInfo.getDatabaseName();
     }
 
-    @Property(name = "URL", order = 5)
+    @Property(order = 5)
     public String getPropertyURL()
     {
         return connectionInfo.getUrl();
     }
 
-    @Property(name = "Server", order = 6)
+    @Property(order = 6)
     public String getPropertyServerName()
     {
         if (isConnected() && dataSource.getInfo() != null) {
@@ -870,7 +870,7 @@ public class DataSourceDescriptor
         return null;
     }
 
-    @Property(name = "Driver", order = 7)
+    @Property(order = 7)
     public String getPropertyDriver()
     {
         if (isConnected() && dataSource.getInfo() != null) {
@@ -883,7 +883,7 @@ public class DataSourceDescriptor
         return null;
     }
 
-    @Property(name = "Connect Time", order = 8)
+    @Property(order = 8)
     public String getPropertyConnectTime()
     {
         if (connectTime != null) {

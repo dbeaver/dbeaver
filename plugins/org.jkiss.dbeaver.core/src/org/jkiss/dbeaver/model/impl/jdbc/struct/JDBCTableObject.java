@@ -61,7 +61,7 @@ public abstract class JDBCTableObject<TABLE extends JDBCTable> implements DBSObj
         this.name = indexName;
     }
 
-    @Property(name = "Table", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public TABLE getTable()
     {
         return table;

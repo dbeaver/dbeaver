@@ -58,7 +58,7 @@ public abstract class AbstractProcedure<
     }
 
     @Override
-    @Property(name = "Procedure Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -70,7 +70,7 @@ public abstract class AbstractProcedure<
     }
 
     @Override
-    @Property(name = "Procedure Description", viewable = true, order = 100)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return description;

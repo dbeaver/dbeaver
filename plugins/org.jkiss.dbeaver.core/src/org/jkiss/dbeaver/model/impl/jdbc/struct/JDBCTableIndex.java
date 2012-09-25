@@ -58,7 +58,7 @@ public abstract class JDBCTableIndex<TABLE extends JDBCTable>
     }
 
     @Override
-    @Property(name = "Index Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
         return name;
@@ -70,14 +70,14 @@ public abstract class JDBCTableIndex<TABLE extends JDBCTable>
     }
 
     @Override
-    @Property(name = "Table", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public TABLE getTable()
     {
         return table;
     }
 
     @Override
-    @Property(name = "Index Type", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public DBSIndexType getIndexType()
     {
         return this.indexType;
