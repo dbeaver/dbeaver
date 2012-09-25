@@ -179,6 +179,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     // Try to detect current table
                     rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, null);
                 } else if (dataSource instanceof DBSObjectContainer) {
+                    // Try to get from active object
+                    if (dataSource instanceof DBSObjectSelector) {
+                        DBSObject selectedObject = ((DBSObjectSelector)dataSource).getSelectedObject();
+                        if (selectedObject != null) {
+                            makeProposalsFromChildren(monitor, selectedObject, null, proposals);
+                        }
+                    }
                     rootObject = (DBSObjectContainer) dataSource;
                 }
                 if (rootObject != null) {

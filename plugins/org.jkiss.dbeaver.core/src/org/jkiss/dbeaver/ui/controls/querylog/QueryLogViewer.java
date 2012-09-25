@@ -817,11 +817,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
             composite.setLayout(new GridLayout(1, false));
 
-            SashForm sash = new SashForm(composite, SWT.VERTICAL);
-            sash.setLayoutData(new GridData(GridData.FILL_BOTH));
-            sash.setLayout(new GridLayout(1, false));
+//            SashForm sash = new SashForm(composite, SWT.VERTICAL);
+//            sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+//            sash.setLayout(new GridLayout(1, false));
 
-            final Composite topFrame = UIUtils.createPlaceholder(sash, 2, 5);
+            final Composite topFrame = UIUtils.createPlaceholder(composite, 2, 5);
             topFrame.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             UIUtils.createLabelText(topFrame, CoreMessages.controls_querylog_label_time, COLUMN_TIME.getText(object), SWT.READ_ONLY);
@@ -833,19 +833,19 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             final Text messageText = new Text(topFrame, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
             messageText.setText(COLUMN_TEXT.getText(object));
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 40;
-            gd.widthHint = 300;
+            //gd.heightHint = 40;
+            gd.widthHint = 500;
             messageText.setLayoutData(gd);
 
-            final Composite bottomFrame = UIUtils.createPlaceholder(sash, 1, 5);
-            bottomFrame.setLayoutData(new GridData(GridData.FILL_BOTH));
+            final Composite bottomFrame = UIUtils.createPlaceholder(composite, 1, 5);
+            bottomFrame.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             final Label resultLabel = UIUtils.createControlLabel(bottomFrame, CoreMessages.controls_querylog_label_result);
             resultLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
             final Text resultText = new Text(bottomFrame, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.H_SCROLL);
             resultText.setText(COLUMN_RESULT.getText(object));
-            gd = new GridData(GridData.FILL_BOTH);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.heightHint = 60;
             gd.widthHint = 300;
             resultText.setLayoutData(gd);
