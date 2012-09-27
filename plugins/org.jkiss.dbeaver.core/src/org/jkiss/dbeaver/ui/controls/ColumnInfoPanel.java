@@ -90,6 +90,7 @@ public class ColumnInfoPanel extends Composite {
         {
             return attribute.getName();
         }
+        @Override
         public String toString()
         {
             return value == null ? "[NULL]" : value.toString(); //$NON-NLS-1$
@@ -130,7 +131,7 @@ public class ColumnInfoPanel extends Composite {
         @Override
         public String toString()
         {
-            return valueController.getValueLocator().getKeyType();//valueController.getValueLocator().getKeyKind();
+            return "";//valueController.getValueLocator().getEntityIdentifier()
         }
     }
 

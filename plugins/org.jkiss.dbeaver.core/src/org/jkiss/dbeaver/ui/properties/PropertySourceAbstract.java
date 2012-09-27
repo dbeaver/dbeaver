@@ -80,7 +80,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
 
     public PropertySourceAbstract addProperty(Object id, String name, Object value)
     {
-        props.add(new PropertyDescriptorEx(null, id, name, null, null, false, null, null, false));
+        props.add(new PropertyDescriptorEx(null, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
         propValues.put(id, value);
 
         return this;
@@ -270,7 +270,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
     }
 
-    public void collectProperties()
+    public boolean collectProperties()
     {
         lazyValues.clear();
         props.clear();
@@ -299,6 +299,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
                 }
             }
         }
+        return !props.isEmpty();
     }
 
     private class PropertySheetLoadService extends AbstractLoadService<Map<ObjectPropertyDescriptor, Object>> {

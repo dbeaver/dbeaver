@@ -35,11 +35,13 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.Collator;
@@ -177,20 +179,7 @@ public class PropertyTreeViewer extends TreeViewer {
         // Make tree model
         customCategories = getCustomCategories();
 
-        Map<String, TreeNode> categories = new LinkedHashMap<String, TreeNode>();
-        final IPropertyDescriptor[] props = propertySource.getPropertyDescriptors();
-        for (IPropertyDescriptor prop : props) {
-            String categoryName = prop.getCategory();
-            if (CommonUtils.isEmpty(categoryName)) {
-                categoryName = CATEGORY_GENERAL;
-            }
-            TreeNode category = categories.get(categoryName);
-            if (category == null) {
-                category = new TreeNode(parent, propertySource, categoryName);
-                categories.put(categoryName, category);
-            }
-            new TreeNode(category, propertySource, prop);
-        }
+        Map<String, TreeNode> categories = loadTreeNodes(parent, propertySource);
         if (customCategories != null) {
             for (String customCategory : customCategories) {
                 TreeNode node = categories.get(customCategory);
@@ -212,6 +201,53 @@ public class PropertyTreeViewer extends TreeViewer {
         super.expandAll();
 
         disposeOldEditor();
+    }
+
+    private Map<String, TreeNode> loadTreeNodes(TreeNode parent, IPropertySource propertySource) {
+        Map<String, TreeNode> categories = new LinkedHashMap<String, TreeNode>();
+        final IPropertyDescriptor[] props = propertySource.getPropertyDescriptors();
+        for (IPropertyDescriptor prop : props) {
+            String categoryName = prop.getCategory();
+            if (CommonUtils.isEmpty(categoryName)) {
+                categoryName = CATEGORY_GENERAL;
+            }
+            TreeNode category = (parent != null ? parent : categories.get(categoryName));
+            if (category == null) {
+                category = new TreeNode(parent, propertySource, categoryName);
+                categories.put(categoryName, category);
+            }
+            TreeNode propNode = new TreeNode(category, propertySource, prop);
+            // Load nested object's properties
+            if (!(propertySource instanceof IPropertySourceEditable) && prop instanceof IPropertyDescriptorEx) {
+                Class<?> propType = ((IPropertyDescriptorEx) prop).getDataType();
+                if (propType != null) {
+                    if (DBPObject.class.isAssignableFrom(propType)) {
+                        Object propertyValue = propertySource.getPropertyValue(prop.getId());
+                        if (propertyValue != null) {
+                            PropertyCollector nestedCollector = new PropertyCollector(propertyValue, true);
+                            if (nestedCollector.collectProperties()) {
+                                categories.putAll(loadTreeNodes(propNode, nestedCollector));
+                            }
+                        }
+                    } else if (BeanUtils.isCollectionType(propType)) {
+                        Object propertyValue = propertySource.getPropertyValue(prop.getId());
+                        if (propertyValue != null) {
+                            Collection collection;
+                            if (BeanUtils.isArrayType(propType)) {
+                                collection = Arrays.asList((Object[])propertyValue);
+                            } else {
+                                collection = (Collection)propertyValue;
+                            }
+                            PropertySourceCollection psc = new PropertySourceCollection(collection);
+                            for (IPropertyDescriptor pd : psc.getPropertyDescriptors()) {
+                                TreeNode itemNode = new TreeNode(propNode, psc, pd);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return categories;
     }
 
     public void clearProperties()

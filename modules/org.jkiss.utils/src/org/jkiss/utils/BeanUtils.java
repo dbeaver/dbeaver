@@ -20,6 +20,7 @@
 package org.jkiss.utils;
 
 import java.lang.reflect.*;
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 /**
@@ -172,11 +173,16 @@ public class BeanUtils {
 
 	public static boolean isCollectionType(Type type)
 	{
-		if (type instanceof ParameterizedType) {
-			ParameterizedType pt = (ParameterizedType)type;
-			if (pt.getActualTypeArguments().length == 1) {
-				return true;
-			}
+		if (type instanceof Class && Collection.class.isAssignableFrom((Class) type)) {
+/*
+            if (type instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType)type;
+                if (pt.getActualTypeArguments().length == 1) {
+                    return true;
+                }
+            }
+*/
+            return true;
 		}
 		return isArrayType(type);
 	}
