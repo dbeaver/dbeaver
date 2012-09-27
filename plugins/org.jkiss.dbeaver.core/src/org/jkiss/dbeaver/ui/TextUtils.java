@@ -37,8 +37,7 @@ public class TextUtils {
     public static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
 
     public static boolean isEmptyLine(IDocument document, int line)
-        throws BadLocationException
-    {
+            throws BadLocationException {
         IRegion region = document.getLineInformation(line);
         if (region == null || region.getLength() == 0) {
             return true;
@@ -53,13 +52,12 @@ public class TextUtils {
      * to the end of the string. The width is computed using the
      * {@link org.eclipse.swt.graphics.GC#textExtent(String)}.
      *
-     * @param gc GC used to perform calculation.
-     * @param t text to modify.
+     * @param gc    GC used to perform calculation.
+     * @param t     text to modify.
      * @param width Pixels to display.
      * @return shortened string that fits in area specified.
      */
-    public static String getShortText(GC gc, String t, int width)
-    {
+    public static String getShortText(GC gc, String t, int width) {
         if (CommonUtils.isEmpty(t)) {
             return t;
         }
@@ -68,31 +66,28 @@ public class TextUtils {
             return t;
         }
 
-        int w = gc.textExtent("...").x; //$NON-NLS-1$
+        int w = gc.textExtent("...").x;
         String text = t;
         int l = text.length();
         int pivot = l / 2;
         int s = pivot;
         int e = pivot + 1;
 
-        while (s >= 0 && e < l)
-        {
+        while (s >= 0 && e < l) {
             String s1 = text.substring(0, s);
             String s2 = text.substring(e, l);
             int l1 = gc.textExtent(s1).x;
             int l2 = gc.textExtent(s2).x;
-            if (l1 + w + l2 < width)
-            {
-                text = s1 + "..." + s2; //$NON-NLS-1$
+            if (l1 + w + l2 < width) {
+                text = s1 + "..." + s2;
                 break;
             }
             s--;
             e++;
         }
 
-        if (s == 0 || e == l)
-        {
-            text = text.substring(0, 1) + "..." + text.substring(l - 1, l); //$NON-NLS-1$
+        if (s == 0 || e == l) {
+            text = text.substring(0, 1) + "..." + text.substring(l - 1, l);
         }
 
         return text;
@@ -103,85 +98,38 @@ public class TextUtils {
      * the width argument. Strings that have been shorted have an "..." attached
      * to the end of the string. The width is computed using the
      * {@link org.eclipse.swt.graphics.GC#stringExtent(String)}.
-     *
+     * <p/>
      * Text shorten removed due to awful algorithm (it works really slow on long strings).
      * TODO: make something better
      *
-     * @param gc GC used to perform calculation.
-     * @param t text to modify.
+     * @param gc    GC used to perform calculation.
+     * @param t     text to modify.
      * @param width Pixels to display.
      * @return shortened string that fits in area specified.
      */
-    public static String getShortString(GC gc, String t, int width)
-    {
-        if (CommonUtils.isEmpty(t)) {
-            return t;
-        }
+    public static String getShortString(GC gc, String t, int width) {
 
-        if (width <= 0) {
-            return ""; //$NON-NLS-1$
-        }
-        int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
-        float length = t.length();
-        if (width < length * avgCharWidth) {
-            length = (float)width / avgCharWidth;
-            length *= 1.5;
-/*
-            for (;;) {
-                String tmp = t.substring(0, length);
-                int textLength = gc.textExtent(tmp).x;
-                if (textLength >= width) {
-                    break;
-                }
-                length += 100;
-                if (length >= t.length()) {
-                    return t;
-                }
-            }
-*/
-            if (length < t.length()) {
-                t = t.substring(0, (int)length);
-            }
-        }
-        return t;
-/*
-        if (width >= gc.stringExtent(t).x)
-        {
-            return t;
-        }
-
-        int w = gc.stringExtent("...").x;
-        String text = t;
-        int l = text.length();
-        int pivot = l / 2;
-        int s = pivot;
-        int e = pivot + 1;
-        while (s >= 0 && e < l)
-        {
-            String s1 = text.substring(0, s);
-            String s2 = text.substring(e, l);
-            int l1 = gc.stringExtent(s1).x;
-            int l2 = gc.stringExtent(s2).x;
-            if (l1 + w + l2 < width)
-            {
-                text = s1 + "..." + s2;
-                break;
-            }
-            s--;
-            e++;
-        }
-
-        if (s == 0 || e == l)
-        {
-            text = text.substring(0, 1) + "..." + text.substring(l - 1, l);
-        }
-
-        return text;
-*/
+        return getShortText(gc, t, width);
+//        if (CommonUtils.isEmpty(t)) {
+//            return t;
+//        }
+//
+//        if (width <= 0) {
+//            return ""; //$NON-NLS-1$
+//        }
+//        int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
+//        float length = t.length();
+//        if (width < length * avgCharWidth) {
+//            length = (float) width / avgCharWidth;
+//            length *= 1.5;
+//            if (length < t.length()) {
+//                t = t.substring(0, (int) length);
+//            }
+//        }
+//        return t;
     }
 
-    public static String replaceVariables(String string, Map<String, Object> variables)
-    {
+    public static String replaceVariables(String string, Map<String, Object> variables) {
         Matcher matcher = VAR_PATTERN.matcher(string);
         int pos = 0;
         while (matcher.find(pos)) {
@@ -190,15 +138,14 @@ public class TextUtils {
             Object varValue = variables.get(varName);
             if (varValue != null) {
                 matcher = VAR_PATTERN.matcher(
-                    string = matcher.replaceFirst(CommonUtils.toString(varValue)));
+                        string = matcher.replaceFirst(CommonUtils.toString(varValue)));
                 pos = 0;
             }
         }
         return string;
     }
 
-    public static String[] parseCommandLine(String commandLine)
-    {
+    public static String[] parseCommandLine(String commandLine) {
         StringTokenizer st = new StringTokenizer(commandLine);
         String[] args = new String[st.countTokens()];
         for (int i = 0; st.hasMoreTokens(); i++) {

@@ -134,7 +134,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
 */
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
-        new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
+        ColumnInfoPanel columnPanel = new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
 /*
 
         ExpandBar expandBar = new ExpandBar(dialogGroup, SWT.V_SCROLL);
