@@ -4684,9 +4684,12 @@ public class LightGrid extends Canvas {
     public String getCellText(int column, int row)
     {
         if (contentLabelProvider != null) {
-            return CommonUtils.truncateString(
-                contentLabelProvider.getText(new GridPos(column, row)),
-                MAX_TOOLTIP_LENGTH);
+            String text = contentLabelProvider.getText(new GridPos(column, row));
+            // Truncate too long texts (they are really bad for performance)
+            if (text.length() > MAX_TOOLTIP_LENGTH) {
+                text = text.substring(0, MAX_TOOLTIP_LENGTH) + " ...";
+            }
+            return text;
         }
         return null;
     }

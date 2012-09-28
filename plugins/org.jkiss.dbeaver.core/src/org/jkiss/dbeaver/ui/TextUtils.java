@@ -109,24 +109,25 @@ public class TextUtils {
      */
     public static String getShortString(GC gc, String t, int width) {
 
-        return getShortText(gc, t, width);
-//        if (CommonUtils.isEmpty(t)) {
-//            return t;
-//        }
-//
-//        if (width <= 0) {
-//            return ""; //$NON-NLS-1$
-//        }
-//        int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
-//        float length = t.length();
-//        if (width < length * avgCharWidth) {
-//            length = (float) width / avgCharWidth;
-//            length *= 1.5;
-//            if (length < t.length()) {
-//                t = t.substring(0, (int) length);
-//            }
-//        }
 //        return t;
+        if (CommonUtils.isEmpty(t)) {
+            return t;
+        }
+
+        if (width <= 0) {
+            return ""; //$NON-NLS-1$
+        }
+        int avgCharWidth = gc.getFontMetrics().getAverageCharWidth();
+        float length = t.length();
+        if (width < length * avgCharWidth) {
+            length = (float) width / avgCharWidth;
+            length *= 1.5;
+            if (length < t.length()) {
+                t = t.substring(0, (int) length);
+                //return getShortText(gc, t, width);
+            }
+        }
+        return t;
     }
 
     public static String replaceVariables(String string, Map<String, Object> variables) {

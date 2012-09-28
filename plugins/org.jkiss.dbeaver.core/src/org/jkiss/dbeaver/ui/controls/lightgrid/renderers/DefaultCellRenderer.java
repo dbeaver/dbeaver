@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
@@ -103,9 +104,12 @@ public class DefaultCellRenderer extends GridCellRenderer {
             gc.setForeground(grid.getCellForeground(getColumn(), getRow()));
         }
 
-        String text = org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, grid.getCellText(getColumn(), getRow()), width);
+        // Get cell text
+        String text = grid.getCellText(getColumn(), getRow());
         // Replace linefeeds with space
-        text = text.replace('\n', UIUtils.PARAGRAPH_CHAR);
+        text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ');
+        // Get shortern version of string
+        text = TextUtils.getShortString(gc, text, width);
 
         if (getAlignment() == SWT.RIGHT) {
             int len = gc.stringExtent(text).x;
