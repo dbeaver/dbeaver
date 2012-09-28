@@ -114,10 +114,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         return syntaxManager;
     }
 
-    public IDocument getDocument()
+    public Document getDocument()
     {
         IDocumentProvider provider = getDocumentProvider();
-        return provider == null ? null : provider.getDocument(getEditorInput());
+        return provider == null ? null : (Document)provider.getDocument(getEditorInput());
     }
 
     public ProjectionAnnotationModel getAnnotationModel()
@@ -334,7 +334,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             syntaxManager.refreshRules();
         }
 
-        Document document = (Document) getDocument();
+        Document document = getDocument();
         if (document != null) {
             IDocumentPartitioner partitioner = new FastPartitioner(
                 new SQLPartitionScanner(syntaxManager),
@@ -388,10 +388,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     public SQLStatementInfo extractQueryAtPos(int currentPos)
     {
-        IDocument document = getDocument();
+        Document document = getDocument();
         if (document.getLength() == 0) {
             return null;
         }
+        IDocumentPartitioner partitioner = document.getDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING);
+        if (partitioner != null) {
+            // Move to default partition. We don't want to be in the middle of multi-line comment or string
+            while (currentPos > 0 && !IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(currentPos))) {
+                currentPos--;
+            }
+        }
+
         // Extract part of document between empty lines
         int startPos = 0;
         int endPos = document.getLength();
@@ -408,7 +416,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             }
             while (lastLine < linesCount) {
                 if (TextUtils.isEmptyLine(document, lastLine)) {
-                    break;
+                    if (partitioner == null || IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(document.getLineOffset(lastLine)))) {
+                        break;
+                    }
                 }
                 lastLine++;
             }
