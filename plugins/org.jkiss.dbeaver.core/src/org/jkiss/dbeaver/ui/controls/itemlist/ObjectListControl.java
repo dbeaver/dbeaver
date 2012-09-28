@@ -949,7 +949,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                                 e = ((InvocationTargetException) e).getTargetException();
                             }
                             log.error("Error reading property '" + prop.getId() + "' from " + object, e); //$NON-NLS-1$ //$NON-NLS-2$
-                            return RuntimeUtils.makeExceptionStatus(e);
+                            // do not return error - it causes a lot of error boxes
+                            //return RuntimeUtils.makeExceptionStatus(e);
                         }
                 }
                 }

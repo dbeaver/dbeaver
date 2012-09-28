@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * GenericPackage
@@ -37,7 +36,6 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
 
     private GenericStructContainer container;
     private String packageName;
-    private List<GenericProcedure> procedures = new ArrayList<GenericProcedure>();
     private boolean nameFromCatalog;
 
     public GenericPackage(
@@ -49,6 +47,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         this.container = container;
         this.packageName = packageName;
         this.nameFromCatalog = nameFromCatalog;
+        this.procedures = new ArrayList<GenericProcedure>();
     }
 
     @Override
@@ -95,13 +94,6 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         throws DBException
     {
         return procedures;
-    }
-
-    @Override
-    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return DBUtils.findObjects(procedures, name);
     }
 
     @Override

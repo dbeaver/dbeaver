@@ -26,19 +26,17 @@ import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -53,12 +51,12 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
     private IDataSourceProvider dataSourceProvider;
     private SQLSyntaxManager syntaxManager;
 
-    private static class TableLookupCache {
-        List<DBNDatabaseNode> nodes;
+    private static class ObjectLookupCache {
+        List<DBSObjectReference> references;
         boolean loading = true;
     }
 
-    private Map<String, TableLookupCache> linksCache = new HashMap<String, TableLookupCache>();
+    private Map<String, ObjectLookupCache> linksCache = new HashMap<String, ObjectLookupCache>();
 
 
     public SQLHyperlinkDetector(IDataSourceProvider dataSourceProvider, SQLSyntaxManager syntaxManager)
@@ -135,10 +133,10 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         }
 
         String tableName = word;
-        TableLookupCache tlc = linksCache.get(tableName);
+        ObjectLookupCache tlc = linksCache.get(tableName);
         if (tlc == null) {
             // Start new word finder job
-            tlc = new TableLookupCache();
+            tlc = new ObjectLookupCache();
             linksCache.put(tableName, tlc);
             TablesFinderJob job = new TablesFinderJob(structureAssistant, tableName, tlc);
             job.schedule();
@@ -161,26 +159,20 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             // Long task - just return no links for now
             return null;
         } else {
-            // If no nodes found for this word - just null result
-            if (tlc.nodes.isEmpty()) {
+            // If no references found for this word - just null result
+            if (tlc.references.isEmpty()) {
                 return null;
             }
-            // Check nodes (they may be disposed by refresh/delete/other node actions)
-            for (Iterator<DBNDatabaseNode> i = tlc.nodes.iterator(); i.hasNext(); ) {
-                if (i.next().isDisposed()) {
-                    i.remove();
-                }
-            }
-            if (tlc.nodes.isEmpty()) {
-                // No more nodes remains - try next time
+            if (tlc.references.isEmpty()) {
+                // No more references remains - try next time
                 linksCache.remove(tableName);
                 return null;
             }
-            // Create hyperlinks based on nodes
+            // Create hyperlinks based on references
             final IRegion wordRegion = new Region(wordStart, wordEnd - wordStart);
-            IHyperlink[] links = new IHyperlink[tlc.nodes.size()];
-            for (int i = 0, objectsSize = tlc.nodes.size(); i < objectsSize; i++) {
-                links[i] = new EntityHyperlink(tlc.nodes.get(i), wordRegion);
+            IHyperlink[] links = new IHyperlink[tlc.references.size()];
+            for (int i = 0, objectsSize = tlc.references.size(); i < objectsSize; i++) {
+                links[i] = new EntityHyperlink(tlc.references.get(i), wordRegion);
             }
             return links;
         }
@@ -197,9 +189,9 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
         private DBSStructureAssistant structureAssistant;
         private String word;
-        private TableLookupCache cache;
+        private ObjectLookupCache cache;
 
-        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String word, TableLookupCache cache)
+        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String word, ObjectLookupCache cache)
         {
             super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataSourceProvider.getDataSource());
             this.structureAssistant = structureAssistant;
@@ -212,20 +204,12 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            cache.nodes = new ArrayList<DBNDatabaseNode>();
+            cache.references = new ArrayList<DBSObjectReference>();
             try {
-                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                 DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
-                Collection<DBSObject> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, 10);
-                if (!objects.isEmpty()) {
-                    for (DBSObject object : objects) {
-                        DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, object, true);
-                        if (node == null) {
-                            log.debug("Couldn't find navigator node for object '" + object.getName());
-                        } else {
-                            cache.nodes.add(node);
-                        }
-                    }
+                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, 10);
+                if (!CommonUtils.isEmpty(objects)) {
+                    cache.references.addAll(objects);
                 }
             } catch (DBException e) {
                 log.warn(e);

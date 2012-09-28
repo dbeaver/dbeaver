@@ -28,9 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -237,14 +235,14 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         if (childObject == null) {
                             DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                             if (structureAssistant != null) {
-                                Collection<DBSObject> tables = structureAssistant.findObjectsByMask(
+                                Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(
                                     monitor,
                                     null,
                                     structureAssistant.getAutoCompleteObjectTypes(),
                                     token,
                                     2);
-                                if (!tables.isEmpty()) {
-                                    childObject = tables.iterator().next();
+                                if (!references.isEmpty()) {
+                                    childObject = references.iterator().next().resolveObject(monitor);
                                 }
                             }
                         }
@@ -369,14 +367,14 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 // No such object found - may be it's start of table name
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                 if (structureAssistant != null) {
-                    Collection<DBSObject> tables = structureAssistant.findObjectsByMask(
+                    Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(
                         monitor,
                         sc,
                         structureAssistant.getAutoCompleteObjectTypes(),
                         nameList.get(0),
                         2);
                     if (!tables.isEmpty()) {
-                        return tables.iterator().next();
+                        return tables.iterator().next().resolveObject(monitor);
                     }
                 }
                 return null;
@@ -426,14 +424,14 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         List<ICompletionProposal> proposals)
     {
         try {
-            Collection<DBSObject> tables = assistant.findObjectsByMask(
+            Collection<DBSObjectReference> tables = assistant.findObjectsByMask(
                 monitor,
                 rootSC,
                 assistant.getAutoCompleteObjectTypes(),
                 tableName + "%",
                 100);
-            for (DBSObject table : tables) {
-                proposals.add(makeProposalsFromObject(monitor, table));
+            for (DBSObjectReference table : tables) {
+                proposals.add(makeProposalsFromObject(table, table.getObjectType().getImage()));
             }
         } catch (DBException e) {
             log.error(e);
@@ -442,11 +440,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     private ICompletionProposal makeProposalsFromObject(DBRProgressMonitor monitor, DBSObject object)
     {
-        String objectName = object.getName();
-        //String displayString = objectName;
-        //if (object instanceof DBSEntityQualified) {
-        //    displayString = ((DBSEntityQualified)object).getFullQualifiedName();
-        //}
+        DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, true);
+        return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
+    }
+
+    private ICompletionProposal makeProposalsFromObject(DBPNamedObject object, Image objectIcon)
+    {
+        String objectName = DBUtils.getObjectFullName(object);
 
         StringBuilder info = new StringBuilder();
         PropertyCollector collector = new PropertyCollector(object, false);
@@ -462,14 +462,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             info.append("<br>");
         }
 
-        DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, true);
-/*
-        return new ContextInformation(
-                node == null ? null : node.getNodeIconDefault(),
-                childName,
-                info.toString());
-*/
-        return createCompletionProposal(objectName, objectName, info.toString(), node == null ? null : node.getNodeIconDefault(), true);
+        return createCompletionProposal(object.getName(), objectName, info.toString(), objectIcon, true);
     }
 
     /*

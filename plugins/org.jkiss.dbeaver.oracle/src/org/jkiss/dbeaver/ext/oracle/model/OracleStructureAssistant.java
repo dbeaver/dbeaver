@@ -27,11 +27,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -85,7 +84,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     }
 
     @Override
-    public Collection<DBSObject> findObjectsByMask(
+    public Collection<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,
         DBSObjectType[] objectTypes,
@@ -97,13 +96,15 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         JDBCExecutionContext context = dataSource.openContext(
             monitor, DBCExecutionPurpose.META, "Find objects by name");
         try {
-            List<DBSObject> objects = new ArrayList<DBSObject>();
+            List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
 
             // Search all objects
             searchAllObjects(context, schema, objectNameMask, objectTypes, maxResults, objects);
 
-            // Search constraints
-            findConstraintsByMask(context, schema, objectNameMask, objectTypes, maxResults, objects);
+            if (CommonUtils.contains(objectTypes, OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY) && objects.size() < maxResults) {
+                // Search constraints
+                findConstraintsByMask(context, schema, objectNameMask, objectTypes, maxResults, objects);
+            }
 
             return objects;
         }
@@ -116,20 +117,19 @@ public class OracleStructureAssistant implements DBSStructureAssistant
     }
 
     private void findConstraintsByMask(
-//            DBRProgressMonitor monitor,
-            JDBCExecutionContext context,
-            OracleSchema schema,
-            String constrNameMask,
-            DBSObjectType[] objectTypes,
-            int maxResults,
-            List<DBSObject> objects)
+        JDBCExecutionContext context,
+        final OracleSchema schema,
+        String constrNameMask,
+        DBSObjectType[] objectTypes,
+        int maxResults,
+        List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = context.getProgressMonitor();
 
         List<DBSObjectType> objectTypesList = Arrays.asList(objectTypes);
-        boolean hasFK = objectTypesList.contains(OracleObjectType.FOREIGN_KEY);
-        boolean hasConstraints = objectTypesList.contains(OracleObjectType.CONSTRAINT);
+        final boolean hasFK = objectTypesList.contains(OracleObjectType.FOREIGN_KEY);
+        final boolean hasConstraints = objectTypesList.contains(OracleObjectType.CONSTRAINT);
 
         // Load tables
         JDBCPreparedStatement dbStat = context.prepareStatement(
@@ -150,32 +150,41 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
-                    String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
-                    String constrName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
-                    String constrType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_TYPE);
-                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
-                    if (tableSchema == null) {
-                        log.debug("Constraint schema '" + schemaName + "' not found");
-                        continue;
-                    }
-                    OracleTable table = tableSchema.getTable(monitor, tableName);
-                    if (table == null) {
-                        log.debug("Constraint table '" + tableName + "' not found in catalog '" + tableSchema.getName() + "'");
-                        continue;
-                    }
-                    DBSObject constraint = null;
-                    if (hasFK && OracleTableConstraint.getConstraintType(constrType) == DBSEntityConstraintType.FOREIGN_KEY) {
-                        constraint = table.getForeignKey(monitor, constrName);
-                    }
-                    if (hasConstraints && OracleTableConstraint.getConstraintType(constrType) != DBSEntityConstraintType.FOREIGN_KEY) {
-                        constraint = table.getConstraint(monitor, constrName);
-                    }
-                    if (constraint == null) {
-                        log.debug("Constraint '" + constrName + "' not found in table '" + table.getFullQualifiedName() + "'");
-                    } else {
-                        objects.add(constraint);
-                    }
+                    final String schemaName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_OWNER);
+                    final String tableName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_TABLE_NAME);
+                    final String constrName = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_NAME);
+                    final String constrType = JDBCUtils.safeGetString(dbResult, OracleConstants.COL_CONSTRAINT_TYPE);
+                    final DBSEntityConstraintType type = OracleTableConstraint.getConstraintType(constrType);
+                    objects.add(new AbstractObjectReference(
+                        constrName,
+                        schemaName,
+                        null,
+                        type == DBSEntityConstraintType.FOREIGN_KEY ? OracleObjectType.FOREIGN_KEY : OracleObjectType.CONSTRAINT)
+                    {
+                        @Override
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
+                        {
+                            OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
+                            if (tableSchema == null) {
+                                throw new DBException("Constraint schema '" + schemaName + "' not found");
+                            }
+                            OracleTable table = tableSchema.getTable(monitor, tableName);
+                            if (table == null) {
+                                throw new DBException("Constraint table '" + tableName + "' not found in catalog '" + tableSchema.getName() + "'");
+                            }
+                            DBSObject constraint = null;
+                            if (hasFK && type == DBSEntityConstraintType.FOREIGN_KEY) {
+                                constraint = table.getForeignKey(monitor, constrName);
+                            }
+                            if (hasConstraints && type != DBSEntityConstraintType.FOREIGN_KEY) {
+                                constraint = table.getConstraint(monitor, constrName);
+                            }
+                            if (constraint == null) {
+                                throw new DBException("Constraint '" + constrName + "' not found in table '" + table.getFullQualifiedName() + "'");
+                            }
+                            return constraint;
+                        }
+                    });
                 }
             }
             finally {
@@ -186,11 +195,11 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         }
     }
 
-    private void searchAllObjects(JDBCExecutionContext context, OracleSchema schema, String objectNameMask, DBSObjectType[] objectTypes, int maxResults, List<DBSObject> objects)
+    private void searchAllObjects(final JDBCExecutionContext context, final OracleSchema schema, String objectNameMask, DBSObjectType[] objectTypes, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         StringBuilder objectTypeClause = new StringBuilder(100);
-        List<OracleObjectType> oracleObjectTypes = new ArrayList<OracleObjectType>(objectTypes.length + 2);
+        final List<OracleObjectType> oracleObjectTypes = new ArrayList<OracleObjectType>(objectTypes.length + 2);
         for (DBSObjectType objectType : objectTypes) {
             if (objectType instanceof OracleObjectType) {
                 oracleObjectTypes.add((OracleObjectType) objectType);
@@ -235,23 +244,27 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     if (context.getProgressMonitor().isCanceled()) {
                         break;
                     }
-                    String schemaName = JDBCUtils.safeGetString(dbResult, "OWNER");
-                    String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-                    String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
-                    OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(context.getProgressMonitor(), schemaName);
-                    if (tableSchema == null) {
-                        log.debug("Table schema '" + schemaName + "' not found");
-                        continue;
-                    }
-                    OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
+                    final String schemaName = JDBCUtils.safeGetString(dbResult, "OWNER");
+                    final String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+                    final String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+                    final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
                     if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && oracleObjectTypes.contains(objectType))
                     {
-                        DBSObject object = objectType.findObject(context.getProgressMonitor(), tableSchema, objectName);
-                        if (object == null) {
-                            log.debug(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
-                            continue;
-                        }
-                        objects.add(object);
+                        objects.add(new AbstractObjectReference(objectName, schemaName, null, objectType) {
+                            @Override
+                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
+                            {
+                                OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(context.getProgressMonitor(), schemaName);
+                                if (tableSchema == null) {
+                                    throw new DBException("Schema '" + schemaName + "' not found");
+                                }
+                                DBSObject object = objectType.findObject(context.getProgressMonitor(), tableSchema, objectName);
+                                if (object == null) {
+                                    throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
+                                }
+                                return object;
+                            }
+                        });
                     }
                 }
             }

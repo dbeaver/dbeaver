@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.CopyUnformattedTextAction;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.NavigateObjectAction;
 
 import java.util.ResourceBundle;
 
@@ -41,12 +42,14 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal"; //$NON-NLS-1$
     static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip"; //$NON-NLS-1$
     static final String ACTION_CONTENT_FORMAT_PROPOSAL = "ContentFormatProposal"; //$NON-NLS-1$
+
     private SQLEditorBase activeEditorPart;
 
     private RetargetTextEditorAction contentAssistProposal;
     private RetargetTextEditorAction contentAssistTip;
     private RetargetTextEditorAction contentFormatProposal;
     private CopyUnformattedTextAction copyUnformattedTextAction;
+    private NavigateObjectAction navigateObjectAction;
 
     public SQLEditorContributor()
     {
@@ -76,6 +79,8 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         contentAssistTip = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_TIP));
         contentAssistTip.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
         copyUnformattedTextAction = new CopyUnformattedTextAction();
+        navigateObjectAction = new NavigateObjectAction();
+        navigateObjectAction.setActionDefinitionId(ICommandIds.CMD_NAVIGATE_OBJECT);
     }
 
     @Override
@@ -102,6 +107,9 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             contentAssistTip.setAction(getAction(activeEditorPart, ACTION_CONTENT_ASSIST_TIP)); //$NON-NLS-1$
             contentFormatProposal.setAction(getAction(activeEditorPart, ACTION_CONTENT_FORMAT_PROPOSAL)); //$NON-NLS-1$
             copyUnformattedTextAction.setEditor(activeEditorPart);
+
+            activeEditorPart.setAction(ICommandIds.CMD_NAVIGATE_OBJECT, navigateObjectAction);
+            navigateObjectAction.setEditor(activeEditorPart);
         }
     }
 
@@ -129,6 +137,10 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
             formatMenu.add(copyUnformattedTextAction);
             //editMenu.add(executeStatementAction);
             //editMenu.add(executeScriptAction);
+        }
+        IMenuManager navigateMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_NAVIGATE);
+        if (navigateMenu != null && !isNestedEditor()) {
+            navigateMenu.add(navigateObjectAction);
         }
     }
 

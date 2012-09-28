@@ -50,7 +50,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private final ForeignKeysCache foreignKeysCache;
     private final PrimaryKeysCache primaryKeysCache;
     private Map<String, GenericPackage> packageMap;
-    private List<GenericProcedure> procedures;
+    protected List<GenericProcedure> procedures;
 
     protected GenericObjectContainer(GenericDataSource dataSource)
     {
@@ -225,6 +225,17 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             loadProcedures(monitor);
         }
         return procedures;
+    }
+
+    @Override
+    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException
+    {
+        for (GenericProcedure procedure : CommonUtils.safeCollection(getProcedures(monitor))) {
+            if (uniqueName.equals(procedure.getUniqueName())) {
+                return procedure;
+            }
+        }
+        return null;
     }
 
     @Override

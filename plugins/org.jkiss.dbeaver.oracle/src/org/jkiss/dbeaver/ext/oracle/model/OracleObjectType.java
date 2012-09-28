@@ -167,7 +167,7 @@ public enum OracleObjectType implements DBSObjectType {
     {
         return typeMap.get(typeName);
     }
-    
+
     private static interface ObjectFinder<OBJECT_TYPE extends DBSObject> {
         OBJECT_TYPE findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException;
     }
@@ -255,5 +255,12 @@ public enum OracleObjectType implements DBSObjectType {
         }
         return object;
     }
+
+    @Override
+    public String toString()
+    {
+        return objectType;
+    }
+
 
 }

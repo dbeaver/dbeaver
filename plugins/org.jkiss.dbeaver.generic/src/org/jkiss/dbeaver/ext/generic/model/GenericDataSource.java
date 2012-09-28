@@ -219,6 +219,12 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
+    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException
+    {
+        return structureContainer == null ? null : structureContainer.getProcedure(monitor, uniqueName);
+    }
+
+    @Override
     public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException
     {

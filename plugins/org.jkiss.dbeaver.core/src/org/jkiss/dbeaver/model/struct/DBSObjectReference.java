@@ -20,27 +20,21 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Collection;
-
 /**
- * DBSStructureAssistant
+ * Object reference
  */
-public interface DBSStructureAssistant
+public interface DBSObjectReference extends DBPNamedObject
 {
+    String getContainerName();
 
-    DBSObjectType[] getSupportedObjectTypes();
+    DBSObjectType getObjectType();
 
-    DBSObjectType[] getHyperlinkObjectTypes();
+    String getObjectDescription();
 
-    DBSObjectType[] getAutoCompleteObjectTypes();
-
-    Collection<DBSObjectReference> findObjectsByMask(
-        DBRProgressMonitor monitor,
-        DBSObject parentObject,
-        DBSObjectType[] objectTypes,
-        String objectNameMask,
-        int maxResults) throws DBException;
+    DBSObject resolveObject(DBRProgressMonitor monitor)
+        throws DBException;
 
 }

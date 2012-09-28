@@ -26,14 +26,15 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -64,7 +65,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, int maxResults, List<DBSObject> objects) throws DBException, SQLException
+    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
@@ -79,13 +80,13 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         }
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
-            findTablesByMask(context, catalog, schema, objectNameMask, maxResults, objects);
+            findTablesByMask(context, catalog, schema, objectNameMask, maxResults, references);
         } else if (objectType == RelationalObjectType.TYPE_PROCEDURE) {
-            findProceduresByMask(context, catalog, schema, objectNameMask, maxResults, objects);
+            findProceduresByMask(context, catalog, schema, objectNameMask, maxResults, references);
         }
     }
 
-    private void findTablesByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String tableNameMask, int maxResults, List<DBSObject> objects)
+    private void findTablesByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = context.getProgressMonitor();
@@ -105,28 +106,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 if (CommonUtils.isEmpty(tableName)) {
                     continue;
                 }
-                GenericCatalog tableCatalog = catalog != null ? catalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
-                if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
-                    // there is only one catalog - let's use it (PostgreSQL)
-                    tableCatalog = dataSource.getCatalogs().iterator().next();
-                }
-                GenericSchema tableSchema = schema != null ?
-                    schema :
-                    CommonUtils.isEmpty(schemaName) ? null :
-                        tableCatalog == null ? dataSource.getSchema(schemaName) : tableCatalog.getSchema(monitor, schemaName);
-                GenericTable table;
-                if (tableSchema != null) {
-                    table = tableSchema.getTable(monitor, tableName);
-                } else if (tableCatalog != null) {
-                    table = tableCatalog.getTable(monitor, tableName);
-                } else {
-                    table = dataSource.getTable(monitor, tableName);
-                }
-                if (table == null) {
-                    log.debug("Couldn't find table '" + tableName + "' in '" + catalogName + "/" + schemaName + "'");
-                } else {
-                    objects.add(table);
-                }
+                objects.add(new TableReference(catalog, schema, catalogName, schemaName, tableName, JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS)));
                 if (objects.size() >= maxResults) {
                     break;
                 }
@@ -137,7 +117,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findProceduresByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String procNameMask, int maxResults, List<DBSObject> objects)
+    private void findProceduresByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String procNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = context.getProgressMonitor();
@@ -153,40 +133,14 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 String catalogName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_CAT);
                 String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_SCHEM);
                 String procName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_NAME);
+                String uniqueName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.SPECIFIC_NAME);
                 if (CommonUtils.isEmpty(procName)) {
                     continue;
                 }
-                GenericCatalog procCatalog = catalog != null ? catalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
-                GenericSchema procSchema = schema != null ?
-                    schema :
-                    CommonUtils.isEmpty(schemaName) ? null :
-                        procCatalog == null ? dataSource.getSchema(schemaName) : procCatalog.getSchema(monitor, schemaName);
-                Collection<GenericProcedure> procedures = null;
-                if (procSchema != null) {
-                    // Try to use catalog name as package name (Oracle)
-                    if (!CommonUtils.isEmpty(catalogName)) {
-                        GenericPackage procPackage = procSchema.getPackage(monitor, catalogName);
-                        if (procPackage != null) {
-                            procedures = procPackage.getProcedures(monitor, procName);
-                        }
-                    }
-                    if (procedures == null) {
-                        procedures = procSchema.getProcedures(monitor, procName);
-                    }
-                } else if (procCatalog != null) {
-                    procedures = procCatalog.getProcedures(monitor, procName);
-                } else {
-                    procedures = dataSource.getProcedures(monitor, procName);
+                if (CommonUtils.isEmpty(uniqueName)) {
+                    uniqueName = procName;
                 }
-                if (CommonUtils.isEmpty(procedures)) {
-                    log.debug("Couldn't find procedure '" + procName + "'");
-                } else {
-                    for (GenericProcedure proc : procedures) {
-                        if (!objects.contains(proc)) {
-                            objects.add(proc);
-                        }
-                    }
-                }
+                objects.add(new ProcedureReference(catalog, schema, catalogName, schemaName, procName, uniqueName));
                 if (objects.size() >= maxResults) {
                     break;
                 }
@@ -197,4 +151,94 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         }
     }
 
+    private abstract class ObjectReference extends AbstractObjectReference {
+        protected final GenericCatalog parentCatalog;
+        protected final GenericSchema parentSchema;
+        protected final String catalogName;
+        protected final String schemaName;
+
+        protected ObjectReference(GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName, String name, String description, DBSObjectType type)
+        {
+            super(name, DBUtils.getSimpleQualifiedName(catalogName, schemaName), description, type);
+            this.parentCatalog = parentCatalog;
+            this.parentSchema = parentSchema;
+            this.catalogName = catalogName;
+            this.schemaName = schemaName;
+        }
+    }
+
+    private class TableReference extends ObjectReference {
+
+        private TableReference(GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName, String tableName, String description)
+        {
+            super(parentCatalog, parentSchema, catalogName, schemaName, tableName, description, RelationalObjectType.TYPE_TABLE);
+        }
+
+        @Override
+        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
+        {
+            GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
+            if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
+                // there is only one catalog - let's use it (PostgreSQL)
+                tableCatalog = dataSource.getCatalogs().iterator().next();
+            }
+            GenericSchema tableSchema = parentSchema != null ?
+                parentSchema :
+                CommonUtils.isEmpty(schemaName) ? null :
+                    tableCatalog == null ? dataSource.getSchema(schemaName) : tableCatalog.getSchema(monitor, schemaName);
+            GenericTable table;
+            if (tableSchema != null) {
+                table = tableSchema.getTable(monitor, getName());
+            } else if (tableCatalog != null) {
+                table = tableCatalog.getTable(monitor, getName());
+            } else {
+                table = dataSource.getTable(monitor, getName());
+            }
+            if (table == null) {
+                throw new DBException("Can't find table '" + getName() + "' in '" + catalogName + "/" + schemaName + "'");
+            }
+            return table;
+        }
+    }
+
+    private class ProcedureReference extends ObjectReference {
+
+        private String uniqueName;
+        private ProcedureReference(GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName, String procedureName, String uniqueName)
+        {
+            super(parentCatalog, parentSchema, catalogName, schemaName, procedureName, null, RelationalObjectType.TYPE_PROCEDURE);
+            this.uniqueName = uniqueName;
+        }
+
+        @Override
+        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
+        {
+            GenericCatalog procCatalog = parentCatalog != null ? parentCatalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
+            GenericSchema procSchema = parentSchema != null ?
+                parentSchema :
+                CommonUtils.isEmpty(schemaName) ? null :
+                    procCatalog == null ? dataSource.getSchema(schemaName) : procCatalog.getSchema(monitor, schemaName);
+            GenericProcedure procedure = null;
+            if (procSchema != null) {
+                // Try to use catalog name as package name (Oracle)
+                if (!CommonUtils.isEmpty(catalogName)) {
+                    GenericPackage procPackage = procSchema.getPackage(monitor, catalogName);
+                    if (procPackage != null) {
+                        procedure = procPackage.getProcedure(monitor, uniqueName);
+                    }
+                }
+                if (procedure == null) {
+                    procedure = procSchema.getProcedure(monitor, uniqueName);
+                }
+            } else if (procCatalog != null) {
+                procedure = procCatalog.getProcedure(monitor, uniqueName);
+            } else {
+                procedure = dataSource.getProcedure(monitor, uniqueName);
+            }
+            if (procedure == null) {
+                throw new DBException("Can't find procedure '" + getName() + "' (" + uniqueName + ")" + "' in '" + catalogName + "/" + schemaName + "'");
+            }
+            return procedure;
+        }
+    }
 }

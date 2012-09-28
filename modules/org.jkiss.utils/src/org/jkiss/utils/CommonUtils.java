@@ -309,7 +309,18 @@ public class CommonUtils {
         return false;
     }
 
-	public static boolean equalObjects(Object o1, Object o2)
+    public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE ... values)
+    {
+        if (isEmpty(array)) return false;
+        for (OBJECT_TYPE v : array) {
+            for (OBJECT_TYPE v2 : values) {
+                if (equalObjects(v, v2)) return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean equalObjects(Object o1, Object o2)
 	{
 		if (o1 == o2) {
 			return true;

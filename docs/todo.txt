@@ -16,5 +16,3 @@ comment mysql table, column
 
 scripts refactoring
 F4 - open object (hyperlink?)
-
-delete fk (oracle) - undo doesn't work

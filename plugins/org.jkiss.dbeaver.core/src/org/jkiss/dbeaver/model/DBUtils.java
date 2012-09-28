@@ -829,10 +829,13 @@ public final class DBUtils {
         }
     }
 
-    public static String getObjectFullName(DBSObject object)
+    public static String getObjectFullName(DBPNamedObject object)
     {
         if (object instanceof DBPQualifiedObject) {
             return ((DBPQualifiedObject) object).getFullQualifiedName();
+        } else if (object instanceof DBSObjectReference) {
+            String containerName = ((DBSObjectReference) object).getContainerName();
+            return CommonUtils.isEmpty(containerName) ? object.getName() : containerName + "." + object.getName();
         } else {
             return object.getName();
         }

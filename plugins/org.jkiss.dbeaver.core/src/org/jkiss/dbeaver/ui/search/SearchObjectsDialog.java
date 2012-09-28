@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
@@ -30,6 +32,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -52,6 +55,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class SearchObjectsDialog extends HelpEnabledDialog {
+
+    static final Log log = LogFactory.getLog(SearchObjectsDialog.class);
 
     private static final int MATCH_INDEX_STARTS_WITH = 0;
     private static final int MATCH_INDEX_CONTAINS = 1;
@@ -578,16 +583,23 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             try {
                 DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                 java.util.List<DBNNode> nodes = new ArrayList<DBNNode>();
-                Collection<DBSObject> objects = structureAssistant.findObjectsByMask(
+                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
                     getProgressMonitor(),
                     parentObject,
                     objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
                     objectNameMask,
                     maxResults);
-                for (DBSObject object : objects) {
-                    DBNNode node = navigatorModel.getNodeByObject(getProgressMonitor(), object, true);
-                    if (node != null) {
-                        nodes.add(node);
+                for (DBSObjectReference reference : objects) {
+                    try {
+                        DBSObject object = reference.resolveObject(getProgressMonitor());
+                        if (object != null) {
+                            DBNNode node = navigatorModel.getNodeByObject(getProgressMonitor(), object, true);
+                            if (node != null) {
+                                nodes.add(node);
+                            }
+                        }
+                    } catch (DBException e) {
+                        log.error(e);
                     }
                 }
                 return nodes;

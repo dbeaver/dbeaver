@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 
@@ -63,7 +64,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
     }
 
     @Override
-    public Collection<DBSObject> findObjectsByMask(
+    public Collection<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,
         DBSObject parentObject,
         DBSObjectType[] objectTypes,
@@ -71,12 +72,12 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         int maxResults)
         throws DBException
     {
-        List<DBSObject> objects = new ArrayList<DBSObject>();
+        List<DBSObjectReference> references = new ArrayList<DBSObjectReference>();
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, CoreMessages.model_jdbc_find_objects_by_name);
         try {
             for (DBSObjectType type : objectTypes) {
-                findObjectsByMask(context, type, parentObject, objectNameMask, maxResults - objects.size(), objects);
-                if (objects.size() >= maxResults) {
+                findObjectsByMask(context, type, parentObject, objectNameMask, maxResults - references.size(), references);
+                if (references.size() >= maxResults) {
                     break;
                 }
             }
@@ -87,7 +88,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         finally {
             context.close();
         }
-        return objects;
+        return references;
     }
 
     protected abstract void findObjectsByMask(
@@ -96,7 +97,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         DBSObject parentObject,
         String objectNameMask,
         int maxResults,
-        List<DBSObject> objects)
+        List<DBSObjectReference> references)
         throws DBException, SQLException;
 
 }
