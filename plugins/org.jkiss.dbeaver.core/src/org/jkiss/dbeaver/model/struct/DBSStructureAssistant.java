@@ -41,6 +41,7 @@ public interface DBSStructureAssistant
         DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
+        boolean caseSensitive,
         int maxResults) throws DBException;
 
 }

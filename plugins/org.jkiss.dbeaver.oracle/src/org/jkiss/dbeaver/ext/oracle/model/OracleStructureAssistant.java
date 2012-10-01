@@ -89,6 +89,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
+        boolean caseSensitive,
         int maxResults)
         throws DBException
     {
@@ -99,7 +100,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
 
             // Search all objects
-            searchAllObjects(context, schema, objectNameMask, objectTypes, maxResults, objects);
+            searchAllObjects(context, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
 
             if (CommonUtils.contains(objectTypes, OracleObjectType.CONSTRAINT, OracleObjectType.FOREIGN_KEY) && objects.size() < maxResults) {
                 // Search constraints
@@ -195,7 +196,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         }
     }
 
-    private void searchAllObjects(final JDBCExecutionContext context, final OracleSchema schema, String objectNameMask, DBSObjectType[] objectTypes, int maxResults, List<DBSObjectReference> objects)
+    private void searchAllObjects(final JDBCExecutionContext context, final OracleSchema schema, String objectNameMask, DBSObjectType[] objectTypes, boolean caseSensitive, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         StringBuilder objectTypeClause = new StringBuilder(100);
@@ -231,7 +232,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)" +
             "\nORDER BY OBJECT_NAME");
         try {
-            objectNameMask = objectNameMask.toUpperCase();
+            if (!caseSensitive) {
+                objectNameMask = objectNameMask.toUpperCase();
+            }
             dbStat.setString(1, objectNameMask);
             if (schema != null) {
                 dbStat.setString(2, schema.getName());

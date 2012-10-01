@@ -51,15 +51,7 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
             // Mixed case not supported - so leave it as is
             return value;
         }
-        switch (info.storesUnquotedCase()) {
-            case LOWER:
-                return value.toLowerCase();
-            case UPPER:
-                return value.toUpperCase();
-            case MIXED:
-            default:
-                // Stores case as is - leave as is
-                return value;
-        }
+        return info.storesUnquotedCase().transform(value);
     }
+
 }

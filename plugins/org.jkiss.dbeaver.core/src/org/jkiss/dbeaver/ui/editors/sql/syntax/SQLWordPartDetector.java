@@ -46,7 +46,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
      */
     public SQLWordPartDetector(IDocument document, SQLSyntaxManager syntaxManager, int documentOffset)
     {
-        super(syntaxManager.getStructSeparator());
+        super(syntaxManager.getStructSeparator(), syntaxManager.getQuoteSymbol());
         docOffset = documentOffset - 1;
         int topIndex = 0;//viewer.getTopIndexStartOffset();
         try {

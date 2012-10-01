@@ -588,6 +588,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                     parentObject,
                     objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
                     objectNameMask,
+                    false,
                     maxResults);
                 for (DBSObjectReference reference : objects) {
                     try {

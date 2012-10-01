@@ -69,6 +69,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
+        boolean caseSensitive,
         int maxResults)
         throws DBException
     {
@@ -76,7 +77,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, CoreMessages.model_jdbc_find_objects_by_name);
         try {
             for (DBSObjectType type : objectTypes) {
-                findObjectsByMask(context, type, parentObject, objectNameMask, maxResults - references.size(), references);
+                findObjectsByMask(context, type, parentObject, objectNameMask, caseSensitive, maxResults - references.size(), references);
                 if (references.size() >= maxResults) {
                     break;
                 }
@@ -96,6 +97,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         DBSObjectType objectType,
         DBSObject parentObject,
         String objectNameMask,
+        boolean caseSensitive,
         int maxResults,
         List<DBSObjectReference> references)
         throws DBException, SQLException;

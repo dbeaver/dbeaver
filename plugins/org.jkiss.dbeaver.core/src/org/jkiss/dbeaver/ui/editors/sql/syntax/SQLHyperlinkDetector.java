@@ -79,7 +79,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 
         int offset = region.getOffset();
 
-        SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(syntaxManager.getStructSeparator());
+        SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(syntaxManager.getStructSeparator(), syntaxManager.getQuoteSymbol());
         int docLength = document.getLength();
         int identStart = offset;
         int identEnd = offset;
@@ -138,7 +138,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             // Start new word finder job
             tlc = new ObjectLookupCache();
             linksCache.put(tableName, tlc);
-            TablesFinderJob job = new TablesFinderJob(structureAssistant, tableName, tlc);
+            TablesFinderJob job = new TablesFinderJob(structureAssistant, tableName, wordDetector.isQuoted(identifier), tlc);
             job.schedule();
         }
         if (tlc.loading) {
@@ -190,12 +190,14 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         private DBSStructureAssistant structureAssistant;
         private String word;
         private ObjectLookupCache cache;
+        private boolean caseSensitive;
 
-        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String word, ObjectLookupCache cache)
+        protected TablesFinderJob(DBSStructureAssistant structureAssistant, String word, boolean caseSensitive, ObjectLookupCache cache)
         {
             super("Find table names for '" + word + "'", DBIcon.SQL_EXECUTE.getImageDescriptor(), dataSourceProvider.getDataSource());
             this.structureAssistant = structureAssistant;
             this.word = word;
+            this.caseSensitive = caseSensitive;
             this.cache = cache;
             setUser(false);
             setSystem(true);
@@ -207,7 +209,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             cache.references = new ArrayList<DBSObjectReference>();
             try {
                 DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
-                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, 10);
+                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, null, objectTypes, word, caseSensitive, 10);
                 if (!CommonUtils.isEmpty(objects)) {
                     cache.references.addAll(objects);
                 }

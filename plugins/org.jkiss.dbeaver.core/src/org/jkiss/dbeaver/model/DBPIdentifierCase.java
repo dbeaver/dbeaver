@@ -23,7 +23,28 @@ package org.jkiss.dbeaver.model;
  * Database keyword type
  */
 public enum DBPIdentifierCase {
-    UPPER,
-    LOWER,
-    MIXED
+    UPPER {
+        @Override
+        public String transform(String value)
+        {
+            return value.toUpperCase();
+        }
+    },
+    LOWER {
+        @Override
+        public String transform(String value)
+        {
+            return value.toLowerCase();
+        }
+    },
+    MIXED {
+        @Override
+        public String transform(String value)
+        {
+            return value;
+        }
+    };
+
+    public abstract String transform(String value);
+
 }

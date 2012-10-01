@@ -65,19 +65,14 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(JDBCExecutionContext context, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :
             schema == null ? null : schema.getCatalog();
         final GenericDataSource dataSource = getDataSource();
-        boolean isQuoted = DBUtils.isQuotedIdentifier(dataSource, objectNameMask);
-        DBPIdentifierCase convertCase = isQuoted ? dataSource.getInfo().storesQuotedCase() : dataSource.getInfo().storesUnquotedCase();
-        if (convertCase == DBPIdentifierCase.UPPER) {
-            objectNameMask = objectNameMask.toUpperCase();
-        } else if (convertCase == DBPIdentifierCase.LOWER) {
-            objectNameMask = objectNameMask.toLowerCase();
-        }
+        DBPIdentifierCase convertCase = caseSensitive ? dataSource.getInfo().storesQuotedCase() : dataSource.getInfo().storesUnquotedCase();
+        objectNameMask = convertCase.transform(objectNameMask);
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(context, catalog, schema, objectNameMask, maxResults, references);

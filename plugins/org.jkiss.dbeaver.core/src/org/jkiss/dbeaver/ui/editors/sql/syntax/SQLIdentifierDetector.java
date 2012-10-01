@@ -29,10 +29,22 @@ import java.util.StringTokenizer;
 public class SQLIdentifierDetector extends SQLWordDetector
 {
     private String catalogSeparator;
+    private String quoteSymbol;
 
-    public SQLIdentifierDetector(String catalogSeparator)
+    public SQLIdentifierDetector(String catalogSeparator, String quoteSymbol)
     {
         this.catalogSeparator = catalogSeparator;
+        this.quoteSymbol = quoteSymbol;
+    }
+
+    public String getCatalogSeparator()
+    {
+        return catalogSeparator;
+    }
+
+    public String getQuoteSymbol()
+    {
+        return quoteSymbol;
     }
 
     public boolean containsSeparator(String identifier)
@@ -64,11 +76,30 @@ public class SQLIdentifierDetector extends SQLWordDetector
 
     @Override
     public boolean isWordPart(char c) {
-        return super.isWordPart(c) || catalogSeparator.indexOf(c) != -1;
+        return super.isWordPart(c) ||
+            (quoteSymbol != null && quoteSymbol.indexOf(c) != -1) ||
+            (catalogSeparator != null && catalogSeparator.indexOf(c) != -1);
     }
 
     public boolean isPlainWordPart(char c) {
         return super.isWordPart(c);
     }
+
+    public boolean isQuoted(String token)
+    {
+        return token.startsWith(quoteSymbol);
+    }
+
+    public String removeQuotes(String name)
+    {
+        if (name.startsWith(quoteSymbol)) {
+            name = name.substring(quoteSymbol.length());
+        }
+        if (name.endsWith(quoteSymbol)) {
+            name = name.substring(name.length() - quoteSymbol.length());
+        }
+        return name;
+    }
+
 
 }

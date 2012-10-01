@@ -239,7 +239,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                                     monitor,
                                     null,
                                     structureAssistant.getAutoCompleteObjectTypes(),
-                                    token,
+                                    wordDetector.removeQuotes(token),
+                                    wordDetector.isQuoted(token),
                                     2);
                                 if (!references.isEmpty()) {
                                     childObject = references.iterator().next().resolveObject(monitor);
@@ -303,8 +304,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         //List<SQLQueryInfo.TableRef> refList = queryInfo.getTableRefs();
         Matcher matcher;
         Pattern aliasPattern;
-        String quote;
-        quote = editor.getDataSource().getInfo().getIdentifierQuoteString();
+        String quote = editor.getDataSource().getInfo().getIdentifierQuoteString();
         if (quote == null) {
             quote = SQLConstants.STR_QUOTE_DOUBLE;
         }
@@ -367,11 +367,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 // No such object found - may be it's start of table name
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
                 if (structureAssistant != null) {
+                    String objectNameMask = nameList.get(0);
                     Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(
                         monitor,
                         sc,
                         structureAssistant.getAutoCompleteObjectTypes(),
-                        nameList.get(0),
+                        wordDetector.removeQuotes(objectNameMask),
+                        wordDetector.isQuoted(objectNameMask),
                         2);
                     if (!tables.isEmpty()) {
                         return tables.iterator().next().resolveObject(monitor);
@@ -420,7 +422,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         DBRProgressMonitor monitor,
         DBSStructureAssistant assistant,
         DBSObjectContainer rootSC,
-        String tableName,
+        String objectName,
         List<ICompletionProposal> proposals)
     {
         try {
@@ -428,7 +430,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 monitor,
                 rootSC,
                 assistant.getAutoCompleteObjectTypes(),
-                tableName + "%",
+                wordDetector.removeQuotes(objectName) + "%",
+                wordDetector.isQuoted(objectName),
                 100);
             for (DBSObjectReference table : tables) {
                 proposals.add(makeProposalsFromObject(table, table.getObjectType().getImage()));
