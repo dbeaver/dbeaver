@@ -19,31 +19,26 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.utils.Pair;
+
 import java.util.List;
 import java.util.Set;
 
 /**
- * Keyword manager.
+ * Comments manager.
  * <p/>
- * Contains information about some concrete datasource underlying database syntax.
- * Support runtime change of datasource (reloads syntax information)
+ * Contains information about comments
  */
-public interface DBPKeywordManager extends DBPCommentsManager {
+public interface DBPCommentsManager {
+    /**
+     * Two-item array containing begin and end of multi-line comments.
+     * @return string array or null if multi-line comments are not supported
+     */
+    Pair<String, String> getMultiLineComments();
 
-    Set<String> getReservedWords();
-
-    Set<String> getFunctions();
-
-    Set<String> getTypes();
-
-    DBPKeywordType getKeywordType(String word);
-
-    List<String> getMatchedKeywords(String word);
-
-    boolean isKeywordStart(String word);
-
-    boolean isEntityQueryWord(String word);
-
-    boolean isAttributeQueryWord(String word);
-
+    /**
+     * List of possible single-line comment prefixes
+     * @return comment prefixes or null if single line comments are nto supported
+     */
+    String[] getSingleLineComments();
 }

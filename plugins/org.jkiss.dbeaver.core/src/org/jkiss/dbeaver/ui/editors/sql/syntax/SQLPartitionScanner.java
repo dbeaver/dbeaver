@@ -24,6 +24,7 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.rules.*;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
+import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -158,7 +159,10 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         rules.add(wordRule);
 
         // Add rules for multi-line comments
-        rules.add(new MultiLineRule(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END, multilineCommentToken, (char) 0, true));
+        Pair<String, String> multiLineComments = sqlSyntax.getKeywordManager().getMultiLineComments();
+        if (multiLineComments != null) {
+            rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), multilineCommentToken, (char) 0, true));
+        }
     }
 
     public SQLPartitionScanner(SQLSyntaxManager sqlSyntax)

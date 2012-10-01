@@ -34,6 +34,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.eclipse.ui.texteditor.rulers.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPCommentsManager;
 
 import java.util.Iterator;
 import java.util.List;
@@ -129,8 +130,8 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         final IColumnSupport support= (IColumnSupport) getAdapter(IColumnSupport.class);
         IPreferenceStore store = getPreferenceStore();
         final RulerColumnPreferenceAdapter adapter= new RulerColumnPreferenceAdapter(store, AbstractTextEditor.PREFERENCE_RULER_CONTRIBUTIONS);
-        List descriptors= RulerColumnRegistry.getDefault().getColumnDescriptors();
-        for (Iterator t= descriptors.iterator(); t.hasNext();) {
+        List descriptors = RulerColumnRegistry.getDefault().getColumnDescriptors();
+        for (Iterator t = descriptors.iterator(); t.hasNext();) {
             final RulerColumnDescriptor descriptor= (RulerColumnDescriptor) t.next();
             if (!descriptor.isIncludedInMenu() || !support.isColumnSupported(descriptor))
                 continue;
@@ -319,4 +320,8 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     }
 */
 
+    public DBPCommentsManager getCommentsSupport()
+    {
+        return null;
+    }
 }

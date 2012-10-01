@@ -19,8 +19,8 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.format;
 
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -223,8 +223,11 @@ public class SQLFormatter {
                     encounterBetween = false;
                 }
             } else if (token.getType() == SQLFormatterConstants.COMMENT) {
-                if (token.getString().startsWith(SQLConstants.ML_COMMENT_START)) {
-                    index += insertReturnAndIndent(argList, index + 1, indent);
+                Pair<String, String> mlComments = formatterCfg.getSyntaxManager().getKeywordManager().getMultiLineComments();
+                if (mlComments != null) {
+                    if (token.getString().startsWith(mlComments.getFirst())) {
+                        index += insertReturnAndIndent(argList, index + 1, indent);
+                    }
                 }
             }
             prev = token;

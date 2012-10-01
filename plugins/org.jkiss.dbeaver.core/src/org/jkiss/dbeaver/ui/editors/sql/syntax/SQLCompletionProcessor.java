@@ -101,10 +101,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             (CommonUtils.isEmpty(wordDetector.getPrevWords()) || (wordDetector.getPrevDelimiter() != null && wordDetector.getPrevDelimiter().indexOf(',') != -1));
         QueryType queryType = null;
         if (isStructureQuery) {
-            if (editor.getSyntaxManager().getKeywordManager().isTableQueryWord(wordDetector.getPrevKeyWord())) {
+            if (editor.getSyntaxManager().getKeywordManager().isEntityQueryWord(wordDetector.getPrevKeyWord())) {
                 queryType = QueryType.TABLE;
 
-            } else if (editor.getSyntaxManager().getKeywordManager().isColumnQueryWord(wordDetector.getPrevKeyWord()) && CommonUtils.isEmptyTrimmed(wordDetector.getPrevDelimiter())) {
+            } else if (editor.getSyntaxManager().getKeywordManager().isAttributeQueryWord(wordDetector.getPrevKeyWord()) && CommonUtils.isEmptyTrimmed(wordDetector.getPrevDelimiter())) {
                 queryType = QueryType.COLUMN;
             }
         }

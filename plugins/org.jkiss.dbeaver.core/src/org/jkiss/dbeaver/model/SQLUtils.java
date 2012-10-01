@@ -19,11 +19,11 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -62,24 +62,28 @@ public final class SQLUtils {
 
     public static String stripComments(DBPDataSource dataSource, String query)
     {
+        DBPKeywordManager keywordManager = dataSource.getContainer().getKeywordManager();
+        Pair<String, String> multiLineComments = keywordManager.getMultiLineComments();
         return stripComments(
             query,
-            SQLConstants.ML_COMMENT_START,
-            SQLConstants.ML_COMMENT_END,
-            dataSource.getContainer().getKeywordManager().getSingleLineComments());
+            multiLineComments == null ? null : multiLineComments.getFirst(),
+            multiLineComments == null ? null : multiLineComments.getSecond(),
+            keywordManager.getSingleLineComments());
     }
 
     public static String stripComments(String query, String mlCommentStart, String mlCommentEnd, String[] slComments)
     {
         query = query.trim();
-        Pattern stripPattern = Pattern.compile(
-            "(\\s*" + Pattern.quote(mlCommentStart) +
-                "[^" + Pattern.quote(mlCommentEnd) +
-                "]*" + Pattern.quote(mlCommentEnd) +
-                "\\s*)[^" + Pattern.quote(mlCommentStart) + "]*");
-        Matcher matcher = stripPattern.matcher(query);
-        if (matcher.matches()) {
-            query = query.substring(matcher.end(1));
+        if (mlCommentStart != null && mlCommentEnd != null) {
+            Pattern stripPattern = Pattern.compile(
+                "(\\s*" + Pattern.quote(mlCommentStart) +
+                    "[^" + Pattern.quote(mlCommentEnd) +
+                    "]*" + Pattern.quote(mlCommentEnd) +
+                    "\\s*)[^" + Pattern.quote(mlCommentStart) + "]*");
+            Matcher matcher = stripPattern.matcher(query);
+            if (matcher.matches()) {
+                query = query.substring(matcher.end(1));
+            }
         }
         for (String slComment : slComments) {
             while (query.startsWith(slComment)) {

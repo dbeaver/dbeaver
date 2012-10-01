@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
+import org.jkiss.utils.Pair;
 
 /**
  * CopyUnformattedTextAction
@@ -69,6 +70,7 @@ public class CopyUnformattedTextAction extends Action {
         SQLSyntaxManager syntaxManager = sqlEditor.getSyntaxManager();
         syntaxManager.setRange(document, startPos, endPos - startPos);
         String[] singleLineComments = syntaxManager.getKeywordManager().getSingleLineComments();
+        Pair<String, String> multiLineComments = syntaxManager.getKeywordManager().getMultiLineComments();
         boolean lastWhitespace = false;
         try {
             for (;;) {
@@ -87,7 +89,9 @@ public class CopyUnformattedTextAction extends Action {
                     String comment = document.get(tokenOffset, tokenLength);
                     for (String slc : singleLineComments) {
                         if (comment.startsWith(slc)) {
-                            comment = SQLConstants.ML_COMMENT_START + comment.substring(slc.length()) + SQLConstants.ML_COMMENT_END;
+                            if (multiLineComments != null) {
+                                comment = multiLineComments.getFirst() + comment.substring(slc.length()) + multiLineComments.getSecond();
+                            }
                             break;
                         }
                     }

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.dbeaver.model.DBPKeywordManager;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.utils.Pair;
 
 import java.util.Collections;
 import java.util.List;
@@ -68,15 +69,21 @@ public class EmptyKeywordManager implements DBPKeywordManager {
     }
 
     @Override
-    public boolean isTableQueryWord(String word)
+    public boolean isEntityQueryWord(String word)
     {
         return false;
     }
 
     @Override
-    public boolean isColumnQueryWord(String word)
+    public boolean isAttributeQueryWord(String word)
     {
         return false;
+    }
+
+    @Override
+    public Pair<String, String> getMultiLineComments()
+    {
+        return null;
     }
 
     @Override

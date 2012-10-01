@@ -16,32 +16,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.editors.sql.handlers;
+package org.jkiss.dbeaver.ui.editors.text.handlers;
 
 import org.eclipse.jface.text.*;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.model.DBPCommentsManager;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
 
 public final class ToggleLineCommentHandler extends AbstractCommentHandler {
 
     @Override
-    protected void processAction(SQLEditorBase textEditor, IDocument document, ITextSelection textSelection) throws BadLocationException
+    protected void processAction(BaseTextEditor textEditor, IDocument document, ITextSelection textSelection) throws BadLocationException
     {
-        if (textEditor.getDataSource() == null) {
+        DBPCommentsManager commentsSupport = textEditor.getCommentsSupport();
+        if (commentsSupport == null) {
             return;
         }
-        String[] singleLineComments = textEditor.getDataSource().getContainer().getKeywordManager().getSingleLineComments();
+        String[] singleLineComments = commentsSupport.getSingleLineComments();
         if (CommonUtils.isEmpty(singleLineComments)) {
             // Single line comments are not supported
             return;
         }
         int selOffset = textSelection.getOffset();
-        int selLength = textSelection.getLength();
+        int originalLength = textSelection.getLength();
+        int selLength = originalLength;
         DocumentRewriteSession rewriteSession = null;
         if (document instanceof IDocumentExtension4) {
             rewriteSession = ((IDocumentExtension4) document).startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
         }
-        for (int lineNum = textSelection.getEndLine(); lineNum >= textSelection.getStartLine(); lineNum--) {
+        int endLine = textSelection.getEndLine();
+        int startLine = textSelection.getStartLine();
+        for (int lineNum = endLine; lineNum >= startLine; lineNum--) {
             int lineOffset = document.getLineOffset(lineNum);
             int lineLength = document.getLineLength(lineNum);
             String lineComment = null;
@@ -64,7 +69,8 @@ public final class ToggleLineCommentHandler extends AbstractCommentHandler {
         if (rewriteSession != null) {
             ((IDocumentExtension4) document).stopRewriteSession(rewriteSession);
         }
-
-        textEditor.getSelectionProvider().setSelection(new TextSelection(selOffset, selLength));
+        if (originalLength > 0) {
+            textEditor.getSelectionProvider().setSelection(new TextSelection(selOffset, selLength));
+        }
     }
 }

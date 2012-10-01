@@ -50,6 +50,8 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.model.DBPCommentsManager;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
@@ -618,5 +620,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         }
     }
 
-
+    @Override
+    public DBPCommentsManager getCommentsSupport()
+    {
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            return dataSource.getContainer().getKeywordManager();
+        } else {
+            return null;
+        }
+    }
 }

@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -211,16 +212,18 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
             int offset = command.offset;
             int length = command.length;
 
+/*
             // partition change
-            final int PREFIX_LENGTH = "/*".length(); //$NON-NLS-1$
-            final int POSTFIX_LENGTH = "*/".length(); //$NON-NLS-1$
+            final int PREFIX_LENGTH = SQLConstants.ML_COMMENT_START.length();
+            final int POSTFIX_LENGTH = SQLConstants.ML_COMMENT_END.length(); //$NON-NLS-1$
             if ((offset < partitionStart + PREFIX_LENGTH || offset + length > partitionEnd - POSTFIX_LENGTH)
                 || text != null && text.length() >= 2
-                && ((text.indexOf("*/") != -1) || (document.getChar(offset) == '*' && text.startsWith(
+                && ((text.contains(SQLConstants.ML_COMMENT_END)) || (document.getChar(offset) == '*' && text.startsWith(
                 "/")))) //$NON-NLS-1$ //$NON-NLS-2$
             {
                 return;
             }
+*/
 
         }
         catch (BadLocationException e) {

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -45,6 +46,7 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
     private TreeSet<String> tableQueryWords = new TreeSet<String>();
     private TreeSet<String> columnQueryWords = new TreeSet<String>();
 
+    private Pair<String, String> multiLineComments = new Pair<String, String>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
     private String[] singleLineComments = {"--"};
 
     public DataSourceKeywordManager(DBPDataSource dataSource)
@@ -99,13 +101,13 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
     }
 
     @Override
-    public boolean isTableQueryWord(String word)
+    public boolean isEntityQueryWord(String word)
     {
         return tableQueryWords.contains(word.toUpperCase());
     }
 
     @Override
-    public boolean isColumnQueryWord(String word)
+    public boolean isAttributeQueryWord(String word)
     {
         return columnQueryWords.contains(word.toUpperCase());
     }
@@ -200,6 +202,12 @@ public class DataSourceKeywordManager implements DBPKeywordManager {
         for (String keyword : set) {
             allKeywords.put(keyword, type);
         }
+    }
+
+    @Override
+    public Pair<String, String> getMultiLineComments()
+    {
+        return multiLineComments;
     }
 
     @Override

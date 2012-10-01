@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.EmptyKeywordManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
+import org.jkiss.utils.Pair;
 
 import java.util.*;
 
@@ -187,8 +188,11 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             rules.add(new SingleLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
         }
 
-        // Add rules for multi-line comments
-        rules.add(new MultiLineRule(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END, commentToken, (char) 0, true));
+        Pair<String, String> multiLineComments = getKeywordManager().getMultiLineComments();
+        if (multiLineComments != null) {
+            // Add rules for multi-line comments
+            rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
+        }
 
         // Add generic whitespace rule.
         rules.add(new WhitespaceRule(new TextWhiteSpaceDetector()));

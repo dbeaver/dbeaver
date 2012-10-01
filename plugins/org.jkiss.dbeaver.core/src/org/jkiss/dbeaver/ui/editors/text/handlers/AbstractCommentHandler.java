@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.editors.sql.handlers;
+package org.jkiss.dbeaver.ui.editors.text.handlers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,6 +33,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
 /**
  * This class contains all of the shared functionality for comment handlers
@@ -43,9 +44,9 @@ public abstract class AbstractCommentHandler extends AbstractHandler {
 
     public final Object execute(ExecutionEvent event) throws ExecutionException {
         IEditorPart editor = HandlerUtil.getActiveEditor(event);
-        SQLEditorBase textEditor = null;
-        if (editor instanceof SQLEditorBase) {
-            textEditor = (SQLEditorBase) editor;
+        BaseTextEditor textEditor = null;
+        if (editor instanceof BaseTextEditor) {
+            textEditor = (BaseTextEditor) editor;
         }
         if (textEditor != null) {
             IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
@@ -64,7 +65,7 @@ public abstract class AbstractCommentHandler extends AbstractHandler {
         return null;
     }
 
-    protected abstract void processAction(SQLEditorBase textEditor, IDocument document, ITextSelection textSelection) throws BadLocationException;
+    protected abstract void processAction(BaseTextEditor textEditor, IDocument document, ITextSelection textSelection) throws BadLocationException;
 
     private static ITextSelection getSelection(ITextEditor textEditor) {
         ISelectionProvider provider = textEditor.getSelectionProvider();
