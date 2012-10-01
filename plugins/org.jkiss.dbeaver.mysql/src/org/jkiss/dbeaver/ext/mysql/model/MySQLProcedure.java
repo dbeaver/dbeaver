@@ -80,7 +80,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     }
 
     @Override
-    @Property(name = "Procedure Type", order = 2)
+    @Property(order = 2)
     public DBSProcedureType getProcedureType()
     {
         return procedureType ;
@@ -91,19 +91,19 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         this.procedureType = procedureType;
     }
 
-    @Property(name = "Result Type", order = 2)
+    @Property(order = 2)
     public String getResultType()
     {
         return resultType;
     }
 
-    @Property(name = "Body Type", order = 3)
+    @Property(order = 3)
     public String getBodyType()
     {
         return bodyType;
     }
 
-    @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getBody()
     {
         if (this.body == null && !persisted) {
@@ -115,7 +115,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return body;
     }
 
-    @Property(name = "ClientBody", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getClientBody(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -155,7 +155,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return clientBody;
     }
 
-    @Property(name = "Deterministic", editable = true, updatable = true, order = 3, description = "A routine is considered 'deterministic' if it always produces the same result for the same input parameters, and 'not deterministic' otherwise.")
+    @Property(editable = true, updatable = true, order = 3)
     public boolean isDeterministic()
     {
         return deterministic;
@@ -222,7 +222,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     }
 
     @Override
-    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getClientBody(monitor);

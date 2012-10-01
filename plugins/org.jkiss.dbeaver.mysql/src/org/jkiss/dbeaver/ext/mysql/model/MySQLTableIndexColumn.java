@@ -76,20 +76,20 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
     }
 
     @Override
-    @Property(name = "Position", viewable = false, order = 2)
+    @Property(viewable = false, order = 2)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
     }
 
     @Override
-    @Property(name = "Ascending", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public boolean isAscending()
     {
         return ascending;
     }
 
-    @Property(name = "Nullable", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public boolean isNullable()
     {
         return nullable;

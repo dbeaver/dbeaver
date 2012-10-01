@@ -53,7 +53,7 @@ public class MySQLTableConstraintColumn extends AbstractTableConstraintColumn
     }
 
     @Override
-    @Property(name = "Position", viewable = false, order = 2)
+    @Property(viewable = false, order = 2)
     public int getOrdinalPosition()
     {
         return ordinalPosition;

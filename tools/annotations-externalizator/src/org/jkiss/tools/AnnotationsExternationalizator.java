@@ -29,13 +29,14 @@ import java.util.List;
 
 public class AnnotationsExternationalizator {
 
-    private static final String PLUGIN_FOLDER = "C:\\_WORK\\JKISS\\DBeaver\\SVN\\dbeaver\\plugins\\org.jkiss.dbeaver.core";
+    private static final String PLUGIN_FOLDER = "C:\\_WORK\\JKISS\\DBeaver\\SVN\\dbeaver\\plugins\\org.jkiss.dbeaver.mysql";
     private static final String PLUGIN_PROPERTIES_NAME = "plugin.properties";
 
     private static File pluginPropertiesFile = null;
     private static int counter = 1;
     private static FileWriter pluginPropertiesWriter = null;
     public static final String PROPERTY_NAME_PREFIX = "@Property(name = \"";
+    public static final String DESCRIPTION_SUFFIX = ", description = \"";
     public static final String PACKAGE_PREFIX = "package ";
     public static final String CLASS_PREFIX = " class ";
     public static final String PUBLIC_PREFIX = "public ";
@@ -77,37 +78,65 @@ public class AnnotationsExternationalizator {
         String[] lines = readLines(javaFile);
         boolean hasChanges = false;
 
+        // iterate file lines
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             String trimLine = line.trim();
 
+            // package name
             if (trimLine.startsWith(PACKAGE_PREFIX)) {
                 int prefixLength = PACKAGE_PREFIX.length();
                 packageName = trimLine.substring(prefixLength, trimLine.indexOf(";", prefixLength));
             }
 
+            // getter with property
             if (trimLine.startsWith(PROPERTY_NAME_PREFIX)) {
+                System.out.println(counter++ + ": " + trimLine);
+
                 int prefixLength = PROPERTY_NAME_PREFIX.length();
-                String propertyName = trimLine.substring(prefixLength, trimLine.indexOf("\"", prefixLength));
+                String namePropertyValue = trimLine.substring(prefixLength, trimLine.indexOf("\"", prefixLength));
                 lines[i] = line.substring(0, line.indexOf("name = ")) + line.substring(line.indexOf(", ") + 2, line.length());
+                line = lines[i];
+
                 String methodName = null;
 
+                // method (getter) name
                 for (int k = i; k < lines.length; k++) {
-                    line = lines[k];
-                    trimLine = line.trim();
-                    int indexGet = trimLine.indexOf("get");
-                    int indexBrackets = trimLine.indexOf("()");
+                    String l = lines[k];
+                    String trimL = l.trim();
+                    int indexGet = trimL.indexOf("get");
+                    if (indexGet < 0) {
+                        indexGet = trimL.indexOf(" is");
+                    }
+                    int indexBrackets = trimL.indexOf("()");
                     int index = indexGet < indexBrackets ? indexGet : indexBrackets;
-                    if (trimLine.startsWith(PUBLIC_PREFIX) && index > 0) {
-                        methodName = trimLine.substring(indexGet + 3, trimLine.indexOf("("));
+                    if (trimL.startsWith(PUBLIC_PREFIX) && index > 0) {
+                        methodName = trimL.substring(indexGet + 3, trimL.indexOf("("));
                         methodName = Character.toLowerCase(methodName.charAt(0)) + methodName.substring(1);
-                        i = k + 1;
+                        //i = k + 1;
                         break;
                     }
                 }
-                //System.out.println(counter++ + ": [" + packageName + "." + className + "." + methodName + "] " + propertyName);
-                //System.out.println(counter++ + ": meta." + packageName + "." + className + ".name." + methodName + "=" + propertyName);
-                pluginPropertiesWriter.write("\nmeta." + packageName + "." + className + "." + methodName + ".name=" + propertyName);
+
+                System.out.println("meta." + packageName + "." + className + "." + methodName + ".name=" + namePropertyValue);
+
+                // description
+                String descrPropertyValue = null;
+                int descrIndex = line.indexOf(DESCRIPTION_SUFFIX);
+                if (descrIndex > 0) {
+                    int beginIndex = descrIndex + DESCRIPTION_SUFFIX.length();
+                    int endIndex = line.indexOf("\"", beginIndex);
+                    descrPropertyValue = line.substring(beginIndex, endIndex);
+                    lines[i] = line.substring(0, descrIndex) + line.substring(endIndex, line.length());
+                }
+                System.out.println("meta." + packageName + "." + className + "." + methodName + ".description=" + descrPropertyValue);
+                System.out.println(lines[i]);
+                System.out.println("");
+
+                pluginPropertiesWriter.write("\nmeta." + packageName + "." + className + "." + methodName + ".name=" + namePropertyValue);
+                if (descrPropertyValue != null) {
+                    pluginPropertiesWriter.write("\nmeta." + packageName + "." + className + "." + methodName + ".description=" + descrPropertyValue);
+                }
                 hasChanges = true;
             }
         }

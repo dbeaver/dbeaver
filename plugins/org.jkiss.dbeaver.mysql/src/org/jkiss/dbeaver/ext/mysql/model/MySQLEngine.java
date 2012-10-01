@@ -68,7 +68,7 @@ public class MySQLEngine extends MySQLInformation {
     }
 
     @Override
-    @Property(name = "Engine", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -81,24 +81,24 @@ public class MySQLEngine extends MySQLInformation {
         return description;
     }
 
-    @Property(name = "Support", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public Support getSupport() {
         return support;
     }
 
-    @Property(name = "Supports Transactions", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public boolean isSupportsTransactions()
     {
         return supportsTransactions;
     }
 
-    @Property(name = "Supports XA", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public boolean isSupportsXA()
     {
         return supportsXA;
     }
 
-    @Property(name = "Supports Savepoints", viewable = true, order = 6)
+    @Property(viewable = true, order = 6)
     public boolean isSupportsSavepoints()
     {
         return supportsSavepoints;

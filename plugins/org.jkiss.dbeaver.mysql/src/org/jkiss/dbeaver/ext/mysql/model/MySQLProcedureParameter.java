@@ -68,7 +68,7 @@ public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureP
     }
 
     @Override
-    @Property(name = "Column Type", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public DBSProcedureParameterType getParameterType()
     {
         return parameterType;

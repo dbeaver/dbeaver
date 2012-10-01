@@ -58,7 +58,7 @@ public class MySQLCharset extends MySQLInformation {
     }
 
     @Override
-    @Property(name = "Charset", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -69,7 +69,7 @@ public class MySQLCharset extends MySQLInformation {
         return collations;
     }
 
-    @Property(name = "Default Collation", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public MySQLCollation getDefaultCollation()
     {
         for (MySQLCollation collation : collations) {
@@ -80,14 +80,14 @@ public class MySQLCharset extends MySQLInformation {
         return null;
     }
 
-    @Property(name = "Max length", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public int getMaxLength()
     {
         return maxLength;
     }
 
     @Override
-    @Property(name = "Description", viewable = true, order = 100)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return description;

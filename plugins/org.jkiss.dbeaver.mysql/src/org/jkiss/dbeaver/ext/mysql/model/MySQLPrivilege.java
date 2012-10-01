@@ -74,12 +74,12 @@ public class MySQLPrivilege implements DBAPrivilege
     }
 
     @Override
-    @Property(name = "Privilege", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName() {
         return name;
     }
 
-    @Property(name = "Context", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public String getContext()
     {
         return context;

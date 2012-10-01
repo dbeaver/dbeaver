@@ -147,21 +147,21 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return charLength;
     }
 
-    @Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
     @Override
     public String getTypeName()
     {
         return super.getTypeName();
     }
 
-    @Property(name = "Length", viewable = true, editable = true, updatable = true, order = 40)
+    @Property(viewable = true, editable = true, updatable = true, order = 40)
     @Override
     public long getMaxLength()
     {
         return super.getMaxLength();
     }
 
-    @Property(name = "Not Null", viewable = true, editable = true, updatable = true, order = 50)
+    @Property(viewable = true, editable = true, updatable = true, order = 50)
     @Override
     public boolean isRequired()
     {
@@ -169,7 +169,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     @Override
-    @Property(name = "Auto Increment", viewable = true, editable = true, updatable = true, order = 51)
+    @Property(viewable = true, editable = true, updatable = true, order = 51)
     public boolean isSequence()
     {
         return autoIncrement;
@@ -181,7 +181,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     @Override
-    @Property(name = "Default", viewable = true, editable = true, updatable = true, order = 70)
+    @Property(viewable = true, editable = true, updatable = true, order = 70)
     public String getDefaultValue()
     {
         return defaultValue;
@@ -193,7 +193,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     @Override
-    @Property(name = "Key", viewable = true, order = 80)
+    @Property(viewable = true, order = 80)
     public KeyType getKeyType()
     {
         return keyType;
@@ -204,7 +204,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         return enumValues;
     }
 
-    @Property(name = "Charset", viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 81)
+    @Property(viewable = false, editable = true, listProvider = CharsetListProvider.class, order = 81)
     public MySQLCharset getCharset()
     {
         return collation == null ? null : collation.getCharset();
@@ -215,7 +215,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.collation = charset == null ? null : charset.getDefaultCollation();
     }
 
-    @Property(name = "Collation", viewable = false, editable = true, listProvider = CollationListProvider.class, order = 82)
+    @Property(viewable = false, editable = true, listProvider = CollationListProvider.class, order = 82)
     public MySQLCollation getCollation()
     {
         return collation;
@@ -226,7 +226,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         this.collation = collation;
     }
 
-    @Property(name = "Comment", viewable = true, editable = true, updatable = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, order = 100)
     public String getComment()
     {
         return comment;

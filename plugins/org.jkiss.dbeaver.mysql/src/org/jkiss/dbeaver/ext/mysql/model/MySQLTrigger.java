@@ -67,19 +67,19 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
     }
 
     @Override
-    @Property(name = "Table", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public MySQLTable getTable()
     {
         return table;
     }
 
-    @Property(name = "Client Charset", order = 5)
+    @Property(order = 5)
     public String getCharsetClient()
     {
         return charsetClient;
     }
 
-    @Property(name = "SQL Mode", order = 6)
+    @Property(order = 6)
     public String getSqlMode()
     {
         return sqlMode;
@@ -98,7 +98,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
     }
 
     @Override
-    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getBody();

@@ -116,104 +116,104 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
     }
 
     @Override
-    @Property(name = "Partition Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return super.getName();
     }
 
-    @Property(name = "Position", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public int getPosition()
     {
         return position;
     }
 
-    @Property(name = "Method", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public String getMethod()
     {
         return method;
     }
 
-    @Property(name = "Expression", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public String getExpression()
     {
         return expression;
     }
 
     @Override
-    @Property(name = "Description", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public String getDescription()
     {
         return description;
     }
 
-    @Property(name = "Table Rows", viewable = true, order = 6)
+    @Property(viewable = true, order = 6)
     public long getTableRows()
     {
         return tableRows;
     }
 
-    @Property(name = "Avg Row Len", viewable = true, order = 7)
+    @Property(viewable = true, order = 7)
     public long getAvgRowLength()
     {
         return avgRowLength;
     }
 
-    @Property(name = "Data Len", viewable = true, order = 8)
+    @Property(viewable = true, order = 8)
     public long getDataLength()
     {
         return dataLength;
     }
 
-    @Property(name = "Max Data Len", viewable = true, order = 9)
+    @Property(viewable = true, order = 9)
     public long getMaxDataLength()
     {
         return maxDataLength;
     }
 
-    @Property(name = "Index Len", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public long getIndexLength()
     {
         return indexLength;
     }
 
-    @Property(name = "Data Free", viewable = true, order = 11)
+    @Property(viewable = true, order = 11)
     public long getDataFree()
     {
         return dataFree;
     }
 
-    @Property(name = "Create Time", viewable = false, order = 12)
+    @Property(viewable = false, order = 12)
     public Date getCreateTime()
     {
         return createTime;
     }
 
-    @Property(name = "Update Time", viewable = false, order = 13)
+    @Property(viewable = false, order = 13)
     public Date getUpdateTime()
     {
         return updateTime;
     }
 
-    @Property(name = "Check Time", viewable = false, order = 14)
+    @Property(viewable = false, order = 14)
     public Date getCheckTime()
     {
         return checkTime;
     }
 
-    @Property(name = "Checksum", viewable = true, order = 15)
+    @Property(viewable = true, order = 15)
     public long getChecksum()
     {
         return checksum;
     }
 
-    @Property(name = "Comment", viewable = true, order = 16)
+    @Property(viewable = true, order = 16)
     public String getComment()
     {
         return comment;
     }
 
-    @Property(name = "Node Group", viewable = true, order = 17)
+    @Property(viewable = true, order = 17)
     public String getNodegroup()
     {
         return nodegroup;

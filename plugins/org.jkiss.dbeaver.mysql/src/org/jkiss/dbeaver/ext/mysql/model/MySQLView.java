@@ -72,15 +72,15 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
 
         public boolean isLoaded() { return loaded; }
 
-        @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1) public String getDefinition() { return definition; }
+        @Property(hidden = true, editable = true, updatable = true, order = -1) public String getDefinition() { return definition; }
         public void setDefinition(String definition) { this.definition = definition; }
 
-        @Property(name = "Check Option", viewable = true, editable = true, updatable = true, order = 4) public CheckOption getCheckOption() { return checkOption; }
+        @Property(viewable = true, editable = true, updatable = true, order = 4) public CheckOption getCheckOption() { return checkOption; }
         public void setCheckOption(CheckOption checkOption) { this.checkOption = checkOption; }
 
-        @Property(name = "Updatable", viewable = true, order = 5) public boolean isUpdatable() { return updatable; }
+        @Property(viewable = true, order = 5) public boolean isUpdatable() { return updatable; }
         public void setUpdatable(boolean updatable) { this.updatable = updatable; }
-        @Property(name = "Definer", viewable = true, order = 6) public String getDefiner() { return definer; }
+        @Property(viewable = true, order = 6) public String getDefiner() { return definer; }
         public void setDefiner(String definer) { this.definer = definer; }
     }
 
@@ -106,7 +106,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
         super(catalog, dbResult);
     }
 
-    @Property(name = "View Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     @Override
     public String getName()
     {
@@ -220,7 +220,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
     }
 
     @Override
-    @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getAdditionalInfo(monitor).getDefinition();

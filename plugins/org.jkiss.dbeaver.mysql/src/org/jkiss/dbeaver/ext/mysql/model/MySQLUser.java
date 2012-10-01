@@ -90,7 +90,7 @@ public class MySQLUser implements DBAUser, DBPSaveableObject
     }
 
     @Override
-    @Property(name = "User name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName() {
         return userName + "@" + host;
     }
@@ -136,7 +136,7 @@ public class MySQLUser implements DBAUser, DBPSaveableObject
         DBUtils.fireObjectUpdate(this);
     }
 
-    @Property(name = "Host mask", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public String getHost() {
         return host;
     }

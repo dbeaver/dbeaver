@@ -95,7 +95,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
-    @Property(name = "Schema Name", viewable = true, editable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName()
     {
         return name;
@@ -124,7 +124,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return null;
     }
 
-    @Property(name = "Default Charset", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public MySQLCharset getDefaultCharset()
     {
         return defaultCharset;
@@ -135,7 +135,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         this.defaultCharset = defaultCharset;
     }
 
-    @Property(name = "Default Collation", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public MySQLCollation getDefaultCollation()
     {
         return defaultCollation;
@@ -146,7 +146,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         this.defaultCollation = defaultCollation;
     }
 
-    @Property(name = "SQL Path", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public String getSqlPath()
     {
         return sqlPath;

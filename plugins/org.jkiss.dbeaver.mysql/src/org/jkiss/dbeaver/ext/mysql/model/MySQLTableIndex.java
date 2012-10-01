@@ -78,14 +78,14 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLTable>
     }
 
     @Override
-    @Property(name = "Unique", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public boolean isUnique()
     {
         return !nonUnique;
     }
 
     @Override
-    @Property(name = "Comment", viewable = true, order = 6)
+    @Property(viewable = true, order = 6)
     public String getDescription()
     {
         return comment;

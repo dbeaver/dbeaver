@@ -43,13 +43,13 @@ public class MySQLParameter implements DBSObject
     }
 
     @Override
-    @Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
     }
 
-    @Property(name = "Value", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public Object getValue()
     {
         return value;
