@@ -36,6 +36,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     List<String> prevWords = null;
     String wordPart = "";
     int docOffset;
+    int endOffset;
 
     /**
      * Method SQLWordPartDetector.
@@ -48,10 +49,14 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     {
         super(syntaxManager.getStructSeparator(), syntaxManager.getQuoteSymbol());
         docOffset = documentOffset - 1;
-        int topIndex = 0;//viewer.getTopIndexStartOffset();
+        endOffset = documentOffset;
+        int topIndex = 0, documentLength = document.getLength();
         try {
             while (docOffset >= topIndex && isWordPart(document.getChar(docOffset))) {
                 docOffset--;
+            }
+            while (endOffset < documentLength && isWordPart(document.getChar(endOffset))) {
+                endOffset++;
             }
 
             int prevOffset = docOffset;
@@ -130,6 +135,11 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     public int getOffset()
     {
         return docOffset;
+    }
+
+    public int getLength()
+    {
+        return endOffset - docOffset;
     }
 
     public String getPrevKeyWord()

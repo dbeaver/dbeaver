@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBSObjectReference extends DBPNamedObject
 {
-    String getContainerName();
+    DBSObject getContainer();
 
     DBSObjectType getObjectType();
 

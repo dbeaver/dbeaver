@@ -158,7 +158,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     final DBSEntityConstraintType type = OracleTableConstraint.getConstraintType(constrType);
                     objects.add(new AbstractObjectReference(
                         constrName,
-                        schemaName,
+                        dataSource.getSchema(context.getProgressMonitor(), schemaName),
                         null,
                         type == DBSEntityConstraintType.FOREIGN_KEY ? OracleObjectType.FOREIGN_KEY : OracleObjectType.CONSTRAINT)
                     {
@@ -253,7 +253,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
                     if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && oracleObjectTypes.contains(objectType))
                     {
-                        objects.add(new AbstractObjectReference(objectName, schemaName, null, objectType) {
+                        objects.add(new AbstractObjectReference(objectName, dataSource.getSchema(context.getProgressMonitor(), schemaName), null, objectType) {
                             @Override
                             public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
                             {

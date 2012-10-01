@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
@@ -9,14 +10,14 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 public abstract class AbstractObjectReference implements DBSObjectReference {
 
     private final String name;
-    private final String containerName;
+    private final DBSObject container;
     private final String description;
     private final DBSObjectType type;
 
-    protected AbstractObjectReference(String name, String containerName, String description, DBSObjectType type)
+    protected AbstractObjectReference(String name, DBSObject container, String description, DBSObjectType type)
     {
         this.name = name;
-        this.containerName = containerName;
+        this.container = container;
         this.description = description;
         this.type = type;
     }
@@ -27,9 +28,9 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
         return name;
     }
 
-    public String getContainerName()
+    public DBSObject getContainer()
     {
-        return containerName;
+        return container;
     }
 
     @Override

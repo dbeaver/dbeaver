@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -154,7 +153,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
 
         protected ObjectReference(GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName, String name, String description, DBSObjectType type)
         {
-            super(name, DBUtils.getSimpleQualifiedName(catalogName, schemaName), description, type);
+            super(name, parentSchema != null ? parentSchema : parentCatalog, description, type);
             this.parentCatalog = parentCatalog;
             this.parentSchema = parentSchema;
             this.catalogName = catalogName;

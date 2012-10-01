@@ -78,10 +78,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos == -1) {
             replacementOffset = wordDetector.getOffset();
-            replacementLength = wordPart.length();
+            replacementLength = wordDetector.getLength();
         } else {
             replacementOffset = wordDetector.getOffset() + divPos + 1;
-            replacementLength = wordPart.length() - divPos - 1;
+            replacementLength = wordDetector.getLength() - divPos - 1;
         }
     }
 

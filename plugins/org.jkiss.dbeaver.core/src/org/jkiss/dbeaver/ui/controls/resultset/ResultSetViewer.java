@@ -2744,7 +2744,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             } else {
                 DBDAttributeBinding metaColumn = metaColumns[colNumber];
-                return metaColumn.getAttribute().getLabel();
+                DBCAttributeMetaData attribute = metaColumn.getAttribute();
+                if (CommonUtils.isEmpty(attribute.getLabel())) {
+                    return metaColumn.getColumnName();
+                } else {
+                    return attribute.getLabel();
+                }
 /*
                 return CommonUtils.isEmpty(metaColumn.getMetaData().getTableName()) ?
                     metaColumn.getMetaData().getName() :

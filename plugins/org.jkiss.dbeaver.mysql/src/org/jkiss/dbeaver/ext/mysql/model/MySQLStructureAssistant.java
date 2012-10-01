@@ -106,7 +106,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     }
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
-                    objects.add(new AbstractObjectReference(tableName, catalogName, null, RelationalObjectType.TYPE_TABLE) {
+                    objects.add(new AbstractObjectReference(tableName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
                         {
@@ -156,7 +156,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     }
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_SCHEMA);
                     final String procName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME);
-                    objects.add(new AbstractObjectReference(procName, catalogName, null, RelationalObjectType.TYPE_PROCEDURE) {
+                    objects.add(new AbstractObjectReference(procName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
                         {
@@ -208,7 +208,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     final String constrName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_NAME);
                     final String constrType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
-                    objects.add(new AbstractObjectReference(constrName, DBUtils.getSimpleQualifiedName(catalogName, tableName), null, RelationalObjectType.TYPE_CONSTRAINT) {
+                    objects.add(new AbstractObjectReference(constrName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
                         {
@@ -268,7 +268,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     final String catalogName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_SCHEMA);
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     final String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
-                    objects.add(new AbstractObjectReference(columnName, DBUtils.getSimpleQualifiedName(catalogName, tableName), null, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                    objects.add(new AbstractObjectReference(columnName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
                         {

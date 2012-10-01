@@ -396,7 +396,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         List<ICompletionProposal> proposals)
     {
         if (startPart != null) {
-            startPart = startPart.toUpperCase();
+            startPart = wordDetector.removeQuotes(startPart).toUpperCase();
         }
         try {
             Collection<? extends DBSObject> children = null;
@@ -449,7 +449,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     private ICompletionProposal makeProposalsFromObject(DBPNamedObject object, Image objectIcon)
     {
-        String objectName = DBUtils.getObjectFullName(object);
+        String objectFullName = DBUtils.getObjectFullName(object);
 
         StringBuilder info = new StringBuilder();
         PropertyCollector collector = new PropertyCollector(object, false);
@@ -465,7 +465,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             info.append("<br>");
         }
 
-        return createCompletionProposal(object.getName(), objectName, info.toString(), objectIcon, true);
+        return createCompletionProposal(
+            DBUtils.getQuotedIdentifier(editor.getDataSource(), object.getName()),
+            objectFullName,
+            info.toString(),
+            objectIcon,
+            true);
     }
 
     /*
@@ -486,15 +491,25 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // Escape replace string if required
             replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), replaceString);
         }
-        final int proposalCase = store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
+
+        // If we have quoted string then ignore pref settings
+        boolean quotedString = wordDetector.isQuoted(replaceString);
+        final int proposalCase = quotedString ?
+            SQLPreferenceConstants.PROPOSAL_CASE_DEFAULT :
+            store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
         switch (proposalCase) {
             case SQLPreferenceConstants.PROPOSAL_CASE_UPPER:
-                replaceString = replaceString.toUpperCase(); break;
+                replaceString = replaceString.toUpperCase();
+                break;
             case SQLPreferenceConstants.PROPOSAL_CASE_LOWER:
-                replaceString = replaceString.toLowerCase(); break;
+                replaceString = replaceString.toLowerCase();
+                break;
             default:
+                DBPIdentifierCase convertCase = quotedString ? editor.getDataSource().getInfo().storesQuotedCase() : editor.getDataSource().getInfo().storesUnquotedCase();
+                replaceString = convertCase.transform(replaceString);
                 break;
         }
+
         return new SQLCompletionProposal(
             editor.getSyntaxManager(),
             displayString,
