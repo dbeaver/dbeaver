@@ -35,7 +35,7 @@ public class NavigatorHandlerCopyObject extends NavigatorHandlerCopyAbstract {
     {
         DBPNamedObject adapted = RuntimeUtils.getObjectAdapter(object, DBPNamedObject.class);
         if (adapted != null) {
-            return DBUtils.convertObjectToString(adapted);
+            return DBUtils.getObjectShortName(adapted);
         } else {
             return null;
         }

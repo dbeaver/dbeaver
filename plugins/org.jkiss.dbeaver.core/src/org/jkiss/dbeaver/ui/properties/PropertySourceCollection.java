@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -109,7 +108,7 @@ public class PropertySourceCollection implements IPropertySource {
 
         @Override
         public String getDisplayName() {
-            return DBUtils.convertObjectToString(item);
+            return DBUtils.getObjectShortName(item);
         }
 
         @Override

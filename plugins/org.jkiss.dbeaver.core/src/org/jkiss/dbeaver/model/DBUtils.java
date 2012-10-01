@@ -809,7 +809,16 @@ public final class DBUtils {
         }
     }
 
-    public static String convertObjectToString(Object object)
+    public static DBPObject getPublicObject(DBPObject object)
+    {
+        if (object instanceof DBSDataSourceContainer) {
+            return ((DBSDataSourceContainer)object).getDataSource();
+        } else {
+            return object;
+        }
+    }
+
+    public static String getObjectShortName(Object object)
     {
         String strValue;
         if (object instanceof DBPNamedObject) {
@@ -818,15 +827,6 @@ public final class DBUtils {
             strValue = String.valueOf(object);
         }
         return strValue;
-    }
-
-    public static DBPObject getPublicObject(DBPObject object)
-    {
-        if (object instanceof DBSDataSourceContainer) {
-            return ((DBSDataSourceContainer)object).getDataSource();
-        } else {
-            return object;
-        }
     }
 
     public static String getObjectFullName(DBPNamedObject object)
