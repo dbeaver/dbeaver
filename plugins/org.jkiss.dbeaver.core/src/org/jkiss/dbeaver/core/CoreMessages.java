@@ -891,6 +891,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_search_objects_message_no_objects_like_;
 	public static String dialog_search_objects_message_objects_found;
 	public static String dialog_search_objects_spinner_max_results;
+    public static String dialog_search_objects_case_sensitive;
 	public static String dialog_search_objects_title;
 
 	public static String dialog_select_datasource_error_message;

@@ -63,6 +63,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
     private static final int MATCH_INDEX_LIKE = 2;
 
     private static final String PROP_MASK = "search-view.mask"; //$NON-NLS-1$
+    private static final String PROP_CASE_SENSITIVE = "search-view.case-sensitive"; //$NON-NLS-1$ 
     private static final String PROP_MAX_RESULT = "search-view.max-results"; //$NON-NLS-1$
     private static final String PROP_MATCH_INDEX = "search-view.match-index"; //$NON-NLS-1$
     private static final String PROP_HISTORY = "search-view.history"; //$NON-NLS-1$
@@ -79,6 +80,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
     private DatabaseNavigatorTree dataSourceTree;
 
     private String nameMask;
+    private boolean caseSensitive;
     private int maxResults;
     private int matchTypeIndex;
     private Set<DBSObjectType> checkedTypes = new HashSet<DBSObjectType>();
@@ -93,6 +95,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
         nameMask = store.getString(PROP_MASK);
+        caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
         maxResults = store.getInt(PROP_MAX_RESULT);
         matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
         for (int i = 0; ;i++) {
@@ -118,6 +121,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
         store.setValue(PROP_MASK, nameMask);
+        store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
         {
@@ -200,8 +204,8 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
 
             {
                 //new Label(searchGroup, SWT.NONE);
-                Composite optionsGroup2 = UIUtils.createPlaceholder(searchGroup, 4, 5);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                Composite optionsGroup2 = UIUtils.createPlaceholder(searchGroup, 5, 5);
+                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.horizontalSpan = 3;
                 optionsGroup2.setLayoutData(gd);
 
@@ -226,6 +230,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 if (maxResults <= 0) {
                     maxResults = 100;
                 }
+
                 final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
                 maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 maxResultsSpinner.addModifyListener(new ModifyListener() {
@@ -235,6 +240,17 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                         maxResults = maxResultsSpinner.getSelection();
                     }
                 });
+
+                final Button caseCheckbox = UIUtils.createCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, caseSensitive);
+                maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+                caseCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        caseSensitive = caseCheckbox.getSelection();
+                    }
+                });
+
             }
 
             Composite optionsGroup = new Composite(searchGroup, SWT.NONE);
@@ -547,7 +563,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             }
 
             return LoadingUtils.createService(
-                new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, maxResults),
+                new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, caseSensitive, maxResults),
                 itemList.createVisualizer(ControlEnableState.disable(searchGroup)));
         }
     }
@@ -558,6 +574,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         private final DBSObject parentObject;
         private final java.util.List<DBSObjectType> objectTypes;
         private final String objectNameMask;
+        private final boolean caseSensitive;
         private final int maxResults;
 
         private ObjectSearchService(
@@ -566,6 +583,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             DBSObject parentObject,
             java.util.List<DBSObjectType> objectTypes,
             String objectNameMask,
+            boolean caseSensitive,
             int maxResults)
         {
             super("Find objects", dataSource);
@@ -573,6 +591,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             this.parentObject = parentObject;
             this.objectTypes = objectTypes;
             this.objectNameMask = objectNameMask;
+            this.caseSensitive = caseSensitive;
             this.maxResults = maxResults;
         }
 
@@ -588,7 +607,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                     parentObject,
                     objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
                     objectNameMask,
-                    false,
+                    caseSensitive,
                     maxResults);
                 for (DBSObjectReference reference : objects) {
                     try {
