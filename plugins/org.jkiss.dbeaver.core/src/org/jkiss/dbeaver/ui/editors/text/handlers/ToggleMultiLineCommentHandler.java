@@ -45,22 +45,35 @@ public final class ToggleMultiLineCommentHandler extends AbstractCommentHandler 
         }
 
         String lineDelimiter = TextUtilities.getDefaultLineDelimiter(document);
-        String selText = document.get(selOffset, selLength);
+        String selText = selection.getText();
         boolean isMultiLine = selection.getStartLine() != selection.getEndLine() || selText.contains(lineDelimiter);
-        if (selText.trim().startsWith(comment.getFirst()) && selText.endsWith(comment.getSecond())) {
-            // Remove comments
-            if (isMultiLine) {
-
-            } else {
-                document.replace(selection.getOffset(), selection.getLength(), comment.getFirst() + selText + comment.getSecond());
-                selLength -= comment.getFirst().length() + comment.getSecond().length();
+        String testText = selText.trim();
+        if (testText.startsWith(comment.getFirst()) && testText.endsWith(comment.getSecond())) {
+            // Remove comments (also remove all extra line feeds)
+            int startPos = selText.indexOf(comment.getFirst()) + comment.getFirst().length();
+            while (lineDelimiter.indexOf(selText.charAt(startPos)) != -1) {
+                startPos++;
             }
+            int endPos = selText.lastIndexOf(comment.getSecond());
+            while (lineDelimiter.indexOf(selText.charAt(endPos)) != -1) {
+                endPos--;
+            }
+            String newSel = selText.substring(startPos, endPos);
+            document.replace(selection.getOffset(), selection.getLength(), newSel);
+            selLength -= (selText.length() - newSel.length());
+
         } else {
             // Add comment
             if (isMultiLine) {
-                document.replace(selection.getOffset() + selection.getLength(), 0, comment.getSecond() + lineDelimiter);
-                document.replace(selection.getOffset(), 0, comment.getFirst() + lineDelimiter);
-                selLength += comment.getFirst().length() + comment.getSecond().length() + lineDelimiter.length() * 2;
+                // Determine - whether we need to insert extra line feeds
+                // We use it only if begin and end of selection is on the beginning of line
+                int endOffset = selOffset + selLength;
+                boolean firstAtBegin = document.getLineOffset(selection.getStartLine()) == selOffset;
+                boolean secondAtBegin = document.getLineOffset(document.getLineOfOffset(endOffset)) == endOffset;
+                boolean useLineFeeds = firstAtBegin && secondAtBegin;
+                document.replace(selection.getOffset() + selection.getLength(), 0, comment.getSecond() + (useLineFeeds ? lineDelimiter : ""));
+                document.replace(selection.getOffset(), 0, comment.getFirst() + (useLineFeeds ? lineDelimiter : ""));
+                selLength += comment.getFirst().length() + comment.getSecond().length() + (useLineFeeds ? lineDelimiter.length() * 2 : 0);
             } else {
                 document.replace(selection.getOffset(), selection.getLength(), comment.getFirst() + selText + comment.getSecond());
                 selLength += comment.getFirst().length() + comment.getSecond().length();
