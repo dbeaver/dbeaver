@@ -21,56 +21,58 @@ package org.jkiss.dbeaver.ui.editors.text.handlers;
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.Pair;
 
 public final class ToggleMultiLineCommentHandler extends AbstractCommentHandler {
 
     @Override
-    protected void processAction(BaseTextEditor textEditor, IDocument document, ITextSelection textSelection) throws BadLocationException
+    protected void processAction(BaseTextEditor textEditor, IDocument document, ITextSelection selection) throws BadLocationException
     {
         DBPCommentsManager commentsSupport = textEditor.getCommentsSupport();
         if (commentsSupport == null) {
             return;
         }
-        String[] singleLineComments = commentsSupport.getSingleLineComments();
-        if (CommonUtils.isEmpty(singleLineComments)) {
-            // Single line comments are not supported
+        Pair<String,String> comment = commentsSupport.getMultiLineComments();
+        if (comment == null) {
+            // Multi line comments are not supported
             return;
         }
-        int selOffset = textSelection.getOffset();
-        int originalLength = textSelection.getLength();
-        int selLength = originalLength;
+        int selOffset = selection.getOffset();
+        int selLength = selection.getLength();
         DocumentRewriteSession rewriteSession = null;
         if (document instanceof IDocumentExtension4) {
             rewriteSession = ((IDocumentExtension4) document).startRewriteSession(DocumentRewriteSessionType.SEQUENTIAL);
         }
-        int endLine = textSelection.getEndLine();
-        int startLine = textSelection.getStartLine();
-        for (int lineNum = endLine; lineNum >= startLine; lineNum--) {
-            int lineOffset = document.getLineOffset(lineNum);
-            int lineLength = document.getLineLength(lineNum);
-            String lineComment = null;
-            for (String commentString : singleLineComments) {
-                if (document.get(lineOffset, lineLength).startsWith(commentString)) {
-                    lineComment = commentString;
-                    break;
-                }
-            }
-            if (lineComment != null) {
-                // Remove comment
-                document.replace(lineOffset, lineComment.length(), "");
-                selLength -= lineComment.length();
+
+        String lineDelimiter = TextUtilities.getDefaultLineDelimiter(document);
+        String selText = document.get(selOffset, selLength);
+        boolean isMultiLine = selection.getStartLine() != selection.getEndLine() || selText.contains(lineDelimiter);
+        if (selText.trim().startsWith(comment.getFirst()) && selText.endsWith(comment.getSecond())) {
+            // Remove comments
+            if (isMultiLine) {
+
             } else {
-                // Add comment
-                document.replace(lineOffset, 0, singleLineComments[0]);
-                selLength += singleLineComments[0].length();
+                document.replace(selection.getOffset(), selection.getLength(), comment.getFirst() + selText + comment.getSecond());
+                selLength -= comment.getFirst().length() + comment.getSecond().length();
+            }
+        } else {
+            // Add comment
+            if (isMultiLine) {
+                document.replace(selection.getOffset() + selection.getLength(), 0, comment.getSecond() + lineDelimiter);
+                document.replace(selection.getOffset(), 0, comment.getFirst() + lineDelimiter);
+                selLength += comment.getFirst().length() + comment.getSecond().length() + lineDelimiter.length() * 2;
+            } else {
+                document.replace(selection.getOffset(), selection.getLength(), comment.getFirst() + selText + comment.getSecond());
+                selLength += comment.getFirst().length() + comment.getSecond().length();
             }
         }
+
         if (rewriteSession != null) {
             ((IDocumentExtension4) document).stopRewriteSession(rewriteSession);
         }
-        if (originalLength > 0) {
+        if (selLength > 0) {
             textEditor.getSelectionProvider().setSelection(new TextSelection(selOffset, selLength));
         }
+
     }
 }
