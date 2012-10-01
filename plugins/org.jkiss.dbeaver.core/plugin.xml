@@ -78,6 +78,12 @@
                 properties="active"
                 type="org.jkiss.dbeaver.ext.IDatabaseEditor"/>
         <propertyTester
+                class="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
+                id="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
+                namespace="org.jkiss.dbeaver.ui.editors.text"
+                properties="canComment"
+                type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor"/>
+        <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql"
@@ -193,7 +199,8 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.navigate.object" name="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.open.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.open.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.comment.toggle" name="%command.org.jkiss.dbeaver.ui.editors.sql.coment.toggle.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.coment.toggle.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.comment.single" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.comment.multi" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="%command.org.jkiss.dbeaver.core.export.data.name" description="%command.org.jkiss.dbeaver.core.export.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
         <command id="org.jkiss.dbeaver.core.resultset.toggleMode" name="%command.org.jkiss.dbeaver.core.resultset.toggleMode.name" description="%command.org.jkiss.dbeaver.core.resultset.toggleMode.description" style="toggle" categoryId="org.jkiss.dbeaver.core.rs"/>
@@ -677,8 +684,23 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLFileHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.toggle" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleLineCommentHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></activeWhen>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleSingleLineCommentHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleMultiLineCommentHandler">
+            <activeWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
+                    </adapt>
+                </with>
+            </activeWhen>
         </handler>
 
         <!-- Entity editor handlers -->
@@ -1316,6 +1338,14 @@
             <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
         </menuContribution>
 
+        <!-- Edit menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="edit">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi"/>
+            </menu>
+        </menuContribution>
+
         <!-- Navigation menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="navigate" label="%command.org.jkiss.dbeaver.core.object.find.name">
@@ -1446,7 +1476,8 @@
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+L"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+L"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+O"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.toggle" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+/"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+/"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+/"/>
 
         <!-- Text editors -->
         <key commandId="org.eclipse.ui.edit.text.contentAssist.proposals" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SPACE"/>
