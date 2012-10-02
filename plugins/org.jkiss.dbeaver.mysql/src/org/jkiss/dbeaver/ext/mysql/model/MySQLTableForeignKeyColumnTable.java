@@ -39,7 +39,7 @@ public class MySQLTableForeignKeyColumnTable extends MySQLTableConstraintColumn 
     }
 
     @Override
-    @Property(id = "reference", name = "Reference Column", viewable = true, order = 4)
+    @Property(id = "reference", viewable = true, order = 4)
     public MySQLTableColumn getReferencedColumn()
     {
         return referencedColumn;
