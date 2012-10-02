@@ -41,7 +41,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         this.constraintType = constraintType;
     }
 
-    @Property(id = "owner", name = "Owner", viewable = true, order = 2)
+    @Property(id = "owner", viewable = true, order = 2)
     public TABLE getTable()
     {
         return table;

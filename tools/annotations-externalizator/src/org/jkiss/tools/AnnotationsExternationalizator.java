@@ -29,13 +29,14 @@ import java.util.List;
 
 public class AnnotationsExternationalizator {
 
-    private static final String PLUGIN_FOLDER = "C:\\_WORK\\JKISS\\DBeaver\\SVN\\dbeaver\\plugins\\org.jkiss.dbeaver.wmi";
+    private static final String PLUGIN_FOLDER = "C:\\_WORK\\JKISS\\DBeaver\\SVN\\dbeaver\\plugins\\org.jkiss.dbeaver.core";
     private static final String PLUGIN_PROPERTIES_NAME = "plugin.properties";
 
     private static File pluginPropertiesFile = null;
     private static int counter = 1;
     private static FileWriter pluginPropertiesWriter = null;
-    public static final String PROPERTY_NAME_PREFIX = "@Property(name = \"";
+    public static final String PROPERTY_PREFIX = "@Property(";
+    public static final String NAME_SUFFIX = "name = \"";
     public static final String DESCRIPTION_SUFFIX = ", description = \"";
     public static final String PACKAGE_PREFIX = "package ";
     public static final String CLASS_PREFIX = " class ";
@@ -90,12 +91,12 @@ public class AnnotationsExternationalizator {
             }
 
             // getter with property
-            if (trimLine.startsWith(PROPERTY_NAME_PREFIX)) {
+            if (trimLine.startsWith(PROPERTY_PREFIX) && trimLine.contains(NAME_SUFFIX)) {
                 System.out.println(counter++ + ": " + trimLine);
 
-                int prefixLength = PROPERTY_NAME_PREFIX.length();
-                String namePropertyValue = trimLine.substring(prefixLength, trimLine.indexOf("\"", prefixLength));
-                lines[i] = line.substring(0, line.indexOf("name = ")) + line.substring(line.indexOf(", ") + 2, line.length());
+                int nameValueIndex = trimLine.indexOf(NAME_SUFFIX) + NAME_SUFFIX.length();
+                String namePropertyValue = trimLine.substring(nameValueIndex, trimLine.indexOf("\"", nameValueIndex));
+                lines[i] = line.substring(0, line.indexOf("name = ")) + line.substring(line.indexOf(", ", line.indexOf("name = ")) + 2, line.length());
                 line = lines[i];
 
                 String methodName = null;

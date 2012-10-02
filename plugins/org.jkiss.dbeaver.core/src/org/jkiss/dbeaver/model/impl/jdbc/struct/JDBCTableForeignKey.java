@@ -59,7 +59,7 @@ public abstract class JDBCTableForeignKey<
     }
 
     @Override
-    @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
+    @Property(id = "reference", viewable = true, order = 4)
     public PRIMARY_KEY getReferencedConstraint()
     {
         return referencedKey;
