@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -100,7 +101,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 if (CommonUtils.isEmpty(tableName)) {
                     continue;
                 }
-                objects.add(new TableReference(catalog, schema, catalogName, schemaName, tableName, JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS)));
+                objects.add(new TableReference(
+                    findContainer(context.getProgressMonitor(), catalog, schema, catalogName, schemaName),
+                    tableName,
+                    JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS)));
                 if (objects.size() >= maxResults) {
                     break;
                 }
@@ -134,7 +138,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 if (CommonUtils.isEmpty(uniqueName)) {
                     uniqueName = procName;
                 }
-                objects.add(new ProcedureReference(catalog, schema, catalogName, schemaName, procName, uniqueName));
+                objects.add(new ProcedureReference(
+                    findContainer(context.getProgressMonitor(), catalog, schema, catalogName, schemaName),
+                    catalogName,
+                    procName, uniqueName));
                 if (objects.size() >= maxResults) {
                     break;
                 }
@@ -145,54 +152,47 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private abstract class ObjectReference extends AbstractObjectReference {
-        protected final GenericCatalog parentCatalog;
-        protected final GenericSchema parentSchema;
-        protected final String catalogName;
-        protected final String schemaName;
+    protected GenericStructContainer findContainer(DBRProgressMonitor monitor, GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName) throws DBException
+    {
+        GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
+        if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
+            // there is only one catalog - let's use it (PostgreSQL)
+            tableCatalog = dataSource.getCatalogs().iterator().next();
+        }
+        GenericSchema tableSchema = parentSchema != null ?
+            parentSchema :
+            CommonUtils.isEmpty(schemaName) ? null :
+                tableCatalog == null ? dataSource.getSchema(schemaName) : tableCatalog.getSchema(monitor, schemaName);
+        return tableSchema != null ? tableSchema : tableCatalog != null ? tableCatalog : dataSource;
+    }
 
-        protected ObjectReference(GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName, String name, String description, DBSObjectType type)
+    private abstract class ObjectReference extends AbstractObjectReference {
+
+        protected ObjectReference(GenericStructContainer container, String name, String description, DBSObjectType type)
         {
-            super(name,
-                parentSchema != null ? parentSchema : parentCatalog != null ? parentCatalog : dataSource,
-                description,
-                type);
-            this.parentCatalog = parentCatalog;
-            this.parentSchema = parentSchema;
-            this.catalogName = catalogName;
-            this.schemaName = schemaName;
+            super(name, container, description, type);
+        }
+
+        @Override
+        public GenericStructContainer getContainer()
+        {
+            return (GenericStructContainer)super.getContainer();
         }
     }
 
     private class TableReference extends ObjectReference {
 
-        private TableReference(GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName, String tableName, String description)
+        private TableReference(GenericStructContainer container, String tableName, String description)
         {
-            super(parentCatalog, parentSchema, catalogName, schemaName, tableName, description, RelationalObjectType.TYPE_TABLE);
+            super(container, tableName, description, RelationalObjectType.TYPE_TABLE);
         }
 
         @Override
         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
         {
-            GenericCatalog tableCatalog = parentCatalog != null ? parentCatalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
-            if (tableCatalog == null && CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(dataSource.getCatalogs()) && dataSource.getCatalogs().size() == 1) {
-                // there is only one catalog - let's use it (PostgreSQL)
-                tableCatalog = dataSource.getCatalogs().iterator().next();
-            }
-            GenericSchema tableSchema = parentSchema != null ?
-                parentSchema :
-                CommonUtils.isEmpty(schemaName) ? null :
-                    tableCatalog == null ? dataSource.getSchema(schemaName) : tableCatalog.getSchema(monitor, schemaName);
-            GenericTable table;
-            if (tableSchema != null) {
-                table = tableSchema.getTable(monitor, getName());
-            } else if (tableCatalog != null) {
-                table = tableCatalog.getTable(monitor, getName());
-            } else {
-                table = dataSource.getTable(monitor, getName());
-            }
+            GenericTable table = getContainer().getTable(monitor, getName());
             if (table == null) {
-                throw new DBException("Can't find table '" + getName() + "' in '" + catalogName + "/" + schemaName + "'");
+                throw new DBException("Can't find table '" + getName() + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
             }
             return table;
         }
@@ -200,40 +200,33 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
 
     private class ProcedureReference extends ObjectReference {
 
+        private final String catalogName;
         private String uniqueName;
-        private ProcedureReference(GenericCatalog parentCatalog, GenericSchema parentSchema, String catalogName, String schemaName, String procedureName, String uniqueName)
+        private ProcedureReference(GenericStructContainer container, String catalogName, String procedureName, String uniqueName)
         {
-            super(parentCatalog, parentSchema, catalogName, schemaName, procedureName, null, RelationalObjectType.TYPE_PROCEDURE);
+            super(container, procedureName, null, RelationalObjectType.TYPE_PROCEDURE);
+            this.catalogName = catalogName;
             this.uniqueName = uniqueName;
         }
 
         @Override
         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
         {
-            GenericCatalog procCatalog = parentCatalog != null ? parentCatalog : CommonUtils.isEmpty(catalogName) ? null : dataSource.getCatalog(catalogName);
-            GenericSchema procSchema = parentSchema != null ?
-                parentSchema :
-                CommonUtils.isEmpty(schemaName) ? null :
-                    procCatalog == null ? dataSource.getSchema(schemaName) : procCatalog.getSchema(monitor, schemaName);
             GenericProcedure procedure = null;
-            if (procSchema != null) {
+            if (getContainer() instanceof GenericSchema) {
                 // Try to use catalog name as package name (Oracle)
                 if (!CommonUtils.isEmpty(catalogName)) {
-                    GenericPackage procPackage = procSchema.getPackage(monitor, catalogName);
+                    GenericPackage procPackage = ((GenericSchema)getContainer()).getPackage(monitor, catalogName);
                     if (procPackage != null) {
                         procedure = procPackage.getProcedure(monitor, uniqueName);
                     }
                 }
-                if (procedure == null) {
-                    procedure = procSchema.getProcedure(monitor, uniqueName);
-                }
-            } else if (procCatalog != null) {
-                procedure = procCatalog.getProcedure(monitor, uniqueName);
-            } else {
-                procedure = dataSource.getProcedure(monitor, uniqueName);
             }
             if (procedure == null) {
-                throw new DBException("Can't find procedure '" + getName() + "' (" + uniqueName + ")" + "' in '" + catalogName + "/" + schemaName + "'");
+                procedure = getContainer().getProcedure(monitor, uniqueName);
+            }
+            if (procedure == null) {
+                throw new DBException("Can't find procedure '" + getName() + "' (" + uniqueName + ")" + "' in '" + DBUtils.getFullQualifiedName(dataSource, getContainer()) + "'");
             }
             return procedure;
         }
