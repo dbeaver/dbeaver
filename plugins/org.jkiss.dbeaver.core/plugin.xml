@@ -1340,7 +1340,7 @@
 
         <!-- Edit menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-            <menu id="edit">
+            <menu id="edit" label="%menu.edit">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi"/>
             </menu>
@@ -1348,7 +1348,7 @@
 
         <!-- Navigation menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-            <menu id="navigate" label="%command.org.jkiss.dbeaver.core.object.find.name">
+            <menu id="navigate" label="%menu.navigate">
                 <command commandId="org.jkiss.dbeaver.core.object.find"/>
             </menu>
         </menuContribution>
