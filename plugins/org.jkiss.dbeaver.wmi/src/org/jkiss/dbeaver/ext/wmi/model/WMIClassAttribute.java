@@ -40,7 +40,7 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
     }
 
     @Override
-    @Property(name = "Type", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public String getTypeName()
     {
         return element.getTypeName();
@@ -96,7 +96,7 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
     }
 
     @Override
-    @Property(name = "Default Value", viewable = true, order = 20)
+    @Property(viewable = true, order = 20)
     public String getDefaultValue()
     {
         return CommonUtils.toString(element.getValue());

@@ -114,7 +114,7 @@ public class WMIClass extends WMIContainer
         return getFlagQualifier(WMIConstants.Q_Terminal);
     }
 
-    @Property(name = "Super Class", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public WMIClass getSuperClass()
     {
         return superClass;
@@ -151,7 +151,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    @Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         if (name == null && classObject != null) {
@@ -169,7 +169,7 @@ public class WMIClass extends WMIContainer
         return name;
     }
 
-    @Property(name = "Path", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public String getPath()
     {
         try {
