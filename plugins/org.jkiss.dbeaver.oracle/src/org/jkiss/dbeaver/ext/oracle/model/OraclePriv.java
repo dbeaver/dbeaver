@@ -40,7 +40,7 @@ public abstract class OraclePriv extends OracleObject<OracleGrantee> implements 
         return super.getName();
     }
 
-    @Property(name = "Admin Option", viewable = true, order = 3, description = "Indicates whether the grant was with the ADMIN OPTION")
+    @Property(viewable = true, order = 3)
     public boolean isAdminOption()
     {
         return adminOption;

@@ -129,115 +129,115 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     }
 
     @Override
-    @Property(name = "Name", viewable = true, editable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName()
     {
         return name;
     }
 
-    @Property(name = "Block Size", viewable = true, editable = true, order = 2)
+    @Property(viewable = true, editable = true, order = 2)
     public long getBlockSize()
     {
         return blockSize;
     }
 
-    @Property(name = "Initial Extent", editable = true, order = 3)
+    @Property(editable = true, order = 3)
     public long getInitialExtent()
     {
         return initialExtent;
     }
 
-    @Property(name = "Next Extent", editable = true, order = 4)
+    @Property(editable = true, order = 4)
     public long getNextExtent()
     {
         return nextExtent;
     }
 
-    @Property(name = "Min Extents", editable = true, order = 5)
+    @Property(editable = true, order = 5)
     public long getMinExtents()
     {
         return minExtents;
     }
 
-    @Property(name = "Max Extents", editable = true, order = 6)
+    @Property(editable = true, order = 6)
     public long getMaxExtents()
     {
         return maxExtents;
     }
 
-    @Property(name = "PCT Increase", editable = true, order = 7)
+    @Property(editable = true, order = 7)
     public long getPctIncrease()
     {
         return pctIncrease;
     }
 
-    @Property(name = "Min Ext Len", editable = true, order = 8)
+    @Property(editable = true, order = 8)
     public long getMinExtLen()
     {
         return minExtLen;
     }
 
-    @Property(name = "Status", viewable = true, editable = true, order = 9)
+    @Property(viewable = true, editable = true, order = 9)
     public Status getStatus()
     {
         return status;
     }
 
-    @Property(name = "Contents", editable = true, order = 10)
+    @Property(editable = true, order = 10)
     public Contents getContents()
     {
         return contents;
     }
 
-    @Property(name = "Logging", editable = true, order = 11)
+    @Property(editable = true, order = 11)
     public Logging isLogging()
     {
         return logging;
     }
 
-    @Property(name = "Force Logging", editable = true, order = 12)
+    @Property(editable = true, order = 12)
     public boolean isForceLogging()
     {
         return forceLogging;
     }
 
-    @Property(name = "Extent Management", editable = true, order = 13)
+    @Property(editable = true, order = 13)
     public ExtentManagement getExtentManagement()
     {
         return extentManagement;
     }
 
-    @Property(name = "Allocation Type", editable = true, order = 14)
+    @Property(editable = true, order = 14)
     public AllocationType getAllocationType()
     {
         return allocationType;
     }
 
-    @Property(name = "Plugged In", editable = true, order = 15)
+    @Property(editable = true, order = 15)
     public boolean isPluggedIn()
     {
         return pluggedIn;
     }
 
-    @Property(name = "Segment Space Management", editable = true, order = 16)
+    @Property(editable = true, order = 16)
     public SegmentSpaceManagement getSegmentSpaceManagement()
     {
         return segmentSpaceManagement;
     }
 
-    @Property(name = "Default Table Compression", editable = true, order = 17)
+    @Property(editable = true, order = 17)
     public boolean isDefTableCompression()
     {
         return defTableCompression;
     }
 
-    @Property(name = "Retention", editable = true, order = 18)
+    @Property(editable = true, order = 18)
     public Retention getRetention()
     {
         return retention;
     }
 
-    @Property(name = "Big File", editable = true, order = 19)
+    @Property(editable = true, order = 19)
     public boolean isBigFile()
     {
         return bigFile;

@@ -80,68 +80,68 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
         this.staleness = JDBCUtils.safeGetString(dbResult, "STALENESS");
     }
 
-    @Property(name = "Container", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getContainer(DBRProgressMonitor monitor) throws DBException
     {
         return OracleUtils.resolveLazyReference(monitor, getSchema(), getSchema().tableCache, this, "container");
     }
 
-    @Property(name = "Updatable", viewable = true, order = 14)
+    @Property(viewable = true, order = 14)
     public boolean isUpdatable()
     {
         return updatable;
     }
 
-    @Property(name = "Rewrite Enabled", viewable = false, order = 15)
+    @Property(viewable = false, order = 15)
     public boolean isRewriteEnabled()
     {
         return rewriteEnabled;
     }
 
-    @Property(name = "Rewrite Capability", viewable = false, order = 16)
+    @Property(viewable = false, order = 16)
     public String getRewriteCapability()
     {
         return rewriteCapability;
     }
 
-    @Property(name = "Refresh Mode", viewable = false, order = 17)
+    @Property(viewable = false, order = 17)
     public String getRefreshMode()
     {
         return refreshMode;
     }
 
-    @Property(name = "Refresh Method", viewable = false, order = 18)
+    @Property(viewable = false, order = 18)
     public String getRefreshMethod()
     {
         return refreshMethod;
     }
 
-    @Property(name = "Build Mode", viewable = false, order = 19)
+    @Property(viewable = false, order = 19)
     public String getBuildMode()
     {
         return buildMode;
     }
 
-    @Property(name = "Fast Refreshable", viewable = false, order = 20)
+    @Property(viewable = false, order = 20)
     public String getFastRefreshable()
     {
         return fastRefreshable;
     }
 
-    @Property(name = "Last Refresh Type", viewable = false, order = 21)
+    @Property(viewable = false, order = 21)
     public String getLastRefreshType()
     {
         return lastRefreshType;
     }
 
-    @Property(name = "Last Refresh Date", viewable = false, order = 22)
+    @Property(viewable = false, order = 22)
     public Date getLastRefreshDate()
     {
         return lastRefreshDate;
     }
 
-    @Property(name = "Staleness", viewable = false, order = 23)
+    @Property(viewable = false, order = 23)
     public String getStaleness()
     {
         return staleness;
@@ -154,7 +154,7 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
     }
 
     @Override
-    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor)
     {
         return query;

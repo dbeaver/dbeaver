@@ -53,13 +53,13 @@ public class OraclePrivObject extends OracleObject<OracleGrantee> implements DBA
         return super.getName();
     }
 
-    @Property(name = "Object Type", order = 4, viewable = true, description = "Object type")
+    @Property(order = 4, viewable = true)
     public String getObjectType()
     {
         return objectType;
     }
 
-    @Property(name = "Object", order = 5, viewable = true, supportsPreview = true, description = "The object can be any object, including tables, packages, indexes, sequences, and so on")
+    @Property(order = 5, viewable = true, supportsPreview = true)
     public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
         if (monitor == null || CommonUtils.isEmpty(objectOwner)) {
@@ -74,25 +74,25 @@ public class OraclePrivObject extends OracleObject<OracleGrantee> implements DBA
             name);
     }
 
-    @Property(name = "Privilege", viewable = true, order = 10, description = "Privilege on the object")
+    @Property(viewable = true, order = 10)
     public String getPrivilege()
     {
         return privilege;
     }
 
-    @Property(name = "Grantor", order = 11, description = "User who performed the grant")
+    @Property(order = 11)
     public String getGrantor()
     {
         return grantor;
     }
 
-    @Property(name = "Grantable", viewable = true, order = 12, description = "Indicates whether the privilege was granted with the GRANT OPTION")
+    @Property(viewable = true, order = 12)
     public boolean isGrantable()
     {
         return grantable;
     }
 
-    @Property(name = "Hierarchy", viewable = true, order = 13, description = "Indicates whether the privilege was granted with the HIERARCHY OPTION")
+    @Property(viewable = true, order = 13)
     public boolean isHierarchy()
     {
         return hierarchy;

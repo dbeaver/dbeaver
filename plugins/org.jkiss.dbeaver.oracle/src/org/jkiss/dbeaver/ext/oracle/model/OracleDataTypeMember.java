@@ -84,19 +84,19 @@ public abstract class OracleDataTypeMember implements DBSEntityElement
     }
 
     @Override
-    @Property(name = "Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
         return name;
     }
 
-    @Property(name = "Number", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public int getNumber()
     {
         return number;
     }
 
-    @Property(name = "Inherited", viewable = true, order = 20)
+    @Property(viewable = true, order = 20)
     public boolean isInherited()
     {
         return inherited;

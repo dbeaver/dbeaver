@@ -79,7 +79,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         this.deleteRule = "CASCADE".equals(deleteRuleName) ? DBSForeignKeyModifyRule.CASCADE : DBSForeignKeyModifyRule.NO_ACTION;
     }
 
-    @Property(name = "Ref Table", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public OracleTableBase getReferencedTable()
     {
         return referencedKey.getTable();
@@ -93,7 +93,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
     }
 
     @Override
-    @Property(name = "On Delete", viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
+    @Property(viewable = true, editable = true, listProvider = ConstraintModifyRuleListProvider.class, order = 5)
     public DBSForeignKeyModifyRule getDeleteRule()
     {
         return deleteRule;

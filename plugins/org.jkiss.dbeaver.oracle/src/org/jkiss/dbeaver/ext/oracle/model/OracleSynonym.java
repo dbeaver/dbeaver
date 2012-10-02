@@ -51,26 +51,26 @@ public class OracleSynonym extends OracleSchemaObject {
     }
 
     @Override
-    @Property(name = "Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
         return super.getName();
     }
 
-    @Property(name = "Object Type", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public String getObjectTypeName()
     {
         return objectTypeName;
     }
 
-    @Property(name = "Object Owner", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public Object getObjectOwner()
     {
         final OracleSchema schema = getDataSource().schemaCache.getCachedObject(objectOwner);
         return schema == null ? objectOwner : schema;
     }
 
-    @Property(name = "Object", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
         return OracleObjectType.resolveObject(
@@ -82,7 +82,7 @@ public class OracleSynonym extends OracleSchemaObject {
             objectName);
     }
 
-    @Property(name = "DB Link", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public Object getDbLink(DBRProgressMonitor monitor) throws DBException
     {
         return OracleDBLink.resolveObject(monitor, getSchema(), dbLink);

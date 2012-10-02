@@ -62,20 +62,20 @@ public abstract class OracleTableConstraintBase extends JDBCTableConstraint<Orac
         return getTable().getDataSource();
     }
 
-    @Property(name = "Type", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 3)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 3)
     @Override
     public DBSEntityConstraintType getConstraintType()
     {
         return constraintType;
     }
 
-    @Property(name = "Condition", viewable = true, editable = true, order = 4)
+    @Property(viewable = true, editable = true, order = 4)
     public String getSearchCondition()
     {
         return searchCondition;
     }
 
-    @Property(name = "Status", viewable = true, editable = false, order = 5)
+    @Property(viewable = true, editable = false, order = 5)
     public OracleObjectStatus getStatus()
     {
         return status;

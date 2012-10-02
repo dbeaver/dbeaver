@@ -96,7 +96,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Override
-    @Property(name = "Name", viewable = true, editable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName()
     {
         return name;
@@ -113,7 +113,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return null;
     }
 
-    @Property(name = "User ID", viewable = false, order = 200)
+    @Property(viewable = false, order = 200)
     public long getId()
     {
         return id;

@@ -109,7 +109,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    @Property(name = "Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1, description = "Name of the table")
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
         return super.getName();
@@ -129,7 +129,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             this);
     }
 
-    @Property(name = "Comments", viewable = true, editable = true, order = 100)
+    @Property(viewable = true, editable = true, order = 100)
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public synchronized String getComment(DBRProgressMonitor monitor)
         throws DBException

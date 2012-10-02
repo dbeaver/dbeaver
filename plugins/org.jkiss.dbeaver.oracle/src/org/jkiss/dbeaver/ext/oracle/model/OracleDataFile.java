@@ -85,85 +85,85 @@ public class OracleDataFile extends OracleObject<OracleTablespace> {
     }
 
     @Override
-    @Property(name = "Name", viewable = true, editable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName()
     {
         return name;
     }
 
-    @Property(name = "ID", order = 2)
+    @Property(order = 2)
     public long getId()
     {
         return id;
     }
 
-    @Property(name = "Relative No", order = 3)
+    @Property(order = 3)
     public long getRelativeNo()
     {
         return relativeNo;
     }
 
-    @Property(name = "Bytes", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public BigDecimal getBytes()
     {
         return bytes;
     }
 
-    @Property(name = "Blocks", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public BigDecimal getBlocks()
     {
         return blocks;
     }
 
-    @Property(name = "Max Bytes", viewable = true, order = 6)
+    @Property(viewable = true, order = 6)
     public BigDecimal getMaxBytes()
     {
         return maxBytes;
     }
 
-    @Property(name = "Max Blocks", viewable = true, order = 7)
+    @Property(viewable = true, order = 7)
     public BigDecimal getMaxBlocks()
     {
         return maxBlocks;
     }
 
-    @Property(name = "Increment", viewable = true, order = 8)
+    @Property(viewable = true, order = 8)
     public long getIncrementBy()
     {
         return incrementBy;
     }
 
-    @Property(name = "User Bytes", viewable = true, order = 9)
+    @Property(viewable = true, order = 9)
     public BigDecimal getUserBytes()
     {
         return userBytes;
     }
 
-    @Property(name = "User Blocks", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public BigDecimal getUserBlocks()
     {
         return userBlocks;
     }
 
-    @Property(name = "Available", viewable = true, order = 11)
+    @Property(viewable = true, order = 11)
     public boolean isAvailable()
     {
         return available;
     }
 
-    @Property(name = "Auto Ext", viewable = true, order = 12)
+    @Property(viewable = true, order = 12)
     public boolean isAutoExtensible()
     {
         return autoExtensible;
     }
 
-    @Property(name = "Online", order = 13)
+    @Property(order = 13)
     public OnlineStatus getOnlineStatus()
     {
         return onlineStatus;
     }
 
-    @Property(name = "Temporary", order = 14)
+    @Property(order = 14)
     public boolean isTemporary()
     {
         return temporary;

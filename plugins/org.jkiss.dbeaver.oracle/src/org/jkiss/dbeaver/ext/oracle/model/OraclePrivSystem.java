@@ -34,7 +34,7 @@ public class OraclePrivSystem extends OraclePriv {
     }
 
     @Override
-    @Property(name = "Privilege", viewable = true, order = 2, description = "System privilege")
+    @Property(viewable = true, order = 2)
     public String getName() {
         return super.getName();
     }

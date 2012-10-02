@@ -81,7 +81,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
     }
 
     @Override
-    @Property(name = "Unique", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public boolean isUnique()
     {
         return !nonUnique;
@@ -93,7 +93,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
         return tablespace;
     }
 
-    @Property(name = "Tablespace", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {

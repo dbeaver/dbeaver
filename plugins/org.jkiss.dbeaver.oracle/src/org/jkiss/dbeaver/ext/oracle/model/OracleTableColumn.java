@@ -89,7 +89,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return getTable().getDataSource();
     }
 
-    @Property(name = "Data Type", viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnDataTypeListProvider.class, description = "Data type of the column")
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnDataTypeListProvider.class)
     public DBSDataType getType()
     {
         return type;
@@ -101,7 +101,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.typeName = type == null ? "" : type.getName();
     }
 
-    @Property(name = "Type Mod", viewable = true, order = 30, description = "Datatype modifier of the column")
+    @Property(viewable = true, order = 30)
     public OracleDataTypeModifier getTypeMod()
     {
         return typeMod;
@@ -114,7 +114,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return super.getTypeName();
     }
 
-    @Property(name = "Length", viewable = true, editable = true, updatable = true, order = 40, description = "Length of the column (in bytes)")
+    @Property(viewable = true, editable = true, updatable = true, order = 40)
     @Override
     public long getMaxLength()
     {
@@ -122,20 +122,20 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     @Override
-    @Property(name = "Precision", viewable = true, order = 41, description = "Decimal precision for NUMBER datatype; binary precision for FLOAT datatype; NULL for all other datatypes")
+    @Property(viewable = true, order = 41)
     public int getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(name = "Scale", viewable = true, order = 42, description = "Digits to the right of the decimal point in a number")
+    @Property(viewable = true, order = 42)
     public int getScale()
     {
         return super.getScale();
     }
 
-    @Property(name = "Not Null", viewable = true, editable = true, updatable = true, order = 50, description = "Indicates whether a column allows NULLs")
+    @Property(viewable = true, editable = true, updatable = true, order = 50)
     @Override
     public boolean isRequired()
     {
@@ -143,7 +143,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     @Override
-    @Property(name = "Default", viewable = true, editable = true, updatable = true, order = 70, description = "Default value for the column")
+    @Property(viewable = true, editable = true, updatable = true, order = 70)
     public String getDefaultValue()
     {
         return defaultValue;
@@ -160,7 +160,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.defaultValue = defaultValue;
     }
 
-    @Property(name = "Comment", viewable = true, editable = true, updatable = true, order = 100, description = "Column comment")
+    @Property(viewable = true, editable = true, updatable = true, order = 100)
     public String getComment()
     {
         return comment;

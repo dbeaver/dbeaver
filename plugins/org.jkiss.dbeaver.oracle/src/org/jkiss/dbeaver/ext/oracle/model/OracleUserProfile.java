@@ -46,7 +46,7 @@ public class OracleUserProfile extends OracleGlobalObject
     }
 
     @Override
-    @Property(name = "Profile name", viewable = true, order = 1, description = "Profile name")
+    @Property(viewable = true, order = 1)
     public String getName() {
         return name;
     }
@@ -87,18 +87,18 @@ public class OracleUserProfile extends OracleGlobalObject
         }
 
         @Override
-        @Property(name = "Resource name", viewable = true, order = 1, description = "Resource name")
+        @Property(viewable = true, order = 1)
         public String getName() {
             return super.getName();
         }
 
-        @Property(name = "Resource type", viewable = true, order = 2, description = "Indicates whether the resource profile is a KERNEL or a PASSWORD parameter")
+        @Property(viewable = true, order = 2)
         public String getType()
         {
             return type;
         }
 
-        @Property(name = "Limit", viewable = true, order = 3, description = "Limit placed on this resource for this profile")
+        @Property(viewable = true, order = 3)
         public String getLimit()
         {
             return limit;

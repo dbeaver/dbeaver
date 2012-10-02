@@ -47,13 +47,13 @@ public class OracleJavaClass extends OracleSchemaObject {
 
     }
 
-    @Property(name = "Access", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public Accessibility getAccessibility()
     {
         return accessibility;
     }
 
-    @Property(name = "Interface", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public boolean isInterface()
     {
         return isInterface;

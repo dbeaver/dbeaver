@@ -216,7 +216,7 @@ public class OracleDataType extends OracleObject
     }
 
     @Override
-    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
@@ -243,7 +243,7 @@ public class OracleDataType extends OracleObject
     }
 
     @Override
-    @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
@@ -300,13 +300,13 @@ public class OracleDataType extends OracleObject
     }
 
     @Override
-    @Property(name = "Type Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
         return name;
     }
 
-    @Property(name = "Code", viewable = true, editable = true, order = 2)
+    @Property(viewable = true, editable = true, order = 2)
     public String getTypeCode()
     {
         return typeCode;
@@ -317,7 +317,7 @@ public class OracleDataType extends OracleObject
         return typeOID;
     }
 
-    @Property(name = "Super Type", viewable = true, editable = true, order = 3)
+    @Property(viewable = true, editable = true, order = 3)
     public OracleDataType getSuperType(DBRProgressMonitor monitor)
     {
         if (superType  == null) {
@@ -346,25 +346,25 @@ public class OracleDataType extends OracleObject
         }
     }
 
-    @Property(name = "Predefined", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public boolean isPredefined()
     {
         return flagPredefined;
     }
 
-    @Property(name = "Incomplete", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public boolean isIncomplete()
     {
         return flagIncomplete;
     }
 
-    @Property(name = "Final", viewable = true, order = 6)
+    @Property(viewable = true, order = 6)
     public boolean isFinal()
     {
         return flagFinal;
     }
 
-    @Property(name = "Instantiable", viewable = true, order = 7)
+    @Property(viewable = true, order = 7)
     public boolean isInstantiable()
     {
         return flagInstantiable;

@@ -70,56 +70,56 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         this.consumerGroup = JDBCUtils.safeGetString(resultSet, "INITIAL_RSRC_CONSUMER_GROUP");
     }
 
-    @Property(name = "ID", order = 1, description = "ID number of the user")
+    @Property(order = 1)
     public long getId()
     {
         return id;
     }
 
     @Override
-    @Property(name = "User name", viewable = true, order = 2, description = "Name of the user")
+    @Property(viewable = true, order = 2)
     public String getName() {
         return name;
     }
 
-    @Property(name = "External name", order = 3, description = "User external name")
+    @Property(order = 3)
     public String getExternalName()
     {
         return externalName;
     }
 
-    @Property(name = "Status", viewable = true, order = 4, description = "Account status")
+    @Property(viewable = true, order = 4)
     public String getStatus()
     {
         return status;
     }
 
-    @Property(name = "Create date", viewable = true, order = 5, description = "User creation date")
+    @Property(viewable = true, order = 5)
     public Timestamp getCreateDate()
     {
         return createDate;
     }
 
-    @Property(name = "Lock date", order = 6, description = "Date the account was locked if account status was LOCKED")
+    @Property(order = 6)
     public Timestamp getLockDate()
     {
         return lockDate;
     }
 
-    @Property(name = "Expiry date", order = 7, description = "Date of expiration of the account")
+    @Property(order = 7)
     public Timestamp getExpiryDate()
     {
         return expiryDate;
     }
 
-    @Property(name = "Default tablespace", order = 8, description = "Default tablespace for data")
+    @Property(order = 8)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getDefaultTablespace(DBRProgressMonitor monitor) throws DBException
     {
         return OracleTablespace.resolveTablespaceReference(monitor, this, "defaultTablespace");
     }
 
-    @Property(name = "Temporary tablespace", order = 9, description = "Default tablespace for temporary tables or a tablespace group")
+    @Property(order = 9)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTempTablespace(DBRProgressMonitor monitor) throws DBException
     {
@@ -140,14 +140,14 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         }
     }
 
-    @Property(name = "Profile", order = 10, description = "User resource profile name")
+    @Property(order = 10)
     @LazyProperty(cacheValidator = ProfileReferenceValidator.class)
     public Object getProfile(DBRProgressMonitor monitor) throws DBException
     {
         return OracleUtils.resolveLazyReference(monitor, getDataSource(), getDataSource().profileCache, this, "profile");
     }
 
-    @Property(name = "Consumer group", order = 11, description = "Initial resource consumer group for the user")
+    @Property(order = 11)
     public String getConsumerGroup()
     {
         return consumerGroup;

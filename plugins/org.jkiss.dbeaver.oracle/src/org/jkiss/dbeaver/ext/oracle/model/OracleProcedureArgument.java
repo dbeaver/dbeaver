@@ -109,7 +109,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter
     }
 
     @Override
-    @Property(name = "Name", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public String getName()
     {
         if (CommonUtils.isEmpty(name)) {
@@ -124,20 +124,20 @@ public class OracleProcedureArgument implements DBSProcedureParameter
         return name;
     }
 
-    @Property(name = "Position", viewable = true, order = 11)
+    @Property(viewable = true, order = 11)
     public int getPosition()
     {
         return position;
     }
 
     @Override
-    @Property(name = "In/Out", viewable = true, order = 20)
+    @Property(viewable = true, order = 20)
     public DBSProcedureParameterType getParameterType()
     {
         return mode == null ? null : mode.getParameterType();
     }
 
-    @Property(name = "Type", viewable = true, order = 21)
+    @Property(viewable = true, order = 21)
     public Object getType()
     {
         return packageTypeName != null ?
@@ -151,7 +151,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter
     }
 
     @Override
-    @Property(name = "Length", viewable = true, order = 30)
+    @Property(viewable = true, order = 30)
     public long getMaxLength()
     {
         return dataLength;
@@ -170,14 +170,14 @@ public class OracleProcedureArgument implements DBSProcedureParameter
     }
 
     @Override
-    @Property(name = "Scale", viewable = true, order = 40)
+    @Property(viewable = true, order = 40)
     public int getScale()
     {
         return dataScale;
     }
 
     @Override
-    @Property(name = "Precision", viewable = true, order = 50)
+    @Property(viewable = true, order = 50)
     public int getPrecision()
     {
         return dataPrecision;

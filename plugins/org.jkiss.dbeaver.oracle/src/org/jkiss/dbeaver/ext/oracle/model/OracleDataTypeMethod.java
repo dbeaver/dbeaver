@@ -82,7 +82,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
         }
     }
 
-    @Property(name = "Method Type", viewable = true, editable = true, order = 5)
+    @Property(viewable = true, editable = true, order = 5)
     public String getMethodType()
     {
         return methodType;
@@ -100,19 +100,19 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
         return resultTypeMod;
     }
 
-    @Property(name = "Final", viewable = true, order = 8)
+    @Property(viewable = true, order = 8)
     public boolean isFinal()
     {
         return flagFinal;
     }
 
-    @Property(name = "Instantiable", viewable = true, order = 9)
+    @Property(viewable = true, order = 9)
     public boolean isInstantiable()
     {
         return flagInstantiable;
     }
 
-    @Property(name = "Overriding", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public boolean isOverriding()
     {
         return flagOverriding;

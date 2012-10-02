@@ -62,56 +62,56 @@ public class OracleRecycledObject extends OracleSchemaObject implements DBSObjec
         this.canPurge = JDBCUtils.safeGetBoolean(dbResult, "CAN_PURGE", "Y");
     }
 
-    @Property(name = "Object name", viewable = true, order = 2, description = "New object name")
+    @Property(viewable = true, order = 2)
     public String getRecycledName()
     {
         return recycledName;
     }
 
-    @Property(name = "Operation", viewable = true, order = 3, description = "Operation carried out on the object")
+    @Property(viewable = true, order = 3)
     public Operation getOperation()
     {
         return operation;
     }
 
-    @Property(name = "Object type", viewable = true, order = 4, description = "Type of the object")
+    @Property(viewable = true, order = 4)
     public String getObjectType()
     {
         return objectType;
     }
 
-    @Property(name = "Tablespace", viewable = true, order = 5, description = "Tablespace to which the object belongs")
+    @Property(viewable = true, order = 5)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {
         return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
-    @Property(name = "Create time", order = 6)
+    @Property(order = 6)
     public String getCreateTime()
     {
         return createTime;
     }
 
-    @Property(name = "Drop time", order = 7)
+    @Property(order = 7)
     public String getDropTime()
     {
         return dropTime;
     }
 
-    @Property(name = "Partition", order = 8)
+    @Property(order = 8)
     public String getPartitionName()
     {
         return partitionName;
     }
 
-    @Property(name = "Can Undrop", viewable = true, order = 9, description = "Indicates whether the object can be undropped")
+    @Property(viewable = true, order = 9)
     public boolean isCanUndrop()
     {
         return canUndrop;
     }
 
-    @Property(name = "Can Purge", viewable = true, order = 10, description = "Indicates whether the object can be purged")
+    @Property(viewable = true, order = 10)
     public boolean isCanPurge()
     {
         return canPurge;

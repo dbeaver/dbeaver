@@ -62,7 +62,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             "END " + name + ";" + ContentUtils.getDefaultLineSeparator();
     }
 
-    @Property(name = "Valid", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public boolean isValid()
     {
         return valid;
@@ -97,7 +97,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     }
 
     @Override
-    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {

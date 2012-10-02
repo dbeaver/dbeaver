@@ -64,7 +64,7 @@ public class OraclePackage extends OracleSchemaObject
         super(schema, name, false);
     }
 
-    @Property(name = "Valid", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public boolean isValid()
     {
         return valid;
@@ -77,7 +77,7 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Override
-    @Property(name = "Header", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
@@ -93,7 +93,7 @@ public class OraclePackage extends OracleSchemaObject
     }
 
     @Override
-    @Property(name = "Body", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {

@@ -54,7 +54,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         private String typeName;
         private OracleView superView;
 
-        @Property(name = "Definition", hidden = true, editable = true, updatable = true, order = -1)
+        @Property(hidden = true, editable = true, updatable = true, order = -1)
         public String getText() { return text; }
         public void setText(String text) { this.text = text; }
 
@@ -64,7 +64,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         public void setOidText(String oidText) { this.oidText = oidText; }
         public String getTypeName() { return typeName; }
         public void setTypeName(String typeName) { this.typeName = typeName; }
-        @Property(name = "Super View", viewable = false, editable = true, order = 5)
+        @Property(viewable = false, editable = true, order = 5)
         public OracleView getSuperView() { return superView; }
         public void setSuperView(OracleView superView) { this.superView = superView; }
     }
@@ -83,7 +83,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         super(schema, dbResult);
     }
 
-    @Property(name = "View Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     @Override
     public String getName()
     {
@@ -109,7 +109,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     }
 
     @Override
-    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         return getAdditionalInfo(monitor).getText();

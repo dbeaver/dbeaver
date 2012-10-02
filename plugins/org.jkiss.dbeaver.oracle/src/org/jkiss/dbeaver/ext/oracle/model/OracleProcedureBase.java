@@ -56,7 +56,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
     }
 
     @Override
-    @Property(name = "Procedure Type", viewable = true, editable = true, order = 3)
+    @Property(viewable = true, editable = true, order = 3)
     public DBSProcedureType getProcedureType()
     {
         return procedureType ;

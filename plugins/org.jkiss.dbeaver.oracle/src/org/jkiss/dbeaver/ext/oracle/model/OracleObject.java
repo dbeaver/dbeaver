@@ -78,7 +78,7 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
     }
 
     @Override
-    @Property(name = "Name", viewable = true, editable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName()
     {
         return name;

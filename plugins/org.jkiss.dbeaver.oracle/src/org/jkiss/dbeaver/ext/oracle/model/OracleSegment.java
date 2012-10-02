@@ -74,37 +74,37 @@ public class OracleSegment<PARENT extends DBSObject> extends OracleObject<PARENT
         }
     }
 
-    @Property(name = "Owner", viewable = true, editable = true, order = 2)
+    @Property(viewable = true, editable = true, order = 2)
     public OracleSchema getSchema()
     {
         return schema;
     }
 
-    @Property(name = "Type", viewable = true, editable = true, order = 3)
+    @Property(viewable = true, editable = true, order = 3)
     public String getSegmentType()
     {
         return segmentType;
     }
 
-    @Property(name = "Partition", viewable = true, editable = true, order = 4)
+    @Property(viewable = true, editable = true, order = 4)
     public String getPartitionName()
     {
         return partitionName;
     }
 
-    @Property(name = "Bytes", viewable = true, editable = true, order = 5)
+    @Property(viewable = true, editable = true, order = 5)
     public long getBytes()
     {
         return bytes;
     }
 
-    @Property(name = "Blocks", viewable = true, editable = true, order = 6)
+    @Property(viewable = true, editable = true, order = 6)
     public long getBlocks()
     {
         return blocks;
     }
 
-    @Property(name = "File", order = 7)
+    @Property(order = 7)
     public OracleDataFile getFile()
     {
         return file;

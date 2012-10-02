@@ -50,49 +50,49 @@ public class OracleSequence extends OracleSchemaObject {
     }
 
     @Override
-    @Property(name = "Sequence Name", viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
         return super.getName();
     }
 
-    @Property(name = "Value", viewable = true, editable = true, order = 2)
+    @Property(viewable = true, editable = true, order = 2)
     public Number getLastNumber()
     {
         return lastNumber;
     }
 
-    @Property(name = "Min Value", viewable = true, editable = true, order = 3)
+    @Property(viewable = true, editable = true, order = 3)
     public Number getMinValue()
     {
         return minValue;
     }
 
-    @Property(name = "Max Value", viewable = true, editable = true, order = 4)
+    @Property(viewable = true, editable = true, order = 4)
     public Number getMaxValue()
     {
         return maxValue;
     }
 
-    @Property(name = "Increment", viewable = true, editable = true, order = 5)
+    @Property(viewable = true, editable = true, order = 5)
     public long getIncrementBy()
     {
         return incrementBy;
     }
 
-    @Property(name = "Cache", viewable = true, editable = true, order = 6)
+    @Property(viewable = true, editable = true, order = 6)
     public long getCacheSize()
     {
         return cacheSize;
     }
 
-    @Property(name = "Cycle", viewable = true, editable = true, order = 7)
+    @Property(viewable = true, editable = true, order = 7)
     public boolean isCycle()
     {
         return flagCycle;
     }
 
-    @Property(name = "Ordered", viewable = true, editable = true, order = 8)
+    @Property(viewable = true, editable = true, order = 8)
     public boolean isOrder()
     {
         return flagOrder;

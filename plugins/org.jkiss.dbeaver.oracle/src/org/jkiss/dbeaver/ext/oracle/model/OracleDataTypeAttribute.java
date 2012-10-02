@@ -59,26 +59,26 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
         this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");
     }
 
-    @Property(name = "Type", viewable = true, editable = true, order = 3)
+    @Property(viewable = true, editable = true, order = 3)
     public DBSDataType getAttrType()
     {
         return attrType;
     }
 
-    @Property(name = "Type Mod", viewable = true, editable = true, order = 4)
+    @Property(viewable = true, editable = true, order = 4)
     public OracleDataTypeModifier getAttrTypeMod()
     {
         return attrTypeMod;
     }
 
-    @Property(name = "Length", viewable = true, editable = true, order = 5)
+    @Property(viewable = true, editable = true, order = 5)
     public Integer getLength()
     {
         return length;
     }
 
     @Override
-    @Property(name = "Precision", viewable = true, editable = true, order = 6)
+    @Property(viewable = true, editable = true, order = 6)
     public int getPrecision()
     {
         return precision == null ? 0 : precision;
@@ -91,7 +91,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     }
 
     @Override
-    @Property(name = "Scale", viewable = true, editable = true, order = 7)
+    @Property(viewable = true, editable = true, order = 7)
     public int getScale()
     {
         return scale == null ? 0 : scale;

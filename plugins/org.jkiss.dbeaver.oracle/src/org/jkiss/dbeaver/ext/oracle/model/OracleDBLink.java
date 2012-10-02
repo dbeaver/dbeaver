@@ -46,19 +46,19 @@ public class OracleDBLink extends OracleSchemaObject {
 
     }
 
-    @Property(name = "User Name", viewable = true, editable = true, order = 2)
+    @Property(viewable = true, editable = true, order = 2)
     public String getUserName()
     {
         return userName;
     }
 
-    @Property(name = "Host", viewable = true, editable = true, order = 3)
+    @Property(viewable = true, editable = true, order = 3)
     public String getHost()
     {
         return host;
     }
 
-    @Property(name = "Created", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public Date getCreated()
     {
         return created;

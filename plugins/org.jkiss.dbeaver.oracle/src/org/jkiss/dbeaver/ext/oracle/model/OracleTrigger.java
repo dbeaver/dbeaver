@@ -107,69 +107,69 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     }
 
     @Override
-    @Property(name = "Name", viewable = true, editable = true, order = 1)
+    @Property(viewable = true, editable = true, order = 1)
     public String getName()
     {
         return super.getName();
     }
 
     @Override
-    @Property(name = "Table", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public OracleTableBase getTable()
     {
         return table;
     }
 
-    @Property(name = "Object Type", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public BaseObjectType getObjectType()
     {
         return objectType;
     }
 
-    @Property(name = "Trigger Type", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public String getTriggerType()
     {
         return triggerType;
     }
 
-    @Property(name = "Event", viewable = true, order = 6)
+    @Property(viewable = true, order = 6)
     public String getTriggeringEvent()
     {
         return triggeringEvent;
     }
 
-    @Property(name = "Column", viewable = true, order = 7)
+    @Property(viewable = true, order = 7)
     public String getColumnName()
     {
         return columnName;
     }
 
-    @Property(name = "Ref Names", order = 8)
+    @Property(order = 8)
     public String getRefNames()
     {
         return refNames;
     }
 
-    @Property(name = "When Clause", order = 9)
+    @Property(order = 9)
     public String getWhenClause()
     {
         return whenClause;
     }
 
-    @Property(name = "Status", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public OracleObjectStatus getStatus()
     {
         return status;
     }
 
     @Override
-    @Property(name = "Description", order = 11)
+    @Property(order = 11)
     public String getDescription()
     {
         return description;
     }
 
-    @Property(name = "Action Type", viewable = true, order = 12)
+    @Property(viewable = true, order = 12)
     public ActionType getActionType()
     {
         return actionType;
@@ -201,7 +201,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     }
 
     @Override
-    @Property(name = "Declaration", hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDeclaration == null && monitor != null) {

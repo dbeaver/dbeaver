@@ -43,12 +43,12 @@ public class OracleRole extends OracleGrantee implements DBARole
     }
 
     @Override
-    @Property(name = "Role name", viewable = true, order = 2, description = "Name of the role")
+    @Property(viewable = true, order = 2)
     public String getName() {
         return name;
     }
 
-    @Property(name = "Authentication", viewable = true, order = 3, description = "Indicates if the role requires a password to be enabled")
+    @Property(viewable = true, order = 3)
     public String getAuthentication()
     {
         return authentication;

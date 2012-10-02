@@ -111,44 +111,44 @@ public abstract class OraclePartitionBase<PARENT extends DBSObject> extends Orac
         return tablespace;
     }
 
-    @Property(name = "Position", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public int getPosition()
     {
         return position;
     }
 
-    @Property(name = "Usable", viewable = true, order = 11)
+    @Property(viewable = true, order = 11)
     public boolean isUsable()
     {
         return usable;
     }
 
-    @Property(name = "Tablespace", viewable = true, order = 12)
+    @Property(viewable = true, order = 12)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {
         return OracleTablespace.resolveTablespaceReference(monitor, this, null);
     }
 
-    @Property(name = "High Value", viewable = true, order = 30)
+    @Property(viewable = true, order = 30)
     public String getHighValue()
     {
         return highValue;
     }
 
-    @Property(name = "Rows", viewable = true, order = 40)
+    @Property(viewable = true, order = 40)
     public long getNumRows()
     {
         return numRows;
     }
 
-    @Property(name = "Sample Size", viewable = true, order = 41)
+    @Property(viewable = true, order = 41)
     public long getSampleSize()
     {
         return sampleSize;
     }
 
-    @Property(name = "Last Analyzed", viewable = true, order = 42)
+    @Property(viewable = true, order = 42)
     public Timestamp getLastAnalyzed()
     {
         return lastAnalyzed;

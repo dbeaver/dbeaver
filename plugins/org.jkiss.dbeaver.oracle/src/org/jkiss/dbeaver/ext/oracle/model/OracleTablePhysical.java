@@ -66,7 +66,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         this.partitionCache = partitioned ? new PartitionCache() : null;
     }
 
-    @Property(name = "Row Count", viewable = true, order = 20, description = "Number of rows in the table (populated only if you collect statistics)")
+    @Property(viewable = true, order = 20)
     public long getRowCount()
     {
         return rowCount;
@@ -84,7 +84,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return tablespace;
     }
 
-    @Property(name = "Tablespace", viewable = true, order = 22)
+    @Property(viewable = true, order = 22)
     @LazyProperty(cacheValidator = OracleTablespace.TablespaceReferenceValidator.class)
     public Object getTablespace(DBRProgressMonitor monitor) throws DBException
     {

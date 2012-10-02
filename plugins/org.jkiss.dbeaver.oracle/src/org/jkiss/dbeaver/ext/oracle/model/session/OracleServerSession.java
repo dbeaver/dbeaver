@@ -62,7 +62,7 @@ public class OracleServerSession implements DBAServerSession {
         this.remoteProgram = JDBCUtils.safeGetString(dbResult, "PROGRAM");
     }
 
-    @Property(name = "SID", category = "Session", viewable = true, order = 1, description = "Session identifier")
+    @Property(category = "Session", viewable = true, order = 1)
     public String getSid()
     {
         return sid;
@@ -73,66 +73,66 @@ public class OracleServerSession implements DBAServerSession {
         return serial;
     }
 
-    @Property(name = "User", category = "Session", viewable = true, order = 2, description = "Oracle user")
+    @Property(category = "Session", viewable = true, order = 2)
     public String getUser()
     {
         return user;
     }
 
-    @Property(name = "Schema", category = "Session", viewable = true, order = 3, description = "Schema user name")
+    @Property(category = "Session", viewable = true, order = 3)
     public String getSchema()
     {
         return schema;
     }
 
-    @Property(name = "Status", category = "Session", viewable = true, order = 4, description = "Status of the session")
+    @Property(category = "Session", viewable = true, order = 4)
     public String getStatus()
     {
         return status;
     }
 
-    @Property(name = "State", category = "Session", viewable = true, order = 5, description = "Wait state")
+    @Property(category = "Session", viewable = true, order = 5)
     public String getState()
     {
         return state;
     }
 
-    @Property(name = "Event", category = "Session", viewable = true, order = 6, description = "Resource or event for which the session is waiting")
+    @Property(category = "Session", viewable = true, order = 6)
     public String getEvent()
     {
         return event;
     }
 
-    @Property(name = "Logon Time", category = "Session", order = 7, description = "Time of logon")
+    @Property(category = "Session", order = 7)
     public Timestamp getLogonTime()
     {
         return logonTime;
     }
 
-    @Property(name = "Service", category = "Session", order = 8, description = "Service name of the session")
+    @Property(category = "Session", order = 8)
     public String getServiceName()
     {
         return serviceName;
     }
 
-    @Property(name = "Current SQL", category = "SQL", order = 50, description = "Current SQL statement")
+    @Property(category = "SQL", order = 50)
     public String getSql()
     {
         return sql;
     }
 
-    @Property(name = "Remote Host", category = "Process", viewable = true, order = 30, description = "Operating system machine name")
+    @Property(category = "Process", viewable = true, order = 30)
     public String getRemoteHost()
     {
         return remoteHost;
     }
 
-    @Property(name = "Remote User", category = "Process", viewable = true, order = 31, description = "Operating system client user name")
+    @Property(category = "Process", viewable = true, order = 31)
     public String getRemoteUser()
     {
         return remoteUser;
     }
-    @Property(name = "Remote Program", category = "Process", viewable = true, order = 32, description = "Operating system program name")
+    @Property(category = "Process", viewable = true, order = 32)
     public String getRemoteProgram()
     {
         return remoteProgram;

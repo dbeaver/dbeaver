@@ -44,7 +44,7 @@ public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDa
         return super.getName();
     }
 
-    @Property(name = "Role", viewable = true, order = 2, description = "Granted role", supportsPreview = true)
+    @Property(viewable = true, order = 2, supportsPreview = true)
     public Object getRole(DBRProgressMonitor monitor) throws DBException
     {
         if (monitor == null) {
@@ -53,7 +53,7 @@ public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDa
         return OracleUtils.resolveLazyReference(monitor, getDataSource(), getDataSource().roleCache, this, null);
     }
 
-    @Property(name = "Default", viewable = true, order = 4, description = "Indicates whether the role is designated as a DEFAULT ROLE for the user")
+    @Property(viewable = true, order = 4)
     public boolean isDefaultRole()
     {
         return defaultRole;

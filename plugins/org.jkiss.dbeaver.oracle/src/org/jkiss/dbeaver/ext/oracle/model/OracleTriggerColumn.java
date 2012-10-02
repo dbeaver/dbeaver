@@ -66,14 +66,14 @@ public class OracleTriggerColumn extends AbstractTriggerColumn
     }
 
     @Override
-    @Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
     }
 
     @Override
-    @Property(name = "Column", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public OracleTableColumn getTableColumn()
     {
         return tableColumn;

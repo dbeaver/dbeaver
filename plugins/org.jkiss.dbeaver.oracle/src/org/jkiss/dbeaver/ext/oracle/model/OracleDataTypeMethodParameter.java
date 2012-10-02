@@ -78,19 +78,19 @@ public class OracleDataTypeMethodParameter implements DBSObject {
     }
 
     @Override
-    @Property(name = "Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
     }
 
-    @Property(name = "Number", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public int getNumber()
     {
         return number;
     }
 
-    @Property(name = "Mode", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public OracleParameterMode getMode()
     {
         return mode;
