@@ -48,43 +48,43 @@ public class MySQLSession implements DBAServerSession {
         this.info = JDBCUtils.safeGetString(dbResult, "info");
     }
 
-    @Property(viewable = true, order = 1")
+    @Property(viewable = true, order = 1)
     public String getPid()
     {
         return pid;
     }
 
-    @Property(viewable = true, order = 2")
+    @Property(viewable = true, order = 2)
     public String getUser()
     {
         return user;
     }
 
-    @Property(viewable = true, order = 3")
+    @Property(viewable = true, order = 3)
     public String getHost()
     {
         return host;
     }
 
-    @Property(viewable = true, order = 4")
+    @Property(viewable = true, order = 4)
     public String getDb()
     {
         return db;
     }
 
-    @Property(viewable = true, order = 5")
+    @Property(viewable = true, order = 5)
     public String getCommand()
     {
         return command;
     }
 
-    @Property(viewable = true, order = 6")
+    @Property(viewable = true, order = 6)
     public String getTime()
     {
         return time;
     }
 
-    @Property(viewable = true, order = 7")
+    @Property(viewable = true, order = 7)
     public String getState()
     {
         return state;

@@ -74,67 +74,67 @@ public class MySQLPlanNode implements DBCPlanNode {
         return nested;
     }
 
-    @Property(order = 0, viewable = true")
+    @Property(order = 0, viewable = true)
     public long getId()
     {
         return id;
     }
 
-    @Property(order = 1, viewable = true")
+    @Property(order = 1, viewable = true)
     public String getSelectType()
     {
         return selectType;
     }
 
-    @Property(order = 2, viewable = true")
+    @Property(order = 2, viewable = true)
     public String getTable()
     {
         return table;
     }
 
-    @Property(order = 3, viewable = true")
+    @Property(order = 3, viewable = true)
     public String getType()
     {
         return type;
     }
 
-    @Property(order = 4, viewable = true")
+    @Property(order = 4, viewable = true)
     public String getPossibleKeys()
     {
         return possibleKeys;
     }
 
-    @Property(order = 5, viewable = true")
+    @Property(order = 5, viewable = true)
     public String getKey()
     {
         return key;
     }
 
-    @Property(order = 6, viewable = true")
+    @Property(order = 6, viewable = true)
     public String getKeyLength()
     {
         return keyLength;
     }
 
-    @Property(order = 7, viewable = true")
+    @Property(order = 7, viewable = true)
     public String getRef()
     {
         return ref;
     }
 
-    @Property(order = 8, viewable = true")
+    @Property(order = 8, viewable = true)
     public long getRowCount()
     {
         return rowCount;
     }
 
-    @Property(order = 9, viewable = true")
+    @Property(order = 9, viewable = true)
     public double getFiltered()
     {
         return filtered;
     }
 
-    @Property(order = 10, viewable = true")
+    @Property(order = 10, viewable = true)
     public String getExtra()
     {
         return extra;
