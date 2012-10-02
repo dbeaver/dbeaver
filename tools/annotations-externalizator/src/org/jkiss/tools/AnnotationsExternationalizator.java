@@ -29,7 +29,7 @@ import java.util.List;
 
 public class AnnotationsExternationalizator {
 
-    private static final String PLUGIN_FOLDER = "C:\\_WORK\\JKISS\\DBeaver\\SVN\\dbeaver\\plugins\\org.jkiss.dbeaver.core";
+    private static final String PLUGIN_FOLDER = "C:\\_WORK\\JKISS\\DBeaver\\SVN\\dbeaver\\plugins\\org.jkiss.dbeaver.generic";
     private static final String PLUGIN_PROPERTIES_NAME = "plugin.properties";
 
     private static File pluginPropertiesFile = null;

@@ -63,7 +63,7 @@ public class GenericTableIndexColumn extends AbstractTableIndexColumn
     }
 
     @Override
-    @Property(id = "name", name = "Column", viewable = true, order = 1)
+    @Property(id = "name", viewable = true, order = 1)
     public GenericTableColumn getTableColumn()
     {
         return tableColumn;

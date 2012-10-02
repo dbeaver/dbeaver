@@ -52,7 +52,7 @@ public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
     }
 
     @Override
-    @Property(id = "name", name = "Column", viewable = true, order = 1)
+    @Property(id = "name", viewable = true, order = 1)
     public GenericTableColumn getAttribute()
     {
         return tableColumn;
