@@ -88,13 +88,13 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
         return methodType;
     }
 
-    @Property(id = "dataType", name = "Result", viewable = true, order = 6)
+    @Property(id = "dataType", viewable = true, order = 6)
     public OracleDataType getResultType()
     {
         return resultType;
     }
 
-    @Property(id = "dataTypeMod", name = "Result Mod", viewable = true, order = 7)
+    @Property(id = "dataTypeMod", viewable = true, order = 7)
     public OracleDataTypeModifier getResultTypeMod()
     {
         return resultTypeMod;

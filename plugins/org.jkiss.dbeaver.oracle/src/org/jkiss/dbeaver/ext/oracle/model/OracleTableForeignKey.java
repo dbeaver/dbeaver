@@ -86,7 +86,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
     }
 
     @Override
-    @Property(id = "reference", name = "Ref Object", viewable = true, order = 4)
+    @Property(id = "reference", viewable = true, order = 4)
     public OracleTableConstraint getReferencedConstraint()
     {
         return referencedKey;

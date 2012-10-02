@@ -96,13 +96,13 @@ public class OracleDataTypeMethodParameter implements DBSObject {
         return mode;
     }
 
-    @Property(id = "dataType", name = "Type", viewable = true, order = 4)
+    @Property(id = "dataType", viewable = true, order = 4)
     public OracleDataType getType()
     {
         return type;
     }
 
-    @Property(id = "dataTypeMod", name = "Type Mod", viewable = true, order = 5)
+    @Property(id = "dataTypeMod", viewable = true, order = 5)
     public OracleDataTypeModifier getTypeMod()
     {
         return typeMod;
