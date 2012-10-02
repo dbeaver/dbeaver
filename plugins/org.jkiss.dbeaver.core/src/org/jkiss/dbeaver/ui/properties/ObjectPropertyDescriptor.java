@@ -386,11 +386,14 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         if (Property.DEFAULT_LOCAL_STRING.equals(string)) {
             Bundle bundle = FrameworkUtil.getBundle(declaringClass);
             ResourceBundle resourceBundle = Platform.getResourceBundle(bundle);
-            String messageID = "meta." + declaringClass.getName() + "." + getId() + "." + type;
+            String messageID = "meta." + declaringClass.getName() + "." + BeanUtils.getPropertyNameFromGetter(getGetter().getName()) + "." + type;
             String result;
             try {
                 result = resourceBundle.getString(messageID);
             } catch (Exception e) {
+                if (type.equals(Property.RESOURCE_TYPE_NAME)) {
+                    log.warn("Resource '" + messageID + "' not found in bundle " + bundle.getSymbolicName());
+                }
                 return defaultValue;
             }
             if (!result.equals(messageID)) {

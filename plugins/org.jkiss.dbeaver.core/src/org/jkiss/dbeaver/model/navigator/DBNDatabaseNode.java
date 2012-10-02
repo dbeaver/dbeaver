@@ -359,7 +359,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             if (monitor.isCanceled()) {
                 break;
             }
-            monitor.subTask(CoreMessages.model_navigator_load_ + child.getChildrenType(getObject().getDataSource()));
+            monitor.subTask(CoreMessages.model_navigator_load_ + " " + child.getChildrenType(getObject().getDataSource()));
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
                 boolean isLoaded = loadTreeItems(monitor, item, oldList, toList);
