@@ -47,7 +47,7 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema
     }
 
     @Override
-    @Property(name = "Catalog", order = 2)
+    @Property(order = 2)
     public GenericCatalog getCatalog()
     {
         return catalog;
@@ -66,14 +66,14 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema
     }
 
     @Override
-    @Property(name = "Schema Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return schemaName;
     }
 
     @Override
-    @Property(name = "Schema Description", viewable = true, order = 100)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return null;

@@ -101,7 +101,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     }
 
     @Override
-    @Property(name = "Auto Increment", viewable = true, order = 51)
+    @Property(viewable = true, order = 51)
     public boolean isSequence()
     {
         return autoIncrement;
@@ -113,7 +113,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         return this;
     }
 
-    @Property(name = "Radix", viewable = false, order = 62)
+    @Property(viewable = false, order = 62)
     public int getRadix()
     {
         return radix;
@@ -125,7 +125,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     }
 
     @Override
-    @Property(name = "Key", viewable = true, order = 80)
+    @Property(viewable = true, order = 80)
     public boolean isInUniqueKey()
     {
         final Collection<GenericPrimaryKey> uniqueKeysCache = getTable().getContainer().getPrimaryKeysCache().getCachedObjects(getTable());
@@ -146,7 +146,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     }
 
     @Override
-    @Property(name = "Description", viewable = true, order = 100)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return remarks;

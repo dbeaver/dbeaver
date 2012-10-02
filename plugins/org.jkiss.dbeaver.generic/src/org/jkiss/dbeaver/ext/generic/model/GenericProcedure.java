@@ -66,33 +66,33 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     }
 
 /*
-    @Property(name = "Plain Name", viewable = true, order = 2)
+    @Property(viewable = true, order = 2)
     public String getPlainName()
     {
         return specificName;
     }
 */
 
-    @Property(name = "Catalog", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public GenericCatalog getCatalog()
     {
         return getContainer().getCatalog();
     }
 
-    @Property(name = "Schema", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public GenericSchema getSchema()
     {
         return getContainer().getSchema();
     }
 
-    @Property(name = "Package", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public GenericPackage getPackage()
     {
         return getContainer() instanceof GenericPackage ? (GenericPackage) getContainer() : null;
     }
 
     @Override
-    @Property(name = "Type", viewable = true, order = 6)
+    @Property(viewable = true, order = 6)
     public DBSProcedureType getProcedureType()
     {
         return procedureType;

@@ -89,7 +89,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     }
 
     @Override
-    @Property(name = "Catalog Name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return catalogName;

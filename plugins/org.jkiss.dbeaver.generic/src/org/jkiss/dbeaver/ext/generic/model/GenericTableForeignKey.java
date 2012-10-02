@@ -57,7 +57,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         return getTable().getDataSource();
     }
 
-    @Property(name = "Defferability", viewable = true, order = 7)
+    @Property(viewable = true, order = 7)
     public DBSForeignKeyDefferability getDefferability()
     {
         return defferability;

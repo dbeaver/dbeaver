@@ -51,7 +51,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    @Property(name = "Package", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return packageName;
@@ -70,14 +70,14 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    @Property(name = "Catalog", viewable = true, order = 3)
+    @Property(viewable = true, order = 3)
     public GenericCatalog getCatalog()
     {
         return container.getCatalog();
     }
 
     @Override
-    @Property(name = "Schema", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public GenericSchema getSchema()
     {
         return container.getSchema();

@@ -71,7 +71,7 @@ public class GenericProcedureParameter extends JDBCColumn implements DBSProcedur
     }
 
     @Override
-    @Property(name = "Column Type", viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public DBSProcedureParameterType getParameterType()
     {
         return parameterType;

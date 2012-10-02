@@ -135,7 +135,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return getContainer().getCatalog();
     }
 
-    @Property(name = "Schema", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public GenericSchema getSchema()
     {
         return getContainer().getSchema();
@@ -199,7 +199,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    @Property(name = "Table Description", viewable = true, order = 100)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return description;
@@ -217,7 +217,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     // Comment row count calculation - it works too long and takes a lot of resources without serious reason
-    @Property(name = "Row Count", viewable = true, expensive = true, order = 5)
+    @Property(viewable = true, expensive = true, order = 5)
     public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {

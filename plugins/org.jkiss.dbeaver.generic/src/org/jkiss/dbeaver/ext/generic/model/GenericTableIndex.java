@@ -78,26 +78,26 @@ public class GenericTableIndex extends JDBCTableIndex<GenericTable>
     }
 
     @Override
-    @Property(name = "Index Description", viewable = true, order = 100)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return null;
     }
 
     @Override
-    @Property(name = "Unique", viewable = true, order = 4)
+    @Property(viewable = true, order = 4)
     public boolean isUnique()
     {
         return !nonUnique;
     }
 
-    @Property(name = "Qualifier", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public String getQualifier()
     {
         return qualifier;
     }
 
-    @Property(name = "Cardinality", viewable = true, order = 5)
+    @Property(viewable = true, order = 5)
     public long getCardinality()
     {
         return cardinality;
