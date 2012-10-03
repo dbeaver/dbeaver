@@ -1,0 +1,94 @@
+<!-- Please do not remove or change this AfD message until the issue is settled -->
+{{Article for deletion/dated|page=DBeaver|timestamp=20120702135332|year=2012|month=July|day=2|substed=yes|help=off}}
+<!-- For administrator use only: {{Old AfD multi|page=DBeaver|date=2 July 2012|result='''keep'''}} -->
+<!-- End of AfD message, feel free to edit beyond this point -->
+{{Infobox software
+|name                   = DBeaver
+|developer              = Serge Rieder and others
+|latest_release_version = 1.6.0
+|latest_release_date    = June 30, 2012
+|operating_system       = [[Cross-platform]]
+|platform               = [[Java platform|Java]]
+|genre                  = Database administration tool
+|license                = [[GPL]]
+|website                = [http://dbeaver.jkiss.org/ dbeaver.jkiss.org]
+}}
+
+The '''DBeaver''' is a universal database administration tool and SQL client. Generally it uses [[JDBC]] drivers to allow users to work with databases. It provides an SQL editor that offers code completion and syntax highlighting for standard [[SQL]] and database metadata browser which allows to view database structure and settings. Also it has a set of tools and plugins which allows to view/edit ER diagrams, perform export and import of tables and databases, etc. DBeaver has a plugin architecture that allows to create custom plugins for certain databases to provide non-standard database features (like tablespaces, stored procedures, security management, etc). 
+As DBeaver is written entirely in [[Java platform|Java]] with [[Standard Widget Toolkit|SWT]] UI components, it has to run on any platform that has a [[JVM]].
+
+DBeaver is freeware and open-source. It is released under terms of [[GPL]] license.
+
+==Feature Summary==
+
+* Database metadata browse -  allows for browsing database objects such as catalogs, schemas, tables, view, triggers, sequences, procedures, indexes, 
+
+security objects, etc
+* Metadata editor - allows for editing database objects.
+* SQL statements/scripts execution
+* SQL highlighting (specific for each database engine)
+* Autocompletion and metadata hyperlinks in SQL editor
+* Result set/table edit
+* BLOB/CLOB support (view and edit modes)
+* Scrollable resultsets
+* Data (tables, query results) export
+* Transactions management
+* Database objects search (tables, columns, constraints, procedures)
+* ERD (Entity Relational Diagrams)
+* Database object bookmarks
+* SQL scripts management
+* Projects support (connections, SQL scripts and bookmarks)
+
+==History==
+
+The DBeaver project was started by Serge Rieder in 2011 and became an open source in June 2012.
+
+==Supported operation systems==
+
+* [[Microsoft Windows]]
+* [[Linux]]
+* [[Mac OS]]
+* [[Solaris (operating system)|Solaris]]
+* [[AIX]]
+* [[HPUX]]
+
+==Supported databases==
+
+* [[Apache Derby]]
+* [[Daffodil database|Daffodil (One$DB)]]
+* [[Firebird (database server)|Firebird]] with the JayBird JCA/JDBC Driver
+* [[FrontBase]]
+* [[HSQLDB]]
+* [[H2 (DBMS)]]
+* [[IBM DB2]]
+* [[Informix]]
+* [[Ingres (database)|Ingres]] (and [[Ingres (database)|OpenIngres]])
+* [[InterBase]]
+* [[Linter SQL RDBMS]]
+* [[Mckoi SQL Database]]
+* [[Microsoft Access]] with the JDBC/ODBC bridge.
+* [[Microsoft SQL Server]]
+* [[Mimer SQL]]
+* [[MySQL]]
+* [[Oracle Database]]
+* [[PostgreSQL]]
+* [[MaxDB]] / SAPDB
+* [[SQLite]]
+* [[Sybase]]
+* [[Teradata]]
+* [[Windows Management Instrumentation]] (WMI) interface
+
+==See also==
+*[[SQL]]
+*[[Comparison of database tools]]
+
+==References==
+*[http://dbeaver.jkiss.org/ DBeaver project home site]
+<references/>
+
+{{Portal|Free software}}
+
+{{DEFAULTSORT:DBeaver}}
+[[Category:Database administration tools]]
+[[Category:Java platform software]]
+[[Category:SQL]]

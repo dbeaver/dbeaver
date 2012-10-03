@@ -1,0 +1,56 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Дополнительные настройки соединения</title>
+    </head>
+
+    <body>
+        <h1>Дополнительные настройки соединения</h1>
+        <p>Это последняя страница мастера новых соединений, и на ней расположены настройки, общие для всех драйверов.</p>
+        <p>Эти настройки используются самой программой DBeaver, не драйверами.</p>
+
+        <table border="1">
+            <tr valign="top">
+                <td nowrap>Имя соединения</td>
+                <td>Имя соединения. Оно будет использоваться в <a href="../views/database-navigator.html">окне базы данных</a>.
+                </td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Локальное сохранение пароля</td>
+                <td>Отметьте это поле если Вы хотите хранить пароль доступа к базе данных локально. В противном случае, DBeaver будет спрашивать пароль всякий раз при подключении к базе данных.
+                    Пароль сохраняется в зашифрованной форме, но если Вы работаете с высоко секретными данными, не исключена вероятность, что третьи лица могут получить доступ к Вашему компьютеру. В этом случае мы рекомендуем Вам отказаться от этой функции.
+                </td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Показ системных объектов</td>
+                <td>Отметьте это поле, если Вы хотите видеть системные объекты базы данных (схемы, таблицы и т.д.). Если Вы этого не сделаете, системные объекты будут скрыты.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Фильтрование каталогов/схем</td>
+                <td>Показывать только каталоги (схемы), имя которых соответствует заданному шаблону. Формат шаблона может быть специфичным для каждой базы данных, но как правило, он использует LIKE-синтаксис.</td>
+            </tr>
+        </table>
+
+    </body>
+</html>

@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<plugin>
+
+    <extension
+        point="org.eclipse.ui.views">
+        <category
+            name="DBeaver"
+            id="org.jkiss.dbeaver.ext.erd">
+        </category>
+    </extension>
+    <extension
+        point="org.eclipse.help.contexts">
+        <contexts
+            file="contexts.xml">
+        </contexts>
+    </extension>
+
+    <extension
+        point="org.eclipse.ui.popupMenus">
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+            id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
+            class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
+            main="false"
+            label="%editor.erd.name"
+            description="%editor.erd.description"
+            position="additions_end"
+            icon="icons/erd.png">
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resourceHandler">
+        <handler type="erd" extensions="erd" class="org.jkiss.dbeaver.ext.erd.navigator.ERDResourceHandler"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.eclipse.gef.EditPart" class="org.jkiss.dbeaver.ext.erd.model.ERDObjectAdapter">
+            <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
+            <adapter type="org.eclipse.ui.views.properties.IPropertySource"/>
+        </factory>
+        <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter">
+           <adapter type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
+        </factory>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerPaste">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.ext.erd.editor.editable"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+
+        <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerDelete">
+            <activeWhen>
+                <and>
+                    <with variable="activeFocusControl">
+                        <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
+                            <test property="org.jkiss.dbeaver.ext.erd.editor.canDelete"/>
+                        </adapt>
+                    </with>
+                    <with variable="selection">
+                        <count value="+"/>
+                    </with>
+                </and>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerSelectAll">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerUndo">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.ext.erd.editor.canUndo"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerRedo">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
+                        <test property="org.jkiss.dbeaver.ext.erd.editor.canRedo"/>
+                    </adapt>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.file.print" class="org.jkiss.dbeaver.ext.erd.action.ERDHandlerPrint">
+            <activeWhen>
+                <with variable="activeFocusControl">
+                    <adapt type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
+                </with>
+            </activeWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="org.jkiss.dbeaver.ext.erd.action.ERDEditorPropertyTester"
+             id="org.jkiss.dbeaver.ext.erd.action.ERDEditorPropertyTester"
+             namespace="org.jkiss.dbeaver.ext.erd.editor"
+             properties="canUndo,canRedo,canDelete,editable"
+             type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart">
+       </propertyTester>
+    </extension>
+
+    <extension point="org.eclipse.ui.themes">
+        <themeElementCategory
+                label="Diagrams"
+                id="org.jkiss.dbeaver.ui.presentation.erd">
+            <description>
+                ERD Diagrams
+            </description>
+        </themeElementCategory>
+        <fontDefinition
+                label="Diagram font"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.font">
+            <description>The diagram font is used for diagram entity and attribute names.</description>
+        </fontDefinition>
+        <!--colorDefinition
+                label="Diagram entity background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.entity.bg"
+                value="COLOR_LIST_SELECTION">
+            <description>Entity background</description>
+        </colorDefinition-->
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="%pref.page.name.erd.editor"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.erd.general" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="General Settings">
+           <enabledWhen>
+              <instanceof value="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
+           </enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.elementFactories">
+        <factory id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorInputFactory" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorInputFactory"/>
+    </extension>
+
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="utf-8"
+            file-extensions="erd"
+            id="org.jkiss.dbeaver.erd.content-type-erd"
+            name="ERD"
+            priority="normal"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor name="ERD Editor"
+                extensions="erd"
+                icon="icons/erd.png"
+                contributorClass="org.jkiss.dbeaver.ext.erd.editor.ERDEditorContributor"
+                class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone"
+                id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd.content-type-erd"/>
+        </editor>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.erd.diagram.create" name="Create ERD" description="Create ER diagram" categoryId="org.jkiss.dbeaver.core.navigator"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="icons/erd.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.ext.erd.navigator.CreateDiagramHandler"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- All Context menus -->
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.eclipse.core.resources.IFolder">
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="erd"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart.EditorContext?after=additions">
+            <command commandId="org.eclipse.ui.edit.undo"/>
+            <command commandId="org.eclipse.ui.edit.redo"/>
+            <separator name="selection" visible="true"/>
+            <command commandId="org.eclipse.ui.edit.selectAll"/>
+        </menuContribution>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"
+             icon="icons/erd.png"
+             id="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"
+             name="%wizard.erd.name">
+           <description>
+               %wizard.erd.description
+           </description>
+        </wizard>
+    </extension>
+
+
+</plugin>

@@ -1,0 +1,73 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Настройки соединения</title>
+    </head>
+
+    <body>
+        <h1>Настройки соединения</h1>
+
+        <h2>Общие настройки</h2>
+        <p>В этом месте вы можете определить настройки и параметры соединения.</p>
+        <p>Некоторые параметры обязательны, другие - опциональны.</p>
+        <p>Стандартные настройки:</p>
+        <table border="1">
+            <tr valign="top">
+                <td nowrap>JDBC-адрес</td>
+                <td>Адрес (URL) базы данных. Это поле доступно для редактирования только в том случае, когда драйвер не имеет шаблона адреса (sample URL).
+                    В противном случае, это поле будет изменяться автоматически при заполнении прочих параметров соединения.
+                </td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Хост</td>
+                <td>Имя хоста базы данных</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Порт</td>
+                <td>Номер порта базы данных. Как правило, это поле опционально. Если оно оставлено пустым, будет использован порт, принятый по-умолчанию для текущей базы данных.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>База данных/схема</td>
+                <td>Имя удалённой базы данных/схемы.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Сервер</td>
+                <td>Имя удалённого сервера.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Имя пользователя/пароль</td>
+                <td>Учётные данные пользователя. Могут быть оставлены пустыми для некоторых драйверов (например, для встроенных баз данных)</td>
+            </tr>
+        </table>
+
+        <h2>Дополнительно</h2>
+        <p>Драйвер базы данных может поддерживать дополнительные настройки соединения.
+            Пользователь может видеть список всех дополнительных свойств на закладке "Дополнительно". Все эти свойства - редактируемые.</p>
+        <p>Некоторые драйвера поддерживают дополнительные настройки, но не предоставляют их список.
+            В этом случае Вы можете найти список дополнительных свойств в документации драйвера. Выяснив там необходимые параметры, Вы можете определить их в разделе "Пользовательские свойства".
+            Щёлкните там правой кнопкой мыши и выберите пункт меню "Добавить новое свойство".
+        </p>
+
+    </body>
+</html>

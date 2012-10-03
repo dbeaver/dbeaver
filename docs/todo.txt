@@ -1,0 +1,18 @@
+Major:
+
+Eclipse plugin
+Search refactoring (scripts search)
+Localizations
+JDBC driver versions update
+Help system improvement (use external help)
+Execution history
+DB2 & PostgreSQL & MS SQL plugins
+DDL tab for Generic plugin
+
+Minor:
+
+rename mysql (generic?) table,column
+comment mysql table, column
+
+scripts refactoring
+F4 - open object (hyperlink?)

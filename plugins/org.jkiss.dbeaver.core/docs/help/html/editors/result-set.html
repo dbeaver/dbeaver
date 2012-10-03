@@ -1,0 +1,58 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Result Set Viewer</title>
+    </head>
+
+    <body>
+        <h1>Result Set Viewer</h1>
+        <p>Result Set is usually a result of some query execution or is the content of some table or view.</p>
+        <p>Result Set viewer. You may copy any number of cells, select columns, rows, all cells. The Result Set may be filtered and ordered by user defined criteria. Table content and query results may be edited.</p>
+
+        <h2>Overview</h2>
+        <p>Result Set viewer has two visualization modes: grid and record.</p>
+        <p>Grid mode (default) is a typical grid, similar to Excel. Grid mode shows only one record at a time and has two columns - database column name and column value. Use editor the toolbar or the TAB key to switch between these modes.</p>
+        <p>To navigate through rows and columns use standard navigation keys: cursor, PgUp, PgDown, Home, End. CTRL+End navigates to the last row, CTRL+Home to the first, etc.</p>
+        <p>Number of rows limited by viewer. Maximum number of rows (default value is 200) can be configured (in Preferences or in main toolbar). If you scroll to the last row, and it is possible to fetch new portion of rows, then DBeaver will automatically fetch the data and scroll down.</p>
+
+        <h2>Copy & Export cells</h2>
+        <p>You may select any number of cells with mouse in combination with CTRL and SHIFT keys. Selected cells can be copied in clipboard in tab delimited format (and then pasted into Excel, Calc, etc).</p>
+        <p>Result Set can be exported in file. This command is accessible from context menu. Export wizard supports multiple export formats and big number of options. Export will fetch all rows from source query or table (could take a long time).</p>
+        <p>Note: DBeaver opens a separate database connection for export. It allows user to continue work with database while export is processed.</p>
+
+        <h2>Filtering & Ordering</h2>
+        <p>Result set can be ordered by one or many columns. Click on the arrow image next to the column name to order by this column. More ordering options are available in the Filter dialog.</p>
+        <p>Filtering and ordering options can be specified in Filter dialog. It is accessible from context menu or by clicking in the left upper corner of grid.</p>
+        <p>Read more about <a href="../dialogs/data-filter.html">Data Filter Dialog</a>.</p>
+        <p>Note: ordering/filtering of huge result set could take a lot of time, especially if you order/filter by non-indexed columns. Be careful when specifying order/filter criteria.</p>
+
+        <h2>Edit</h2>
+        <p>Table content and the result of some queries can be edited. Double click on grid cell opens cell editor dialog or LOB editor window. Pressing ENTER key on certain cell opens inline editor, another ENTER in cell editor saves changed value. You may navigate cell editors with TAB and SHIFT+TAB keys. Resultset grid fully supports clipboard operations - you may paste value into certain cell directly from clipboard.</p>
+        <p>Query result set edits are supported only if the database driver supports additional result set metadata (at the moment it was found and tested only in MySQL) and query results contain a combination of columns which constructs a unique key.</p>
+        <p>Table content edit is enabled if table has at least one unique key or index.</p>
+        <p>Cell edit dialog is accessible from the context menu. In-line editing is accessible from the toolbar (or press CTRL+ALT+S). To revert changes press the "Reject Changes" button (or press CTRL+ALT+R).</p>
+        <p>Note: if you work in transaction mode (autocommit is off) then you need to commit changes in the current connection (command accessible from main toolbar or main menu).</p>
+
+    </body>
+</html>

@@ -1,0 +1,139 @@
+/*
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+package org.jkiss.dbeaver.registry;
+
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.ui.export.data.IDataExporter;
+import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * EntityEditorDescriptor
+ */
+public class DataExporterDescriptor extends AbstractDescriptor
+{
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataExportProvider"; //$NON-NLS-1$
+
+    private String id;
+    private String className;
+    private List<String> sourceTypes = new ArrayList<String>();
+    private String name;
+    private String description;
+    private String fileExtension;
+    private Image icon;
+    private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
+
+    private Class<?> exporterClass;
+
+    public DataExporterDescriptor(IConfigurationElement config)
+    {
+        super(config.getContributor());
+
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.fileExtension = config.getAttribute(RegistryConstants.ATTR_EXTENSION);
+        String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
+        if (!CommonUtils.isEmpty(iconPath)) {
+            this.icon = iconToImage(iconPath);
+        }
+
+        IConfigurationElement[] typesCfg = config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE);
+        if (typesCfg != null) {
+            for (IConfigurationElement typeCfg : typesCfg) {
+                String objectType = typeCfg.getAttribute(RegistryConstants.ATTR_TYPE);
+                if (objectType != null) {
+                    sourceTypes.add(objectType);
+                }
+            }
+        }
+
+        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
+        for (IConfigurationElement prop : propElements) {
+            properties.addAll(PropertyDescriptorEx.extractProperties(prop));
+        }
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public String getFileExtension()
+    {
+        return fileExtension;
+    }
+
+    public Image getIcon()
+    {
+        return icon;
+    }
+
+    public List<IPropertyDescriptor> getProperties() {
+        return properties;
+    }
+
+    public boolean appliesToType(Class objectType)
+    {
+        if (sourceTypes.isEmpty()) {
+            return true;
+        }
+        for (String sourceType : sourceTypes) {
+            Class<?> objectClass = getObjectClass(sourceType);
+            if (objectClass != null && objectClass.isAssignableFrom(objectType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Class<?> getExporterClass()
+    {
+        if (exporterClass == null) {
+            exporterClass = getObjectClass(className);
+        }
+        return exporterClass;
+    }
+
+    public IDataExporter createExporter() throws IllegalAccessException, InstantiationException
+    {
+        Class clazz = getExporterClass();
+        if (clazz == null) {
+            throw new InstantiationException("Cannot find exporter class " + className);
+        }
+        return (IDataExporter)clazz.newInstance();
+    }
+}

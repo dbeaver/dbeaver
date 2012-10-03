@@ -1,0 +1,97 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<html>
+<head>
+    <title>DBeaver FAQ</title>
+    <style type="text/css">
+
+        body {
+            font-family: Arial,Helvetica,sans-serif;
+            font-size: 12px;
+        }
+        h2 {
+            font-size: 20px;
+        }
+        h3 {
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>Frequently Asked Questions about DBeaver</h1>
+<p>This is draft version of "Frequently Asked Questions", more information will be added soon</p>
+
+<h2>General</h2>
+<h3>Why "DBeaver"</h3>
+<p>DBeaver named in contrast to SQuirreL, popular java-based database client.
+It's something like "database beaver versus SQL squirrel".
+DBeaver is pronounced as <code>dee-beaver</code>.
+<!--We hope that beaver will be much stronger, faster and smarter than squirrel :)-->
+</p>
+
+<h3>What is "JKISS"</h3>
+<p>It's our company name. It's an acronym ("Just Keep It Straight and Simple" or "Just Keep It Simple, Stupid").
+JKISS is pronounced as <code>jey-kiss</code>.
+</p>
+
+<h3>Who makes it and for what reason</h3>
+<p>Check <a href="/about/team">Team</a> page to see who we are.</p>
+<p>For now there is no any certain goal of this project. We just want to make a good (better than ony other) universal tool to work with databases.</p>
+<p>This is a completely non-commercial project, nobody pays us for the job, there are no donations or any other kind of funding. This project is powered by our pleasure for 100%.</p>
+<p>So far.</p>
+
+<h3>May I access DBeaver source code?</h3>
+<p>Not yet. At the moment DBeaver is completely freeware but it is not opensource. It may become so in the future.
+Actually we have plans to open sources this year but first we want to make really fully functional and stable version.</p>
+
+<h2>Installing and running</h2>
+<h3>DBeaver doesn't start</h3>
+<p>A1: You have old Java or not Java VM installed. DBeaver require Java 1.6.
+    You may get newest Java from <a href="http://java.com">http://java.com</a> or you may use automatic installer (Windows version) which will check and install Java 1.6 on demand.
+    If you have different versions of JVM on your computer then you may specify particular one in command line (check readme file for command line arguments description).</p>
+
+<p>A2: You use wrong DBeaver version (e.g. 64bit on 32bit OS)</p>
+
+<p>A3: You have extracted archive with newer version of DBeaver in the folder where older version has been installed.
+    Sometimes it may cause file versions' conflicts. You may fix it by removing all contents of folder "configuration" excepting the file "config.ini".</p>
+
+<h3>Where DBeaver stores it's configuration and how can I change it</h3>
+<p>By default DBeaver stores all its data in user's home ".dbeaver" folder.
+    E.g. <code>"C:\Users\&lt;UserName&gt;\.dbeaver"</code> or <code>"/home/&lt;UserName&gt;/.dbeaver"</code>.
+    This folder won't be deleted upon uninstall or reinstall so new version of DBeaver will use existing configuration/data.
+    You may freely replace this folder - DBeaver will just start with default settings.</p>
+<p>You may change default configuration location using command line parameter "-data".
+    Check <code>readme.txt</code> file for command line parameters description.</p>
+
+<h3>Database driver not found</h3>
+<p>If you use custom driver then check driver's properties in driver manager. Make sure that all driver's libraries (jars)
+    are valid and that driver's class could be found by DBeaver (use "Find Class" button). If DBeaver can't locate any driver class in specified libraries
+    then likely you have invalid or broken libraries.</p>
+
+<h2>Browse metadata</h2>
+<p>...</p>
+
+<h2>View/edit data</h2>
+<p>...</p>
+
+</body>
+</html>

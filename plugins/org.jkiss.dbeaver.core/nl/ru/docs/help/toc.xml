@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<toc label="Универсальный менеджер баз данных">
+	<topic label="О DBeaver" href="docs/help/html/about.html">
+        <topic href="docs/help/html/techdoc.html" label="Техническое описание"/>
+	</topic>
+    <topic label="Управление соединениями с БД">
+        <topic href="docs/help/html/dialogs/driver-manager.html" label="Управление драйверами"/>
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Диалог редактирования драйвера"/>
+        <topic label="Мастер соединения">
+            <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Выбор драйвера"/>
+            <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Настройки соединения"/>
+            <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Дополнительные настройки"/>
+        </topic>
+    </topic>
+    <topic label="Работа с данными">
+        <topic href="docs/help/html/editors/sql-editor.html" label="Редактор SQL"/>
+        <topic href="docs/help/html/editors/result-set.html" label="Выборка"/>
+    </topic>
+    <topic label="Работа с метаданными">
+        <topic href="docs/help/html/views/database-navigator.html" label="Окно баз данных"/>
+        <topic href="docs/help/html/editors/entity-editor.html" label="Редактор сущности"/>
+    </topic>
+    <topic label="Проекты">
+        <topic href="docs/help/html/views/project-navigator.html" label="Окно проектов"/>
+        <topic href="docs/help/html/views/project-explorer.html" label="Окно проекта"/>
+    </topic>
+    <topic label="Разное">
+        <topic href="docs/help/html/views/query-manager.html" label="Менеджер запросов"/>
+    </topic>
+</toc>
