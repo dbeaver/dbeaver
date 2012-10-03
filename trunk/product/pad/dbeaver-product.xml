@@ -47,6 +47,25 @@
 
     <versions>
         <version>
+            <number>1.6.4</number>
+            <type>stable</type>
+            <date>04.10.2012</date>
+
+            <release-notes>
+                - SQL editor comments toggle support
+                - Autocomplete, SQL hyperlinks and objects search refactored:
+                    a. Object lookup speed significantly increased;
+                    b. Case-sensitive (quoted) object names lookup support
+                    c. Tables are shown prior to schemas;
+                - Support of HTML format for tables/data export
+                - SQL editor fixes (correct extraction of current query)
+                - SQL scripts creation fix
+                - Metadata editors UI and undo/redo fixes
+                - Metadata property names localization
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.6.3</number>
             <type>stable</type>
             <date>15.09.2012</date>

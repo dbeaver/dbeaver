@@ -44,7 +44,7 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>1.6.3</Program_Version>
+    <Program_Version>1.6.4</Program_Version>
     <Program_Release_Month>09</Program_Release_Month>
     <Program_Release_Day>16</Program_Release_Day>
     <Program_Release_Year>2012</Program_Release_Year>
@@ -55,20 +55,16 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Support of data edit for tables without unique key
-        - Support of custom descriptions for dictionary tables
-        - Quick filter of ResultSets
-        - ResultSet controls improved
-        - Transactions management improved
-        - Columns width fixed in ResultSet grid
-        - Support of nanoseconds for TIMESTAMP data types
-        - Oracle connection settings improved (SID/Service Name)
-        - Oracle metadata load fix
-        - Oracle DATE type handle fix
-        - MSSQL active database selection fix
-        - MySQL SELECT INTO fix
-        - SQL formatter improvements
-        - Many bugfixes and minor UI improvements
+        - SQL editor comments toggle support
+        - Autocomplete, SQL hyperlinks and objects search refactored:
+            a. Object lookup speed significantly increased;
+            b. Case-sensitive (quoted) object names lookup support
+            c. Tables are shown prior to schemas;
+        - Support of HTML format for tables/data export
+        - SQL editor fixes (correct extraction of current query)
+        - SQL scripts creation fix
+        - Metadata editors UI and undo/redo fixes
+        - Metadata property names localization
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -109,8 +105,8 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.6.3-x86-setup.exe</Primary_Download_URL>
-      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.6.3-x86_64-setup.exe</Secondary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.6.4-x86-setup.exe</Primary_Download_URL>
+      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.6.4-x86_64-setup.exe</Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
     </Download_URLs>

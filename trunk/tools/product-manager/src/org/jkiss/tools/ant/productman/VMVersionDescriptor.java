@@ -35,7 +35,7 @@ public class VMVersionDescriptor {
     {
         number = XMLUtils.getChildElementBody(root, "number");
         updateTime = XMLUtils.getChildElementBody(root, "date");
-        releaseNotes = CommonUtils.toString(XMLUtils.getChildElementBody(root, "release-notes")).trim();
+        releaseNotes = CommonUtils.toString(XMLUtils.getChildElementBody(root, "release-notes"));
     }
 
     public String getNumber()

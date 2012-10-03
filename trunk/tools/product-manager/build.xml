@@ -15,7 +15,7 @@
     <target name="build">
         <mkdir dir="build"/>
 
-        <javac srcdir="../../plugins/org.jkiss.dbeaver.core/src" destdir="build" includeantruntime="true">
+        <javac srcdir="../../modules/org.jkiss.utils/src" destdir="build" includeantruntime="true">
 			<classpath refid="classpath"/>
 			<include name="org/jkiss/utils/**/*.*"/>
 		</javac>
