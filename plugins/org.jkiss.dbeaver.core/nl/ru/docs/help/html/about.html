@@ -1,0 +1,129 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Main Topic</title>
+    </head>
+
+    <body>
+        <h1>Об Универсальном менеджере баз данных</h1>
+        <h2>Описание</h2>
+
+        DBeaver - это свободная универсальная программа для программистов и администраторов баз данных. Её особенности:
+        <ul>
+            <li>Удобство и простота использования - главные цели данного проекта, интерфейс программы тщательно спроектирован и реализован.</li>
+            <li>Бесплатна.</li>
+            <li>Работает на множестве платформ.</li>
+            <li>Основана на открытых библиотеках и позволяет писать дополнения (плагины).</li>
+            <li>Поддерживает любые базы данных, для которых существует JDBC драйвер.</li>
+            <li>Может оперировать с внешними источниками данных, для которых может быть, а может и не быть JDBC драйвера.</li>
+            <li>Имеет набор из нескольких плагинов для определённых СУБД (MySQL, Oracle) и различные утилиты для работы с базами данных (реляционные диаграммы).</li>
+        </ul>
+
+        <h3>Поддерживаемые (протестированные) базы данных:</h3>
+        <ul>
+            <li>MySQL</li>
+            <li>Oracle</li>
+            <li>PostgreSQL</li>
+            <li>IBM DB2</li>
+            <li>Microsoft SQL Server</li>
+            <li>Sybase</li>
+            <li>ODBC</li>
+            <li>Java DB (Derby)</li>
+            <li>Firebird (Interbase)</li>
+            <li>HSQLDB</li>
+            <li>SQLite</li>
+            <li>Mimer</li>
+            <li>H2</li>
+            <li>IBM Informix</li>
+            <li>SAP MAX DB</li>
+            <li>Cache</li>
+            <li>Любой JDBC-совместимый источник данных</li>
+        </ul>
+
+        <h3>Поддерживаемые операционные системы:</h3>
+        <ul>
+            <li>Windows (2000/XP/2003/Vista/7)</li>
+            <li>Linux</li>
+            <li>Mac OS</li>
+            <li>AIX</li>
+            <li>Solaris</li>
+        </ul>
+
+        <h3>Основные возможности:</h3>
+        <ul>
+            <li>Просмотр метаданных базы данных</li>
+            <li>Редактор метаданных (таблицы, колонки, ключи, индексы)</li>
+            <li>Исполнение SQL выражений и скриптов</li>
+            <li>Подсветка SQL синтаксиса (специфично для разных СУБД)</li>
+            <li>Автодополнение и гиперссылки на метаданные в SQL-редакторе</li>
+            <li>Редактор содержимого таблиц и выборок</li>
+            <li>Поддержка BLOB/CLOB (просмотр и редактирование)</li>
+            <li>Прокручиваемые результаты запросов</li>
+            <li>Экспорт данных (таблиц, результатов запросов)</li>
+            <li>Управление транзакциями</li>
+            <li>Поиск объектов базы данных (таблицы, колонки, ограничения, процедуры)</li>
+            <li>Реляционные диаграммы</li>
+            <li>Закладки на объекты базы данных</li>
+            <li>Управление SQL скриптами</li>
+            <li>Проекты (соединения, диаграммы, SQL скрипты и закладки)</li>
+        </ul>
+
+        <h3>Возможности MySQL-плагина:</h3>
+        <ul>
+            <li>Типы данных Enum/Set</li>
+            <li>Просмотр процедур и триггеров</li>
+            <li>Просмотр DDL метаданных</li>
+            <li>Управление сессиями</li>
+            <li>Управление пользователями</li>
+            <li>Управление каталогами</li>
+            <li>Расширенный редактор метаданных</li>
+        </ul>
+
+        <h3>Другие преимущества:</h3>
+        <ul>
+            <li>DBeaver потребляет значительно меньше оперативной памяти, чем другие подобные программы (SQuirreL, DBVisualizer).</li>
+            <li>Метаданные загружаются по мере необходимости без длительных задержек во время соединения.</li>
+            <li>Просмотрщик выборки (таблица) - очень быстрый и потребляет крайне мало ресурсов.</li>
+            <li>Все операции с базой данных происходят в неблокирующем режиме, поэтому DBeaver не &quot;зависает&quot; в случае проблем с сервером базы данных или других ошибок связи по сети.</li>
+        </ul>
+
+        <h2>Лицензия</h2>
+
+        <p>
+            DBeaver бесплатен. Вы можете использовать его для любых целей без ограничений.
+            Эта программа предоставляется &quot;как есть&quot; без специальной или подразумеваемой гарантии.
+        </p>
+
+        <p>
+            Определённая лицензия на программу и её исходный код пока что не выбраны.
+            В любом случае, её бинарный дистрибутив абсолютно бесплатен.
+        </p>
+
+        <h2>Контакты</h2>
+
+        Техническая поддержка - <a href="mailto:support@jkiss.org">support@jkiss.org</a><br/>
+        Техническая поддержка, предложения о новых возможностях и другие вопросы - <a href="mailto:serge@jkiss.org">serge@jkiss.org</a>
+
+    </body>
+</html>

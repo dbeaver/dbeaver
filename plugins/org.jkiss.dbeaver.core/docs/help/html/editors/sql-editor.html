@@ -1,0 +1,60 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>SQL Editor</title>
+    </head>
+
+    <body>
+        <h1>SQL Editor</h1>
+        <h2>Overview</h2>
+        <p>SQL editor allows editing and execution of SQL queries and scripts.</p>
+        <p>There are two ways to open SQL editor - using "SQL Editor" or "New SQL Editor" commands. These commands are accessible through the main toolbar, main menu, or with shortcuts CTRL+L and CTRL+ALT+L.</p>
+        <p>"SQL Editor" command opens recent SQL scripts for the currently active connection (active connection name is shown in the main toolbar) or creates a new SQL script (which can be opened later from <a href="../views/project-explorer.html">Project Explorer</a> view). "New SQL Editor" always creates a new script.</p>
+        <p>When you close the SQL editor it auto-saves. If you want to revert changes - use the appropriate command from context menu.</p>
+        <p>SQL editor highlights SQL syntax depending on the current database SQL dialect. When you open SQL editor for some connection, DBeaver will try to connect to underlying database. If the database is inaccessible then you won't be able to execute queries.</p>
+        <p>You may change the active database of current SQL editor by using the main toolbar.</p>
+        <p>There are two SQL execution modes: query and script.</p>
+
+        <h2>Query execution</h2>
+        <p>The query execution command is accessible from the toolbar, context menu, main menu or with shortcut CTRL+Enter.</p>
+        <p>SQL editor extract current query - the SQL statement under the cursor limited by empty lines or statement delimiter (";" symbol)</p>
+        <p>Also you may select any part of text - it will be executed as single query.</p>
+        <p>Query execution usually produces some result set - it will be printed in the "Data Grid" tab. Read more about <a href="result-set.html">Result Sets</a> navigation and edit.</p>
+
+        <h2>Scripts execution</h2>
+        <p>Script executes the entire content of the SQL editor or selected text. This command is accessible from the menu, toolbar or with shortcut ALT+X.</p>
+        <p>SQL editor parses content using the ";" character as a delimiter between statements and then executes these statements consequently.</p>
+
+        <h2>Execution plan</h2>
+        <p>You may automatically build an execution plan for the current query. This command is accessible from the toolbar or with the shortcut CTRL+SHIFT+Enter.</p>
+        <p>Driver provider must support execution plan extraction. The Generic driver provider doesn't support this feature.</p>
+
+        <h2>Execution log</h2>
+        <p>Execution log tab contains history of all command executed in the current SQL editor.</p>
+        <p>Read more information about <a href="../view/query-manager.html">Query Manager</a>.</p>
+
+        <p></p>
+
+    </body>
+</html>

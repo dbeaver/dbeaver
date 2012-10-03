@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<product-descriptor>
+
+    <name>DBeaver</name>
+    <web type="main">http://dbeaver.jkiss.org/</web>
+    <web type="download">http://dbeaver.jkiss.org/download/</web>
+    <screenshot-1>http://dbeaver.jkiss.org/product/Screenshot_Main.png</screenshot-1>
+    <icon-1>http://dbeaver.jkiss.org/product/dbeaver.gif</icon-1>
+    <keywords>sql,database manager,database client,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc</keywords>
+    <description>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver.</description>
+
+    <company>
+        <name>JKISS</name>
+        <address1>Engelsa pr. 97-212</address1>
+        <address2> </address2>
+        <city>Saint-Petersburg</city>
+        <state>SPb</state>
+        <zip>194214</zip>
+        <country>Russian Federation</country>
+        <web>http://jkiss.org</web>
+        <contact>
+            <first-name>Serge</first-name>
+            <last-name>Rieder</last-name>
+            <email>serge@jkiss.org</email>
+            <phone>+7-962-728-16-88</phone>
+        </contact>
+    </company>
+
+    <versions>
+        <version>
+            <number>1.6.3</number>
+            <type>stable</type>
+            <date>15.09.2012</date>
+
+            <release-notes>
+                - Support of data edit for tables without unique key
+                - Support of custom descriptions for dictionary tables
+                - Quick filter of ResultSets
+                - ResultSet controls improved
+                - Transactions management improved
+                - Columns width fixed in ResultSet grid
+                - Support of nanoseconds for TIMESTAMP data types
+                - Oracle connection settings improved (SID/Service Name)
+                - Oracle metadata load fix
+                - Oracle DATE type handle fix
+                - MSSQL active database selection fix
+                - MySQL SELECT INTO fix
+                - SQL formatter improvements
+                - Many bugfixes and minor UI improvements
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.6.2</number>
+            <type>minor</type>
+            <date>11.08.2012</date>
+
+            <release-notes>
+                - Test connection button fix
+                - Parameters binding dialog improvement
+                - Minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.6.1</number>
+            <type>stable</type>
+            <date>29.07.2012</date>
+
+            <release-notes>
+                - Toolbar actions fix (ERD, SQL editor, etc)
+                - Search dialog fix
+                - Object filters fix
+                - Numeric data types (Oracle) handle fix
+                - Read-only connections fix (all new connections were read-only by default)
+                - A few minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.6.0</number>
+            <type>ea</type>
+            <date>30.06.2012</date>
+
+            <release-notes>
+                - DBeaver is under GPL license
+                - Chinese, Russian and Italian translations
+                - Metadata tree filters
+                - ResultSet editor improvements. Support of copy/paste for cells.
+                - BLOB editor fix (save)
+                - Oracle cursors viewer
+                - Read-only connections support
+                - HTTP proxy authentication support
+                - SSH support for external (native) utilities
+                - Line numbers ruler configuration
+                - Fixed handling of dynamic SQL parameters
+                - A lot of minor UI fixes and improvements
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.7</number>
+            <type>ea</type>
+            <date>30.05.2012</date>
+
+            <release-notes>
+                - Non public EA version for Entelgy
+                - A lot of fixes and refactoring
+                - HEX editor save fix
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.6</number>
+            <type>minor</type>
+            <date>22.05.2012</date>
+
+            <release-notes>
+                - SSH tunnels settings fix
+                - External tools fix (support of SSH tunnels)
+                - ERD color schema fix
+                - Hyperlinks fix
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.5</number>
+            <type>minor</type>
+            <date>23.04.2012</date>
+
+            <release-notes>
+                - MySQL problem when no default database is set
+                - Oracle performance problems
+                - Minor UI fixes (hyperlinks rendering)
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.4</number>
+            <type>major</type>
+            <date>04.04.2012</date>
+
+            <release-notes>
+                - SSH tunnels support
+                - Column descriptions in metadata
+                - Miscellaneous UI fixes and typo corrections
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.3</number>
+            <type>ea</type>
+            <date>25.03.2012</date>
+
+            <release-notes>
+                - EA version with hotfixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.2</number>
+            <type>major</type>
+            <date>29.02.2012</date>
+
+            <release-notes>
+                - Auto-completion configuration
+                - Date/Time format fixed in table export
+                - ResultSet filter dialog redesign
+                - ResultSet cell editor fixes
+                - Oracle schema loading fix
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.1</number>
+            <type>major</type>
+            <date>10.02.2012</date>
+
+            <release-notes>
+                - Content assistant configuration
+                - Metadata editor fixes
+                - Table data editor fix (MS SQL)
+                - Error messages and localization fixes
+                - Performance optimization
+                - Main menu updated
+                - Minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.5.0</number>
+            <type>major</type>
+            <date>30.01.2012</date>
+
+            <release-notes>
+                - WMI plugin
+                - Redesign of architecture to support non-relational databases
+                - ERD plugin improvements
+                - Oracle plugin additions and performance fixes
+                - A lot of bug fixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.4.7</number>
+            <type>hotfix</type>
+            <date>23.12.2011</date>
+
+            <release-notes>
+                - Oracle OCI driver fixes
+                - External folders link support
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.4.6</number>
+            <type>stable</type>
+            <date>07.12.2011</date>
+
+            <release-notes>
+                - Native clients support update
+                - MySQL &amp; Oracle tools
+                - Many UI and general fixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.4.5</number>
+            <type>stable</type>
+            <date>28.11.2011</date>
+
+            <release-notes>
+                - MySQL and Oracle native clients support
+                - MySQL full database export/import
+                - Resultset filters UI update
+                - Drivers management improvements
+                - SQL editor fixes and additional formatting
+                - General UI and code fixes
+                - Multilingual installer
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.4.4</number>
+            <type>unstable</type>
+            <date>21.11.2011</date>
+
+            <release-notes>
+                Experimental version
+                - UI and code fixes
+                - Native clients support
+                - MySQL tools
+                - Oracle metadata reading fixes
+                - i18n updates
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.4.3</number>
+            <type>stable</type>
+            <date>25.10.2011</date>
+
+            <release-notes>
+                - New version checker/updater
+                - Connection events (run shell command on connect/disconnect)
+                - Oracle tables view/edit fixes
+                - Oracle procedures, packages, views, types, triggers source code editor and compiler
+                - UI internationalization and first localization beta
+                - Many general UI fixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.4.2</number>
+            <type>ea</type>
+            <date>07.10.2011</date>
+
+            <release-notes>
+                - Fixes of Oracle plugin (datatype handlers)
+                - Minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.4.1</number>
+            <type>stable</type>
+            <date>04.11.2011</date>
+
+            <release-notes>
+                - Oracle
+                    * Oracle home selection fix
+                    * TNS_ADMIN environment variable usage fix
+                    * TNS names are available for Thin driver
+                    * Data type resolve fix (Timestamp and BigInteger)
+                    * View/Materialized view search
+                - MS SQL: UPDATE statement execution fix (do not use row count limit)
+                - Auto complete fix for complex identifiers
+                - Table/ResultSet editor fix
+                - PostgreSQL: driver update
+                - Driver manager fix (do not try to load redist libraries for drivers with custom libraries)
+                - OS-dependent drivers
+                - UI fixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>1.1.0</number>
+            <type>stable</type>
+            <date>11.04.2011</date>
+            <release-notes>
+                - Major redesign of object editor/viewer
+                - Context search in editors (in object lists and in ERD)
+                - Show row count for tables (configurable, may be disabled to prevent database load)
+                - Display child objects in item lists (for complex entities e.g. index/constraint columns)
+                - ERD palette redesign (show structure of diagram content)
+                - Filtering of database tree depending on element properties (e.g. show only columns for views)
+                - Support of running background tasks view/cancel
+                - Real progress monitor for editor tasks
+                - Accelerators (shortcuts) and main/context menu major update
+                - Configure of new SQL scripts creation (in the root or in the connection's folder) + deletion of empty scripts on close
+                - Performance improvements (lazy activation of all sub-editors)
+                - Major icons update
+                - Support of read-only datasources
+                - Support of DB objects rename
+                - DB2 driver: current scheme get/set
+                - MSSQL driver: indent columns support
+                - Memory leaks fixed in SQL and ERD editors
+                - A lot of minor bugfixes and many minor UI changes
+            </release-notes>
+        </version>
+    </versions>
+
+    <update-sites>
+        <site title="Main DBeaver Mirror" url="http://dbeaver.jkiss.org/files" priority="1" />
+    </update-sites>
+
+</product-descriptor>

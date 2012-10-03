@@ -1,0 +1,25 @@
+1. Install/Uninstall (Windows, Linux)
+2. Create connection
+    2.1 Build-in driver
+    2.3 Downloadable driver
+    2.4 Custom driver
+3. Copy/delete connection
+4. Execute
+    4.1 Queries
+    4.2 Scripts
+5. Export tables/resultsets
+6. Order/filter tables/resultsets
+7. Modify metadata
+    7.1 Table
+    7.2 Columns
+    7.3 Constraints
+    7.4 Foreign keys
+    7.5 Indexes
+    7.6 Views (MySQL)
+    7.7 Users (MySQL)
+8. Search objects
+9. SQL editor
+    9.1 Auto-complete
+    9.2 Hyperlinks
+    9.3 Auto-indent
+10. Modify resultset

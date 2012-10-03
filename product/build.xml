@@ -1,0 +1,389 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<project name="dbeaver" default="build">
+    <!--sets the path of the properties file-->
+    <property file="local.properties" />
+    <property file="../plugins/org.jkiss.dbeaver.core/META-INF/MANIFEST.MF" />
+    <property name="productVersion" value="${Bundle-Version}"/>
+    <property name="buildId" value="dbeaver-${productVersion}"/>
+    <property name="buildLabel" value="${buildId}"/>
+    <property name="readmeFile" value="build/readme.txt"/>
+    <property name="distDirectory" value="dist"/>
+    <tstamp>
+        <format property="current-date" pattern="dd MMM yyyy" locale="en"/>
+    </tstamp>
+
+    <target name="clean">
+        <delete dir="${distDirectory}" />
+        <delete dir="${buildDirectory}" />
+        <delete file="build.properties" />
+    </target>
+
+    <target name="init">
+        <filter filtersFile="local.properties"/>
+        <filter token="productVersion" value="${productVersion}"/>
+        <filter token="buildId" value="${buildId}"/>
+        <filter token="buildLabel" value="${buildLabel}"/>
+        <delete file="build.properties" />
+        <copy file="build.properties.template" tofile="build.properties" filtering="true"/>
+
+        <property file="build.properties" />
+
+        <echo message="Build ${productName} ${productVersion}"/>
+
+        <mkdir dir="${buildDirectory}" />
+        <mkdir dir="${buildDirectory}/plugins" />
+        <mkdir dir="${buildDirectory}/features" />
+        <copy todir="${buildDirectory}/plugins">
+            <fileset dir="../plugins">
+                <include name="**" />
+                <exclude name="**/.svn" />
+                <exclude name="**/*.class" />
+            </fileset>
+            <fileset dir="../modules">
+                <include name="**" />
+                <exclude name="**/.svn" />
+                <exclude name="**/*.class" />
+            </fileset>
+        </copy>
+        <mkdir dir="${distDirectory}" />
+        <antcall target="readme"/>
+    </target>
+
+    <target name="readme">
+        <echo message="Generate ${readmeFile}"/>
+        <filter filtersFile="local.properties"/>
+        <filter token="build.version" value="${productVersion}"/>
+        <filter token="build.date" value="${current-date}"/>
+        <delete file="${readmeFile}" />
+        <copy file="docs/readme.txt" tofile="${readmeFile}" filtering="true"/>
+    </target>
+
+    <target name="copy-drivers">
+        <copy todir="${driversDirectory}">
+            <fileset dir="../contrib/drivers">
+                <include name="**" />
+                <exclude name="**/.svn" />
+            </fileset>
+        </copy>
+    </target>
+
+    <!--
+        This target actually executes the PDE Build process by launching the 
+        Eclipse antRunner application.
+    -->
+    <target name="pde-dbeaver">
+        <!-- Build standard product -->
+        <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-buildfile" />
+            <arg value="${buildFile}" />
+            <arg value="-Dtimestamp=${timestamp}" />
+            <arg value="-DproductId=DBeaver" />
+            <arg value="-Dconfigs=${configs}" />
+            <classpath>
+                <pathelement location="${launcherLibLocation}" />
+            </classpath>
+        </java>
+    </target>
+
+    <target name="pde-dbeaver-icu" if="configs.icu">
+        <!-- Build product with ICU library -->
+        <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-buildfile" />
+            <arg value="${buildFile}" />
+            <arg value="-Dtimestamp=${timestamp}" />
+            <arg value="-DproductId=DBeaver_icu" />
+            <arg value="-Dconfigs=${configs.icu}" />
+            <classpath>
+                <pathelement location="${launcherLibLocation}" />
+            </classpath>
+        </java>
+    </target>
+
+    <target name="pde-build" depends="init">
+        <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
+        <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
+        <antcall target="pde-dbeaver"/>
+        <antcall target="pde-dbeaver-icu"/>
+    </target>
+
+    <target name="driver-pack">
+        <zip destfile="${distDirectory}/driver-pack-${productVersion}.zip" basedir="../contrib/drivers" excludes="*.svn">
+
+        </zip>
+    </target>
+
+    <!--This target defines the run-order of the targets-->
+    <target name="build" depends="pde-build,driver-pack" />
+
+    <target name="nsis">
+        <unzip 
+            src="${buildDirectory}/${buildId}/${buildId}-win32.win32.${arch}.zip"
+            dest="${buildDirectory}/installer/raw/win32.${arch}"
+            overwrite="true"
+            />
+        <filter filtersfile="build.properties"/>
+        <filter token="arch" value="${arch}"/>
+        <filter token="product.dir" value="..\..\.."/>
+        <copy todir="${buildDirectory}/installer/${arch}" filtering="true">
+            <fileset dir="installer/nsis">
+                <include name="*.ns*" />
+            </fileset>
+        </copy>
+
+        <exec executable="${nsisDirectory}/makensis" dir="${buildDirectory}/installer/${arch}">
+            <arg value="DBeaver.nsi"/>
+        </exec>
+    </target>
+    
+    <target name="dist-win" depends="init">
+        <mkdir dir="${buildDirectory}/installer" />
+        <mkdir dir="${buildDirectory}/installer/raw" />
+
+        <antcall target="nsis">
+            <param name="arch" value="x86"/>
+        </antcall>
+        <antcall target="nsis">
+            <param name="arch" value="x86_64"/>
+        </antcall>
+
+        <!--delete dir="${buildDirectory}/installer" /-->
+    </target>
+
+    <target name="deb">
+        <property name="debDirectory" value="${buildDirectory}/installer/deb/linux.${arch}"/>
+        <property name="packageName" value="${archivePrefix}"/>
+        <unzip
+            src="${buildDirectory}/${buildId}/${buildId}-linux.gtk.${arch}.zip"
+            dest="${debDirectory}"
+            overwrite="true"
+            />
+        <desktopentry
+            name="${productName}"
+            toFile="${debDirectory}/dbeaver.desktop"
+            comment="Launches ${productName}."
+            path="/usr/share/${packageName}/"
+            exec="/usr/share/${packageName}/dbeaver"
+            icon="/usr/share/${packageName}/icon.xpm"
+            categories="Development;Java"/>
+
+        <deb
+            package="${packageName}"
+            version="${productVersion}"
+            todir="${distDirectory}"
+            section="devel"
+            depends="sun-java6-jre | openjdk-6-jre"
+            homepage="http://dbeaver.jkiss.org"
+            suggests="dbeaver"
+            architecture="${arch.deb}">
+            <maintainer name="Serge Rieder" email="serge@jkiss.org"/>
+            <description synopsis="DBeaver">Universal Database Manager</description>
+            <tarfileset file="${debDirectory}/dbeaver/dbeaver" prefix="usr/share/${packageName}" filemode="755"/>
+            <tarfileset dir="${debDirectory}/dbeaver" prefix="usr/share/${packageName}" includes="**">
+                <exclude name="dbeaver"/>
+            </tarfileset>
+            <tarfileset file="${debDirectory}/dbeaver.desktop" prefix="usr/share/applications"/>
+        </deb>
+    </target>
+
+    <target name="dist-deb" depends="init">
+        <path id="ant-deb.classpath">
+            <fileset dir="lib" includes="*.jar"/>
+        </path>
+        <taskdef resource="ant_deb_task.properties" classpathref="ant-deb.classpath"/>
+
+        <antcall target="deb">
+            <param name="arch" value="x86"/>
+            <param name="arch.deb" value="i386"/>
+        </antcall>
+        <antcall target="deb">
+            <param name="arch" value="x86_64"/>
+            <param name="arch.deb" value="amd64"/>
+        </antcall>
+
+    </target>
+
+    <target name="dist-macos">
+
+    </target>
+
+    <target name="dist-rpm" depends="init">
+        <path id="ant-rpm.classpath">
+            <fileset dir="lib" includes="*.jar"/>
+        </path>
+        <taskdef name="rpm" classname="org.redline_rpm.RedlineTask"  classpathref="ant-rpm.classpath"/>
+
+        <property name="rpmDirectory" value="build/rpm"/>
+        
+        <echo message="Make RPM in ${rpmDirectory}"/>
+        
+        <delete dir="${rpmDirectory}" />
+        <mkdir dir="${rpmDirectory}" />
+        <mkdir dir="${rpmDirectory}/SOURCES" />
+        <mkdir dir="${rpmDirectory}/SPECS" />
+
+        <filter filtersfile="build.properties"/>
+        <copy todir="${rpmDirectory}/SPECS" filtering="true">
+            <fileset dir="installer/rpm">
+                <include name="*.spec" />
+            </fileset>
+        </copy>
+
+        <!--copy
+            file="build/${buildId}/${buildId}-linux.gtk.x86.zip"
+            todir="${rpmDirectory}/SOURCES"/-->
+
+        <rpm 
+            name="${archivePrefix}" 
+            version="${productVersion}" 
+            group="Applications/Databases" 
+            url="http://dbeaver.jkiss.org"
+            packager="Serge Rieder"
+            host="jkiss.org"
+            vendor="JKISS"
+            summary="Universal Database Manager and SQL Client"
+            description="Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver."
+            destination="dist">
+            <zipfileset 
+                prefix='/usr/share/dbeaver' 
+                file="build/${buildId}/${buildId}-linux.gtk.x86.zip"/>
+                <!--link path="/usr/share/java/test.jar" target="/usr/share/java/test-1.2.3.jar"/-->
+            <depends name="sun-jre" version="1.6"/>
+        </rpm>
+
+            
+        <!--exec executable="rpm">
+            <arg value="-bb"/>
+            <arg value="- -buildroot"/>
+            <arg value="${rpmDirectory}"/>
+            <arg value="dbeaver.spec"/>
+        </exec-->
+
+        <!--rpm
+            specFile="dbeaver.spec"
+            topDir="${rpmDirectory}"
+            cleanBuildDir="true"
+            failOnError="true"/-->
+
+    </target>
+
+    <target name="dist-plugin">
+        <unzip 
+            src="${buildDirectory}/${buildId}/${buildId}-win32.win32.x86.zip"
+            dest="${buildDirectory}/dbeaver-plugin"
+            overwrite="true"
+            />
+        <zip destfile="${distDirectory}/dbeaver-${productVersion}-plugin.zip">
+            <fileset dir="${buildDirectory}/dbeaver-plugin/dbeaver/plugins">
+                <include name="org.jkiss.dbeaver*.jar" />
+            </fileset>
+        </zip>
+    </target>
+
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,dist-plugin,dist-source,driver-pack">
+
+    </target>
+
+    <target name="copy-release" depends="init">
+        <mkdir dir="${releaseFilesDirectory}" />
+        <copy todir="${releaseFilesDirectory}">
+            <fileset dir="${buildDirectory}/${buildId}">
+                <include name="*.zip" />
+            </fileset>
+            <fileset dir="${distDirectory}">
+                <include name="**" />
+            </fileset>
+        </copy>
+    </target>
+    
+    <target name="copy-ea" depends="init">
+        <mkdir dir="${releaseFilesDirectory}/ea" />
+        <copy todir="${releaseFilesDirectory}/ea">
+            <fileset dir="${buildDirectory}/${buildId}">
+                <include name="*.zip" />
+            </fileset>
+            <fileset dir="${distDirectory}">
+                <include name="**" />
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- Versions -->
+    
+    <target name="generate-version">
+        <ant dir="../tools/product-manager" antfile="build.xml" target="generate-version" />
+    </target>
+
+    <!-- Localization -->
+    
+    <target name="copy-eclipse">
+        <mkdir dir="${baseLocation}" />
+        <copy todir="${baseLocation}">
+            <fileset dir="${stdBaseLocation}">
+                <include name="**" />
+            </fileset>
+        </copy>
+        <tstamp/>
+    </target>
+
+    <target name="clean-eclipse">
+        <delete dir="${baseLocation}" />
+    </target>
+
+    <target name="babel-repack" depends="copy-eclipse">
+        <ant dir="../tools/babel-packer" antfile="build.xml" target="babel-repack" />
+    </target>
+
+
+    <!-- ===================================================================== -->
+    <!-- Source Dist -->
+    <!-- ===================================================================== -->
+
+    <target name="dist-source" depends="init">
+<!--
+        <typedef resource="org/tigris/subversion/svnant/svnantlib.xml"/> 
+        <svn javahl="false">
+            <export srcPath="." destPath="dist/sources"/>
+        </svn>
+-->
+        <!--delete dir="${buildDirectory}/sources"/-->
+        <exec executable="svn">
+            <arg value="export"/>
+			<arg value="--force"/>
+			<arg value="-q"/>
+            <arg value=".."/>
+            <arg value="${buildDirectory}/sources"/>
+        </exec>
+        <zip destfile="${distDirectory}/dbeaver-${productVersion}-sources.zip">
+			<fileset dir="${buildDirectory}/sources">
+				<include name="modules/**"/>
+				<include name="plugins/**"/>
+				<include name="product/**"/>
+				<include name="tools/**"/>
+			</fileset>
+        </zip>
+        <!--delete dir="${buildDirectory}/sources"/-->
+    </target>
+
+</project>

@@ -1,0 +1,128 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html>
+    <head>
+        <title>Driver Editor</title>
+    </head>
+
+    <body>
+        <h1>Driver Editor</h1>
+        This dialog allows you to change the driver settings.
+
+        <h2>Basic settings</h2>
+
+        <table border="1">
+            <tr valign="top">
+                <td nowrap="nowrap">Driver name</td>
+
+                <td>Name of driver, shown in the driver manager. May be used by DBeaver to name scripts, show tips, etc</td>
+            </tr>
+
+            <tr valign="top">
+                <td nowrap="nowrap">Category</td>
+
+                <td>Optional field. Some databases have many different drivers, it is convenient to group these drivers. Category is just a name for this group. Most drivers do not have category.</td>
+            </tr>
+
+            <tr valign="top">
+                <td nowrap="nowrap">Class name</td>
+
+                <td>Required field. It is a name of Java class which implements the driver. You may find the class name in the driver&#39;s documentation or click on the &quot;Find Class&quot; button in the &quot;Driver Libraries&quot; tab and choose the class name from the list.</td>
+            </tr>
+
+            <tr valign="top">
+                <td nowrap="nowrap">Sample URL</td>
+
+                <td>
+                    Optional field. If this value is left blank, you will need to specify the full database URL. It is much more convenient when the sample URL is specified - in this case the connection wizard will require only valuable connection properties (host name, database name, etc).
+
+                    <p>A sample URL is a JDBC database URL but instead of real database properties it consists of &quot;patterns&quot; which will be replaced by the connection wizard with real values.</p>
+
+                    <p>List of supported URL patterns:</p>
+
+                    <ul>
+                        <li><code>{host}</code>- database host name</li>
+
+                        <li><code>{port}</code>- database port number</li>
+
+                        <li><code>{database}</code>- database/schema name</li>
+
+                        <li><code>{server}</code>- database server name. Rarely used, usually by complex legacy databases (e.g. Informix)</li>
+
+                        <li><code>{folder}</code>- database folder. Usually used by embedded database engines to specify folder with database files</li>
+
+                        <li><code>{file}</code>- the same as <code>{folder}</code>but specifies single file</li>
+                    </ul>
+
+                    <p>Optional patterns may be enclosed in square brackets</p>
+
+                    <p>Typical sample URL: <code>jdbc:db2://{host}[:{port}]/{database}</code></p>
+                </td>
+            </tr>
+        </table>
+
+        <h2>Driver Libraries</h2>
+
+        <p>List of external driver libraries. Usually the library is a <code>jar</code> or <code>zip</code> archive file which contains an implementation of a JDBC driver. You may specify an entire directory as source of driver classes instead of the archive file.</p>
+
+        <p>The &quot;Find class&quot; button below the library list searches for all JDBC driver implementations in the specified libraries. You may choose a particular class name (if there are multiple classes found) and it will be placed in &quot;Class Name&quot; field.</p>
+        
+        <!-- Stopped editing here 6/21 -->
+        <!-- TODO -->
+
+        <h2>Connection properties</h2>
+
+        <p>Default additional properties for the driver. These properties will be used for all connections based on this driver. However, these properties could be redefined in a particular connection.</p>
+
+        <p>Additional properties are used to configure drivers for a specific environment or for a specific requirement. The list of available properties is specific for each driver. You may find them in the driver&#39;s documentation or in the <a href="con-wizard-settings.html">connection wizard</a> (&quot;Advanced properties&quot; tab)</p>
+
+        <h2>Advanced parameters</h2>
+
+        <p>Advanced parameters are used by some drivers to configure driver specific behavior.</p>
+
+        <p>List of parameters supported by Generic driver provider:</p>
+
+        <table border="1">
+            <tr valign="top">
+                <td nowrap="nowrap">Shutdown parameter</td>
+
+                <td>Some embedded database engines require additional shutdown parameters in the URL when you disconnect from a database. Otherwise the driver will lock the database file until you finish the DBeaver process. If specified, the shutdown parameter will be appended to the database URL on disconnect. Usually the shutdown parameter looks like <code>;shutdown=true</code></td>
+            </tr>
+
+            <tr valign="top">
+                <td nowrap="nowrap">Get active database query</td>
+
+                <td>SQL query that returns name of current database/schema. Used by DBeaver to show active database/schema in UI.</td>
+            </tr>
+
+            <tr valign="top">
+                <td nowrap="nowrap">Set active database query</td>
+
+                <td>SQL query that changes current database/schema.</td>
+            </tr>
+        </table>
+
+        <h2>License</h2>
+
+        <p>Driver license. If present then user should read and accept this license before use of this driver.</p>
+    </body>
+</html>

@@ -1,0 +1,403 @@
+/*
+ * Copyright (C) 2010-2012 Serge Rieder serge@jkiss.org
+ * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jkiss.dbeaver.ui.preferences;
+
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
+import org.jkiss.dbeaver.registry.DataFormatterRegistry;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
+import org.jkiss.dbeaver.ui.dialogs.misc.DataFormatProfilesEditDialog;
+import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+
+import java.util.*;
+import java.util.List;
+
+/**
+ * PrefPageDataFormat
+ */
+public class PrefPageDataFormat extends TargetPrefPage
+{
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataformat"; //$NON-NLS-1$
+
+    private DBDDataFormatterProfile formatterProfile;
+
+    private Font boldFont;
+    private Combo typeCombo;
+    private PropertyTreeViewer propertiesControl;
+    private Text sampleText;
+
+    private List<DataFormatterDescriptor> formatterDescriptors;
+    private LocaleSelectorControl localeSelector;
+
+    private String profileName;
+    private Locale profileLocale;
+    private Map<String, Map<Object, Object>> profileProperties = new HashMap<String, Map<Object, Object>>();
+    private Combo profilesCombo;
+    private PropertySourceCustom propertySource;
+
+    private static DataFormatterRegistry getRegistry()
+    {
+        return DBeaverCore.getInstance().getDataFormatterRegistry();
+    }
+
+    public PrefPageDataFormat()
+    {
+        super();
+        setPreferenceStore(DBeaverCore.getInstance().getGlobalPreferenceStore());
+    }
+
+    @Override
+    protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
+    {
+        return dataSourceDescriptor.getDataFormatterProfile().isOverridesParent();
+    }
+
+    @Override
+    protected boolean supportsDataSourceSpecificOptions()
+    {
+        return true;
+    }
+
+    @Override
+    protected void createPreferenceHeader(Composite composite)
+    {
+        if (!isDataSourcePreferencePage()) {
+            Composite profileGroup = UIUtils.createPlaceholder(composite, 3);
+            profileGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createControlLabel(profileGroup, CoreMessages.pref_page_data_format_label_profile);
+            profilesCombo = new Combo(profileGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            profilesCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            profilesCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    changeProfile();
+                }
+            });
+            Button editButton = new Button(profileGroup, SWT.PUSH);
+            editButton.setText(CoreMessages.pref_page_data_format_button_manage_profiles);
+            editButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    manageProfiles();
+                }
+            });
+        }
+    }
+
+    @Override
+    protected Control createPreferenceContent(Composite parent)
+    {
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
+
+        Composite composite = UIUtils.createPlaceholder(parent, 1);
+
+        // Locale
+        localeSelector = new LocaleSelectorControl(composite, null);
+        localeSelector.addListener(SWT.Selection, new Listener() {
+            @Override
+            public void handleEvent(Event event)
+            {
+                if (event.data instanceof Locale) {
+                    onLocaleChange((Locale) event.data);
+                }
+            }
+        });
+
+        // formats
+        {
+            Group formatGroup = new Group(composite, SWT.NONE);
+            formatGroup.setText(CoreMessages.pref_page_data_format_group_format);
+            formatGroup.setLayout(new GridLayout(2, false));
+            formatGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_type);
+            typeCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
+            typeCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    reloadFormatter();
+                }
+            });
+
+            Label propsLabel = UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_settingt);
+            propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            propertiesControl = new PropertyTreeViewer(formatGroup, SWT.BORDER);
+            propertiesControl.getControl().addListener(SWT.Modify, new Listener() {
+                @Override
+                public void handleEvent(Event event)
+                {
+                    saveFormatterProperties();
+                }
+            });
+
+            UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_sample);
+            sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
+            sampleText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+
+        return composite;
+    }
+
+    private void manageProfiles()
+    {
+        DataFormatProfilesEditDialog dialog = new DataFormatProfilesEditDialog(getShell());
+        dialog.open();
+        refreshProfileList();
+    }
+
+    private DBDDataFormatterProfile getDefaultProfile()
+    {
+        if (isDataSourcePreferencePage()) {
+            return getDataSourceContainer().getDataFormatterProfile();
+        } else {
+            return getRegistry().getGlobalProfile();
+        }
+    }
+
+    private void changeProfile()
+    {
+        int selectionIndex = profilesCombo.getSelectionIndex();
+        if (selectionIndex < 0) {
+            return;
+        }
+        DBDDataFormatterProfile newProfile;
+        if (selectionIndex == 0) {
+            newProfile = getDefaultProfile();
+        } else {
+            String newProfileName = profilesCombo.getItem(selectionIndex);
+            newProfile = getRegistry().getCustomProfile(newProfileName);
+        }
+        if (newProfile != formatterProfile) {
+            setCurrentProfile(newProfile);
+        }
+    }
+
+    private void setCurrentProfile(DBDDataFormatterProfile profile)
+    {
+        if (formatterProfile == profile) {
+            return;
+        }
+        formatterProfile = profile;
+        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(getRegistry().getDataFormatters());
+
+        profileName = formatterProfile.getProfileName();
+        profileLocale = formatterProfile.getLocale();
+        profileProperties.clear();
+        for (DataFormatterDescriptor dfd : formatterDescriptors) {
+            Map<Object, Object> formatterProps = formatterProfile.getFormatterProperties(dfd.getId());
+            if (formatterProps != null) {
+                profileProperties.put(dfd.getId(), formatterProps);
+            }
+        }
+
+        try {
+            // Set locale
+            localeSelector.setLocale(profileLocale);
+            // Load types
+            typeCombo.removeAll();
+            for (DataFormatterDescriptor formatter : formatterDescriptors) {
+                typeCombo.add(formatter.getName());
+            }
+            if (typeCombo.getItemCount() > 0) {
+                typeCombo.select(0);
+            }
+            reloadFormatter();
+            //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
+            //rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
+            //resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+        } catch (Exception e) {
+            log.warn(e);
+        }
+    }
+
+    private void refreshProfileList()
+    {
+        if (isDataSourcePreferencePage()) {
+            return;
+        }
+        int selectionIndex = profilesCombo.getSelectionIndex();
+        String oldProfile = null;
+        if (selectionIndex > 0) {
+            oldProfile = profilesCombo.getItem(selectionIndex);
+        }
+        profilesCombo.removeAll();
+        profilesCombo.add("<" + getRegistry().getGlobalProfile().getProfileName() + ">"); //$NON-NLS-1$ //$NON-NLS-2$
+        for (DBDDataFormatterProfile profile : getRegistry().getCustomProfiles()) {
+            profilesCombo.add(profile.getProfileName());
+        }
+        if (oldProfile != null) {
+            profilesCombo.setText(oldProfile);
+        }
+        if (profilesCombo.getSelectionIndex() < 0) {
+            profilesCombo.select(0);
+        }
+        profilesCombo.setEnabled(profilesCombo.getItemCount() >= 2);
+        
+        changeProfile();
+    }
+
+
+    private DataFormatterDescriptor getCurrentFormatter()
+    {
+        int selectionIndex = typeCombo.getSelectionIndex();
+        if (selectionIndex < 0) {
+            return null;
+        }
+        return formatterDescriptors.get(selectionIndex);
+    }
+
+    private void reloadFormatter()
+    {
+        DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
+        if (formatterDescriptor == null) {
+            return;
+        }
+
+        Map<Object,Object> formatterProps = profileProperties.get(formatterDescriptor.getId());
+        Map<Object, Object> defaultProps = formatterDescriptor.getSample().getDefaultProperties(localeSelector.getSelectedLocale());
+        propertySource = new PropertySourceCustom(
+            formatterDescriptor.getProperties(),
+            formatterProps);
+        propertySource.setDefaultValues(defaultProps);
+        propertiesControl.loadProperties(propertySource);
+        reloadSample();
+    }
+
+    private void reloadSample()
+    {
+        DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
+        if (formatterDescriptor == null) {
+            return;
+        }
+        try {
+            DBDDataFormatter formatter = formatterDescriptor.createFormatter();
+
+            Map<Object, Object> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
+            Map<Object, Object> props = profileProperties.get(formatterDescriptor.getId());
+            Map<Object, Object> formatterProps = new HashMap<Object, Object>();
+            if (defProps != null && !defProps.isEmpty()) {
+                formatterProps.putAll(defProps);
+            }
+            if (props != null && !props.isEmpty()) {
+                formatterProps.putAll(props);
+            }
+            formatter.init(profileLocale, formatterProps);
+
+            String sampleValue = formatter.formatValue(formatterDescriptor.getSample().getSampleValue());
+            sampleText.setText(sampleValue);
+        } catch (Exception e) {
+            log.warn("Could not render sample value", e); //$NON-NLS-1$
+        }
+    }
+
+    private void saveFormatterProperties()
+    {
+        DataFormatterDescriptor formatterDescriptor = getCurrentFormatter();
+        if (formatterDescriptor == null) {
+            return;
+        }
+        Map<Object, Object> props = propertySource.getProperties();
+        profileProperties.put(formatterDescriptor.getId(), props);
+        reloadSample();
+    }
+
+    private void onLocaleChange(Locale locale)
+    {
+        if (!locale.equals(profileLocale)) {
+            profileLocale = locale;
+            DataFormatterDescriptor formatter = getCurrentFormatter();
+            if (formatter != null) {
+                propertySource.setDefaultValues(formatter.getSample().getDefaultProperties(locale));
+                propertiesControl.refresh();
+            }
+            reloadSample();
+        }
+    }
+
+    @Override
+    protected void loadPreferences(IPreferenceStore store)
+    {
+        refreshProfileList();
+
+        setCurrentProfile(getDefaultProfile());
+    }
+
+    @Override
+    protected void savePreferences(IPreferenceStore store)
+    {
+        try {
+            formatterProfile.setProfileName(profileName);
+            formatterProfile.setLocale(profileLocale);
+            for (String typeId : profileProperties.keySet()) {
+                formatterProfile.setFormatterProperties(typeId, profileProperties.get(typeId));
+            }
+            formatterProfile.saveProfile();
+        } catch (Exception e) {
+            log.warn(e);
+        }
+        RuntimeUtils.savePreferenceStore(store);
+    }
+
+    @Override
+    protected void clearPreferences(IPreferenceStore store)
+    {
+        formatterProfile.reset();
+    }
+
+    @Override
+    protected String getPropertyPageID()
+    {
+        return PAGE_ID;
+    }
+
+    @Override
+    public void applyData(Object data)
+    {
+        if (data instanceof DBDDataFormatterProfile) {
+            UIUtils.setComboSelection(profilesCombo, ((DBDDataFormatterProfile)data).getProfileName());
+            changeProfile();
+        }
+    }
+
+    @Override
+    public void dispose()
+    {
+        boldFont.dispose();
+        super.dispose();
+    }
+
+}

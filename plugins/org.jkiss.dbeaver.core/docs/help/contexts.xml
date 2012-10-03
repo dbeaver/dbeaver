@@ -1,0 +1,80 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<contexts>
+    <context id="driver-manager">
+        <description>Driver Manager dialog. Manages all database drivers.</description>
+        <topic href="docs/help/html/dialogs/driver-manager.html" label="Driver Manager"/>
+    </context>
+    <context id="driver-editor">
+        <description>Driver Edit dialog. Edit driver's libraries and properties.</description>
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver Editor"/>
+    </context>
+    <context id="con-wizard-driver">
+        <description>New Connection Wizard. Choose driver</description>
+        <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Choose driver for connection"/>
+    </context>
+    <context id="con-wizard-settings">
+        <description>Manage connection's settings</description>
+        <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Connection settings"/>
+    </context>
+    <context id="con-wizard-final">
+        <description>Manage additional connection settings</description>
+        <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Additional connection settings"/>
+    </context>
+
+    <context id="sql-editor">
+        <description>SQL Editor. Edit, execute SQL queries and scripts.</description>
+        <topic href="docs/help/html/editors/sql-editor.html" label="SQL Editor"/>
+        <topic href="docs/help/html/editors/result-set.html" label="Result Set Viewer"/>
+    </context>
+    <context id="result-set-viewer">
+        <description>Result Set Viewer.</description>
+        <topic href="docs/help/html/editors/result-set.html" label="Result Set Viewer"/>
+    </context>
+    <context id="data-filter">
+        <description>Data Ordering/Filtering dialog.</description>
+        <topic href="docs/help/html/dialogs/data-filter.html" label="Data Order/Filter Dialog"/>
+    </context>
+
+    <context id="entity-editor">
+        <description>Entity Editor. Manages database objects.</description>
+        <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>
+    </context>
+
+    <context id="view-database-navigator">
+        <description>Database navigator. Navigates through all project's databases and their structure.</description>
+        <topic href="docs/help/html/views/database-navigator.html" label="Database Navigator"/>
+    </context>
+    <context id="view-project-explorer">
+        <description>Project explorer. Manages all project's resources (except database mata objects) - scripts, bookmarks, etc.</description>
+        <topic href="docs/help/html/views/project-explorer.html" label="Project Explorer"/>
+    </context>
+    <context id="view-project-navigator">
+        <description>Project navigator. Manages all projects and their content.</description>
+        <topic href="docs/help/html/views/project-navigator.html" label="Project Navigator"/>
+        <topic href="docs/help/html/views/database-navigator.html" label="Database Navigator"/>
+        <topic href="docs/help/html/views/project-explorer.html" label="Project Explorer"/>
+    </context>
+    <context id="view-query-manager">
+        <description>Query manager. History of all processed SQL statements and transaction operations.</description>
+        <topic href="docs/help/html/views/query-manager.html" label="Query Manager"/>
+    </context>
+
+</contexts>
