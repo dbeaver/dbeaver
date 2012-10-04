@@ -62,6 +62,7 @@
                 - SQL scripts creation fix
                 - Metadata editors UI and undo/redo fixes
                 - Metadata property names localization
+                - Minor UI fixes
             </release-notes>
         </version>
 

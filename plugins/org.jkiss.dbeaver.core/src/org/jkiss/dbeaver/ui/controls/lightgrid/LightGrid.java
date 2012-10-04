@@ -3207,6 +3207,9 @@ public class LightGrid extends Canvas {
 
             showColumn(col);
             redraw();
+        } else {
+            // Change focus column anyway
+            focusColumn = getColumn(new Point(e.x, e.y));
         }
 
         if (selectionEvent != null) {
