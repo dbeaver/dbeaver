@@ -686,7 +686,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleSingleLineCommentHandler">
             <activeWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
                     </adapt>
@@ -695,7 +695,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleMultiLineCommentHandler">
             <activeWhen>
-                <with variable="activeEditor">
+                <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
                     </adapt>
