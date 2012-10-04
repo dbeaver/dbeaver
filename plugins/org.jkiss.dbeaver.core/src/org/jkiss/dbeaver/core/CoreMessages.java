@@ -92,6 +92,8 @@ public class CoreMessages extends NLS {
 
 	public static String actions_navigator_view_script_button;
 
+    public static String actions_spreadsheet_copy_special;
+
 	public static String common_error_sql;
 
 	public static String confirm_exit_title;
