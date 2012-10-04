@@ -61,6 +61,7 @@
                 - SQL editor fixes (correct extraction of current query)
                 - SQL scripts creation fix
                 - Metadata editors UI and undo/redo fixes
+                - Quick data filters fixed (enable filters menu for empty result set + numbers formatting fix)
                 - Metadata property names localization
                 - Minor UI fixes
             </release-notes>
