@@ -1034,18 +1034,22 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void fillFiltersMenu(IMenuManager filtersMenu)
     {
         GridPos currentPosition = getCurrentPosition();
-        if (supportsDataFilter() && isValidCell(currentPosition)) {
-            int columnIndex = translateGridPos(currentPosition).col;
+        int columnIndex = translateGridPos(currentPosition).col;
+        if (supportsDataFilter() && columnIndex >= 0) {
             DBDAttributeBinding column = metaColumns[columnIndex];
             if (column.getTableColumn() == null) {
                 return;
             }
             DBSDataKind dataKind = DBUtils.getDataKind(column.getAttribute());
             if (!column.getAttribute().isRequired()) {
-                filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.VALUE, column));
-                filtersMenu.add(new FilterByColumnAction("IS NOT NULL", FilterByColumnType.VALUE, column));
+                filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.NONE, column));
+                filtersMenu.add(new FilterByColumnAction("IS NOT NULL", FilterByColumnType.NONE, column));
             }
             for (FilterByColumnType type : FilterByColumnType.values()) {
+                if (type == FilterByColumnType.NONE || (type == FilterByColumnType.VALUE && !isValidCell(currentPosition))) {
+                    // Value filters are available only if certain cell is selected
+                    continue;
+                }
                 filtersMenu.add(new Separator());
                 if (type.getValue(this, column, true) == null) {
                     continue;
@@ -2903,6 +2907,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 return column.getValueHandler().getValueFromClipboard(
                     column.getAttribute(),
                     viewer.getSpreadsheet().getClipboard());
+            }
+        },
+        NONE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
+            @Override
+            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault)
+            {
+                return "";
             }
         };
 

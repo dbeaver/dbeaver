@@ -206,7 +206,7 @@ public class Spreadsheet extends Composite implements Listener {
 
     public GridPos getCursorPosition()
     {
-        if (grid.isDisposed() || grid.getItemCount() <= 0 || grid.getColumnCount() <= 0) {
+        if (grid.isDisposed()) {
             return new GridPos(-1, -1);
         }
         return grid.getFocusCell();
