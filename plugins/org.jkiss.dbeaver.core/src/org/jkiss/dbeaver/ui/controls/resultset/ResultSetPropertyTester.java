@@ -56,10 +56,10 @@ public class ResultSetPropertyTester extends PropertyTester
             return rsv.getRowsCount() > 0;
         } else if (PROP_CAN_COPY.equals(property)) {
             final GridPos currentPosition = rsv.getCurrentPosition();
-            return currentPosition != null && currentPosition.isValid();
+            return rsv.isValidCell(currentPosition);
         } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
             final GridPos currentPosition = rsv.getCurrentPosition();
-            return currentPosition != null && !rsv.isColumnReadOnly(currentPosition);
+            return rsv.isValidCell(currentPosition) && !rsv.isColumnReadOnly(currentPosition);
         } else if (PROP_CAN_MOVE.equals(property)) {
             int currentRow = rsv.getCurrentRow();
             if ("back".equals(expectedValue)) {

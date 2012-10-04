@@ -45,8 +45,8 @@
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>1.6.4</Program_Version>
-    <Program_Release_Month>09</Program_Release_Month>
-    <Program_Release_Day>16</Program_Release_Day>
+    <Program_Release_Month>10</Program_Release_Month>
+    <Program_Release_Day>04</Program_Release_Day>
     <Program_Release_Year>2012</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -65,6 +65,7 @@
         - SQL scripts creation fix
         - Metadata editors UI and undo/redo fixes
         - Metadata property names localization
+        - Minor UI fixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -79,22 +80,12 @@
     </File_Info>
     <Expire_Info>
       <Has_Expire_Info>N</Has_Expire_Info>
-      <Expire_Based_On>Days</Expire_Based_On>
-      <Expire_Count></Expire_Count>
-      <Expire_Other_Info></Expire_Other_Info>
-      <Expire_Month></Expire_Month>
-      <Expire_Day></Expire_Day>
-      <Expire_Year></Expire_Year>
     </Expire_Info>
     <Program_Categories>SQL Client,Databases,Other,Development</Program_Categories>
     <Limitations>none</Limitations>
-    <Program_Cost_Other_Code></Program_Cost_Other_Code>
-    <Program_Cost_Other></Program_Cost_Other>
     <Awards></Awards>
     <Program_Specific_Category></Program_Specific_Category>
     <Includes_JAVA_VM></Includes_JAVA_VM>
-    <Includes_VB_Runtime></Includes_VB_Runtime>
-    <Includes_DirectX></Includes_DirectX>
   </Program_Info>
   <Web_Info>
     <Application_URLs>
