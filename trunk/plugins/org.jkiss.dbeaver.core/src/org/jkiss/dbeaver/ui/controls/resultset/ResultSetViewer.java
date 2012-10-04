@@ -2881,9 +2881,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault)
             {
-                return column.getValueHandler().getValueDisplayString(
-                    column.getAttribute(),
-                    viewer.curRows.get(viewer.getCurrentRow())[viewer.getMetaColumnIndex(column.getAttribute())]);
+                Object value = viewer.curRows.get(viewer.getCurrentRow())[viewer.getMetaColumnIndex(column.getAttribute())];
+                if (value instanceof Number) {
+                    return value.toString();
+                }
+                return column.getValueHandler().getValueDisplayString(column.getAttribute(), value);
             }
         },
         INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
