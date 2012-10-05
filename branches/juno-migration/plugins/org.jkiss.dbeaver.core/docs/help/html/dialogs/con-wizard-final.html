@@ -1,0 +1,56 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Additional Connection Settings</title>
+    </head>
+
+    <body>
+        <h1>Additional Connection Settings</h1>
+        <p>This is last page of connection wizard and it contains properties common for all drivers.</p>
+        <p>These properties are used by DBeaver, not by drivers.</p>
+
+        <table border="1">
+            <tr valign="top">
+                <td nowrap>Connection Name</td>
+                <td>Name of connection. This will be used by the <a href="../views/database-navigator.html">database navigator</a>.
+                </td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Save password locally</td>
+                <td>Check this field if you want to store database password locally. Otherwise DBeaver will ask for a password each time you connect to this database.
+                    Passwords are stored in encrypted form, but if you use highly secured databases it is possible that a third person could access your computer. We recommend avoiding this feature.
+                </td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Show system objects</td>
+                <td>Check this if you want to see database system objects (schemas, tables, etc). If you don't check this then system objects will be hidden.</td>
+            </tr>
+            <tr valign="top">
+                <td nowrap>Filter catalogs/schemas</td>
+                <td>Show only catalogs (schemas) where the name matches a specific pattern. Pattern format may be specific to each database but generally it uses the LIKE syntax.</td>
+            </tr>
+        </table>
+
+    </body>
+</html>

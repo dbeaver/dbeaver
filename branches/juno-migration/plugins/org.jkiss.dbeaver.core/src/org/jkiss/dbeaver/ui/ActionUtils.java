@@ -1,0 +1,184 @@
+/*
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+package org.jkiss.dbeaver.ui;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.commands.Command;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
+import org.eclipse.jface.action.ContributionItem;
+import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.IActionDelegate;
+import org.eclipse.ui.IObjectActionDelegate;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchWindowActionDelegate;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
+import org.eclipse.ui.services.IServiceLocator;
+
+/**
+ * NavigatorUtils
+ */
+public class ActionUtils
+{
+    static final Log log = LogFactory.getLog(ActionUtils.class);
+
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId)
+    {
+        return makeCommandContribution(serviceLocator, commandId, CommandContributionItem.STYLE_PUSH);
+    }
+
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, int style)
+    {
+        return new CommandContributionItem(new CommandContributionItemParameter(
+            serviceLocator,
+            null,
+            commandId,
+            style));
+    }
+
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, int style, ImageDescriptor icon)
+    {
+        CommandContributionItemParameter parameters = new CommandContributionItemParameter(
+            serviceLocator,
+            null,
+            commandId,
+            style);
+        parameters.icon = icon;
+        return new CommandContributionItem(parameters);
+    }
+
+    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, String name, ImageDescriptor imageDescriptor)
+    {
+        return makeCommandContribution(serviceLocator, commandId, name, imageDescriptor, null, false);
+    }
+
+    public static ContributionItem makeActionContribution(
+        IAction action,
+        boolean showText)
+    {
+        ActionContributionItem item = new ActionContributionItem(action);
+        if (showText) {
+            item.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+        }
+        return item;
+    }
+
+    public static CommandContributionItem makeCommandContribution(
+        IServiceLocator serviceLocator,
+        String commandId,
+        String name,
+        ImageDescriptor imageDescriptor,
+        String toolTip,
+        boolean showText)
+    {
+        final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
+            serviceLocator,
+            null,
+            commandId,
+            null,
+            imageDescriptor,
+            null,
+            null,
+            name,
+            null,
+            toolTip,
+            CommandContributionItem.STYLE_PUSH,
+            null,
+            false);
+        if (showText) {
+            contributionParameters.mode = CommandContributionItem.MODE_FORCE_TEXT;
+        }
+        return new CommandContributionItem(contributionParameters);
+    }
+
+    public static boolean isCommandEnabled(String commandId, IWorkbenchPart part)
+    {
+        if (commandId != null) {
+            try {
+                //Command cmd = new Command();
+                ICommandService commandService = (ICommandService)part.getSite().getService(ICommandService.class);
+                if (commandService != null) {
+                    Command command = commandService.getCommand(commandId);
+                    return command != null && command.isEnabled();
+                }
+            } catch (Exception e) {
+                log.error("Could not execute command '" + commandId + "'", e);
+            }
+        }
+        return false;
+    }
+
+    public static void runCommand(String commandId, IServiceLocator serviceLocator)
+    {
+        if (commandId != null) {
+            try {
+                //Command cmd = new Command();
+                ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
+                if (commandService != null) {
+                    Command command = commandService.getCommand(commandId);
+                    if (command != null && command.isEnabled()) {
+                        IHandlerService handlerService = (IHandlerService) serviceLocator.getService(IHandlerService.class);
+                        handlerService.executeCommand(commandId, null);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Could not execute command '" + commandId + "'", e);
+            }
+        }
+    }
+
+    public static IAction makeAction(final IActionDelegate actionDelegate, IWorkbenchPart part, ISelection selection, String text, ImageDescriptor image, String toolTip)
+    {
+        Action actionImpl = new Action() {
+            @Override
+            public void run() {
+                actionDelegate.run(this);
+            }
+        };
+        if (text != null) {
+            actionImpl.setText(text);
+        }
+        if (image != null) {
+            actionImpl.setImageDescriptor(image);
+        }
+        if (toolTip != null) {
+            actionImpl.setToolTipText(toolTip);
+        }
+
+        actionDelegate.selectionChanged(actionImpl, selection);
+
+        if (part != null) {
+            if (actionDelegate instanceof IObjectActionDelegate) {
+                ((IObjectActionDelegate)actionDelegate).setActivePart(actionImpl, part);
+            } else if (actionDelegate instanceof IWorkbenchWindowActionDelegate) {
+                ((IWorkbenchWindowActionDelegate)actionDelegate).init(part.getSite().getWorkbenchWindow());
+            }
+        }
+
+        return actionImpl;
+    }
+
+}

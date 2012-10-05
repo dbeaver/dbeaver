@@ -1,0 +1,106 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<project name="Build specific targets and properties" default="noDefault">
+
+    <!-- =====================================================================
+        
+        The Following Properties are available in all targets:
+         - eclipse.base : the base folder everything will be collected into
+         - eclipse.plugins : the plugins folder
+         - eclipse.features: the features folder
+         - archiveFullPath : the full path of the final archive once it is created
+         
+         ===================================================================== -->
+         
+    <!-- =====================================================================  -->
+    <!-- Called after each invocation of the gather.bin.parts target on the     -->
+    <!-- individual plugins and features.                                       -->
+    <!-- Available properties are:                                              -->
+    <!--   projectLocation: location of the project being gathered              -->
+    <!--   projectName: symbolic name with version (org.eclipse.foo_1.0.0.v123) -->
+    <!--   target.folder: the destination, eclipse/plugins or eclipse/features  -->
+    <!--                                                                        -->
+    <!-- The generated pattern is that plugins/features are gathered into the   -->
+    <!-- folder ${target.folder}/${projectName}                                 -->
+    <!-- =====================================================================  -->
+    <target name="gather.bin.parts">
+    </target>
+    
+    <!-- ===================================================================== -->
+    <!-- Called after invoking the gather.bin.parts targets for all plugins    -->
+    <!-- and features. Results exist as folders and have not yet been jarred.  -->
+    <!-- ===================================================================== -->
+    <target name="post.gather.bin.parts">
+    </target>
+
+    <!-- ===================================================================== -->
+    <!-- Called just prior to signing a jar                                    -->
+    <!-- In addititon to the properties listed above:                           -->
+    <!--    - source : plugins or features directory                           -->
+    <!--    - elementName: element being signed without .jar                   -->
+    <!--                   (eg "org.eclipse.foo_1.0.0"                         -->
+    <!-- ===================================================================== -->
+    <target name="pre.jarSigning">
+    </target>
+
+    <!-- ===================================================================== -->
+    <!-- Called after all plugins and features have been jarred                -->
+    <!-- (and potentially signed)                                              -->
+    <!-- ===================================================================== -->
+    <target name="post.jarUp">
+    </target>
+
+    <!-- ===================================================================== -->
+    <!-- Called just before the archive file is built                          -->
+    <!-- In addititon to the properties listed above:                           -->
+    <!--    - rootFolder : the folder containing the root files                -->
+    <!-- ===================================================================== -->
+    <target name="pre.archive">
+        <echo message="Adding contributions to ${rootFolder}"/>
+<!--
+        <copy todir="${rootFolder}/drivers/postgresql">
+            <fileset dir="${buildDirectory}/../../contrib/drivers/postgresql"/>
+        </copy>
+        <copy todir="${rootFolder}/drivers/oracle">
+            <fileset dir="${buildDirectory}/../../contrib/drivers/oracle"/>
+        </copy>
+        <copy todir="${rootFolder}/drivers/jtds">
+            <fileset dir="${buildDirectory}/../../contrib/drivers/jtds"/>
+        </copy>
+
+        <copy todir="${rootFolder}">
+            <fileset dir="${buildDirectory}/docs/help"/>
+        </copy>
+-->
+        <copy file="${buildDirectory}/readme.txt" todir="${rootFolder}"/>
+        <mkdir dir="${rootFolder}/licenses"/>
+        <copy todir="${rootFolder}/licenses">
+            <fileset dir="${buildDirectory}/../../docs/licenses"/>
+        </copy>
+    </target>
+    
+    <!-- ===================================================================== -->
+    <!-- Default target                                                        -->
+    <!-- ===================================================================== -->
+    <target name="noDefault">
+        <echo message="You must specify a target when invoking this file" />
+    </target>
+
+</project>

@@ -1,0 +1,44 @@
+#
+# Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+#
+
+buildDirectory=D:/Devel/my/DBeaver/product/build
+# Eclipse before localization
+stdBaseLocation=D:/Java/eclipse-build
+# Eclipse after localization (is used for build)
+baseLocation=D:/Java/eclipse-build-localized
+nsisDirectory=C:/Program Files/NSIS
+equinoxLauncherPluginVersion=1.1.0.v20100507
+pdeBuildPluginVersion=3.6.0.v20100603
+releaseFilesDirectory=d:/temp
+babelLocation=D:/Devel/my/Babel
+locales=ru,fr
+
+#configs = *, *, *
+
+#configs=win32, win32, x86
+
+#configs=win32, win32, x86 & \
+#	linux, gtk, x86
+
+configs=win32, win32, x86 & \
+	linux, gtk, x86 & \
+	macosx, cocoa, ppc
+
+#configs=win32, win32, x86 & \
+#	win32,win32,x86_64 & \
+#	win32,win32,wpf & \
+#	linux, gtk, ppc & \
+#	linux, gtk, x86 & \
+#	linux, gtk, x86_64 & \
+#	linux, motif, x86 & \
+#	solaris, motif, sparc & \
+#	solaris, gtk, sparc & \
+#	aix, motif, ppc & \
+#	hpux, motif, ia64_32 & \
+#	macosx, carbon, ppc & \
+#	macosx, carbon, x86 & \
+#	macosx, cocoa, ppc & \
+#	macosx, cocoa, x86 & \
+#	macosx, cocoa, x86_64
+

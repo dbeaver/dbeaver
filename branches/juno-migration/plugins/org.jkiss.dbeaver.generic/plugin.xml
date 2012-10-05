@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<plugin>
+
+    <extension
+        point="org.eclipse.help.contexts">
+        <contexts
+            file="contexts.xml">
+        </contexts>
+    </extension>
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+            description="Generic JDBC connector"
+            id="generic"
+            label="Generic"
+            icon="icons/database.png">
+            <tree path="generic" label="Generic data source">
+                <items label="#catalog" path="catalog" property="catalogs" iconId="#database" optional="true">
+                    <items label="#schema" path="schema" property="schemas" iconId="#schema" optional="true">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" iconId="#folder_table" description="Tables">
+                            <items label="%tree.table.node.name" path="table" property="tables">
+                                <icon iconId="#table" default="true"/>
+                                <icon iconId="#view" if="object.view"/>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" iconId="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" iconId="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" iconId="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" iconId="#unique-key">
+                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" iconId="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" iconId="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" iconId="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" iconId="#index">
+                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" iconId="#column" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey" label="%tree.references.node.name" iconId="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                    <items label="%tree.reference.node.name" path="reference" property="references" iconId="#reference">
+                                        <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" iconId="#table" recursive=".." visibleIf="!object.view">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" iconId="#indexes" description="Indexes">
+                            <items iconId="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                <items iconId="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" virtual="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode" label="%tree.procedures.node.name" iconId="#procedures" description="Procedures">
+                            <items label="%tree.package.node.name" path="package" property="packages" iconId="#package">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" iconId="#procedure">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
+                                </items>
+                            </items>
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" iconId="#procedure">
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
+                        </folder>
+                    </items>
+                </items>
+            </tree>
+
+            <driver-properties>
+                <propertyGroup label="Parameters" description="Custom driver parameters">
+                    <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
+                </propertyGroup>
+                <propertyGroup label="Queries" description="Custom driver queries">
+                    <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
+                    <property id="query-set-active-db" label="Set active database" description="Query to change active database" type="string" required="false" defaultValue=""/>
+                </propertyGroup>
+            </driver-properties>
+
+            <drivers managable="true">
+
+                <driver
+                    id="postgresql"
+                    label="PostgreSQL"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    defaultPort="5432"
+                    webURL="http://jdbc.postgresql.org/"
+                    description="PostgreSQL standard driver">
+                    <file type="jar" path="drivers/postgresql/postgresql-9.1-901.jdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/postgresql-9.1-901.jdbc4.jar"/>
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="SHOW search_path"/>
+                    <parameter name="query-set-active-db" value="SET search_path = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                </driver>
+                <driver
+                    id="oracle"
+                    label="Oracle"
+                    class="oracle.jdbc.OracleDriver"
+                    sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
+                    defaultPort="1521"
+                    webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
+                    description="Oracle thin driver">
+                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/>
+                    <file type="license" path="drivers/oracle/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
+                    <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
+                </driver>
+                <driver
+                    id="db2"
+                    label="DB2"
+                    class="com.ibm.db2.jcc.DB2Driver"
+                    sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    defaultPort="50000"
+                    webURL="http://www.ibm.com/software/data/db2/express/download.html"
+                    description="DB2 JCC driver">
+					<file type="jar" path="drivers/db2/db2jcc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc.jar"/>
+					<file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc_license_cu.jar"/>
+                    <file type="license" path="drivers/db2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/LICENSE.txt"/>
+                    <property name="fullyMaterializeLobData" value="true"/>
+                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <property name="progressiveStreaming" value="2"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                </driver>
+
+                <driver
+                    id="mssql"
+                    label="jTDS driver"
+                    category="MS SQL Server"
+                    class="net.sourceforge.jtds.jdbc.Driver"
+                    sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
+                    defaultPort="1433"
+                    webURL="http://jtds.sourceforge.net/"
+                    description="jTDS SQL Server driver">
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x86/ntlmauth.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x64/ntlmauth.dll"/>
+                    <file type="license" path="drivers/jtds/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/LICENSE.txt"/>
+                </driver>
+
+                <driver
+                    id="mssql_ms"
+                    label="Microsoft Driver"
+                    category="MS SQL Server"
+                    class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                    sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                    defaultPort="1433"
+                    webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
+                    description="Microsoft JDBC Driver for SQL Server ">
+                    <parameter name="query-get-active-db" value="select db_name()"/>
+                    <parameter name="query-set-active-db" value="use [?]"/>
+                    <file type="jar" path="drivers/mssql/sqljdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/sqljdbc4.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/auth/x86/sqljdbc_auth.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/auth/x64/sqljdbc_auth.dll"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/xa/x86/sqljdbc_xa.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/xa/x86/sqljdbc_xa.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/xa/x64/sqljdbc_xa.dll"/>
+                    <file type="license" path="drivers/mssql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/LICENSE.txt"/>
+                </driver>
+
+                <driver
+                    id="sybase"
+                    label="Sybase"
+                    class="net.sourceforge.jtds.jdbc.Driver"
+                    sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
+                    defaultPort="5000"
+                    webURL="http://jtds.sourceforge.net/"
+                    description="Sybase JTDS driver">
+                    <!--parameter name="query-get-active-db">select db_name()</query>
+                    <parameter name="query-set-active-db">use ?</query-->
+                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
+                    <file type="license" path="drivers/jtds/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="sap_maxdb"
+                    label="SAP MaxDB"
+                    class="com.sap.dbtech.jdbc.DriverSapDB"
+                    sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
+                    defaultPort="7200"
+                    webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
+                    description="SAP MaxDB - The SAP Database System">
+                    <file type="jar" path="drivers/maxdb/sapdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/sapdbc.jar"/>
+                    <file type="license" path="drivers/maxdb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
+                </driver>
+                <driver
+                    id="informix"
+                    label="Informix"
+                    class="com.informix.jdbc.IfxDriver"
+                    sampleURL="jdbc:informix-sqli://{host}:{port}/{database}:INFORMIXSERVER={server}"
+                    defaultPort="1533"
+                    webURL="http://www.developers.net/ibmshowcase/focus/Informix"
+                    description="IBM Informix Dynamic Server">
+                    <file type="jar" path="drivers/informix/ifxjdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxjdbc.jar"/>
+                    <file type="jar" path="drivers/informix/ifxlang.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxlang.jar"/>
+                    <file type="license" path="drivers/informix/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
+                    <parameter name="query-set-active-db" value=""/>
+                </driver>
+                <driver
+                    id="h2_server"
+                    label="Server"
+                    category="H2"
+                    class="org.h2.Driver"
+                    sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
+                    defaultPort="9092"
+                    webURL="http://www.h2database.com/"
+                    description="H2 Server">
+                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
+                    <file type="license" path="drivers/h2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="h2_embedded"
+                    label="Embedded"
+                    category="H2"
+                    class="org.h2.Driver"
+                    sampleURL="jdbc:h2:{database}"
+                    webURL="http://www.h2database.com/"
+                    description="H2 Embedded">
+                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
+                    <file type="license" path="drivers/h2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="odbc"
+                    label="ODBC"
+                    class="sun.jdbc.odbc.JdbcOdbcDriver"
+                    sampleURL="jdbc:odbc:{database}"
+                    webURL="http://sun.com"
+                    description="ODBC bridge driver">
+                    <os name="win32"/>
+                </driver>
+                <driver
+                    id="derby"
+                    label="Embedded"
+                    category="Derby"
+                    class="org.apache.derby.jdbc.EmbeddedDriver"
+                    sampleURL="jdbc:derby:{folder}"
+                    webURL="http://db.apache.org/"
+                    anonymous="true"
+                    description="Derby (Java DB) embedded driver">
+                    <parameter name="shutdown-url-param" value=";shutdown=true"/>
+                    <file type="jar" path="drivers/derby/derby.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derby.jar"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
+                </driver>
+                <driver
+                    id="derby_server"
+                    label="Server"
+                    category="Derby"
+                    class="org.apache.derby.jdbc.ClientDriver"
+                    sampleURL="jdbc:derby://{host}:{port}/{database};create=false"
+                    defaultPort="1527"
+                    webURL="http://db.apache.org/"
+                    description="Derby (Java DB) server driver">
+                    <file type="jar" path="drivers/derby/derbyclient.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derbyclient.jar"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
+                    <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
+                </driver>
+                <driver
+                    id="mimer"
+                    label="Mimer SQL"
+                    class="com.mimer.jdbc.Driver"
+                    sampleURL="jdbc:mimer:tcp://{host}:{port}/{database}"
+                    defaultPort="1360"
+                    webURL="http://developer.mimer.com/"
+                    description="Mimer SQL TCP/IP driver">
+                    <file type="jar" path="drivers/mimer/mimjdbc3.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mimer/mimjdbc3.jar"/>
+                </driver>
+                <driver
+                    id="hsqldb_server"
+                    label="Server"
+                    category="HSQLDB"
+                    class="org.hsqldb.jdbcDriver"
+                    sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
+                    defaultPort="9001"
+                    webURL="http://hsqldb.org/"
+                    description="HyperSQL DataBase - Server Mode">
+                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
+                    <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                </driver>
+                <driver
+                    id="hsqldb_embedded"
+                    label="Embedded"
+                    category="HSQLDB"
+                    class="org.hsqldb.jdbc.JDBCDriver"
+                    sampleURL="jdbc:hsqldb:file:{folder}"
+                    webURL="http://hsqldb.org/"
+                    anonymous="true"
+                    description="HyperSQL DataBase - Embedded Mode">
+                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
+                    <parameter name="shutdown-url-param" value=";shutdown=true"/>
+                    <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                </driver>
+                <driver
+                    id="cache"
+                    label="Cache"
+                    class="com.intersys.jdbc.CacheDriver"
+                    sampleURL="jdbc:Cache://{host}:{port}/{database}"
+                    defaultPort="1972"
+                    webURL="http://www.intersystems.com/cache/"
+                    description="Intersystems Cache">
+                    <file type="jar" path="drivers/cache/CacheDB.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/CacheDB.jar"/>
+                    <file type="license" path="drivers/cache/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="ingres"
+                    label="Ingres"
+                    class="com.ingres.jdbc.IngresDriver"
+                    sampleURL="jdbc:ingres://{host}:{port}/{database}"
+                    defaultPort="II7"
+                    webURL="http://www.ingres.com/products/ingres-database/"
+                    description="Ingres Database">
+                    <file type="jar" path="drivers/ingres/iijdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/ingres/iijdbc.jar"/>
+                    <file type="license" path="drivers/ingres/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/ingres/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="linter"
+                    label="Linter"
+                    class="com.relx.jdbc.LinterDriver"
+                    sampleURL="jdbc:linter:linapid:{host}:{port}:{database}"
+                    defaultPort="1070"
+                    webURL="http://linter.ru/"
+                    description="Linter (ЛИНТЕР) Database">
+                    <file type="jar" path="drivers/linter/LinJdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/LinJdbc.jar"/>
+                    <file type="jar" path="drivers/linter/linjdbc-1.4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/linjdbc-1.4.jar"/>
+                    <file type="license" path="drivers/linter/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="firebird_jaybird"
+                    label="Firebird (JayBird)"
+                    class="org.firebirdsql.jdbc.FBDriver"
+                    sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
+                    defaultPort="3050"
+                    webURL=""
+                    description="Firebird JayBird driver">
+                    <file type="jar" path="drivers/firebird/jaybird-full-2.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/jaybird-full-2.1.6.jar"/>
+                    <file type="license" path="drivers/firebird/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="sqlite_zentus"
+                    label="SQLite Zentus driver"
+                    category="SQLite"
+                    class="org.sqlite.JDBC"
+                    sampleURL="jdbc:sqlite:{file}"
+                    defaultPort=""
+                    webURL="http://www.zentus.com/sqlitejdbc/"
+                    description="SQLite3 JDBC driver by David Crawshaw (Windows, Linux and Mac OS)">
+                    <file type="jar" path="drivers/sqlite/zentus/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/zentus/sqlitejdbc-v056.jar"/>
+                    <file type="license" path="drivers/sqlite/zentus/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/zentus/LICENSE.txt"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                </driver>
+                <driver
+                    id="sqlite_xerial"
+                    label="SQLite Xerial driver"
+                    category="SQLite"
+                    class="org.sqlite.JDBC"
+                    sampleURL="jdbc:sqlite:{file}"
+                    defaultPort=""
+                    webURL="http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC/"
+                    description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
+                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar"/>
+                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/xerial/LICENSE.txt"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                </driver>
+                <driver
+                    id="sqlite_ch_werner"
+                    label="SQLite Wrapper by Christian Werner"
+                    category="SQLite"
+                    class="SQLite.JDBCDriver"
+                    sampleURL="jdbc:sqlite:/{file}"
+                    defaultPort=""
+                    webURL="http://www.ch-werner.de/javasqlite/"
+                    description="SQLite3 JDBC driver by Christian Werner (Windows only)">
+                    <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/werner/sqlite.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/werner/sqlite_jni.dll"/>
+                </driver>
+                <driver
+                    id="teradata"
+                    label="Teradata"
+                    class="com.ncr.teradata.TeraDriver"
+                    sampleURL="jdbc:teradata://{host}/{database}"
+                    defaultPort=""
+                    description="Teradata JDBC driver">
+                    <file type="jar" path="drivers/teradata/terajdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/terajdbc4.jar"/>
+                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/tdgssconfig.jar"/>
+                    <file type="license" path="drivers/teradata/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="mysql3"
+                    label="MySQL 3.x"
+                    class="com.mysql.jdbc.Driver"
+                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                    defaultPort="3306"
+                    webURL="http://www.mysql.com/products/connector/"
+                    description="Driver for MySQL 3.x and earlier">
+                    <file type="license" path="drivers/mysql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/LICENSE.txt"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/mysql-connector-java-5.1.13-bin.jar"/>
+                </driver>
+            </drivers>
+
+            <views>
+                <view
+                    id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
+                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                    label="%dialog.connection.header"
+                    class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                    icon="icons/database.png">
+                </view>
+                <view
+                      class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                      icon="icons/database.png"
+                      id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
+                      label="%dialog.connection.header"
+                      targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+                </view>
+            </views>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <manager
+            class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.generic.edit.GenericTableColumnManager"
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.generic.edit.GenericPrimaryKeyManager"
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.generic.edit.GenericForeignKeyManager"
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
+    </extension>
+
+</plugin>

@@ -1,0 +1,97 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<html>
+<head>
+	<title>DBeaver Roadmap 2012</title>
+</head>
+<body>
+
+<style type="text/css">
+    body {
+        font-family: Arial,Helvetica,sans-serif;
+        font-size: 14px;
+    }
+
+	h1 {
+		counter-reset: head2;
+	}
+
+	h2:before {
+        font-size: 20px;
+		content: counter(head2) ". ";
+		counter-increment: head2;
+	}
+	h2 {
+		counter-reset: head3;
+	}
+
+	h3:before {
+        font-size: 14px;
+		content: counter(head2) "." counter(head3) ". ";
+		counter-increment: head3;
+	}
+	h3 {
+		counter-reset: head4;
+	}
+</style>
+
+<h1>DBeaver Roadmap 2012</h1>
+
+<h2>Open-source</h2>
+<div>Choose open-source license.</div>
+<div>Make public access (read-only) to version control and bug-tracking system.</div>
+<div>Make a team and grant commit rights to members.</div>
+
+<h2>Client-side scripting</h2>
+<div>Add support of client-side scripting: velocity style macros-like commands which are executed
+on client side and allows additional data handling across multiple databases.</div>
+
+<h2>Script management</h2>
+<div>Improve current script management system</div>
+
+<h2>Database plugins</h2>
+<div>Add new extensions to support native database features for:</div>
+<ul>
+    <li>IBM DB2</li>
+    <li>MS SQL Server</li>
+    <li>PostgreSQL</li>
+</ul>
+
+<h2>Help</h2>
+<ol>
+	<li>Replace eclipse help with own lightweight help system</li>
+    <li>Context help for dialogs/editors</li>
+</ol>
+
+<h2>Eclipse plugin mode</h2>
+<div>Support Eclipse plugin mode.</div>
+
+<h2>Localization</h2>
+<ol>
+	<li>Italian, German, Russian, Chinese. Actual language set depends on requests and available team members.</li>
+</ol>
+
+<h2>Metadata editor</h2>
+<ol>
+	<li>Improve metadata editors (stored procedures, administrative tools, etc).</li>
+</ol>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+/*
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jkiss.dbeaver.ui.actions;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
+import org.eclipse.ui.services.IEvaluationService;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
+
+/**
+ * DatabaseEditorPropertyTester
+ */
+public class DataSourcePropertyTester extends PropertyTester
+{
+    static final Log log = LogFactory.getLog(DataSourcePropertyTester.class);
+
+    public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasource";
+    public static final String PROP_CONNECTED = "connected";
+    public static final String PROP_TRANSACTIONAL = "transactional";
+    public static final String PROP_TRANSACTION_ACTIVE = "transactionActive";
+
+    public DataSourcePropertyTester() {
+        super();
+    }
+
+    @Override
+    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+        if (!(receiver instanceof DBSDataSourceContainer)) {
+            return false;
+        }
+        DBSDataSourceContainer dataSourceContainer = (DBSDataSourceContainer)receiver;
+        if (PROP_CONNECTED.equals(property)) {
+            return dataSourceContainer.isConnected() == Boolean.valueOf(String.valueOf(expectedValue));
+        } else if (PROP_TRANSACTIONAL.equals(property)) {
+            if (!dataSourceContainer.isConnected()) {
+                return Boolean.FALSE.equals(expectedValue);
+            }
+            DBPDataSource dataSource = dataSourceContainer.getDataSource();
+            if (dataSource == null || !dataSource.isConnected()) {
+                return false;
+            }
+            DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check auto commit state");
+            try {
+                boolean transactional = !context.getTransactionManager().isAutoCommit();
+                return Boolean.valueOf(transactional).equals(expectedValue);
+            }
+            catch (DBCException e) {
+                log.error(e);
+            }
+            finally {
+                context.close();
+            }
+        } else if (PROP_TRANSACTION_ACTIVE.equals(property)) {
+            if (dataSourceContainer.isConnected()) {
+                DBPDataSource dataSource = dataSourceContainer.getDataSource();
+                QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSession(dataSource);
+                QMMTransactionInfo transaction = session.getTransaction();
+                if (transaction != null) {
+                    QMMTransactionSavepointInfo savepoint = transaction.getCurrentSavepoint();
+                    if (savepoint != null) {
+                        QMMStatementExecuteInfo execute = savepoint.getLastExecute();
+                        if (execute != null) {
+                            return Boolean.TRUE.equals(expectedValue);
+                        }
+                    }
+                }
+            }
+            return Boolean.FALSE.equals(expectedValue);
+        }
+        return false;
+    }
+
+    public static void firePropertyChange(String propName)
+    {
+        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
+        service.requestEvaluation(NAMESPACE + "." + propName);
+    }
+
+    public static void fireCommandRefresh(final String commandID)
+    {
+        // Update commands
+        final ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            Display.getDefault().asyncExec(new Runnable() {
+                @Override
+                public void run()
+                {
+                    commandService.refreshElements(commandID, null);
+                }
+            });
+        }
+    }
+}

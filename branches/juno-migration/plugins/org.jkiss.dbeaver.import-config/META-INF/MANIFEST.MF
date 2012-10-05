@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Import Config Plug-in
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.import_config;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: org.jkiss.dbeaver.ext.import_config.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.jkiss.dbeaver.core;bundle-version="1.0.0",
+ org.eclipse.core.resources
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: Serge Rieder

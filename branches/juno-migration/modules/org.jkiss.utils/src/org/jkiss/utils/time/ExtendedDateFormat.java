@@ -1,0 +1,158 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.utils.time;
+
+import java.sql.Timestamp;
+import java.text.FieldPosition;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+/**
+ * Formatter adapted to support nanoseconds from java.sql.Timestanp.
+ */
+public class ExtendedDateFormat extends SimpleDateFormat {
+
+    int nanoStart = -1, nanoLength;
+    boolean nanoOptional;
+    String nanoPrefix, nanoPostfix;
+
+    public ExtendedDateFormat(String pattern) {
+        this(pattern, Locale.getDefault());
+    }
+
+    public ExtendedDateFormat(String pattern, Locale locale) {
+        super(stripNanos(pattern), locale);
+
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            if (c == '\'') {
+                for (int k = i + 1; k < pattern.length(); k++) {
+                    if (pattern.charAt(k) == '\'') {
+                        i = k + 1;
+                        break;
+                    }
+                }
+            } else if (c == '[') {
+                nanoStart = i;
+                nanoOptional = true;
+                for (int k = i + 1; k < pattern.length(); k++) {
+                    if (pattern.charAt(k) == 'f') {
+                        nanoLength++;
+                        if (nanoPrefix == null) {
+                            nanoPrefix = pattern.substring(i + 1, k);
+                        }
+                    }
+                    if (pattern.charAt(k) == ']') {
+                        nanoPostfix = pattern.substring(i + 1 + nanoPrefix.length() + nanoLength, k);
+                        i = k + 1;
+                        break;
+                    }
+                }
+            } else if (c == 'f') {
+                nanoStart = i;
+                nanoOptional = false;
+                for (int k = i + 1; k < pattern.length(); k++) {
+                    if (pattern.charAt(k) != 'f') {
+                        break;
+                    }
+                    nanoLength++;
+                }
+                nanoLength++;
+                i = nanoStart + nanoLength;
+            }
+        }
+    }
+
+    @Override
+    public StringBuffer format(Date date, StringBuffer toAppendTo, FieldPosition pos) {
+        StringBuffer result = super.format(date, toAppendTo, pos);
+        if (nanoStart >= 0) {
+            long nanos = 0;
+            if (date instanceof Timestamp) {
+                nanos = ((Timestamp) date).getNanos();
+            }
+            if (!nanoOptional || nanos > 0) {
+                // Append nanos value in the end
+                if (nanoPrefix != null) {
+                    result.append(nanoPrefix);
+                }
+                String nanoStr = String.valueOf(nanos);
+                for (int i = 0; i < nanoLength - nanoStr.length(); i++) {
+                    result.append("0");
+                }
+                result.append(nanoStr);
+                if (nanoPostfix != null) {
+                    result.append(nanoPostfix);
+                }
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public Date parse(String text, ParsePosition pos) {
+        return super.parse(text, pos);
+    }
+
+    private static String stripNanos(String pattern) {
+        for (int i = 0; i < pattern.length(); i++) {
+            char c = pattern.charAt(i);
+            if (c == '\'') {
+                for (int k = i + 1; k < pattern.length(); k++) {
+                    if (pattern.charAt(k) == '\'') {
+                        i = k + 1;
+                        break;
+                    }
+                }
+            } else if (c == '[') {
+                for (int k = i + 1; k < pattern.length(); k++) {
+                    if (pattern.charAt(k) == ']') {
+                        return pattern.substring(0, i) + pattern.substring(k + 1);
+                    }
+                }
+            } else if (c == 'f') {
+                for (int k = i + 1; k < pattern.length(); k++) {
+                    if (pattern.charAt(k) != 'f') {
+                        return pattern.substring(0, i) + pattern.substring(k);
+                    }
+                }
+                return pattern.substring(0, i);
+            }
+        }
+        return pattern;
+    }
+
+    public static void main(String[] args)
+    {
+        test("yyyy-mm-dd Z hh:mm:ss[.fffffffff]");
+        test("yyyy-mm-dd Z hh:mm:ss.fffffffff");
+        test("yyyy-mm-dd Z hh:mm:ss");
+        test("yyyy-mm-dd Z hh:mm:ss[.fffffffff nanos]");
+    }
+
+    private static void test(String pattern)
+    {
+        ExtendedDateFormat edf = new ExtendedDateFormat(pattern);
+        Timestamp date = new Timestamp(System.currentTimeMillis());
+        System.out.println(edf.format(date));
+        date.setNanos(0);
+        System.out.println(edf.format(date));
+    }
+
+}

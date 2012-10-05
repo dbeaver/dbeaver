@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<XML_DIZ_INFO>
+  <Company_Info>
+    <Company_Name>JKISS</Company_Name>
+    <Address_1>Engelsa pr. 97-212</Address_1>
+    <Address_2></Address_2>
+    <City_Town>Saint-Petersburg</City_Town>
+    <State_Province>SPb</State_Province>
+    <Zip_Postal_Code>194214</Zip_Postal_Code>
+    <Country>Russian Federation</Country>
+    <Company_WebSite_URL>http://jkiss.org</Company_WebSite_URL>
+    <Contact_Info>
+      <Contact_First_Name>Serge</Contact_First_Name>
+      <Contact_Last_Name>Rieder</Contact_Last_Name>
+      <Contact_Email>serge@jkiss.org</Contact_Email>
+      <Author_First_Name>Serge</Author_First_Name>
+      <Author_Last_Name>Rieder</Author_Last_Name>
+      <Author_Email>serge@jkiss.org</Author_Email>
+    </Contact_Info>
+    <Support_Info>
+      <Support_Email>support@jkiss.org</Support_Email>
+      <General_Email>serge@jkiss.org</General_Email>
+      <Support_Phone>+7-962-728-16-88</Support_Phone>
+    </Support_Info>
+  </Company_Info>
+  <Program_Info>
+    <Program_Name>DBeaver</Program_Name>
+    <Program_Version>1.6.4</Program_Version>
+    <Program_Release_Month>10</Program_Release_Month>
+    <Program_Release_Day>04</Program_Release_Day>
+    <Program_Release_Year>2012</Program_Release_Year>
+    <Program_Cost_Dollars>0</Program_Cost_Dollars>
+    <Program_Type>Freeware</Program_Type>
+    <Program_Release_Status>New Release</Program_Release_Status>
+    <Program_Install_Support>Install and Uninstall</Program_Install_Support>
+    <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
+    <Program_Language>English</Program_Language>
+    <Program_Change_Info>
+        - SQL editor comments toggle support
+        - Autocomplete, SQL hyperlinks and objects search refactored:
+            a. Object lookup speed significantly increased;
+            b. Case-sensitive (quoted) object names lookup support
+            c. Tables are shown prior to schemas;
+        - Support of HTML format for tables/data export
+        - SQL editor fixes (correct extraction of current query)
+        - SQL scripts creation fix
+        - Metadata editors UI and undo/redo fixes
+        - Quick data filters fixed (enable filters menu for empty result set + numbers formatting fix)
+        - Metadata property names localization
+        - Minor UI fixes
+    </Program_Change_Info>
+    <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
+    <Program_Category_Class>Development::Other</Program_Category_Class>
+    <File_Info>
+      <File_Size_Bytes>24687519</File_Size_Bytes>
+      <File_Size_K>23885</File_Size_K>
+      <File_Size_M>23.3</File_Size_M>
+      <Filename_Versioned></Filename_Versioned>
+      <Filename_Previous></Filename_Previous>
+      <Filename_Generic></Filename_Generic>
+      <Filename_Long></Filename_Long>
+    </File_Info>
+    <Expire_Info>
+      <Has_Expire_Info>N</Has_Expire_Info>
+    </Expire_Info>
+    <Program_Categories>SQL Client,Databases,Other,Development</Program_Categories>
+    <Limitations>none</Limitations>
+    <Awards></Awards>
+    <Program_Specific_Category></Program_Specific_Category>
+    <Includes_JAVA_VM></Includes_JAVA_VM>
+  </Program_Info>
+  <Web_Info>
+    <Application_URLs>
+      <Application_Info_URL>http://dbeaver.jkiss.org/</Application_Info_URL>
+      <Application_Order_URL>http://dbeaver.jkiss.org/download/</Application_Order_URL>
+      <Application_Screenshot_URL>http://dbeaver.jkiss.org/product/Screenshot_Main.png</Application_Screenshot_URL>
+      <Application_Icon_URL>http://dbeaver.jkiss.org/product/dbeaver.gif</Application_Icon_URL>
+      <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
+    </Application_URLs>
+    <Download_URLs>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.6.4-x86-setup.exe</Primary_Download_URL>
+      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-1.6.4-x86_64-setup.exe</Secondary_Download_URL>
+      <Additional_Download_URL_1></Additional_Download_URL_1>
+      <Additional_Download_URL_2></Additional_Download_URL_2>
+    </Download_URLs>
+  </Web_Info>
+  <Permissions>
+    <Distribution_Permissions>DBeaver is freeware. You can use it for any purpose with no limitations.</Distribution_Permissions>
+    <EULA>Copyright (C) 2010-2012 Serge Rieder serge@jkiss.org
+
+        DBeaver is free software; you can redistribute it and/or
+        modify it under the terms of the GNU Lesser General Public
+        License as published by the Free Software Foundation; either
+        version 2.1 of the License, or (at your option) any later version.
+
+        This library is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+        Lesser General Public License for more details.
+
+        You should have received a copy of the GNU Lesser General Public
+        License along with this library; if not, write to the Free Software
+        Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.</EULA>
+  </Permissions>
+  <Program_Descriptions>
+    <English>
+      <Keywords>sql,database manager,database client,java,mysql,postgresql,mssql,db2,oracle,wmi,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc,sqlite,ingres,linter,teradata,wmi browser</Keywords>
+      <Char_Desc_45>Universal Database Manager and SQL Client</Char_Desc_45>
+      <Char_Desc_80>Free Universal Database Manager and SQL Client</Char_Desc_80>
+      <Char_Desc_250>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite and any database which has JDBC driver.</Char_Desc_250>
+      <Char_Desc_450>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite and any database which has JDBC driver.</Char_Desc_450>
+      <Char_Desc_2000>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite and any database which has JDBC driver.</Char_Desc_2000>
+    </English>
+  </Program_Descriptions>
+</XML_DIZ_INFO>
