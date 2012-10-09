@@ -908,7 +908,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                         null,
                         PrefConstants.CONFIRM_DRIVER_DOWNLOAD,
                         ConfirmationDialog.QUESTION,
-                        ConfirmationDialog.WARNING,
                         getName(),
                         libNames) == IDialogConstants.YES_ID) {
                         // Download drivers

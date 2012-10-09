@@ -303,7 +303,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     null,
                     PrefConstants.CONFIRM_ENTITY_REJECT,
                     ConfirmationDialog.QUESTION,
-                    ConfirmationDialog.WARNING,
                     getDatabaseObject().getName()) != IDialogConstants.YES_ID)
                 {
                     return;
