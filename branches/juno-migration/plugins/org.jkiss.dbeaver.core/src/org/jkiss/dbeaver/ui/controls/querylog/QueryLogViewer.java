@@ -37,7 +37,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -51,7 +50,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.SQLUtils;
@@ -291,15 +289,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
         {
             // Register control in focus service (to provide handlers binding)
-            final IFocusService focusService = (IFocusService) site.getService(IFocusService.class);
-            focusService.addFocusTracker(logTable, QUERY_LOG_CONTROL_ID);
+            UIUtils.addFocusTracker(site, QUERY_LOG_CONTROL_ID, logTable);
 
             logTable.addDisposeListener(new DisposeListener() {
                 @Override
                 public void widgetDisposed(DisposeEvent e)
                 {
                     // Unregister from focus service
-                    focusService.removeFocusTracker(logTable);
+                    UIUtils.removeFocusTracker(QueryLogViewer.this.site, logTable);
                     dispose();
                 }
             });

@@ -45,6 +45,7 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.services.IServiceLocator;
+import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -1026,6 +1027,22 @@ public class UIUtils {
             null);
         if (propDialog != null) {
             propDialog.open();
+        }
+    }
+
+    public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
+    {
+        final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
+        if (focusService != null) {
+            focusService.addFocusTracker(control, controlID);
+        }
+    }
+
+    public static void removeFocusTracker(IServiceLocator serviceLocator, Control control)
+    {
+        final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
+        if (focusService != null) {
+            focusService.removeFocusTracker(control);
         }
     }
 
