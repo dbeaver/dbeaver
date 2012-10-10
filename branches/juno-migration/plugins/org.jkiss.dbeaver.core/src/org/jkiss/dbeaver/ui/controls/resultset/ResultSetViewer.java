@@ -522,6 +522,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         UIUtils.dispose(this.boldFont);
         if (toolBarManager != null) {
             toolBarManager.dispose();
+            toolBarManager = null;
         }
     }
 

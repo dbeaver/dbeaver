@@ -1040,6 +1040,10 @@ public class UIUtils {
 
     public static void removeFocusTracker(IServiceLocator serviceLocator, Control control)
     {
+        if (DBeaverCore.getInstance().getWorkbench().isClosing()) {
+            // TODO: it is a bug in eclipse. During workbench shutdown disposed service returned.
+            return;
+        }
         final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
         if (focusService != null) {
             focusService.removeFocusTracker(control);

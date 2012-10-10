@@ -182,12 +182,4 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         coolBar.add(new ToolBarContributionItem(toolbar, IActionConstants.TOOLBAR_DATASOURCE));
     }
 
-    @Override
-    public void dispose()
-    {
-        if (dataSourceToolbar != null) {
-            dataSourceToolbar.dispose();
-            dataSourceToolbar = null;
-        }
-    }
 }

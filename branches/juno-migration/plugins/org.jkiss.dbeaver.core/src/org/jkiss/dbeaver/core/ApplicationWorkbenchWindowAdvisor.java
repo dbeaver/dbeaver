@@ -93,6 +93,26 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     }
 
     @Override
+    public void postWindowOpen() {
+        super.postWindowOpen();
+
+        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        if (projectRegistry.getActiveDataSourceRegistry().getDataSources().isEmpty()) {
+            // Open New Connection wizard
+            Display.getCurrent().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    IWorkbenchWindow window = getWindowConfigurer().getWindow();
+                    final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+                    ConnectionDialog dialog = new ConnectionDialog(window
+                        , new NewConnectionWizard(projectRegistry.getActiveDataSourceRegistry()));
+                    dialog.open();
+                }
+            });
+        }
+    }
+
+    @Override
     public boolean preWindowShellClose()
     {
         IWorkbenchWindow window = getWindowConfigurer().getWindow();
@@ -115,38 +135,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        // Do its job
-        return super.preWindowShellClose();
-    }
 
-    @Override
-    public void postWindowOpen() {
-        super.postWindowOpen();
-
-        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-        if (projectRegistry.getActiveDataSourceRegistry().getDataSources().isEmpty()) {
-            // Open New Connection wizard
-            Display.getCurrent().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    IWorkbenchWindow window = getWindowConfigurer().getWindow();
-                    final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-                    ConnectionDialog dialog = new ConnectionDialog(window
-                        , new NewConnectionWizard(projectRegistry.getActiveDataSourceRegistry()));
-                    dialog.open();
-                }
-            });
-        }
-    }
-
-    @Override
-    public void postWindowClose()
-    {
+        // Remove project listener
         ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         if (projectRegistry != null) {
             projectRegistry.removeProjectListener(this);
         }
-        super.postWindowClose();
+
+        // Do its job
+        return super.preWindowShellClose();
     }
 
     @Override

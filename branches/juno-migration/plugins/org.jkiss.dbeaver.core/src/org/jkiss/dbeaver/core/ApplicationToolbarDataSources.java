@@ -35,10 +35,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -169,7 +166,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         }
     }
 
-    public void dispose()
+    private void dispose()
     {
         DBeaverCore.getInstance().getDataSourceProviderRegistry().removeDataSourceRegistryListener(this);
         for (DBPDataSourceRegistry registry : handledRegistries) {
@@ -387,6 +384,13 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
                     public void focusLost(FocusEvent e)
                     {
                         changeResultSetSize();
+                    }
+                });
+                comboGroup.addDisposeListener(new DisposeListener() {
+                    @Override
+                    public void widgetDisposed(DisposeEvent e)
+                    {
+                        ApplicationToolbarDataSources.this.dispose();
                     }
                 });
                 return comboGroup;
