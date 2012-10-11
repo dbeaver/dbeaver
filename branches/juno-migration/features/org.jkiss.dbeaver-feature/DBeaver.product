@@ -135,5 +135,8 @@ See the GNU Lesser General Public License for more details.
       <feature id="org.jkiss.dbeaver" version="2.0.0"/>
    </features>
 
+   <configurations>
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
+   </configurations>
 
 </product>
