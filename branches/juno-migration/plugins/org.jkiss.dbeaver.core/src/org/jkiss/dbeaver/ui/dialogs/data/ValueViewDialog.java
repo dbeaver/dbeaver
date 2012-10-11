@@ -78,6 +78,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     private Table editorSelector;
     private boolean handleEditorChange;
     private SelectorLoaderJob loaderJob = null;
+    private Object editedValue;
 
     protected ValueViewDialog(DBDValueController valueController) {
         super(valueController.getValueSite().getShell());
@@ -113,7 +114,6 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         dialogCount--;
         if (this.valueController != null) {
             this.valueController.unregisterEditor(this);
-            this.valueController = null;
         }
         return super.close();
     }
@@ -179,11 +179,20 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     }
 
     @Override
+    public int open()
+    {
+        int result = super.open();
+        if (result == IDialogConstants.OK_ID) {
+            getValueController().updateValue(editedValue);
+        }
+        return result;
+    }
+
+    @Override
     protected void okPressed()
     {
         try {
-            Object value = getEditorValue();
-            getValueController().updateValue(value);
+            editedValue = getEditorValue();
 
             super.okPressed();
         }
@@ -197,13 +206,12 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     protected void buttonPressed(int buttonId) {
         if (buttonId == IDialogConstants.IGNORE_ID) {
             if (!valueController.isReadOnly()) {
-                Object value = valueController.getValue();
-                if (value instanceof DBDValue) {
-                    value = ((DBDValue)value).makeNull();
+                editedValue = valueController.getValue();
+                if (editedValue instanceof DBDValue) {
+                    editedValue = ((DBDValue)editedValue).makeNull();
                 } else {
-                    value = null;
+                    editedValue = null;
                 }
-                getValueController().updateValue(value);
             }
             super.okPressed();
         } else {

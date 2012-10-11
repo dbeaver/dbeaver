@@ -1888,10 +1888,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     }
                     curRow[columnIndex] = value;
                     // Update controls
-                    site.getShell().getDisplay().asyncExec(new Runnable() {
+                    site.getShell().getDisplay().syncExec(new Runnable() {
                         @Override
                         public void run() {
-                            spreadsheet.setFocus();
                             updateEditControls();
                             spreadsheet.redrawGrid();
                         }

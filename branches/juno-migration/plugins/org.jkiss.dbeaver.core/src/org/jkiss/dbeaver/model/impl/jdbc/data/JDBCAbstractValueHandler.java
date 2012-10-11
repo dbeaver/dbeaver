@@ -138,8 +138,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             public void keyTraversed(TraverseEvent e)
             {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
-                    controller.updateValue(extractor.getValueFromControl(control));
+                    Object newValue = extractor.getValueFromControl(control);
                     controller.closeInlineEditor();
+                    controller.updateValue(newValue);
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
@@ -147,7 +148,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
-                    controller.updateValue(extractor.getValueFromControl(control));
+                    Object newValue = extractor.getValueFromControl(control);
+                    controller.closeInlineEditor();
+                    controller.updateValue(newValue);
                     controller.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
