@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
@@ -41,6 +42,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_CUT = "canCut";
     public static final String PROP_CAN_MOVE = "canMove";
+    public static final String PROP_CAN_TOGGLE = "canToggle";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
 
@@ -51,12 +53,11 @@ public class ResultSetPropertyTester extends PropertyTester
             return false;
         }
         ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
-
-        boolean result = checkResultSetProperty(rsv, property, expectedValue);
-        if (!result) {
-            System.out.println("RESTRICT " + property + " in " + rsv.getDataContainer());
+        if (rsv != null) {
+            return checkResultSetProperty(rsv, property, expectedValue);
+        } else {
+            return false;
         }
-        return result;
     }
 
     private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
@@ -93,6 +94,8 @@ public class ResultSetPropertyTester extends PropertyTester
             }
         } else if (PROP_CHANGED.equals(property)) {
             return rsv.hasChanges();
+        } else if (PROP_CAN_TOGGLE.equals(property)) {
+            return true;
         }
         return false;
     }
@@ -101,6 +104,11 @@ public class ResultSetPropertyTester extends PropertyTester
     {
         IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
         service.requestEvaluation(NAMESPACE + "." + propName);
+//        ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+//        if (commandService != null) {
+//            commandService.refreshElements(NAMESPACE + "." + propName, null);
+//            System.out.println("REFRESH " + NAMESPACE + "." + propName);
+//        }
     }
 
 }

@@ -110,9 +110,9 @@ public class ObjectPropertyTester extends PropertyTester
             if (node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper)node).getObject();
                 return
+                    object != null &&
                     !isReadOnly(object) &&
                     node.getParentNode() instanceof DBNContainer &&
-                    object != null &&
                     hasObjectManager(object.getClass(), DBEObjectMaker.class);
             } else if (node instanceof DBNResource) {
                 if ((((DBNResource)node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {

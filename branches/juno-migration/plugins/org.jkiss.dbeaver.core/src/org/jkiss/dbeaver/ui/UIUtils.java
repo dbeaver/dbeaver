@@ -897,7 +897,7 @@ public class UIUtils {
                 if (dialog.getTray() != null) {
                     dialog.closeTray();
                 } else {
-                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(pluginId + "." + helpContextID); //$NON-NLS-1$
+                    //PlatformUI.getWorkbench().getHelpSystem().displayHelp(pluginId + "." + helpContextID); //$NON-NLS-1$
                 }
             }
         });
