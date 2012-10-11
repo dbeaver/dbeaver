@@ -34,7 +34,6 @@
       </win>
    </launcher>
 
-
    <vm>
    </vm>
 
@@ -50,89 +49,16 @@ See the GNU Lesser General Public License for more details.
    </license>
 
    <plugins>
-      <plugin id="com.ibm.icu.base"/>
-      <plugin id="com.jcraft.jsch"/>
-      <plugin id="javax.annotation"/>
-      <plugin id="javax.inject"/>
-      <plugin id="javax.xml"/>
-      <plugin id="org.apache.batik.css"/>
-      <plugin id="org.apache.batik.util"/>
-      <plugin id="org.apache.batik.util.gui"/>
-      <plugin id="org.eclipse.compare.core"/>
-      <plugin id="org.eclipse.core.commands"/>
-      <plugin id="org.eclipse.core.contenttype"/>
-      <plugin id="org.eclipse.core.databinding"/>
-      <plugin id="org.eclipse.core.databinding.observable"/>
-      <plugin id="org.eclipse.core.databinding.property"/>
-      <plugin id="org.eclipse.core.expressions"/>
-      <plugin id="org.eclipse.core.filesystem"/>
-      <plugin id="org.eclipse.core.filesystem.win32.x86_64" fragment="true"/>
-      <plugin id="org.eclipse.core.jobs"/>
-      <plugin id="org.eclipse.core.resources"/>
-      <plugin id="org.eclipse.core.runtime"/>
-      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
-      <plugin id="org.eclipse.draw2d"/>
-      <plugin id="org.eclipse.e4.core.commands"/>
-      <plugin id="org.eclipse.e4.core.contexts"/>
-      <plugin id="org.eclipse.e4.core.di"/>
-      <plugin id="org.eclipse.e4.core.di.extensions"/>
-      <plugin id="org.eclipse.e4.core.services"/>
-      <plugin id="org.eclipse.e4.ui.bindings"/>
-      <plugin id="org.eclipse.e4.ui.css.core"/>
-      <plugin id="org.eclipse.e4.ui.css.swt"/>
-      <plugin id="org.eclipse.e4.ui.css.swt.theme"/>
-      <plugin id="org.eclipse.e4.ui.di"/>
-      <plugin id="org.eclipse.e4.ui.model.workbench"/>
-      <plugin id="org.eclipse.e4.ui.services"/>
-      <plugin id="org.eclipse.e4.ui.widgets"/>
-      <plugin id="org.eclipse.e4.ui.workbench"/>
-      <plugin id="org.eclipse.e4.ui.workbench.renderers.swt"/>
-      <plugin id="org.eclipse.e4.ui.workbench.swt"/>
-      <plugin id="org.eclipse.e4.ui.workbench3"/>
-      <plugin id="org.eclipse.emf.common"/>
-      <plugin id="org.eclipse.emf.ecore"/>
-      <plugin id="org.eclipse.emf.ecore.change"/>
-      <plugin id="org.eclipse.emf.ecore.xmi"/>
-      <plugin id="org.eclipse.equinox.app"/>
-      <plugin id="org.eclipse.equinox.common"/>
-      <plugin id="org.eclipse.equinox.ds"/>
-      <plugin id="org.eclipse.equinox.event"/>
-      <plugin id="org.eclipse.equinox.preferences"/>
-      <plugin id="org.eclipse.equinox.registry"/>
-      <plugin id="org.eclipse.equinox.util"/>
-      <plugin id="org.eclipse.gef"/>
-      <plugin id="org.eclipse.help"/>
-      <plugin id="org.eclipse.jface"/>
-      <plugin id="org.eclipse.jface.databinding"/>
-      <plugin id="org.eclipse.jface.text"/>
-      <plugin id="org.eclipse.osgi"/>
-      <plugin id="org.eclipse.osgi.services"/>
-      <plugin id="org.eclipse.swt"/>
-      <plugin id="org.eclipse.swt.win32.win32.x86_64" fragment="true"/>
-      <plugin id="org.eclipse.text"/>
-      <plugin id="org.eclipse.ui"/>
-      <plugin id="org.eclipse.ui.forms"/>
-      <plugin id="org.eclipse.ui.views"/>
-      <plugin id="org.eclipse.ui.views.properties.tabbed"/>
-      <plugin id="org.eclipse.ui.workbench"/>
-      <plugin id="org.eclipse.ui.workbench.texteditor"/>
-      <plugin id="org.jkiss.dbeaver.core"/>
-      <plugin id="org.jkiss.dbeaver.ext.erd"/>
-      <plugin id="org.jkiss.dbeaver.ext.generic"/>
-      <plugin id="org.jkiss.dbeaver.ext.import_config"/>
-      <plugin id="org.jkiss.dbeaver.ext.mysql"/>
-      <plugin id="org.jkiss.dbeaver.ext.oracle"/>
-      <plugin id="org.jkiss.dbeaver.ext.test"/>
-      <plugin id="org.jkiss.dbeaver.ext.wmi"/>
-      <plugin id="org.jkiss.utils"/>
-      <plugin id="org.jkiss.wmi"/>
-      <plugin id="org.w3c.css.sac"/>
-      <plugin id="org.w3c.dom.smil"/>
-      <plugin id="org.w3c.dom.svg"/>
    </plugins>
 
    <features>
       <feature id="org.jkiss.dbeaver" version="2.0.0"/>
+      <feature id="org.eclipse.emf.ecore"/>
+      <feature id="org.eclipse.e4.rcp"/>
+      <feature id="org.eclipse.emf.common"/>
+      <feature id="org.eclipse.draw2d"/>
+      <feature id="org.eclipse.rcp"/>
+      <feature id="org.eclipse.gef"/>
    </features>
 
    <configurations>
