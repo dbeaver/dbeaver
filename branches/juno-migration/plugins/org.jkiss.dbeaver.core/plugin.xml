@@ -263,7 +263,6 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="IMG_OBJ_FOLDER"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="IMG_ETOOL_SAVEAS_EDIT"/>
 
-        <!--image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/resultset_record.png"/-->
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="icons/sql/resultset_first.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.next" icon="icons/sql/resultset_next.png"/>
@@ -274,6 +273,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.row.delete" icon="icons/sql/row_delete.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.applyChanges" icon="icons/sql/accept.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" icon="icons/sql/cancel.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/resultset_record.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
@@ -805,97 +805,103 @@
         -->
         <handler commandId="org.jkiss.dbeaver.core.resultset.toggleMode" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetModeToggleHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.first" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                <with variable="activeFocusControl">
-                    <test property="org.jkiss.dbeaver.core.resultset.canMove" value="back"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.previous" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                 <with variable="activeFocusControl">
-                     <test property="org.jkiss.dbeaver.core.resultset.canMove" value="back"/>
-                 </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.next" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                 <with variable="activeFocusControl">
-                     <test property="org.jkiss.dbeaver.core.resultset.canMove" value="forward"/>
-                 </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.last" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                 <with variable="activeFocusControl">
-                     <test property="org.jkiss.dbeaver.core.resultset.canMove" value="forward"/>
-                 </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.edit" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                 <with variable="activeFocusControl">
-                     <test property="org.jkiss.dbeaver.core.resultset.editable" value="edit"/>
-                 </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                <with variable="activeFocusControl">
-                    <test property="org.jkiss.dbeaver.core.resultset.editable" value="inline"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.add" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                 <with variable="activeFocusControl">
-                     <test property="org.jkiss.dbeaver.core.resultset.editable" value="add"/>
-                 </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.copy" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                <with variable="activeFocusControl">
-                    <test property="org.jkiss.dbeaver.core.resultset.editable" value="copy"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.row.delete" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                <with variable="activeFocusControl">
-                    <test property="org.jkiss.dbeaver.core.resultset.editable" value="delete"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.applyChanges" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                <with variable="activeFocusControl">
-                    <test property="org.jkiss.dbeaver.core.resultset.changed"/>
-                </with>
-            </enabledWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
-            <enabledWhen>
-                <with variable="activeFocusControl">
-                    <test property="org.jkiss.dbeaver.core.resultset.changed"/>
-                </with>
-            </enabledWhen>
-        </handler>
+            <!--<activeWhen>
+             <with variable="activePart">
+                 <adapt type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider"/>
+             </with>
+         </activeWhen>-->
 
-        <!-- Override text commands in RS viewer -->
+        </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.first" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+         <with variable="activeFocusControl">
+             <test property="org.jkiss.dbeaver.core.resultset.canMove" value="back"/>
+         </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.previous" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+          <with variable="activeFocusControl">
+              <test property="org.jkiss.dbeaver.core.resultset.canMove" value="back"/>
+          </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.next" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+          <with variable="activeFocusControl">
+              <test property="org.jkiss.dbeaver.core.resultset.canMove" value="forward"/>
+          </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.last" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+          <with variable="activeFocusControl">
+              <test property="org.jkiss.dbeaver.core.resultset.canMove" value="forward"/>
+          </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.edit" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+          <with variable="activeFocusControl">
+              <test property="org.jkiss.dbeaver.core.resultset.editable" value="edit"/>
+          </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+         <with variable="activeFocusControl">
+             <test property="org.jkiss.dbeaver.core.resultset.editable" value="inline"/>
+         </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.add" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+          <with variable="activeFocusControl">
+              <test property="org.jkiss.dbeaver.core.resultset.editable" value="add"/>
+          </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.copy" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+         <with variable="activeFocusControl">
+             <test property="org.jkiss.dbeaver.core.resultset.editable" value="copy"/>
+         </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.row.delete" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+         <with variable="activeFocusControl">
+             <test property="org.jkiss.dbeaver.core.resultset.editable" value="delete"/>
+         </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.applyChanges" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+         <with variable="activeFocusControl">
+             <test property="org.jkiss.dbeaver.core.resultset.changed"/>
+         </with>
+     </enabledWhen>
+ </handler>
+ <handler commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+     <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+     <enabledWhen>
+         <with variable="activeFocusControl">
+             <test property="org.jkiss.dbeaver.core.resultset.changed"/>
+         </with>
+     </enabledWhen>
+ </handler>
+
+ <!-- Override text commands in RS viewer -->
         <handler commandId="org.eclipse.ui.edit.text.goto.wordPrevious" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
         </handler>

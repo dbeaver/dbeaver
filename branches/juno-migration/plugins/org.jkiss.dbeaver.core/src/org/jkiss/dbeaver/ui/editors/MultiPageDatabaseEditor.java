@@ -118,7 +118,7 @@ public abstract class MultiPageDatabaseEditor extends MultiPageEditorPart implem
             Layout parentLayout = tabFolder.getParent().getLayout();
             if (parentLayout instanceof FillLayout) {
                 ((FillLayout)parentLayout).marginHeight = 5;
-                ((FillLayout)parentLayout).marginWidth = 5;
+                //((FillLayout)parentLayout).marginWidth = 5;
             }
         }
     }

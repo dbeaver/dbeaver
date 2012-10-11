@@ -686,6 +686,7 @@ public class UIUtils {
     public static SashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
     {
         final SashForm sash = new SashForm(parent, style);
+/*
         //sash.setSashWidth(10);
         final IWorkbenchWindow workbenchWindow = workbenchPart.getSite().getWorkbenchWindow();
         //sash.setBackground(sashActiveBackground);
@@ -767,6 +768,7 @@ public class UIUtils {
                 }
             }
         });
+*/
 
         return sash;
     }

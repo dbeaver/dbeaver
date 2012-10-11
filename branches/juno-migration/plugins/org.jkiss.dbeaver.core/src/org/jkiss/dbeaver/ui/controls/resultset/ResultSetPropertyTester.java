@@ -52,6 +52,15 @@ public class ResultSetPropertyTester extends PropertyTester
         }
         ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
 
+        boolean result = checkResultSetProperty(rsv, property, expectedValue);
+        if (!result) {
+            System.out.println("RESTRICT " + property + " in " + rsv.getDataContainer());
+        }
+        return result;
+    }
+
+    private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
+    {
         if (PROP_HAS_DATA.equals(property)) {
             return rsv.getRowsCount() > 0;
         } else if (PROP_CAN_COPY.equals(property)) {

@@ -363,11 +363,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         };
         toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(
-            site,
-            ResultSetCommandHandler.CMD_TOGGLE_MODE,
-            CommandContributionItem.STYLE_PUSH,
-            DBIcon.RS_TOGGLE_RECORD.getImageDescriptor()));
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE));
         toolBarManager.add(new ConfigAction());
 
         toolBarManager.createControl(statusBar);
@@ -522,7 +518,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         UIUtils.dispose(this.boldFont);
         if (toolBarManager != null) {
             toolBarManager.dispose();
-            toolBarManager = null;
         }
     }
 

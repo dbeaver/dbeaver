@@ -820,6 +820,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         IEditorPart activeEditor = getActiveEditor();
         if (activeEditor != null) {
+            if (adapter.isAssignableFrom(activeEditor.getClass())) {
+                return activeEditor;
+            }
             Object result = activeEditor.getAdapter(adapter);
             if (result != null) {
                 return result;
