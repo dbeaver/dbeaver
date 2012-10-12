@@ -132,7 +132,8 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
-        return getEditorInput().getDataSourceContainer();
+    	SQLEditorInput input = getEditorInput();
+        return input == null ? null : getEditorInput().getDataSourceContainer();
     }
 
     @Override
