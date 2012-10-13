@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.internal.resources.ProjectDescription;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -54,9 +55,11 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.osgi.framework.Version;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -75,7 +78,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     //private static final String AUTOSAVE_DIR = ".autosave";
     private static final String LOB_DIR = ".lob"; //$NON-NLS-1$
-    public static final String TEMP_PROJECT_NAME = "temp"; //$NON-NLS-1$
+    public static final String TEMP_PROJECT_NAME = "org.jkiss.dbeaver.temp"; //$NON-NLS-1$
 
     private static DBeaverCore instance;
     private DBeaverActivator plugin;
@@ -121,7 +124,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         instance = new DBeaverCore(plugin);
         instance.initialize();
-        instance.cleanupLobFiles(new NullProgressMonitor());
         return instance;
     }
 
@@ -195,6 +197,15 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.projectRegistry = new ProjectRegistry();
         this.projectRegistry.loadExtensions(extensionRegistry);
 
+        initializeTempProject();
+
+        // Navigator model
+        this.navigatorModel = new DBNModel();
+        this.navigatorModel.initialize();
+    }
+
+    private void initializeTempProject()
+    {
         try {
             PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
                 @Override
@@ -203,15 +214,36 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                 {
                     try {
                         try {
-// Temp project
+                            // Temp project
                             tempProject = workspace.getRoot().getProject(TEMP_PROJECT_NAME);
-                            if (!tempProject.exists()) {
-                                tempProject.create(monitor);
+                            File systemTempFolder = new File(System.getProperty("java.io.tmpdir"));
+                            File dbeaverTempFolder = new File(systemTempFolder, "org.jkiss.dbeaver.temp");
+                            if (tempProject.exists()) {
+                                try {
+                                    tempProject.delete(true, true, monitor);
+                                } catch (CoreException e) {
+                                    log.error("Can't delete temp project", e);
+                                }
                             }
+                            if (!dbeaverTempFolder.exists()) {
+                                if (!dbeaverTempFolder.mkdirs()) {
+                                    log.error("Can't create directory '" + dbeaverTempFolder.getAbsolutePath() + "'");
+                                }
+                            }
+                            ProjectDescription description = new ProjectDescription();
+                            description.setLocation(new Path(dbeaverTempFolder.getAbsolutePath()));
+                            description.setName(TEMP_PROJECT_NAME);
+                            description.setComment("Project for DBeaver temporary content");
+                            try {
+                                tempProject.create(description, monitor);
+                            } catch (CoreException e) {
+                                log.error("Can't create temp project", e);
+                            }
+
                             tempProject.open(monitor);
                             tempProject.setHidden(true);
                         } catch (CoreException e) {
-                            log.error("Cannot create temp project", e); //$NON-NLS-1$
+                            log.error("Cannot open temp project", e); //$NON-NLS-1$
                         }
 
                         // Projects registry
@@ -226,10 +258,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         } catch (InterruptedException e) {
             // do nothing
         }
-
-        // Navigator model
-        this.navigatorModel = new DBNModel();
-        this.navigatorModel.initialize();
     }
 
     public IProject getProject(String projectId)
@@ -634,28 +662,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             }
         }
         return result;
-    }
-
-    private void cleanupLobFiles(IProgressMonitor monitor)
-    {
-        IFolder tempFolder;
-        try {
-            tempFolder = getLobFolder(monitor);
-        } catch (IOException e) {
-            log.error(e);
-            return;
-        }
-        try {
-            IResource[] tempResources = tempFolder.members();
-            for (IResource tempResource : tempResources) {
-                if (tempResource instanceof IFile) {
-                    IFile tempFile = (IFile) tempResource;
-                    tempFile.delete(true, false, monitor);
-                }
-            }
-        } catch (CoreException ex) {
-            log.error("Error deleting temp lob file", ex); //$NON-NLS-1$
-        }
     }
 
 }

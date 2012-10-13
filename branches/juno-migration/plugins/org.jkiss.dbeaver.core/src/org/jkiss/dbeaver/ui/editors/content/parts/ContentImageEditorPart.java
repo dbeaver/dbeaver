@@ -20,13 +20,9 @@ package org.jkiss.dbeaver.ui.editors.content.parts;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
@@ -99,14 +95,13 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         if (imageViewer == null || imageViewer.isDisposed()) {
             return;
         }
-        IEditorInput input = getEditorInput();
-        if (input instanceof IPathEditorInput) {
+        IFile file = (IFile) getEditorInput().getAdapter(IFile.class);
+        if (file != null) {
             try {
-                final IPath absolutePath = Platform.getLocation().append(
-                    ((IPathEditorInput) input).getPath());
-                File file = absolutePath.toFile();
-                if (file.exists()) {
-                    InputStream inputStream = new FileInputStream(file);
+                final IPath absolutePath = file.getLocation();
+                File localFile = absolutePath.toFile();
+                if (localFile.exists()) {
+                    InputStream inputStream = new FileInputStream(localFile);
                     try {
                         contentValid = imageViewer.loadImage(inputStream);
                         imageViewer.update();
