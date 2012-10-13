@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 

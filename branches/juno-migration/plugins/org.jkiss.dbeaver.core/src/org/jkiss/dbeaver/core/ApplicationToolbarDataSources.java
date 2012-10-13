@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -153,17 +152,6 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
     public ApplicationToolbarDataSources(IWorkbenchWindow workbenchWindow)
     {
         this.workbenchWindow = workbenchWindow;
-        this.workbenchWindow.addPageListener(this);
-        //workbench.addWindowListener();
-        // Register as datasource listener in all datasources
-        final DBeaverCore core = DBeaverCore.getInstance();
-        core.getDataSourceProviderRegistry().addDataSourceRegistryListener(this);
-        for (IProject project : core.getLiveProjects()) {
-            DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
-            if (registry != null) {
-                handleRegistryLoad(registry);
-            }
-        }
     }
 
     private void dispose()
@@ -173,11 +161,11 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
             registry.removeDataSourceListener(this);
         }
 
-        setActivePart(null);
-
         UIUtils.dispose(resultSetSize);
         UIUtils.dispose(connectionCombo);
         UIUtils.dispose(databaseCombo);
+
+        setActivePart(null);
 
         this.workbenchWindow.removePageListener(this);
     }
@@ -308,6 +296,18 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
             @Override
             protected Control createControl(Composite parent)
             {
+                workbenchWindow.addPageListener(ApplicationToolbarDataSources.this);
+                //workbench.addWindowListener();
+                // Register as datasource listener in all datasources
+                final DBeaverCore core = DBeaverCore.getInstance();
+                core.getDataSourceProviderRegistry().addDataSourceRegistryListener(ApplicationToolbarDataSources.this);
+                for (IProject project : core.getLiveProjects()) {
+                    DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
+                    if (registry != null) {
+                        handleRegistryLoad(registry);
+                    }
+                }
+
                 Composite comboGroup = new Composite(parent, SWT.NONE);
                 GridLayout gl = new GridLayout(3, false);
                 gl.marginWidth = 0;
@@ -400,6 +400,9 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
     }
 
     private void fillDataSourceList(boolean force) {
+        if (connectionCombo.isDisposed()) {
+            return;
+        }
         final List<? extends DBSDataSourceContainer> dataSources = getAvailableDataSources();
 
         boolean update = force;
@@ -786,7 +789,7 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
         if (part == activePart && selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
             if (element != null) {
-                if (element instanceof DBNNode || RuntimeUtils.getObjectAdapter(element, DBSObject.class) != null) {
+                if (RuntimeUtils.getObjectAdapter(element, DBSObject.class) != null) {
                     updateControls(false);
                 }
             }

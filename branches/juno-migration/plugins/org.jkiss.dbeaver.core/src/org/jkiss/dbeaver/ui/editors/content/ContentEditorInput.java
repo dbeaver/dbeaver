@@ -207,7 +207,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     @Override
     public IPath getPath()
     {
-        return contentFile == null ? null : contentFile.getFullPath();
+        return contentFile == null ? null : contentFile.getLocation();
     }
 
     public boolean isReadOnly() {
