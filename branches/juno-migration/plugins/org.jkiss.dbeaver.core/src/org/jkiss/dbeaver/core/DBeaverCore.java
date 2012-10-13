@@ -283,19 +283,28 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     {
         IProgressMonitor monitor = new NullProgressMonitor();
         if (workspace != null) {
-            for (IProject project : workspace.getRoot().getProjects()) {
+            if (tempProject != null && tempProject.exists()) {
                 try {
-                    if (project.isOpen()) {
-                        project.close(monitor);
-                    }
-                } catch (CoreException ex) {
-                    log.error("Can't close default project", ex); //$NON-NLS-1$
+                    tempProject.delete(true, true, monitor);
+                } catch (CoreException e) {
+                    log.warn("Can't cleanup temp project", e);
                 }
             }
-            try {
-                workspace.save(true, monitor);
-            } catch (CoreException ex) {
-                log.error("Can't save workspace", ex); //$NON-NLS-1$
+            if (isStandalone()) {
+                for (IProject project : workspace.getRoot().getProjects()) {
+                    try {
+                        if (project.isOpen()) {
+                            project.close(monitor);
+                        }
+                    } catch (CoreException ex) {
+                        log.error("Can't close default project", ex); //$NON-NLS-1$
+                    }
+                }
+                try {
+                    workspace.save(true, monitor);
+                } catch (CoreException ex) {
+                    log.error("Can't save workspace", ex); //$NON-NLS-1$
+                }
             }
         }
 
