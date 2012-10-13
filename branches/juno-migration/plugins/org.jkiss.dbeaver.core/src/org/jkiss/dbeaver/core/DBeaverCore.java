@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.io.ByteArrayInputStream;
@@ -217,7 +218,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                             // Temp project
                             tempProject = workspace.getRoot().getProject(TEMP_PROJECT_NAME);
                             File systemTempFolder = new File(System.getProperty("java.io.tmpdir"));
-                            File dbeaverTempFolder = new File(systemTempFolder, "org.jkiss.dbeaver.temp");
+                            File dbeaverTempFolder = new File(
+                                systemTempFolder,
+                                TEMP_PROJECT_NAME + "." + CommonUtils.escapeIdentifier(workspace.getRoot().getLocation().toString()));
                             if (tempProject.exists()) {
                                 try {
                                     tempProject.delete(true, true, monitor);
