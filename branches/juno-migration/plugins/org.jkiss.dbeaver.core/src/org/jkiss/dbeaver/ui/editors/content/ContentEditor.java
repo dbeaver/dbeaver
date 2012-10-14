@@ -475,7 +475,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
         if (delta == null) {
             return;
         }
-        delta = delta.findMember(getEditorInput().getPath());
+        delta = delta.findMember(ContentUtils.convertPathToWorkspacePath(getEditorInput().getPath()));
         if (delta == null) {
             return;
         }

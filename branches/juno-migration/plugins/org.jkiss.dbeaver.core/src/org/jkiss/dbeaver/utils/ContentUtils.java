@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
@@ -472,4 +473,16 @@ public class ContentUtils {
         }
         return mimeType;
     }
+
+    public static IFile convertPathToWorkspaceFile(IPath path)
+    {
+        return DBeaverCore.getInstance().getWorkspace().getRoot().getFileForLocation(path);
+    }
+
+    public static IPath convertPathToWorkspacePath(IPath path)
+    {
+        IFile wFile = convertPathToWorkspaceFile(path);
+        return wFile == null ? null : wFile.getFullPath();
+    }
+
 }

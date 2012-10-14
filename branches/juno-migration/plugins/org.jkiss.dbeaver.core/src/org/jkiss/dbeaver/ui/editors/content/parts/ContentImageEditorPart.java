@@ -31,6 +31,7 @@ import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewControl;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import javax.activation.MimeType;
 import java.io.File;
@@ -183,6 +184,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         if (localPath == null) {
             return;
         }
+        localPath = ContentUtils.convertPathToWorkspacePath(localPath);
         delta = delta.findMember(localPath);
         if (delta == null) {
             return;

@@ -83,6 +83,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         if (localPath == null) {
             return;
         }
+        localPath = ContentUtils.convertPathToWorkspacePath(localPath);
         delta = delta.findMember(localPath);
         if (delta == null) {
             return;

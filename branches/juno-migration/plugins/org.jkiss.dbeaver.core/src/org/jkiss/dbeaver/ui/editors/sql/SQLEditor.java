@@ -68,6 +68,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -126,7 +127,8 @@ public class SQLEditor extends SQLEditorBase
 
     public IProject getProject()
     {
-        return DBeaverCore.getInstance().getWorkspace().getRoot().getFileForLocation(getEditorInput().getPath()).getProject();
+        IFile file = ContentUtils.convertPathToWorkspaceFile(getEditorInput().getPath());
+        return file == null ? null : file.getProject();
     }
 
     @Override
@@ -154,7 +156,7 @@ public class SQLEditor extends SQLEditorBase
         if (input == null) {
             return false;
         }
-        IFile file = DBeaverCore.getInstance().getWorkspace().getRoot().getFileForLocation(input.getPath());
+        IFile file = ContentUtils.convertPathToWorkspaceFile(input.getPath());
         if (file == null || !file.exists()) {
             log.warn("File '" + input.getPath() + "' doesn't exists");
             return false;
@@ -290,7 +292,7 @@ public class SQLEditor extends SQLEditorBase
             throw new PartInitException("Invalid Input: Must be " + IPathEditorInput.class.getSimpleName());
         }
         IPathEditorInput input = (IPathEditorInput)editorInput;
-        IFile file = DBeaverCore.getInstance().getWorkspace().getRoot().getFileForLocation(input.getPath());
+        IFile file = ContentUtils.convertPathToWorkspaceFile(input.getPath());
         if (file == null || !file.exists()) {
             throw new PartInitException("File '" + input.getPath() + "' doesn't exists");
         }
