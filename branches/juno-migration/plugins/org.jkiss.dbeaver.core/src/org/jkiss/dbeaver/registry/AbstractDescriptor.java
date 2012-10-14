@@ -31,7 +31,6 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverIcons;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -69,18 +68,25 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public boolean appliesTo(DBPObject object)
+        public <T> Class<T> getObjectClass()
+        {
+            return getObjectClass(null);
+        }
+
+        public <T> Class<T> getObjectClass(Class<T> type)
         {
             if (implName == null) {
-                return false;
+                return null;
             }
             if (implClass == null) {
-                implClass = getObjectClass(implName);
+                implClass = AbstractDescriptor.this.getObjectClass(implName, type);
             }
-            if (implClass == null) {
-                return false;
-            }
-            if (!implClass.isAssignableFrom(object.getClass())) {
+            return (Class<T>) implClass;
+        }
+
+        public boolean appliesTo(Object object)
+        {
+            if (!matchesType(object.getClass())) {
                 return false;
             }
             if (expression != null) {
@@ -90,7 +96,13 @@ public abstract class AbstractDescriptor {
             return true;
         }
 
-        private JexlContext makeContext(final DBPObject object)
+        public boolean matchesType(Class<?> clazz)
+        {
+            getObjectClass();
+            return implClass != null && implClass.isAssignableFrom(clazz);
+        }
+
+        private JexlContext makeContext(final Object object)
         {
             return new JexlContext() {
                 @Override
@@ -163,7 +175,7 @@ public abstract class AbstractDescriptor {
 
     public Class<?> getObjectClass(String className)
     {
-        return getObjectClass(className, Object.class);
+        return getObjectClass(className, null);
     }
 
     public <T> Class<T> getObjectClass(String className, Class<T> type)
@@ -184,7 +196,7 @@ public abstract class AbstractDescriptor {
                 return null;
             }
         }
-        if (!type.isAssignableFrom(objectClass)) {
+        if (type != null && !type.isAssignableFrom(objectClass)) {
             log.error("Object class '" + className + "' doesn't match requested type '" + type.getName() + "'");
             return null;
         }

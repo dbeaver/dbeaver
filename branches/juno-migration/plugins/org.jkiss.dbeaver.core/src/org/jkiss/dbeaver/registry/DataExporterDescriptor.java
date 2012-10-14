@@ -37,22 +37,20 @@ public class DataExporterDescriptor extends AbstractDescriptor
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataExportProvider"; //$NON-NLS-1$
 
     private String id;
-    private String className;
-    private List<String> sourceTypes = new ArrayList<String>();
+    private ObjectType exporterType;
+    private List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
     private String name;
     private String description;
     private String fileExtension;
     private Image icon;
     private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
 
-    private Class<?> exporterClass;
-
     public DataExporterDescriptor(IConfigurationElement config)
     {
         super(config.getContributor());
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.exporterType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.fileExtension = config.getAttribute(RegistryConstants.ATTR_EXTENSION);
@@ -66,7 +64,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
             for (IConfigurationElement typeCfg : typesCfg) {
                 String objectType = typeCfg.getAttribute(RegistryConstants.ATTR_TYPE);
                 if (objectType != null) {
-                    sourceTypes.add(objectType);
+                    sourceTypes.add(new ObjectType(objectType));
                 }
             }
         }
@@ -111,29 +109,20 @@ public class DataExporterDescriptor extends AbstractDescriptor
         if (sourceTypes.isEmpty()) {
             return true;
         }
-        for (String sourceType : sourceTypes) {
-            Class<?> objectClass = getObjectClass(sourceType);
-            if (objectClass != null && objectClass.isAssignableFrom(objectType)) {
+        for (ObjectType sourceType : sourceTypes) {
+            if (sourceType.matchesType(objectType)) {
                 return true;
             }
         }
         return false;
     }
 
-    public Class<?> getExporterClass()
-    {
-        if (exporterClass == null) {
-            exporterClass = getObjectClass(className);
-        }
-        return exporterClass;
-    }
-
     public IDataExporter createExporter() throws IllegalAccessException, InstantiationException
     {
-        Class clazz = getExporterClass();
+        Class<IDataExporter> clazz = exporterType.getObjectClass(IDataExporter.class);
         if (clazz == null) {
-            throw new InstantiationException("Cannot find exporter class " + className);
+            throw new InstantiationException("Cannot find exporter class " + exporterType.implName);
         }
-        return (IDataExporter)clazz.newInstance();
+        return clazz.newInstance();
     }
 }

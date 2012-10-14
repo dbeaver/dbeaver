@@ -32,12 +32,19 @@
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
-                base-type="org.eclipse.core.runtime.text"
-                default-charset="utf-8"
-                file-extensions="sql"
-                id="org.jkiss.dbeaver.core.content-type-sql"
-                name="SQL"
-                priority="normal"/>
+              base-type="org.eclipse.core.runtime.text"
+              default-charset="utf-8"
+              file-extensions="sql"
+              id="org.jkiss.dbeaver.sql"
+              name="SQL"
+              priority="high"
+              describer="org.jkiss.dbeaver.ui.editors.sql.SQLContentTypeDescriber"/>
+        <content-type
+            file-extensions="bm"
+            id="org.jkiss.dbeaver.bookmark"
+            name="Bookmark"
+            priority="normal"
+            describer="org.jkiss.dbeaver.model.impl.project.BookmarkContentTypeDescriber"/>
     </extension>
 
     <extension id="application" point="org.eclipse.core.runtime.applications">
@@ -1561,7 +1568,7 @@
                 contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.core.content-type-sql"/>
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </editor>
         <editor
                 name="%editor.folder.name"
@@ -1933,10 +1940,16 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler type="project" class="org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl"/>
+        <handler type="project" class="org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl">
+            <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
+        </handler>
         <handler type="databases" class="org.jkiss.dbeaver.model.impl.project.DatabasesHandlerImpl"/>
-        <handler type="scripts" extensions="sql" class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl"/>
-        <handler type="bookmarks" extensions="bm" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl"/>
+        <handler type="scripts" extensions="sql" class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
+        </handler>
+        <handler type="bookmarks" extensions="bm" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
+        </handler>
     </extension>
 
     <extension point="org.jkiss.dbeaver.networkHandler">

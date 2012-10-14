@@ -373,34 +373,3 @@ public class ProjectRegistry implements IResourceChangeListener {
     }
 
 }
-
-/*
-                    // Add new project in registry
-                    if (projectDatabases.get(project) != null) {
-                        log.warn("Project '" + project.getName() + "' is already in the registry");
-                    } else {
-                        try {
-                            initializeProject(project, VoidProgressMonitor.INSTANCE.getNestedMonitor());
-                        } catch (CoreException e) {
-                            log.error(e);
-                        }
-                    }
-
-
-                } else if (projectDelta.getKind() == IResourceDelta.REMOVED) {
-                    // Remove project from registry
-                    DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
-                    if (dataSourceRegistry == null) {
-                        log.warn("Project '" + project.getName() + "' not found in the registry");
-                    } else {
-                        dataSourceRegistry.dispose();
-                        projectDatabases.remove(project);
-                    }
-                }
-            }
-        }
-    }
-
-
-}
-*/
