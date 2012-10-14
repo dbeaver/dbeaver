@@ -95,15 +95,10 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
         return fileExtensions;
     }
 
-    public synchronized Class<DBPResourceHandler> getHandlerClass()
-    {
-        return handlerType.getObjectClass(DBPResourceHandler.class);
-    }
-
     public synchronized DBPResourceHandler getHandler() throws IllegalAccessException, InstantiationException
     {
         if (handler == null) {
-            Class<DBPResourceHandler> clazz = getHandlerClass();
+            Class<DBPResourceHandler> clazz = handlerType.getObjectClass(DBPResourceHandler.class);
             if (clazz == null) {
                 return null;
             }
