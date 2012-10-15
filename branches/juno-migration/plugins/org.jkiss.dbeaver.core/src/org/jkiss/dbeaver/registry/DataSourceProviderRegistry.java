@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -86,13 +85,7 @@ public class DataSourceProviderRegistry
 
         // Load drivers
         File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), RegistryConstants.DRIVERS_FILE_NAME);
-        if (!driversConfig.exists()) {
-            driversConfig = new File(RuntimeUtils.getBetaDir(), RegistryConstants.DRIVERS_FILE_NAME);
-            if (driversConfig.exists()) {
-                loadDrivers(driversConfig);
-                saveDrivers();
-            }
-        } else {
+        if (driversConfig.exists()) {
             loadDrivers(driversConfig);
         }
 

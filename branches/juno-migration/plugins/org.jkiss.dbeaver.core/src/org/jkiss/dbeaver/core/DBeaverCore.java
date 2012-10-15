@@ -39,7 +39,6 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWGlobalAuthenticator;
-import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -260,25 +259,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         } catch (InterruptedException e) {
             // do nothing
         }
-    }
-
-    public IProject getProject(String projectId)
-    {
-        IProject[] projects = this.workspace.getRoot().getProjects();
-        for (IProject project : projects) {
-            if (!project.isOpen()) {
-                continue;
-            }
-            try {
-                String id = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
-                if (id != null && id.equals(projectId)) {
-                    return project;
-                }
-            } catch (CoreException e) {
-                log.warn(e);
-            }
-        }
-        return null;
     }
 
     public synchronized void dispose()

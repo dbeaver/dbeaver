@@ -141,13 +141,13 @@ public class DBNResource extends DBNNode
     {
         if (children == null) {
             if (resource instanceof IContainer) {
-                this.children = readChildNodes();
+                this.children = readChildNodes(monitor);
             }
         }
         return children;
     }
 
-    protected List<DBNNode> readChildNodes() throws DBException
+    protected List<DBNNode> readChildNodes(DBRProgressMonitor monitor) throws DBException
     {
         //final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         List<DBNNode> result = new ArrayList<DBNNode>();

@@ -299,13 +299,17 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
             {
                 workbenchWindow.addPageListener(ApplicationToolbarDataSources.this);
                 //workbench.addWindowListener();
+
                 // Register as datasource listener in all datasources
+                // We need it because at this moment there could be come already loaded registries (on startup)
                 final DBeaverCore core = DBeaverCore.getInstance();
                 core.getDataSourceProviderRegistry().addDataSourceRegistryListener(ApplicationToolbarDataSources.this);
                 for (IProject project : core.getLiveProjects()) {
-                    DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
-                    if (registry != null) {
-                        handleRegistryLoad(registry);
+                    if (project.isOpen()) {
+                        DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
+                        if (registry != null) {
+                            handleRegistryLoad(registry);
+                        }
                     }
                 }
 

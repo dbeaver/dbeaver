@@ -30,15 +30,13 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
-import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -59,37 +57,21 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public static final String CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
-    private final String projectId;
+    private final IProject project;
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
     public DataSourceRegistry(IProject project)
     {
-        this.projectId = ProjectRegistry.getProjectId(project);
+        this.project = project;
         IFile configFile = project.getFile(CONFIG_FILE_NAME);
 
         File dsFile = configFile.getLocation().toFile();
         if (dsFile.exists()) {
             loadDataSources(dsFile, new SimpleStringEncrypter());
         }
-        if (dataSources.isEmpty() && DBeaverCore.getInstance().getLiveProjects().size() == 1) {
-            // If this is first project then try to read file from DBeaver beta
-            dsFile = new File(RuntimeUtils.getBetaDir(), CONFIG_FILE_NAME);
-            if (dsFile.exists()) {
-                try {
-                    loadDataSources(dsFile, new SecuredPasswordEncrypter());
-                    saveDataSources();
-                } catch (EncryptionException e) {
-                    log.warn("Encryption error", e);
-                }
-            }
-        }
         DBeaverCore.getInstance().getDataSourceProviderRegistry().fireRegistryChange(this, true);
-        //if (!dsFile.exists()) {
-            // Generate empty config file
-        //    saveDataSources();
-        //}
     }
 
     public void dispose()
@@ -554,7 +536,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     @Override
     public IProject getProject()
     {
-        return DBeaverCore.getInstance().getProject(projectId);
+        return project;
     }
 
     private class DataSourcesParser implements SAXListener
