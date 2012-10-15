@@ -21,6 +21,14 @@
 
 <plugin>
 
+    <extension point="org.eclipse.core.contenttype.contentTypes">
+        <content-type
+                file-extensions="erd"
+                id="org.jkiss.dbeaver.erd"
+                name="ER Diagram"
+                priority="normal"/>
+    </extension>
+
     <extension
         point="org.eclipse.ui.views">
         <category
@@ -54,7 +62,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler type="erd" extensions="erd" class="org.jkiss.dbeaver.ext.erd.navigator.ERDResourceHandler"/>
+        <handler class="org.jkiss.dbeaver.ext.erd.navigator.ERDResourceHandler">
+            <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">

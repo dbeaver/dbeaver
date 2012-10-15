@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.project.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -40,9 +39,6 @@ public class ProjectRegistry implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
-    private final List<DBPResourceHandler> resourceHandlerList = new ArrayList<DBPResourceHandler>();
-    private final Map<String, DBPResourceHandler> resourceHandlerMap = new HashMap<String, DBPResourceHandler>();
-    private final Map<String, DBPResourceHandler> extensionsMap = new HashMap<String, DBPResourceHandler>();
 
     private final Map<String, DataSourceRegistry> projectDatabases = new HashMap<String, DataSourceRegistry>();
     private String activeProjectId;
@@ -62,21 +58,6 @@ public class ProjectRegistry implements IResourceChangeListener {
             for (IConfigurationElement ext : extElements) {
                 ResourceHandlerDescriptor handlerDescriptor = new ResourceHandlerDescriptor(ext);
                 handlerDescriptors.add(handlerDescriptor);
-            }
-        }
-        for (ResourceHandlerDescriptor descriptor : handlerDescriptors) {
-            try {
-                final DBPResourceHandler handler = descriptor.getHandler();
-                if (handler == null) {
-                    continue;
-                }
-                resourceHandlerMap.put(descriptor.getResourceType(), handler);
-                resourceHandlerList.add(handler);
-                for (String ext : descriptor.getFileExtensions()) {
-                    extensionsMap.put(ext, handler);
-                }
-            } catch (Exception e) {
-                log.error("Can't instantiate resource handler " + descriptor.getResourceType(), e);
             }
         }
     }
@@ -166,54 +147,26 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public DBPResourceHandler getResourceHandler(IResource resource)
     {
-        if (resource == null || !resource.isAccessible() || resource.isPhantom()) {
+        if (resource == null || !resource.isAccessible() || resource.isHidden() || resource.isPhantom()) {
             // Skip not accessible hidden and phantom resources
             return null;
         }
-        if (resource instanceof IContainer && resource.isHidden()) {
-            // Skip hidden folders and projects
+        if (resource.getParent() instanceof IProject && resource.getName().equals(DataSourceRegistry.CONFIG_FILE_NAME)) {
+            // Skip connections settings file
+            // TODO: remove in some older version
             return null;
         }
         DBPResourceHandler handler = null;
-        String resourceType = getResourceType(resource);
-        if (resourceType != null) {
-            handler = getResourceHandler(resourceType);
-        }
-        if (handler == null) {
-            if (!CommonUtils.isEmpty(resource.getFileExtension())) {
-                handler = getResourceHandlerByExtension(resource.getFileExtension());
+        for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
+            if (rhd.canHandle(resource)) {
+                handler = rhd.getHandler();
+                break;
             }
         }
         if (handler == null) {
             handler = DefaultResourceHandlerImpl.INSTANCE;
         }
         return handler;
-    }
-
-    public static String getResourceType(IResource resource)
-    {
-        String resourceType;
-        try {
-            resourceType = resource.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
-        } catch (CoreException e) {
-            log.warn(e);
-            return null;
-        }
-        if (CommonUtils.isEmpty(resourceType) && resource instanceof IFolder && !(resource.getParent() instanceof IProject)) {
-            // For folders try to get parent's handler
-            return getResourceType(resource.getParent());
-        }
-        return resourceType;
-    }
-
-    public DBPResourceHandler getResourceHandler(String resourceType)
-    {
-        return resourceHandlerMap.get(resourceType);
-    }
-
-    public DBPResourceHandler getResourceHandlerByExtension(String extension)
-    {
-        return extensionsMap.get(extension);
     }
 
     public DataSourceRegistry getDataSourceRegistry(IProject project)
@@ -301,14 +254,6 @@ public class ProjectRegistry implements IResourceChangeListener {
         }
         if (projectId.equals(activeProjectId)) {
             activeProject = project;
-        }
-        // Init all resource handlers
-        for (DBPResourceHandler handler : resourceHandlerList) {
-            try {
-                handler.initializeProject(project, monitor);
-            } catch (DBException e) {
-                log.warn("Can't initialize project using resource handler", e);
-            }
         }
 
         // Init DS registry

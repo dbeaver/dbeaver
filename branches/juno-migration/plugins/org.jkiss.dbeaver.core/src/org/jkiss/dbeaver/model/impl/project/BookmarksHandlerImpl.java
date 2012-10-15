@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -52,16 +51,11 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     private static final String BOOKMARKS_DIR = "Bookmarks";
     private static final String BOOKMARK_EXT = "bm"; //$NON-NLS-1$
 
-    public static final String RES_TYPE_BOOKMARKS = "bookmarks"; //$NON-NLS-1$
-
     public static IFolder getBookmarksFolder(IProject project, boolean forceCreate) throws CoreException
     {
         final IFolder bookmarksFolder = project.getFolder(BOOKMARKS_DIR);
         if (!bookmarksFolder.exists() && forceCreate) {
             bookmarksFolder.create(true, true, new NullProgressMonitor());
-        }
-        if (bookmarksFolder.exists()) {
-            bookmarksFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_BOOKMARKS);
         }
         return bookmarksFolder;
     }
@@ -82,14 +76,6 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             return "bookmark folder"; //$NON-NLS-1$
         } else {
             return "bookmark"; //$NON-NLS-1$
-        }
-    }
-
-    @Override
-    public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
-    {
-        if (DBeaverCore.getInstance().isStandalone()) {
-            getBookmarksFolder(project, true);
         }
     }
 

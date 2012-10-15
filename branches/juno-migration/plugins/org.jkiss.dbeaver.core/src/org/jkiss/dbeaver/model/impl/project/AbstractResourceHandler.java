@@ -19,10 +19,8 @@
 package org.jkiss.dbeaver.model.impl.project;
 
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -44,12 +42,6 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
             return FEATURE_MOVE_INTO | FEATURE_CREATE_FOLDER;
         }
         return 0;
-    }
-
-    @Override
-    public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
-    {
-        // Just do nothing
     }
 
     @Override

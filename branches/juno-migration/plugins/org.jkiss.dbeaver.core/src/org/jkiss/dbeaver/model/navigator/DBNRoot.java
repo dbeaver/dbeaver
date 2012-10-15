@@ -132,7 +132,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         DBNProject projectNode = new DBNProject(
             this,
             project,
-            DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(ProjectHandlerImpl.RES_TYPE_PROJECT));
+            DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(project));
         projects.add(projectNode);
         Collections.sort(projects, new Comparator<DBNProject>() {
             @Override

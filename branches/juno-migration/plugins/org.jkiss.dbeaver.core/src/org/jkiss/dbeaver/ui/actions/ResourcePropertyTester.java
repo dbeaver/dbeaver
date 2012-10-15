@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.actions;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -34,8 +32,6 @@ import org.jkiss.dbeaver.registry.ProjectRegistry;
  */
 public class ResourcePropertyTester extends PropertyTester
 {
-    static final Log log = LogFactory.getLog(ObjectPropertyTester.class);
-
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resource";
     public static final String PROP_CAN_OPEN = "canOpen";
     public static final String PROP_CAN_CREATE_FOLDER = "canCreateFolder";
@@ -71,8 +67,8 @@ public class ResourcePropertyTester extends PropertyTester
         } else if (property.equals(PROP_CAN_SET_ACTIVE)) {
             return resource instanceof IProject && resource != projectRegistry.getActiveProject();
         } else if (property.equals(PROP_TYPE)) {
-            final String resType = ProjectRegistry.getResourceType(resource);
-            return resType != null && resType.equals(expectedValue);
+            final DBPResourceHandler resourceHandler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+            return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
         }
         return false;
     }

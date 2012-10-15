@@ -1940,14 +1940,13 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler type="project" class="org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl">
+        <handler class="org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
-        <handler type="databases" class="org.jkiss.dbeaver.model.impl.project.DatabasesHandlerImpl"/>
-        <handler type="scripts" extensions="sql" class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl">
+        <handler class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl">
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </handler>
-        <handler type="bookmarks" extensions="bm" class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl">
+        <handler class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl">
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
         </handler>
     </extension>

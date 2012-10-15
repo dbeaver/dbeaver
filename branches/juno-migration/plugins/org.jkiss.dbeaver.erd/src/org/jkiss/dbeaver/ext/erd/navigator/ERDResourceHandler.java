@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -53,16 +52,11 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     private static final String ERD_DIR = "Diagrams";
     private static final String ERD_EXT = "erd"; //$NON-NLS-1$
 
-    public static final String RES_TYPE_DIAGRAMS = "erd"; //$NON-NLS-1$
-
     public static IFolder getDiagramsFolder(IProject project, boolean forceCreate) throws CoreException
     {
         final IFolder diagramsFolder = project.getFolder(ERD_DIR);
         if (!diagramsFolder.exists() && forceCreate) {
             diagramsFolder.create(true, true, new NullProgressMonitor());
-        }
-        if (diagramsFolder.exists()) {
-            diagramsFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_DIAGRAMS);
         }
         return diagramsFolder;
     }
@@ -87,14 +81,6 @@ public class ERDResourceHandler extends AbstractResourceHandler {
             return "diagram folder";
         } else {
             return "diagram";
-        }
-    }
-
-    @Override
-    public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
-    {
-        if (DBeaverCore.getInstance().isStandalone()) {
-            getDiagramsFolder(project, true);
         }
     }
 

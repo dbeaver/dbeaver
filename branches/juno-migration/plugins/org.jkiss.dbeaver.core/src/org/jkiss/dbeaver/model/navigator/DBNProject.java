@@ -134,6 +134,14 @@ public class DBNProject extends DBNResource implements IAdaptable
         }
     }
 
+    @Override
+    protected List<DBNNode> readChildNodes() throws DBException
+    {
+        List<DBNNode> children = super.readChildNodes();
+        children.add(0, new DBNProjectDatabases(this));
+        return children;
+    }
+
     public DBNResource findResource(IResource resource)
     {
         List<IResource> path = new ArrayList<IResource>();

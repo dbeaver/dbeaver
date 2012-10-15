@@ -30,7 +30,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -62,9 +61,6 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         final IFolder scriptsFolder = project.getFolder(SCRIPTS_DIR);
         if (!scriptsFolder.exists() && forceCreate) {
             scriptsFolder.create(true, true, new NullProgressMonitor());
-        }
-        if (scriptsFolder.exists()) {
-            scriptsFolder.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
         }
         return scriptsFolder;
     }
@@ -124,7 +120,6 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         // Make new script file
         IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, CoreMessages.model_project_Script, SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
-        tempFile.setPersistentProperty(PROP_RESOURCE_TYPE, RES_TYPE_SCRIPTS);
 
         // Save ds container reference
         if (dataSourceContainer != null) {
@@ -160,14 +155,6 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
             return new SQLEditorInput((IFile)resource).getName();
         }
         return super.getResourceDescription(resource);
-    }
-
-    @Override
-    public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
-    {
-        if (DBeaverCore.getInstance().isStandalone()) {
-            getScriptsFolder(project, true);
-        }
     }
 
     @Override

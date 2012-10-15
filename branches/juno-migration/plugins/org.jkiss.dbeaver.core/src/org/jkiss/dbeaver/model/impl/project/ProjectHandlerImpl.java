@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
  */
 public class ProjectHandlerImpl extends AbstractResourceHandler {
 
-    public static final String RES_TYPE_PROJECT = "project";
-
     @Override
     public String getTypeName(IResource resource)
     {
@@ -49,14 +47,6 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
             return FEATURE_DELETE | FEATURE_RENAME;
         }
         return FEATURE_RENAME;
-    }
-
-    @Override
-    public void initializeProject(IProject project, IProgressMonitor monitor) throws CoreException, DBException
-    {
-        if (!ProjectHandlerImpl.RES_TYPE_PROJECT.equals(project.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE))) {
-            project.setPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE, ProjectHandlerImpl.RES_TYPE_PROJECT);
-        }
     }
 
     @Override
