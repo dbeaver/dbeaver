@@ -200,9 +200,8 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         String charset = null;
         IEditorInput editorInput = getEditorInput();
         File systemFile = null;
-        IFile file = (IFile) editorInput.getAdapter(IFile.class);
-        if (file != null) {
-            systemFile = file.getLocation().toFile();
+        if (editorInput instanceof IPathEditorInput) {
+            systemFile = ((IPathEditorInput) editorInput).getPath().toFile();
         }
         if (systemFile != null) {
             // open file
@@ -247,7 +246,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         IEditorInput editorInput = getEditorInput();
         // Sync file changes
-        IFile file = (IFile) editorInput.getAdapter(IFile.class);
+        IFile file = ContentUtils.getFileFromEditorInput(editorInput);
         if (file != null) {
             final IPath absolutePath = file.getLocation();
             File systemFile = absolutePath.toFile();

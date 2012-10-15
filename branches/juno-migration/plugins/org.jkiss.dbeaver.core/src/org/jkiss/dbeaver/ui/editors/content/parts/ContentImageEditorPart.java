@@ -96,10 +96,9 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
         if (imageViewer == null || imageViewer.isDisposed()) {
             return;
         }
-        IFile file = (IFile) getEditorInput().getAdapter(IFile.class);
-        if (file != null) {
+        if (getEditorInput() instanceof IPathEditorInput) {
             try {
-                final IPath absolutePath = file.getLocation();
+                final IPath absolutePath = ((IPathEditorInput)getEditorInput()).getPath();
                 File localFile = absolutePath.toFile();
                 if (localFile.exists()) {
                     InputStream inputStream = new FileInputStream(localFile);

@@ -29,6 +29,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IPathEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -472,6 +474,15 @@ public class ContentUtils {
             }
         }
         return mimeType;
+    }
+
+    public static IFile getFileFromEditorInput(IEditorInput editorInput)
+    {
+        if (editorInput instanceof IPathEditorInput) {
+            return convertPathToWorkspaceFile(((IPathEditorInput) editorInput).getPath());
+        } else {
+            return null;
+        }
     }
 
     public static IFile convertPathToWorkspaceFile(IPath path)

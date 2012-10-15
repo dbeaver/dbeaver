@@ -117,12 +117,6 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     @Override
     public Object getAdapter(Class adapter)
     {
-        if (adapter == IFile.class) {
-            return contentFile;
-        } else if (adapter == IPath.class) {
-            return contentFile.getFullPath();
-        }
-
         return null;
     }
 

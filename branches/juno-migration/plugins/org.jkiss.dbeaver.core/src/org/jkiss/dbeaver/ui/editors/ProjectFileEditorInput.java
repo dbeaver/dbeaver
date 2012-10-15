@@ -146,9 +146,7 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 					return ProjectFileEditorInput.this.file.getParent();
 				}
 			};
-		} else if (IFile.class.equals(adapter)) {
-            return file;
-        }
+		}
 
 		return super.getAdapter(adapter);
 	}

@@ -60,6 +60,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
@@ -198,8 +199,8 @@ class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventList
     private IProject getActiveProject()
     {
         final IAdaptable activeObject = getActiveObject();
-        if (activeObject != null) {
-            final IFile file = (IFile) activeObject.getAdapter(IFile.class);
+        if (activeObject instanceof IEditorInput) {
+            final IFile file = ContentUtils.getFileFromEditorInput((IEditorInput) activeObject);
             if (file != null) {
                 return file.getProject();
             }

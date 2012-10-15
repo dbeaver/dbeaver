@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
+import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import javax.activation.MimeType;
@@ -54,7 +55,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageEditorPart implements IDataSourceProvider, DBDValueEditor, IResourceChangeListener
+public class ContentEditor extends MultiPageAbstractEditor implements IDataSourceProvider, DBDValueEditor, IResourceChangeListener
 {
     @Override
     public ContentEditorInput getEditorInput()
@@ -300,6 +301,7 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
 
     @Override
     protected void createPages() {
+        super.createPages();
         DBDContent content = getContent();
         if (content == null) {
             return;
@@ -457,11 +459,6 @@ public class ContentEditor extends MultiPageEditorPart implements IDataSourcePro
                 valueEditorRegistered = false;
             }
         }
-    }
-
-    @Override
-    public void setFocus()
-    {
     }
 
     @Override
