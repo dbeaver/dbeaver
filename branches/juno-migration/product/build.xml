@@ -85,7 +85,7 @@
     </target>
 
     <target name="copy-drivers">
-        <copy todir="${driversDirectory}">
+        <copy todir="../contrib/drivers">
             <fileset dir="../contrib/drivers">
                 <include name="**" />
                 <exclude name="**/.svn" />
@@ -304,7 +304,7 @@
             />
         <zip destfile="${distDirectory}/dbeaver-${productVersion}-plugin.zip">
             <fileset dir="${buildDirectory}/dbeaver-plugin/dbeaver/plugins">
-                <include name="org.jkiss.dbeaver*.jar" />
+                <include name="org.jkiss*.jar" />
             </fileset>
         </zip>
     </target>

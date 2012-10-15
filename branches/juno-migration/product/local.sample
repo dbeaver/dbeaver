@@ -7,10 +7,15 @@ buildDirectory=D:/Devel/DBeaver-juno/product/build
 stdBaseLocation=D:/Java/eclipse-build
 # Eclipse after localization (is used for build)
 baseLocation=D:/Java/eclipse-build
+# Path to delta-pack
 pluginPath=d:/java/eclipse-4.2.1-delta-pack
+# Path to NSIS
 nsisDirectory=C:/Program Files/NSIS
+# version of org.eclipse.equinox.launcher plugin
 equinoxLauncherPluginVersion=1.3.0.v20120522-1813
+# version of org.eclipse.pde.build plugin
 pdeBuildPluginVersion=3.8.1.v20120725-202643
+# release dist
 releaseFilesDirectory=d:/temp
 babelLocation=D:/Devel/java/Babel
 locales=ru,fr
