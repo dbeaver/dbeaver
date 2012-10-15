@@ -63,6 +63,14 @@
                 <exclude name="**/*.class" />
             </fileset>
         </copy>
+        <copy todir="${buildDirectory}/features">
+            <fileset dir="../features">
+                <include name="**" />
+                <exclude name="**/.svn" />
+                <exclude name="**/*.class" />
+            </fileset>
+        </copy>
+
         <mkdir dir="${distDirectory}" />
         <antcall target="readme"/>
     </target>
