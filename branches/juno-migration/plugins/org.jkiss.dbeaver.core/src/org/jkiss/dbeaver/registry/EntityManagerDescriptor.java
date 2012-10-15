@@ -29,9 +29,7 @@ public class EntityManagerDescriptor extends AbstractDescriptor
 {
     private String id;
     private ObjectType managerType;
-    private String objectType;
-
-    private Class objectClass;
+    private ObjectType objectType;
     private DBEObjectManager managerInstance;
 
     EntityManagerDescriptor(IConfigurationElement config)
@@ -40,12 +38,12 @@ public class EntityManagerDescriptor extends AbstractDescriptor
 
         this.id = config.getAttribute(RegistryConstants.ATTR_CLASS);
         this.managerType = new ObjectType(id);
-        this.objectType = config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE);
+        this.objectType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE));
     }
 
     void dispose()
     {
-        objectClass = null;
+        objectType = null;
         managerType = null;
         managerInstance = null;
     }
@@ -55,21 +53,9 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         return id;
     }
 
-/*
-    public String getClassName()
+    public boolean appliesToType(Class clazz)
     {
-        return className;
-    }
-
-    public String getObjectType()
-    {
-        return objectType;
-    }
-
-*/
-    public boolean appliesToType(Class objectType)
-    {
-        return managerType.appliesTo(objectType);
+        return objectType.matchesType(clazz);
     }
 
     public synchronized DBEObjectManager getManager()

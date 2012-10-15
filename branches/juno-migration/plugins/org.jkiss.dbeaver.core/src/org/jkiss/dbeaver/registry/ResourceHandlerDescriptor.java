@@ -43,6 +43,8 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     private DBPResourceHandler handler;
     private List<IContentType> contentTypes = new ArrayList<IContentType>();
     private List<ObjectType> resourceTypes = new ArrayList<ObjectType>();
+    private List<String> roots = new ArrayList<String>();
+    private String defaultRoot;
 
     ResourceHandlerDescriptor(IConfigurationElement config)
     {
@@ -65,6 +67,18 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
             if (!CommonUtils.isEmpty(resourceType)) {
                 resourceTypes.add(new ObjectType(resourceType));
             }
+        }
+        for (IConfigurationElement rootConfig : CommonUtils.safeArray(config.getChildren("root"))) {
+            String folder = rootConfig.getAttribute("folder");
+            if (!CommonUtils.isEmpty(folder)) {
+                roots.add(folder);
+            }
+            if ("true".equals(rootConfig.getAttribute("default"))) {
+                defaultRoot = folder;
+            }
+        }
+        if (CommonUtils.isEmpty(defaultRoot) && !CommonUtils.isEmpty(roots)) {
+            defaultRoot = roots.get(0);
         }
     }
 
@@ -114,4 +128,15 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
         }
         return false;
     }
+
+    public String getDefaultRoot()
+    {
+        return defaultRoot;
+    }
+
+    public List<String> getRoots()
+    {
+        return roots;
+    }
+
 }

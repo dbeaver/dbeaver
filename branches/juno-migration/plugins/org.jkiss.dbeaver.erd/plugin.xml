@@ -63,6 +63,7 @@
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
         <handler class="org.jkiss.dbeaver.ext.erd.navigator.ERDResourceHandler">
+            <root folder="Diagrams"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.erd"/>
         </handler>
     </extension>

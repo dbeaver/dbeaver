@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.project;
+package org.jkiss.dbeaver.model.impl.resources.bookmarks;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.impl.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -53,7 +54,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     public static IFolder getBookmarksFolder(IProject project, boolean forceCreate) throws CoreException
     {
-        final IFolder bookmarksFolder = project.getFolder(BOOKMARKS_DIR);
+        final IFolder bookmarksFolder = DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, BookmarksHandlerImpl.class);
         if (!bookmarksFolder.exists() && forceCreate) {
             bookmarksFolder.create(true, true, new NullProgressMonitor());
         }
@@ -105,9 +106,6 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             if (dataSourceContainer == null) {
                 throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'"); //$NON-NLS-2$
             }
-            //if (!dataSourceContainer.isConnected()) {
-            //    dataSourceContainer.connect();
-            //}
             final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
             dsNode.initializeNode(null, new Runnable() {
                 @Override

@@ -16,20 +16,18 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.project;
+package org.jkiss.dbeaver.model.impl.resources;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -51,14 +49,11 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
     static final Log log = LogFactory.getLog(ScriptsHandlerImpl.class);
 
-    private static final String SCRIPTS_DIR = "Scripts";
-
-    public static final String RES_TYPE_SCRIPTS = "scripts"; //$NON-NLS-1$
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 
     public static IFolder getScriptsFolder(IProject project, boolean forceCreate) throws CoreException
     {
-        final IFolder scriptsFolder = project.getFolder(SCRIPTS_DIR);
+        final IFolder scriptsFolder = DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, ScriptsHandlerImpl.class);
         if (!scriptsFolder.exists() && forceCreate) {
             scriptsFolder.create(true, true, new NullProgressMonitor());
         }

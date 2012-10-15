@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.impl.project;
+package org.jkiss.dbeaver.model.impl.resources.bookmarks;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;

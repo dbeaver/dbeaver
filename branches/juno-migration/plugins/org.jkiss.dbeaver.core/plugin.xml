@@ -44,7 +44,7 @@
             id="org.jkiss.dbeaver.bookmark"
             name="Bookmark"
             priority="normal"
-            describer="org.jkiss.dbeaver.model.impl.project.BookmarkContentTypeDescriber"/>
+            describer="org.jkiss.dbeaver.model.impl.resources.bookmarks.BookmarkContentTypeDescriber"/>
     </extension>
 
     <extension id="application" point="org.eclipse.core.runtime.applications">
@@ -1940,13 +1940,15 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
-        <handler class="org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl">
+        <handler class="org.jkiss.dbeaver.model.impl.resources.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.model.impl.project.ScriptsHandlerImpl">
+        <handler class="org.jkiss.dbeaver.model.impl.resources.ScriptsHandlerImpl">
+            <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.model.impl.project.BookmarksHandlerImpl">
+        <handler class="org.jkiss.dbeaver.model.impl.resources.bookmarks.BookmarksHandlerImpl">
+            <root folder="Bookmarks"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
         </handler>
     </extension>

@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.project;
+package org.jkiss.dbeaver.model.impl.resources;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
@@ -39,8 +39,7 @@ import java.util.Map;
  */
 public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
 
-    //static final Log log = LogFactory.getLog(DefaultResourceHandlerImpl.class);
-
+    public static final String DEFAULT_ROOT = "Resources"; //$NON-NLS-1$
     public static final DefaultResourceHandlerImpl INSTANCE = new DefaultResourceHandlerImpl();
 
     private static class ProgramInfo {

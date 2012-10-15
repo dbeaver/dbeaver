@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
@@ -330,28 +331,37 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     void saveDataSources()
     {
         synchronized (dataSources) {
+            IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
             PasswordEncrypter encrypter = new SimpleStringEncrypter();
             IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
             try {
-                // Save in temp memory to be safe (any error during direct write will corrupt configuration)
-                ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
-                try {
-                    XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET);
-                    xml.setButify(true);
-                    xml.startElement("data-sources");
-                    for (DataSourceDescriptor dataSource : dataSources) {
-                        saveDataSource(xml, dataSource, encrypter);
+                if (dataSources.isEmpty()) {
+                    configFile.delete(true, false, progressMonitor);
+                } else {
+                    // Save in temp memory to be safe (any error during direct write will corrupt configuration)
+                    ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+                    try {
+                        XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET);
+                        xml.setButify(true);
+                        xml.startElement("data-sources");
+                        for (DataSourceDescriptor dataSource : dataSources) {
+                            saveDataSource(xml, dataSource, encrypter);
+                        }
+                        xml.endElement();
+                        xml.flush();
                     }
-                    xml.endElement();
-                    xml.flush();
-                }
-                catch (IOException ex) {
-                    log.warn("IO error while saving datasources", ex);
-                }
-                InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
-                configFile.setContents(ifs, true, false, VoidProgressMonitor.INSTANCE.getNestedMonitor());
+                    catch (IOException ex) {
+                        log.warn("IO error while saving datasources", ex);
+                    }
+                    InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+                    if (!configFile.exists()) {
+                        configFile.create(ifs, true, progressMonitor);
+                    } else {
+                        configFile.setContents(ifs, true, false, progressMonitor);
+                    }
 
-                //configFile.refreshLocal(IFile.DEPTH_ZERO, new NullProgressMonitor());
+                    //configFile.refreshLocal(IFile.DEPTH_ZERO, new NullProgressMonitor());
+                }
             } catch (CoreException ex) {
                 log.error("Error saving datasources configuration", ex);
             }

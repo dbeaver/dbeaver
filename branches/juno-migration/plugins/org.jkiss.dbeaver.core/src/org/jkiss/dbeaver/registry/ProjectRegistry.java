@@ -21,12 +21,9 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExtensionRegistry;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.impl.project.DefaultResourceHandlerImpl;
+import org.jkiss.dbeaver.model.impl.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
@@ -41,6 +38,7 @@ public class ProjectRegistry implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
+    private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<String, ResourceHandlerDescriptor>();
 
     private final Map<IProject, DataSourceRegistry> projectDatabases = new HashMap<IProject, DataSourceRegistry>();
     private IProject activeProject;
@@ -59,6 +57,11 @@ public class ProjectRegistry implements IResourceChangeListener {
             for (IConfigurationElement ext : extElements) {
                 ResourceHandlerDescriptor handlerDescriptor = new ResourceHandlerDescriptor(ext);
                 handlerDescriptors.add(handlerDescriptor);
+            }
+            for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
+                for (String root : rhd.getRoots()) {
+                    rootMapping.put(root, rhd);
+                }
             }
         }
     }
@@ -123,6 +126,7 @@ public class ProjectRegistry implements IResourceChangeListener {
             handlerDescriptor.dispose();
         }
         this.handlerDescriptors.clear();
+        this.rootMapping.clear();
 
         // Remove listeners
         if (workspace != null) {
@@ -168,10 +172,28 @@ public class ProjectRegistry implements IResourceChangeListener {
                 break;
             }
         }
+        if (handler == null && resource instanceof IFolder) {
+            IPath relativePath = resource.getFullPath().makeRelativeTo(resource.getProject().getFullPath());
+            ResourceHandlerDescriptor handlerDescriptor = rootMapping.get(relativePath.toString());
+            if (handlerDescriptor != null) {
+                handler = handlerDescriptor.getHandler();
+            }
+        }
         if (handler == null) {
             handler = DefaultResourceHandlerImpl.INSTANCE;
         }
         return handler;
+    }
+
+    public IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType)
+    {
+        for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
+            DBPResourceHandler handler = rhd.getHandler();
+            if (handler != null && handler.getClass() == handlerType) {
+                return project.getFolder(rhd.getDefaultRoot());
+            }
+        }
+        return project.getFolder(DefaultResourceHandlerImpl.DEFAULT_ROOT);
     }
 
     public DataSourceRegistry getDataSourceRegistry(IProject project)
