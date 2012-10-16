@@ -84,7 +84,7 @@ public class DataSourceProviderRegistry
         }
 
         // Load drivers
-        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), RegistryConstants.DRIVERS_FILE_NAME);
+        File driversConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME, true);
         if (driversConfig.exists()) {
             loadDrivers(driversConfig);
         }
@@ -138,11 +138,6 @@ public class DataSourceProviderRegistry
 
     ////////////////////////////////////////////////////
     // DataType providers
-
-    public List<DataTypeProviderDescriptor> getDataTypeProviders()
-    {
-        return dataTypeProviders;
-    }
 
     public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, String typeName, int valueType)
     {
@@ -212,7 +207,7 @@ public class DataSourceProviderRegistry
 
     public void saveDrivers()
     {
-        File driversConfig = new File(DBeaverCore.getInstance().getRootPath().toFile(), RegistryConstants.DRIVERS_FILE_NAME);
+        File driversConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME, false);
         try {
             OutputStream os = new FileOutputStream(driversConfig);
             try {

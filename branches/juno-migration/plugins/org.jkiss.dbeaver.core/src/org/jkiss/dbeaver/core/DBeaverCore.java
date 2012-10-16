@@ -87,7 +87,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     //private DBeaverProgressProvider progressProvider;
     private IWorkspace workspace;
     private IWorkbench workbench;
-    private IPath rootPath;
     private IProject tempProject;
     private OSDescriptor localSystem;
 
@@ -170,7 +169,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         DBeaverIcons.initRegistry(plugin.getBundle());
 
         this.workspace = ResourcesPlugin.getWorkspace();
-        this.rootPath = Platform.getLocation();
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
 
@@ -360,9 +358,17 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return workspace;
     }
 
-    public IPath getRootPath()
+    /**
+     * Returns configuration file
+     */
+    public File getConfigurationFile(String fileName, boolean read)
     {
-        return rootPath;
+        File configFile = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), fileName);
+        if (!configFile.exists() && read) {
+            // [Compatibility with DBeaver 1.x]
+            configFile = new File(Platform.getLocation().toFile(), fileName);
+        }
+        return configFile;
     }
 
     public ISharedTextColors getSharedTextColors()

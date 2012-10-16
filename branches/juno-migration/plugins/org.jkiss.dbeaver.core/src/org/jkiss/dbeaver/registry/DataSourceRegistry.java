@@ -356,11 +356,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
                     if (!configFile.exists()) {
                         configFile.create(ifs, true, progressMonitor);
+                        configFile.setHidden(true);
                     } else {
                         configFile.setContents(ifs, true, false, progressMonitor);
                     }
-
-                    //configFile.refreshLocal(IFile.DEPTH_ZERO, new NullProgressMonitor());
                 }
             } catch (CoreException ex) {
                 log.error("Error saving datasources configuration", ex);
@@ -758,10 +757,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         // Disconnect
                         disconnected = dataSource.disconnect(monitor);
                     } catch (Exception ex) {
-                        log.error("Can't shutdown data source", ex);
+                        log.error("Can't shutdown data source '" + dataSource.getName() + "'", ex);
                     }
                 }
             }
         }
     }
+
 }
