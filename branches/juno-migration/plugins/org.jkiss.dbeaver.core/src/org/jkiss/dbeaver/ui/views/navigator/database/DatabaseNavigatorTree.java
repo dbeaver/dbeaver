@@ -194,9 +194,9 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         viewer.setSelection(new StructuredSelection(node));
     }
 
-    public void reloadTree(DBNNode rootNode)
+    public void reloadTree(final DBNNode rootNode)
     {
-        this.viewer.setInput(new DatabaseNavigatorContent(rootNode));
+        DatabaseNavigatorTree.this.viewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
     private class TreeSelectionAdapter implements MouseListener {

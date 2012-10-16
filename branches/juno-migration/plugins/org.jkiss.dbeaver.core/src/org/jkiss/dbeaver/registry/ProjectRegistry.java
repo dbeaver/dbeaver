@@ -22,10 +22,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.utils.CommonUtils;
 
@@ -228,15 +231,23 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public void setActiveProject(IProject project)
     {
-        IProject oldValue = this.activeProject;
+        final IProject oldValue = this.activeProject;
         this.activeProject = project;
-        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue("project.active", project.getName());
+        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue("project.active", project == null ? "" : project.getName());
 
-        synchronized (projectListeners) {
-            for (DBPProjectListener listener : projectListeners) {
-                listener.handleActiveProjectChange(oldValue, activeProject);
+        GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_ACTIVE_PROJECT);
+
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run()
+            {
+                synchronized (projectListeners) {
+                    for (DBPProjectListener listener : projectListeners) {
+                        listener.handleActiveProjectChange(oldValue, activeProject);
+                    }
+                }
             }
-        }
+        });
     }
 
     private IProject createGeneralProject(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
@@ -290,12 +301,12 @@ public class ProjectRegistry implements IResourceChangeListener {
                 IProject project = (IProject)projectDelta.getResource();
                 if (projectDelta.getKind() == IResourceDelta.REMOVED) {
                     if (project == activeProject) {
-                        activeProject = null;
+                        setActiveProject(null);
                     }
                     GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                 } else if (projectDelta.getKind() == IResourceDelta.ADDED) {
-                    if (project.isOpen() && activeProject == project) {
-                        this.activeProject = project;
+                    if (activeProject == null) {
+                        setActiveProject(project);
                     }
                     GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                 }

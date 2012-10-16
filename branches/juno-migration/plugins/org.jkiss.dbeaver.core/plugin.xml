@@ -58,7 +58,7 @@
                 class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
                 namespace="org.jkiss.dbeaver.core.global"
-                properties="standalone,hasMultipleProjects"
+                properties="standalone,hasActiveProject,hasMultipleProjects"
                 type="java.lang.Object"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
@@ -419,7 +419,13 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.driver.manager" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerDriverManager"/>
-        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConnectionCreate"/>
+        <handler commandId="org.jkiss.dbeaver.core.new.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConnectionCreate">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.core.migrate.connection" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConnectionMigrate"/>
 
         <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCollapseAll">
