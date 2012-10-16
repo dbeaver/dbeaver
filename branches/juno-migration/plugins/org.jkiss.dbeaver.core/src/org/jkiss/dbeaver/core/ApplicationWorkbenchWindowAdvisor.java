@@ -97,13 +97,12 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         super.postWindowOpen();
 
         final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-        if (projectRegistry.getActiveDataSourceRegistry().getDataSources().isEmpty()) {
+        if (projectRegistry.getActiveDataSourceRegistry() != null && projectRegistry.getActiveDataSourceRegistry().getDataSources().isEmpty()) {
             // Open New Connection wizard
             Display.getCurrent().asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     IWorkbenchWindow window = getWindowConfigurer().getWindow();
-                    final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
                     ConnectionDialog dialog = new ConnectionDialog(window
                         , new NewConnectionWizard(projectRegistry.getActiveDataSourceRegistry()));
                     dialog.open();

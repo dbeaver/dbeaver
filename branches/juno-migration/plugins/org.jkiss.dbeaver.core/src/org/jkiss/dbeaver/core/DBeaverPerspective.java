@@ -47,7 +47,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         IFolderLayout treeFolder = layout.createFolder(
             FOLDER_NAVIGATION,
             IPageLayout.LEFT,
-            0.60f,
+            0.30f,
             editorArea);
         treeFolder.addView(DatabaseNavigatorView.VIEW_ID);
         treeFolder.addView(ProjectNavigatorView.VIEW_ID);

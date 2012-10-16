@@ -72,7 +72,7 @@ public class ProjectRegistry implements IResourceChangeListener {
         String activeProjectName = core.getGlobalPreferenceStore().getString("project.active");
 
         List<IProject> projects = core.getLiveProjects();
-        if (core.isStandalone() && CommonUtils.isEmpty(projects)) {
+        if (DBeaverCore.isStandalone() && CommonUtils.isEmpty(projects)) {
             // Create initial project (onloy for standalone version)
             monitor.beginTask("Create general project", 1);
             try {
@@ -242,7 +242,7 @@ public class ProjectRegistry implements IResourceChangeListener {
     private IProject createGeneralProject(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
     {
         final IProject project = workspace.getRoot().getProject(
-            DBeaverCore.getInstance().isStandalone() ?
+            DBeaverCore.isStandalone() ?
                 "General" : "DBeaver");
         project.create(monitor);
         project.open(monitor);

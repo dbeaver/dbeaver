@@ -73,7 +73,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         configurer.setSaveAndRestore(true);
 
         TrayDialog.setDialogHelpAvailable(true);
-        DBeaverCore.getInstance().setStandalone(true);
+        DBeaverCore.setStandalone(true);
 
         // Disable all schemas except our own
         final IBindingService bindingService = (IBindingService)configurer.getWorkbench().getService(IBindingService.class);

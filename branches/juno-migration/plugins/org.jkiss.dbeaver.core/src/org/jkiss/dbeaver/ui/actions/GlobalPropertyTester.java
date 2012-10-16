@@ -43,7 +43,7 @@ public class GlobalPropertyTester extends PropertyTester
         if (property.equals(PROP_HAS_MULTI_PROJECTS)) {
             return DBeaverCore.getInstance().getLiveProjects().size() > 1;
         } else if (property.equals(PROP_STANDALONE)) {
-            return DBeaverCore.getInstance().isStandalone();
+            return DBeaverCore.isStandalone();
         }
         return false;
     }

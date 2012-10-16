@@ -80,6 +80,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public static final String TEMP_PROJECT_NAME = "org.jkiss.dbeaver.temp"; //$NON-NLS-1$
 
     private static DBeaverCore instance;
+    private static boolean standalone = false;
+
     private DBeaverActivator plugin;
     private DatabaseEditorAdapterFactory editorsAdapter;
     //private DBeaverProgressProvider progressProvider;
@@ -100,7 +102,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private SharedTextColors sharedTextColors;
     private ProjectRegistry projectRegistry;
 
-    private boolean standalone = false;
     private boolean isClosing;
 
     public static DBeaverCore getInstance()
@@ -141,14 +142,14 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         isClosing = closing;
     }
 
-    public boolean isStandalone()
+    public static boolean isStandalone()
     {
         return standalone;
     }
 
-    void setStandalone(boolean standalone)
+    static void setStandalone(boolean flag)
     {
-        this.standalone = standalone;
+        standalone = flag;
     }
 
     public Version getVersion()
