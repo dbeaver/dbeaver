@@ -129,9 +129,25 @@
         </java>
     </target>
 
+    <target name="pde-runtime">
+        <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-buildfile" />
+            <arg value="${buildFile}" />
+            <arg value="-Dtimestamp=${timestamp}" />
+            <arg value="-DproductId=DBeaverRuntime" />
+            <arg value="-Dconfigs=*,*,*" />
+            <classpath>
+                <pathelement location="${launcherLibLocation}" />
+            </classpath>
+        </java>
+    </target>
+
     <target name="pde-build" depends="init">
         <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
+	<antcall target="pde-runtime"/>
         <antcall target="pde-dbeaver"/>
         <antcall target="pde-dbeaver-icu"/>
     </target>
@@ -143,7 +159,7 @@
     </target>
 
     <!--This target defines the run-order of the targets-->
-    <target name="build" depends="pde-build,driver-pack" />
+    <target name="build" depends="pde-build" />
 
     <target name="nsis">
         <unzip 
