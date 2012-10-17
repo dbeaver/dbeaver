@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.ui.perspective;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,7 +40,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
@@ -74,8 +77,8 @@ import java.util.List;
 /**
  * DataSource Toolbar
  */
-public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
-    static final Log log = LogFactory.getLog(ApplicationToolbarDataSources.class);
+public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
+    static final Log log = LogFactory.getLog(DataSourceManagementToolbar.class);
 
     public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
 
@@ -150,7 +153,7 @@ public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEv
         DBSObject active;
     }
 
-    public ApplicationToolbarDataSources(IWorkbenchWindow workbenchWindow)
+    public DataSourceManagementToolbar(IWorkbenchWindow workbenchWindow)
     {
         this.workbenchWindow = workbenchWindow;
     }
@@ -293,124 +296,6 @@ public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEv
         updateControls(false);
 
         UIUtils.updateMainWindowTitle(workbenchWindow);
-    }
-
-    public void fillToolBar(IToolBarManager manager)
-    {
-        // Connection related actions
-        manager.add(new ControlContribution("datasource_selector_control") //$NON-NLS-1$
-        {
-            @Override
-            protected Control createControl(Composite parent)
-            {
-                workbenchWindow.addPageListener(ApplicationToolbarDataSources.this);
-                IWorkbenchPage activePage = workbenchWindow.getActivePage();
-                if (activePage != null) {
-                    pageOpened(activePage);
-                }
-
-                // Register as datasource listener in all datasources
-                // We need it because at this moment there could be come already loaded registries (on startup)
-                final DBeaverCore core = DBeaverCore.getInstance();
-                core.getDataSourceProviderRegistry().addDataSourceRegistryListener(ApplicationToolbarDataSources.this);
-                for (IProject project : core.getLiveProjects()) {
-                    if (project.isOpen()) {
-                        DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
-                        if (registry != null) {
-                            handleRegistryLoad(registry);
-                        }
-                    }
-                }
-
-                Composite comboGroup = new Composite(parent, SWT.NONE);
-                GridLayout gl = new GridLayout(3, false);
-                gl.marginWidth = 0;
-                gl.marginHeight = 0;
-                comboGroup.setLayout(gl);
-
-                connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
-                GridData gd = new GridData();
-                gd.widthHint = 120;
-                connectionCombo.setLayoutData(gd);
-                connectionCombo.setVisibleItemCount(15);
-                connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
-                connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
-                connectionCombo.select(0);
-                fillDataSourceList(true);
-                connectionCombo.addSelectionListener(new SelectionListener()
-                {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        changeDataSourceSelection();
-                    }
-
-                    @Override
-                    public void widgetDefaultSelected(SelectionEvent e)
-                    {
-                        widgetSelected(e);
-                    }
-                });
-
-                databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
-                gd = new GridData();
-                gd.widthHint = 120;
-                databaseCombo.setLayoutData(gd);
-                databaseCombo.setVisibleItemCount(15);
-                databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
-                databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
-                databaseCombo.select(0);
-                databaseCombo.addSelectionListener(new SelectionListener() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        changeDataBaseSelection();
-                    }
-
-                    @Override
-                    public void widgetDefaultSelected(SelectionEvent e)
-                    {
-                        widgetSelected(e);
-                    }
-                });
-                updateDatabaseList(true);
-
-                resultSetSize = new Text(comboGroup, SWT.BORDER);
-                resultSetSize.setTextLimit(10);
-                gd = new GridData();
-                gd.widthHint = 30;
-
-                resultSetSize.setToolTipText(CoreMessages.toolbar_datasource_selector_resultset_segment_size);
-                final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
-                if (dataSourceContainer != null) {
-                    resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS)));
-                }
-                //resultSetSize.setDigits(7);
-                resultSetSize.setLayoutData(gd);
-                resultSetSize.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
-                resultSetSize.addFocusListener(new FocusListener() {
-                    @Override
-                    public void focusGained(FocusEvent e)
-                    {
-                    }
-
-                    @Override
-                    public void focusLost(FocusEvent e)
-                    {
-                        changeResultSetSize();
-                    }
-                });
-                comboGroup.addDisposeListener(new DisposeListener() {
-                    @Override
-                    public void widgetDisposed(DisposeEvent e)
-                    {
-                        ApplicationToolbarDataSources.this.dispose();
-                    }
-                });
-                return comboGroup;
-            }
-        });
-
     }
 
     private void fillDataSourceList(boolean force) {
@@ -810,4 +695,126 @@ public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEv
         }
     }
 
+    Control createControl(Composite parent)
+    {
+        workbenchWindow.addPageListener(DataSourceManagementToolbar.this);
+        IWorkbenchPage activePage = workbenchWindow.getActivePage();
+        if (activePage != null) {
+            pageOpened(activePage);
+        }
+
+        // Register as datasource listener in all datasources
+        // We need it because at this moment there could be come already loaded registries (on startup)
+        final DBeaverCore core = DBeaverCore.getInstance();
+        core.getDataSourceProviderRegistry().addDataSourceRegistryListener(DataSourceManagementToolbar.this);
+        for (IProject project : core.getLiveProjects()) {
+            if (project.isOpen()) {
+                DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
+                if (registry != null) {
+                    handleRegistryLoad(registry);
+                }
+            }
+        }
+
+        Composite comboGroup = new Composite(parent, SWT.NONE);
+        GridLayout gl = new GridLayout(3, false);
+        gl.marginWidth = 0;
+        gl.marginHeight = 0;
+        comboGroup.setLayout(gl);
+
+        connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+        GridData gd = new GridData();
+        gd.widthHint = 120;
+        connectionCombo.setLayoutData(gd);
+        connectionCombo.setVisibleItemCount(15);
+        connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
+        connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
+        connectionCombo.select(0);
+        fillDataSourceList(true);
+        connectionCombo.addSelectionListener(new SelectionListener()
+        {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                changeDataSourceSelection();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+                widgetSelected(e);
+            }
+        });
+
+        databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
+        gd = new GridData();
+        gd.widthHint = 120;
+        databaseCombo.setLayoutData(gd);
+        databaseCombo.setVisibleItemCount(15);
+        databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
+        databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
+        databaseCombo.select(0);
+        databaseCombo.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                changeDataBaseSelection();
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+                widgetSelected(e);
+            }
+        });
+        updateDatabaseList(true);
+
+        resultSetSize = new Text(comboGroup, SWT.BORDER);
+        resultSetSize.setTextLimit(10);
+        gd = new GridData();
+        gd.widthHint = 30;
+
+        resultSetSize.setToolTipText(CoreMessages.toolbar_datasource_selector_resultset_segment_size);
+        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer != null) {
+            resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS)));
+        }
+        //resultSetSize.setDigits(7);
+        resultSetSize.setLayoutData(gd);
+        resultSetSize.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+        resultSetSize.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+            }
+
+            @Override
+            public void focusLost(FocusEvent e)
+            {
+                changeResultSetSize();
+            }
+        });
+        comboGroup.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e)
+            {
+                DataSourceManagementToolbar.this.dispose();
+            }
+        });
+        return comboGroup;
+    }
+
+    public static class ToolbarContribution extends WorkbenchWindowControlContribution {
+        public ToolbarContribution()
+        {
+            super("datasource_selector_control");
+        }
+
+        @Override
+        protected Control createControl(Composite parent)
+        {
+            DataSourceManagementToolbar toolbar = new DataSourceManagementToolbar(DBeaverCore.getActiveWorkbenchWindow());
+            return toolbar.createControl(parent);
+        }
+    }
 }

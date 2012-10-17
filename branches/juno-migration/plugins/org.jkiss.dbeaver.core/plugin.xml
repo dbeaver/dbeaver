@@ -1066,8 +1066,9 @@
                 <command commandId="org.jkiss.dbeaver.core.rollback"/>
                 <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn"/>
             </toolbar>
-            <toolbar id="datasource-settings" label="Transactions">
-
+            <toolbar id="datasource-settings" label="Datasource">
+                <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
+                </control>
             </toolbar>
 
         </menuContribution>
@@ -1392,7 +1393,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.perspectives">
-        <perspective name="%perspective.name" class="org.jkiss.dbeaver.core.DBeaverPerspective" id="org.jkiss.dbeaver.core.perspective"/>
+        <perspective name="%perspective.name" class="org.jkiss.dbeaver.ui.perspective.DBeaverPerspective" id="org.jkiss.dbeaver.core.perspective"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
