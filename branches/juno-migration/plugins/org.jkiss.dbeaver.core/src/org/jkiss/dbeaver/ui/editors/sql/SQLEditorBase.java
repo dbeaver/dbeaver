@@ -42,6 +42,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
@@ -178,6 +179,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             }
         }
 
+        IContextService service = (IContextService)getSite().getService(IContextService.class);
+        if (service != null) {
+            service.activateContext("org.jkiss.dbeaver.ui.editors.sql"); //$NON-NLS-1$
+        }
     }
 
     @Override
@@ -628,4 +633,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             return null;
         }
     }
+
+
 }

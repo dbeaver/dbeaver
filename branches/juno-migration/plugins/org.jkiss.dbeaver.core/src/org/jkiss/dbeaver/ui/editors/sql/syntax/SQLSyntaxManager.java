@@ -24,6 +24,7 @@ import org.eclipse.jface.text.rules.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -72,7 +73,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
     public SQLSyntaxManager()
     {
-        themeManager = DBeaverCore.getInstance().getWorkbench().getThemeManager();
+        themeManager = PlatformUI.getWorkbench().getThemeManager();
     }
 
     public void dispose()

@@ -87,7 +87,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private DatabaseEditorAdapterFactory editorsAdapter;
     //private DBeaverProgressProvider progressProvider;
     private IWorkspace workspace;
-    private IWorkbench workbench;
     private IProject tempProject;
     private OSDescriptor localSystem;
 
@@ -423,14 +422,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return projectRegistry;
     }
 
-    public IWorkbench getWorkbench()
-    {
-        if (this.workbench == null) {
-            this.workbench = PlatformUI.getWorkbench();
-        }
-        return this.workbench;
-    }
-
     public IPreferenceStore getGlobalPreferenceStore()
     {
         return plugin.getPreferenceStore();
@@ -441,11 +432,12 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     {
         try {
             IRunnableContext runnableContext;
-            IWorkbenchWindow workbenchWindow = getWorkbench().getActiveWorkbenchWindow();
+            IWorkbench workbench = PlatformUI.getWorkbench();
+            IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
             if (workbenchWindow != null) {
-                runnableContext = new ProgressMonitorDialog(getWorkbench().getActiveWorkbenchWindow().getShell());
+                runnableContext = new ProgressMonitorDialog(workbench.getActiveWorkbenchWindow().getShell());
             } else {
-                runnableContext = this.getWorkbench().getProgressService();
+                runnableContext = workbench.getProgressService();
             }
             runnableContext.run(true, true, new IRunnableWithProgress() {
                 @Override
@@ -463,10 +455,11 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public void runInProgressService(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
-        if (this.getWorkbench() == null || this.getWorkbench().getProgressService() == null) {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        if (workbench == null || workbench.getProgressService() == null) {
             runnable.run(VoidProgressMonitor.INSTANCE);
         } else {
-            this.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {
+            workbench.getProgressService().run(true, true, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
@@ -500,7 +493,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable)
     {
         try {
-            this.getWorkbench().getProgressService().runInUI(context, new IRunnableWithProgress() {
+            PlatformUI.getWorkbench().getProgressService().runInUI(context, new IRunnableWithProgress() {
                 @Override
                 public void run(IProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
@@ -624,11 +617,12 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     public static IWorkbenchWindow getActiveWorkbenchWindow()
     {
-        IWorkbenchWindow window = instance.plugin.getWorkbench().getActiveWorkbenchWindow();
+        IWorkbench workbench = PlatformUI.getWorkbench();
+        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
         if (window != null) {
             return window;
         }
-        IWorkbenchWindow[] windows = instance.plugin.getWorkbench().getWorkbenchWindows();
+        IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
         if (windows.length > 0) {
             return windows[0];
         }
