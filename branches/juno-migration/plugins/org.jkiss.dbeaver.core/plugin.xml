@@ -1888,41 +1888,5 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="sql script commit fetch timeout"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="update http proxy"/>
     </extension>
-    <extension
-          id="product"
-          point="org.eclipse.core.runtime.products">
-       <product
-             application="org.jkiss.dbeaver.core.application.standalone"
-             name="DBeaver">
-          <property
-                name="windowImages"
-                value="icons/dbeaver.png">
-          </property>
-          <property
-                name="aboutText"
-                value="DBeaver - Universal Database Manager">
-          </property>
-          <property
-                name="aboutImage"
-                value="product_lg.gif">
-          </property>
-          <property
-                name="startupForegroundColor"
-                value="000000">
-          </property>
-          <property
-                name="startupProgressRect"
-                value="25,45,150,15">
-          </property>
-          <property
-                name="startupMessageRect"
-                value="25,25,200,15">
-          </property>
-          <property
-                name="preferenceCustomization"
-                value="plugin_customization.ini">
-          </property>
-       </product>
-    </extension>
 
 </plugin>

@@ -185,14 +185,13 @@
     </extension>
 
     <extension id="product" point="org.eclipse.core.runtime.products">
-        <product application="org.jkiss.dbeaver.core.application" description="%productSubTitle" name="DBeaver">
+        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver">
             <property name="aboutText" value="DBeaver - Universal Database Manager"/>
             <property name="copyright" value="%productCopyright"/>
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
-            <property name="windowImages" value="icons/dbeaver.png"/>
-            <property name="aboutImage" value="product_lg.gif"/>
+            <property name="windowImages" value="platform:/plugin/org.jkiss.dbeaver.core/icons/dbeaver.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
             <property name="startupMessageRect" value="25,25,200,15"/>
@@ -240,11 +239,11 @@
 
     <extension point="org.eclipse.ui.splashHandlers">
         <splashHandler
-                class="org.jkiss.dbeaver.ui.splash.DBeaverSplashHandler"
+                class="org.jkiss.dbeaver.core.application.DBeaverSplashHandler"
                 id="org.jkiss.dbeaver.ui.splash.interactive">
         </splashHandler>
         <splashHandlerProductBinding
-                productId="org.jkiss.dbeaver.core.product"
+                productId="org.jkiss.dbeaver.core.application.product"
                 splashId="org.jkiss.dbeaver.ui.splash.interactive">
         </splashHandlerProductBinding>
     </extension>

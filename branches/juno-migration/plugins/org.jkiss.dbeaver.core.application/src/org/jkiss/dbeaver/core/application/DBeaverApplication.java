@@ -25,8 +25,6 @@ import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.DBeaverConstants;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.io.File;
 import java.net.URL;
@@ -36,6 +34,8 @@ import java.net.URL;
  */
 public class DBeaverApplication implements IApplication
 {
+
+    public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
 
     /* (non-Javadoc)
     * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
@@ -89,8 +89,9 @@ public class DBeaverApplication implements IApplication
     }
 
     private static File getDefaultWorkspaceLocation() {
-        File userHomeDir = RuntimeUtils.getUserHomeDir();
-        return new File(userHomeDir, DBeaverConstants.DBEAVER_DEFAULT_DIR);
+        return new File(
+            System.getProperty("user.home"),
+            DBEAVER_DEFAULT_DIR);
     }
 
     /* (non-Javadoc)

@@ -157,6 +157,11 @@ public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEv
 
     private void dispose()
     {
+        IWorkbenchPage activePage = workbenchWindow.getActivePage();
+        if (activePage != null) {
+            pageClosed(activePage);
+        }
+
         DBeaverCore.getInstance().getDataSourceProviderRegistry().removeDataSourceRegistryListener(this);
         for (DBPDataSourceRegistry registry : handledRegistries) {
             registry.removeDataSourceListener(this);
@@ -267,6 +272,7 @@ public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEv
             }
         }
         if (activePart == part) {
+            UIUtils.updateMainWindowTitle(workbenchWindow);
             return;
         }
 
@@ -298,7 +304,10 @@ public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEv
             protected Control createControl(Composite parent)
             {
                 workbenchWindow.addPageListener(ApplicationToolbarDataSources.this);
-                //workbench.addWindowListener();
+                IWorkbenchPage activePage = workbenchWindow.getActivePage();
+                if (activePage != null) {
+                    pageOpened(activePage);
+                }
 
                 // Register as datasource listener in all datasources
                 // We need it because at this moment there could be come already loaded registries (on startup)
@@ -778,9 +787,9 @@ public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEv
     {
         // Do nothing
 
-        //if (part == activePart) {
-        //    setActiveEditor(null);
-        //}
+//        if (part == activePart) {
+//            setActivePart(null);
+//        }
     }
 
     @Override

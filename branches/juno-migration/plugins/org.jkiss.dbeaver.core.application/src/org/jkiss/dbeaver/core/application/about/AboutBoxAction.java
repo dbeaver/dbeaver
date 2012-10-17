@@ -16,12 +16,11 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.actions.common;
+package org.jkiss.dbeaver.core.application.about;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.actions.ActionDelegate;
-import org.jkiss.dbeaver.ui.dialogs.misc.AboutBoxDialog;
 
 
 public class AboutBoxAction extends ActionDelegate

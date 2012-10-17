@@ -151,9 +151,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         standalone = flag;
     }
 
-    public Version getVersion()
+    public static Version getVersion()
     {
-        return Platform.getProduct().getDefiningBundle().getVersion();
+        return DBeaverActivator.getInstance().getBundle().getVersion();
     }
 
     private void initialize()

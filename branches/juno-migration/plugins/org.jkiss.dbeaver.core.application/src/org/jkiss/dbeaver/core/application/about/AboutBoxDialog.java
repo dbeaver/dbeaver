@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.dialogs.misc;
+package org.jkiss.dbeaver.core.application.about;
 
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
@@ -40,6 +40,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -91,7 +93,7 @@ public class AboutBoxDialog extends Dialog
         GridData gd;
 
         IProduct product = Platform.getProduct();
-        String productVersion = product.getDefiningBundle().getVersion().toString();
+        String productVersion = DBeaverCore.getVersion().toString();
 
         Label titleLabel = new Label(group, SWT.NONE);
         titleLabel.setBackground(background);

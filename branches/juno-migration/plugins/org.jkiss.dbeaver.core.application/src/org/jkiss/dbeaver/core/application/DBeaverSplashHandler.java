@@ -17,7 +17,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.splash;
+package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -32,6 +32,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -116,7 +117,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             public void paintControl(PaintEvent e) {
                 String productVersion = "";
                 if (product != null) {
-                    productVersion = "v" + product.getDefiningBundle().getVersion().toString();
+                    productVersion = "v" + DBeaverCore.getVersion().toString();
                 }
                 String osVersion = Platform.getOS() + "\n" + Platform.getOSArch();
                 if (boldFont != null) {
