@@ -136,7 +136,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return isClosing;
     }
 
-    void setClosing(boolean closing)
+    public void setClosing(boolean closing)
     {
         isClosing = closing;
     }
@@ -146,7 +146,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return standalone;
     }
 
-    static void setStandalone(boolean flag)
+    public static void setStandalone(boolean flag)
     {
         standalone = flag;
     }

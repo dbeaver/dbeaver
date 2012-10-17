@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
@@ -29,6 +29,9 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.jkiss.dbeaver.core.ApplicationToolbarDataSources;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.actions.common.AboutBoxAction;
@@ -59,7 +62,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IWorkbenchAction searchHelpAction;
     private IWorkbenchAction dynamicHelpAction;
     private IWorkbenchAction newWindowAction;
-    private ApplicationToolbarDataSources dataSourceToolbar;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
     {
@@ -177,7 +179,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_TXN));
 
         IToolBarManager toolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-        dataSourceToolbar = new ApplicationToolbarDataSources(getActionBarConfigurer().getWindowConfigurer().getWindow());
+        ApplicationToolbarDataSources dataSourceToolbar = new ApplicationToolbarDataSources(getActionBarConfigurer().getWindowConfigurer().getWindow());
         dataSourceToolbar.fillToolBar(toolbar);
         coolBar.add(new ToolBarContributionItem(toolbar, IActionConstants.TOOLBAR_DATASOURCE));
     }

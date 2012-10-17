@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.core.standalone;
+package org.jkiss.dbeaver.core.application;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;

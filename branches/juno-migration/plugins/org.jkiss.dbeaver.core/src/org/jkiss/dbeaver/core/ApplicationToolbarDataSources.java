@@ -74,7 +74,7 @@ import java.util.List;
 /**
  * DataSource Toolbar
  */
-class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
+public class ApplicationToolbarDataSources implements DBPRegistryListener, DBPEventListener, IPropertyChangeListener, IPageListener, IPartListener, ISelectionListener {
     static final Log log = LogFactory.getLog(ApplicationToolbarDataSources.class);
 
     public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
