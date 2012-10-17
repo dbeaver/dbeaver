@@ -21,11 +21,10 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
  * ResourcePropertyTester
@@ -75,8 +74,7 @@ public class ResourcePropertyTester extends PropertyTester
 
     public static void firePropertyChange(String propName)
     {
-        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
-        service.requestEvaluation(NAMESPACE + "." + propName);
+        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
 }
