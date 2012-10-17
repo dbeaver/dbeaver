@@ -162,7 +162,7 @@
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
-            <property name="windowImages" value="platform:/plugin/org.jkiss.dbeaver.core/icons/dbeaver.png"/>
+            <property name="windowImages" value="platform:/plugin/org.jkiss.dbeaver.core.application/icons/dbeaver.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
             <property name="startupMessageRect" value="25,25,200,15"/>

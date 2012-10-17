@@ -1431,7 +1431,7 @@
         <column class="org.jkiss.dbeaver.ui.editors.text.LineNumberColumn"
             enabled="false"
             global="true"
-            id="org.eclipse.ui.editors.columns.linenumbers"
+            id="org.jkiss.dbeaver.ui.editors.columns.linenumbers"
             includeInMenu="true"
             name="Line numbers">
             <placement gravity="0.9"/>

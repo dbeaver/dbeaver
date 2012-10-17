@@ -61,7 +61,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     /**
      * The contribution id of the line number / change ruler.
      */
-    public static final String ID = "org.eclipse.ui.editors.columns.linenumbers"; //$NON-NLS-1$
+    public static final String ID = "org.jkiss.dbeaver.ui.editors.columns.linenumbers"; //$NON-NLS-1$
 
     private static final String FG_COLOR_KEY = "lineNumberForeground";
     private static final String BG_COLOR_KEY = "lineNumberBackground";
