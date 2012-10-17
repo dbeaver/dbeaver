@@ -1776,7 +1776,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.exportWizards">
-        <category id="org.jkiss.dbeaver.core.export.resources" name="Resources"/>
+        <category id="org.jkiss.dbeaver.core.export.resources" name="DBeaver"/>
         <wizard
              category="org.jkiss.dbeaver.core.export.resources"
              class="org.jkiss.dbeaver.ui.export.project.ProjectExportWizard"
@@ -1800,7 +1800,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.importWizards">
-        <category id="org.jkiss.dbeaver.core.import.resources" name="Resources"/>
+        <category id="org.jkiss.dbeaver.core.import.resources" name="DBeaver"/>
         <wizard
             category="org.jkiss.dbeaver.core.import.resources"
             class="org.jkiss.dbeaver.ui.export.project.ProjectImportWizard"
