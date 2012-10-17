@@ -31,7 +31,6 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.keys.IBindingService;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ext.IAutoSaveEditorInput;
@@ -55,6 +54,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     static final Log log = LogFactory.getLog(ApplicationWorkbenchAdvisor.class);
 
     private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
+    public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$
+
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
@@ -82,11 +83,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 //        for (Binding binding : bindingService.getBindings()) {
 //            System.out.println("binding:" + binding);
 //        }
-        for (Scheme scheme : bindingService.getDefinedSchemes()) {
-            if (!scheme.getId().equals(DBeaverConstants.DBEAVER_SCHEME_NAME)) {
-                scheme.undefine();
-            }
-        }
+//        for (Scheme scheme : bindingService.getDefinedSchemes()) {
+//            if (!scheme.getId().equals(DBEAVER_SCHEME_NAME)) {
+//                scheme.undefine();
+//            }
+//        }
 
     }
 

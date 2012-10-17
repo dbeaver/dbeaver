@@ -24,6 +24,7 @@ import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 
 import java.io.File;
@@ -69,6 +70,9 @@ public class DBeaverApplication implements IApplication
 */
         System.out.println("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         System.out.println("Workspace path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+        PlatformUI.getPreferenceStore().setDefault(
+            IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,
+            ApplicationWorkbenchAdvisor.DBEAVER_SCHEME_NAME);
         try {
             int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
             if (returnCode == PlatformUI.RETURN_RESTART) {
