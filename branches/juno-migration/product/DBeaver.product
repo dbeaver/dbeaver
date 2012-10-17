@@ -16,7 +16,7 @@
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i48="/org.jkiss.dbeaver.core/icons/dbeaver.png"/>
+   <windowImages i48="/org.jkiss.dbeaver.core.application/icons/dbeaver.png"/>
 
    <splash
       location="org.jkiss.dbeaver.core"

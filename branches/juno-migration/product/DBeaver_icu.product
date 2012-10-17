@@ -4,7 +4,6 @@
 <product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.product" application="org.jkiss.dbeaver.core.application" version="1.6.4" useFeatures="false" includeLaunchers="true">
 
    <aboutInfo>
-      <image path="product_lg.gif"/>
       <text>
          DBeaver - Universal Database Manager
       </text>
@@ -17,7 +16,7 @@
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
-   <windowImages i48="/org.jkiss.dbeaver.core/icons/dbeaver.png"/>
+   <windowImages i48="/org.jkiss.dbeaver.core.application/icons/dbeaver.png"/>
 
    <splash
       location="org.jkiss.dbeaver.core"

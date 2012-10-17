@@ -9,7 +9,7 @@
       </text>
    </aboutInfo>
 
-   <configIni>
+   <configIni use="">
    </configIni>
 
    <plugins>
