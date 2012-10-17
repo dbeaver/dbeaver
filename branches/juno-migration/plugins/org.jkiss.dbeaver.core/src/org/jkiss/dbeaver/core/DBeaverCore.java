@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
@@ -462,14 +463,18 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public void runInProgressService(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
-        this.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {
-            @Override
-            public void run(IProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                runnable.run(RuntimeUtils.makeMonitor(monitor));
-            }
-        });
+        if (this.getWorkbench() == null || this.getWorkbench().getProgressService() == null) {
+            runnable.run(VoidProgressMonitor.INSTANCE);
+        } else {
+            this.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {
+                @Override
+                public void run(IProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    runnable.run(RuntimeUtils.makeMonitor(monitor));
+                }
+            });
+        }
     }
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
