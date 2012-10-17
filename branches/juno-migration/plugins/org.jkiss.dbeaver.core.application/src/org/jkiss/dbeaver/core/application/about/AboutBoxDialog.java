@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.BusyIndicator;
@@ -31,6 +32,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
@@ -42,6 +44,7 @@ import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.application.Activator;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -51,6 +54,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public class AboutBoxDialog extends Dialog
 {
     private final Font TITLE_FONT;
+
+    private Image ABOUT_IMAGE = Activator.getImageDescriptor("icons/about_circle.png").createImage();
 
     public AboutBoxDialog(Shell shell)
     {
@@ -132,7 +137,7 @@ public class AboutBoxDialog extends Dialog
         gd.horizontalAlignment = GridData.CENTER;
         gd.grabExcessHorizontalSpace = true;
         imageLabel.setLayoutData(gd);
-        imageLabel.setImage(DBIcon.ABOUT.getImage());
+        imageLabel.setImage(ABOUT_IMAGE);
 
         Label versionLabel = new Label(group, SWT.NONE);
         versionLabel.setBackground(background);

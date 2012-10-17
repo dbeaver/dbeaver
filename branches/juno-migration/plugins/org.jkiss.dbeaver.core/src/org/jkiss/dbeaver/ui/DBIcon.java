@@ -212,9 +212,7 @@ public enum DBIcon
     OVER_LAMP("over_lamp", "/icons/over/lamp_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
     OVER_KEY("over_key", "/icons/over/key_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
     OVER_LOCK("over_lock", "/icons/over/lock_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
-    OVER_REFERENCE("over_reference", "/icons/over/reference_ovr.png"), //$NON-NLS-1$ //$NON-NLS-2$
-
-    ABOUT("about", "/icons/about_circle.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    OVER_REFERENCE("over_reference", "/icons/over/reference_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     private final String token;
     private final String path;

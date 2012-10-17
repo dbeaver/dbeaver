@@ -25,11 +25,11 @@
       startupMessageRect="25,25,200,15"
       startupForegroundColor="000000" />
    <launcher name="dbeaver">
-      <linux icon="/org.jkiss.dbeaver.core/icons/logo/dbeaver.xpm"/>
-      <macosx icon="/org.jkiss.dbeaver.core/icons/logo/dbeaver.icns"/>
+      <linux icon="/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.xpm"/>
+      <macosx icon="/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.icns"/>
       <solaris/>
       <win useIco="true">
-         <ico path="/org.jkiss.dbeaver.core/icons/logo/dbeaver.ico"/>
+         <ico path="/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.ico"/>
          <bmp/>
       </win>
    </launcher>
