@@ -104,6 +104,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             syntaxManager,
             getCompletionProcessor(),
             new SQLHyperlinkDetector(this, syntaxManager)));
+        setKeyBindingScopes(new String[] { "org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql" });  //$NON-NLS-1$
     }
 
     protected IContentAssistProcessor getCompletionProcessor()
@@ -177,11 +178,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             if (sourceViewer instanceof ITextViewerExtension) {
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
             }
-        }
-
-        IContextService service = (IContextService)getSite().getService(IContextService.class);
-        if (service != null) {
-            service.activateContext("org.jkiss.dbeaver.ui.editors.sql"); //$NON-NLS-1$
         }
     }
 

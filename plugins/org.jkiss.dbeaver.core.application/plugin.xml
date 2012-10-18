@@ -97,62 +97,57 @@
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
-        <scheme
-              description="%productName"
-              id="org.jkiss.dbeaver.defaultKeyScheme"
-              name="%productName"
-              parentId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
 
         <!-- Text editors -->
-        <key commandId="org.eclipse.ui.edit.text.contentAssist.proposals" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SPACE"/>
-        <key commandId="org.eclipse.ui.edit.text.hippieCompletion" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+SPACE"/>
-        <key commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+SPACE"/>
+        <key commandId="org.eclipse.ui.edit.text.contentAssist.proposals" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SPACE"/>
+        <key commandId="org.eclipse.ui.edit.text.hippieCompletion" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+SPACE"/>
+        <key commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SPACE"/>
 
-        <key commandId="org.eclipse.ui.file.refresh" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F5"/>
+        <key commandId="org.eclipse.ui.file.refresh" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F5"/>
 
-        <key commandId="org.eclipse.ui.newWizard" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+N"/>
-        <key commandId="org.eclipse.ui.file.save" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+S"/>
-        <key commandId="org.eclipse.ui.file.saveAs" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+S"/>
-        <key commandId="org.eclipse.ui.file.close" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F4"/>
-        <key commandId="org.eclipse.ui.file.print" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+P"/>
-        <key commandId="org.eclipse.ui.edit.rename" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F2"/>
-        <key commandId="org.eclipse.ui.file.properties" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+ENTER"/>
+        <key commandId="org.eclipse.ui.newWizard" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+N"/>
+        <key commandId="org.eclipse.ui.file.save" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+S"/>
+        <key commandId="org.eclipse.ui.file.saveAs" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+S"/>
+        <key commandId="org.eclipse.ui.file.close" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F4"/>
+        <key commandId="org.eclipse.ui.file.print" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+P"/>
+        <key commandId="org.eclipse.ui.edit.rename" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F2"/>
+        <key commandId="org.eclipse.ui.file.properties" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ENTER"/>
 
-        <key commandId="org.eclipse.ui.edit.copy" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+C"/>
-        <key commandId="org.eclipse.ui.edit.paste" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+V"/>
-        <key commandId="org.eclipse.ui.edit.cut" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+X"/>
-        <key commandId="org.eclipse.ui.edit.delete" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="DELETE"/>
-        <key commandId="org.eclipse.ui.edit.undo" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Z"/>
-        <key commandId="org.eclipse.ui.edit.redo" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+Z"/>
-        <key commandId="org.eclipse.ui.edit.selectAll" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+A"/>
+        <key commandId="org.eclipse.ui.edit.copy" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+C"/>
+        <key commandId="org.eclipse.ui.edit.paste" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+V"/>
+        <key commandId="org.eclipse.ui.edit.cut" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+X"/>
+        <key commandId="org.eclipse.ui.edit.delete" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="DELETE"/>
+        <key commandId="org.eclipse.ui.edit.undo" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Z"/>
+        <key commandId="org.eclipse.ui.edit.redo" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+Z"/>
+        <key commandId="org.eclipse.ui.edit.selectAll" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+A"/>
 
-        <key commandId="org.eclipse.ui.edit.findReplace" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F"/>
-        <key commandId="org.eclipse.ui.edit.findNext" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F3"/>
-        <key commandId="org.eclipse.ui.edit.findPrevious" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="SHIFT+F3"/>
-        <key commandId="org.eclipse.ui.edit.findIncremental" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+F3"/>
+        <key commandId="org.eclipse.ui.edit.findReplace" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F"/>
+        <key commandId="org.eclipse.ui.edit.findNext" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F3"/>
+        <key commandId="org.eclipse.ui.edit.findPrevious" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+F3"/>
+        <key commandId="org.eclipse.ui.edit.findIncremental" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+F3"/>
 
 
-        <key commandId="org.eclipse.ui.navigate.nextTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+ARROW_RIGHT"/>
-        <key commandId="org.eclipse.ui.navigate.previousTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+ARROW_LEFT"/>
-        <key commandId="org.eclipse.ui.navigate.nextSubTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+ARROW_RIGHT"/>
-        <key commandId="org.eclipse.ui.navigate.previousSubTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+ARROW_LEFT"/>
+        <key commandId="org.eclipse.ui.navigate.nextTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_RIGHT"/>
+        <key commandId="org.eclipse.ui.navigate.previousTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_LEFT"/>
+        <key commandId="org.eclipse.ui.navigate.nextSubTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+ARROW_RIGHT"/>
+        <key commandId="org.eclipse.ui.navigate.previousSubTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+ARROW_LEFT"/>
 
-        <key commandId="org.eclipse.ui.window.nextEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+TAB"/>
-        <key commandId="org.eclipse.ui.window.previousEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+TAB"/>
-        <key commandId="org.eclipse.ui.window.switchToEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+E"/>
+        <key commandId="org.eclipse.ui.window.nextEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+TAB"/>
+        <key commandId="org.eclipse.ui.window.previousEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+TAB"/>
+        <key commandId="org.eclipse.ui.window.switchToEditor" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+E"/>
 
-        <key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+BS"/>
+        <key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+BS"/>
 
-        <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+G"/>
-        <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
-        <key commandId="org.eclipse.ui.edit.text.moveLineUp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_UP"/>
-        <key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+Y"/>
-        <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+J"/>
+        <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+G"/>
+        <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_DOWN"/>
+        <key commandId="org.eclipse.ui.edit.text.moveLineUp" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_UP"/>
+        <key commandId="org.eclipse.ui.edit.text.delete.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Y"/>
+        <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+J"/>
 
-        <key commandId="org.eclipse.ui.edit.text.upperCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+U"/>
-        <key commandId="org.eclipse.ui.edit.text.lowerCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+L"/>
+        <key commandId="org.eclipse.ui.edit.text.upperCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+U"/>
+        <key commandId="org.eclipse.ui.edit.text.lowerCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+L"/>
 
-        <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
+        <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F1"/>
     </extension>
 
     <extension id="product" point="org.eclipse.core.runtime.products">
