@@ -131,9 +131,8 @@
         <key commandId="org.eclipse.ui.edit.findPrevious" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="SHIFT+F3"/>
         <key commandId="org.eclipse.ui.edit.findIncremental" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+F3"/>
 
-
-        <key commandId="org.eclipse.ui.navigate.nextTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+ARROW_RIGHT"/>
-        <key commandId="org.eclipse.ui.navigate.previousTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+ARROW_LEFT"/>
+        <key commandId="org.eclipse.ui.navigate.nextTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+SHIFT+ARROW_RIGHT"/>
+        <key commandId="org.eclipse.ui.navigate.previousTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="ALT+SHIFT+ARROW_LEFT"/>
         <key commandId="org.eclipse.ui.navigate.nextSubTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+ARROW_RIGHT"/>
         <key commandId="org.eclipse.ui.navigate.previousSubTab" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+ARROW_LEFT"/>
 
