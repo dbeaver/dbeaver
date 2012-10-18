@@ -19,12 +19,10 @@
    </license>
 
    <requires>
-      <import feature="org.eclipse.gef"/>
-      <import plugin="org.eclipse.ui"/>
-      <import plugin="org.eclipse.ui.intro"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.core.resources"/>
       <import plugin="org.eclipse.core.expressions"/>
+      <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.ui.workbench"/>
       <import plugin="org.eclipse.ui.workbench.texteditor"/>
       <import plugin="org.eclipse.ui.views.properties.tabbed"/>
@@ -33,6 +31,7 @@
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="com.jcraft.jsch"/>
       <import plugin="org.eclipse.ui.views"/>
+      <import plugin="org.eclipse.gef"/>
    </requires>
 
    <plugin
