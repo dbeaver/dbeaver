@@ -99,7 +99,11 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
         if (activeEditorPart == targetEditor) {
             return;
         }
-        activeEditorPart = (SQLEditorBase)targetEditor;
+        if (targetEditor instanceof SQLEditorBase) {
+        	activeEditorPart = (SQLEditorBase)targetEditor;
+        } else {
+        	activeEditorPart = null;
+        }
 
         if (activeEditorPart != null) {
             // Update editor actions

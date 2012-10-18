@@ -43,7 +43,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.swt.IFocusService;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -352,12 +352,11 @@ public class Spreadsheet extends Composite implements Listener {
         grid.setRowLabelProvider(rowLabelProvider);
 
         {
-            final IFocusService focusService = (IFocusService) site.getService(IFocusService.class);
-            focusService.addFocusTracker(grid, SPREADSHEET_CONTROL_ID);
+            UIUtils.addFocusTracker(site, SPREADSHEET_CONTROL_ID, grid);
             grid.addDisposeListener(new DisposeListener() {
                 @Override
                 public void widgetDisposed(DisposeEvent e) {
-                    focusService.removeFocusTracker(grid);
+                    UIUtils.removeFocusTracker(site, grid);
                 }
             });
         }

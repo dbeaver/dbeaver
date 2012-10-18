@@ -331,7 +331,7 @@ public class OracleDataSource extends JDBCDataSource
         if (!(object instanceof OracleSchema)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active schema");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
         try {
             JDBCUtils.executeSQL(context, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
         } catch (SQLException e) {

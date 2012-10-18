@@ -66,11 +66,10 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
     private static IStorage getStorageFromInput(Object element)
     {
+        if (element instanceof IEditorInput) {
+            return ContentUtils.getFileFromEditorInput((IEditorInput) element);
+        }
         if (element instanceof IAdaptable) {
-            IFile file = (IFile) ((IAdaptable) element).getAdapter(IFile.class);
-            if (file != null) {
-                return file;
-            }
             IStorage storage = (IStorage) ((IAdaptable) element).getAdapter(IStorage.class);
             if (storage != null) {
                 return storage;
@@ -512,7 +511,12 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                 return false;
             }
 
-            delta = delta.findMember(getFile().getFullPath());
+            IFile file = getFile();
+            if (file == null) {
+                return false;
+            }
+
+            delta = delta.findMember(file.getFullPath());
 
             if (delta == null) {
                 return false;
@@ -527,7 +531,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                         break;
                     }
 
-                    boolean isSynchronized = computeModificationStamp(getFile()) == info.modificationStamp;
+                    boolean isSynchronized = computeModificationStamp(file) == info.modificationStamp;
                     if ((IResourceDelta.ENCODING & delta.getFlags()) != 0 && isSynchronized) {
                         runnable = new SafeChange(fileEditorInput) {
                             @Override

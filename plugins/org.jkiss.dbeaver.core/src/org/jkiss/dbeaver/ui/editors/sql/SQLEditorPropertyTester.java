@@ -19,10 +19,9 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
  * DatabaseEditorPropertyTester
@@ -59,8 +58,7 @@ public class SQLEditorPropertyTester extends PropertyTester
 
     public static void firePropertyChange(String propName)
     {
-        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
-        service.requestEvaluation(NAMESPACE + "." + propName);
+        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
 }

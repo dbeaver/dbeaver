@@ -3694,13 +3694,6 @@ public class LightGrid extends Canvas {
                 false,
                 false,
                 EventSource.KEYBOARD);
-            if (selEvent != null) {
-                selEvent.stateMask = e.stateMask;
-                selEvent.character = e.character;
-                selEvent.keyCode = e.keyCode;
-                selEvent.data = newPos;
-                notifyListeners(SWT.Selection, selEvent);
-            }
             //}
 
             if (!shiftPressed)
@@ -3715,6 +3708,14 @@ public class LightGrid extends Canvas {
                 }
             }
             showItem(newSelection);
+
+            if (selEvent != null) {
+                selEvent.stateMask = e.stateMask;
+                selEvent.character = e.character;
+                selEvent.keyCode = e.keyCode;
+                selEvent.data = newPos;
+                notifyListeners(SWT.Selection, selEvent);
+            }
 
             redraw();
         }

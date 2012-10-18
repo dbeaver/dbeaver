@@ -35,19 +35,18 @@ public class DataFormatterDescriptor extends AbstractDescriptor
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataFormatter"; //$NON-NLS-1$
 
     private String id;
-    private String className;
     private String name;
     private String description;
     private List<PropertyDescriptorEx> properties = new ArrayList<PropertyDescriptorEx>();
     private DBDDataFormatterSample sample;
-    private Class<?> formatterClass;
+    private ObjectType formatterType;
 
     public DataFormatterDescriptor(IConfigurationElement config)
     {
         super(config.getContributor());
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.formatterType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
 
@@ -87,17 +86,9 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         return properties;
     }
 
-    public Class<?> getFormatterClass()
-    {
-        if (formatterClass == null) {
-            formatterClass = getObjectClass(className);
-        }
-        return formatterClass;
-    }
-
     public DBDDataFormatter createFormatter() throws IllegalAccessException, InstantiationException
     {
-        Class clazz = getFormatterClass();
+        Class clazz = formatterType.getObjectClass();
         if (clazz == null) {
             return null;
         }

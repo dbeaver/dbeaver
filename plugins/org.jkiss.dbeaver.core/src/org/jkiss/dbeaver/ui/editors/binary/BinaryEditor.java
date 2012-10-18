@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -84,6 +83,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         if (localPath == null) {
             return;
         }
+        localPath = ContentUtils.convertPathToWorkspacePath(localPath);
         delta = delta.findMember(localPath);
         if (delta == null) {
             return;
@@ -198,21 +198,19 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     private void loadBinaryContent()
     {
         String charset = null;
-        IEditorInput unresolved = getEditorInput();
+        IEditorInput editorInput = getEditorInput();
         File systemFile = null;
-        if (unresolved instanceof IPathEditorInput) {  // eg. FileInPlaceEditorInput
-            final IPath absolutePath = Platform.getLocation().append(
-                ((IPathEditorInput) unresolved).getPath());
-            systemFile = absolutePath.toFile();
-        }
-        // open file
-        try {
-            manager.openFile(systemFile, charset);
-        }
-        catch (IOException e) {
-            log.error("Could not open binary content", e);
+        if (editorInput instanceof IPathEditorInput) {
+            systemFile = ((IPathEditorInput) editorInput).getPath().toFile();
         }
         if (systemFile != null) {
+            // open file
+            try {
+                manager.openFile(systemFile, charset);
+            }
+            catch (IOException e) {
+                log.error("Could not open binary content", e);
+            }
             setPartName(systemFile.getName());
         }
     }
@@ -247,9 +245,10 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     public void doSave(IProgressMonitor monitor)
     {
         IEditorInput editorInput = getEditorInput();
-        if (editorInput instanceof IPathEditorInput) {
-            final IPath absolutePath = Platform.getLocation().append(
-                ((IPathEditorInput) editorInput).getPath());
+        // Sync file changes
+        IFile file = ContentUtils.getFileFromEditorInput(editorInput);
+        if (file != null) {
+            final IPath absolutePath = file.getLocation();
             File systemFile = absolutePath.toFile();
             // Save to file
             try {
@@ -259,10 +258,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 log.error("Could not save binary content", e);
             }
             // Sync file changes
-            IFile file = (IFile) editorInput.getAdapter(IFile.class);
-            if (file != null) {
-                ContentUtils.syncFile(RuntimeUtils.makeMonitor(monitor), file);
-            }
+            ContentUtils.syncFile(RuntimeUtils.makeMonitor(monitor), file);
         }
     }
 

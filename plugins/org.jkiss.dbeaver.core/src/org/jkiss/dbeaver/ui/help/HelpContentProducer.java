@@ -18,14 +18,14 @@
  */
 package org.jkiss.dbeaver.ui.help;
 
-import org.eclipse.help.IHelpContentProducer;
+//import org.eclipse.help.IHelpContentProducer;
 
 import java.io.InputStream;
 import java.util.Locale;
 
-public class HelpContentProducer implements IHelpContentProducer {
+public class HelpContentProducer /*implements IHelpContentProducer*/ {
 
-	@Override
+/*	@Override
     public InputStream getInputStream(String pluginID, String href, Locale locale) {
         if (href.equals(IHelpContextIds.CTX_DRIVER_EDITOR)) {
 
@@ -35,5 +35,5 @@ public class HelpContentProducer implements IHelpContentProducer {
         }
 		return null;
 	}
-
+*/
 }

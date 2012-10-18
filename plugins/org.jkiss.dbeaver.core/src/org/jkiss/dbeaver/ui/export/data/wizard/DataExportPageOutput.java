@@ -78,6 +78,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     updatePageCompletion();
                 }
             });
+            ((GridData)directoryText.getLayoutData()).horizontalSpan = 3;
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);

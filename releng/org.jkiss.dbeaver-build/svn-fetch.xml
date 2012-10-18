@@ -1,0 +1,15 @@
+<project name="FetchScript" default="fetch">
+
+    <target name="fetch">
+        <available property="${destination}.exist" file="${destination}" />
+        <property name="username" value="" />
+        <property name="password" value="" />
+
+        <antcall target="FetchFromSVN" />
+    </target>
+
+    <target name="FetchFromSVN" unless="${destination}.exist">
+        <svn command="export" url="${url}/${tag}/${path}" rev="${revision}" dest="${destination}" username="${username}" password="${password}" force="true" />
+    </target>
+
+</project>

@@ -52,7 +52,6 @@ public class DBNDiagram extends DBNResource
     @Override
     public Image getNodeIcon()
     {
-
         if (image == null) {
             image = Activator.getImageDescriptor("icons/erd.png").createImage();
         }

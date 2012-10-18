@@ -600,7 +600,7 @@ public class GenericDataSource extends JDBCDataSource
             throw new DBException("Active database can't be changed for this kind of datasource!");
         }
         String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active catalog");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement(changeQuery);
             try {

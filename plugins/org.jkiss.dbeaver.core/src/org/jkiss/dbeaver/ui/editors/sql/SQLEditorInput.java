@@ -49,13 +49,9 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     {
         super(file);
         this.scriptName = file.getFullPath().removeFileExtension().lastSegment();
-        try {
-            dataSourceContainer = getScriptDataSource(file);
-            if (dataSourceContainer == null) {
-                setScriptDataSource(getFile(), null);
-            }
-        } catch (CoreException e) {
-            log.error(e);
+        this.dataSourceContainer = getScriptDataSource(file);
+        if (this.dataSourceContainer == null) {
+            setScriptDataSource(getFile(), null);
         }
     }
 
@@ -71,13 +67,9 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
             return;
         }
         dataSourceContainer = container;
-        try {
-            IFile file = getFile();
-            if (file != null) {
-                setScriptDataSource(file, dataSourceContainer);
-            }
-        } catch (CoreException e) {
-            log.error(e);
+        IFile file = getFile();
+        if (file != null) {
+            setScriptDataSource(file, dataSourceContainer);
         }
     }
 
@@ -135,20 +127,27 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     }
 
     public static DBSDataSourceContainer getScriptDataSource(IFile file)
-            throws CoreException
     {
-        String dataSourceId = file.getPersistentProperty(PROP_DATA_SOURCE_ID);
-        if (dataSourceId != null) {
-            return DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject()).getDataSource(dataSourceId);
-        } else {
+        try {
+            String dataSourceId = file.getPersistentProperty(PROP_DATA_SOURCE_ID);
+            if (dataSourceId != null) {
+                return DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject()).getDataSource(dataSourceId);
+            } else {
+                return null;
+            }
+        } catch (CoreException e) {
+            log.error("Internal error while reading file property", e);
             return null;
         }
     }
 
     public static void setScriptDataSource(IFile file, DBSDataSourceContainer dataSourceContainer)
-        throws CoreException
     {
-        file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
+        try {
+            file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
+        } catch (CoreException e) {
+            log.error("Internal error while writing file property", e);
+        }
     }
 
 }

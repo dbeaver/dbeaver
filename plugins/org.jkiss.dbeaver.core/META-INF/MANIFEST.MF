@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Core Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 1.6.4
+Bundle-Version: 2.0.0.beta
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
@@ -38,7 +38,7 @@ Export-Package: org.apache.commons.logging,
  org.jkiss.dbeaver.model.impl.jdbc.edit,
  org.jkiss.dbeaver.model.impl.jdbc.edit.struct,
  org.jkiss.dbeaver.model.impl.jdbc.struct,
- org.jkiss.dbeaver.model.impl.project,
+ org.jkiss.dbeaver.model.impl.resources,
  org.jkiss.dbeaver.model.impl.struct,
  org.jkiss.dbeaver.model.meta,
  org.jkiss.dbeaver.model.navigator,
@@ -76,7 +76,6 @@ Export-Package: org.apache.commons.logging,
  org.jkiss.dbeaver.ui.dialogs.connection,
  org.jkiss.dbeaver.ui.dialogs.data,
  org.jkiss.dbeaver.ui.dialogs.driver,
- org.jkiss.dbeaver.ui.dialogs.misc,
  org.jkiss.dbeaver.ui.dialogs.struct,
  org.jkiss.dbeaver.ui.dialogs.tools,
  org.jkiss.dbeaver.ui.dnd,
@@ -107,7 +106,6 @@ Export-Package: org.apache.commons.logging,
  org.jkiss.dbeaver.ui.preferences,
  org.jkiss.dbeaver.ui.properties,
  org.jkiss.dbeaver.ui.properties.tabbed,
- org.jkiss.dbeaver.ui.splash,
  org.jkiss.dbeaver.ui.views.navigator.database,
  org.jkiss.dbeaver.ui.views.navigator.database.load,
  org.jkiss.dbeaver.ui.views.navigator.project,
@@ -117,7 +115,6 @@ Export-Package: org.apache.commons.logging,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: lib/commons-logging-1.0.4.jar,
  lib/commons-jexl-2.0.1.jar,
- lib/jsch-20120328.jar,
  .
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -129,11 +126,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.swt,
  org.eclipse.jface,
  org.eclipse.jface.text,
- org.eclipse.help.ui,
- org.eclipse.help.webapp,
- org.mortbay.jetty.server,
- org.mortbay.jetty.util,
- org.eclipse.equinox.http.jetty,
  org.jkiss.utils;visibility:=reexport,
  com.jcraft.jsch
 Bundle-Vendor: Serge Rieder

@@ -22,14 +22,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.impl.project.DefaultResourceHandlerImpl;
+import org.jkiss.dbeaver.model.impl.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.SecurityUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,12 +41,9 @@ public class ProjectRegistry implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
-    private final List<DBPResourceHandler> resourceHandlerList = new ArrayList<DBPResourceHandler>();
-    private final Map<String, DBPResourceHandler> resourceHandlerMap = new HashMap<String, DBPResourceHandler>();
-    private final Map<String, DBPResourceHandler> extensionsMap = new HashMap<String, DBPResourceHandler>();
+    private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<String, ResourceHandlerDescriptor>();
 
-    private final Map<String, DataSourceRegistry> projectDatabases = new HashMap<String, DataSourceRegistry>();
-    private String activeProjectId;
+    private final Map<IProject, DataSourceRegistry> projectDatabases = new HashMap<IProject, DataSourceRegistry>();
     private IProject activeProject;
     private IWorkspace workspace;
 
@@ -63,20 +61,10 @@ public class ProjectRegistry implements IResourceChangeListener {
                 ResourceHandlerDescriptor handlerDescriptor = new ResourceHandlerDescriptor(ext);
                 handlerDescriptors.add(handlerDescriptor);
             }
-        }
-        for (ResourceHandlerDescriptor descriptor : handlerDescriptors) {
-            try {
-                final DBPResourceHandler handler = descriptor.getHandler();
-                if (handler == null) {
-                    continue;
+            for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
+                for (String root : rhd.getRoots()) {
+                    rootMapping.put(root, rhd);
                 }
-                resourceHandlerMap.put(descriptor.getResourceType(), handler);
-                resourceHandlerList.add(handler);
-                for (String ext : descriptor.getFileExtensions()) {
-                    extensionsMap.put(ext, handler);
-                }
-            } catch (Exception e) {
-                log.error("Can't instantiate resource handler " + descriptor.getResourceType(), e);
             }
         }
     }
@@ -84,11 +72,11 @@ public class ProjectRegistry implements IResourceChangeListener {
     public void loadProjects(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
     {
         final DBeaverCore core = DBeaverCore.getInstance();
-        this.activeProjectId = core.getGlobalPreferenceStore().getString("project.active");
+        String activeProjectName = core.getGlobalPreferenceStore().getString("project.active");
 
         List<IProject> projects = core.getLiveProjects();
-        if (CommonUtils.isEmpty(projects)) {
-            // Create initial project
+        if (DBeaverCore.isStandalone() && CommonUtils.isEmpty(projects)) {
+            // Create initial project (onloy for standalone version)
             monitor.beginTask("Create general project", 1);
             try {
                 createGeneralProject(workspace, monitor);
@@ -98,23 +86,24 @@ public class ProjectRegistry implements IResourceChangeListener {
             projects = core.getLiveProjects();
         }
 
-        monitor.beginTask("Open projects", projects.size());
+        monitor.beginTask("Open active project", projects.size());
         try {
-            List<IProject> initializedProjects = new ArrayList<IProject>();
+            List<IProject> availableProjects = new ArrayList<IProject>();
             for (IProject project : projects) {
                 if (project.exists() && !project.isHidden()) {
-                    monitor.subTask("Initialize project " + project.getName());
-                    try {
-                        initializeProject(project, monitor);
-                        initializedProjects.add(project);
-                    } catch (CoreException e) {
-                        log.error("Can't open project '" + project.getName() + "'", e);
+                    if (project.getName().equals(activeProjectName)) {
+                        activeProject = project;
+                        break;
                     }
+                    availableProjects.add(project);
                 }
                 monitor.worked(1);
             }
-            if (getActiveProject() == null && !initializedProjects.isEmpty()) {
-                setActiveProject(initializedProjects.get(0));
+            if (activeProject == null && !availableProjects.isEmpty()) {
+                setActiveProject(availableProjects.get(0));
+            }
+            if (activeProject != null) {
+                activeProject.open(monitor);
             }
         } finally {
             monitor.done();
@@ -126,6 +115,9 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public void dispose()
     {
+        if (!this.projectDatabases.isEmpty()) {
+            log.warn("Some projects are still open: " + this.projectDatabases.keySet());
+        }
         // Dispose all DS registries
         for (DataSourceRegistry dataSourceRegistry : this.projectDatabases.values()) {
             dataSourceRegistry.dispose();
@@ -137,6 +129,7 @@ public class ProjectRegistry implements IResourceChangeListener {
             handlerDescriptor.dispose();
         }
         this.handlerDescriptors.clear();
+        this.rootMapping.clear();
 
         // Remove listeners
         if (workspace != null) {
@@ -166,22 +159,27 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public DBPResourceHandler getResourceHandler(IResource resource)
     {
-        if (resource == null || !resource.isAccessible() || resource.isPhantom()) {
+        if (resource == null || resource.isHidden() || resource.isPhantom()) {
             // Skip not accessible hidden and phantom resources
             return null;
         }
-        if (resource instanceof IContainer && resource.isHidden()) {
-            // Skip hidden folders and projects
+        if (resource.getParent() instanceof IProject && resource.getName().equals(DataSourceRegistry.CONFIG_FILE_NAME)) {
+            // Skip connections settings file
+            // TODO: remove in some older version
             return null;
         }
         DBPResourceHandler handler = null;
-        String resourceType = getResourceType(resource);
-        if (resourceType != null) {
-            handler = getResourceHandler(resourceType);
+        for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
+            if (rhd.canHandle(resource)) {
+                handler = rhd.getHandler();
+                break;
+            }
         }
-        if (handler == null) {
-            if (!CommonUtils.isEmpty(resource.getFileExtension())) {
-                handler = getResourceHandlerByExtension(resource.getFileExtension());
+        if (handler == null && resource instanceof IFolder) {
+            IPath relativePath = resource.getFullPath().makeRelativeTo(resource.getProject().getFullPath());
+            ResourceHandlerDescriptor handlerDescriptor = rootMapping.get(relativePath.toString());
+            if (handlerDescriptor != null) {
+                handler = handlerDescriptor.getHandler();
             }
         }
         if (handler == null) {
@@ -190,30 +188,15 @@ public class ProjectRegistry implements IResourceChangeListener {
         return handler;
     }
 
-    public static String getResourceType(IResource resource)
+    public IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType)
     {
-        String resourceType;
-        try {
-            resourceType = resource.getPersistentProperty(DBPResourceHandler.PROP_RESOURCE_TYPE);
-        } catch (CoreException e) {
-            log.warn(e);
-            return null;
+        for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
+            DBPResourceHandler handler = rhd.getHandler();
+            if (handler != null && handler.getClass() == handlerType) {
+                return project.getFolder(rhd.getDefaultRoot());
+            }
         }
-        if (CommonUtils.isEmpty(resourceType) && resource instanceof IFolder && !(resource.getParent() instanceof IProject)) {
-            // For folders try to get parent's handler
-            return getResourceType(resource.getParent());
-        }
-        return resourceType;
-    }
-
-    public DBPResourceHandler getResourceHandler(String resourceType)
-    {
-        return resourceHandlerMap.get(resourceType);
-    }
-
-    public DBPResourceHandler getResourceHandlerByExtension(String extension)
-    {
-        return extensionsMap.get(extension);
+        return project.getFolder(DefaultResourceHandlerImpl.DEFAULT_ROOT);
     }
 
     public DataSourceRegistry getDataSourceRegistry(IProject project)
@@ -222,8 +205,7 @@ public class ProjectRegistry implements IResourceChangeListener {
             log.warn("Project '" + project.getName() + "' is not open - can't get datasource registry");
             return null;
         }
-        String projectId = getProjectId(project);
-        DataSourceRegistry dataSourceRegistry = projectId == null ? null : projectDatabases.get(projectId);
+        DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
         if (dataSourceRegistry == null) {
             throw new IllegalStateException("Project '" + project.getName() + "' not found in registry");
         }
@@ -232,26 +214,14 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public DataSourceRegistry getActiveDataSourceRegistry()
     {
-        final DataSourceRegistry dataSourceRegistry = projectDatabases.get(activeProjectId);
+        if (activeProject == null) {
+            return null;
+        }
+        final DataSourceRegistry dataSourceRegistry = projectDatabases.get(activeProject);
         if (dataSourceRegistry == null) {
             throw new IllegalStateException("No registry for active project found");
         }
         return dataSourceRegistry;
-    }
-
-    public static String getProjectId(IProject project)
-    {
-        try {
-            String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
-            if (projectId == null) {
-                project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, projectId = SecurityUtils.generateGUID(false));
-                log.warn("Project '" + project.getName() + "' didn't has project ID");
-            }
-            return projectId;
-        } catch (CoreException e) {
-            log.error(e);
-            return null;
-        }
     }
 
     public IProject getActiveProject()
@@ -261,59 +231,35 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public void setActiveProject(IProject project)
     {
-        IProject oldValue = this.activeProject;
+        final IProject oldValue = this.activeProject;
         this.activeProject = project;
-        this.activeProjectId = getProjectId(project);
-        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue("project.active", activeProjectId);
+        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue("project.active", project == null ? "" : project.getName());
 
-        synchronized (projectListeners) {
-            for (DBPProjectListener listener : projectListeners) {
-                listener.handleActiveProjectChange(oldValue, activeProject);
+        GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_ACTIVE_PROJECT);
+
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run()
+            {
+                synchronized (projectListeners) {
+                    for (DBPProjectListener listener : projectListeners) {
+                        listener.handleActiveProjectChange(oldValue, activeProject);
+                    }
+                }
             }
-        }
+        });
     }
 
     private IProject createGeneralProject(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
     {
         final IProject project = workspace.getRoot().getProject(
-            DBeaverCore.getInstance().isStandalone() ?
+            DBeaverCore.isStandalone() ?
                 "General" : "DBeaver");
         project.create(monitor);
         project.open(monitor);
         final IProjectDescription description = workspace.newProjectDescription(project.getName());
         description.setComment("General DBeaver project");
         project.setDescription(description, monitor);
-        project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, SecurityUtils.generateGUID(false));
-
-        return project;
-    }
-
-    private IProject initializeProject(final IProject project, IProgressMonitor monitor) throws CoreException
-    {
-        // Open project
-        if (!project.isOpen()) {
-            project.open(monitor);
-        }
-        // Set project ID
-        String projectId = project.getPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID);
-        if (projectId == null) {
-            project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, projectId = SecurityUtils.generateGUID(false));
-        }
-        if (projectId.equals(activeProjectId)) {
-            activeProject = project;
-        }
-        // Init all resource handlers
-        for (DBPResourceHandler handler : resourceHandlerList) {
-            try {
-                handler.initializeProject(project, monitor);
-            } catch (DBException e) {
-                log.warn("Can't initialize project using resource handler", e);
-            }
-        }
-
-        // Init DS registry
-        DataSourceRegistry dataSourceRegistry = new DataSourceRegistry(project);
-        projectDatabases.put(projectId, dataSourceRegistry);
 
         return project;
     }
@@ -326,23 +272,19 @@ public class ProjectRegistry implements IResourceChangeListener {
      */
     public void addProject(IProject project)
     {
-        try {
-            initializeProject(project, new NullProgressMonitor());
-        } catch (CoreException e) {
-            log.error("Can't add project to registry", e);
-        }
+        projectDatabases.put(project, new DataSourceRegistry(project));
     }
 
-    public void removeProject(String projectId)
+    public void removeProject(IProject project)
     {
         // Remove project from registry
-        if (projectId != null) {
-            DataSourceRegistry dataSourceRegistry = projectDatabases.get(projectId);
+        if (project != null) {
+            DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
             if (dataSourceRegistry == null) {
-                log.warn("Project '" + projectId + "' not found in the registry");
+                log.warn("Project '" + project.getName() + "' not found in the registry");
             } else {
                 dataSourceRegistry.dispose();
-                projectDatabases.remove(projectId);
+                projectDatabases.remove(project);
             }
         }
     }
@@ -359,12 +301,12 @@ public class ProjectRegistry implements IResourceChangeListener {
                 IProject project = (IProject)projectDelta.getResource();
                 if (projectDelta.getKind() == IResourceDelta.REMOVED) {
                     if (project == activeProject) {
-                        activeProject = null;
+                        setActiveProject(null);
                     }
                     GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                 } else if (projectDelta.getKind() == IResourceDelta.ADDED) {
-                    if (project.isOpen() && activeProjectId.equals(getProjectId(project))) {
-                        this.activeProject = project;
+                    if (activeProject == null) {
+                        setActiveProject(project);
                     }
                     GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                 }
@@ -373,34 +315,3 @@ public class ProjectRegistry implements IResourceChangeListener {
     }
 
 }
-
-/*
-                    // Add new project in registry
-                    if (projectDatabases.get(project) != null) {
-                        log.warn("Project '" + project.getName() + "' is already in the registry");
-                    } else {
-                        try {
-                            initializeProject(project, VoidProgressMonitor.INSTANCE.getNestedMonitor());
-                        } catch (CoreException e) {
-                            log.error(e);
-                        }
-                    }
-
-
-                } else if (projectDelta.getKind() == IResourceDelta.REMOVED) {
-                    // Remove project from registry
-                    DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
-                    if (dataSourceRegistry == null) {
-                        log.warn("Project '" + project.getName() + "' not found in the registry");
-                    } else {
-                        dataSourceRegistry.dispose();
-                        projectDatabases.remove(project);
-                    }
-                }
-            }
-        }
-    }
-
-
-}
-*/

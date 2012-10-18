@@ -21,8 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.services.IEvaluationService;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
@@ -41,6 +40,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_CUT = "canCut";
     public static final String PROP_CAN_MOVE = "canMove";
+    public static final String PROP_CAN_TOGGLE = "canToggle";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
 
@@ -51,7 +51,15 @@ public class ResultSetPropertyTester extends PropertyTester
             return false;
         }
         ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
+        if (rsv != null) {
+            return checkResultSetProperty(rsv, property, expectedValue);
+        } else {
+            return false;
+        }
+    }
 
+    private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
+    {
         if (PROP_HAS_DATA.equals(property)) {
             return rsv.getRowsCount() > 0;
         } else if (PROP_CAN_COPY.equals(property)) {
@@ -84,14 +92,20 @@ public class ResultSetPropertyTester extends PropertyTester
             }
         } else if (PROP_CHANGED.equals(property)) {
             return rsv.hasChanges();
+        } else if (PROP_CAN_TOGGLE.equals(property)) {
+            return true;
         }
         return false;
     }
 
     public static void firePropertyChange(String propName)
     {
-        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
-        service.requestEvaluation(NAMESPACE + "." + propName);
+        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
+//        ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+//        if (commandService != null) {
+//            commandService.refreshElements(NAMESPACE + "." + propName, null);
+//            System.out.println("REFRESH " + NAMESPACE + "." + propName);
+//        }
     }
 
 }

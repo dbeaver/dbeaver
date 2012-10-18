@@ -115,7 +115,7 @@ public class DataFormatterRegistry
     {
         customProfiles = new ArrayList<DBDDataFormatterProfile>();
 
-        File storeFile = new File(DBeaverCore.getInstance().getRootPath().toFile(), CONFIG_FILE_NAME);
+        File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, true);
         if (!storeFile.exists()) {
             return;
         }
@@ -151,7 +151,7 @@ public class DataFormatterRegistry
         if (customProfiles == null) {
             return;
         }
-        File storeFile = new File(DBeaverCore.getInstance().getRootPath().toFile(), CONFIG_FILE_NAME);
+        File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, false);
         try {
             OutputStream os = new FileOutputStream(storeFile);
             try {

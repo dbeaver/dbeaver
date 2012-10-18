@@ -303,7 +303,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     null,
                     PrefConstants.CONFIRM_ENTITY_REJECT,
                     ConfirmationDialog.QUESTION,
-                    ConfirmationDialog.WARNING,
                     getDatabaseObject().getName()) != IDialogConstants.YES_ID)
                 {
                     return;
@@ -821,6 +820,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         IEditorPart activeEditor = getActiveEditor();
         if (activeEditor != null) {
+            if (adapter.isAssignableFrom(activeEditor.getClass())) {
+                return activeEditor;
+            }
             Object result = activeEditor.getAdapter(adapter);
             if (result != null) {
                 return result;
