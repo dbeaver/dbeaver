@@ -384,9 +384,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     private String getLocalizedString(String string, String type, String defaultValue) {
         if (Property.DEFAULT_LOCAL_STRING.equals(string)) {
-            Bundle bundle = FrameworkUtil.getBundle(declaringClass);
+            Class<?> propOwner = getGetter().getDeclaringClass();
+            Bundle bundle = FrameworkUtil.getBundle(propOwner);
             ResourceBundle resourceBundle = Platform.getResourceBundle(bundle);
-            String messageID = "meta." + declaringClass.getName() + "." + BeanUtils.getPropertyNameFromGetter(getGetter().getName()) + "." + type;
+            String messageID = "meta." + propOwner.getName() + "." + BeanUtils.getPropertyNameFromGetter(getGetter().getName()) + "." + type;
             String result;
             try {
                 result = resourceBundle.getString(messageID);

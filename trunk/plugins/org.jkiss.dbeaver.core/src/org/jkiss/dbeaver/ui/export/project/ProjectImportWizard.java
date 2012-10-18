@@ -31,7 +31,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -357,7 +356,6 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
             // Set project properties
             loadResourceProperties(monitor, project, projectElement);
-            project.setPersistentProperty(DBPResourceHandler.PROP_PROJECT_ID, null);
 
             // Load resources
             importChildResources(
@@ -378,9 +376,6 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             }
             throw new DBException("Error importing project resources", e);
         }
-
-        // Add project to registry (it will also initialize this project)
-        DBeaverCore.getInstance().getProjectRegistry().addProject(project);
 
         return project;
     }

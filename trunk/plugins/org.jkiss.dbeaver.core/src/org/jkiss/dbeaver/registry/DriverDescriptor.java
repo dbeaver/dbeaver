@@ -34,6 +34,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -908,7 +909,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                         null,
                         PrefConstants.CONFIRM_DRIVER_DOWNLOAD,
                         ConfirmationDialog.QUESTION,
-                        ConfirmationDialog.WARNING,
                         getName(),
                         libNames) == IDialogConstants.YES_ID) {
                         // Download drivers
@@ -1223,6 +1223,25 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             return clientManager.getDefaultClientHomeId();
         }
         return null;
+    }
+
+    public static File getCustomDriversHome()
+    {
+        File homeFolder;
+        // Try to use custom drivers path from preferences
+        String driversHome = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_HOME);
+        if (!CommonUtils.isEmpty(driversHome)) {
+            homeFolder = new File(driversHome);
+        } else {
+            homeFolder = DBeaverActivator.getInstance().getStateLocation().toFile();
+        }
+        if (!homeFolder.exists()) {
+            if (!homeFolder.mkdirs()) {
+                log.warn("Can't create drivers folder '" + homeFolder.getAbsolutePath() + "'");
+            }
+        }
+
+        return homeFolder;
     }
 
     static class DriversParser implements SAXListener

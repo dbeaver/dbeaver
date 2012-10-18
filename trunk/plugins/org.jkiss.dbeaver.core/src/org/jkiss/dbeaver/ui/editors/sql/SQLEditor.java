@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -69,6 +68,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -99,14 +99,11 @@ public class SQLEditor extends SQLEditorBase
     private SQLQueryJob curJob;
     private boolean curJobRunning;
     private DataContainer dataContainer;
-    private PartListener partListener;
-    // Editor close flag. Set to true if editor closed by some user action (except workbench close)
-    private boolean editorClosed = false;
 
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
     private static Image imgLog;
-    //private IProject project;
+    private DBSDataSourceContainer dataSourceContainer;
 
     static {
         imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
@@ -119,7 +116,6 @@ public class SQLEditor extends SQLEditorBase
         super();
         ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
         dataContainer = new DataContainer();
-        partListener = new PartListener();
     }
 
     @Override
@@ -129,30 +125,43 @@ public class SQLEditor extends SQLEditorBase
         return dataSourceContainer == null ? null : dataSourceContainer.getDataSource();
     }
 
+    public IProject getProject()
+    {
+        IFile file = ContentUtils.convertPathToWorkspaceFile(getEditorInput().getPath());
+        return file == null ? null : file.getProject();
+    }
+
     @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
-        return getEditorInput().getDataSourceContainer();
+        return dataSourceContainer;
     }
 
     @Override
     public boolean setDataSourceContainer(DBSDataSourceContainer container)
     {
-        final DBSDataSourceContainer curContainer = getDataSourceContainer();
-        if (container == curContainer) {
+        if (container == dataSourceContainer) {
             return true;
         }
         // Acquire ds container
-        if (curContainer != null) {
-//            if (resultsView.isDirty()) {
-//                resultsView.rejectChanges();
-//            }
-//            resultsView.clearAll();
-            curContainer.release(this);
+        if (dataContainer != null) {
+            dataSourceContainer.release(this);
+            dataSourceContainer = null;
         }
 
         closeJob();
-        getEditorInput().setDataSourceContainer(container);
+
+        dataSourceContainer = container;
+        IPathEditorInput input = getEditorInput();
+        if (input == null) {
+            return false;
+        }
+        IFile file = ContentUtils.convertPathToWorkspaceFile(input.getPath());
+        if (file == null || !file.exists()) {
+            log.warn("File '" + input.getPath() + "' doesn't exists");
+            return false;
+        }
+        SQLEditorInput.setScriptDataSource(file, container);
         checkConnected();
 
         onDataSourceChange();
@@ -250,21 +259,18 @@ public class SQLEditor extends SQLEditorBase
     }
 
     @Override
-    public SQLEditorInput getEditorInput()
+    public IPathEditorInput getEditorInput()
     {
-        return (SQLEditorInput) super.getEditorInput();
+        return (IPathEditorInput) super.getEditorInput();
     }
 
     @Override
     public void init(IEditorSite site, IEditorInput editorInput)
         throws PartInitException
     {
-        if (!(editorInput instanceof SQLEditorInput)) {
-            throw new PartInitException("Invalid Input: Must be SQLEditorInput");
-        }
         super.init(site, editorInput);
 
-        IProject project = getEditorInput().getProject();
+        IProject project = getProject();
         if (project != null) {
             final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
             if (dataSourceRegistry != null) {
@@ -272,13 +278,27 @@ public class SQLEditor extends SQLEditorBase
             }
         }
 
-        site.getPage().addPartListener(partListener);
-
         // Acquire ds container
         final DBSDataSourceContainer dsContainer = getDataSourceContainer();
         if (dsContainer != null) {
             dsContainer.acquire(this);
         }
+    }
+
+    @Override
+    protected void doSetInput(IEditorInput editorInput) throws CoreException
+    {
+        if (!(editorInput instanceof IPathEditorInput)) {
+            throw new PartInitException("Invalid Input: Must be " + IPathEditorInput.class.getSimpleName());
+        }
+        IPathEditorInput input = (IPathEditorInput)editorInput;
+        IFile file = ContentUtils.convertPathToWorkspaceFile(input.getPath());
+        if (file == null || !file.exists()) {
+            throw new PartInitException("File '" + input.getPath() + "' doesn't exists");
+        }
+        dataSourceContainer = SQLEditorInput.getScriptDataSource(file);
+
+        super.doSetInput(input);
     }
 
     @Override
@@ -611,21 +631,9 @@ public class SQLEditor extends SQLEditorBase
             dsContainer.release(this);
         }
 
-        getSite().getPage().removePartListener(partListener);
-        IFile fileToDelete = null;
-
-        if (editorClosed) {
-            // If it is close then delete it
-            final IDocument document = getDocument();
-            if (document != null) {
-                if (document.get().trim().isEmpty()) {
-                    fileToDelete = getEditorInput().getFile();
-                }
-            }
-        }
         closeJob();
 
-        IProject project = getEditorInput().getProject();
+        IProject project = getProject();
         if (project != null) {
             final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
             if (dataSourceRegistry != null) {
@@ -796,37 +804,4 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private class PartListener implements IPartListener {
-        @Override
-        public void partActivated(IWorkbenchPart part)
-        {
-
-        }
-
-        @Override
-        public void partBroughtToTop(IWorkbenchPart part)
-        {
-
-        }
-
-        @Override
-        public void partClosed(IWorkbenchPart part)
-        {
-            if (part == SQLEditor.this) {
-                editorClosed = true;
-            }
-        }
-
-        @Override
-        public void partDeactivated(IWorkbenchPart part)
-        {
-
-        }
-
-        @Override
-        public void partOpened(IWorkbenchPart part)
-        {
-
-        }
-    }
 }

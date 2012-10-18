@@ -30,7 +30,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -51,6 +53,8 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
     private Text proxyUserText;
     private Text proxyPasswordText;
     private SecuredPasswordEncrypter encrypter;
+
+    private Text customDriversHome;
 
     @Override
     public void init(IWorkbench workbench)
@@ -77,6 +81,9 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
         proxyUserText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_user, ""); //$NON-NLS-2$
         proxyPasswordText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_password, "", SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
 
+        Group drivers = UIUtils.createControlGroup(composite, "Drivers location", 3, GridData.FILL_HORIZONTAL, 300);
+        customDriversHome = UIUtils.createOutputFolderChooser(drivers, null);
+
         performDefaults();
 
         return composite;
@@ -101,6 +108,7 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
             }
         }
         proxyPasswordText.setText(passwordString);
+        customDriversHome.setText(DriverDescriptor.getCustomDriversHome().getAbsolutePath());
 
         super.performDefaults();
     }
@@ -123,6 +131,7 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
             }
         }
         store.setValue(PrefConstants.UI_PROXY_PASSWORD, password);
+        store.setValue(PrefConstants.UI_DRIVERS_HOME, customDriversHome.getText());
         RuntimeUtils.savePreferenceStore(store);
 
         return super.performOk();
@@ -139,4 +148,5 @@ public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPrefe
     {
 
     }
+
 }

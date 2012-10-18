@@ -6,11 +6,11 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.jkiss.dbeaver.ext.wmi.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.ui.views;bundle-version="3.5.0",
+ org.eclipse.ui.views,
  org.eclipse.jface,
- org.eclipse.jface.text;bundle-version="3.5.0",
- org.jkiss.dbeaver.core;bundle-version="1.0.0",
- org.eclipse.ui.workbench.texteditor;bundle-version="3.6.0",
+ org.eclipse.jface.text,
+ org.jkiss.dbeaver.core,
+ org.eclipse.ui.workbench.texteditor,
  org.jkiss.wmi;visibility:=reexport
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

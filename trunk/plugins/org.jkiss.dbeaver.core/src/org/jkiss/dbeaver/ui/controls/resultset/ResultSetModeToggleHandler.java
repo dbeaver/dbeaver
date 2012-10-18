@@ -18,16 +18,10 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
-import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
 
 import java.util.Map;
 
@@ -39,8 +33,8 @@ public class ResultSetModeToggleHandler extends ResultSetCommandHandler implemen
     @Override
     public void updateElement(UIElement element, Map parameters)
     {
-        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
-        if (partSite != null) {
+        if (element.getServiceLocator() instanceof IWorkbenchPartSite) {
+            IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator();
             if (partSite.getPart() instanceof ResultSetProvider) {
                 ResultSetViewer rsv = ((ResultSetProvider) partSite.getPart()).getResultSetViewer();
                 if (rsv != null) {

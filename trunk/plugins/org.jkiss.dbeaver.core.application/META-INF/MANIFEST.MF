@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Standalone
+Bundle-SymbolicName: org.jkiss.dbeaver.core.application;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ClassPath: .
+Bundle-Vendor: Serge Rieder
+Bundle-Localization: plugin
+Require-Bundle: org.jkiss.dbeaver.core;bundle-version="2.0.0",
+ org.eclipse.osgi,
+ org.eclipse.equinox.app,
+ org.eclipse.swt,
+ org.eclipse.ui.workbench,
+ org.eclipse.core.runtime,
+ org.eclipse.jface,
+ org.eclipse.core.resources

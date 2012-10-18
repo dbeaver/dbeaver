@@ -1,0 +1,149 @@
+<project default="build">
+    <property environment="env" />
+    <property file="env.properties" />
+
+    <property file="install.properties" />
+    <property file="build.properties" />
+
+    <property name="build.number" value="${env.BUILD_NUMBER}" />
+
+    <target name="build1">
+        <property name="buildDirectory" value="${env.WORKSPACE}/../builds/${env.BUILD_ID}" />
+        <property name="publishDir" value="${buildDirectory}/archive" />
+        <antcall target="do.install.product" />
+    </target>
+    <target name="build">
+    	<echo>USER.HOME=${env.USER.HOME}</echo>
+
+
+        <tstamp>
+            <format property="QUALIFIER" pattern="yyMMddHHmmss" locale="en,UK" />
+            <format property="build.date" pattern="dd.MM.yy-HH:mm" locale="ru,RU" />
+        </tstamp>
+
+        <exec executable="svn" output="svn-info.xml.tmp">
+            <arg value="info" />
+            <arg value="--username" />
+            <arg value="${svn.user}" />
+            <arg value="--password" />
+            <arg value="${svn.password}" />
+            <arg value="--no-auth-cache" />
+            <arg value="--non-interactive" />
+            <arg value="--trust-server-cert" />
+             
+            <arg value="--xml" />
+            <arg value="${svn.url}" />
+        </exec>
+        <xslt in="svn-info.xml.tmp" out="svn-info.text.tmp" style="svn-info.xsl" force="true" />
+        <property file="svn-info.text.tmp" />
+        <delete file="svn-info.text.tmp" />
+
+        <echo file="svn-export.properties">
+svn.revision=${svn.revision}
+svn.tag=${svn.tag}
+svn.url=${svn.url}
+        </echo>
+
+        <property name="buildDirectory" value="${env.WORKSPACE}/../builds/${env.BUILD_ID}" />
+        <property name="publishDir" value="${buildDirectory}/archive" />
+
+
+        <antcall target="checkout">
+            <param name="property.check" value="maps.exist" />
+            <param name="destination" value="${buildDirectory}/maps" />
+            <param name="path" value="${maps.path}" />
+        </antcall>
+
+        <property name="builder" value="${buildDirectory}/config" />
+
+        <antcall target="checkout">
+            <param name="property.check" value="builder.exist" />
+            <param name="destination" value="${builder}" />
+            <param name="path" value="${config.path}" />
+        </antcall>
+        
+        <concat destfile="${builder}/build.properties" append="no" fixlastline="yes">
+            <fileset file="${builder}/custom-build.properties" />
+            <fileset file="${basedir}/common/build.properties" />
+        </concat>
+        <copy file="${basedir}/common/customTargets.xml" todir="${builder}"/>
+
+        <copy todir="${buildDirectory}/${result.build}/maps">
+            <fileset dir="${buildDirectory}/maps" />
+            <filterchain>
+                <expandproperties />
+            </filterchain>
+        </copy>
+
+        <!--java jar="${install.dir}/eclipse/plugins/${launcher}" fork="true" failonerror="true">
+            <jvmarg value="-Xms1024m" />
+            <jvmarg value="-Xmx1024m" />
+            <sysproperty key="publishedRepoLocation" value="${install.dir}/publishedRepo" />
+            <sysproperty key="buildRepoLocation" value="${buildDirectory}/${result.build}/buildRepo" />
+
+            <arg value="-nosplash" />
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-data" />
+            <arg value="${buildDirectory}/workspace" />
+            <arg value="-buildfile" />
+            <arg value="${basedir}/prodict-mirror.xml" />
+        </java-->
+
+        <java jar="${install.dir}/eclipse/plugins/${launcher}" fork="true" failonerror="true">
+            <jvmarg value="-Xms1024m" />
+            <jvmarg value="-Xmx1024m" />
+            <!--jvmarg value="-Xdebug" />
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y" /-->
+            <sysproperty key="forceContextQualifier" value="v${QUALIFIER}" />
+            <sysproperty key="builder" value="${builder}" />
+            <sysproperty key="buildDirectory" value="${buildDirectory}/${result.build}" />
+            <sysproperty key="repoBaseLocation" value="${repoBaseLocation}" />
+            <sysproperty key="baseLocation" value="${install.dir}/eclipse" />
+            <sysproperty key="transformedRepoLocation" value="${transformedRepoLocation}" />
+            <sysproperty key="baseos" value="${baseos}" />
+            <sysproperty key="basews" value="${basews}" />
+            <sysproperty key="basearch" value="${basearch}" />
+            <sysproperty key="product.version" value="${product.version}" />
+
+            <sysproperty key="publishDir" value="${publishDir}" />
+            <sysproperty key="build.number" value="${build.number}" />
+            <sysproperty key="build.date" value="${build.date}" />
+
+            <arg value="-nosplash" />
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <!--arg value="-verbose" /-->
+            <arg value="-data" />
+            <arg value="${buildDirectory}/workspace" />
+            <arg value="-buildfile" />
+            <!--arg value="${install.dir}/eclipse/plugins/${eclipse.pde.build}/scripts/build.xml" /-->
+            <arg value="${install.dir}/eclipse/plugins/${eclipse.pde.build}/scripts/productBuild/productBuild.xml" />
+            
+        </java>
+
+    </target>
+
+    <target name="checkout" unless="${property.check}">
+        <java jar="${install.dir}/eclipse/plugins/${launcher}" fork="true" failonerror="true">
+            <sysproperty key="destination" value="${destination}" />
+            <sysproperty key="username" value="${svn.user}" />
+            <sysproperty key="password" value="${svn.password}" />
+            <sysproperty key="url" value="${svn.url}" />
+            <sysproperty key="tag" value="${svn.tag}" />
+            <sysproperty key="revision" value="${svn.revision}" />
+            <sysproperty key="path" value="${path}" />
+
+            <arg value="-nosplash" />
+            <arg value="-consolelog" />
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-data" />
+            <arg value="${buildDirectory}/workspace" />
+            <arg value="-buildfile" />
+            <arg value="${basedir}/svn-fetch.xml" />
+        </java>
+
+    </target>
+
+</project>

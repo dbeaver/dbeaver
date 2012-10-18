@@ -332,7 +332,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         if (!(object instanceof MySQLCatalog)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
-        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Set active catalog");
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
         try {
             JDBCPreparedStatement dbStat = context.prepareStatement("use " + object.getName());
             try {

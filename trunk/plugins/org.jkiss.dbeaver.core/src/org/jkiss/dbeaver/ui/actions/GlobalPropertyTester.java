@@ -19,9 +19,8 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
  * GlobalPropertyTester
@@ -32,6 +31,7 @@ public class GlobalPropertyTester extends PropertyTester
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.global";
     public static final String PROP_STANDALONE = "standalone";
+    public static final String PROP_HAS_ACTIVE_PROJECT = "hasActiveProject";
     public static final String PROP_HAS_MULTI_PROJECTS = "hasMultipleProjects";
 
     public GlobalPropertyTester() {
@@ -42,16 +42,17 @@ public class GlobalPropertyTester extends PropertyTester
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (property.equals(PROP_HAS_MULTI_PROJECTS)) {
             return DBeaverCore.getInstance().getLiveProjects().size() > 1;
+        } else if (property.equals(PROP_HAS_ACTIVE_PROJECT)) {
+            return DBeaverCore.getInstance().getProjectRegistry().getActiveProject() != null;
         } else if (property.equals(PROP_STANDALONE)) {
-            return DBeaverCore.getInstance().isStandalone();
+            return DBeaverCore.isStandalone();
         }
         return false;
     }
 
     public static void firePropertyChange(String propName)
     {
-        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
-        service.requestEvaluation(NAMESPACE + "." + propName);
+        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
 }

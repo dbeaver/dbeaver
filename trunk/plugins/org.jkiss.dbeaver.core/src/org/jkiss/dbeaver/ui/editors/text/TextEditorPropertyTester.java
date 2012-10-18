@@ -19,9 +19,8 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -61,8 +60,7 @@ public class TextEditorPropertyTester extends PropertyTester
 
     public static void firePropertyChange(String propName)
     {
-        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
-        service.requestEvaluation(NAMESPACE + "." + propName);
+        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
 }

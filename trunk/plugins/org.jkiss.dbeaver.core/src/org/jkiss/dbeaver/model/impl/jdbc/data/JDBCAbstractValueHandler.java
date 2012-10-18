@@ -25,7 +25,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValue;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
@@ -138,8 +138,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             public void keyTraversed(TraverseEvent e)
             {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
-                    controller.updateValue(extractor.getValueFromControl(control));
+                    Object newValue = extractor.getValueFromControl(control);
                     controller.closeInlineEditor();
+                    controller.updateValue(newValue);
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
@@ -147,17 +148,16 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
-                    controller.updateValue(extractor.getValueFromControl(control));
+                    Object newValue = extractor.getValueFromControl(control);
+                    controller.closeInlineEditor();
+                    controller.updateValue(newValue);
                     controller.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 }
             }
         });
-        final IFocusService focusService = (IFocusService) controller.getValueSite().getService(IFocusService.class);
-        if (focusService != null) {
-            focusService.addFocusTracker(control, CELL_VALUE_INLINE_EDITOR);
-        }
+        UIUtils.addFocusTracker(controller.getValueSite(), CELL_VALUE_INLINE_EDITOR, control);
         control.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e)
@@ -191,9 +191,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             @Override
             public void widgetDisposed(DisposeEvent e)
             {
-                if (focusService != null) {
-                    focusService.removeFocusTracker(control);
-                }
+                UIUtils.removeFocusTracker(controller.getValueSite(), control);
             }
         });
     }

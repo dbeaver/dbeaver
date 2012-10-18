@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
@@ -30,15 +31,13 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
-import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -59,37 +58,21 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public static final String CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
-    private final String projectId;
+    private final IProject project;
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
     public DataSourceRegistry(IProject project)
     {
-        this.projectId = ProjectRegistry.getProjectId(project);
+        this.project = project;
         IFile configFile = project.getFile(CONFIG_FILE_NAME);
 
         File dsFile = configFile.getLocation().toFile();
         if (dsFile.exists()) {
             loadDataSources(dsFile, new SimpleStringEncrypter());
         }
-        if (dataSources.isEmpty() && DBeaverCore.getInstance().getLiveProjects().size() == 1) {
-            // If this is first project then try to read file from DBeaver beta
-            dsFile = new File(RuntimeUtils.getBetaDir(), CONFIG_FILE_NAME);
-            if (dsFile.exists()) {
-                try {
-                    loadDataSources(dsFile, new SecuredPasswordEncrypter());
-                    saveDataSources();
-                } catch (EncryptionException e) {
-                    log.warn("Encryption error", e);
-                }
-            }
-        }
         DBeaverCore.getInstance().getDataSourceProviderRegistry().fireRegistryChange(this, true);
-        //if (!dsFile.exists()) {
-            // Generate empty config file
-        //    saveDataSources();
-        //}
     }
 
     public void dispose()
@@ -348,28 +331,36 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     void saveDataSources()
     {
         synchronized (dataSources) {
+            IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
             PasswordEncrypter encrypter = new SimpleStringEncrypter();
             IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
             try {
-                // Save in temp memory to be safe (any error during direct write will corrupt configuration)
-                ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
-                try {
-                    XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET);
-                    xml.setButify(true);
-                    xml.startElement("data-sources");
-                    for (DataSourceDescriptor dataSource : dataSources) {
-                        saveDataSource(xml, dataSource, encrypter);
+                if (dataSources.isEmpty()) {
+                    configFile.delete(true, false, progressMonitor);
+                } else {
+                    // Save in temp memory to be safe (any error during direct write will corrupt configuration)
+                    ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+                    try {
+                        XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET);
+                        xml.setButify(true);
+                        xml.startElement("data-sources");
+                        for (DataSourceDescriptor dataSource : dataSources) {
+                            saveDataSource(xml, dataSource, encrypter);
+                        }
+                        xml.endElement();
+                        xml.flush();
                     }
-                    xml.endElement();
-                    xml.flush();
+                    catch (IOException ex) {
+                        log.warn("IO error while saving datasources", ex);
+                    }
+                    InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+                    if (!configFile.exists()) {
+                        configFile.create(ifs, true, progressMonitor);
+                        configFile.setHidden(true);
+                    } else {
+                        configFile.setContents(ifs, true, false, progressMonitor);
+                    }
                 }
-                catch (IOException ex) {
-                    log.warn("IO error while saving datasources", ex);
-                }
-                InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
-                configFile.setContents(ifs, true, false, VoidProgressMonitor.INSTANCE.getNestedMonitor());
-
-                //configFile.refreshLocal(IFile.DEPTH_ZERO, new NullProgressMonitor());
             } catch (CoreException ex) {
                 log.error("Error saving datasources configuration", ex);
             }
@@ -554,7 +545,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     @Override
     public IProject getProject()
     {
-        return DBeaverCore.getInstance().getProject(projectId);
+        return project;
     }
 
     private class DataSourcesParser implements SAXListener
@@ -766,10 +757,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         // Disconnect
                         disconnected = dataSource.disconnect(monitor);
                     } catch (Exception ex) {
-                        log.error("Can't shutdown data source", ex);
+                        log.error("Can't shutdown data source '" + dataSource.getName() + "'", ex);
                     }
                 }
             }
         }
     }
+
 }

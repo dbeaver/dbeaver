@@ -124,6 +124,8 @@ public class QMMTransactionSavepointInfo extends QMMObject {
             switch (exec.getStatement().getPurpose()) {
                 case USER:
                 case USER_SCRIPT:
+                case UTIL:
+                case DDL:
                     return true;
                 default:
                     break;

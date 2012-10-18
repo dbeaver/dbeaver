@@ -1,15 +1,16 @@
 productName=DBeaver
 productVersion=@productVersion@
 archivePrefix=dbeaver
-product=/org.jkiss.dbeaver.core/${productId}.product
+product=${productId}.product
 
 baseLocation=@baseLocation@
+pluginPath=@pluginPath@
 nsisDirectory=@nsisDirectory@
 buildDirectory=@buildDirectory@
 releaseFilesDirectory=@releaseFilesDirectory@
 
-topLevelElementType = plugin
-topLevelElementId = org.jkiss.dbeaver.core
+#topLevelElementType = feature
+#topLevelElementId = org.jkiss.dbeaver.runtime
 
 buildType=B
 buildId=@buildId@
@@ -17,7 +18,6 @@ buildLabel=@buildLabel@
 
 equinoxLauncherPluginVersion=@equinoxLauncherPluginVersion@
 pdeBuildPluginVersion=@pdeBuildPluginVersion@
-
 
 ###############################################################################
 # Copyright (c) 2003, 2011 IBM Corporation and others.
@@ -43,46 +43,14 @@ pdeBuildPluginVersion=@pdeBuildPluginVersion@
 # Of course any of the settings here can be overridden by spec'ing 
 # them on the command line (e.g., -DbaseLocation=d:/eclipse
 
-#The type of the top level element we are building,  generally "feature"
-#topLevelElementType = feature
-#The id of the top level element we are building
-#topLevelElementId = org.foo.bar
-
 ############# PRODUCT/PACKAGING CONTROL #############
-#product=/plugin or feature id/path/to/.product
 runPackager=true
 
 #Set the name of the archive that will result from the product build.
 #archiveNamePrefix=
 
-# The prefix that will be used in the generated archive.
-#archivePrefix=eclipse
-
 # The location underwhich all of the build output will be collected.
 collectingFolder=${archivePrefix}
-
-# The list of {os, ws, arch} configurations to build.  This 
-# value is a '&' separated list of ',' separate triples.  For example, 
-#     configs=win32,win32,x86 & linux,motif,x86
-# By default the value is *,*,*
-#configs = @configs@
-
-#configs=win32, win32, x86 & \
-#	win32,win32,x86_64 & \
-#	win32,win32,wpf & \
-#	linux, gtk, ppc & \
-#	linux, gtk, x86 & \
-#	linux, gtk, x86_64 & \
-#	linux, motif, x86 & \
-#	solaris, motif, sparc & \
-#	solaris, gtk, sparc & \
-#	aix, motif, ppc & \
-#	hpux, motif, ia64_32 & \
-#	macosx, carbon, ppc & \
-#	macosx, carbon, x86 & \
-#	macosx, cocoa, ppc & \
-#	macosx, cocoa, x86 & \
-#	macosx, cocoa, x86_64
 
 # By default PDE creates one archive (result) per entry listed in the configs property.
 # Setting this value to true will cause PDE to only create one output containing all 
@@ -180,17 +148,6 @@ tarargs=
 ############## BUILD NAMING CONTROL ################
 # The directory into which the build elements are fetched and where
 # the build takes place.
-#buildDirectory=${user.home}/eclipse.build
-
-# Type of build.  Used in naming the build output.  Typically this value is
-# one of I, N, M, S, ...
-#buildType=I
-
-# ID of the build.  Used in naming the build output.
-#buildId=TestBuild
-
-# Label for the build.  Used in naming the build output
-#buildLabel=${buildType}.${buildId}
 
 # Timestamp for the build.  Used in naming the build output
 timestamp=007
@@ -209,9 +166,6 @@ timestamp=007
 # Base location for anything the build needs to compile against.  For example,
 # in most RCP app or a plug-in,  the baseLocation should be the location of a previously
 # installed Eclipse against which the application or plug-in code will be compiled and the RCP delta pack.
-
-#base=<path/to/parent/of/eclipse>
-#baseLocation=${base}/eclipse
 
 #Folder containing repositories whose content is needed to compile against
 #repoBaseLocation=${base}/repos

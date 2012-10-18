@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<plugin>
+
+    <extension point="org.eclipse.ui.menus">
+        <!-- Edit menu -->
+        <menuContribution allPopups="false" locationURI="menu:edit">
+            <separator name="additions" visible="true"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.bookmark.add"/>
+        </menuContribution>
+
+        <!-- Edit menu -->
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="edit" label="%menu.edit">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi"/>
+            </menu>
+        </menuContribution>
+
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page id="org.jkiss.dbeaver.preferences.main" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral" name="%pref.page.name.db.configuration">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.general"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="%pref.page.name.data.formats">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="%pref.page.name.query.manager">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.qm"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.ui.general" class="org.jkiss.dbeaver.ui.preferences.PrefPageUIGeneral" name="%pref.page.name.general">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.general"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations"/>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageEmpty" name="Editors"/>
+
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.contenteditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" name="%pref.page.name.content.editor">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.content"/>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
+        </page>
+
+    </extension>
+
+</plugin>

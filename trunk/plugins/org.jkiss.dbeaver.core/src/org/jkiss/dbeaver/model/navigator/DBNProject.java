@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -39,28 +40,18 @@ import java.util.List;
  */
 public class DBNProject extends DBNResource implements IAdaptable
 {
-    //private DBNProjectDatabases databases;
-    //private DBNProjectScripts scripts;
-    //private DBNProjectBookmarks bookmarks;
-
     public DBNProject(DBNNode parentNode, IProject project, DBPResourceHandler handler)
     {
         super(parentNode, project, handler);
-        //this.databases = new DBNProjectDatabases(this, project);
-        //this.scripts = new DBNProjectScripts(this, project);
-        //this.bookmarks = new DBNProjectBookmarks(this, project);
-
-        //this.children = new ArrayList<DBNNode>();
-        //this.children.add(databases);
-        //this.children.add(scripts);
-        //this.children.add(bookmarks);
+        DBeaverCore.getInstance().getProjectRegistry().addProject(project);
     }
 
     @Override
     protected void dispose(boolean reflect)
     {
-        //this.databases = null;
+        IProject project = getProject();
         super.dispose(reflect);
+        DBeaverCore.getInstance().getProjectRegistry().removeProject(project);
     }
 
     public IProject getProject()
@@ -132,6 +123,21 @@ public class DBNProject extends DBNResource implements IAdaptable
         } catch (CoreException e) {
             throw new DBException(e);
         }
+    }
+
+    @Override
+    protected List<DBNNode> readChildNodes(DBRProgressMonitor monitor) throws DBException
+    {
+        if (!getProject().isOpen()) {
+            try {
+                getProject().open(monitor.getNestedMonitor());
+            } catch (CoreException e) {
+                throw new DBException("Can't open project '" + getProject().getName() + "'", e);
+            }
+        }
+        List<DBNNode> children = super.readChildNodes(monitor);
+        children.add(0, new DBNProjectDatabases(this));
+        return children;
     }
 
     public DBNResource findResource(IResource resource)

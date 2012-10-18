@@ -28,25 +28,23 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 public class EntityManagerDescriptor extends AbstractDescriptor
 {
     private String id;
-    private String className;
-    private String objectType;
-
-    private Class objectClass;
-    private Class managerClass;
+    private ObjectType managerType;
+    private ObjectType objectType;
     private DBEObjectManager managerInstance;
 
     EntityManagerDescriptor(IConfigurationElement config)
     {
         super(config.getContributor());
 
-        this.id = this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
-        this.objectType = config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE);
+        this.id = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.managerType = new ObjectType(id);
+        this.objectType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE));
     }
 
     void dispose()
     {
-        objectClass = null;
-        managerClass = null;
+        objectType = null;
+        managerType = null;
         managerInstance = null;
     }
 
@@ -55,37 +53,9 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         return id;
     }
 
-/*
-    public String getClassName()
+    public boolean appliesToType(Class clazz)
     {
-        return className;
-    }
-
-    public String getObjectType()
-    {
-        return objectType;
-    }
-
-*/
-    public boolean appliesToType(Class objectType)
-    {
-        return this.getObjectClass() != null && this.getObjectClass().isAssignableFrom(objectType);
-    }
-
-    public Class<?> getObjectClass()
-    {
-        if (objectClass == null) {
-            objectClass = getObjectClass(objectType);
-        }
-        return objectClass;
-    }
-
-    public Class<?> getManagerClass()
-    {
-        if (managerClass == null) {
-            managerClass = getObjectClass(className);
-        }
-        return managerClass;
+        return objectType.matchesType(clazz);
     }
 
     public synchronized DBEObjectManager getManager()
@@ -93,14 +63,14 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         if (managerInstance != null) {
             return managerInstance;
         }
-        Class clazz = getManagerClass();
+        Class clazz = managerType.getObjectClass();
         if (clazz == null) {
-            throw new IllegalStateException("Can't load manager class '" + className + "'");
+            throw new IllegalStateException("Can't load manager class '" + managerType.implName + "'");
         }
         try {
             managerInstance = (DBEObjectManager) clazz.newInstance();
         } catch (Throwable ex) {
-            throw new IllegalStateException("Error instantiating entity manager '" + className + "'", ex);
+            throw new IllegalStateException("Error instantiating entity manager '" + clazz.getName() + "'", ex);
         }
         return managerInstance;
     }

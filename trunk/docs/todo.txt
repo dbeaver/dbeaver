@@ -1,6 +1,5 @@
 Major:
 
-Eclipse plugin
 Search refactoring (scripts search)
 Localizations
 JDBC driver versions update
@@ -15,4 +14,8 @@ rename mysql (generic?) table,column
 comment mysql table, column
 
 scripts refactoring
-F4 - open object (hyperlink?)
+
+Plugin:
+Eclipse plugin
+Choose where to save drivers
+Customize resource roots

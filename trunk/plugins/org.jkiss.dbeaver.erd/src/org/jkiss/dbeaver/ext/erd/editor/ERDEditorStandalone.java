@@ -181,7 +181,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
 
     private IFile getEditorFile()
     {
-        return (IFile) getEditorInput().getAdapter(IFile.class);
+        return ContentUtils.getFileFromEditorInput(getEditorInput());
     }
 
     @Override

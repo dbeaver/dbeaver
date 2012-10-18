@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.DBeaverConstants;
  */
 public class SQLConstants {
 
-    public final static String SQL_CONTENT_TYPE = "org.jkiss.dbeaver.core.content-type-sql";
+    public final static String SQL_CONTENT_TYPE = "org.jkiss.dbeaver.sql";
 
     public final static String SQL_COMMENT = "sql_comment";
 

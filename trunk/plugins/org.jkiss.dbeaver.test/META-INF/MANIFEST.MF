@@ -6,7 +6,7 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.jkiss.dbeaver.ext.test.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.jkiss.dbeaver.core;bundle-version="1.0.0",
+ org.jkiss.dbeaver.core,
  org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6

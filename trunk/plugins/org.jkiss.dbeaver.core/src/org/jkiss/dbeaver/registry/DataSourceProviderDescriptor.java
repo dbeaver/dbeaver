@@ -51,7 +51,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     private DataSourceProviderRegistry registry;
     private final String id;
-    private final String implClassName;
+    private final ObjectType implType;
     private final String name;
     private final String description;
     private Image icon;
@@ -70,7 +70,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         this.registry = registry;
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.implClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
+        this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         String iconName = config.getAttribute(RegistryConstants.ATTR_ICON);
@@ -169,15 +169,15 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         if (instance == null) {
             // Create instance
-            Class<?> implClass = getObjectClass(implClassName);
+            Class<?> implClass = implType.getObjectClass();
             if (implClass == null) {
-                throw new DBException("Can't find descriptor class '" + implClassName + "'");
+                throw new DBException("Can't find descriptor class '" + implType.implName + "'");
             }
             try {
                 this.instance = (DBPDataSourceProvider) implClass.newInstance();
             }
             catch (Throwable ex) {
-                throw new DBException("Can't instantiate data source provider '" + implClassName + "'", ex);
+                throw new DBException("Can't instantiate data source provider '" + implClass.getName() + "'", ex);
             }
             // Initialize it
             try {
@@ -185,7 +185,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
             catch (Throwable ex) {
                 this.instance = null;
-                throw new DBException("Can't initialize data source provider '" + implClassName + "'", ex);
+                throw new DBException("Can't initialize data source provider '" + implClass.getName() + "'", ex);
             }
         }
         return instance;

@@ -42,8 +42,6 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -56,6 +54,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.*;
 
@@ -104,9 +103,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
 
         if (control != null) {
             ERDEditorAdapter.mapControl(control, editor);
-            IFocusService fs = (IFocusService) PlatformUI.getWorkbench().getService(IFocusService.class);
-            fs.addFocusTracker(control, editor.getEditorInput() + "#" + this.hashCode());
-
+            UIUtils.addFocusTracker(editor.getSite(), editor.getEditorInput() + "#" + this.hashCode(), control);
             applyThemeSettings();
         }
     }
@@ -118,8 +115,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         }
         if (getControl() != null) {
             ERDEditorAdapter.unmapControl(getControl());
-            IFocusService fs = (IFocusService) PlatformUI.getWorkbench().getService(IFocusService.class);
-            fs.removeFocusTracker(getControl());
+            UIUtils.removeFocusTracker(editor.getSite(), getControl());
         }
         super.handleDispose(e);
     }

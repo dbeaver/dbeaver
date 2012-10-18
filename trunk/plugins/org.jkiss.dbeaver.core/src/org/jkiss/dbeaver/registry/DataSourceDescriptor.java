@@ -599,12 +599,14 @@ public class DataSourceDescriptor
         try {
             if (context.isConnected() && !context.getTransactionManager().isAutoCommit()) {
                 // Check current transaction
+
                 // If there are some executions in last savepoint then ask user about commit/rollback
                 QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
                 QMMSessionInfo qmmSession = qmm.getSession(dataSource);
                 QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
                 QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
                 if (sp != null && (sp.getPrevious() != null || sp.hasUserExecutions())) {
+
                     // Ask for confirmation
                     TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
                     UIUtils.runInUI(null, closeConfirmer);

@@ -45,6 +45,7 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.services.IServiceLocator;
+import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -685,6 +686,7 @@ public class UIUtils {
     public static SashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
     {
         final SashForm sash = new SashForm(parent, style);
+/*
         //sash.setSashWidth(10);
         final IWorkbenchWindow workbenchWindow = workbenchPart.getSite().getWorkbenchWindow();
         //sash.setBackground(sashActiveBackground);
@@ -766,6 +768,7 @@ public class UIUtils {
                 }
             }
         });
+*/
 
         return sash;
     }
@@ -894,7 +897,7 @@ public class UIUtils {
                 if (dialog.getTray() != null) {
                     dialog.closeTray();
                 } else {
-                    PlatformUI.getWorkbench().getHelpSystem().displayHelp(pluginId + "." + helpContextID); //$NON-NLS-1$
+                    //PlatformUI.getWorkbench().getHelpSystem().displayHelp(pluginId + "." + helpContextID); //$NON-NLS-1$
                 }
             }
         });
@@ -919,11 +922,12 @@ public class UIUtils {
     public static Text createOutputFolderChooser(final Composite parent, ModifyListener changeListener)
     {
         UIUtils.createControlLabel(parent, CoreMessages.dialog_export_wizard_output_label_directory);
-        final Text directoryText = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
+        final Text directoryText = new Text(parent, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
         directoryText.setLayoutData(gd);
-        directoryText.addModifyListener(changeListener);
+        if (changeListener != null) {
+            directoryText.addModifyListener(changeListener);
+        }
 
         final Runnable folderChooser = new Runnable() {
             @Override
@@ -1026,6 +1030,26 @@ public class UIUtils {
             null);
         if (propDialog != null) {
             propDialog.open();
+        }
+    }
+
+    public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
+    {
+        final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
+        if (focusService != null) {
+            focusService.addFocusTracker(control, controlID);
+        }
+    }
+
+    public static void removeFocusTracker(IServiceLocator serviceLocator, Control control)
+    {
+        if (PlatformUI.getWorkbench().isClosing()) {
+            // TODO: it is a bug in eclipse. During workbench shutdown disposed service returned.
+            return;
+        }
+        final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
+        if (focusService != null) {
+            focusService.removeFocusTracker(control);
         }
     }
 

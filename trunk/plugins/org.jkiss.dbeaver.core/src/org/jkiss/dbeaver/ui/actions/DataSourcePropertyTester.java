@@ -24,7 +24,6 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.services.IEvaluationService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
  * DatabaseEditorPropertyTester
@@ -102,8 +102,7 @@ public class DataSourcePropertyTester extends PropertyTester
 
     public static void firePropertyChange(String propName)
     {
-        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
-        service.requestEvaluation(NAMESPACE + "." + propName);
+        ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
     public static void fireCommandRefresh(final String commandID)

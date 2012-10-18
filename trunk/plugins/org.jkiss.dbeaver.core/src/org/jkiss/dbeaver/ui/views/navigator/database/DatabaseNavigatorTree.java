@@ -83,7 +83,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         // TODO: I may set SWT.SINGLE style and it'll solve the problem at least when traversing tree
         // TODO: But we need multiple selection (to copy, export, etc)
         // TODO: need to do something with it
-        int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | style;
+        int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | style;
         if (checkEnabled) {
             this.viewer = new CheckboxTreeViewer(this, treeStyle);
         } else {
@@ -92,7 +92,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         this.viewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         this.viewer.setUseHashlookup(true);
         if (rootNode.getParentNode() == null) {
-            this.viewer.setAutoExpandLevel(2);
+            //this.viewer.setAutoExpandLevel(2);
         }
         this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this.viewer));
         this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this.viewer, showRoot));
@@ -194,9 +194,9 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         viewer.setSelection(new StructuredSelection(node));
     }
 
-    public void reloadTree(DBNNode rootNode)
+    public void reloadTree(final DBNNode rootNode)
     {
-        this.viewer.setInput(new DatabaseNavigatorContent(rootNode));
+        DatabaseNavigatorTree.this.viewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
     private class TreeSelectionAdapter implements MouseListener {

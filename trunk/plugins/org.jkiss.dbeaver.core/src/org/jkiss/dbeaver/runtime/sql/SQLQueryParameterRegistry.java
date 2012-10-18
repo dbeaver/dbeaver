@@ -70,7 +70,7 @@ public class SQLQueryParameterRegistry
 
     private void loadProfiles()
     {
-        File storeFile = getRegistryFile();
+        File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, true);
         if (!storeFile.exists()) {
             return;
         }
@@ -100,14 +100,9 @@ public class SQLQueryParameterRegistry
         }
     }
 
-    private File getRegistryFile()
-    {
-        return new File(DBeaverCore.getInstance().getRootPath().toFile(), CONFIG_FILE_NAME);
-    }
-
     public void save()
     {
-        File storeFile = getRegistryFile();
+        File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, false);
         try {
             OutputStream os = new FileOutputStream(storeFile);
             try {
