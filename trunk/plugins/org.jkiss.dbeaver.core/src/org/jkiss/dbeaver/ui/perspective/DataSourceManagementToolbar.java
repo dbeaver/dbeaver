@@ -724,6 +724,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
         GridData gd = new GridData();
         gd.widthHint = 120;
+        gd.minimumWidth = 120;
         connectionCombo.setLayoutData(gd);
         connectionCombo.setVisibleItemCount(15);
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
@@ -748,6 +749,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
         gd = new GridData();
         gd.widthHint = 120;
+        gd.minimumWidth = 120;
         databaseCombo.setLayoutData(gd);
         databaseCombo.setVisibleItemCount(15);
         databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
