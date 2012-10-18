@@ -71,8 +71,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
                 if (ConfirmationDialog.showConfirmDialog(
                         getShell(),
                         PrefConstants.CONFIRM_KEEP_STATEMENT_OPEN,
-                        ConfirmationDialog.QUESTION,
-                        ConfirmationDialog.WARNING) == IDialogConstants.YES_ID) {
+                        ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID) {
                     globalPreferenceStore.setValue(PrefConstants.KEEP_STATEMENT_OPEN, true);
                     ((SQLEditor)valueController.getValueSite().getPart()).getResultsView().refresh();
                 }

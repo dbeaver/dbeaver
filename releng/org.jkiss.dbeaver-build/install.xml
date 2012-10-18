@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="InstallBuild" default="install">
+    <property file="install.properties" />
+    <property file="build.properties" />
+
+    <!--condition property="isZip">
+        <equals arg1="${archiveType}" arg2="zip" casesensitive="false" trim="true" />
+    </condition-->
+
+    <target name="install" depends="download">
+        <echo>Install build procedure</echo>
+        <antcall target="extract.eclipse">
+            <param name="work.file" value="eclipse"/>
+        </antcall>
+
+        <antcall target="install.svn"/>
+        <antcall target="base.repo"/>
+    </target>
+
+    <target name="base.repo" depends="download">
+        <mkdir dir="${repoBaseLocation}"/>
+        <copy file="${install.dir}/${rcp-p2repo}" todir="${repoBaseLocation}"/>
+
+        <antcall target="do.mirror.deltapack">
+            <param name="work.file" value="${repoBaseLocation}/deltapack"/>
+        </antcall>
+
+        <antcall target="get.component.runable.task">
+        	<param name="component" value="language-pack"/>
+            <param name="work.file" value="${repoBaseLocation}/${language-pack}"/>
+            <param name="zip" value="${language-pack}"/>
+        </antcall>
+
+        <antcall target="get.component.runable.task">
+        	<param name="component" value="gef-runtime"/>
+            <param name="work.file" value="${repoBaseLocation}/${gef-runtime}"/>
+            <param name="zip" value="${gef-runtime}"/>
+        </antcall>
+
+    </target>
+
+    <target name="get.component.runable.task" depends="file.exist" unless="${work.file}.exist">
+        <property name="unpack.dir" value="${install.dir}/unpack" />
+        <property name="transform.dir" value="${install.dir}/transform" />
+
+        <delete dir="${unpack.dir}" />
+        <unzip src="${install.dir}/${zip}" dest="${unpack.dir}" />
+
+        <delete dir="${transform.dir}" />
+
+        <antcall target="antRunner">
+            <param name="key1" value="repo" />
+            <param name="value1" value="file:/${transform.dir}" />
+            <param name="key2" value="component" />
+            <param name="value2" value="${component}" />
+            <param name="key3" value="source" />
+            <param name="value3" value="${unpack.dir}/eclipse" />
+
+            <param name="workspace" value="${install.dir}/workspace" />
+            <param name="buildfile" value="${basedir}/publish.xml" />
+        </antcall>
+
+        <antcall target="antRunner">
+            <param name="key1" value="source" />
+            <param name="value1" value="${transform.dir}" />
+            <param name="key2" value="component" />
+            <param name="value2" value="${component}" />
+            <param name="key3" value="dest" />
+            <param name="value3" value="${repoBaseLocation}/${component}" />
+
+            <param name="workspace" value="${install.dir}/workspace" />
+            <param name="buildfile" value="${basedir}/mirror.xml" />
+        </antcall>
+        <delete dir="${publishedRepoLocation}"/>
+    </target>
+
+    <target name="do.mirror.deltapack" depends="file.exist" unless="${work.file}.exist">
+        <antcall target="antRunner">
+            <param name="key1" value="destDir"/>
+            <param name="value1" value="${work.file}"/>
+            <param name="key2" value="repo"/>
+            <param name="value2" value="${eclipse.update.url}"/>
+            <param name="key3" value="version"/>
+            <param name="value3" value="${platform.version}" />
+            <param name="key4" value="format" />
+            <param name="value4" value="${install.dir}/${rcp-p2repo}" />
+
+            <param name="workspace" value="${install.dir}/workspace"/>
+            <param name="buildfile" value="${basedir}/deltapack-mirror.xml"/>
+        </antcall>
+    </target>
+
+    <target name="install.svn" depends="mirror.svn">
+        <property name="installed.components.dir" value="${install.dir}/eclipse/installed"/>
+        <mkdir dir="${installed.components.dir}"/>
+        <antcall target="do.install.svn">
+            <param name="work.file" value="${installed.components.dir}/svn.pde.build.zip"/>
+        </antcall>
+    </target>
+
+    <target name="do.install.svn" depends="file.exist" unless="${work.file}.exist">
+        <java jar="${install.dir}/eclipse/plugins/${launcher}" fork="true" failonerror="true">
+            <arg value="-nosplash" />
+            <arg value="-consolelog" />
+            <arg value="-application" />
+            <arg value="org.eclipse.equinox.p2.director" />
+            <arg value="-data" />
+            <arg value="${install.dir}/workspace" />
+            <arg value="-repository" />
+            <arg value="file:/${svn.pde.build.dir}" />
+            <arg value="-installIU" />
+            <arg value="org.eclipse.team.svn.pde.build.feature.group" />
+            <arg value="-destination" />
+            <arg value="${install.dir}/eclipse" />
+            <arg value="-profile" />
+            <arg value="SDKProfile" />
+            <arg value="-profileProperties" />
+            <arg value="org.eclipse.update.install.features=true" />
+        </java>
+        <java jar="${install.dir}/eclipse/plugins/${launcher}" fork="true" failonerror="true">
+            <arg value="-nosplash" />
+            <arg value="-clean" />
+            <arg value="-initialize" />
+        </java>
+        <zip destfile="${work.file}" basedir="${svn.pde.build.dir}"/>
+    </target>
+
+    <target name="mirror.svn">
+        <antcall target="do.mirror.svn">
+            <param name="work.file" value="${svn.pde.build.dir}"/>
+        </antcall>
+    </target>
+
+    <target name="do.mirror.svn" depends="file.exist" unless="${work.file}.exist">
+        <antcall target="antRunner">
+            <param name="key1" value="destDir"/>
+            <param name="value1" value="${svn.pde.build.dir}"/>
+            <param name="key2" value="repo"/>
+            <param name="value2" value="${svn.pde.build.url}"/>
+            <param name="workspace" value="${install.dir}/workspace" />
+            <param name="buildfile" value="${basedir}/svn.pde.build-mirror.xml"/>
+        </antcall>
+    </target>
+
+    <target name="antRunner">
+        <java jar="${install.dir}/eclipse/plugins/${launcher}" fork="true" failonerror="true">
+            <sysproperty key="${key1}" value="${value1}" />
+            <sysproperty key="${key2}" value="${value2}" />
+            <sysproperty key="${key3}" value="${value3}" />
+            <sysproperty key="${key4}" value="${value4}" />
+            <sysproperty key="${key5}" value="${value5}" />
+            <arg value="-nosplash" />
+            <arg value="-consolelog" />
+            <arg value="-application" />
+            <arg value="org.eclipse.ant.core.antRunner" />
+            <arg value="-data" />
+            <arg value="${workspace}" />
+            <arg value="-buildfile" />
+            <arg value="${buildfile}" />
+        </java>
+    </target>
+
+    <target name="extract.eclipse" depends="install.file.exist" unless="${work.file}.exist">
+        <echo>Extract Eclipse.</echo>
+        <antcall target="extract.eclipse.${archiveType}"/>
+        <!--unzip src="${install.dir}/${eclipse.archive}" dest="${install.dir}"/-->
+    </target>
+    
+    <target name="extract.eclipse.zip" >
+        <unzip dest="${install.dir}" src="${install.dir}/${eclipse.archive}" />
+        </target>
+    <target name="extract.eclipse.tar.gz" >
+        <untar compression="gzip" dest="${install.dir}" overwrite="true" src="${install.dir}/${eclipse.archive}" />
+    </target>
+
+    <target name="download">
+        <mkdir dir="${install.dir}"/>
+        <echo>Download platform components:</echo>
+        <antcall target="download.file">
+            <param name="work.file" value="${eclipse.archive}" />
+        </antcall>
+
+        <antcall target="download.file">
+            <param name="work.file" value="${rcp-p2repo}" />
+        </antcall>
+    </target>
+
+    <target name="download.file" depends="install.file.exist" unless="${work.file}.exist">
+        <echo>Download:${work.file}</echo>
+        <get src="${download.base}/${work.file}" dest="${install.dir}/${work.file}" verbose="true" />
+    </target>
+
+    <target name="install.file.exist">
+        <available file="${install.dir}/${work.file}" property="${work.file}.exist" />
+    </target>
+
+    <target name="file.exist">
+        <available file="${work.file}" property="${work.file}.exist" />
+    </target>
+
+
+</project>

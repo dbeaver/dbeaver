@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
@@ -44,7 +41,9 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.ISaveablePart2;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -61,6 +60,8 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.navigator.DBNAdapterFactory;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -163,6 +164,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
         super();
+
         this.site = site;
         this.mode = ResultSetMode.GRID;
         this.resultSetProvider = resultSetProvider;
@@ -363,16 +365,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         };
         toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
-        toolBarManager.add(ActionUtils.makeCommandContribution(
-            site,
-            ResultSetCommandHandler.CMD_TOGGLE_MODE,
-            CommandContributionItem.STYLE_PUSH,
-            DBIcon.RS_TOGGLE_RECORD.getImageDescriptor()));
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE));
         toolBarManager.add(new ConfigAction());
 
         toolBarManager.createControl(statusBar);
 
-        updateEditControls();
+        //updateEditControls();
     }
 
     Spreadsheet getSpreadsheet()
@@ -1486,8 +1484,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 this.curRows.get(cell.row),
                 cell.col,
                 null).updateValue(newValue);
-            spreadsheet.redrawGrid();
-            updateEditControls();
         }
         catch (Exception e) {
             UIUtils.showErrorDialog(site.getShell(), "Cannot replace cell value", null, e);
@@ -1892,10 +1888,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     }
                     curRow[columnIndex] = value;
                     // Update controls
-                    site.getShell().getDisplay().asyncExec(new Runnable() {
+                    site.getShell().getDisplay().syncExec(new Runnable() {
                         @Override
                         public void run() {
                             updateEditControls();
+                            spreadsheet.redrawGrid();
                         }
                     });
                 }

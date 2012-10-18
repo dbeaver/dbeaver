@@ -98,8 +98,8 @@ public class DBeaverActivator extends AbstractUIPlugin
     public synchronized PrintStream getDebugWriter()
     {
         if (debugWriter == null) {
-            File rootPath = Platform.getLocation().toFile();
-            File debugLogFile = new File(rootPath, "debug.log"); //$NON-NLS-1$
+            File logPath = Platform.getLogFileLocation().toFile().getParentFile();
+            File debugLogFile = new File(logPath, "dbeaver-debug.log"); //$NON-NLS-1$
             if (debugLogFile.exists()) {
                 if (!debugLogFile.delete()) {
                     System.err.println("Could not delete debug log file"); //$NON-NLS-1$

@@ -39,7 +39,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -191,7 +190,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         infoGroup.setLayout(gl);
 
         listInfoLabel = new Text(infoGroup, SWT.READ_ONLY);
-        listInfoLabel.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        //listInfoLabel.setBackground(container.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.minimumWidth = 100;
         listInfoLabel.setLayoutData(gd);
@@ -247,7 +246,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 defaultToolbarManager.removeAll();
                 if (isSearchPossible() && isSearchEnabled()) {
                     defaultToolbarManager.add(ActionUtils.makeCommandContribution(
-                            DBeaverCore.getInstance().getWorkbench(),
+                        PlatformUI.getWorkbench(),
                             IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
                             CoreMessages.controls_progress_page_toolbar_title,
                             DBIcon.SEARCH.getImageDescriptor()));
@@ -366,12 +365,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         if (searchToolbarManager == null) {
             searchToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
             searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                    DBeaverCore.getInstance().getWorkbench(),
+                    PlatformUI.getWorkbench(),
                     IWorkbenchActionDefinitionIds.FIND_NEXT,
                     null,
                     DBIcon.ARROW_DOWN.getImageDescriptor()));
             searchToolbarManager.add(ActionUtils.makeCommandContribution(
-                    DBeaverCore.getInstance().getWorkbench(),
+                    PlatformUI.getWorkbench(),
                     IWorkbenchActionDefinitionIds.FIND_PREVIOUS,
                     null,
                     DBIcon.ARROW_UP.getImageDescriptor()));

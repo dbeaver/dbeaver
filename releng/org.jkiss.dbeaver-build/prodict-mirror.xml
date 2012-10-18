@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Publish p2 metadata" default="generate.p2.metadata">
+
+    <target name="generate.p2.metadata">
+        <p2.mirror ignoreErrors="false">
+            <slicingOptions includeNonGreedy="false" includeOptional="true" platformFilter="true" />
+            <source location="file:/${publishedRepoLocation}" />
+
+            <destination location="file:/${buildRepoLocation}" />
+            <iu id="org.eclipse.equinox.executable.feature.group" />
+            <iu id="org.eclipse.rcp.feature.group" />
+        </p2.mirror>
+
+    </target>
+</project>

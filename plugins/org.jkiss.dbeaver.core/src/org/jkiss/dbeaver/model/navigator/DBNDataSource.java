@@ -48,16 +48,11 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     protected void dispose(boolean reflect)
     {
         DBNModel.getInstance().removeNode(this, reflect);
-/*
-        if (this.dataSource.isConnected()) {
-            try {
-                this.dataSource.disconnect(this);
-            }
-            catch (DBException ex) {
-                log.error("Error disconnecting datasource", ex);
-            }
-        }
-*/
+
+//        if (this.dataSource.isConnected()) {
+//            DataSourceDisconnectHandler.execute(this.dataSource, null);
+//        }
+
         this.dataSource = null;
         super.dispose(reflect);
     }

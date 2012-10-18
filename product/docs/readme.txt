@@ -26,20 +26,25 @@ Installing DBeaver
 Command line parameters
 ========================
 
-  - data <path>
+  -data <path>
     Store all projects/configuration in folder <path>. By default DBeaver
 	stores all its data in user's home ".dbeaver" folder.
 	<path> could be an absolute or relative directory name.
 	If you want to use DBeaver as redistributable program start it
 	with arguments like "dbeaver -data workspace".
 
-  - nl locale
+  -nl locale
     Use specified locale instead of default one.
     Example: -nl en (use English locale).
 
-  - vm <java vm path>
+  -vm <java vm path>
     Use Java VM installed in <java vm path> folder instead of default
     location.
+
+  -vmargs <jvm parameters>
+    Allows to pass any number of additional parameters to JVM.
+    Additional parameters may be used to customize environment or
+    3-rd party jdbc drivers.
 
 Licensing
 ==========================

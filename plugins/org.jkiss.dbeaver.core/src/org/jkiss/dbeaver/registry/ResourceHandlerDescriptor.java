@@ -19,11 +19,17 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.core.runtime.content.IContentType;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -32,63 +38,105 @@ import java.util.List;
 public class ResourceHandlerDescriptor extends AbstractDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
-    public static final char EXTENSIONS_DELIMITER = ',';
 
-    private String className;
-    private String resourceType;
-    private List<String> fileExtensions;
-
-    private Class<DBPResourceHandler> handlerClass;
+    private ObjectType handlerType;
     private DBPResourceHandler handler;
+    private List<IContentType> contentTypes = new ArrayList<IContentType>();
+    private List<ObjectType> resourceTypes = new ArrayList<ObjectType>();
+    private List<String> roots = new ArrayList<String>();
+    private String defaultRoot;
 
     ResourceHandlerDescriptor(IConfigurationElement config)
     {
         super(config.getContributor());
 
-        this.resourceType = config.getAttribute(RegistryConstants.ATTR_TYPE);
-        this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
-        String extensionsString = config.getAttribute(RegistryConstants.ATTR_EXTENSIONS);
-        if (!CommonUtils.isEmpty(extensionsString)) {
-            this.fileExtensions = CommonUtils.splitString(extensionsString, EXTENSIONS_DELIMITER);
-        } else {
-            this.fileExtensions = Collections.emptyList();
+        this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        for (IConfigurationElement contentTypeBinding : CommonUtils.safeArray(config.getChildren("contentTypeBinding"))) {
+            String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
+            if (!CommonUtils.isEmpty(contentTypeId)) {
+                IContentType contentType = Platform.getContentTypeManager().getContentType(contentTypeId);
+                if (contentType != null) {
+                    contentTypes.add(contentType);
+                } else {
+                    log.warn("Content type '" + contentTypeId + "' not recognized");
+                }
+            }
+        }
+        for (IConfigurationElement resourceTypeBinding : CommonUtils.safeArray(config.getChildren("resourceTypeBinding"))) {
+            String resourceType = resourceTypeBinding.getAttribute("resourceType");
+            if (!CommonUtils.isEmpty(resourceType)) {
+                resourceTypes.add(new ObjectType(resourceType));
+            }
+        }
+        for (IConfigurationElement rootConfig : CommonUtils.safeArray(config.getChildren("root"))) {
+            String folder = rootConfig.getAttribute("folder");
+            if (!CommonUtils.isEmpty(folder)) {
+                roots.add(folder);
+            }
+            if ("true".equals(rootConfig.getAttribute("default"))) {
+                defaultRoot = folder;
+            }
+        }
+        if (CommonUtils.isEmpty(defaultRoot) && !CommonUtils.isEmpty(roots)) {
+            defaultRoot = roots.get(0);
         }
     }
 
     void dispose()
     {
         this.handler = null;
-        this.handlerClass = null;
+        this.handlerType = null;
     }
 
-    public String getResourceType()
-    {
-        return resourceType;
-    }
-
-    public List<String> getFileExtensions()
-    {
-        return fileExtensions;
-    }
-
-    public synchronized Class<DBPResourceHandler> getHandlerClass()
-    {
-        if (handlerClass == null) {
-            handlerClass = getObjectClass(className, DBPResourceHandler.class);
-        }
-        return handlerClass;
-    }
-
-    public synchronized DBPResourceHandler getHandler() throws IllegalAccessException, InstantiationException
+    public synchronized DBPResourceHandler getHandler()
     {
         if (handler == null) {
-            Class<DBPResourceHandler> clazz = getHandlerClass();
+            Class<DBPResourceHandler> clazz = handlerType.getObjectClass(DBPResourceHandler.class);
             if (clazz == null) {
                 return null;
             }
-            handler = clazz.newInstance();
+            try {
+                handler = clazz.newInstance();
+            } catch (Exception e) {
+                log.error("Can't instantiate resource handler", e);
+            }
         }
         return handler;
+    }
+
+    public boolean canHandle(IResource resource)
+    {
+        if (!contentTypes.isEmpty() && resource instanceof IFile) {
+            try {
+                IContentDescription contentDescription = ((IFile) resource).getContentDescription();
+                if (contentDescription != null) {
+                    IContentType fileContentType = contentDescription.getContentType();
+                    if (fileContentType != null && contentTypes.contains(fileContentType)) {
+                        return true;
+                    }
+                }
+            } catch (CoreException e) {
+                log.warn("Can't obtain content description for '" + resource.getName() + "'", e);
+            }
+        }
+        if (!resourceTypes.isEmpty()) {
+            for (ObjectType objectType : resourceTypes) {
+                if (objectType.appliesTo(resource)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public String getDefaultRoot()
+    {
+        return defaultRoot;
+    }
+
+    public List<String> getRoots()
+    {
+        return roots;
     }
 
 }

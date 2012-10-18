@@ -1,0 +1,7 @@
+<project default="publish.featuresAndBundles">
+	<target name="publish.featuresAndBundles">
+		<echo>p2.publish.featuresAndBundles repository="${repo}" repositoryName="${component}" publishArtifacts="true" compress="true" source="${source}"</echo>
+		<p2.publish.featuresAndBundles repository="${repo}" repositoryName="${component}" publishArtifacts="true" compress="true" source="${source}">
+		</p2.publish.featuresAndBundles>
+	</target>
+</project>

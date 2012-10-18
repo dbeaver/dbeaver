@@ -141,25 +141,30 @@ public class DBNResource extends DBNNode
     {
         if (children == null) {
             if (resource instanceof IContainer) {
-                //final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-                List<DBNNode> result = new ArrayList<DBNNode>();
-                try {
-                    IResource[] members = ((IContainer) resource).members(IContainer.INCLUDE_HIDDEN);
-                    for (IResource member : members) {
-                        DBNNode newChild = makeNode(member);
-                        if (newChild != null) {
-                            result.add(newChild);
-                        }
-                    }
-                } catch (CoreException e) {
-                    throw new DBException(e);
-                }
-                filterChildren(result);
-                sortChildren(result);
-                this.children = result;
+                this.children = readChildNodes(monitor);
             }
         }
         return children;
+    }
+
+    protected List<DBNNode> readChildNodes(DBRProgressMonitor monitor) throws DBException
+    {
+        //final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        List<DBNNode> result = new ArrayList<DBNNode>();
+        try {
+            IResource[] members = ((IContainer) resource).members(IContainer.INCLUDE_HIDDEN);
+            for (IResource member : members) {
+                DBNNode newChild = makeNode(member);
+                if (newChild != null) {
+                    result.add(newChild);
+                }
+            }
+        } catch (CoreException e) {
+            throw new DBException(e);
+        }
+        filterChildren(result);
+        sortChildren(result);
+        return result;
     }
 
     DBNResource getChild(IResource resource)

@@ -102,8 +102,6 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
             description.setComment(data.getDescription());
             project.setDescription(description, monitor.getNestedMonitor());
         }
-
-        DBeaverCore.getInstance().getProjectRegistry().addProject(project);
     }
 
 }

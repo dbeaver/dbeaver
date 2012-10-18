@@ -18,13 +18,11 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -39,15 +37,15 @@ import java.util.List;
 /**
  * DBNProjectDatabases
  */
-public class DBNProjectDatabases extends DBNResource implements DBNContainer, DBPEventListener
+public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
     private DataSourceRegistry dataSourceRegistry;
 
-    public DBNProjectDatabases(DBNNode parentNode, IResource resource, DBPResourceHandler handler)
+    public DBNProjectDatabases(DBNProject parentNode)
     {
-        super(parentNode, resource, handler);
-        dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(resource.getProject());
+        super(parentNode);
+        dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(parentNode.getProject());
         dataSourceRegistry.addDataSourceListener(this);
 
         List<DataSourceDescriptor> projectDataSources = dataSourceRegistry.getDataSources();
@@ -68,6 +66,12 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
             dataSourceRegistry = null;
         }
         super.dispose(reflect);
+    }
+
+    @Override
+    public String getNodeType()
+    {
+        return "connections";
     }
 
     public DataSourceRegistry getDataSourceRegistry()
@@ -102,7 +106,7 @@ public class DBNProjectDatabases extends DBNResource implements DBNContainer, DB
     @Override
     public String getNodeDescription()
     {
-        return getResource().getProject().getName() + CoreMessages.model_navigator__connections;
+        return ((DBNProject)getParentNode()).getProject().getName() + CoreMessages.model_navigator__connections;
     }
 
     @Override

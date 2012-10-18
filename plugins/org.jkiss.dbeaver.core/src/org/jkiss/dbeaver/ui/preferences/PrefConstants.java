@@ -70,6 +70,7 @@ public final class PrefConstants
     // General UI
     public static final String UI_AUTO_UPDATE_CHECK = "ui.auto.update.check"; //$NON-NLS-1$
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
+    public static final String UI_DRIVERS_HOME = "ui.drivers.home"; //$NON-NLS-1$
     public static final String UI_PROXY_HOST = "ui.proxy.host"; //$NON-NLS-1$
     public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
     public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$

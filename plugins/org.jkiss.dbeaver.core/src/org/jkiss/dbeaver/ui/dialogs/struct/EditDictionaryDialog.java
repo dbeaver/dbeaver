@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui.dialogs.struct;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -56,7 +57,7 @@ public class EditDictionaryDialog extends AttributesSelectorDialog {
         super(shell, title, entity);
         this.entity = entity;
         this.dictionary = entity.getDataSource().getContainer().getVirtualModel().findEntity(entity, true);
-        DBeaverCore.getInstance().runInUI(DBeaverCore.getInstance().getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+        DBeaverCore.getInstance().runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException

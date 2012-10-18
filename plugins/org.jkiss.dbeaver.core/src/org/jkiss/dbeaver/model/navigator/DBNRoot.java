@@ -22,7 +22,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.impl.project.ProjectHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -132,7 +131,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         DBNProject projectNode = new DBNProject(
             this,
             project,
-            DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(ProjectHandlerImpl.RES_TYPE_PROJECT));
+            DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(project));
         projects.add(projectNode);
         Collections.sort(projects, new Comparator<DBNProject>() {
             @Override

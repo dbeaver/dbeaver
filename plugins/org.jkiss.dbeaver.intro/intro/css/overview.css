@@ -1,0 +1,15 @@
+a#mylyn-overview img {
+	background-image: url(../../images/topiclabel/ov_mylyn48.gif);
+}
+
+a#mylyn-overview:hover img {
+	background-image: url(../../images/topiclabel/ov_mylyn48_hov.gif);
+}
+
+a#mylyn-legend img {
+	background-image: url(../../images/topiclabel/ov_legend48.gif);
+}
+
+a#mylyn-legend:hover img {
+	background-image: url(../../images/topiclabel/ov_legend48_hov.gif);
+}

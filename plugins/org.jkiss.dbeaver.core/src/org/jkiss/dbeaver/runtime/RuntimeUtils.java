@@ -296,11 +296,6 @@ public class RuntimeUtils {
         return new File(userHome);
     }
 
-    public static File getBetaDir()
-    {
-        return new File(getUserHomeDir(), ".dbeaver-beta/"); //$NON-NLS-1$
-    }
-
     public static String getCurrentDate()
     {
         return new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$

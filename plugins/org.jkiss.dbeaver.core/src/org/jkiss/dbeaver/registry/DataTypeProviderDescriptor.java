@@ -102,11 +102,6 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         return id;
     }
 
-    public String getClassName()
-    {
-        return className;
-    }
-
     public DBDValueHandlerProvider getInstance()
     {
         if (instance == null && className != null) {
