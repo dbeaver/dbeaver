@@ -603,6 +603,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_PORT, 0);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_USER, "");
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_PROXY_PASSWORD, "");
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_DRIVERS_HOME, "");
 
         // Network
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NET_TUNNEL_PORT_MIN, 10000);

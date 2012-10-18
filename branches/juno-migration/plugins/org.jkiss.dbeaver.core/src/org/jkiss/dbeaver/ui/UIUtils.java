@@ -922,11 +922,12 @@ public class UIUtils {
     public static Text createOutputFolderChooser(final Composite parent, ModifyListener changeListener)
     {
         UIUtils.createControlLabel(parent, CoreMessages.dialog_export_wizard_output_label_directory);
-        final Text directoryText = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
+        final Text directoryText = new Text(parent, SWT.BORDER);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 3;
         directoryText.setLayoutData(gd);
-        directoryText.addModifyListener(changeListener);
+        if (changeListener != null) {
+            directoryText.addModifyListener(changeListener);
+        }
 
         final Runnable folderChooser = new Runnable() {
             @Override
