@@ -10,6 +10,15 @@
 
    <plugin
          id="com.ibm.icu.base"
+         os="aix,hpux,linux,qnx,solaris,win32"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.ibm.icu"
+         os="macosx"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -211,6 +220,16 @@
          unpack="false"/>
 
    <plugin
+         id="org.eclipse.core.resources.win32.x86"
+         os="win32"
+         arch="x86"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
          id="org.eclipse.core.runtime"
          download-size="0"
          install-size="0"
@@ -338,10 +357,12 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.e4.ui.workbench.swt"
+         id="org.eclipse.e4.ui.workbench.renderers.swt.cocoa"
+         os="macosx"
          download-size="0"
          install-size="0"
          version="0.0.0"
+         fragment="true"
          unpack="false"/>
 
    <plugin
@@ -485,16 +506,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.swt.carbon.macosx"
-         os="macosx"
-         ws="carbon"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.swt.cocoa.macosx"
          os="macosx"
          ws="cocoa"
@@ -516,10 +527,54 @@
          unpack="false"/>
 
    <plugin
+         id="org.eclipse.swt.gtk.aix.ppc"
+         os="aix"
+         ws="gtk"
+         arch="ppc"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swt.gtk.aix.ppc64"
+         os="aix"
+         ws="gtk"
+         arch="ppc64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swt.gtk.hpux.ia64_32"
+         os="hpux"
+         ws="gtk"
+         arch="ia64_32"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
          id="org.eclipse.swt.gtk.linux.ppc64"
          os="linux"
          ws="gtk"
-         arch="ppc"
+         arch="ppc64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.swt.gtk.linux.s390"
+         os="linux"
+         ws="gtk"
+         arch="s390"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -550,6 +605,7 @@
 
    <plugin
          id="org.eclipse.swt.gtk.solaris.sparc"
+         os="solaris"
          ws="gtk"
          arch="sparc"
          download-size="0"
@@ -558,15 +614,16 @@
          fragment="true"
          unpack="false"/>
 
-   <!--plugin
+   <plugin
          id="org.eclipse.swt.gtk.solaris.x86"
+         os="solaris"
          ws="gtk"
          arch="x86"
          download-size="0"
          install-size="0"
          version="0.0.0"
          fragment="true"
-         unpack="false"/-->
+         unpack="false"/>
 
    <plugin
          id="org.eclipse.swt.win32.win32.x86"
@@ -682,6 +739,13 @@
 
    <plugin
          id="org.eclipse.ui.intro"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.eclipse.e4.ui.workbench.swt"
          download-size="0"
          install-size="0"
          version="0.0.0"
