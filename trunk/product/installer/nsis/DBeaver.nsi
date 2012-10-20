@@ -25,8 +25,8 @@
   VIAddVersionKey "LegalTrademarks" "DBeaver is a trademark of JKISS"
   VIAddVersionKey "LegalCopyright" "JKISS"
   VIAddVersionKey "FileDescription" "DBeaver"
-  VIAddVersionKey "FileVersion" "@productVersion@"
-  VIProductVersion "@productVersion@.0"
+  VIAddVersionKey "FileVersion" "2.0"
+  VIProductVersion "2.0.0.0"
 
 ; Definitions for Java 6.0
   !define JRE_VERSION "6.0"
@@ -169,6 +169,7 @@ Section "-DBeaver Core" SecCore
   SetOutPath "$INSTDIR\plugins"
   
   File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core_*.jar"
+  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core.application_*.jar"
   File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.utils_*.jar"
   
   ;Store installation folder
