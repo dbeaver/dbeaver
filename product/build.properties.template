@@ -9,9 +9,6 @@ nsisDirectory=@nsisDirectory@
 buildDirectory=@buildDirectory@
 releaseFilesDirectory=@releaseFilesDirectory@
 
-#topLevelElementType = feature
-#topLevelElementId = org.jkiss.dbeaver.runtime
-
 buildType=B
 buildId=@buildId@
 buildLabel=@buildLabel@

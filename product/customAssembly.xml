@@ -73,12 +73,8 @@
     <!--    - rootFolder : the folder containing the root files                -->
     <!-- ===================================================================== -->
     <target name="pre.archive">
-        <echo message="Adding contributions to ${rootFolder}"/>
-        <copy file="${buildDirectory}/readme.txt" todir="${rootFolder}"/>
-        <mkdir dir="${rootFolder}/licenses"/>
-        <copy todir="${rootFolder}/licenses">
-            <fileset dir="${buildDirectory}/../../docs/licenses"/>
-        </copy>
+        <antcall target="packStandalone"/>
+        <antcall target="packFeature"/>
     </target>
     
     <!-- ===================================================================== -->
@@ -86,6 +82,26 @@
     <!-- ===================================================================== -->
     <target name="noDefault">
         <echo message="You must specify a target when invoking this file" />
+    </target>
+
+    <!-- ===================================================================== -->
+    <!-- Packaging                                                             -->
+    <!-- ===================================================================== -->
+
+    <target name="packStandalone" unless="buildFeature">
+        <echo message="Adding standalone contributions to ${rootFolder}"/>
+        <copy file="${buildDirectory}/readme.txt" todir="${rootFolder}"/>
+        <mkdir dir="${rootFolder}/licenses"/>
+        <copy todir="${rootFolder}/licenses">
+            <fileset dir="${buildDirectory}/../../docs/licenses"/>
+        </copy>
+    </target>
+
+    <target name="packFeature" if="buildFeature">
+        <delete dir="${rootFolder}/configuration"/>
+        <!--delete>
+            <fileset dir="${rootFolder}" includes="**/org.eclipse.*.jar"/>
+        </delete-->
     </target>
 
 </project>
