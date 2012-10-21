@@ -723,10 +723,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
         GridData gd = new GridData();
-        gd.widthHint = 120;
-        gd.minimumWidth = 120;
+        gd.widthHint = 160;
+        gd.minimumWidth = 160;
         connectionCombo.setLayoutData(gd);
         connectionCombo.setVisibleItemCount(15);
+        connectionCombo.setWidthHint(160);
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
         connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
         connectionCombo.select(0);
@@ -748,10 +749,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
         gd = new GridData();
-        gd.widthHint = 120;
-        gd.minimumWidth = 120;
+        gd.widthHint = 140;
+        gd.minimumWidth = 140;
         databaseCombo.setLayoutData(gd);
         databaseCombo.setVisibleItemCount(15);
+        databaseCombo.setWidthHint(140);
         databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
         databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
         databaseCombo.select(0);
