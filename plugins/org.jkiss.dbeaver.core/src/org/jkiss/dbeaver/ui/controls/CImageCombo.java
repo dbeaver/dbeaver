@@ -72,6 +72,7 @@ public class CImageCombo extends Composite {
     private Text text;
     private Table table;
     private int visibleItemCount = 4;
+    private int widthHint = SWT.DEFAULT;
     private Shell popup;
     private Button arrow;
     private boolean hasFocus;
@@ -207,6 +208,11 @@ public class CImageCombo extends Composite {
         //initAccessible();
     }
 
+    public void setWidthHint(int widthHint)
+    {
+        this.widthHint = widthHint;
+    }
+
     private void setEnabled(boolean enabled, boolean force)
     {
         if (force || enabled != isEnabled()) {
@@ -260,7 +266,7 @@ public class CImageCombo extends Composite {
             SWT.error(SWT.ERROR_NULL_ARGUMENT);
         }
 
-        TableItem newItem = new TableItem(this.table, SWT.FILL);
+        TableItem newItem = new TableItem(this.table, SWT.NONE);
         newItem.setText(string);
         newItem.setData(data);
         if (image != null) {
@@ -403,6 +409,9 @@ public class CImageCombo extends Composite {
 
         height = Math.max(hHint, Math.max(textSize.y, arrowSize.y) + 2 * borderWidth);
         width = Math.max(wHint, Math.max(textWidth + 2 * spacer + arrowSize.x + 2 * borderWidth, listSize.x));
+        if (widthHint != SWT.DEFAULT) {
+            width = widthHint;
+        }
         return new Point(width + 10, height);
     }
 
@@ -1493,4 +1502,33 @@ public class CImageCombo extends Composite {
         }
     }
 
+    @Override
+    public void layout()
+    {
+        super.layout();    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void layout(boolean changed)
+    {
+        super.layout(changed);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void layout(boolean changed, boolean all)
+    {
+        super.layout(changed, all);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void layout(Control[] changed)
+    {
+        super.layout(changed);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void layout(Control[] changed, int flags)
+    {
+        super.layout(changed, flags);    //To change body of overridden methods use File | Settings | File Templates.
+    }
 }
