@@ -121,7 +121,7 @@
             <arg value="${buildFile}" />
             <arg value="-Dtimestamp=${timestamp}" />
             <arg value="-DproductId=DBeaverRuntime" />
-            <!--<arg value="-Dcomponent=org.jkiss.dbeaver.runtime"/>-->
+            <arg value="-Dcomponent=org.jkiss.dbeaver.runtime"/>
             <arg value="-DbuildFeature=true"/>
             <arg value="-Dconfigs=*,*,*" />
             <classpath>
@@ -134,7 +134,7 @@
         <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
 	    <antcall target="pde-runtime"/>
-        <antcall target="pde-standalone"/>
+        <!--<antcall target="pde-standalone"/>-->
     </target>
 
     <target name="driver-pack">
@@ -301,7 +301,33 @@
 
     </target>
 
-    <target name="copy-release" depends="init">
+    <!-- ===================================================================== -->
+    <!-- Localization -->
+    <!-- ===================================================================== -->
+
+    <target name="clean-eclipse">
+        <delete dir="${baseLocation}" />
+    </target>
+
+    <target name="copy-eclipse">
+        <mkdir dir="${baseLocation}" />
+        <copy todir="${baseLocation}">
+            <fileset dir="${stdBaseLocation}">
+                <include name="**" />
+            </fileset>
+        </copy>
+        <tstamp/>
+    </target>
+
+    <target name="babel-repack" depends="copy-eclipse">
+        <ant dir="../tools/babel-packer" antfile="build.xml" target="babel-repack" />
+    </target>
+
+    <!-- ===================================================================== -->
+    <!-- Release -->
+    <!-- ===================================================================== -->
+
+    <target name="publish-release" depends="init">
         <mkdir dir="${releaseFilesDirectory}" />
         <copy todir="${releaseFilesDirectory}">
             <fileset dir="${buildDirectory}/${buildId}">
@@ -312,8 +338,8 @@
             </fileset>
         </copy>
     </target>
-    
-    <target name="copy-ea" depends="init">
+
+    <target name="publish-ea" depends="init">
         <mkdir dir="${releaseFilesDirectory}/ea" />
         <copy todir="${releaseFilesDirectory}/ea">
             <fileset dir="${buildDirectory}/${buildId}">
@@ -326,43 +352,34 @@
     </target>
 
     <!-- Versions -->
-    
+
     <target name="generate-version">
         <ant dir="../tools/product-manager" antfile="build.xml" target="generate-version" />
     </target>
 
-    <!-- Localization -->
-    
-    <target name="copy-eclipse">
-        <mkdir dir="${baseLocation}" />
-        <copy todir="${baseLocation}">
-            <fileset dir="${stdBaseLocation}">
-                <include name="**" />
+    <!-- Copy update site -->
+
+    <target name="publish-update">
+        <zip destfile="${distDirectory}/dbeaver-${productVersion}-update.zip">
+            <fileset dir="${buildDirectory}/updateSite">
+                <include name="**"/>
+            </fileset>
+        </zip>
+        <property name="update-dist" value="${updateFilesDirectory}/${productVersion}"/>
+        <mkdir dir="${update-dist}"/>
+        <copy todir="${update-dist}" file="${distDirectory}/dbeaver-${productVersion}-update.zip"/>
+        <copy todir="${update-dist}">
+            <fileset dir="${buildDirectory}/updateSite">
+                <include name="**"/>
             </fileset>
         </copy>
-        <tstamp/>
     </target>
-
-    <target name="clean-eclipse">
-        <delete dir="${baseLocation}" />
-    </target>
-
-    <target name="babel-repack" depends="copy-eclipse">
-        <ant dir="../tools/babel-packer" antfile="build.xml" target="babel-repack" />
-    </target>
-
 
     <!-- ===================================================================== -->
     <!-- Source Dist -->
     <!-- ===================================================================== -->
 
     <target name="dist-source" depends="init">
-<!--
-        <typedef resource="org/tigris/subversion/svnant/svnantlib.xml"/> 
-        <svn javahl="false">
-            <export srcPath="." destPath="dist/sources"/>
-        </svn>
--->
         <!--delete dir="${buildDirectory}/sources"/-->
         <exec executable="svn">
             <arg value="export"/>
@@ -379,7 +396,6 @@
 				<include name="tools/**"/>
 			</fileset>
         </zip>
-        <!--delete dir="${buildDirectory}/sources"/-->
     </target>
 
 </project>
