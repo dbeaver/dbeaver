@@ -54,7 +54,7 @@ collectingFolder=${archivePrefix}
 # artifacts for all the platforms listed in the configs property.
 # To control the output format for the group, add a "group, group, group - <format>" entry to the
 # archivesFormat. 
-#groupConfigurations=true
+groupConfigurations=true
 
 #The format of the archive. By default a zip is created using antZip.
 #The list can only contain the configuration for which the desired format is different than zip.
@@ -81,7 +81,7 @@ allowBinaryCycles = true
 #parallelThreadsPerProcessor=
 	
 #Set to true if you want the output to be ready for an update jar (no site.xml generated)
-#outputUpdateJars = false
+outputUpdateJars = true
 
 #Set to true for Jnlp generation
 #codebase should be a URL that will be used as the root of all relative URLs in the output.

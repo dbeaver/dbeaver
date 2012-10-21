@@ -163,35 +163,26 @@
     </target>
 
     <target name="generateUpdateSite" if="buildFeature">
-        <echo message="Build update site" />
+        <echo message="Build update site"/>
         <!-- Create the directory structure -->
         <mkdir dir="${UpdateSiteStagingLocation}"/>
-        <mkdir dir="${UpdateSiteStagingLocation}/features"/>
-        <mkdir dir="${UpdateSiteStagingLocation}/plugins"/>
+        <copy todir="${UpdateSiteStagingLocation}">
+            <fileset dir="${buildDirectory}/../updateSite"/>
+        </copy>
+
         <!-- Build the jar files -->
         <antcall target="allElements">
             <param name="genericTargets" value="${builder}/customTargets.xml"/>
             <param name="target" value="updateSiteExport"/>
         </antcall>
-        <antcall target="copySiteContents"/>
-        <antcall target="createNightlyBuildSiteXml"/>
     </target>
 
     <target name="updateSiteExport">
+        <echo message="Update site export for ${id}" />
         <ant antfile="build.xml" dir="${buildDirectory}/features/${id}/" target="build.update.jar">
             <property name="feature.destination" value="${UpdateSiteStagingLocation}/features"/>
             <property name="plugin.destination" value="${UpdateSiteStagingLocation}/plugins"/>
         </ant>
-    </target>
-
-    <target name="copySiteContents" unless="isNightlyBuild">
-        <copy todir="${UpdateSiteStagingLocation}">
-            <fileset dir="${buildDirectory}/../updateSite"  excludes=".*"/>
-        </copy>
-    </target>
-
-    <target name="createNightlyBuildSiteXml" if="isNightlyBuild">
-        <!-- create ${UpdateSiteStagingLocation}/site.xml which contains only the nighlty build version -->
     </target>
 
 </project>
