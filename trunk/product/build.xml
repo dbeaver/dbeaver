@@ -297,7 +297,7 @@
 
     </target>
 
-    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,dist-source,driver-pack">
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,driver-pack">
 
     </target>
 
