@@ -1382,6 +1382,7 @@
 
         <!-- SQL Editor -->
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+L"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+L"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"
