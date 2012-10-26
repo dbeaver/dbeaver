@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.tools.compare;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IFilter;
@@ -48,6 +50,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class CompareObjectsWizard extends Wizard implements IExportWizard {
+
+    static final Log log = LogFactory.getLog(CompareObjectsWizard.class);
 
     private static final String RS_COMPARE_WIZARD_DIALOG_SETTINGS = "CompareWizard";//$NON-NLS-1$
 
@@ -157,6 +161,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
             if (initializeError != null) {
                 showError(initializeError.getMessage());
             } else {
+                log.error(e.getTargetException());
                 showError(e.getTargetException().getMessage());
             }
             return false;
@@ -300,7 +305,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
         List<List<DBNDatabaseNode>> allChildren = new ArrayList<List<DBNDatabaseNode>>(nodeCount);
         for (int i = 0; i < nodeCount; i++) {
             DBNDatabaseNode node = nodes.get(i);
-            allChildren.add(node.getChildren(monitor));
+            allChildren.add(CommonUtils.safeList(node.getChildren(monitor)));
         }
 
         Set<String> allChildNames = new LinkedHashSet<String>();
