@@ -82,7 +82,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             compareSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             compareSettings.setLayout(new GridLayout(1, false));
 
-            skipSystemObjects = UIUtils.createCheckbox(compareSettings, "Skip system object", settings.isSkipSystemObjects());
+            skipSystemObjects = UIUtils.createCheckbox(compareSettings, "Skip system objects", settings.isSkipSystemObjects());
             skipSystemObjects.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
