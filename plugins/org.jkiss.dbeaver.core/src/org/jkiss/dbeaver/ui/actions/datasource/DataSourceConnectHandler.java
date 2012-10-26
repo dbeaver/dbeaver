@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -54,7 +55,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
      * @param dataSourceContainer
      * @param onFinish
      */
-    public static void execute(DBRProgressMonitor monitor, DBSDataSourceContainer dataSourceContainer, final Runnable onFinish) {
+    public static void execute(DBRProgressMonitor monitor, DBSDataSourceContainer dataSourceContainer, final DBRProcessListener onFinish) {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
             if (!CommonUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
@@ -92,7 +93,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
                         }
                     }
                     if (onFinish != null) {
-                        onFinish.run();
+                        onFinish.onProcessFinish(event.getResult());
                     }
                 }
             };
@@ -118,11 +119,15 @@ public class DataSourceConnectHandler extends DataSourceHandler
                     }
                 });
                 if (!result.isOK()) {
-                    UIUtils.showErrorDialog(
-                        null,
-                        connectJob.getName(),
-                        null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
-                        result);
+                    if (onFinish != null) {
+                        onFinish.onProcessFinish(result);
+                    } else {
+                        UIUtils.showErrorDialog(
+                            null,
+                            connectJob.getName(),
+                            null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
+                            result);
+                    }
                 }
             } else {
                 connectJob.addJobChangeListener(jobChangeAdapter);

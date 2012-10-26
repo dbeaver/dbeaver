@@ -158,7 +158,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     @Override
     public CellEditor createPropertyEditor(Composite parent)
     {
-        final Object object = getSource().getEditableValue();
+        IPropertySource source = getSource();
+        if (source == null) {
+            return null;
+        }
+        final Object object = source.getEditableValue();
         if (!isEditable(object)) {
             return null;
         }

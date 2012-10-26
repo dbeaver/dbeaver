@@ -35,7 +35,8 @@ public class CompareObjectsSettings {
 
 
     private final List<DBNDatabaseNode> nodes;
-    private boolean skipSystemObject = true;
+    private boolean skipSystemObjects = true;
+    private boolean compareLazyProperties = false;
 
     public CompareObjectsSettings(List<DBNDatabaseNode> nodes)
     {
@@ -47,20 +48,40 @@ public class CompareObjectsSettings {
         return nodes;
     }
 
-    public boolean isSkipSystemObject()
+    public boolean isSkipSystemObjects()
     {
-        return skipSystemObject;
+        return skipSystemObjects;
+    }
+
+    public void setSkipSystemObjects(boolean skipSystemObjects)
+    {
+        this.skipSystemObjects = skipSystemObjects;
+    }
+
+    public boolean isCompareLazyProperties()
+    {
+        return compareLazyProperties;
+    }
+
+    public void setCompareLazyProperties(boolean compareLazyProperties)
+    {
+        this.compareLazyProperties = compareLazyProperties;
     }
 
     void loadFrom(IDialogSettings dialogSettings)
     {
         if (dialogSettings.get("skipSystem") != null) {
-            skipSystemObject = dialogSettings.getBoolean("skipSystem");
+            skipSystemObjects = dialogSettings.getBoolean("skipSystem");
+        }
+        if (dialogSettings.get("compareLazy") != null) {
+            compareLazyProperties = dialogSettings.getBoolean("compareLazy");
         }
     }
 
     void saveTo(IDialogSettings dialogSettings)
     {
-        dialogSettings.put("skipSystem", skipSystemObject);
+        dialogSettings.put("skipSystem", skipSystemObjects);
+        dialogSettings.put("compareLazy", compareLazyProperties);
     }
+
 }

@@ -56,7 +56,7 @@ public class ConnectJob extends EventProcessorJob
         try {
             connectThread = getThread();
             String oldName = connectThread.getName();
-            if (connectThread != null && reflect) {
+            if (reflect) {
                 connectThread.setName(NLS.bind(CoreMessages.runtime_jobs_connect_thread_name, container.getName()));
             }
 
