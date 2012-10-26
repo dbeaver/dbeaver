@@ -19,8 +19,10 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -111,14 +113,14 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable, IDataS
     }
 
     @Override
-    public boolean initializeNode(DBRProgressMonitor monitor, Runnable onFinish)
+    public boolean initializeNode(DBRProgressMonitor monitor, DBRProcessListener onFinish)
     {
         if (!dataSource.isConnected()) {
             DataSourceConnectHandler.execute(monitor, dataSource, onFinish);
             //dataSource.connect(monitor);
         } else {
             if (onFinish != null) {
-                onFinish.run();
+                onFinish.onProcessFinish(Status.OK_STATUS);
             }
         }
         return dataSource.isConnected();

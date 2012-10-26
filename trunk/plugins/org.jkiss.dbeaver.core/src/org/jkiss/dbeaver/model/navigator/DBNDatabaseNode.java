@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IActionFilter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -256,8 +258,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return locked || super.isLocked();
     }
 
-    public boolean initializeNode(DBRProgressMonitor monitor, Runnable onFinish)
+    public boolean initializeNode(DBRProgressMonitor monitor, DBRProcessListener onFinish)
     {
+        if (onFinish != null) {
+            onFinish.onProcessFinish(Status.OK_STATUS);
+        }
         return true;
     }
 
