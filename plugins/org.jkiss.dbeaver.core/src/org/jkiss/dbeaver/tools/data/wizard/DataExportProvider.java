@@ -16,24 +16,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.tools.project.ProjectCreateWizard;
+package org.jkiss.dbeaver.tools.data.wizard;
 
-public class NavigatorHandlerProjectCreate extends NavigatorHandlerObjectBase {
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ActiveWizardDialog dialog = new ActiveWizardDialog(
-            HandlerUtil.getActiveWorkbenchWindow(event),
-            new ProjectCreateWizard());
-        dialog.open();
+/**
+ * Data export source
+ */
+public class DataExportProvider {
 
-        return null;
+    private DBSDataContainer dataContainer;
+    private DBDDataFilter dataFilter;
+
+    public DataExportProvider(DBSDataContainer dataContainer)
+    {
+        this.dataContainer = dataContainer;
     }
 
+    public DataExportProvider(DBSDataContainer dataContainer, DBDDataFilter dataFilter)
+    {
+        this.dataContainer = dataContainer;
+        this.dataFilter = dataFilter;
+    }
+
+    public DBSDataContainer getDataContainer()
+    {
+        return dataContainer;
+    }
+
+    public DBDDataFilter getDataFilter()
+    {
+        return dataFilter;
+    }
 }

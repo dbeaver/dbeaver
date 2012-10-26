@@ -113,7 +113,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         }
 
         // Make new script file
-        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, CoreMessages.model_project_Script, SCRIPT_FILE_EXTENSION);
+        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
 
         // Save ds container reference

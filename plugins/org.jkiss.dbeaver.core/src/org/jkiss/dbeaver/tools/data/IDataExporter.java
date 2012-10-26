@@ -16,24 +16,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.tools.project.ProjectCreateWizard;
+package org.jkiss.dbeaver.tools.data;
 
-public class NavigatorHandlerProjectCreate extends NavigatorHandlerObjectBase {
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ActiveWizardDialog dialog = new ActiveWizardDialog(
-            HandlerUtil.getActiveWorkbenchWindow(event),
-            new ProjectCreateWizard());
-        dialog.open();
+import java.io.IOException;
 
-        return null;
-    }
+/**
+ * IDataExporter
+ */
+public interface IDataExporter {
+
+    void init(IDataExporterSite site)
+        throws DBException;
+
+    void exportHeader(DBRProgressMonitor monitor)
+        throws DBException, IOException;
+
+    void exportRow(DBRProgressMonitor monitor, Object[] row)
+        throws DBException, IOException;
+
+    void exportFooter(DBRProgressMonitor monitor)
+        throws DBException, IOException;
+
+    void dispose();
 
 }

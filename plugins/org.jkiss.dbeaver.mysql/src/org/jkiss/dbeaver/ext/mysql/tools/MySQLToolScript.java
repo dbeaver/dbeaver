@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPTool;
+import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 import org.jkiss.utils.CommonUtils;
@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Database import
  */
-public class MySQLToolScript implements DBPTool
+public class MySQLToolScript implements IExternalTool
 {
     @Override
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException

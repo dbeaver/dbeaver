@@ -16,24 +16,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
+package org.jkiss.dbeaver.tools.data.wizard;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.tools.project.ProjectCreateWizard;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 
-public class NavigatorHandlerProjectCreate extends NavigatorHandlerObjectBase {
+/**
+ * DataExportErrorJob
+ */
+public class DataExportErrorJob extends AbstractUIJob {
+
+    private Throwable error;
+
+    public DataExportErrorJob(Throwable error)
+    {
+        super("Data Export Error");
+        this.error = error;
+    }
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ActiveWizardDialog dialog = new ActiveWizardDialog(
-            HandlerUtil.getActiveWorkbenchWindow(event),
-            new ProjectCreateWizard());
-        dialog.open();
-
-        return null;
+    public IStatus runInUIThread(DBRProgressMonitor monitor)
+    {
+        UIUtils.showErrorDialog(
+            getDisplay().getActiveShell(),
+            "Data export error",
+            error.getMessage(), error);
+        return Status.OK_STATUS;
     }
 
 }

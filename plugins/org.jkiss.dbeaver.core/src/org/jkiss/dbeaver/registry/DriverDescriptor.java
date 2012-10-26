@@ -1144,7 +1144,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         xml.addAttribute(RegistryConstants.ATTR_CUSTOM, this.isCustom());
         xml.addAttribute(RegistryConstants.ATTR_NAME, this.getName());
         xml.addAttribute(RegistryConstants.ATTR_CLASS, this.getDriverClassName());
-        xml.addAttribute(RegistryConstants.ATTR_URL, this.getSampleURL());
+        if (!CommonUtils.isEmpty(this.getSampleURL())) {
+            xml.addAttribute(RegistryConstants.ATTR_URL, this.getSampleURL());
+        }
         if (this.getDefaultPort() != null) {
             xml.addAttribute(RegistryConstants.ATTR_PORT, this.getDefaultPort());
         }

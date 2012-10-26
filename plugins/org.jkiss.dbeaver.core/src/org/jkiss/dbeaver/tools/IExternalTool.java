@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder serge@jkiss.org
- * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,28 +16,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.mysql.tools;
+
+package org.jkiss.dbeaver.tools;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
-import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 
 /**
- * Database import
+ * Database external utility.
+ * Usually utilizes external native software to perform specific database tasks.
  */
-public class MySQLToolImport implements IExternalTool
-{
-    @Override
-    public void execute(IWorkbenchWindow window, DBPObject object) throws DBException
-    {
-        if (object instanceof MySQLCatalog) {
-            ToolWizardDialog dialog = new ToolWizardDialog(
-                window,
-                new MySQLScriptExecuteWizard((MySQLCatalog) object, true));
-            dialog.open();
-        }
-    }
+public interface IExternalTool {
+
+    void execute(IWorkbenchWindow window, DBPObject object)
+        throws DBException;
+
 }

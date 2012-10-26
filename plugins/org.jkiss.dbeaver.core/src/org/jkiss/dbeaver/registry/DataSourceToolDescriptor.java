@@ -22,7 +22,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPTool;
+import org.jkiss.dbeaver.tools.IExternalTool;
 
 /**
  * DataSourceToolDescriptor
@@ -66,10 +66,10 @@ public class DataSourceToolDescriptor extends AbstractContextDescriptor
         return icon;
     }
 
-    public DBPTool createTool()
+    public IExternalTool createTool()
         throws DBException
     {
-        Class<DBPTool> toolClass = getObjectClass(toolClassName, DBPTool.class);
+        Class<IExternalTool> toolClass = getObjectClass(toolClassName, IExternalTool.class);
         if (toolClass == null) {
             throw new DBException("Tool class '" + toolClassName + "' not found");
         }
