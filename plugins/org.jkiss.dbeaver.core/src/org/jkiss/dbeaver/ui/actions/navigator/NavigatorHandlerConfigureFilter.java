@@ -23,7 +23,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -97,12 +96,9 @@ public class NavigatorHandlerConfigureFilter extends NavigatorHandlerObjectCreat
         if (!updateUI) {
             return;
         }
-        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
-        if (partSite != null) {
-            DBNNode node = NavigatorUtils.getSelectedNode(partSite.getSelectionProvider());
-            if (node != null) {
-                element.setText("Filter " + node.getNodeType() + " ...");
-            }
+        DBNNode node = NavigatorUtils.getSelectedNode(element);
+        if (node != null) {
+            element.setText("Filter " + node.getNodeType() + " ...");
         }
     }
 

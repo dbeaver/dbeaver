@@ -33,7 +33,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -279,20 +278,16 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         if (!updateUI) {
             return;
         }
-        //IWorkbenchPartSite partSite = (IWorkbenchPartSite) parameters.get(IServiceScopes.PARTSITE_SCOPE);
-        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
-        if (partSite != null) {
-            final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
-            if (selectionProvider != null) {
-                ISelection selection = selectionProvider.getSelection();
+        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider != null) {
+            ISelection selection = selectionProvider.getSelection();
 
-                if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-                    element.setText(CoreMessages.actions_navigator_delete_objects);
-                } else {
-                    DBNNode node = NavigatorUtils.getSelectedNode(selection);
-                    if (node != null) {
-                        element.setText(CoreMessages.actions_navigator_delete_ + " " + node.getNodeType()/* + " '" + node.getNodeName() + "'"*/);
-                    }
+            if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
+                element.setText(CoreMessages.actions_navigator_delete_objects);
+            } else {
+                DBNNode node = NavigatorUtils.getSelectedNode(selection);
+                if (node != null) {
+                    element.setText(CoreMessages.actions_navigator_delete_ + " " + node.getNodeType()/* + " '" + node.getNodeName() + "'"*/);
                 }
             }
         }

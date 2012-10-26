@@ -33,7 +33,9 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -77,6 +79,21 @@ public class NavigatorUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Find selected node for specified UI element
+     * @param element ui element
+     * @return ndoe or null
+     */
+    public static DBNNode getSelectedNode(UIElement element)
+    {
+        ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider != null) {
+            return NavigatorUtils.getSelectedNode(selectionProvider);
+        } else {
+            return null;
+        }
     }
 
     public static DBSObject getSelectedObject(IStructuredSelection selection)
