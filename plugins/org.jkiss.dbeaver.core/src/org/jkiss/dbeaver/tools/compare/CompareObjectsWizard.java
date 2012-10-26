@@ -162,6 +162,9 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                     throw new DBException(initializeError.getMessage());
                 }
                 Thread.sleep(100);
+                if (monitor.isCanceled()) {
+                    throw new InterruptedException();
+                }
             }
         }
 
@@ -200,11 +203,14 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
             boolean hasLazy = false;
             // Load all properties
             for (DBNDatabaseNode node : nodes) {
+                if (monitor.isCanceled()) {
+                    throw new InterruptedException();
+                }
                 DBSObject databaseObject = node.getObject();
                 Map<IPropertyDescriptor, Object> nodeProperties = propertyValues.get(databaseObject);
                 if (nodeProperties == null) {
                     nodeProperties = new IdentityHashMap<IPropertyDescriptor, Object>();
-                    propertyValues.put(node, nodeProperties);
+                    propertyValues.put(databaseObject, nodeProperties);
                 }
                 PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties);
                 for (ObjectPropertyDescriptor prop : properties) {
@@ -214,11 +220,11 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                                 nodeProperties.put(prop, LAZY_VALUE);
                             }
                             // Initiate lazy value read
-                            propertySource.getPropertyValue(prop);
+                            propertySource.getPropertyValue(databaseObject, prop);
                             hasLazy = true;
                         }
                     } else {
-                        Object propertyValue = propertySource.getPropertyValue(prop);
+                        Object propertyValue = propertySource.getPropertyValue(databaseObject, prop);
                         synchronized (PROPS_LOCK) {
                             nodeProperties.put(prop, propertyValue);
                         }
@@ -229,6 +235,10 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
             // Wait for all lazy properties to load
             while (hasLazy) {
+                if (monitor.isCanceled()) {
+                    throw new InterruptedException();
+                }
+
                 Thread.sleep(50);
                 synchronized (PROPS_LOCK) {
                     hasLazy = false;
@@ -242,6 +252,9 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
             }
 
             // Compare properties
+            for (ObjectPropertyDescriptor prop : properties) {
+
+            }
 
             // Compare children
 
