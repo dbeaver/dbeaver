@@ -16,33 +16,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.wizard;
+package org.jkiss.dbeaver.tools.compare;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
 
-public class DataExportWizard extends Wizard implements IExportWizard {
+public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
-    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataExportWizard";//$NON-NLS-1$
+    private static final String RS_COMPARE_WIZARD_DIALOG_SETTINGS = "CompareWizard";//$NON-NLS-1$
 
-    private DataExportSettings settings;
+    private CompareObjectsSettings settings;
 
-    public DataExportWizard(List<DataExportProvider> dataContainers) {
-        this.settings = new DataExportSettings(dataContainers);
-        IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
+    public CompareObjectsWizard(List<DBNDatabaseNode> nodes) {
+        this.settings = new CompareObjectsSettings(nodes);
+        IDialogSettings section = UIUtils.getDialogSettings(RS_COMPARE_WIZARD_DIALOG_SETTINGS);
         setDialogSettings(section);
 
         settings.loadFrom(section);
     }
 
-    public DataExportSettings getSettings()
+    public CompareObjectsSettings getSettings()
     {
         return settings;
     }
@@ -50,10 +50,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
     @Override
     public void addPages() {
         super.addPages();
-        addPage(new DataExportPageInit());
-        addPage(new DataExportPageSettings());
-        addPage(new DataExportPageOutput());
-        addPage(new DataExportPageFinal());
+        addPage(new CompareObjectsPageSettings());
     }
 
     @Override
@@ -67,22 +64,8 @@ public class DataExportWizard extends Wizard implements IExportWizard {
         // Save settings
         getSettings().saveTo(getDialogSettings());
 
-        // Run export jobs
-        executeJobs();
-
         // Done
         return true;
-    }
-
-    private void executeJobs() {
-        // Schedule jobs for data providers
-        int totalJobs = settings.getDataProviders().size();
-        if (totalJobs > settings.getMaxJobCount()) {
-            totalJobs = settings.getMaxJobCount();
-        }
-        for (int i = 0; i < totalJobs; i++) {
-            new DataExportJob(settings).schedule();
-        }
     }
 
 }

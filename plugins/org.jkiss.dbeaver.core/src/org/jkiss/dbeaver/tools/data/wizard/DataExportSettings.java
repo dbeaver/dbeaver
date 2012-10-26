@@ -335,7 +335,7 @@ public class DataExportSettings {
         return result.toString();
     }
 
-    public void loadFrom(IDialogSettings dialogSettings)
+    void loadFrom(IDialogSettings dialogSettings)
     {
         DataExporterDescriptor dataExporter = null;
         String expId = dialogSettings.get("exporter");
@@ -427,7 +427,7 @@ public class DataExportSettings {
         setDataExporter(dataExporter);
     }
 
-    public void saveTo(IDialogSettings dialogSettings)
+    void saveTo(IDialogSettings dialogSettings)
     {
         if (this.dataExporter != null) {
             this.exporterPropsHistory.put(this.dataExporter, this.extractorProperties);

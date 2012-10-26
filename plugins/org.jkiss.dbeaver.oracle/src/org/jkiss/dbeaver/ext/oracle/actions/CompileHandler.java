@@ -178,7 +178,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
     public void updateElement(UIElement element, Map parameters)
     {
         List<OracleSourceObject> objects = new ArrayList<OracleSourceObject>();
-        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
+        IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
         if (partSite != null) {
             final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
             if (selectionProvider != null) {

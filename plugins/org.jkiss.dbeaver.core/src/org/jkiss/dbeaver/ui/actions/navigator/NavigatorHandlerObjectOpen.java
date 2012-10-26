@@ -175,26 +175,23 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         if (!updateUI) {
             return;
         }
-        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
-        if (partSite != null) {
-            final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
-            if (selectionProvider != null) {
-                ISelection selection = selectionProvider.getSelection();
-                DBNNode node = NavigatorUtils.getSelectedNode(selection);
-                if (node != null) {
-                    String actionName = CoreMessages.actions_navigator_open;
-                    if (node instanceof DBNDatabaseNode) {
-                        DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) node).getObject().getClass());
-                        actionName = objectManager == null ? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
-                    }
-                    String label;
-                    if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-                        label = actionName + CoreMessages.actions_navigator__objects;
-                    } else {
-                        label = actionName + " " + node.getNodeType(); //$NON-NLS-1$
-                    }
-                    element.setText(label);
+        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider != null) {
+            ISelection selection = selectionProvider.getSelection();
+            DBNNode node = NavigatorUtils.getSelectedNode(selection);
+            if (node != null) {
+                String actionName = CoreMessages.actions_navigator_open;
+                if (node instanceof DBNDatabaseNode) {
+                    DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(((DBNDatabaseNode) node).getObject().getClass());
+                    actionName = objectManager == null ? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
                 }
+                String label;
+                if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
+                    label = actionName + CoreMessages.actions_navigator__objects;
+                } else {
+                    label = actionName + " " + node.getNodeType(); //$NON-NLS-1$
+                }
+                element.setText(label);
             }
         }
     }
