@@ -16,24 +16,34 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.tools.project.ProjectCreateWizard;
+package org.jkiss.dbeaver.tools.project;
 
-public class NavigatorHandlerProjectCreate extends NavigatorHandlerObjectBase {
+/**
+ * Create data
+ */
+class ProjectCreateData {
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ActiveWizardDialog dialog = new ActiveWizardDialog(
-            HandlerUtil.getActiveWorkbenchWindow(event),
-            new ProjectCreateWizard());
-        dialog.open();
+    private String name;
+    private String description;
 
-        return null;
+    public String getName()
+    {
+        return name;
     }
 
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
 }

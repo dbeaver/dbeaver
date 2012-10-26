@@ -25,7 +25,7 @@ import org.eclipse.ui.IActionDelegate;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPTool;
+import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
@@ -59,7 +59,7 @@ public class NavigatorActionExecuteTool implements IActionDelegate
     private void executeTool(DBPObject object)
     {
         try {
-            DBPTool toolInstance = tool.createTool();
+            IExternalTool toolInstance = tool.createTool();
             toolInstance.execute(window, DBUtils.getPublicObject(object));
         } catch (DBException e) {
             UIUtils.showErrorDialog(window.getShell(), "Tool error", "Error executing tool '" + tool.getLabel() + "'", e);

@@ -22,13 +22,13 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPTool;
+import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 
 /**
  * Database export
  */
-public class MySQLToolExport implements DBPTool
+public class MySQLToolExport implements IExternalTool
 {
     @Override
     public void execute(IWorkbenchWindow window, DBPObject object) throws DBException

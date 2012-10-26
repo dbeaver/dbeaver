@@ -16,24 +16,37 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.actions.navigator;
+package org.jkiss.dbeaver.tools.data;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import org.jkiss.dbeaver.tools.project.ProjectCreateWizard;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
-public class NavigatorHandlerProjectCreate extends NavigatorHandlerObjectBase {
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
-        ActiveWizardDialog dialog = new ActiveWizardDialog(
-            HandlerUtil.getActiveWorkbenchWindow(event),
-            new ProjectCreateWizard());
-        dialog.open();
+/**
+ * IDataExporter
+ */
+public interface IDataExporterSite {
 
-        return null;
-    }
+    DBPNamedObject getSource();
+
+    String getExportFormat();
+
+    Map<Object, Object> getProperties();
+
+    List<DBDAttributeBinding> getAttributes();
+
+    OutputStream getOutputStream();
+
+    PrintWriter getWriter();
+
+    void flush() throws IOException;
+
+    void writeBinaryData(InputStream stream, long streamLength) throws IOException;
 
 }

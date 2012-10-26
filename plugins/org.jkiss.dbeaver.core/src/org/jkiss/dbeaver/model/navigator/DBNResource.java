@@ -40,8 +40,6 @@ import java.util.List;
  */
 public class DBNResource extends DBNNode
 {
-    private final String PROJECT_CFG_FILE = ".project";
-
     private IResource resource;
     private DBPResourceHandler handler;
     private List<DBNNode> children;
