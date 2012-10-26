@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -49,7 +51,6 @@ import java.util.List;
  */
 public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
-    private static final String BOOKMARKS_DIR = "Bookmarks";
     private static final String BOOKMARK_EXT = "bm"; //$NON-NLS-1$
 
     public static IFolder getBookmarksFolder(IProject project, boolean forceCreate) throws CoreException
@@ -107,16 +108,16 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                 throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'"); //$NON-NLS-2$
             }
             final DBNDataSource dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSourceContainer);
-            dsNode.initializeNode(null, new Runnable() {
+            dsNode.initializeNode(null, new DBRProcessListener() {
                 @Override
-                public void run()
+                public void onProcessFinish(IStatus status)
                 {
-                    if (dsNode.getDataSourceContainer().isConnected()) {
+                    if (status.isOK()) {
                         UIUtils.runInUI(null, new Runnable() {
                             @Override
                             public void run()
                             {
-                                openNodeByPath(dsNode, (IFile) resource, storage, window);
+                            openNodeByPath(dsNode, (IFile) resource, storage, window);
                             }
                         });
                     }

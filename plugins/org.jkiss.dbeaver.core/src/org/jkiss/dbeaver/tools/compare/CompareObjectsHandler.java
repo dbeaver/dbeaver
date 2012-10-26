@@ -29,12 +29,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
-import sun.plugin.util.UIUtil;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -83,7 +79,7 @@ public class CompareObjectsHandler extends AbstractHandler {
             }
             nodes.add(node);
         }
-        ActiveWizardDialog dialog = new ActiveWizardDialog(
+        CompareWizardDialog dialog = new CompareWizardDialog(
             workbenchWindow,
             new CompareObjectsWizard(nodes));
         dialog.open();

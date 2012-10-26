@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.search;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
@@ -303,19 +305,21 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                                 Object object = iter.next();
                                 if (object instanceof DBNDataSource) {
                                     DBNDataSource dsNode = (DBNDataSource)object;
-                                    dsNode.initializeNode(null, new Runnable() {
+                                    dsNode.initializeNode(null, new DBRProcessListener() {
                                         @Override
-                                        public void run()
+                                        public void onProcessFinish(IStatus status)
                                         {
-                                            Display.getDefault().asyncExec(new Runnable() {
-                                                @Override
-                                                public void run()
-                                                {
-                                                    if (!dataSourceTree.isDisposed()) {
-                                                        fillObjectTypes();
+                                            if (status.isOK()) {
+                                                Display.getDefault().asyncExec(new Runnable() {
+                                                    @Override
+                                                    public void run()
+                                                    {
+                                                        if (!dataSourceTree.isDisposed()) {
+                                                            fillObjectTypes();
+                                                        }
                                                     }
-                                                }
-                                            });
+                                                });
+                                            }
                                         }
                                     });
                                 }

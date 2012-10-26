@@ -18,34 +18,20 @@
  */
 package org.jkiss.dbeaver.tools.compare;
 
-import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.registry.DataExporterDescriptor;
-import org.jkiss.dbeaver.registry.DataFormatterRegistry;
-import org.jkiss.dbeaver.tools.data.wizard.DataExportSettings;
-import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
-import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
-import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
-import org.jkiss.utils.CommonUtils;
 
 class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> {
 
     private Table nodesTable;
     private Button skipSystemObjects;
+    private Button compareLazyProperties;
 
     CompareObjectsPageSettings() {
         super("Compare objects");
@@ -94,7 +80,8 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             compareSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             compareSettings.setLayout(new GridLayout(1, false));
 
-            UIUtils.createCheckbox(compareSettings, "Skip system object", settings.isSkipSystemObject());
+            skipSystemObjects = UIUtils.createCheckbox(compareSettings, "Skip system object", settings.isSkipSystemObjects());
+            compareLazyProperties = UIUtils.createCheckbox(compareSettings, "Compare lazy properties", settings.isCompareLazyProperties());
         }
         
         setControl(composite);
@@ -109,6 +96,9 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     @Override
     public void deactivatePage()
     {
+        CompareObjectsSettings settings = getWizard().getSettings();
+        settings.setSkipSystemObjects(skipSystemObjects.getSelection());
+        settings.setCompareLazyProperties(compareLazyProperties.getSelection());
         super.deactivatePage();
     }
 
