@@ -24,8 +24,10 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.IShellProvider;
@@ -44,11 +46,14 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
+import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
@@ -1050,6 +1055,54 @@ public class UIUtils {
         final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
         if (focusService != null) {
             focusService.removeFocusTracker(control);
+        }
+    }
+
+    public static IDialogSettings getDialogSettings(String dialogId)
+    {
+        IDialogSettings workbenchSettings = DBeaverActivator.getInstance().getDialogSettings();
+        IDialogSettings section = workbenchSettings.getSection(dialogId);
+        if (section == null) {
+            section = workbenchSettings.addNewSection(dialogId);
+        }
+        return section;
+    }
+
+    public static IWorkbenchPartSite getWorkbenchPartSite(IServiceLocator serviceLocator)
+    {
+        IWorkbenchPartSite partSite = (IWorkbenchPartSite) serviceLocator.getService(IWorkbenchPartSite.class);
+        if (partSite == null) {
+            IWorkbenchPart activePart = (IWorkbenchPart) serviceLocator.getService(IWorkbenchPart.class);
+            if (activePart == null) {
+                activePart = DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart();
+            }
+            if (activePart != null) {
+                partSite = activePart.getSite();
+            }
+        }
+        return partSite;
+    }
+
+    public static ISelectionProvider getSelectionProvider(IServiceLocator serviceLocator)
+    {
+        ISelectionProvider selectionProvider = (ISelectionProvider) serviceLocator.getService(IWorkbenchPartSite.class);
+        if (selectionProvider != null) {
+            return selectionProvider;
+        }
+        IWorkbenchPartSite partSite = getWorkbenchPartSite(serviceLocator);
+        if (partSite == null) {
+            IWorkbenchPart activePart = (IWorkbenchPart) serviceLocator.getService(IWorkbenchPart.class);
+            if (activePart == null) {
+                activePart = DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart();
+            }
+            if (activePart != null) {
+                partSite = activePart.getSite();
+            }
+        }
+        if (partSite != null) {
+            return partSite.getSelectionProvider();
+        } else {
+            return null;
         }
     }
 

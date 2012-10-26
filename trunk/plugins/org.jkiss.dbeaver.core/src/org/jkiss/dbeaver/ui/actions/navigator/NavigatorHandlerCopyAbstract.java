@@ -144,16 +144,13 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
         if (!NavigatorHandlerObjectBase.updateUI) {
             return;
         }
-        IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator().getService(IWorkbenchPartSite.class);
-        if (partSite != null) {
-            final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
-            if (selectionProvider != null) {
-                ISelection selection = selectionProvider.getSelection();
-                if (selection instanceof IStructuredSelection) {
-                    String label = getSelectionTitle((IStructuredSelection)selection);
-                    if (label != null) {
-                        element.setText(label);
-                    }
+        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider != null) {
+            ISelection selection = selectionProvider.getSelection();
+            if (selection instanceof IStructuredSelection) {
+                String label = getSelectionTitle((IStructuredSelection)selection);
+                if (label != null) {
+                    element.setText(label);
                 }
             }
         }
