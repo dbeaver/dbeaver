@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.tools.compare;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -81,7 +83,21 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             compareSettings.setLayout(new GridLayout(1, false));
 
             skipSystemObjects = UIUtils.createCheckbox(compareSettings, "Skip system object", settings.isSkipSystemObjects());
+            skipSystemObjects.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    getWizard().getSettings().setSkipSystemObjects(skipSystemObjects.getSelection());
+                }
+            });
             compareLazyProperties = UIUtils.createCheckbox(compareSettings, "Compare lazy properties", settings.isCompareLazyProperties());
+            compareLazyProperties.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    getWizard().getSettings().setCompareLazyProperties(compareLazyProperties.getSelection());
+                }
+            });
         }
         
         setControl(composite);
@@ -96,9 +112,6 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     @Override
     public void deactivatePage()
     {
-        CompareObjectsSettings settings = getWizard().getSettings();
-        settings.setSkipSystemObjects(skipSystemObjects.getSelection());
-        settings.setCompareLazyProperties(compareLazyProperties.getSelection());
         super.deactivatePage();
     }
 
