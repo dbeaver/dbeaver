@@ -26,16 +26,21 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.DataSourcePropertyFilter;
+import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.IdentityHashMap;
@@ -51,6 +56,9 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
     private DBRProcessListener initializeFinisher;
     private volatile int initializedCount = 0;
     private volatile IStatus initializeError;
+    private final Object PROPS_LOCK = new Object();
+
+    private final static Object LAZY_VALUE = new Object();
 
     public CompareObjectsWizard(List<DBNDatabaseNode> nodes)
     {
@@ -158,12 +166,89 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
         }
 
         monitor.subTask("Compare " + title.toString());
+        boolean compareLazyProperties = false;
+
         DBNDatabaseNode firstNode = nodes.get(0);
         List<ObjectPropertyDescriptor> properties = ObjectPropertyDescriptor.extractAnnotations(null, firstNode.getObject().getClass(), getDataSourceFilter(firstNode));
-        for (int i = 0; i < nodes.size(); i++) {
-            monitor.subTask("Compare " + i);
+        for (ObjectPropertyDescriptor prop : properties) {
+            if (prop.isLazy()) {
+                compareLazyProperties = true;
+                break;
+            }
+        }
+        compareLazyProperties = compareLazyProperties && getSettings().isCompareLazyProperties();
 
-            monitor.worked(1);
+        final Map<Object, Map<IPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<Object, Map<IPropertyDescriptor, Object>>();
+        // Check should we read lazy properties
+        ILazyPropertyLoadListener lazyPropertyLoadListener = null;
+        if (compareLazyProperties) {
+            lazyPropertyLoadListener = new ILazyPropertyLoadListener() {
+                @Override
+                public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
+                {
+                    synchronized (propertyValues) {
+                        Map<IPropertyDescriptor, Object> objectProps = propertyValues.get(object);
+                        if (objectProps != null) {
+                            objectProps.put(property, propertyValue);
+                        }
+                    }
+                }
+            };
+            PropertiesContributor.getInstance().addLazyListener(lazyPropertyLoadListener);
+        }
+        try {
+            boolean hasLazy = false;
+            // Load all properties
+            for (DBNDatabaseNode node : nodes) {
+                DBSObject databaseObject = node.getObject();
+                Map<IPropertyDescriptor, Object> nodeProperties = propertyValues.get(databaseObject);
+                if (nodeProperties == null) {
+                    nodeProperties = new IdentityHashMap<IPropertyDescriptor, Object>();
+                    propertyValues.put(node, nodeProperties);
+                }
+                PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties);
+                for (ObjectPropertyDescriptor prop : properties) {
+                    if (prop.isLazy(databaseObject, true)) {
+                        if (compareLazyProperties) {
+                            synchronized (PROPS_LOCK) {
+                                nodeProperties.put(prop, LAZY_VALUE);
+                            }
+                            // Initiate lazy value read
+                            propertySource.getPropertyValue(prop);
+                            hasLazy = true;
+                        }
+                    } else {
+                        Object propertyValue = propertySource.getPropertyValue(prop);
+                        synchronized (PROPS_LOCK) {
+                            nodeProperties.put(prop, propertyValue);
+                        }
+                    }
+                }
+                monitor.worked(1);
+            }
+
+            // Wait for all lazy properties to load
+            while (hasLazy) {
+                Thread.sleep(50);
+                synchronized (PROPS_LOCK) {
+                    hasLazy = false;
+                    for (Map<IPropertyDescriptor, Object> objectProps : propertyValues.values()) {
+                        if (objectProps.values().contains(LAZY_VALUE)) {
+                            hasLazy = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Compare properties
+
+            // Compare children
+
+        } finally {
+            if (lazyPropertyLoadListener != null) {
+                PropertiesContributor.getInstance().removeLazyListener(lazyPropertyLoadListener);
+            }
         }
     }
 

@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
@@ -119,7 +120,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     }
 
     @Override
-    public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
+    public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
     {
         if (curPropertySource.getEditableValue() == object && !propertyTree.getControl().isDisposed()) {
             //propertyTree.get

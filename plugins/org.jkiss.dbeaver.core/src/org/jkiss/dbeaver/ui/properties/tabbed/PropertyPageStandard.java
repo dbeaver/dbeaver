@@ -73,7 +73,7 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
     }
 
     @Override
-    public void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
+    public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
     {
         // Make page refresh if our main object was updated
         if (!CommonUtils.isEmpty(curSelection) && !getControl().isDisposed()) {
