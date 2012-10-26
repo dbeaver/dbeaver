@@ -159,6 +159,7 @@ public enum DBIcon
     SAVE_AS("save_as", "/icons/file/save_as.png"), //$NON-NLS-1$ //$NON-NLS-2$
     LOAD("load", "/icons/file/load.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RESET("reset", "/icons/file/reset.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    COMPARE("compare", "/icons/file/compare.png"), //$NON-NLS-1$ //$NON-NLS-2$
     ACCEPT("accept", "/icons/sql/accept.png"), //$NON-NLS-1$ //$NON-NLS-2$
     REJECT("reject", "/icons/sql/cancel.png"), //$NON-NLS-1$ //$NON-NLS-2$
     REVERT("revert", "/icons/sql/revert.png"), //$NON-NLS-1$ //$NON-NLS-2$
