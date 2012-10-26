@@ -402,7 +402,7 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
             if (result != null) {
                 for (Map.Entry<ObjectPropertyDescriptor, Object> entry : result.entrySet()) {
                     lazyValues.put(entry.getKey().getId(), entry.getValue());
-                    PropertiesContributor.getInstance().notifyPropertyLoad(getEditableValue(), entry.getKey().getId(), entry.getValue(), true);
+                    PropertiesContributor.getInstance().notifyPropertyLoad(getEditableValue(), entry.getKey(), entry.getValue(), true);
                 }
             }
         }

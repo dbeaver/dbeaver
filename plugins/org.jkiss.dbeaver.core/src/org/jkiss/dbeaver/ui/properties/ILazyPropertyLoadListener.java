@@ -19,11 +19,13 @@
 
 package org.jkiss.dbeaver.ui.properties;
 
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
+
 /**
  * Lazy properties listener
  */
 public interface ILazyPropertyLoadListener {
 
-    void handlePropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed);
+    void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed);
 
 }
