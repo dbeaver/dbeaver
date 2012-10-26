@@ -72,6 +72,8 @@ public class SQLParser {
         case '<': // less than operator
         case '=': // equals operator
         case '>': // greater than operator
+        case '!': // greater than operator
+        case '~': // greater than operator
             return true;
         default:
             return false;

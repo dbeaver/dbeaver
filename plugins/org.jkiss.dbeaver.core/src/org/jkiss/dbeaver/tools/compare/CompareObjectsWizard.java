@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.IFilter;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -41,24 +42,28 @@ import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
     private static final String RS_COMPARE_WIZARD_DIALOG_SETTINGS = "CompareWizard";//$NON-NLS-1$
 
+    private final Object PROPS_LOCK = new Object();
+    private final static Object LAZY_VALUE = new Object();
+
     private CompareObjectsSettings settings;
     private Map<DBPDataSource, IFilter> dataSourceFilters = new IdentityHashMap<DBPDataSource, IFilter>();
-    private DBRProcessListener initializeFinisher;
+
+    private final DBRProcessListener initializeFinisher;
+    private final ILazyPropertyLoadListener lazyPropertyLoadListener;
+
     private volatile int initializedCount = 0;
     private volatile IStatus initializeError;
-    private final Object PROPS_LOCK = new Object();
-
-    private final static Object LAZY_VALUE = new Object();
+    private final Map<Object, Map<IPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<Object, Map<IPropertyDescriptor, Object>>();
+    private final List<ObjectPropertyDescriptor> differentProps = new ArrayList<ObjectPropertyDescriptor>();
 
     public CompareObjectsWizard(List<DBNDatabaseNode> nodes)
     {
@@ -78,6 +83,26 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                 }
             }
         };
+        lazyPropertyLoadListener = new ILazyPropertyLoadListener() {
+            @Override
+            public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
+            {
+                synchronized (propertyValues) {
+                    Map<IPropertyDescriptor, Object> objectProps = propertyValues.get(object);
+                    if (objectProps != null) {
+                        objectProps.put(property, propertyValue);
+                    }
+                }
+            }
+        };
+        PropertiesContributor.getInstance().addLazyListener(lazyPropertyLoadListener);
+    }
+
+    @Override
+    public void dispose()
+    {
+        PropertiesContributor.getInstance().removeLazyListener(lazyPropertyLoadListener);
+        super.dispose();
     }
 
     public CompareObjectsSettings getSettings()
@@ -127,6 +152,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                     }
                 }
             });
+            UIUtils.showMessageBox(getShell(), "Objects compare", "Objects compare finished", SWT.ICON_INFORMATION);
         } catch (InvocationTargetException e) {
             if (initializeError != null) {
                 showError(initializeError.getMessage());
@@ -135,6 +161,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
             }
             return false;
         } catch (InterruptedException e) {
+            showError("Compare interrupted");
             return false;
         }
 
@@ -145,15 +172,19 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
     private void compareNodes(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes)
         throws DBException, InterruptedException
     {
+        // Clear compare singletons
+        this.initializedCount = 0;
+        this.initializeError = null;
+        this.propertyValues.clear();
+        this.differentProps.clear();
+
         StringBuilder title = new StringBuilder();
         // Initialize nodes
         {
             monitor.subTask("Initialize nodes");
-            this.initializedCount = 0;
-            this.initializeError = null;
             for (DBNDatabaseNode node : nodes) {
                 if (title.length() > 0) title.append(", ");
-                title.append(node.getNodeName());
+                title.append(node.getNodeFullName());
                 node.initializeNode(null, initializeFinisher);
                 monitor.worked(1);
             }
@@ -181,24 +212,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
         }
         compareLazyProperties = compareLazyProperties && getSettings().isCompareLazyProperties();
 
-        final Map<Object, Map<IPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<Object, Map<IPropertyDescriptor, Object>>();
         // Check should we read lazy properties
-        ILazyPropertyLoadListener lazyPropertyLoadListener = null;
-        if (compareLazyProperties) {
-            lazyPropertyLoadListener = new ILazyPropertyLoadListener() {
-                @Override
-                public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
-                {
-                    synchronized (propertyValues) {
-                        Map<IPropertyDescriptor, Object> objectProps = propertyValues.get(object);
-                        if (objectProps != null) {
-                            objectProps.put(property, propertyValue);
-                        }
-                    }
-                }
-            };
-            PropertiesContributor.getInstance().addLazyListener(lazyPropertyLoadListener);
-        }
         try {
             boolean hasLazy = false;
             // Load all properties
@@ -253,14 +267,80 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
             // Compare properties
             for (ObjectPropertyDescriptor prop : properties) {
-
+                Object firstValue = null;
+                for (DBNDatabaseNode node : nodes) {
+                    DBSObject object = node.getObject();
+                    Object value = propertyValues.get(object).get(prop);
+                    if (firstValue == null) {
+                        firstValue = value;
+                    } else if (!CommonUtils.equalObjects(value, firstValue)) {
+                        differentProps.add(prop);
+                        break;
+                    }
+                }
+            }
+            if (!differentProps.isEmpty()) {
+                // Add difference in report
             }
 
-            // Compare children
+            compareChildren(monitor, nodes);
+
 
         } finally {
             if (lazyPropertyLoadListener != null) {
                 PropertiesContributor.getInstance().removeLazyListener(lazyPropertyLoadListener);
+            }
+        }
+    }
+
+    private void compareChildren(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes) throws DBException, InterruptedException
+    {
+        // Compare children
+        int nodeCount = nodes.size();
+        List<List<DBNDatabaseNode>> allChildren = new ArrayList<List<DBNDatabaseNode>>(nodeCount);
+        for (int i = 0; i < nodeCount; i++) {
+            DBNDatabaseNode node = nodes.get(i);
+            allChildren.add(node.getChildren(monitor));
+        }
+
+        Set<String> allChildNames = new LinkedHashSet<String>();
+        for (List<DBNDatabaseNode> childList : allChildren) {
+            for (DBNDatabaseNode child : childList) {
+                allChildNames.add(child.getNodeName());
+            }
+        }
+
+        for (String childName : allChildNames) {
+            int[] childIndexes = new int[nodeCount];
+            for (int i = 0; i < nodeCount; i++) {
+                childIndexes[i] = -1;
+                List<DBNDatabaseNode> childList = allChildren.get(i);
+                for (int k = 0; k < childList.size(); k++) {
+                    DBNDatabaseNode child = childList.get(k);
+                    if (child.getNodeName().equals(childName)) {
+                        childIndexes[i] = k;
+                        break;
+                    }
+                }
+            }
+
+            List<DBNDatabaseNode> nodesToCompare = new ArrayList<DBNDatabaseNode>(nodeCount);
+            for (int i = 0; i < nodeCount; i++) {
+                if (childIndexes[i] == -1) {
+                    // Missing
+                } else {
+                    for (int k = 0; k < nodeCount; k++) {
+                        if (k != i && childIndexes[k] != childIndexes[i]) {
+                            // Wrong index - add to report
+                            break;
+                        }
+                    }
+                    nodesToCompare.add(allChildren.get(i).get(childIndexes[i]));
+                }
+            }
+            if (nodesToCompare.size() > 1) {
+                // Compare children recursively
+                compareNodes(monitor, nodesToCompare);
             }
         }
     }
