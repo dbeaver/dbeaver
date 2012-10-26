@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ui.properties.tabbed;
 
+import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 
@@ -61,7 +62,7 @@ public class PropertiesContributor {
         }
     }
 
-    public void notifyPropertyLoad(Object object, Object propertyId, Object propertyValue, boolean completed)
+    public void notifyPropertyLoad(Object object, IPropertyDescriptor propertyId, Object propertyValue, boolean completed)
     {
         synchronized (lazyListeners) {
             if (!lazyListeners.isEmpty()) {
