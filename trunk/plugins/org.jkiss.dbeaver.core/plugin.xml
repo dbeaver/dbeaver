@@ -356,7 +356,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.ui.export.data.handlers.DataExportHandler">
+        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.tools.data.handlers.DataExportHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -1714,7 +1714,7 @@
     <extension point="org.jkiss.dbeaver.dataExportProvider">
         <export
                 id="org.jkiss.dbeaver.core.dataExport.html"
-                class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterHTML"
+                class="org.jkiss.dbeaver.tools.data.impl.DataExporterHTML"
                 description="%command.org.jkiss.dbeaver.core.resultset.export.html.description"
                 extension="html"
                 icon="icons/misc/html.png"
@@ -1725,7 +1725,7 @@
         </export>
         <export
                 id="org.jkiss.dbeaver.core.dataExport.csv"
-                class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterCSV"
+                class="org.jkiss.dbeaver.tools.data.impl.DataExporterCSV"
                 description="%command.org.jkiss.dbeaver.core.resultset.export.csv.description"
                 extension="csv"
                 icon="icons/misc/csv.png"
@@ -1738,7 +1738,7 @@
         </export>
         <export
                 id="org.jkiss.dbeaver.core.dataExport.sql"
-                class="org.jkiss.dbeaver.ui.export.data.impl.DataExporterSQL"
+                class="org.jkiss.dbeaver.tools.data.impl.DataExporterSQL"
                 description="%command.org.jkiss.dbeaver.core.resultset.export.sql.description"
                 extension="sql"
                 icon="icons/misc/sql.png"
@@ -1780,7 +1780,7 @@
         <category id="org.jkiss.dbeaver.core.export.resources" name="DBeaver"/>
         <wizard
              category="org.jkiss.dbeaver.core.export.resources"
-             class="org.jkiss.dbeaver.ui.export.project.ProjectExportWizard"
+             class="org.jkiss.dbeaver.tools.project.ProjectExportWizard"
              icon="icons/project.png"
              id="org.jkiss.dbeaver.core.wizard.export.project"
              name="Project">
@@ -1790,7 +1790,7 @@
         </wizard>
         <wizard
              category="org.jkiss.dbeaver.core.export.resources"
-             class="org.jkiss.dbeaver.ui.export.scripts.ScriptsExportWizard"
+             class="org.jkiss.dbeaver.tools.scripts.ScriptsExportWizard"
              icon="icons/sql/sql_script.png"
              id="org.jkiss.dbeaver.core.wizard.export.scripts"
              name="Scripts">
@@ -1804,7 +1804,7 @@
         <category id="org.jkiss.dbeaver.core.import.resources" name="DBeaver"/>
         <wizard
             category="org.jkiss.dbeaver.core.import.resources"
-            class="org.jkiss.dbeaver.ui.export.project.ProjectImportWizard"
+            class="org.jkiss.dbeaver.tools.project.ProjectImportWizard"
             icon="icons/project.png"
             id="org.jkiss.dbeaver.core.wizard.import.project"
             name="Project">
@@ -1814,7 +1814,7 @@
         </wizard>
         <wizard
             category="org.jkiss.dbeaver.core.import.resources"
-            class="org.jkiss.dbeaver.ui.export.scripts.ScriptsImportWizard"
+            class="org.jkiss.dbeaver.tools.scripts.ScriptsImportWizard"
             icon="icons/sql/sql_script.png"
             id="org.jkiss.dbeaver.core.wizard.import.scripts"
             name="Scripts">
@@ -1828,7 +1828,7 @@
         <category id="org.jkiss.dbeaver.core.new.general" name="DBeaver"/>
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
-             class="org.jkiss.dbeaver.ui.export.project.ProjectCreateWizard"
+             class="org.jkiss.dbeaver.tools.project.ProjectCreateWizard"
              icon="icons/project.png"
              id="org.jkiss.dbeaver.core.wizard.new.project"
              name="Project">
