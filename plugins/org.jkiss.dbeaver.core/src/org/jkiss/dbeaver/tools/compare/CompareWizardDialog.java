@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
@@ -35,6 +36,7 @@ public class CompareWizardDialog extends ActiveWizardDialog
     public CompareWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
         super(window, wizard);
+        //setTitleImage(DBIcon.COMPARE.getImage());
     }
 
     @Override

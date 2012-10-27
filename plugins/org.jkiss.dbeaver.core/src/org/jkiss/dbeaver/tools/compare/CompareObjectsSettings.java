@@ -37,6 +37,7 @@ public class CompareObjectsSettings {
     private final List<DBNDatabaseNode> nodes;
     private boolean skipSystemObjects = true;
     private boolean compareLazyProperties = false;
+    private boolean showOnlyDifferences = false;
 
     public CompareObjectsSettings(List<DBNDatabaseNode> nodes)
     {
@@ -68,6 +69,16 @@ public class CompareObjectsSettings {
         this.compareLazyProperties = compareLazyProperties;
     }
 
+    public boolean isShowOnlyDifferences()
+    {
+        return showOnlyDifferences;
+    }
+
+    public void setShowOnlyDifferences(boolean showOnlyDifferences)
+    {
+        this.showOnlyDifferences = showOnlyDifferences;
+    }
+
     void loadFrom(IDialogSettings dialogSettings)
     {
         if (dialogSettings.get("skipSystem") != null) {
@@ -76,12 +87,16 @@ public class CompareObjectsSettings {
         if (dialogSettings.get("compareLazy") != null) {
             compareLazyProperties = dialogSettings.getBoolean("compareLazy");
         }
+        if (dialogSettings.get("showDifference") != null) {
+            showOnlyDifferences = dialogSettings.getBoolean("showDifference");
+        }
     }
 
     void saveTo(IDialogSettings dialogSettings)
     {
         dialogSettings.put("skipSystem", skipSystemObjects);
         dialogSettings.put("compareLazy", compareLazyProperties);
+        dialogSettings.put("showDifference", showOnlyDifferences);
     }
 
 }

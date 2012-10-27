@@ -38,7 +38,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     CompareObjectsPageSettings() {
         super("Compare objects");
         setTitle("Compare database objects");
-        setDescription("Compare database settings");
+        setDescription("Settings of objects compare");
         setPageComplete(false);
     }
 
@@ -53,7 +53,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
         composite.setLayout(gl);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        CompareObjectsSettings settings = getWizard().getSettings();
+        final CompareObjectsSettings settings = getWizard().getSettings();
         {
             Group sourceSettings = new Group(composite, SWT.NONE);
             sourceSettings.setText("Objects");
@@ -78,7 +78,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
 
         {
             Group compareSettings = new Group(composite, SWT.NONE);
-            compareSettings.setText(CoreMessages.dialog_export_wizard_settings_group_exporter);
+            compareSettings.setText("Compare settings");
             compareSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             compareSettings.setLayout(new GridLayout(1, false));
 
@@ -87,15 +87,15 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    getWizard().getSettings().setSkipSystemObjects(skipSystemObjects.getSelection());
+                    settings.setSkipSystemObjects(skipSystemObjects.getSelection());
                 }
             });
-            compareLazyProperties = UIUtils.createCheckbox(compareSettings, "Compare lazy properties", settings.isCompareLazyProperties());
+            compareLazyProperties = UIUtils.createCheckbox(compareSettings, "Compare expensive properties", settings.isCompareLazyProperties());
             compareLazyProperties.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    getWizard().getSettings().setCompareLazyProperties(compareLazyProperties.getSelection());
+                    settings.setCompareLazyProperties(compareLazyProperties.getSelection());
                 }
             });
         }
