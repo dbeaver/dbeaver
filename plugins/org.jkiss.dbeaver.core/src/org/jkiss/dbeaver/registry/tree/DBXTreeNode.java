@@ -50,9 +50,10 @@ public abstract class DBXTreeNode
     private List<DBXTreeIcon> icons;
     private final boolean navigable;
     private final boolean inline;
+    private final boolean virtual;
     private Expression visibleIf;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, String visibleIf)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, String visibleIf)
     {
         this.source = source;
         this.parent = parent;
@@ -62,6 +63,7 @@ public abstract class DBXTreeNode
         this.id = id;
         this.navigable = navigable;
         this.inline = inline;
+        this.virtual = virtual;
         if (!CommonUtils.isEmpty(visibleIf)) {
             try {
                 this.visibleIf = RuntimeUtils.parseExpression(visibleIf);
@@ -88,6 +90,16 @@ public abstract class DBXTreeNode
     public boolean isInline()
     {
         return inline;
+    }
+
+    /**
+     * Virtual items. Such items are not added to global meta model and couldn't
+     * be found in tree by object
+     * @return true or false
+     */
+    public boolean isVirtual()
+    {
+        return virtual;
     }
 
     public DBXTreeNode getParent()

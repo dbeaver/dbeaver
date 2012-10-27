@@ -287,9 +287,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             config.getAttribute(RegistryConstants.ATTR_PATH),
             null,
             false,
-            false,
-            true,
-            false,
+            true, false, false,
             config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
         loadTreeChildren(config, treeRoot);
         loadTreeIcon(treeRoot, config);
@@ -327,6 +325,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                     config.getAttribute(RegistryConstants.ATTR_TYPE),
                     config.getAttribute(RegistryConstants.ATTR_LABEL),
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
+                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
                     config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
                 folder.setDescription(config.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
                 child = folder;
@@ -340,9 +339,9 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                     config.getAttribute(RegistryConstants.ATTR_PATH),
                     config.getAttribute(RegistryConstants.ATTR_PROPERTY),
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL)),
-                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INLINE)),
+                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
                     config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
             } else if (nodeType.equals(RegistryConstants.TAG_OBJECT)) {
                 child = new DBXTreeObject(

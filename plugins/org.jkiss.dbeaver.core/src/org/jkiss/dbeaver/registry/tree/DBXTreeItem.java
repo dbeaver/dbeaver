@@ -32,7 +32,6 @@ public class DBXTreeItem extends DBXTreeNode
     private String path;
     private String propertyName;
     private boolean optional;
-    private boolean virtual;
 
     public DBXTreeItem(
         AbstractDescriptor source,
@@ -43,18 +42,17 @@ public class DBXTreeItem extends DBXTreeNode
         String path,
         String propertyName,
         boolean optional,
-        boolean virtual,
         boolean navigable,
         boolean inline,
+        boolean virtual,
         String visibleIf)
     {
-        super(source, parent, id, navigable, inline, visibleIf);
+        super(source, parent, id, navigable, inline, virtual, visibleIf);
         this.label = label;
         this.itemLabel = itemLabel == null ? label : itemLabel;
         this.path = path;
         this.propertyName = propertyName;
         this.optional = optional;
-        this.virtual = virtual;
     }
 
     public String getPath()
@@ -70,16 +68,6 @@ public class DBXTreeItem extends DBXTreeNode
     public boolean isOptional()
     {
         return optional;
-    }
-
-    /**
-     * Virtual items. Such items are not added to global meta model and couldn't
-     * be found in tree by object
-     * @return true or false
-     */
-    public boolean isVirtual()
-    {
-        return virtual;
     }
 
     @Override

@@ -102,6 +102,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                     try {
                         monitor.beginTask("Compare objects", 100);
                         executor.compareNodes(monitor, getSettings().getNodes());
+                        executor.generateReport();
                         monitor.done();
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
