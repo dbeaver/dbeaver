@@ -45,7 +45,8 @@ public class CompareObjectsExecutor {
 
     private CompareObjectsSettings settings;
 
-    private Map<DBPDataSource, DataSourcePropertyFilter> dataSourceFilters = new IdentityHashMap<DBPDataSource, DataSourcePropertyFilter>();
+    private final List<DBNDatabaseNode> rootNodes;
+    private final Map<DBPDataSource, DataSourcePropertyFilter> dataSourceFilters = new IdentityHashMap<DBPDataSource, DataSourcePropertyFilter>();
 
     private final DBRProcessListener initializeFinisher;
     private final ILazyPropertyLoadListener lazyPropertyLoadListener;
@@ -53,58 +54,90 @@ public class CompareObjectsExecutor {
     private volatile int initializedCount = 0;
     private volatile IStatus initializeError;
     private final Map<Object, Map<IPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<Object, Map<IPropertyDescriptor, Object>>();
-    private final List<ObjectPropertyDescriptor> differentProps = new ArrayList<ObjectPropertyDescriptor>();
 
-    private int depth = 0;
+    private final List<ReportLine> reportLines = new ArrayList<ReportLine>();
+    private int reportDepth = 0;
+    private ReportLine lastLine;
 
-    private static class ObjectDifference {
-
+    private static class ReportLine {
+        DBNDatabaseNode structure;
+        DBNDatabaseNode[] nodes;
+        List<ReportProperty> properties;
+        int depth;
+        boolean hasDifference;
     }
 
-    private static class CompareReport {
+    private static class ReportProperty {
+        ObjectPropertyDescriptor property;
+        Object[] values;
 
+        public ReportProperty(ObjectPropertyDescriptor property)
+        {
+            this.property = property;
+        }
     }
 
     private void reportObjectsCompareBegin(List<DBNDatabaseNode> objects)
     {
-        for (int i = 0; i < depth; i++) System.out.print("\t");
-
-        System.out.print(objects.get(0).getNodeType() + ": ");
-        for (DBNDatabaseNode node : objects) {
-            System.out.print(node.getNodeFullName() + " ");
+        reportDepth++;
+        lastLine = new ReportLine();
+        lastLine.depth = reportDepth;
+        lastLine.structure = objects.get(0);
+        lastLine.nodes = new DBNDatabaseNode[rootNodes.size()];
+        for (int i = 0; i < rootNodes.size(); i++) {
+            for (DBNDatabaseNode node : objects) {
+                if (node == rootNodes.get(i) || node.isChildOf(rootNodes.get(i))) {
+                    lastLine.nodes[i] = node;
+                    break;
+                }
+            }
         }
-        System.out.println();
-        depth++;
+        for (DBNDatabaseNode node : lastLine.nodes) {
+            if (node == null) {
+                lastLine.hasDifference = true;
+                break;
+            }
+        }
+        reportLines.add(lastLine);
     }
 
     private void reportPropertyCompare(ObjectPropertyDescriptor property)
     {
-        for (int i = 0; i < depth; i++) System.out.print("\t");
-        System.out.println("Property " + property.getId());
+        ReportProperty reportProperty = new ReportProperty(property);
+        reportProperty.values = new Object[rootNodes.size()];
+        for (int i = 0; i < lastLine.nodes.length; i++) {
+            DBNDatabaseNode node = lastLine.nodes[i];
+            if (node == null) {
+                continue;
+            }
+            Map<IPropertyDescriptor, Object> valueMap = propertyValues.get(node.getObject());
+            if (valueMap != null) {
+                reportProperty.values[i] = valueMap.get(property);
+            }
+        }
+        if (lastLine.properties == null) {
+            lastLine.properties = new ArrayList<ReportProperty>();
+        }
+        lastLine.properties.add(reportProperty);
 
-/*
-                Object firstValue = null;
-                for (DBNDatabaseNode node : nodes) {
-                    DBSObject object = node.getObject();
-                    Object value = propertyValues.get(object).get(prop);
-                    if (firstValue == null) {
-                        firstValue = value;
-                    } else if (!CommonUtils.equalObjects(value, firstValue)) {
-                        differentProps.add(prop);
-                        break;
-                    }
-                }
-*/
+        Object firstValue = reportProperty.values[0];
+        for (int i = 1; i < rootNodes.size(); i++) {
+            if (!CommonUtils.equalObjects(reportProperty.values[i], firstValue)) {
+                lastLine.hasDifference = true;
+                break;
+            }
+        }
     }
 
     private void reportObjectsCompareEnd()
     {
-        depth--;
+        reportDepth--;
     }
 
     public CompareObjectsExecutor(CompareObjectsSettings settings)
     {
         this.settings = settings;
+        this.rootNodes = settings.getNodes();
 
         initializeFinisher = new DBRProcessListener() {
             @Override
@@ -132,7 +165,7 @@ public class CompareObjectsExecutor {
         PropertiesContributor.getInstance().addLazyListener(lazyPropertyLoadListener);
     }
 
-    public IStatus getInitializeError()
+    IStatus getInitializeError()
     {
         return initializeError;
     }
@@ -150,7 +183,7 @@ public class CompareObjectsExecutor {
         try {
             if (nodes.size() > 1) {
                 // Go deeper only if we have more than one node
-                if (!(nodes.get(0) instanceof DBNDatabaseFolder)) {
+                if (!settings.isCompareOnlyStructure() && !(nodes.get(0) instanceof DBNDatabaseFolder)) {
                     compareProperties(monitor, nodes);
                 }
 
@@ -167,7 +200,6 @@ public class CompareObjectsExecutor {
         this.initializedCount = 0;
         this.initializeError = null;
         this.propertyValues.clear();
-        this.differentProps.clear();
 
         StringBuilder title = new StringBuilder();
         // Initialize nodes
@@ -278,7 +310,7 @@ public class CompareObjectsExecutor {
         for (List<DBNDatabaseNode> childList : allChildren) {
             for (DBNDatabaseNode child : childList) {
                 DBXTreeNode meta = child.getMeta();
-                if (meta instanceof DBXTreeItem && ((DBXTreeItem) meta).isVirtual()) {
+                if (meta.isVirtual()) {
                     // Skip virtual nodes
                     continue;
                 }
@@ -334,4 +366,17 @@ public class CompareObjectsExecutor {
         return filter;
     }
 
+    void generateReport()
+    {
+        for (ReportLine line : reportLines) {
+            for (int i = 0; i < line.depth; i++) System.out.print("\t");
+            System.out.println(line.structure.getNodeType() + ": " + line.structure.getNodeName());
+            if (line.properties != null) {
+                for (ReportProperty property : line.properties) {
+                    for (int i = 0; i < line.depth; i++) System.out.print("\t");
+                    System.out.println("  " + property.property.getId() + ": " + Arrays.asList(property.values));
+                }
+            }
+        }
+    }
 }

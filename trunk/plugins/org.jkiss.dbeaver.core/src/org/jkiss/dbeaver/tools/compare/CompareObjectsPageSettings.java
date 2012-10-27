@@ -34,6 +34,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     private Table nodesTable;
     private Button skipSystemObjects;
     private Button compareLazyProperties;
+    private Button compareOnlyStructure;
 
     CompareObjectsPageSettings() {
         super("Compare objects");
@@ -96,6 +97,14 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                 public void widgetSelected(SelectionEvent e)
                 {
                     settings.setCompareLazyProperties(compareLazyProperties.getSelection());
+                }
+            });
+            compareOnlyStructure = UIUtils.createCheckbox(compareSettings, "Compare only structure (ignore properties)", settings.isCompareOnlyStructure());
+            compareOnlyStructure.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    settings.setCompareOnlyStructure(compareOnlyStructure.getSelection());
                 }
             });
         }
