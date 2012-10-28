@@ -605,7 +605,7 @@ public class DataSourceDescriptor
                 QMMSessionInfo qmmSession = qmm.getSession(dataSource);
                 QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
                 QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
-                if (sp != null && (sp.getPrevious() != null || sp.hasUserExecutions())) {
+                if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
 
                     // Ask for confirmation
                     TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();

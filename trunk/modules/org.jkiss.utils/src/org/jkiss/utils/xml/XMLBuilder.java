@@ -421,6 +421,14 @@ public class XMLBuilder
         CharSequence textValue)
         throws java.io.IOException
     {
+        return addText(textValue, true);
+    }
+
+    public XMLBuilder addText(
+        CharSequence textValue,
+        boolean escape)
+        throws java.io.IOException
+    {
         switch (state) {
             case STATE_ELEM_OPENED:
                 writer.write('>');
@@ -430,7 +438,7 @@ public class XMLBuilder
             default:
                 break;
         }
-        this.writeText(textValue);
+        this.writeText(textValue, escape);
 
         state = STATE_TEXT_ADDED;
 
@@ -584,11 +592,11 @@ public class XMLBuilder
         return this;
     }
 
-    private XMLBuilder writeText(CharSequence textValue)
+    private XMLBuilder writeText(CharSequence textValue, boolean escape)
         throws java.io.IOException
     {
         if (textValue != null) {
-            writer.write(XMLUtils.escapeXml(textValue));
+            writer.write(escape ? XMLUtils.escapeXml(textValue) : textValue.toString());
         }
         return this;
     }
