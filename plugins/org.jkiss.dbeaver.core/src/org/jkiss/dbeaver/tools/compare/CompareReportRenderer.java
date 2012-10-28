@@ -30,15 +30,34 @@ import java.util.List;
 
 public class CompareReportRenderer {
 
-
     private CompareReport report;
     private XMLBuilder xml;
+    private CompareObjectsSettings settings;
 
-    public void renderReport(DBRProgressMonitor monitor, CompareReport report, OutputStream outputStream) throws IOException
+    public void renderReport(DBRProgressMonitor monitor, CompareReport report, CompareObjectsSettings settings, OutputStream outputStream) throws IOException
     {
         this.report = report;
+        this.settings = settings;
         this.xml = new XMLBuilder(outputStream, "utf-8", true);
         this.xml.setButify(true);
+
+        if (settings.isShowOnlyDifferences()) {
+            // Mark differences on tree nodes
+            List<CompareReportLine> reportLines = report.getReportLines();
+            int reportLinesSize = reportLines.size();
+            for (int i = 0; i < reportLinesSize; i++) {
+                if (reportLines.get(i).hasDifference) {
+                    int depth = reportLines.get(i).depth;
+                    for (int k = i - 1; k >= 0; k--) {
+                        if (reportLines.get(k).depth < depth) {
+                            reportLines.get(k).hasDifference = true;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         xml.startElement("html");
         xml.startElement("head");
@@ -97,12 +116,16 @@ public class CompareReportRenderer {
         xml.endElement();
 
         // Table body
+        boolean showOnlyDifferences = settings.isShowOnlyDifferences();
         int objectCount = report.getNodes().size();
         List<CompareReportLine> reportLines = report.getReportLines();
         int reportLinesSize = reportLines.size();
         for (int i = 0; i < reportLinesSize; i++) {
             monitor.worked(1);
             CompareReportLine line = reportLines.get(i);
+            if (showOnlyDifferences && !line.hasDifference) {
+                continue;
+            }
             boolean onlyStructure = line.structure instanceof DBNDatabaseFolder && !line.hasDifference;
             // Skip empty folders
             if (onlyStructure && (i >= reportLinesSize - 1 || reportLines.get(i + 1).depth <= line.depth)) {
@@ -130,16 +153,6 @@ public class CompareReportRenderer {
                     xml.endElement();
                 }
             }
-/*
-            //for (int i = 0; i < line.depth; i++) System.out.print("\t");
-            //System.out.println(line.structure.getNodeType() + ": " + line.structure.getNodeName());
-            if (line.properties != null) {
-                for (CompareReportProperty property : line.properties) {
-                    for (int i = 0; i < line.depth; i++) System.out.print("\t");
-                    System.out.println("  " + property.property.getId() + ": " + Arrays.asList(property.values));
-                }
-            }
-*/
 
             xml.endElement();
 
@@ -160,7 +173,7 @@ public class CompareReportRenderer {
                                 firstValue = value;
                             }
                         }
-                        if (!CommonUtils.equalObjects(value, firstValue)) {
+                        if (!CompareUtils.equalPropertyValues(value, firstValue)) {
                             differs = true;
                             break;
                         }
@@ -169,7 +182,9 @@ public class CompareReportRenderer {
                         // Skip[ properties when nobody have it's value
                         continue;
                     }
-
+                    if (showOnlyDifferences && !differs) {
+                        continue;
+                    }
                     xml.startElement("tr");
                     xml.addAttribute("class", "property level" + (line.depth + 1) + (differs ? " differs" : ""));
                     xml.startElement("td");
@@ -201,7 +216,7 @@ public class CompareReportRenderer {
         xml.addAttribute("class", "object");
         xml.startElement("td");
         xml.addAttribute("colspan", report.getNodes().size() + 1);
-        xml.addText("Done");
+        xml.addText("" + reportLines.size() + " objects compared");
         xml.endElement();
         xml.endElement();
 

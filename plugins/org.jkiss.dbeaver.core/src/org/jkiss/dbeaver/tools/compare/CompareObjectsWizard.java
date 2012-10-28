@@ -150,7 +150,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
             try {
                 monitor.beginTask("Render report", report.getReportLines().size());
                 CompareReportRenderer reportRenderer = new CompareReportRenderer();
-                reportRenderer.renderReport(monitor, report, outputStream);
+                reportRenderer.renderReport(monitor, report, getSettings(), outputStream);
                 monitor.done();
             } finally {
                 ContentUtils.close(outputStream);

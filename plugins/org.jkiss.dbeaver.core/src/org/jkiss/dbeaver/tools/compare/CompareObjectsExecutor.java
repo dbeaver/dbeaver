@@ -104,7 +104,7 @@ public class CompareObjectsExecutor {
 
         Object firstValue = reportProperty.values[0];
         for (int i = 1; i < rootNodes.size(); i++) {
-            if (!CommonUtils.equalObjects(reportProperty.values[i], firstValue)) {
+            if (!CompareUtils.equalPropertyValues(reportProperty.values[i], firstValue)) {
                 lastLine.hasDifference = true;
                 break;
             }
