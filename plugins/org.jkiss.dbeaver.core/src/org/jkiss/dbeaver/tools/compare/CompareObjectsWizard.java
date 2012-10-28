@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
@@ -33,7 +34,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
@@ -100,10 +106,9 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        monitor.beginTask("Compare objects", 100);
-                        executor.compareNodes(monitor, getSettings().getNodes());
-                        executor.generateReport();
-                        monitor.done();
+                        CompareReport report = generateReport(monitor, executor);
+
+                        renderReport(monitor, report);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -127,6 +132,34 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
         // Done
         return true;
+    }
+
+    private CompareReport generateReport(DBRProgressMonitor monitor, CompareObjectsExecutor executor) throws DBException, InterruptedException
+    {
+        monitor.beginTask("Compare objects", 100);
+        CompareReport report = executor.compareObjects(monitor, getSettings().getNodes());
+        monitor.done();
+        return report;
+    }
+
+    private void renderReport(DBRProgressMonitor monitor, CompareReport report)
+    {
+        try {
+            File reportFile = File.createTempFile("compare-report", ".html");
+            OutputStream outputStream = new FileOutputStream(reportFile);
+            try {
+                monitor.beginTask("Render report", report.getReportLines().size());
+                CompareReportRenderer reportRenderer = new CompareReportRenderer();
+                reportRenderer.renderReport(monitor, report, outputStream);
+                monitor.done();
+            } finally {
+                ContentUtils.close(outputStream);
+            }
+            Program.launch(reportFile.getAbsolutePath());
+        } catch (IOException e) {
+            showError(e.getMessage());
+            log.error(e);
+        }
     }
 
 }

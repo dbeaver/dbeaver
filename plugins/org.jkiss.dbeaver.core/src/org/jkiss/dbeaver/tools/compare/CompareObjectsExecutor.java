@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.ui.properties.DataSourcePropertyFilter;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
@@ -55,32 +55,14 @@ public class CompareObjectsExecutor {
     private volatile IStatus initializeError;
     private final Map<Object, Map<IPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<Object, Map<IPropertyDescriptor, Object>>();
 
-    private final List<ReportLine> reportLines = new ArrayList<ReportLine>();
+    private final List<CompareReportLine> reportLines = new ArrayList<CompareReportLine>();
     private int reportDepth = 0;
-    private ReportLine lastLine;
-
-    private static class ReportLine {
-        DBNDatabaseNode structure;
-        DBNDatabaseNode[] nodes;
-        List<ReportProperty> properties;
-        int depth;
-        boolean hasDifference;
-    }
-
-    private static class ReportProperty {
-        ObjectPropertyDescriptor property;
-        Object[] values;
-
-        public ReportProperty(ObjectPropertyDescriptor property)
-        {
-            this.property = property;
-        }
-    }
+    private CompareReportLine lastLine;
 
     private void reportObjectsCompareBegin(List<DBNDatabaseNode> objects)
     {
         reportDepth++;
-        lastLine = new ReportLine();
+        lastLine = new CompareReportLine();
         lastLine.depth = reportDepth;
         lastLine.structure = objects.get(0);
         lastLine.nodes = new DBNDatabaseNode[rootNodes.size()];
@@ -103,7 +85,7 @@ public class CompareObjectsExecutor {
 
     private void reportPropertyCompare(ObjectPropertyDescriptor property)
     {
-        ReportProperty reportProperty = new ReportProperty(property);
+        CompareReportProperty reportProperty = new CompareReportProperty(property);
         reportProperty.values = new Object[rootNodes.size()];
         for (int i = 0; i < lastLine.nodes.length; i++) {
             DBNDatabaseNode node = lastLine.nodes[i];
@@ -116,7 +98,7 @@ public class CompareObjectsExecutor {
             }
         }
         if (lastLine.properties == null) {
-            lastLine.properties = new ArrayList<ReportProperty>();
+            lastLine.properties = new ArrayList<CompareReportProperty>();
         }
         lastLine.properties.add(reportProperty);
 
@@ -175,7 +157,17 @@ public class CompareObjectsExecutor {
         PropertiesContributor.getInstance().removeLazyListener(lazyPropertyLoadListener);
     }
 
-    void compareNodes(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes)
+    public CompareReport compareObjects(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes)
+        throws DBException, InterruptedException
+    {
+        reportLines.clear();
+        lastLine = null;
+
+        compareNodes(monitor, nodes);
+        return new CompareReport(rootNodes, reportLines);
+    }
+
+    private void compareNodes(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes)
         throws DBException, InterruptedException
     {
         reportObjectsCompareBegin(nodes);
@@ -303,6 +295,10 @@ public class CompareObjectsExecutor {
         List<List<DBNDatabaseNode>> allChildren = new ArrayList<List<DBNDatabaseNode>>(nodeCount);
         for (int i = 0; i < nodeCount; i++) {
             DBNDatabaseNode node = nodes.get(i);
+            // Cache structure if possible
+            if (node.getObject() instanceof DBSObjectContainer) {
+                ((DBSObjectContainer) node.getObject()).cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+            }
             allChildren.add(CommonUtils.safeList(node.getChildren(monitor)));
         }
 
@@ -366,17 +362,4 @@ public class CompareObjectsExecutor {
         return filter;
     }
 
-    void generateReport()
-    {
-        for (ReportLine line : reportLines) {
-            for (int i = 0; i < line.depth; i++) System.out.print("\t");
-            System.out.println(line.structure.getNodeType() + ": " + line.structure.getNodeName());
-            if (line.properties != null) {
-                for (ReportProperty property : line.properties) {
-                    for (int i = 0; i < line.depth; i++) System.out.print("\t");
-                    System.out.println("  " + property.property.getId() + ": " + Arrays.asList(property.values));
-                }
-            }
-        }
-    }
 }
