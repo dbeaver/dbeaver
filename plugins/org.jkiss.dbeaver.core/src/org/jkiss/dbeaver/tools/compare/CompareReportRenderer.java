@@ -92,10 +92,13 @@ public class CompareReportRenderer {
         xml.startElement("style");
         StringBuilder styles = new StringBuilder();
         styles.append(".missing {color:red;} .differs {color:red;} ");
-        styles.append(".object td {border-top:solid 1px; border-right:solid 1px; border-color: black; white-space:nowrap;} ");
-        styles.append(".property td {border-right:solid 1px; border-color: black; white-space:nowrap;} ");
+        styles.append(".object td,th {border-top:solid 1px; border-right:solid 1px; border-color: black; white-space:nowrap;} ");
+        styles.append(".property td,th {border-right:solid 1px; border-color: black; white-space:nowrap; font-size: smaller;} ");
+        styles.append(".struct {border-top:none; !important } ");
+//        styles.append(".object:first-child {border:none; } ");
+//        styles.append(".property:first-child {border:none; } ");
         for (int i = 1; i <= maxLevel; i++) {
-            styles.append(".level").append(i).append(" td { padding-left:").append(20 * i).append("px; } ");
+            styles.append(".level").append(i).append(" td,th { text-align:left; padding-left:").append(20 * i).append("px; } ");
         }
         xml.addText(styles.toString());
         xml.endElement();
@@ -135,13 +138,14 @@ public class CompareReportRenderer {
             xml.startElement("tr");
             xml.addAttribute("class", "object level" + line.depth);
             xml.startElement("td");
-            if (onlyStructure) {
-                xml.addAttribute("colspan", line.nodes.length + 1);
-            }
             xml.addText(line.structure.getNodeType());
             xml.endElement();
-            if (!onlyStructure) {
-
+            if (onlyStructure) {
+                xml.startElement("td");
+                xml.addAttribute("colspan", line.nodes.length);
+                xml.addText("&nbsp;", false);
+                xml.endElement();
+            } else {
                 for (int k = 0; k < objectCount; k++) {
                     xml.startElement("td");
                     if (line.nodes[k] == null) {

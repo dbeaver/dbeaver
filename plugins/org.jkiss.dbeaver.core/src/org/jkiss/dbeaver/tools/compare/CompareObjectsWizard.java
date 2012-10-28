@@ -146,6 +146,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
     {
         try {
             File reportFile = File.createTempFile("compare-report", ".html");
+            reportFile.deleteOnExit();
             OutputStream outputStream = new FileOutputStream(reportFile);
             try {
                 monitor.beginTask("Render report", report.getReportLines().size());
