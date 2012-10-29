@@ -30,7 +30,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
@@ -40,13 +39,13 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * PrefPageUIGeneral
+ * PrefPageDrivers
  */
-public class PrefPageUIGeneral extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
+public class PrefPageDrivers extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    static final Log log = LogFactory.getLog(PrefPageUIGeneral.class);
+    static final Log log = LogFactory.getLog(PrefPageDrivers.class);
 
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ui.general"; //$NON-NLS-1$
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers"; //$NON-NLS-1$
     private Button automaticUpdateCheck;
     private Text proxyHostText;
     private Spinner proxyPortSpinner;
