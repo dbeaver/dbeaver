@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -49,7 +50,7 @@ import java.util.List;
  * WMI class
  */
 public class WMIClass extends WMIContainer
-    implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBSDataContainer, IObjectImageProvider
+    implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBPSystemObject, DBSDataContainer, IObjectImageProvider
 {
     private static Image IMG_CLASS;
     private static Image IMG_CLASS_ABSTRACT;
@@ -189,6 +190,7 @@ public class WMIClass extends WMIContainer
         //}
     }
 
+    @Override
     public boolean isSystem()
     {
         return getName().startsWith("__");
