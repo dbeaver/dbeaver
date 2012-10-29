@@ -159,7 +159,7 @@
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
                     <file type="license" path="drivers/mysql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/LICENSE.txt"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/mysql-connector-java-5.1.13-bin.jar"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.22-bin.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/mysql-connector-java-5.1.22-bin.jar"/>
                 </driver>
             </drivers>
             <views>
