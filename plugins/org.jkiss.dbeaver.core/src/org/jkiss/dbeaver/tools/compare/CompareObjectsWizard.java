@@ -136,7 +136,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
     private CompareReport generateReport(DBRProgressMonitor monitor, CompareObjectsExecutor executor) throws DBException, InterruptedException
     {
-        monitor.beginTask("Compare objects", 100);
+        monitor.beginTask("Compare objects", 1000);
         CompareReport report = executor.compareObjects(monitor, getSettings().getNodes());
         monitor.done();
         return report;

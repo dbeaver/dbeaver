@@ -67,7 +67,10 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
     private static IStorage getStorageFromInput(Object element)
     {
         if (element instanceof IEditorInput) {
-            return ContentUtils.getFileFromEditorInput((IEditorInput) element);
+            IFile file = ContentUtils.getFileFromEditorInput((IEditorInput) element);
+            if (file != null) {
+                return file;
+            }
         }
         if (element instanceof IAdaptable) {
             IStorage storage = (IStorage) ((IAdaptable) element).getAdapter(IStorage.class);
