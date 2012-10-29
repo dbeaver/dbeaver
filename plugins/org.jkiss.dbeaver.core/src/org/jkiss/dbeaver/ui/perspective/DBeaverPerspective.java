@@ -65,7 +65,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         IFolderLayout bottomLeft = layout.createFolder(
             BOTTOM_BOTTOM_LEFT,
             IPageLayout.BOTTOM,
-            0.8f,
+            0.2f,
             FOLDER_NAVIGATION);
         bottomLeft.addView(ProjectExplorerView.VIEW_ID);
 
