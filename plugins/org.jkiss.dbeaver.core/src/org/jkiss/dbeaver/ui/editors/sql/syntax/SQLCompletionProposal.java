@@ -74,15 +74,23 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
 
     private void setPosition(SQLWordPartDetector wordDetector)
     {
-        String wordPart = wordDetector.getWordPart();
-        int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
-        if (divPos == -1) {
-            replacementOffset = wordDetector.getOffset();
-            replacementLength = wordDetector.getLength();
+        String fullWord = wordDetector.getFullWord();
+        int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
+        String structSeparator = syntaxManager.getStructSeparator();
+        int startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
+        int endOffset = fullWord.indexOf(structSeparator, curOffset);
+        if (startOffset != -1) {
+            startOffset += wordDetector.getStartOffset() + structSeparator.length();
         } else {
-            replacementOffset = wordDetector.getOffset() + divPos + 1;
-            replacementLength = wordDetector.getLength() - divPos - 1;
+            startOffset = wordDetector.getStartOffset();
         }
+        if (endOffset != -1) {
+            endOffset += wordDetector.getStartOffset();
+        } else {
+            endOffset = wordDetector.getEndOffset();
+        }
+        replacementOffset = startOffset;
+        replacementLength = endOffset - startOffset;
     }
 
     @Override
