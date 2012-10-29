@@ -16,6 +16,5 @@ comment mysql table, column
 scripts refactoring
 
 Plugin:
-Eclipse plugin
-Choose where to save drivers
 Customize resource roots
+Disable Quick Access toolbar
