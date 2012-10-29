@@ -1205,8 +1205,6 @@
 
             <separator name="create" visible="false"/>
 
-            <separator name="tools" visible="true"/>
-
             <command commandId="org.jkiss.dbeaver.core.object.open">
                 <visibleWhen checkEnabled="true"/>
             </command>
@@ -1238,6 +1236,8 @@
             <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
+
+            <separator name="tools" visible="true"/>
 
             <command commandId="org.jkiss.dbeaver.core.export.data">
                 <visibleWhen checkEnabled="true"/>

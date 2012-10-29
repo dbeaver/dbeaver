@@ -148,6 +148,9 @@ public class ObjectPropertyTester extends PropertyTester
 
     private boolean isReadOnly(DBSObject object)
     {
+        if (object == null) {
+            return true;
+        }
         DBPDataSource dataSource = object.getDataSource();
         return dataSource == null || dataSource.getContainer().isConnectionReadOnly();
     }

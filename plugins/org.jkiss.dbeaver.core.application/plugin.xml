@@ -107,7 +107,7 @@
         <key commandId="org.eclipse.ui.edit.text.contentAssist.proposals" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SPACE"/>
         <key commandId="org.eclipse.ui.edit.text.hippieCompletion" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+SPACE"/>
         <key commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+SPACE"/>
-
+<!--
         <key commandId="org.eclipse.ui.file.refresh" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F5"/>
 
         <key commandId="org.eclipse.ui.newWizard" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+N"/>
@@ -152,6 +152,8 @@
         <key commandId="org.eclipse.ui.edit.text.lowerCase" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+L"/>
 
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
+        -->
+
     </extension>
 
     <extension id="product" point="org.eclipse.core.runtime.products">
@@ -183,7 +185,7 @@
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="%pref.page.name.query.manager">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.qm"/>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.ui.general" class="org.jkiss.dbeaver.ui.preferences.PrefPageDrivers" name="%pref.page.name.drivers">
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.drivers" class="org.jkiss.dbeaver.ui.preferences.PrefPageDrivers" name="%pref.page.name.drivers">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.general"/>
         </page>
 
