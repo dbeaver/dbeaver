@@ -31,12 +31,14 @@ import java.util.List;
  */
 public class SQLWordPartDetector extends SQLIdentifierDetector
 {
-    String prevKeyWord = "";
-    String prevDelimiter = null;
-    List<String> prevWords = null;
-    String wordPart = "";
-    int docOffset;
-    int endOffset;
+    private String prevKeyWord = "";
+    private String prevDelimiter = null;
+    private List<String> prevWords = null;
+    private String wordPart;
+    private String fullWord;
+    private int cursorOffset;
+    private int startOffset;
+    private int endOffset;
 
     /**
      * Method SQLWordPartDetector.
@@ -48,21 +50,23 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
     public SQLWordPartDetector(IDocument document, SQLSyntaxManager syntaxManager, int documentOffset)
     {
         super(syntaxManager.getStructSeparator(), syntaxManager.getQuoteSymbol());
-        docOffset = documentOffset - 1;
+        cursorOffset = documentOffset;
+        startOffset = documentOffset - 1;
         endOffset = documentOffset;
         int topIndex = 0, documentLength = document.getLength();
         try {
-            while (docOffset >= topIndex && isWordPart(document.getChar(docOffset))) {
-                docOffset--;
+            while (startOffset >= topIndex && isWordPart(document.getChar(startOffset))) {
+                startOffset--;
             }
             while (endOffset < documentLength && isWordPart(document.getChar(endOffset))) {
                 endOffset++;
             }
 
-            int prevOffset = docOffset;
+            int prevOffset = startOffset;
             //we've been one step too far : increase the offset
-            docOffset++;
-            wordPart = document.get(docOffset, documentOffset - docOffset);
+            startOffset++;
+            wordPart = document.get(startOffset, documentOffset - startOffset);
+            fullWord = document.get(startOffset, endOffset - startOffset);
 
             // Get previous keyword
             while (prevOffset >= topIndex) {
@@ -122,6 +126,11 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         return wordPart;
     }
 
+    public String getFullWord()
+    {
+        return fullWord;
+    }
+
     public String getPrevDelimiter()
     {
         return prevDelimiter;
@@ -132,14 +141,24 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
         return prevWords;
     }
 
-    public int getOffset()
+    public int getCursorOffset()
     {
-        return docOffset;
+        return cursorOffset;
+    }
+
+    public int getStartOffset()
+    {
+        return startOffset;
+    }
+
+    public int getEndOffset()
+    {
+        return endOffset;
     }
 
     public int getLength()
     {
-        return endOffset - docOffset;
+        return endOffset - startOffset;
     }
 
     public String getPrevKeyWord()
