@@ -30,7 +30,6 @@ import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -96,7 +95,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         MenuManager editMenu = new MenuManager(CoreMessages.actions_menu_edit, IWorkbenchActionConstants.M_EDIT);
         MenuManager navigateMenu = new MenuManager(CoreMessages.actions_menu_navigate, IWorkbenchActionConstants.M_NAVIGATE);
         MenuManager windowMenu = new MenuManager(CoreMessages.actions_menu_window, IWorkbenchActionConstants.M_WINDOW);
-        MenuManager helpMenu = new MenuManager(CoreMessages.actions_menu_help, IWorkbenchActionConstants.M_HELP);
+        // do not use standard help menu to avoid junk provided by platform (like cheat sheets)
+        MenuManager helpMenu = new MenuManager(CoreMessages.actions_menu_help, "dbhelp"); //IWorkbenchActionConstants.M_HELP
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -113,14 +113,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
         fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        if (DBeaverCore.isStandalone()) {
-            fileMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
-            fileMenu.add(new Separator());
-        }
+        fileMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+        fileMenu.add(new Separator());
+
         fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
-        if (DBeaverCore.isStandalone()) {
-            fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
-        }
+        fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
 
         // Edit
 /*
