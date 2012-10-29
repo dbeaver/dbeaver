@@ -17,20 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.struct;
-
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+package org.jkiss.dbeaver.model;
 
 /**
- * Object with lock state.
+ * Object which could be hidden
  */
-public interface DBSObjectGuarded extends DBSObject
+public interface DBPHiddenObject
 {
 
-    boolean isObjectLocked();
-
-    void setObjectLock(DBRProgressMonitor monitor, boolean locked)
-        throws DBCException;
+    boolean isHidden();
 
 }

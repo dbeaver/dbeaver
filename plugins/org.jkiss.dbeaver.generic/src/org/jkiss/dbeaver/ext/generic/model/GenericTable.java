@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -47,7 +48,7 @@ import java.util.*;
 /**
  * GenericTable
  */
-public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject
+public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject
 {
     static final Log log = LogFactory.getLog(GenericTable.class);
 
@@ -78,7 +79,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             this.isView = (type.contains("VIEW"));
             this.isSystem =
                 (type.contains("SYSTEM")) || // general rule
-                tableName.contains("RDB$");    // Firebird
+                tableName.contains("RDB$");    // [Firebird]
         }
     }
 
@@ -118,6 +119,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return this.isView;
     }
 
+    @Override
     public boolean isSystem()
     {
         return this.isSystem;

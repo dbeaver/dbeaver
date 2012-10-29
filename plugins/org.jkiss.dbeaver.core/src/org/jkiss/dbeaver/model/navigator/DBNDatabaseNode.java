@@ -114,7 +114,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         if (image != null && object instanceof DBSObjectStateful) {
             image = DBNModel.getStateOverlayImage(image, ((DBSObjectStateful) object).getObjectState());
         }
-        if (object instanceof DBSObjectGuarded && ((DBSObjectGuarded) object).isObjectLocked()) {
+        if (object instanceof DBPGuardedObject && ((DBPGuardedObject) object).isObjectLocked()) {
             image = DBNModel.getLockedOverlayImage(image);
         }
         return image;
@@ -463,6 +463,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
             return false;
         }
 
+        DataSourceDescriptor dataSourceContainer = getDataSourceContainer();
+        boolean showSystem = dataSourceContainer == null || dataSourceContainer.isShowSystemObjects();
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
@@ -471,8 +473,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
                 log.warn("Bad item type: " + childItem.getClass().getName()); //$NON-NLS-1$
                 continue;
             }
-            if (childItem instanceof DBSHiddenObject && ((DBSHiddenObject) childItem).isHidden()) {
+            if (childItem instanceof DBPHiddenObject && ((DBPHiddenObject) childItem).isHidden()) {
                 // Skip hidden objects
+                continue;
+            }
+            if (!showSystem && childItem instanceof DBPSystemObject && ((DBPSystemObject) childItem).isSystem()) {
+                // Skip system objects
                 continue;
             }
             if (filter != null && !filter.matches(((DBSObject)childItem).getName())) {

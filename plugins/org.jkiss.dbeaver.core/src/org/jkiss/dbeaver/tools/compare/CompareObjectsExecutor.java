@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
@@ -308,6 +309,10 @@ public class CompareObjectsExecutor {
                 DBXTreeNode meta = child.getMeta();
                 if (meta.isVirtual()) {
                     // Skip virtual nodes
+                    continue;
+                }
+                if (settings.isSkipSystemObjects() && child.getObject() instanceof DBPSystemObject && ((DBPSystemObject) child.getObject()).isSystem()) {
+                    // Skip system objects
                     continue;
                 }
                 allChildNames.add(child.getNodeName());

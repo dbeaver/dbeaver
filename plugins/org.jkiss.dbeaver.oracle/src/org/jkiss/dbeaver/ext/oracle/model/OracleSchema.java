@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -48,7 +49,7 @@ import java.util.List;
 /**
  * OracleSchema
  */
-public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject
+public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject
 {
     static final Log log = LogFactory.getLog(OracleSchema.class);
 
@@ -300,14 +301,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return true;
     }
 
+    @Override
     public boolean isSystem()
     {
         return CommonUtils.contains(OracleConstants.SYSTEM_SCHEMAS, getName());
-    }
-
-    public DBSCatalog getCatalog()
-    {
-        return null;
     }
 
     @Override

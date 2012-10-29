@@ -74,7 +74,7 @@ public class DataSourceDescriptor
         IAdaptable,
         DBEPrivateObjectEditor,
         DBSObjectStateful,
-        DBSObjectGuarded,
+    DBPGuardedObject,
         DBPRefreshableObject
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
