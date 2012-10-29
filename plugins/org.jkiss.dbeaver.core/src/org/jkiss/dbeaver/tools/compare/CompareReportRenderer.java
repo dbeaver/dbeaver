@@ -40,6 +40,10 @@ public class CompareReportRenderer {
         this.settings = settings;
         this.xml = new XMLBuilder(outputStream, "utf-8", true);
         this.xml.setButify(true);
+        xml.addContent(
+            "<!DOCTYPE html \n" +
+            "     PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n" +
+            "    \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
 
         if (settings.isShowOnlyDifferences()) {
             // Mark differences on tree nodes
@@ -49,10 +53,14 @@ public class CompareReportRenderer {
                 if (reportLines.get(i).hasDifference) {
                     int depth = reportLines.get(i).depth;
                     for (int k = i - 1; k >= 0; k--) {
-                        if (reportLines.get(k).depth < depth) {
-                            reportLines.get(k).hasDifference = true;
-                        } else {
-                            break;
+                        CompareReportLine prevNode = reportLines.get(k);
+                        if (prevNode.depth < depth) {
+                            if (prevNode.hasDifference) {
+                                // Already set
+                                break;
+                            }
+                            depth = prevNode.depth;
+                            prevNode.hasDifference = true;
                         }
                     }
                 }
@@ -61,6 +69,13 @@ public class CompareReportRenderer {
 
         xml.startElement("html");
         xml.startElement("head");
+        xml.startElement("meta");
+        xml.addAttribute("http-equiv", "Content-type");
+        xml.addAttribute("content", "text/html; charset=utf-8");
+        xml.endElement();
+        xml.startElement("title");
+        xml.addText("Compare report");
+        xml.endElement();
         xml.endElement();
         xml.startElement("body");
 
