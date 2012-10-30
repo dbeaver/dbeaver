@@ -147,7 +147,7 @@ public class DisplayedContent implements StyledTextContent {
 
     void setDimensions(int columns, int lines)
     {
-        numberOfColumns = columns;
+        numberOfColumns = columns <= 0 ? 1 : columns;
         //numberOfLines = lines;
         linesTimesColumns = lines * columns;
         setText(data.toString());

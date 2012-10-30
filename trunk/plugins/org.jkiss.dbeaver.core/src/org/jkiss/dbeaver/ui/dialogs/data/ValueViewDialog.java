@@ -25,12 +25,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -54,6 +56,7 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -71,6 +74,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     static final Log log = LogFactory.getLog(ValueViewDialog.class);
 
     private static int dialogCount = 0;
+    public static final String SETTINGS_SECTION_DI = "ValueViewDialog";
+
+    public static final String COLUMN_INFO_VISIBLE = "columnInfoVisible";
+    public static final String DIALOG_SIZE = "-dialogSize";
 
     private DBDValueController valueController;
     private DBSEntityReferrer refConstraint;
@@ -79,12 +86,19 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     private boolean handleEditorChange;
     private SelectorLoaderJob loaderJob = null;
     private Object editedValue;
+    private boolean columnInfoVisible = true;
+    private ColumnInfoPanel columnPanel;
+    private final IDialogSettings dialogSettings;
 
     protected ValueViewDialog(DBDValueController valueController) {
         super(valueController.getValueSite().getShell());
         setShellStyle(SWT.SHELL_TRIM);
         this.valueController = valueController;
         this.valueController.registerEditor(this);
+        dialogSettings = UIUtils.getDialogSettings(SETTINGS_SECTION_DI);
+        if (dialogSettings.get(COLUMN_INFO_VISIBLE) != null) {
+            columnInfoVisible = dialogSettings.getBoolean(COLUMN_INFO_VISIBLE);
+        }
         dialogCount++;
     }
 
@@ -134,7 +148,23 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
 */
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
-        ColumnInfoPanel columnPanel = new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
+        final Link columnHideLink = new Link(dialogGroup, SWT.NONE);
+        columnHideLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                columnInfoVisible = !columnInfoVisible;
+                dialogSettings.put(COLUMN_INFO_VISIBLE, columnInfoVisible);
+                initColumnInfoVisibility(columnHideLink);
+                getShell().layout();
+                getShell().setSize(getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT));
+            }
+        });
+        columnPanel = new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
+        columnPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        initColumnInfoVisibility(columnHideLink);
+
 /*
 
         ExpandBar expandBar = new ExpandBar(dialogGroup, SWT.V_SCROLL);
@@ -154,6 +184,13 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         return dialogGroup;
     }
 
+    private void initColumnInfoVisibility(Link columnHideLink)
+    {
+        columnPanel.setVisible(columnInfoVisible);
+        ((GridData)columnPanel.getLayoutData()).exclude = !columnInfoVisible;
+        columnHideLink.setText("Column Info: (<a>" + (columnInfoVisible ? "hide" : "show") + "</a>)");
+    }
+
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         // create OK and Cancel buttons by default
@@ -168,6 +205,15 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         super.initializeBounds();
 
         Shell shell = getShell();
+
+        String sizeString = dialogSettings.get(getClass().getSimpleName() + DIALOG_SIZE);
+        if (!CommonUtils.isEmpty(sizeString) && sizeString.contains(":")) {
+            int divPos = sizeString.indexOf(':');
+            shell.setSize(new Point(
+                Integer.parseInt(sizeString.substring(0, divPos)),
+                Integer.parseInt(sizeString.substring(divPos + 1))));
+        }
+
         Monitor primary = shell.getMonitor();
         Rectangle bounds = primary.getBounds ();
         Rectangle rect = shell.getBounds ();
@@ -204,6 +250,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     @Override
     protected void buttonPressed(int buttonId) {
+        Point size = getShell().getSize();
+        String sizeString = size.x + ":" + size.y;
+        dialogSettings.put(getClass().getSimpleName() + DIALOG_SIZE, sizeString);
+
         if (buttonId == IDialogConstants.IGNORE_ID) {
             if (!valueController.isReadOnly()) {
                 editedValue = valueController.getValue();

@@ -107,9 +107,9 @@ public class NumberViewDialog extends ValueViewDialog {
                 textEdit.setTextLimit(maxSize + 2);
             }
             textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-            GridData gd = new GridData(GridData.FILL_BOTH);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 300;
-            gd.grabExcessVerticalSpace = true;
+            //gd.grabExcessVerticalSpace = true;
             textEdit.setLayoutData(gd);
             textEdit.setFocus();
             textEdit.setEditable(!getValueController().isReadOnly());
