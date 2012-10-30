@@ -160,7 +160,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 // Actually it still focused but we need to use it's selection
                 // I think it is an eclipse bug
                 if (!(oldActivePart instanceof IEditorPart)) {
-                    workbenchWindow.getActivePage().activate(oldActivePart);
+                    //workbenchWindow.getActivePage().activate(oldActivePart);
                 }
             }
         } catch (Exception ex) {

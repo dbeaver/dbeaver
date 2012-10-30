@@ -1043,6 +1043,8 @@ public class UIUtils {
         final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
         if (focusService != null) {
             focusService.addFocusTracker(control, controlID);
+        } else {
+            log.debug("Focus service not found in " + serviceLocator);
         }
     }
 
@@ -1055,6 +1057,8 @@ public class UIUtils {
         final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
         if (focusService != null) {
             focusService.removeFocusTracker(control);
+        } else {
+            log.debug("Focus service not found in " + serviceLocator);
         }
     }
 

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -486,7 +487,6 @@ public class DBECommandContextImpl implements DBECommandContext {
             clearCommandQueues();
             getCommandQueues();
         }
-        refreshCommandState();
 
         // Redo UI changes
         for (CommandInfo cmd : processedCommands) {
@@ -494,6 +494,8 @@ public class DBECommandContextImpl implements DBECommandContext {
                 cmd.reflector.redoCommand(cmd.command);
             }
         }
+
+        refreshCommandState();
     }
 
     private void clearUndidCommands()
