@@ -53,6 +53,8 @@ public class ResultSetPropertyTester extends PropertyTester
         ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
         if (rsv != null) {
             return checkResultSetProperty(rsv, property, expectedValue);
+//            System.out.println(property + " [" + expectedValue + "]=" + res);
+//            return res;
         } else {
             return false;
         }
@@ -82,9 +84,9 @@ public class ResultSetPropertyTester extends PropertyTester
             } else if ("inline".equals(expectedValue)) {
                 GridPos pos = rsv.getCurrentPosition();
                 return pos != null && !rsv.isColumnReadOnly(pos);
-            } else if ("add".equals(expectedValue) || "copy".equals(expectedValue)) {
+            } else if ("add".equals(expectedValue)) {
                 return rsv.isInsertable();
-            } else if ("delete".equals(expectedValue)) {
+            } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
                 int currentRow = rsv.getCurrentRow();
                 return currentRow >= 0 && currentRow < rsv.getRowsCount() && rsv.isInsertable();
             } else {
