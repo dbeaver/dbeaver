@@ -67,7 +67,6 @@ public class HexEditControl extends Composite {
      * charset encoding, or font system.
      */
     public static final String[] byteToHex = new String[256];
-    static final int charsForAddress = 12;  // Files up to 16 Ters: 11 binary digits + ':'
     static String headerRow = null;
     static final byte[] hexToNibble = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1,
                                        10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -108,7 +107,8 @@ public class HexEditControl extends Composite {
     private boolean mergeRangesIsBlue = false;
     private boolean mergeRangesIsHighlight = false;
     private int mergeRangesPosition = -1;
-    private int bytesPerLine = 16;
+    private final int charsForAddress;  // Files up to 16 Ters: 11 binary digits + ':'
+    private int bytesPerLine;
     private boolean caretStickToStart = false;  // stick to end
     private BinaryClipboard myClipboard = null;
     private BinaryContent content = null;
@@ -425,23 +425,30 @@ public class HexEditControl extends Composite {
         }
     }
 
-    /**
-     * Create a binary text editor
-     *
-     * @param parent parent in the widget hierarchy
-     * @param style  not used for the moment
-     */
     public HexEditControl(final Composite parent, int style)
+    {
+        this(parent, style, 12, 16);
+    }
+
+    /**
+    * Create a binary text editor
+    *
+    * @param parent parent in the widget hierarchy
+    * @param style  not used for the moment
+    */
+    public HexEditControl(final Composite parent, int style, int charsForAddress, int bytesPerLine)
     {
         super(parent, style | SWT.V_SCROLL);
 
         this.readOnly = (style & SWT.READ_ONLY) != 0;
-        colorCaretLine = new Color(Display.getCurrent(), 232, 242, 254);  // very light blue
-        colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
-        highlightRangesInScreen = new ArrayList<Integer>();
+        this.charsForAddress = charsForAddress;
+        this.bytesPerLine = bytesPerLine;
+        this.colorCaretLine = new Color(Display.getCurrent(), 232, 242, 254);  // very light blue
+        this.colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
+        this.highlightRangesInScreen = new ArrayList<Integer>();
 
-        myClipboard = new BinaryClipboard(parent.getDisplay());
-        longSelectionListeners = new ArrayList<SelectionListener>();
+        this.myClipboard = new BinaryClipboard(parent.getDisplay());
+        this.longSelectionListeners = new ArrayList<SelectionListener>();
         addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e)
@@ -459,8 +466,8 @@ public class HexEditControl extends Composite {
             }
         });
         initialize();
-        lastFocusedTextArea = 1;
-        previousLine = -1;
+        this.lastFocusedTextArea = 1;
+        this.previousLine = -1;
     }
 
     @Override
@@ -1766,12 +1773,10 @@ public class HexEditControl extends Composite {
             notifyListeners(SWT.Modify, null);
     }
 
-
     void setAddressesGridDataWidthHint()
     {
         ((GridData) linesText.getLayoutData()).widthHint = charsForAddress * fontCharWidth;
     }
-
 
     void setCaretsSize(boolean insert)
     {
@@ -2014,8 +2019,8 @@ public class HexEditControl extends Composite {
         int width = getClientArea().width - linesText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         int displayedNumberWidth = fontCharWidth * 4;  // hexText and previewText
         bytesPerLine = (width / displayedNumberWidth) & 0xfffffff8;  // 0, 8, 16, 24, etc.
-        if (bytesPerLine < 16)
-            bytesPerLine = 16;
+//        if (bytesPerLine < 16)
+//            bytesPerLine = 16;
         textGridData.widthHint = hexText.computeTrim(0, 0, bytesPerLine * 3 * fontCharWidth, 100).width;
         previewGridData.widthHint = previewText.computeTrim(0, 0, bytesPerLine * fontCharWidth, 100).width;
         updateNumberOfLines();

@@ -19,14 +19,18 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
+import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
+
+import java.nio.ByteBuffer;
 
 /**
  * TextViewDialog
@@ -50,35 +54,80 @@ public class TextViewDialog extends ValueViewDialog {
         } else {
             value = DBUtils.getDefaultValueDisplayString(value);
         }
+        String stringValue = value == null ? "" : value.toString();
         boolean isForeignKey = super.isForeignKey();
 
         Label label = new Label(dialogGroup, SWT.NONE);
         label.setText(CoreMessages.dialog_data_label_value);
 
-        int style = SWT.BORDER | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
-        if (getValueController().isReadOnly()) {
-            style |= SWT.READ_ONLY;
+        boolean readOnly = getValueController().isReadOnly();
+        boolean useHex = !readOnly && !isForeignKey;
+        Composite container = dialogGroup;
+        if (useHex) {
+            container = new TabFolder(dialogGroup, SWT.TOP);
+            //container.setLayout(new GridLayout(1, true));
+            container.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
-        textEdit = new Text(dialogGroup, style);
+        {
+            int style = SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
+            if (!useHex) {
+                style |= SWT.BORDER;
+            }
+            if (readOnly) {
+                style |= SWT.READ_ONLY;
+            }
+            textEdit = new Text(container, style);
 
-        textEdit.setText(value == null ? "" : value.toString());
-        long maxSize = getValueController().getAttributeMetaData().getMaxLength();
-        if (maxSize > 0) {
-            textEdit.setTextLimit((int) maxSize);
+            textEdit.setText(stringValue);
+            long maxSize = getValueController().getAttributeMetaData().getMaxLength();
+            if (maxSize > 0) {
+                textEdit.setTextLimit((int) maxSize);
+            }
+            textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
+            GridData gd = new GridData(isForeignKey ? GridData.FILL_HORIZONTAL : GridData.FILL_BOTH);
+            gd.widthHint = 300;
+            if (!isForeignKey) {
+                gd.heightHint = 200;
+                gd.grabExcessVerticalSpace = true;
+            }
+            textEdit.setLayoutData(gd);
+            textEdit.setFocus();
+            textEdit.setEditable(!readOnly);
+
+            if (useHex) {
+                TabItem item = new TabItem((TabFolder) container, SWT.NONE);
+                item.setText("Text");
+                item.setImage(DBIcon.TYPE_TEXT.getImage());
+                item.setControl(textEdit);
+            }
         }
-        textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-        GridData gd = new GridData(isForeignKey ? GridData.FILL_HORIZONTAL : GridData.FILL_BOTH);
-        gd.widthHint = 300;
-        if (!isForeignKey) {
+        Point minSize = null;
+        if (useHex) {
+            HexEditControl hexEditControl = new HexEditControl(container, SWT.NONE, 6, 8);
+            GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;
-            gd.grabExcessVerticalSpace = true;
+            gd.minimumWidth = hexEditControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+            hexEditControl.setLayoutData(gd);
+            BinaryContent binaryContent = new BinaryContent();
+            binaryContent.insert(ByteBuffer.wrap(stringValue.getBytes()), 0);
+            hexEditControl.setContentProvider(binaryContent);
+            minSize = hexEditControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            minSize.x += 50;
+            minSize.y += 50;
+            TabItem item = new TabItem((TabFolder) container, SWT.NONE);
+            item.setText("Hex");
+            item.setImage(DBIcon.TYPE_BINARY.getImage());
+            item.setControl(hexEditControl);
+
+            ((TabFolder) container).setSelection(0);
         }
-        textEdit.setLayoutData(gd);
-        textEdit.setFocus();
-        textEdit.setEditable(!getValueController().isReadOnly());
 
         if (isForeignKey) {
             super.createEditorSelector(dialogGroup, textEdit);
+        }
+        if (minSize != null) {
+            // Set default size as minimum
+            getShell().setMinimumSize(minSize);
         }
 
         return dialogGroup;
