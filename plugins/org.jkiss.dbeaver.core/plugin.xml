@@ -723,33 +723,33 @@
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleSingleLineCommentHandler">
-            <activeWhen>
+            <enabledWhen>
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
                     </adapt>
                 </with>
-            </activeWhen>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleMultiLineCommentHandler">
-            <activeWhen>
+            <enabledWhen>
                 <with variable="activePart">
                     <adapt type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
                     </adapt>
                 </with>
-            </activeWhen>
+            </enabledWhen>
         </handler>
 
         <!-- Entity editor handlers -->
         <handler commandId="org.eclipse.ui.file.revert" class="org.jkiss.dbeaver.ui.editors.entity.handlers.RevertChangesHandler">
-            <activeWhen>
+            <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
                     </adapt>
                 </with>
-            </activeWhen>
+            </enabledWhen>
         </handler>
         <!--handler commandId="org.eclipse.ui.file.save" class="org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler">
             <activeWhen>
@@ -761,31 +761,31 @@
             </activeWhen>
         </handler-->
         <handler commandId="org.eclipse.ui.edit.text.contentAssist.proposals" class="org.jkiss.dbeaver.ui.editors.entity.handlers.PreviewChangesHandler">
-            <activeWhen>
+            <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.entity.dirty"/>
                     </adapt>
                 </with>
-            </activeWhen>
+            </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.editors.entity.handlers.UndoChangesHandler">
-            <activeWhen>
+            <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.entity.canUndo"/>
                     </adapt>
                 </with>
-            </activeWhen>
+            </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.redo" class="org.jkiss.dbeaver.ui.editors.entity.handlers.RedoChangesHandler">
-            <activeWhen>
+            <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.entity.canRedo"/>
                     </adapt>
                 </with>
-            </activeWhen>
+            </enabledWhen>
         </handler>
 
         <!-- Spreadsheet handlers -->

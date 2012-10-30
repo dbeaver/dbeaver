@@ -8,7 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ClassPath: .
 Bundle-Vendor: Serge Rieder
 Bundle-Localization: plugin
-Require-Bundle: org.jkiss.dbeaver.core;bundle-version="2.0.0",
+Require-Bundle: org.jkiss.dbeaver.core,
  org.eclipse.osgi,
  org.eclipse.equinox.app,
  org.eclipse.swt,
