@@ -102,7 +102,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     public void setFocus()
     {
         if (resultSetView != null) {
-            resultSetView.getControl().setFocus();
+            resultSetView.getGridControl().setFocus();
         }
     }
 
