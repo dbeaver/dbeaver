@@ -1144,7 +1144,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public Control getControl()
     {
-        return viewerPanel;
+        return getGridControl();
     }
 
     public LightGrid getGridControl()
