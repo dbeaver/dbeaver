@@ -1722,6 +1722,14 @@
 
     <extension point="org.jkiss.dbeaver.dataExportProvider">
         <export
+                id="org.jkiss.dbeaver.core.dataExport.xml"
+                class="org.jkiss.dbeaver.tools.data.impl.DataExporterXML"
+                description="%command.org.jkiss.dbeaver.core.resultset.export.xml.description"
+                extension="xml"
+                icon="icons/misc/xml.png"
+                label="%command.org.jkiss.dbeaver.core.resultset.export.xml.name">
+        </export>
+        <export
                 id="org.jkiss.dbeaver.core.dataExport.html"
                 class="org.jkiss.dbeaver.tools.data.impl.DataExporterHTML"
                 description="%command.org.jkiss.dbeaver.core.resultset.export.html.description"
