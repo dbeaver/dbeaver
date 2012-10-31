@@ -39,9 +39,9 @@ import java.util.List;
 /**
  * CSV Exporter
  */
-public class DataExporterHTML extends DataExporterAbstract {
+public class DataExporterXML extends DataExporterAbstract {
 
-    private static final int IMAGE_FRAME_SIZE = 200;
+    public static final int IMAGE_FRAME_SIZE = 200;
 
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
@@ -70,28 +70,34 @@ public class DataExporterHTML extends DataExporterAbstract {
 
     private void printHeader()
     {
-        out.write("<html>");
-        out.write("<head><style>" +
-                "table {font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;text-align:left;border-collapse:collapse;margin:10px;} " +
-                "th{font-size:14px;font-weight:normal;color:#039;padding:10px 8px;} " +
-                "td{color:#669;padding:8px;}" +
-                ".odd{background:#e8edff;}" +
-                "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
-                "</style></head>");
-        out.write("<body><table>");
-        out.write("<tr>");
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            writeTextCell(columns.get(i).getAttribute().getName(), true);
+        out.write("<?xml version=\"1.0\" ?>\n");
+        String tableName = getSite().getSource().getName();
+        out.write("<!DOCTYPE " + tableName + " [\n");
+        out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
+        out.write("  <!ELEMENT DATA_RECORD (");
+        int columnsSize = columns.size();
+        for (int i = 0; i < columnsSize; i++) {
+            out.write(columns.get(i).getAttribute().getName() + "?");
+            if (i < columnsSize - 1) {
+                out.write(",");
+            }
         }
-        out.write("</tr>");
+        out.write(")+>\n");
+        for (int i = 0; i < columnsSize; i++) {
+            out.write("  <!ELEMENT " + columns.get(i).getAttribute().getName() + " (#PCDATA)>\n");
+        }
+        out.write("]>\n");
+        out.write("<" + tableName + ">\n");
     }
 
     @Override
     public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
     {
-        out.write("<tr" + (rowCount++ % 2 == 0 ? " class=\"odd\"" : "") + ">");
+        out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
+            String columnName = column.getAttribute().getName();
+            out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
                 writeTextCell(null, false);
             } else if (row[i] instanceof DBDContent) {
@@ -100,13 +106,11 @@ public class DataExporterHTML extends DataExporterAbstract {
                 DBDContent content = (DBDContent)row[i];
                 try {
                     DBDContentStorage cs = content.getContents(monitor);
-                    out.write("<td>");
                     if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cs.getContentReader());
                     } else {
                         getSite().writeBinaryData(cs.getContentStream(), cs.getContentLength());
                     }
-                    out.write("</td>");
                 }
                 finally {
                     content.release();
@@ -121,36 +125,28 @@ public class DataExporterHTML extends DataExporterAbstract {
                     writeTextCell(stringValue, false);
                 }
             }
+            out.write("</" + columnName + ">\n");
         }
-        out.write("</tr>");
+        out.write("  </DATA_RECORD>\n");
     }
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
-        out.write("</table></body></html>");
+        out.write("</" + getSite().getSource().getName() + ">\n");
     }
 
     private void writeTextCell(String value, boolean header)
     {
-        out.write(header ? "<th>" : "<td>");
-        if (value == null) {
-            out.write("&nbsp;");
-        }
-        else {
+        if (value != null) {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
             out.write(value);
         }
-        out.write(header ? "</th>" : "</td>");
     }
 
     private void writeImageCell(File file) throws DBException
     {
-        out.write("<td>");
-        if (file == null || !file.exists()) {
-            out.write("&nbsp;");
-        }
-        else {
+        if (file != null && file.exists()) {
             Image image = null;
             try {
                 image = ImageIO.read(file);
@@ -161,32 +157,9 @@ public class DataExporterHTML extends DataExporterAbstract {
             if (image != null) {
                 String imagePath = file.getAbsolutePath();
                 imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
-
-                int width = ((BufferedImage) image).getWidth();
-                int height = ((BufferedImage) image).getHeight();
-                int rwidth = width;
-                int rheight = height;
-
-                if (width > IMAGE_FRAME_SIZE || height > IMAGE_FRAME_SIZE) {
-                    float scale = 1;
-                    if (width > height) {
-                        scale = IMAGE_FRAME_SIZE /(float)width;
-                    }
-                    else {
-                        scale = IMAGE_FRAME_SIZE /(float)height;
-                    }
-                    rwidth = (int) (rwidth * scale);
-                    rheight = (int) (rheight * scale);
-                }
-                out.write("<a href=\"" + imagePath + "\">");
-                out.write("<img src=\"" + imagePath + "\" width=\"" + rwidth + "\" height=\"" + rheight + "\" />");
-                out.write("</a>");
-            }
-            else {
-                out.write("&nbsp;");
+                out.write(imagePath);
             }
         }
-        out.write("</td>");
     }
 
     private void writeCellValue(Reader reader) throws IOException
