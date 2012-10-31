@@ -25,6 +25,10 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DatabaseEditorPropertyTester
@@ -53,13 +57,14 @@ public class ResultSetPropertyTester extends PropertyTester
         ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
         if (rsv != null) {
             return checkResultSetProperty(rsv, property, expectedValue);
+//            boolean res = checkResultSetProperty(rsv, property, expectedValue);
 //            System.out.println(property + " [" + expectedValue + "]=" + res);
 //            return res;
         } else {
             return false;
         }
     }
-
+    private static Map<Object,Boolean> stateSave = new HashMap<Object, Boolean>();
     private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
     {
         if (PROP_HAS_DATA.equals(property)) {
@@ -78,6 +83,9 @@ public class ResultSetPropertyTester extends PropertyTester
                 return currentRow < rsv.getRowsCount() - 1;
             }
         } else if (PROP_EDITABLE.equals(property)) {
+            if (!rsv.hasData()) {
+                return false;
+            }
             if ("edit".equals(expectedValue)) {
                 GridPos pos = rsv.getCurrentPosition();
                 return pos != null && rsv.isValidCell(pos);

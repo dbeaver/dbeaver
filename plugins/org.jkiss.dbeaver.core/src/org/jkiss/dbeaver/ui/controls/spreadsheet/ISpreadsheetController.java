@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
  */
 public interface ISpreadsheetController {
 
+    boolean hasData();
+
     boolean isReadOnly();
 
     boolean isValidCell(GridPos pos);

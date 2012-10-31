@@ -717,10 +717,10 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SaveSQLFileHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></activeWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLFileHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></activeWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleSingleLineCommentHandler">
             <enabledWhen>
@@ -822,7 +822,7 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler">
-           <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.spreadsheet.control"/></activeWhen>
             <enabledWhen>
                 <with variable="activeFocusControl">
                     <test property="org.jkiss.dbeaver.core.resultset.canCopy"/>
