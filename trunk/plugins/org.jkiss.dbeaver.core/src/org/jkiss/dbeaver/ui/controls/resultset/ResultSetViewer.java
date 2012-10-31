@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
@@ -33,10 +36,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -60,7 +60,10 @@ import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
@@ -68,7 +71,12 @@ import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.tools.data.wizard.DataExportProvider;
+import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.ThemeConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
@@ -79,8 +87,6 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
-import org.jkiss.dbeaver.tools.data.wizard.DataExportProvider;
-import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.help.IHelpContextIds;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
@@ -132,6 +138,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private int curRowNum = -1;
     private int curColNum = -1;
     private boolean singleSourceCells;
+    private boolean hasData = false;
 
     // Edited rows and cells
     private Set<RowInfo> addedRows = new TreeSet<RowInfo>();
@@ -217,6 +224,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         });
         this.spreadsheet.getGrid().setTopLeftRenderer(new ResultSetTopLeftRenderer(this));
         applyThemeSettings();
+
+        spreadsheet.getGrid().addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+                updateToolbar();
+            }
+
+            @Override
+            public void focusLost(FocusEvent e)
+            {
+                updateToolbar();
+            }
+        });
     }
 
     @Override
@@ -247,15 +268,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void updateGridCursor(int col, int row)
     {
+        boolean changed;
         if (mode == ResultSetMode.GRID) {
+            changed = curRowNum != row || curColNum != col;
             curRowNum = row;
             curColNum = col;
         } else {
+            changed = curColNum != row;
             curColNum = row;
         }
-
-        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
-        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
+        if (changed) {
+            ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
+            ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
+            updateToolbar();
+        }
     }
 
     private void updateRecordMode()
@@ -268,7 +294,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void updateEditControls()
     {
+        ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
+        updateToolbar();
+    }
+
+    private void updateToolbar()
+    {
+        if (toolBarManager.isEmpty()) {
+            return;
+        }
+        for (IContributionItem item : toolBarManager.getItems()) {
+            item.update();
+        }
     }
 
     private void refreshSpreadsheet(boolean rowsChanged)
@@ -299,7 +337,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         } else {
             this.spreadsheet.redrawGrid();
         }
-        updateEditControls();
     }
 
     private void createStatusBar(Composite parent)
@@ -519,15 +556,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    public void clearAll()
-    {
-        closeEditors();
-        clearData();
-        clearMetaData();
-
-        initResultSet();
-    }
-
     private void applyThemeSettings()
     {
         ITheme currentTheme = themeManager.getCurrentTheme();
@@ -736,6 +764,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             statusMessage = CoreMessages.controls_resultset_viewer_status_no_data;
         }
         setStatus(statusMessage, false);
+        hasData = true;
+        updateEditControls();
     }
 
     public void appendData(List<Object[]> rows)
@@ -745,14 +775,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         refreshSpreadsheet(true);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, curRows.size(), rows.size()), false);
-    }
-
-    private void clearResultsView()
-    {
-        // Clear previous state
-        spreadsheet.setRedraw(false);
-        spreadsheet.clearGrid();
-        spreadsheet.setRedraw(true);
     }
 
     private void closeEditors() {
@@ -834,6 +856,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public boolean isSaveOnCloseNeeded()
     {
         return true;
+    }
+
+    public boolean hasData()
+    {
+        return hasData;
     }
 
     @Override
@@ -1212,13 +1239,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         int oldRowNum = curRowNum;
         int oldColNum = curColNum;
 
-/*
-        this.closeEditors();
-        this.clearData();
-        this.clearMetaData();
-        this.clearResultsView();
-*/
-
         if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
             if (oldRowNum >= segmentSize) {
@@ -1233,8 +1253,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     }
                 }
             });
-            updateGridCursor(-1, -1);
-            updateEditControls();
         }
     }
 
@@ -1394,10 +1412,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.releaseAll();
         this.origRows = new ArrayList<Object[]>();
         this.curRows = new ArrayList<Object[]>();
-        this.curRowNum = 0;
-        this.curColNum = 0;
+        this.curRowNum = -1;
+        this.curColNum = -1;
 
         clearEditedData();
+
+        hasData = false;
     }
 
     private void clearEditedData()
@@ -1557,6 +1577,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         addedRows.add(new RowInfo(rowNum));
         refreshSpreadsheet(true);
+        updateEditControls();
         fireResultSetChange();
     }
 
@@ -2259,6 +2280,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
             refreshSpreadsheet(rowsChanged);
             fireResultSetChange();
+            updateEditControls();
         }
 
         // Reflect data changes in viewer
@@ -2363,6 +2385,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             if (!getControl().isDisposed()) {
                                 //releaseStatements();
                                 refreshSpreadsheet(rowsChanged);
+                                updateEditControls();
                                 if (error == null) {
                                     setStatus(
                                             NLS.bind(CoreMessages.controls_resultset_viewer_status_inserted_,
