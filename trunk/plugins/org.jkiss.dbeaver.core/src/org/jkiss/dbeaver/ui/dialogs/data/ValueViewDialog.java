@@ -124,15 +124,6 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     }
 
     @Override
-    public boolean close() {
-        dialogCount--;
-        if (this.valueController != null) {
-            this.valueController.unregisterEditor(this);
-        }
-        return super.close();
-    }
-
-    @Override
     protected Control createDialogArea(Composite parent)
     {
 /*
@@ -225,13 +216,20 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     }
 
     @Override
-    public int open()
+    public final int open()
     {
-        int result = super.open();
-        if (result == IDialogConstants.OK_ID) {
-            getValueController().updateValue(editedValue);
+        try {
+            int result = super.open();
+            if (result == IDialogConstants.OK_ID) {
+                getValueController().updateValue(editedValue);
+            }
+            return result;
+        } finally {
+            dialogCount--;
+            if (this.valueController != null) {
+                this.valueController.unregisterEditor(this);
+            }
         }
-        return result;
     }
 
     @Override
