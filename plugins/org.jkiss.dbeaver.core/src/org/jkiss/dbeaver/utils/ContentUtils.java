@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
@@ -32,15 +33,19 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,14 +121,48 @@ public class ContentUtils {
         return System.getProperty("line.separator", "\n");
     }
 
+    public static String getDefaultBinaryFileEncoding(DBPDataSource dataSource)
+    {
+        IPreferenceStore preferenceStore;
+        if (dataSource == null) {
+            preferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        } else {
+            preferenceStore = dataSource.getContainer().getPreferenceStore();
+        }
+        String fileEncoding = preferenceStore.getString(PrefConstants.CONTENT_HEX_ENCODING);
+        if (CommonUtils.isEmpty(fileEncoding)) {
+            fileEncoding = getDefaultFileEncoding();
+        }
+        return fileEncoding;
+    }
+
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)
         throws IOException
     {
-        return DBeaverCore.getInstance().makeTempFile(
+        IFile file = makeTempFile(
             monitor,
             DBeaverCore.getInstance().getLobFolder(monitor.getNestedMonitor()),
             fileName,
             "data");
+        try {
+            file.setCharset(getDefaultBinaryFileEncoding(null), monitor.getNestedMonitor());
+        } catch (CoreException e) {
+            log.error("Can't set file charset", e);
+        }
+        return file;
+    }
+
+    public static IFile makeTempFile(DBRProgressMonitor monitor, IFolder folder, String name, String extension)
+        throws IOException
+    {
+        IFile tempFile = folder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
+        try {
+            InputStream contents = new ByteArrayInputStream(new byte[0]);
+            tempFile.create(contents, true, monitor.getNestedMonitor());
+        } catch (CoreException ex) {
+            throw new IOException(MessageFormat.format(CoreMessages.DBeaverCore_error_can_create_temp_file, tempFile.toString(), folder.toString()), ex);
+        }
+        return tempFile;
     }
 
     public static void deleteTempFile(DBRProgressMonitor monitor, IFile file)

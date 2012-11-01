@@ -1157,6 +1157,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_content_editor_checkbox_edit_long_as_lobs;
 	public static String pref_page_content_editor_group_content;
 	public static String pref_page_content_editor_label_max_text_length;
+    public static String pref_page_content_editor_group_hex;
+    public static String pref_page_content_editor_hex_encoding;
 
 	public static String pref_page_data_format_button_manage_profiles;
 

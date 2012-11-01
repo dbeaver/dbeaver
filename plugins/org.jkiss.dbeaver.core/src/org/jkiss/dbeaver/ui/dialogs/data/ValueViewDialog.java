@@ -148,7 +148,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 dialogSettings.put(COLUMN_INFO_VISIBLE, columnInfoVisible);
                 initColumnInfoVisibility(columnHideLink);
                 getShell().layout();
-                getShell().setSize(getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT));
+                int width = getShell().getSize().x;
+                getShell().setSize(width, getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
             }
         });
         columnPanel = new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());

@@ -22,7 +22,10 @@ package org.jkiss.dbeaver.core;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.internal.resources.ProjectDescription;
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -55,13 +58,12 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.Authenticator;
 import java.text.MessageFormat;
@@ -538,19 +540,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return tempFolder;
     }
 
-    public IFile makeTempFile(DBRProgressMonitor monitor, IFolder folder, String name, String extension)
-        throws IOException
-    {
-        IFile tempFile = folder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
-        try {
-            InputStream contents = new ByteArrayInputStream(new byte[0]);
-            tempFile.create(contents, true, monitor.getNestedMonitor());
-        } catch (CoreException ex) {
-            throw new IOException(MessageFormat.format(CoreMessages.DBeaverCore_error_can_create_temp_file, tempFile.toString(), folder.toString()), ex);
-        }
-        return tempFile;
-    }
-
     private void initDefaultPreferences()
     {
         IPreferenceStore store = getGlobalPreferenceStore();
@@ -575,6 +564,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_LONG_AS_LOB, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.CONTENT_HEX_ENCODING, ContentUtils.getDefaultFileEncoding());
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_EDIT_APPLY, false);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, false);
 

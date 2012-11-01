@@ -39,6 +39,7 @@ public class PrefPageContentEditor extends TargetPrefPage
     private Button editLongAsLobCheck;
     private Button commitOnEditApplyCheck;
     private Button commitOnContentApplyCheck;
+    private Combo encodingCombo;
 
     public PrefPageContentEditor()
     {
@@ -87,6 +88,16 @@ public class PrefPageContentEditor extends TargetPrefPage
             commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
             commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
         }
+
+        // Hex
+        {
+            Group contentGroup = new Group(composite, SWT.NONE);
+            contentGroup.setText(CoreMessages.pref_page_content_editor_group_hex);
+            contentGroup.setLayout(new GridLayout(2, false));
+
+            UIUtils.createControlLabel(contentGroup, CoreMessages.pref_page_content_editor_hex_encoding);
+            encodingCombo = UIUtils.createEncodingCombo(contentGroup, null);
+        }
         return composite;
     }
 
@@ -98,6 +109,7 @@ public class PrefPageContentEditor extends TargetPrefPage
             editLongAsLobCheck.setSelection(store.getBoolean(PrefConstants.RS_EDIT_LONG_AS_LOB));
             commitOnEditApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_EDIT_APPLY));
             commitOnContentApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY));
+            UIUtils.setComboSelection(encodingCombo, store.getString(PrefConstants.CONTENT_HEX_ENCODING));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -111,6 +123,7 @@ public class PrefPageContentEditor extends TargetPrefPage
             store.setValue(PrefConstants.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
             store.setValue(PrefConstants.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
             store.setValue(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
+            store.setValue(PrefConstants.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -124,6 +137,7 @@ public class PrefPageContentEditor extends TargetPrefPage
         store.setToDefault(PrefConstants.RS_EDIT_LONG_AS_LOB);
         store.setToDefault(PrefConstants.RS_COMMIT_ON_EDIT_APPLY);
         store.setToDefault(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY);
+        store.setToDefault(PrefConstants.CONTENT_HEX_ENCODING);
     }
 
     @Override
