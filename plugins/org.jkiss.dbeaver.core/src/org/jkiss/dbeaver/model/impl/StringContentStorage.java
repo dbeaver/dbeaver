@@ -64,7 +64,7 @@ public class StringContentStorage implements DBDContentStorage {
     @Override
     public String getCharset()
     {
-        return ContentUtils.DEFAULT_FILE_CHARSET;
+        return null;
     }
 
     @Override

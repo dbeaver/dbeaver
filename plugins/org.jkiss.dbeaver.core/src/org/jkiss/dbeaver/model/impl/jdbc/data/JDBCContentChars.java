@@ -138,7 +138,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     @Override
     public String getCharset()
     {
-        return ContentUtils.DEFAULT_FILE_CHARSET;
+        return null;
     }
 
     @Override

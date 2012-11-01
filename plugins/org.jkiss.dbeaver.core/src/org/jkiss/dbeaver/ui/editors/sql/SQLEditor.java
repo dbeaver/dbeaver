@@ -315,6 +315,12 @@ public class SQLEditor extends SQLEditorBase
 */
     }
 
+    @Override
+    public void setFocus()
+    {
+        super.setFocus();
+    }
+
     public void explainQueryPlan()
     {
         final SQLStatementInfo sqlQuery = extractActiveQuery();
