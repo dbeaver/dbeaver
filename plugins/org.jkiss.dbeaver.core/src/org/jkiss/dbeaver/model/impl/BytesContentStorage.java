@@ -35,10 +35,12 @@ public class BytesContentStorage implements DBDContentStorage {
     static final Log log = LogFactory.getLog(BytesContentStorage.class);
 
     private byte[] data;
+    private String encoding;
 
-    public BytesContentStorage(byte[] data)
+    public BytesContentStorage(byte[] data, String encoding)
     {
         this.data = data;
+        this.encoding = encoding;
     }
 
     @Override
@@ -54,7 +56,7 @@ public class BytesContentStorage implements DBDContentStorage {
     {
         return new InputStreamReader(
             getContentStream(),
-            ContentUtils.DEFAULT_FILE_CHARSET);
+            encoding);
     }
 
     @Override
@@ -66,14 +68,14 @@ public class BytesContentStorage implements DBDContentStorage {
     @Override
     public String getCharset()
     {
-        return ContentUtils.DEFAULT_FILE_CHARSET;
+        return null;
     }
 
     @Override
     public DBDContentStorage cloneStorage(DBRProgressMonitor monitor)
         throws IOException
     {
-        return new BytesContentStorage(data);
+        return new BytesContentStorage(data, encoding);
     }
 
     @Override
@@ -84,7 +86,8 @@ public class BytesContentStorage implements DBDContentStorage {
 
     public static BytesContentStorage createFromStream(
         InputStream stream,
-        long contentLength)
+        long contentLength,
+        String encoding)
         throws IOException
     {
         if (contentLength > Integer.MAX_VALUE) {
@@ -96,6 +99,6 @@ public class BytesContentStorage implements DBDContentStorage {
             log.warn("Actual content length (" + count + ") is less than declared: " + contentLength);
             data = Arrays.copyOf(data, count);
         }
-        return new BytesContentStorage(data);
+        return new BytesContentStorage(data, encoding);
     }
 }
