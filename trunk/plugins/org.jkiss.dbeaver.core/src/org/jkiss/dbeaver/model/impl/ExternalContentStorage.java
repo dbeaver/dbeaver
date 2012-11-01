@@ -40,7 +40,7 @@ public class ExternalContentStorage implements DBDContentStorage {
 
     public ExternalContentStorage(File file)
     {
-        this(file, ContentUtils.DEFAULT_FILE_CHARSET);
+        this(file, null);
     }
 
     public ExternalContentStorage(File file, String charset)

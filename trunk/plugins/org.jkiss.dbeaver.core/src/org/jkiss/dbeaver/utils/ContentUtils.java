@@ -434,22 +434,23 @@ public class ContentUtils {
     public static void copyReaderToFile(DBRProgressMonitor monitor, Reader reader, long contentLength, String charset, IFile localFile)
         throws DBException, IOException
     {
+        try {
+            if (charset == null) {
+                charset = localFile.getCharset();
+            } else {
+                localFile.setCharset(charset, monitor.getNestedMonitor());
+            }
+        }
+        catch (CoreException e) {
+            throw new DBException("Can't handle content charset", e);
+        }
         File file = localFile.getLocation().toFile();
         try {
             OutputStream outputStream = new FileOutputStream(file);
             try {
-                if (charset == null) {
-                    charset = ContentUtils.DEFAULT_FILE_CHARSET;
-                }
                 Writer writer = new OutputStreamWriter(outputStream, charset);
                 ContentUtils.copyStreams(reader, contentLength, writer, monitor);
                 writer.flush();
-                try {
-                    localFile.setCharset(charset, monitor.getNestedMonitor());
-                }
-                catch (CoreException e) {
-                    log.warn(e);
-                }
             }
             finally {
                 outputStream.close();
