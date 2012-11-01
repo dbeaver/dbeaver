@@ -102,6 +102,11 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         dialogCount++;
     }
 
+    protected IDialogSettings getDialogSettings()
+    {
+        return dialogSettings;
+    }
+
     protected boolean isForeignKey()
     {
         return getEnumerableConstraint() != null;

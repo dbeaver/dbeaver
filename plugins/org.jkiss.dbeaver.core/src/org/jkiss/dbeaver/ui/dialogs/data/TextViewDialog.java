@@ -27,18 +27,17 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
 /**
@@ -47,10 +46,12 @@ import java.nio.ByteBuffer;
 public class TextViewDialog extends ValueViewDialog {
 
     private static final int DEFAULT_MAX_SIZE = 100000;
+    private static final String VALUE_TYPE_SELECTOR = "string.value.type";
 
     private Text textEdit;
     private Label lengthLabel;
     private HexEditControl hexEditControl;
+    private CTabFolder editorContainer;
 
     public TextViewDialog(DBDValueController valueController) {
         super(valueController);
@@ -76,22 +77,23 @@ public class TextViewDialog extends ValueViewDialog {
         boolean readOnly = getValueController().isReadOnly();
         boolean useHex = !isForeignKey;
         long maxSize = getValueController().getAttributeMetaData().getMaxLength();
-        final CTabFolder container = new CTabFolder(dialogGroup, SWT.TOP);
-        container.setLayoutData(new GridData(GridData.FILL_BOTH));
+        editorContainer = new CTabFolder(dialogGroup, SWT.FLAT | SWT.TOP);
+        editorContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        lengthLabel = new Label(container, SWT.RIGHT);
+        lengthLabel = new Label(editorContainer, SWT.RIGHT);
         lengthLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        container.setTopRight(lengthLabel, SWT.FILL);
+        editorContainer.setTopRight(lengthLabel, SWT.FILL);
 
+        int selectedType = 0;
+        if (getDialogSettings().get(VALUE_TYPE_SELECTOR) != null) {
+            selectedType = getDialogSettings().getInt(VALUE_TYPE_SELECTOR);
+        }
         {
             int style = SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
-            if (!useHex) {
-                style |= SWT.BORDER;
-            }
             if (readOnly) {
                 style |= SWT.READ_ONLY;
             }
-            textEdit = new Text(container, style);
+            textEdit = new Text(editorContainer, style);
 
             textEdit.setText(stringValue);
             if (maxSize > 0) {
@@ -115,14 +117,14 @@ public class TextViewDialog extends ValueViewDialog {
                 }
             });
 
-            CTabItem item = new CTabItem(container, SWT.NO_FOCUS);
+            CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
             item.setText("Text");
             item.setImage(DBIcon.TYPE_TEXT.getImage());
             item.setControl(textEdit);
         }
         Point minSize = null;
         if (useHex) {
-            hexEditControl = new HexEditControl(container, SWT.NONE, 6, 8);
+            hexEditControl = new HexEditControl(editorContainer, SWT.NONE, 6, 8);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;
             gd.minimumWidth = hexEditControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
@@ -131,28 +133,23 @@ public class TextViewDialog extends ValueViewDialog {
             minSize = hexEditControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
             minSize.x += 50;
             minSize.y += 50;
-            CTabItem item = new CTabItem(container, SWT.NO_FOCUS);
+            CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
             item.setText("Hex");
             item.setImage(DBIcon.TYPE_BINARY.getImage());
             item.setControl(hexEditControl);
         }
-        container.setSelection(0);
-        container.addSelectionListener(new SelectionAdapter() {
+        if (selectedType >= editorContainer.getItemCount()) {
+            selectedType = 0;
+        }
+        editorContainer.setSelection(selectedType);
+        editorContainer.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event)
             {
-                switch(container.getSelectionIndex()) {
-                    case 0:
-                    {
-                        try {
-                            BinaryContent content = hexEditControl.getContent();
-                            ByteBuffer buffer = ByteBuffer.allocate((int) content.length());
-                            content.get(buffer, 0);
-                            String stringValue = new String(buffer.array());
-                            textEdit.setText(stringValue);
-                        } catch (IOException e) {
-                            log.error(e);
-                        }
+                getDialogSettings().put(VALUE_TYPE_SELECTOR, editorContainer.getSelectionIndex());
+                switch (editorContainer.getSelectionIndex()) {
+                    case 0: {
+                        setTextContent();
                         break;
                     }
                     case 1:
@@ -174,6 +171,34 @@ public class TextViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
+    private void setTextContent()
+    {
+        BinaryContent content = hexEditControl.getContent();
+        ByteBuffer buffer = ByteBuffer.allocate((int) content.length());
+        try {
+            content.get(buffer, 0);
+        } catch (IOException e) {
+            log.error(e);
+        }
+        byte[] bytes = buffer.array();
+        int length;
+        for (length = 0; length < bytes.length; length++) {
+            if (bytes[length] == 0) {
+                break;
+            }
+        }
+        String stringValue;
+        try {
+            stringValue = new String(
+                bytes, 0, length,
+                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getDataSource()));
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
+            stringValue = new String(buffer.array());
+        }
+        textEdit.setText(stringValue);
+    }
+
     private void setBinaryContent(String stringValue)
     {
         int maxSize = (int) getValueController().getAttributeMetaData().getMaxLength();
@@ -181,31 +206,40 @@ public class TextViewDialog extends ValueViewDialog {
             maxSize = DEFAULT_MAX_SIZE;
         }
         BinaryContent binaryContent = new BinaryContent();
-        byte[] bytes = stringValue.getBytes();
+        byte[] bytes;
+        try {
+            bytes = stringValue.getBytes(
+                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getDataSource()));
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
+            bytes = stringValue.getBytes();
+        }
         if (bytes.length > maxSize) {
             maxSize = bytes.length;
         }
-        ByteBuffer byteBuffer = ByteBuffer.allocate(maxSize);
-        byteBuffer.put(bytes, 0, bytes.length);
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        binaryContent.insert(byteBuffer, 0);
         int tailSize = (maxSize - bytes.length);
         if (tailSize > 0) {
-            byteBuffer.put(new byte[tailSize], 0, tailSize);
+            binaryContent.insert(ByteBuffer.wrap(new byte[tailSize]), bytes.length);
         }
-        byteBuffer.position(0);
-        binaryContent.insert(byteBuffer, 0);
         hexEditControl.setContentProvider(binaryContent);
     }
 
     @Override
     protected Object getEditorValue()
     {
+        if (editorContainer.getSelectionIndex() == 1) {
+            setTextContent();
+        }
         return textEdit.getText();
     }
 
     private void updateValueLength()
     {
         long maxSize = getValueController().getAttributeMetaData().getMaxLength();
-        lengthLabel.setText("Length: " + textEdit.getText().length() + (maxSize > 0 ? " [" + maxSize + "]" : ""));
+        long length = textEdit.getText().length();
+        lengthLabel.setText("Length: " + length + (maxSize > 0 ? " [" + maxSize + "]" : ""));
     }
 
 }
