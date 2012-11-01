@@ -46,10 +46,11 @@ import java.nio.ByteBuffer;
  */
 public class TextViewDialog extends ValueViewDialog {
 
+    private static final int DEFAULT_MAX_SIZE = 100000;
+
     private Text textEdit;
     private Label lengthLabel;
     private HexEditControl hexEditControl;
-    private static final int DEFAULT_MAX_SIZE = 100000;
 
     public TextViewDialog(DBDValueController valueController) {
         super(valueController);
@@ -76,10 +77,11 @@ public class TextViewDialog extends ValueViewDialog {
         boolean useHex = !isForeignKey;
         long maxSize = getValueController().getAttributeMetaData().getMaxLength();
         final CTabFolder container = new CTabFolder(dialogGroup, SWT.TOP);
+        container.setLayoutData(new GridData(GridData.FILL_BOTH));
+
         lengthLabel = new Label(container, SWT.RIGHT);
         lengthLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         container.setTopRight(lengthLabel, SWT.FILL);
-        container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
             int style = SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
@@ -154,11 +156,8 @@ public class TextViewDialog extends ValueViewDialog {
                         break;
                     }
                     case 1:
-                    {
-                        String stringValue = textEdit.getText();
-                        setBinaryContent(stringValue);
+                        setBinaryContent(textEdit.getText());
                         break;
-                    }
                 }
             }
         });
