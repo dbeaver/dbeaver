@@ -87,7 +87,7 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
         }
         catch (CoreException e) {
             log.warn(e);
-            return ContentUtils.DEFAULT_FILE_CHARSET;
+            return null;
         }
     }
 
