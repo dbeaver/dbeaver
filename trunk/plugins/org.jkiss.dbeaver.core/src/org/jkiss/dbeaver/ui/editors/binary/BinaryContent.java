@@ -696,7 +696,6 @@ public class BinaryContent {
         notifyListeners();
     }
 
-
     /**
      * Inserts a sequence of bytes from the given file into this content, starting at the given position
      * and shifting the existing ones.
