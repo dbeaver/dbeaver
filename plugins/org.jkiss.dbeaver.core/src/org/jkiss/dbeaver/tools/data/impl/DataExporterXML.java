@@ -41,11 +41,9 @@ import java.util.List;
  */
 public class DataExporterXML extends DataExporterAbstract {
 
-    public static final int IMAGE_FRAME_SIZE = 200;
-
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
-    private int rowCount = 0;
+    private String tableName;
 
     @Override
     public void init(IDataExporterSite site) throws DBException
@@ -71,20 +69,20 @@ public class DataExporterXML extends DataExporterAbstract {
     private void printHeader()
     {
         out.write("<?xml version=\"1.0\" ?>\n");
-        String tableName = getSite().getSource().getName();
+        tableName = escapeXmlElementName(getSite().getSource().getName());
         out.write("<!DOCTYPE " + tableName + " [\n");
         out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
         out.write("  <!ELEMENT DATA_RECORD (");
         int columnsSize = columns.size();
         for (int i = 0; i < columnsSize; i++) {
-            out.write(columns.get(i).getAttribute().getName() + "?");
+            out.write(escapeXmlElementName(columns.get(i).getAttribute().getName()) + "?");
             if (i < columnsSize - 1) {
                 out.write(",");
             }
         }
         out.write(")+>\n");
         for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + columns.get(i).getAttribute().getName() + " (#PCDATA)>\n");
+            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getAttribute().getName()) + " (#PCDATA)>\n");
         }
         out.write("]>\n");
         out.write("<" + tableName + ">\n");
@@ -96,10 +94,10 @@ public class DataExporterXML extends DataExporterAbstract {
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
-            String columnName = column.getAttribute().getName();
+            String columnName = escapeXmlElementName(column.getAttribute().getName());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
-                writeTextCell(null, false);
+                writeTextCell(null);
             } else if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
@@ -116,14 +114,7 @@ public class DataExporterXML extends DataExporterAbstract {
                     content.release();
                 }
             } else {
-                String stringValue = super.getValueDisplayString(column, row[i]);
-                boolean isImage = row[i] instanceof File && stringValue != null && stringValue.endsWith(".jpg");
-                if (isImage) {
-                    writeImageCell((File) row[i]);
-                }
-                else {
-                    writeTextCell(stringValue, false);
-                }
+                writeTextCell(super.getValueDisplayString(column, row[i]));
             }
             out.write("</" + columnName + ">\n");
         }
@@ -133,10 +124,10 @@ public class DataExporterXML extends DataExporterAbstract {
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
-        out.write("</" + getSite().getSource().getName() + ">\n");
+        out.write("</" + tableName + ">\n");
     }
 
-    private void writeTextCell(String value, boolean header)
+    private void writeTextCell(String value)
     {
         if (value != null) {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
@@ -190,8 +181,7 @@ public class DataExporterXML extends DataExporterAbstract {
         }
     }
 
-    public boolean saveBinariesAsImages()
-    {
-        return true;
+    private String escapeXmlElementName(String name) {
+        return name.replaceAll("[^\\p{Alpha}\\p{Digit}]+","_");
     }
 }
