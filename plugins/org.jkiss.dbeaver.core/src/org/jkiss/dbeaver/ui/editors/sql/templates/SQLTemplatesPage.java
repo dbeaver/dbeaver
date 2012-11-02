@@ -50,7 +50,6 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
 
     private static final String PREFERENCE_PAGE_ID = "org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage"; //$NON-NLS-1$
 
-    private TemplateVariableProcessor templateProcessor;
     private SQLEditorBase sqlEditor;
 
     /**
@@ -62,7 +61,6 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     {
         super(sqlEditor, sqlEditor.getViewer());
         this.sqlEditor = sqlEditor;
-        this.templateProcessor = new TemplateVariableProcessor();
     }
 
     @Override
@@ -106,7 +104,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
         contextViewer.getSelectionProvider().setSelection(new TextSelection(textSelection.getOffset(), 1));
         //ICompilationUnit compilationUnit = (ICompilationUnit) EditorUtility.getEditorInputJavaElement(sqlEditor, true);
 
-        TemplateContextType type = getContextTypeRegistry().getContextType(template.getContextTypeId());
+        //TemplateContextType type = getContextTypeRegistry().getContextType(template.getContextTypeId());
         DocumentTemplateContext context = getContext(document, template, textSelection.getOffset(), textSelection.getLength());
         //DocumentTemplateContext context = ((SQLContextType) type).createContext(document, position, compilationUnit);
         context.setVariable("selection", savedText); //$NON-NLS-1$
@@ -124,42 +122,30 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
         endCompoundChange(contextViewer);
     }
 
-    /* (non-Javadoc)
-      * @see org.eclipse.ui.texteditor.templates.AbstractTemplatesPage#getContextTypeRegistry()
-      */
     @Override
     protected ContextTypeRegistry getContextTypeRegistry()
     {
         return SQLTemplatesRegistry.getInstance().getTemplateContextRegistry();
     }
 
-    /* (non-Javadoc)
-      * @see org.eclipse.ui.texteditor.templates.AbstractTemplatesPage#getTemplatePreferenceStore()
-      */
     @Override
     protected IPreferenceStore getTemplatePreferenceStore()
     {
         return DBeaverCore.getInstance().getGlobalPreferenceStore();
     }
 
-    /* (non-Javadoc)
-      * @see org.eclipse.ui.texteditor.templates.AbstractTemplatesPage#getTemplateStore()
-      */
     @Override
     public TemplateStore getTemplateStore()
     {
         return SQLTemplatesRegistry.getInstance().getTemplateStore();
     }
 
-    /*
-      * @see org.eclipse.ui.texteditor.templates.TextEditorTemplatesPage#isValidTemplate(org.eclipse.jface.text.templates.Template, int, int)
-      */
     @Override
     protected boolean isValidTemplate(IDocument document, Template template, int offset, int length)
     {
         String[] contextIds = getContextTypeIds(document, offset);
-        for (int i = 0; i < contextIds.length; i++) {
-            if (contextIds[i].equals(template.getContextTypeId())) {
+        for (String contextId : contextIds) {
+            if (contextId.equals(template.getContextTypeId())) {
                 DocumentTemplateContext context = getContext(document, template, offset, length);
                 return context.canEvaluate(template) || isTemplateAllowed(context, template);
             }
@@ -167,9 +153,6 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
         return false;
     }
 
-    /* (non-Javadoc)
-      * @see org.eclipse.ui.texteditor.templates.TextEditorTemplatesPage#createPatternViewer(org.eclipse.swt.widgets.Composite)
-      */
     @Override
     protected SourceViewer createPatternViewer(Composite parent)
     {
@@ -205,26 +188,17 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
             getPatternViewer().getDocument().set(""); //$NON-NLS-1$
             return;
         }
-        String contextId = template.getContextTypeId();
-        TemplateContextType type = getContextTypeRegistry().getContextType(contextId);
-        templateProcessor.setContextType(type);
+        //String contextId = template.getContextTypeId();
 
         IDocument doc = getPatternViewer().getDocument();
 
-        String start = null;
-        if ("javadoc".equals(contextId)) { //$NON-NLS-1$
-            start = "/**" + doc.getLegalLineDelimiters()[0]; //$NON-NLS-1$
-        } else
-            start = ""; //$NON-NLS-1$
+        String start = ""; //$NON-NLS-1$
 
         doc.set(start + template.getPattern());
         int startLen = start.length();
         getPatternViewer().setDocument(doc, startLen, doc.getLength() - startLen);
     }
 
-    /* (non-Javadoc)
-      * @see org.eclipse.ui.texteditor.templates.AbstractTemplatesPage#getPreferencePageId()
-      */
     @Override
     protected String getPreferencePageId()
     {
@@ -232,7 +206,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     }
 
     /**
-     * Undomanager - end compound change
+     * Undo manager - end compound change
      *
      * @param viewer the viewer
      */
@@ -243,7 +217,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     }
 
     /**
-     * Undomanager - begin a compound change
+     * Undo manager - begin a compound change
      *
      * @param viewer the viewer
      */
@@ -254,7 +228,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     }
 
     /**
-     * Check whether the template is allowed eventhough the context can't evaluate it. This is
+     * Check whether the template is allowed even though the context can't evaluate it. This is
      * needed because the Dropping of a template is more lenient than ctl-space invoked code assist.
      *
      * @param context  the template context
@@ -263,9 +237,9 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
      */
     private boolean isTemplateAllowed(DocumentTemplateContext context, Template template)
     {
-        int offset;
+        int offset = context.getCompletionOffset();
         try {
-            return ((offset = context.getCompletionOffset()) > 0 && !isTemplateNamePart(context.getDocument().getChar(offset - 1)));
+            return template != null && offset > 0 && !isTemplateNamePart(context.getDocument().getChar(offset - 1));
         } catch (BadLocationException e) {
             log.debug(e);
         }
@@ -303,9 +277,6 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
 
     /**
      * Get the active contexts for the given position in the document.
-     * <p>
-     * FIXME: should trigger code assist to get the context.
-     * </p>
      *
      * @param document the document
      * @param offset   the offset
