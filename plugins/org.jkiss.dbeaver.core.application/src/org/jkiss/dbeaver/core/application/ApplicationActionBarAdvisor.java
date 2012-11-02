@@ -29,6 +29,7 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.texteditor.templates.TemplatesView;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -146,6 +147,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         windowMenu.add(new Separator());
         windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROP_SHEET));
         windowMenu.add(new ToggleViewAction(QueryManagerView.VIEW_ID));
+        windowMenu.add(new ToggleViewAction(TemplatesView.ID));
         windowMenu.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
         windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROGRESS_VIEW));
         windowMenu.add(new ToggleViewAction(IActionConstants.LOG_VIEW_ID));

@@ -22,6 +22,7 @@ import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.IPlaceholderFolderLayout;
+import org.eclipse.ui.texteditor.templates.TemplatesView;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView;
@@ -68,6 +69,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
             0.2f,
             FOLDER_NAVIGATION);
         bottomLeft.addView(ProjectExplorerView.VIEW_ID);
+        bottomLeft.addView(TemplatesView.ID);
 
         // Bottom right.
         IPlaceholderFolderLayout bottomRight = layout.createPlaceholderFolder(
