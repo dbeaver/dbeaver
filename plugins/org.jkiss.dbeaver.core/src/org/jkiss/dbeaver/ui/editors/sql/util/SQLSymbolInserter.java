@@ -18,11 +18,16 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.link.*;
 import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedModeUI.IExitPolicy;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.templates.Template;
+import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.graphics.Point;
@@ -30,13 +35,17 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.templates.ITemplatesPage;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener {
+
+    static protected final Log log = LogFactory.getLog(SQLSymbolInserter.class);
 
     private boolean closeSingleQuotes = true;
     private boolean closeDoubleQuotes = true;
@@ -45,13 +54,13 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
     private final String CATEGORY = toString();
     private IPositionUpdater positionUpdater = new ExclusivePositionUpdater(CATEGORY);
     private List<SymbolLevel> bracketLevelStack = new ArrayList<SymbolLevel>();
-    private AbstractTextEditor editor;
+    private SQLEditorBase editor;
     private ISourceViewer sourceViewer;
 
-    public SQLSymbolInserter(AbstractTextEditor editor, ISourceViewer sourceViewer)
+    public SQLSymbolInserter(SQLEditorBase editor)
     {
         this.editor = editor;
-        this.sourceViewer = sourceViewer;
+        this.sourceViewer = editor.getViewer();
     }
 
     public void setCloseSingleQuotesEnabled(boolean enabled)
@@ -83,7 +92,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
         }
         catch (BadLocationException e) {
             // be conservative
-//            _log.debug(EditorMessages.error_badLocationException, e);
+            log.debug(e);
             return true;
         }
     }
@@ -91,14 +100,13 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
     private boolean hasIdentifierToTheLeft(IDocument document, int offset)
     {
         try {
-            int start = offset;
-            IRegion startLine = document.getLineInformationOfOffset(start);
+            IRegion startLine = document.getLineInformationOfOffset(offset);
             int minStart = startLine.getOffset();
-            return start != minStart && Character.isJavaIdentifierPart(document.getChar(start - 1));
+            return offset != minStart && Character.isJavaIdentifierPart(document.getChar(offset - 1));
 
         }
         catch (BadLocationException e) {
-//            _log.debug(EditorMessages.error_badLocationException, e);
+            log.debug(e);
             return true;
         }
     }
@@ -117,15 +125,12 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
 
         }
         catch (BadLocationException e) {
-//            _log.debug(EditorMessages.error_badLocationException, e);
+            log.debug(e);
             // be conservative
             return true;
         }
     }
 
-    /*
-     * @see org.eclipse.swt.custom.VerifyKeyListener#verifyKey(org.eclipse.swt.events.VerifyEvent)
-     */
     @Override
     public void verifyKey(VerifyEvent event)
     {
@@ -237,12 +242,42 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
 
                 }
                 catch (BadLocationException e) {
-//                    _log.error(EditorMessages.error_badLocationException, e);
+                    log.debug(e);
                 }
                 catch (BadPositionCategoryException e) {
-//                    _log.error(EditorMessages.error_badLocationException, e);
+                    log.debug(e);
                 }
                 break;
+            case SWT.TAB:
+            {
+                try {
+                    int curOffset = offset;
+                    int endOffset = offset;
+//                    if (curOffset == document.getLength()) {
+//                        curOffset--;
+//                        endOffset--;
+//                    }
+                    while (curOffset > 0) {
+                        if (!Character.isJavaIdentifierPart(document.getChar(curOffset - 1))) {
+                            break;
+                        }
+                        curOffset--;
+                    }
+                    if (curOffset != offset) {
+                        String templateName = document.get(curOffset, endOffset - curOffset);
+                        SQLTemplatesPage templatesPage = editor.getTemplatesPage();
+                        Template template = templatesPage.getTemplateStore().findTemplate(templateName);
+                        if (template != null && template.isAutoInsertable()) {
+                            sourceViewer.setSelectedRange(curOffset, endOffset - curOffset);
+                            templatesPage.insertTemplate(template, document);
+                            event.doit = false;
+                        }
+                    }
+                } catch (BadLocationException e) {
+                    log.debug(e);
+                }
+                break;
+            }
         }
     }
 
@@ -362,7 +397,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                 return escapeCharacter == document.getChar(offset - 1);
             }
             catch (BadLocationException e) {
-//                _log.debug(EditorMessages.error_badLocationException, e);
+                log.debug(e);
             }
             return false;
         }

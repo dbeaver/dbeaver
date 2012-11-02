@@ -64,7 +64,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     }
 
     @Override
-    protected void insertTemplate(Template template, IDocument document)
+    public void insertTemplate(Template template, IDocument document)
     {
         if (!sqlEditor.validateEditorInputState())
             return;
