@@ -48,7 +48,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
@@ -166,8 +165,8 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
             if (container != null) {
                 store = container.getPreferenceStore();
             }
-        } else if (editor instanceof IDataSourceProvider) {
-            final DBPDataSource dataSource = ((IDataSourceProvider) editor).getDataSource();
+        } else {
+            final DBPDataSource dataSource = editor.getDataSource();
             if (dataSource != null) {
                 store = dataSource.getContainer().getPreferenceStore();
             }
