@@ -52,6 +52,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
             editorArea);
         treeFolder.addView(DatabaseNavigatorView.VIEW_ID);
         treeFolder.addView(ProjectNavigatorView.VIEW_ID);
+        treeFolder.addView(TemplatesView.ID);
 
         // Right
         IPlaceholderFolderLayout right = layout.createPlaceholderFolder(
@@ -69,7 +70,6 @@ public class DBeaverPerspective implements IPerspectiveFactory
             0.2f,
             FOLDER_NAVIGATION);
         bottomLeft.addView(ProjectExplorerView.VIEW_ID);
-        bottomLeft.addView(TemplatesView.ID);
 
         // Bottom right.
         IPlaceholderFolderLayout bottomRight = layout.createPlaceholderFolder(

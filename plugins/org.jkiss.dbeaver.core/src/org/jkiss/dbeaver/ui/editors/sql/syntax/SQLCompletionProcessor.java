@@ -287,21 +287,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (activeQuery == null) {
             activeQuery = editor.extractQueryAtPos(documentOffset).getQuery() + " ";
         }
-        //activeQuery = activeQuery.toUpperCase();
-        if (token == null) {
 
-        }
-
-        // Hooray, we got the match.
         List<String> nameList = new ArrayList<String>();
-
         if (token == null) {
             token = "";
         }
 
-        //token = token.toUpperCase();
-        //SQLQueryInfo queryInfo = new SQLQueryInfo(activeQuery);
-        //List<SQLQueryInfo.TableRef> refList = queryInfo.getTableRefs();
         Matcher matcher;
         Pattern aliasPattern;
         String quote = editor.getDataSource().getInfo().getIdentifierQuoteString();
