@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+/*******************************************************************************
+ * Copyright (c) 2000, 2011 IBM Corporation and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *******************************************************************************/
+-->
+
+<templates>
+
+<template name="new" description="%Templates.new" id="org.eclipse.jdt.ui.templates.new" context="sql" enabled="true" autoinsert="false">${type} ${name} = new ${type}(${arguments});</template>
+
+<template name="toarray" description="%Templates.toarray" id="org.eclipse.jdt.ui.templates.toarray" context="sql" enabled="true" autoinsert="false">(${type:elemType(collection)}[]) ${collection}.toArray(new ${type}[${collection}.size()])</template>
+
+<template name="nls" description="%Templates.non-nls" id="org.eclipse.jdt.ui.templates.non-nls" context="sql" enabled="true" autoinsert="false">//$$NON-NLS-${N}$$</template>
+
+<template name="runnable" description="%Templates.runnable" id="org.eclipse.jdt.ui.templates.runnable" context="sql" enabled="true" autoinsert="false">new Runnable() {
+	public void run() {
+		${line_selection}
+	}
+}</template>
+
+</templates>

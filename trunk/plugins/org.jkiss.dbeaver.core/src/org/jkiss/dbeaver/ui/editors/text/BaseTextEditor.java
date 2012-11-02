@@ -87,6 +87,11 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         return (TextViewer) getSourceViewer();
     }
 
+    public ISourceViewer getViewer()
+    {
+        return getSourceViewer();
+    }
+
     public void enableUndoManager(boolean enable)
     {
         TextViewer textViewer = getTextViewer();

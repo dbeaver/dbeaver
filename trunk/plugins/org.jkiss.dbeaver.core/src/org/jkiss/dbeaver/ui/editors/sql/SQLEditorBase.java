@@ -42,11 +42,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
+import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -92,6 +93,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     private IAnnotationAccess annotationAccess;
     private boolean hasVerticalRuler = true;
+    private SQLTemplatesPage templatesPage;
 
     public SQLEditorBase()
     {
@@ -257,6 +259,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 getSourceViewer(), required);
             if (adapter != null)
                 return adapter;
+        }
+        if (ITemplatesPage.class.equals(required)) {
+            if (templatesPage == null)
+                templatesPage = new SQLTemplatesPage(this);
+            return templatesPage;
         }
 
         return super.getAdapter(required);
