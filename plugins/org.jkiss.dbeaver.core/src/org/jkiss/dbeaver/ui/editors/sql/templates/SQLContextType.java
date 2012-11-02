@@ -12,6 +12,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 
+import org.eclipse.jface.text.templates.GlobalTemplateVariables;
 import org.eclipse.jface.text.templates.TemplateContextType;
 
 public class SQLContextType extends TemplateContextType {
@@ -24,26 +25,24 @@ public class SQLContextType extends TemplateContextType {
     public SQLContextType()
     {
         super("sql", "SQL");
+        addGlobalResolvers();
+        addDatabaseProposals();
     }
 
-/*
-    public CompilationUnitContext createContext(IDocument document, int offset, int length, ICompilationUnit compilationUnit) {
-        JavaContext javaContext= new JavaContext(this, document, offset, length, compilationUnit);
-        initializeContext(javaContext);
-        return javaContext;
+    private void addGlobalResolvers() {
+        //addResolver(new GlobalTemplateVariables.Cursor());
+        addResolver(new GlobalTemplateVariables.WordSelection());
+        addResolver(new GlobalTemplateVariables.LineSelection());
+        addResolver(new GlobalTemplateVariables.Dollar());
+        addResolver(new GlobalTemplateVariables.Date());
+        addResolver(new GlobalTemplateVariables.Year());
+        addResolver(new GlobalTemplateVariables.Time());
+        addResolver(new GlobalTemplateVariables.User());
     }
 
-    */
-/*
-      * @see org.eclipse.jdt.internal.corext.template.java.CompilationUnitContextType#createContext(org.eclipse.jface.text.IDocument, org.eclipse.jface.text.Position, org.eclipse.jdt.core.ICompilationUnit)
-      *//*
-
-    @Override
-    public CompilationUnitContext createContext(IDocument document, Position completionPosition, ICompilationUnit compilationUnit) {
-        JavaContext javaContext= new JavaContext(this, document, completionPosition, compilationUnit);
-        initializeContext(javaContext);
-        return javaContext;
+    private void addDatabaseProposals()
+    {
+        addResolver(new SQLEntityResolver());
     }
-*/
 
 }
