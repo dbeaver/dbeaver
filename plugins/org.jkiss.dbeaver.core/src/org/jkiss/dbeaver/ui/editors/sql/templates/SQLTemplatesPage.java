@@ -101,12 +101,11 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
         }
         //Position position = new Position(textSelection.getOffset() + 1, 0);
         Region region = new Region(textSelection.getOffset(), 0);
-        contextViewer.getSelectionProvider().setSelection(new TextSelection(textSelection.getOffset(), 1));
-        //ICompilationUnit compilationUnit = (ICompilationUnit) EditorUtility.getEditorInputJavaElement(sqlEditor, true);
+        textSelection = new TextSelection(textSelection.getOffset(), 1);
 
-        //TemplateContextType type = getContextTypeRegistry().getContextType(template.getContextTypeId());
+        contextViewer.getSelectionProvider().setSelection(textSelection);
         DocumentTemplateContext context = getContext(document, template, textSelection.getOffset(), textSelection.getLength());
-        //DocumentTemplateContext context = ((SQLContextType) type).createContext(document, position, compilationUnit);
+
         context.setVariable("selection", savedText); //$NON-NLS-1$
         if (context.getKey().length() == 0) {
             try {

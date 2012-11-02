@@ -15,16 +15,13 @@
 
 <templates>
 
-<template name="new" description="%Templates.new" id="org.eclipse.jdt.ui.templates.new" context="sql" enabled="true" autoinsert="false">${type} ${name} = new ${type}(${arguments});</template>
+    <template id="org.jkiss.dbeaver.templates.scount" autoinsert="true" context="sql" deleted="false" description="select row count" enabled="true" name="scount">select count(*) from ${table};</template>
 
-<template name="toarray" description="%Templates.toarray" id="org.eclipse.jdt.ui.templates.toarray" context="sql" enabled="true" autoinsert="false">(${type:elemType(collection)}[]) ${collection}.toArray(new ${type}[${collection}.size()])</template>
+    <template id="org.jkiss.dbeaver.templates.swhere" autoinsert="true" context="sql" deleted="false" description="select with condition" enabled="true" name="swhere">select * from ${table} where ${column}=${value};</template>
 
-<template name="nls" description="%Templates.non-nls" id="org.eclipse.jdt.ui.templates.non-nls" context="sql" enabled="true" autoinsert="false">//$$NON-NLS-${N}$$</template>
+    <template id="org.jkiss.dbeaver.templates.scgb" autoinsert="true" context="sql" deleted="false" description="select count with group by" enabled="true" name="scgb">select ${column},count(*)
+    from ${table} t group by ${column};</template>
 
-<template name="runnable" description="%Templates.runnable" id="org.eclipse.jdt.ui.templates.runnable" context="sql" enabled="true" autoinsert="false">new Runnable() {
-	public void run() {
-		${line_selection}
-	}
-}</template>
+    <template id="org.jkiss.dbeaver.templates.scob" autoinsert="true" context="sql" deleted="false" description="select with order by" enabled="true" name="sob">select * from ${table} t order by ${column};</template>
 
 </templates>

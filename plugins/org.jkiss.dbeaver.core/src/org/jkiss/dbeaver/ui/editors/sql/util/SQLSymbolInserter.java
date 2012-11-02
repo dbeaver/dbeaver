@@ -26,7 +26,6 @@ import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;
 import org.eclipse.jface.text.link.LinkedModeUI.IExitPolicy;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.templates.Template;
-import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.VerifyEvent;
@@ -35,7 +34,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
@@ -252,7 +250,6 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
             {
                 try {
                     int curOffset = offset;
-                    int endOffset = offset;
 //                    if (curOffset == document.getLength()) {
 //                        curOffset--;
 //                        endOffset--;
@@ -264,11 +261,11 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                         curOffset--;
                     }
                     if (curOffset != offset) {
-                        String templateName = document.get(curOffset, endOffset - curOffset);
+                        String templateName = document.get(curOffset, offset - curOffset);
                         SQLTemplatesPage templatesPage = editor.getTemplatesPage();
                         Template template = templatesPage.getTemplateStore().findTemplate(templateName);
                         if (template != null && template.isAutoInsertable()) {
-                            sourceViewer.setSelectedRange(curOffset, endOffset - curOffset);
+                            sourceViewer.setSelectedRange(curOffset, offset - curOffset);
                             templatesPage.insertTemplate(template, document);
                             event.doit = false;
                         }
