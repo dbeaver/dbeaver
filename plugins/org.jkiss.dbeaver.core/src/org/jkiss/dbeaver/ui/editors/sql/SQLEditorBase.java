@@ -165,7 +165,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
         // Symbol inserter
         {
-            SQLSymbolInserter symbolInserter = new SQLSymbolInserter(this, getSourceViewer());
+            SQLSymbolInserter symbolInserter = new SQLSymbolInserter(this);
 
             IPreferenceStore preferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
             boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
@@ -261,12 +261,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 return adapter;
         }
         if (ITemplatesPage.class.equals(required)) {
-            if (templatesPage == null)
-                templatesPage = new SQLTemplatesPage(this);
-            return templatesPage;
+            return getTemplatesPage();
         }
 
         return super.getAdapter(required);
+    }
+
+    public SQLTemplatesPage getTemplatesPage()
+    {
+        if (templatesPage == null)
+            templatesPage = new SQLTemplatesPage(this);
+        return templatesPage;
     }
 
     @Override
