@@ -18,3 +18,4 @@ scripts refactoring
 Plugin:
 Customize resource roots
 Disable Quick Access toolbar
+column variable in template
