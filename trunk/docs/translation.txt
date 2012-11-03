@@ -1,0 +1,36 @@
+1. Checkout DBeaver sources using read-only anonymous access
+	SVN root: https://svn.jkiss.org/dev/dbeaver/trunk/
+
+
+2. Locating files
+Primary sources are in plugings folder. All "language" resources are in *.properties files. You will easily recognize them because there are existing translations so usually properties set looks like this:
+	plugin.properties
+	plugin_it.properties
+	plugin_ru.properties
+	plugin_zh.properties
+
+3. Translating
+You need to translate every such file. I'd recommend to use English properties as source. 
+You will need to copy english file to you language file and add locale name for this new file (e.g. plugin_fr.properties).
+
+Note that language files must be in ISO-8859-1 encoding (ASCII) and all non ASCII characters should be in escaped Unicode format.
+There are different tools in Eclipse which helps to edit these files. But I'd suggest to use Intellij IDEA to edit resources 
+(generally I use IDEA for everything, not only for resources) - it has very convinient localization tool. 
+You may use IDEA Community Edition for it. If you are in the commiter list then I can give you
+open-source license for DBeaver and then you may use IDEA Ultimate Edition.
+
+Main problem is how to test your translation.
+Most simple way is to build the project using Eclipse IDE and to see how your translation is actually looks. 
+You need to be familiar with Eclipse to be able to do it.
+
+5. Building and running the project
+Download Eclipse for RCP and RAP Developers 4.2.1 or later (http://www.eclipse.org/downloads/).
+Copy file "com.ibm.icu.base_4.2.1.v20100412.jar" from DBeaver source "eclipse" folder into your Eclipse installation "plugins" folder.
+Create new workspace and import all projects from DBeaver source folder (there are 17 projects exists at the Nov 03.2012).
+Build all projects.
+Expand project "product" and open "DBeaver.product" file. Click on "Launch an Eclipse application".
+DBeaver should start and you may check your tranlation.
+
+6. Submitting your changes
+If your in the list of commiters then you may simply add your language files and commit them.
+Otherwise you will need to send me your files by email on serge@jkiss.org.
