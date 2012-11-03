@@ -28,7 +28,7 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
 
     public SQLAttributeResolver()
     {
-        super("columnList", "Table column");
+        super("column", "Table column");
     }
 
     @Override
