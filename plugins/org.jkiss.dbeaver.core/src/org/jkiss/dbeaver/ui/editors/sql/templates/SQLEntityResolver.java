@@ -34,12 +34,6 @@ public class SQLEntityResolver extends TemplateVariableResolver {
     }
 
     @Override
-    protected String resolve(TemplateContext context)
-    {
-        return super.resolve(context);
-    }
-
-    @Override
     protected String[] resolveAll(final TemplateContext context)
     {
         final List<DBSEntity> entities = new ArrayList<DBSEntity>();
