@@ -42,7 +42,7 @@ public class SQLEntityResolver extends TemplateVariableResolver {
     @Override
     protected String[] resolveAll(final TemplateContext context)
     {
-        final List<String> names = new ArrayList<String>();
+        final List<DBSEntity> entities = new ArrayList<DBSEntity>();
         if (context instanceof IDataSourceProvider) {
             try {
                 DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
@@ -51,7 +51,7 @@ public class SQLEntityResolver extends TemplateVariableResolver {
                         throws InvocationTargetException, InterruptedException
                     {
                         try {
-                            resolveTables(monitor, ((IDataSourceProvider) context).getDataSource(), names);
+                            resolveTables(monitor, ((IDataSourceProvider) context).getDataSource(), entities);
                         } catch (DBException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -63,27 +63,32 @@ public class SQLEntityResolver extends TemplateVariableResolver {
                 // skip
             }
         }
-        if (!CommonUtils.isEmpty(names)) {
-            return names.toArray(new String[names.size()]);
+        if (!CommonUtils.isEmpty(entities)) {
+            String[] result = new String[entities.size()];
+            for (int i = 0; i < entities.size(); i++) {
+                DBSEntity entity = entities.get(i);
+                result[i] = entity.getName();
+            }
+            return result;
         }
         return super.resolveAll(context);
     }
 
-    private void resolveTables(DBRProgressMonitor monitor, DBPDataSource dataSource, List<String> names) throws DBException
+    static void resolveTables(DBRProgressMonitor monitor, DBPDataSource dataSource, List<DBSEntity> entities) throws DBException
     {
         if (dataSource instanceof DBSObjectSelector) {
-            DBSObject selectedObject = ((DBSObjectSelector)dataSource).getSelectedObject();
+            DBSObject selectedObject = ((DBSObjectSelector) dataSource).getSelectedObject();
             if (selectedObject instanceof DBSObjectContainer) {
-                makeProposalsFromChildren(monitor, (DBSObjectContainer)selectedObject, names);
+                makeProposalsFromChildren(monitor, (DBSObjectContainer) selectedObject, entities);
                 return;
             }
         }
         if (dataSource instanceof DBSObjectContainer) {
-            makeProposalsFromChildren(monitor, (DBSObjectContainer)dataSource, names);
+            makeProposalsFromChildren(monitor, (DBSObjectContainer) dataSource, entities);
         }
-   }
+    }
 
-    private void makeProposalsFromChildren(DBRProgressMonitor monitor, DBSObjectContainer container, List<String> names) throws DBException
+    static void makeProposalsFromChildren(DBRProgressMonitor monitor, DBSObjectContainer container, List<DBSEntity> names) throws DBException
     {
         Collection<? extends DBSObject> children = container.getChildren(monitor);
         if (CommonUtils.isEmpty(children)) {
@@ -91,7 +96,7 @@ public class SQLEntityResolver extends TemplateVariableResolver {
         }
         for (DBSObject child : children) {
             if (child instanceof DBSEntity) {
-                names.add(child.getName());
+                names.add((DBSEntity) child);
             }
         }
     }
