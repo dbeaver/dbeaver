@@ -32,12 +32,6 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
     }
 
     @Override
-    protected String resolve(TemplateContext context)
-    {
-        return super.resolve(context);
-    }
-
-    @Override
     protected String[] resolveAll(final TemplateContext context)
     {
         TemplateVariable tableVariable = ((SQLContext) context).getTemplateVariable("table");
@@ -87,14 +81,10 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
     @Override
     public void resolve(TemplateVariable variable, TemplateContext context)
     {
-        String[] bindings= resolveAll(context);
-        if (bindings.length != 0)
-            variable.setValues(bindings);
-        if (bindings.length > 1)
-            variable.setUnambiguous(false);
-        else
-            variable.setUnambiguous(isUnambiguous(context));
-        variable.setResolved(true);
+        super.resolve(variable, context);
+        if (variable instanceof SQLVariable) {
+            ((SQLVariable)variable).setResolver(this);
+        }
     }
 
 }
