@@ -17,7 +17,7 @@
 
     <template id="org.jkiss.dbeaver.templates.scount" autoinsert="true" context="sql" deleted="false" description="select row count" enabled="true" name="scount">select count(*) from ${table};</template>
 
-    <template id="org.jkiss.dbeaver.templates.swhere" autoinsert="true" context="sql" deleted="false" description="select with condition" enabled="true" name="swhere">select * from ${table} where ${column}=${value};</template>
+    <template id="org.jkiss.dbeaver.templates.swhere" autoinsert="true" context="sql" deleted="false" description="select with condition" enabled="true" name="swhere">select * from ${table} where ${column:columnList(table)}='${value}';</template>
 
     <template id="org.jkiss.dbeaver.templates.scgb" autoinsert="true" context="sql" deleted="false" description="select count with group by" enabled="true" name="scgb">select ${column},count(*)
     from ${table} t group by ${column};</template>

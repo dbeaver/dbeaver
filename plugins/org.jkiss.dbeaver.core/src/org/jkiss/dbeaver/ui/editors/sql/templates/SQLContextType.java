@@ -43,6 +43,7 @@ public class SQLContextType extends TemplateContextType {
     private void addDatabaseProposals()
     {
         addResolver(new SQLEntityResolver());
+        addResolver(new SQLAttributeResolver());
     }
 
 }
