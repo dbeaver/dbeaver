@@ -1,7 +1,5 @@
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.eclipse.jdt.internal.corext.template.java.JavaVariable;
-import org.eclipse.jdt.internal.ui.text.template.contentassist.MultiVariable;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.Position;
@@ -10,6 +8,7 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +18,7 @@ import java.util.Map;
 public class SQLContext extends DocumentTemplateContext implements IDataSourceProvider {
 
     private SQLEditorBase editor;
-    private Map<String, SQLVariable> fVariables= new HashMap<String, SQLVariable>();
+    private Map<String, SQLVariable> variables = new HashMap<String, SQLVariable>();
 
     public SQLContext(TemplateContextType type, IDocument document, Position position, SQLEditorBase editor)
     {
@@ -44,11 +43,12 @@ public class SQLContext extends DocumentTemplateContext implements IDataSourcePr
         if (!canEvaluate(template))
             return null;
 
-        TemplateTranslator translator= new TemplateTranslator() {
+        TemplateTranslator translator = new TemplateTranslator() {
             @Override
-            protected TemplateVariable createVariable(TemplateVariableType type, String name, int[] offsets) {
-                SQLVariable variable= new SQLVariable(type, name, offsets);
-                fVariables.put(name, variable);
+            protected TemplateVariable createVariable(TemplateVariableType type, String name, int[] offsets)
+            {
+                SQLVariable variable = new SQLVariable(SQLContext.this, type, name, offsets);
+                variables.put(name, variable);
                 return variable;
             }
         };
@@ -59,11 +59,16 @@ public class SQLContext extends DocumentTemplateContext implements IDataSourcePr
         return buffer;
     }
 
-    TemplateVariable getTemplateVariable(String name) {
-        TemplateVariable variable= fVariables.get(name);
+    SQLVariable getTemplateVariable(String name)
+    {
+        SQLVariable variable = variables.get(name);
         if (variable != null && !variable.isResolved())
             getContextType().resolve(variable, this);
         return variable;
     }
 
+    Collection<SQLVariable> getVariables()
+    {
+        return variables.values();
+    }
 }

@@ -104,7 +104,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
         textSelection = new TextSelection(textSelection.getOffset(), 1);
 
         contextViewer.getSelectionProvider().setSelection(textSelection);
-        DocumentTemplateContext context = getContext(document, template, textSelection.getOffset(), textSelection.getLength());
+        SQLContext context = getContext(document, template, textSelection.getOffset(), textSelection.getLength());
 
         context.setVariable("selection", savedText); //$NON-NLS-1$
         if (context.getKey().length() == 0) {
@@ -115,7 +115,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
                 return;
             }
         }
-        TemplateProposal proposal = new TemplateProposal(template, context, region, null);
+        SQLTemplateCompletionProposal proposal = new SQLTemplateCompletionProposal(template, context, region, null);
         sqlEditor.getSite().getPage().activate(sqlEditor);
         proposal.apply(sqlEditor.getViewer(), ' ', 0, region.getOffset());
         endCompoundChange(contextViewer);
@@ -265,7 +265,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
      * @param length   the length
      * @return the context
      */
-    private DocumentTemplateContext getContext(IDocument document, Template template, final int offset, int length)
+    private SQLContext getContext(IDocument document, Template template, final int offset, int length)
     {
         return new SQLContext(
             getContextTypeRegistry().getContextType(template.getContextTypeId()),
