@@ -1,27 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-/*******************************************************************************
- * Copyright (c) 2000, 2011 IBM Corporation and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
  *
- * Contributors:
- *     IBM Corporation - initial API and implementation
- *******************************************************************************/
--->
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
 
 <templates>
 
-    <template id="org.jkiss.dbeaver.templates.scount" autoinsert="true" context="sql" deleted="false" description="select row count" enabled="true" name="scount">select count(*) from ${table};</template>
+    <template id="org.jkiss.dbeaver.templates.scount" autoinsert="true" context="sql" description="select row count" enabled="true" name="scount">select count(*) from ${table};</template>
 
-    <template id="org.jkiss.dbeaver.templates.swhere" autoinsert="true" context="sql" deleted="false" description="select with condition" enabled="true" name="swhere">select * from ${table} where ${column}='${value}';</template>
+    <template id="org.jkiss.dbeaver.templates.swhere" autoinsert="true" context="sql" description="select with condition" enabled="true" name="swhere">select * from ${table} where ${column}='${value}';</template>
 
-    <template id="org.jkiss.dbeaver.templates.scgb" autoinsert="true" context="sql" deleted="false" description="select count with group by" enabled="true" name="scgb">select ${col:column(table)},count(*)
+    <template id="org.jkiss.dbeaver.templates.scgb" autoinsert="true" context="sql" description="select count with group by" enabled="true" name="scgb">select ${col:column(table)},count(*)
     from ${table} t group by ${col};</template>
 
-    <template id="org.jkiss.dbeaver.templates.scob" autoinsert="true" context="sql" deleted="false" description="select with order by" enabled="true" name="sob">select * from ${table} t order by ${column};</template>
+    <template id="org.jkiss.dbeaver.templates.scob" autoinsert="true" context="sql" description="select with order by" enabled="true" name="sob">select * from ${table} t order by ${column};</template>
+
+<!--
+    <template id="org.jkiss.dbeaver.templates.oracle.curtime" autoinsert="true" context="sql_oracle" description="select current time" enabled="true" name="curtime">select current timestamp from dual;</template>
+-->
 
 </templates>
