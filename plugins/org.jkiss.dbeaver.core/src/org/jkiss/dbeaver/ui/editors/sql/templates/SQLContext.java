@@ -8,9 +8,7 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * SQL context
@@ -53,11 +51,42 @@ public class SQLContext extends DocumentTemplateContext implements IDataSourcePr
             }
         };
         TemplateBuffer buffer = translator.translate(template);
+/*
+        // Reorder variables
+        TemplateVariable[] bufferVariables = buffer.getVariables();
+
+        Arrays.sort(bufferVariables, new Comparator<TemplateVariable>() {
+            @Override
+            public int compare(TemplateVariable o1, TemplateVariable o2)
+            {
+                return variableOrder(o1.getName()) - variableOrder(o2.getName());
+            }
+        });
+        buffer = new TemplateBuffer(buffer.getString(), bufferVariables);
+*/
 
         getContextType().resolve(buffer, this);
 
         return buffer;
     }
+
+/*
+    private static final String[] VAR_ORDER = {
+        "table",
+        "column",
+        "value"
+    };
+
+    private static int variableOrder(String name)
+    {
+        for (int i = 0; i < VAR_ORDER.length; i++) {
+            if (name.equals(VAR_ORDER[i])) {
+                return i;
+            }
+        }
+        return VAR_ORDER.length + 1;
+    }
+*/
 
     SQLVariable getTemplateVariable(String name)
     {
