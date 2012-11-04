@@ -42,7 +42,6 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
     private IRegion fSelectedRegion; // initialized by apply()
     private String fDisplayString;
     private InclusivePositionUpdater fUpdater;
-    private IInformationControlCreator fInformationControlCreator;
 
     /**
      * Creates a template proposal with a template and its context.
@@ -173,11 +172,12 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
                     }
                 }
 
-                for (int j = 0; j != offsets.length; j++)
+                for (int j = 0; j != offsets.length; j++) {
                     if (j == 0)
                         group.addPosition(first);
                     else
                         group.addPosition(new LinkedPosition(document, offsets[j] + start, length));
+                }
 
                 model.addGroup(group);
                 hasPositions = true;
@@ -274,14 +274,7 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
      */
     protected final int getReplaceOffset()
     {
-        int start;
-        if (fContext instanceof DocumentTemplateContext) {
-            DocumentTemplateContext docContext = (DocumentTemplateContext) fContext;
-            start = docContext.getStart();
-        } else {
-            start = fRegion.getOffset();
-        }
-        return start;
+        return fContext.getStart();
     }
 
     /**
@@ -294,27 +287,14 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
      */
     protected final int getReplaceEndOffset()
     {
-        int end;
-        if (fContext instanceof DocumentTemplateContext) {
-            DocumentTemplateContext docContext = (DocumentTemplateContext) fContext;
-            end = docContext.getEnd();
-        } else {
-            end = fRegion.getOffset() + fRegion.getLength();
-        }
-        return end;
+        return fContext.getEnd();
     }
 
-    /*
-      * @see ICompletionProposal#getSelection(IDocument)
-      */
     public Point getSelection(IDocument document)
     {
         return new Point(fSelectedRegion.getOffset(), fSelectedRegion.getLength());
     }
 
-    /*
-      * @see ICompletionProposal#getAdditionalProposalInfo()
-      */
     public String getAdditionalProposalInfo()
     {
         try {
@@ -333,9 +313,6 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
         }
     }
 
-    /*
-      * @see ICompletionProposal#getDisplayString()
-      */
     public String getDisplayString()
     {
         if (fDisplayString == null) {
@@ -344,17 +321,11 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
         return fDisplayString;
     }
 
-    /*
-      * @see ICompletionProposal#getImage()
-      */
     public Image getImage()
     {
         return fImage;
     }
 
-    /*
-      * @see ICompletionProposal#getContextInformation()
-      */
     public IContextInformation getContextInformation()
     {
         return null;
@@ -370,31 +341,19 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
         return fRelevance;
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension3#getInformationControlCreator()
-      */
     public IInformationControlCreator getInformationControlCreator()
     {
-        return fInformationControlCreator;
+        return null;
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension2#selected(org.eclipse.jface.text.ITextViewer, boolean)
-      */
     public void selected(ITextViewer viewer, boolean smartToggle)
     {
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension2#unselected(org.eclipse.jface.text.ITextViewer)
-      */
     public void unselected(ITextViewer viewer)
     {
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension2#validate(org.eclipse.jface.text.IDocument, int, org.eclipse.jface.text.DocumentEvent)
-      */
     public boolean validate(IDocument document, int offset, DocumentEvent event)
     {
         try {
@@ -409,17 +368,11 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
         return false;
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension3#getPrefixCompletionText(org.eclipse.jface.text.IDocument, int)
-      */
     public CharSequence getPrefixCompletionText(IDocument document, int completionOffset)
     {
         return fTemplate.getName();
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension3#getPrefixCompletionStart(org.eclipse.jface.text.IDocument, int)
-      */
     public int getPrefixCompletionStart(IDocument document, int completionOffset)
     {
         return getReplaceOffset();
@@ -436,27 +389,18 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
         // not called any longer
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension#isValidFor(org.eclipse.jface.text.IDocument, int)
-      */
     public boolean isValidFor(IDocument document, int offset)
     {
         // not called any longer
         return false;
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension#getTriggerCharacters()
-      */
     public char[] getTriggerCharacters()
     {
         // no triggers
         return new char[0];
     }
 
-    /*
-      * @see org.eclipse.jface.text.contentassist.ICompletionProposalExtension#getContextInformationPosition()
-      */
     public int getContextInformationPosition()
     {
         return fRegion.getOffset();

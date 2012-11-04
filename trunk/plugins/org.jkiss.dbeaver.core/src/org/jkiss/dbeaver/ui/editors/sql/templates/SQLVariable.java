@@ -164,4 +164,8 @@ public class SQLVariable extends TemplateVariable {
         return proposals;
     }
 
+    public SQLContext getContext()
+    {
+        return context;
+    }
 }

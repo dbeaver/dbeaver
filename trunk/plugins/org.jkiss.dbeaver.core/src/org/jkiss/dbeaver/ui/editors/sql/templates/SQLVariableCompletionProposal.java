@@ -77,11 +77,11 @@ final class SQLVariableCompletionProposal implements ICompletionProposal, ICompl
             if (!replacementString.equals(sqlVariable.getCurrentChoice())) {
                 sqlVariable.setCurrentChoice(replacementString);
 /*
-                for (SQLVariable var : context.getVariables()) {
-                    if (var != variable) {
+                for (SQLVariable var : sqlVariable.getContext().getVariables()) {
+                    if (var != sqlVariable) {
                         TemplateVariableResolver resolver = var.getResolver();
                         if (resolver != null) {
-                            resolver.resolve(var, context);
+                            resolver.resolve(var, sqlVariable.getContext());
                         }
                     }
                 }
