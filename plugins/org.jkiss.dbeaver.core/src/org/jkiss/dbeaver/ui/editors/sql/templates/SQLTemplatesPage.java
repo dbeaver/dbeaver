@@ -24,7 +24,9 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewer;
-import org.eclipse.jface.text.templates.*;
+import org.eclipse.jface.text.templates.ContextTypeRegistry;
+import org.eclipse.jface.text.templates.DocumentTemplateContext;
+import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -33,6 +35,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.texteditor.templates.AbstractTemplatesPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewer;
@@ -284,7 +288,16 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     @Override
     protected String[] getContextTypeIds(IDocument document, int offset)
     {
-        return new String[]{SQLContextType.ID_SQL};
+        DBPDataSource dataSource = sqlEditor.getDataSource();
+        if (dataSource == null) {
+            return new String[]{SQLContextTypeBase.ID_SQL};
+        } else {
+            DriverDescriptor driver = (DriverDescriptor)dataSource.getContainer().getDriver();
+            return new String[]{
+                SQLContextTypeBase.ID_SQL,
+                SQLContextTypeProvider.getTypeId(driver.getProviderDescriptor()),
+                SQLContextTypeDriver.getTypeId(driver)};
+        }
     }
 
     /**

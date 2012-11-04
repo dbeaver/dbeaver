@@ -11,6 +11,13 @@
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 import org.eclipse.jface.text.templates.ContextTypeRegistry;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -19,7 +26,23 @@ import org.eclipse.jface.text.templates.ContextTypeRegistry;
 public class SQLContextTypeRegistry extends ContextTypeRegistry {
 
 	public SQLContextTypeRegistry() {
-        addContextType(new SQLContextType());
+        addContextType(new SQLContextTypeBase());
+        for (DataSourceProviderDescriptor provider : DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders()) {
+            if (!provider.isDriversManagable()) {
+                addContextType(new SQLContextTypeProvider(provider));
+            } else {
+                Set<String> categoriesAdded = new HashSet<String>();
+                for (DriverDescriptor driver : provider.getEnabledDrivers()) {
+                    if (!CommonUtils.isEmpty(driver.getCategory())) {
+                        if (categoriesAdded.contains(driver.getCategory())) {
+                            continue;
+                        }
+                        categoriesAdded.add(driver.getCategory());
+                    }
+                    addContextType(new SQLContextTypeDriver(driver));
+                }
+            }
+        }
     }
 
 }

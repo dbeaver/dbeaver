@@ -15,16 +15,12 @@ package org.jkiss.dbeaver.ui.editors.sql.templates;
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
 import org.eclipse.jface.text.templates.TemplateContextType;
 
-public class SQLContextType extends TemplateContextType {
+public abstract class SQLContextTypeAbstract extends TemplateContextType {
 
-	/**
-	 * The context type id for templates working on all Java code locations
-	 */
-	public static final String ID_SQL= "sql"; //$NON-NLS-1$
 
-    public SQLContextType()
+    protected SQLContextTypeAbstract(String id, String name)
     {
-        super("sql", "SQL");
+        super(id, name);
         addGlobalResolvers();
         addDatabaseProposals();
     }
@@ -44,6 +40,18 @@ public class SQLContextType extends TemplateContextType {
     {
         addResolver(new SQLEntityResolver());
         addResolver(new SQLAttributeResolver());
+    }
+
+    @Override
+    public String toString()
+    {
+        return getId() + " [" + getName() + "]";
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return getId().hashCode() + getName().hashCode();
     }
 
 }
