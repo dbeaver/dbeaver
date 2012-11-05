@@ -15,15 +15,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.text.templates.ContextTypeRegistry;
 import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
-import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -73,19 +74,32 @@ public class SQLTemplateStore extends TemplateStore {
     private Collection<TemplatePersistenceData> readContributedTemplates() throws IOException
     {
         Collection<TemplatePersistenceData> templates = new ArrayList<TemplatePersistenceData>();
-        //Platform.getBundleGroupProviders()[0].getBundleGroups()[0].getBundles()
         readIncludedTemplates(
+            DBeaverConstants.PLUGIN_ID,
             templates,
             "templates/default-templates.xml",
             "$nl$/templates/default-templates.properties");
 
+        // Read templates for DS providers
+        for (DataSourceProviderDescriptor provider : DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders()) {
+            readIncludedTemplates(
+                provider.getContributorName(),
+                templates,
+                "templates/" + provider.getId() + "-templates.xml",
+                "$nl$/templates/" + provider.getId() + "-templates.properties");
+        }
+
         return templates;
     }
 
-    private void readIncludedTemplates(Collection<TemplatePersistenceData> templates, String file, String translations) throws IOException
+    private void readIncludedTemplates(
+        String contributorId,
+        Collection<TemplatePersistenceData> templates,
+        String file,
+        String translations) throws IOException
     {
         if (file != null) {
-            Bundle plugin = DBeaverActivator.getInstance().getBundle();
+            Bundle plugin = Platform.getBundle(contributorId);
             URL url = FileLocator.find(plugin, Path.fromOSString(file), null);
             if (url != null) {
                 ResourceBundle bundle = null;
