@@ -47,6 +47,32 @@
 
     <versions>
         <version>
+            <number>2.0.0.rc1</number>
+            <type>beta</type>
+            <date>22.10.2012</date>
+
+            <release-notes>
+                - 2.0 Release Candidate 1
+                - SQL templates (features) support
+                - Database compare feature
+                - Hex editor for strings
+                - A lot of UI bugfixes
+            </release-notes>
+        </version>
+
+        <version>
+            <number>2.0.0.beta</number>
+            <type>beta</type>
+            <date>22.10.2012</date>
+
+            <release-notes>
+                - First 2.0 beta
+                - Migrated to Eclipse 4.2.x framework
+                - Eclipse plugin version released
+            </release-notes>
+        </version>
+
+        <version>
             <number>1.6.4</number>
             <type>stable</type>
             <date>04.10.2012</date>
