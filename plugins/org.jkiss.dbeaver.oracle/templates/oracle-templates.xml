@@ -21,13 +21,6 @@
 
 <templates>
 
-    <template id="org.jkiss.dbeaver.templates.scount" autoinsert="true" context="sql" description="select row count" enabled="true" name="scount">select count(*) from ${table};</template>
-
-    <template id="org.jkiss.dbeaver.templates.swhere" autoinsert="true" context="sql" description="select with condition" enabled="true" name="swhere">select * from ${table} where ${column}='${value}';</template>
-
-    <template id="org.jkiss.dbeaver.templates.scgb" autoinsert="true" context="sql" description="select count with group by" enabled="true" name="scgb">select ${col:column(table)},count(*)
-    from ${table} t group by ${col};</template>
-
-    <template id="org.jkiss.dbeaver.templates.scob" autoinsert="true" context="sql" description="select with order by" enabled="true" name="sob">select * from ${table} t order by ${column};</template>
+    <template id="org.jkiss.dbeaver.templates.curtime" name="curtime" context="sql_oracle" autoinsert="true" description="select current time">select current_timestamp from dual;</template>
 
 </templates>
