@@ -47,7 +47,6 @@
             describer="org.jkiss.dbeaver.model.impl.resources.bookmarks.BookmarkContentTypeDescriber"/>
     </extension>
 
-
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester"
@@ -109,8 +108,8 @@
                 namespace="org.jkiss.dbeaver.runtime.process"
                 properties="running"
                 type="org.jkiss.dbeaver.model.runtime.DBRProcessController"/>
-
     </extension>
+
     <extension point="org.eclipse.ui.views">
         <category id="org.jkiss.dbeaver.core.category" name="DBeaver Core View Category"/>
         <view
@@ -149,18 +148,6 @@
                 restorable="false"
                 icon="icons/misc/shell.png"
                 name="%view.shell.process.title"/>
-        <view
-                icon="icons/progress_view.png"
-                category="org.eclipse.ui"
-                class="org.eclipse.ui.ExtensionFactory:progressView"
-                id="org.eclipse.ui.views.ProgressView"
-                name="%view.progress.title"/>
-
-        <view id="org.eclipse.ui.texteditor.TemplatesView"
-                name="%view.templates.title"
-                icon="icons/templates_view.png"
-                category="org.eclipse.ui"
-                class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -323,6 +310,11 @@
         <definition id="org.jkiss.dbeaver.core.ui.sqlEditorBase.control">
             <with variable="activeFocusControlId">
                 <equals value="org.jkiss.dbeaver.ui.sqlEditorBase"/>
+            </with>
+        </definition>
+        <definition id="DBeaverPerspectiveActive">
+            <with variable="activeWorkbenchWindow.activePerspective">
+                <equals value="org.jkiss.dbeaver.core.perspective"/>
             </with>
         </definition>
     </extension>
@@ -1053,6 +1045,8 @@
         <!-- Database menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?before=window">
             <menu id="dataSourceMenu" label="%menu.database">
+                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
                 <command commandId="org.jkiss.dbeaver.core.new.connection"/>
@@ -1077,21 +1071,41 @@
         <!-- Database toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
             <toolbar id="database" label="Database Toolbar">
-                <command commandId="org.jkiss.dbeaver.core.connect"/>
-                <command commandId="org.jkiss.dbeaver.core.invalidate"/>
-                <command commandId="org.jkiss.dbeaver.core.disconnect"/>
+                <command commandId="org.jkiss.dbeaver.core.connect">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.invalidate">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.disconnect">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
                 <separator name="tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
-                <command commandId="org.jkiss.dbeaver.core.object.find"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.object.find">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
             </toolbar>
             <toolbar id="txn" label="Transactions">
-                <command commandId="org.jkiss.dbeaver.core.commit"/>
-                <command commandId="org.jkiss.dbeaver.core.rollback"/>
-                <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn"/>
+                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                <command commandId="org.jkiss.dbeaver.core.commit">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.rollback">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
             </toolbar>
             <toolbar id="datasource-settings" label="DataSource">
                 <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 </control>
             </toolbar>
 
@@ -1285,6 +1299,7 @@
         <!-- SQL editor menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
+                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <separator name="execute" visible="true"/>
