@@ -1011,7 +1011,8 @@ public class UIUtils {
     public static void updateMainWindowTitle(IWorkbenchWindow window)
     {
         IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        String title = Platform.getProduct().getName();
+        IProduct product = Platform.getProduct();
+        String title = product == null ? "Unknown" : product.getName(); //$NON-NLS-1$
         if (activeProject != null) {
             title += " - " + activeProject.getName(); //$NON-NLS-1$
         }

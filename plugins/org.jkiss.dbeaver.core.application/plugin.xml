@@ -32,6 +32,20 @@
         </application>
     </extension>
 
+    <extension point="org.eclipse.ui.views">
+        <view id="org.eclipse.ui.views.ProgressView"
+                icon="icons/progress_view.png"
+                category="org.eclipse.ui"
+                class="org.eclipse.ui.ExtensionFactory:progressView"
+                name="%view.progress.title"/>
+
+        <view id="org.eclipse.ui.texteditor.TemplatesView"
+              name="%view.templates.title"
+              icon="icons/templates_view.png"
+              category="org.eclipse.ui"
+              class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
+    </extension>
+
     <extension point="org.eclipse.ui.menus">
         <!-- Edit menu -->
         <menuContribution allPopups="false" locationURI="menu:edit">
