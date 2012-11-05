@@ -54,13 +54,14 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 	@Override
     public void buildContextMenu(IMenuManager menu)
 	{
-		GEFActionConstants.addStandardActionGroups(menu);
+        if (editor.isLoaded()) {
+            GEFActionConstants.addStandardActionGroups(menu);
 
-        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
-        menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new Separator());
-        menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, editor.createAttributeVisibilityMenu());
-        menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new DiagramLayoutAction(editor));
-
+            menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new Separator());
+            menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, editor.createAttributeVisibilityMenu());
+            menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new DiagramLayoutAction(editor));
+        }
 	}
 }

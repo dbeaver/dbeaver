@@ -97,7 +97,9 @@ public class EntityHyperlink implements IHyperlink
         } else {
             objectNode = node;
         }
-        NavigatorHandlerObjectOpen.openEntityEditor(objectNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+        if (objectNode != null) {
+            NavigatorHandlerObjectOpen.openEntityEditor(objectNode, null, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+        }
     }
 
     private class ObjectFinder implements DBRRunnableWithProgress {
@@ -107,11 +109,14 @@ public class EntityHyperlink implements IHyperlink
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
+            monitor.beginTask("Resolve object " + reference.getName(), 1);
             try {
                 DBSObject object = reference.resolveObject(monitor);
                 node = DBNModel.getInstance().getNodeByObject(monitor, object, true);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
+            } finally {
+                monitor.done();
             }
         }
     }

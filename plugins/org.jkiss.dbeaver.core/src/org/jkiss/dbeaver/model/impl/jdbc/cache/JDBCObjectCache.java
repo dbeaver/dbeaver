@@ -82,6 +82,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         try {
             JDBCStatement dbStat = prepareObjectsStatement(context, owner);
             try {
+                monitor.subTask("Execute query");
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
