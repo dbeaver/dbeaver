@@ -54,10 +54,7 @@ import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
 import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.program.Program;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchAdapter;
@@ -93,6 +90,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.FileOutputStream;
 import java.util.*;
+import java.util.List;
 
 /**
  * Editor implementation based on the the example editor skeleton that is built in <i>Building
@@ -841,6 +839,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         public ProgressVisualizer<EntityDiagram> createLoadVisualizer()
         {
+            getGraphicalControl().setBackground(ColorConstants.lightGray);
             return new LoadVisualizer();
         }
 
@@ -940,9 +939,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         private class LoadVisualizer extends ProgressVisualizer<EntityDiagram> {
             @Override
+            public void visualizeLoading()
+            {
+                super.visualizeLoading();
+            }
+
+            @Override
             public void completeLoading(EntityDiagram entityDiagram)
             {
                 super.completeLoading(entityDiagram);
+                getGraphicalControl().setBackground(ColorConstants.white);
                 isLoaded = true;
                 Control control = getGraphicalViewer().getControl();
                 if (control == null || control.isDisposed()) {
