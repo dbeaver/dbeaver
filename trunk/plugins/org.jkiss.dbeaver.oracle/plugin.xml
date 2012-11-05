@@ -340,6 +340,9 @@
                     <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
                 </tool>
             </tools>
+            <templates>
+                <resolver type="orauser" class="org.jkiss.dbeaver.ext.oracle.model.resolvers.OracleUserResolver" description="Current Oracle user"/>
+            </templates>
         </datasource>
     </extension>
 

@@ -26,10 +26,17 @@ import java.util.Set;
 public class SQLContextTypeRegistry extends ContextTypeRegistry {
 
 	public SQLContextTypeRegistry() {
+        loadContextTypes();
+    }
+
+    private void loadContextTypes()
+    {
         addContextType(new SQLContextTypeBase());
         for (DataSourceProviderDescriptor provider : DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders()) {
             if (!provider.isDriversManagable()) {
-                addContextType(new SQLContextTypeProvider(provider));
+                SQLContextTypeProvider contextType = new SQLContextTypeProvider(provider);
+                addContextType(contextType);
+                provider.loadTemplateVariableResolvers(contextType);
             } else {
                 Set<String> categoriesAdded = new HashSet<String>();
                 for (DriverDescriptor driver : provider.getEnabledDrivers()) {
@@ -39,7 +46,9 @@ public class SQLContextTypeRegistry extends ContextTypeRegistry {
                         }
                         categoriesAdded.add(driver.getCategory());
                     }
-                    addContextType(new SQLContextTypeDriver(driver));
+                    SQLContextTypeDriver contextType = new SQLContextTypeDriver(driver);
+                    addContextType(contextType);
+                    provider.loadTemplateVariableResolvers(contextType);
                 }
             }
         }

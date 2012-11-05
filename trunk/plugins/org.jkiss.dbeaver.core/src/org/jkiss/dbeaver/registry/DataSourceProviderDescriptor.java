@@ -22,6 +22,8 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.jface.text.templates.TemplateContextType;
+import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -35,10 +37,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DataSourceProviderDescriptor
@@ -404,4 +403,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         return new DriverDescriptor(this, config);
     }
+
+    public void loadTemplateVariableResolvers(TemplateContextType contextType)
+    {
+        //Collection<TemplateVariableResolver>
+    }
+
 }
