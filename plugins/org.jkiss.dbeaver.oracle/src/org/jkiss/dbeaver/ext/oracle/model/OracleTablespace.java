@@ -314,7 +314,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     {
         final OracleDataSource dataSource = referrer.getDataSource();
         if (!dataSource.isAdmin()) {
-            return referrer;
+            return referrer.getLazyReference(propertyId);
         } else {
             return OracleUtils.resolveLazyReference(monitor, dataSource, dataSource.tablespaceCache, referrer, propertyId);
         }
