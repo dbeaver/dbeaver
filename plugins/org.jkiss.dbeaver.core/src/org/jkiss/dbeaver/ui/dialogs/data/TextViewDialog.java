@@ -45,7 +45,7 @@ import java.nio.ByteBuffer;
  */
 public class TextViewDialog extends ValueViewDialog {
 
-    private static final int DEFAULT_MAX_SIZE = 100000;
+    //private static final int DEFAULT_MAX_SIZE = 100000;
     private static final String VALUE_TYPE_SELECTOR = "string.value.type";
 
     private Text textEdit;
@@ -181,12 +181,12 @@ public class TextViewDialog extends ValueViewDialog {
             log.error(e);
         }
         byte[] bytes = buffer.array();
-        int length;
-        for (length = 0; length < bytes.length; length++) {
-            if (bytes[length] == 0) {
-                break;
-            }
-        }
+        int length = bytes.length;
+//        for (length = 0; length < bytes.length; length++) {
+//            if (bytes[length] == 0) {
+//                break;
+//            }
+//        }
         String stringValue;
         try {
             stringValue = new String(
@@ -201,10 +201,10 @@ public class TextViewDialog extends ValueViewDialog {
 
     private void setBinaryContent(String stringValue)
     {
-        int maxSize = (int) getValueController().getAttributeMetaData().getMaxLength();
-        if (maxSize <= 0) {
-            maxSize = DEFAULT_MAX_SIZE;
-        }
+//        int maxSize = (int) getValueController().getAttributeMetaData().getMaxLength();
+//        if (maxSize <= 0) {
+//            maxSize = DEFAULT_MAX_SIZE;
+//        }
         BinaryContent binaryContent = new BinaryContent();
         byte[] bytes;
         try {
@@ -214,15 +214,15 @@ public class TextViewDialog extends ValueViewDialog {
             log.error(e);
             bytes = stringValue.getBytes();
         }
-        if (bytes.length > maxSize) {
-            maxSize = bytes.length;
-        }
+//        if (bytes.length > maxSize) {
+//            maxSize = bytes.length;
+//        }
         ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
         binaryContent.insert(byteBuffer, 0);
-        int tailSize = (maxSize - bytes.length);
-        if (tailSize > 0) {
-            binaryContent.insert(ByteBuffer.wrap(new byte[tailSize]), bytes.length);
-        }
+//        int tailSize = (maxSize - bytes.length);
+//        if (tailSize > 0) {
+//            binaryContent.insert(ByteBuffer.wrap(new byte[tailSize]), bytes.length);
+//        }
         hexEditControl.setContentProvider(binaryContent);
     }
 
