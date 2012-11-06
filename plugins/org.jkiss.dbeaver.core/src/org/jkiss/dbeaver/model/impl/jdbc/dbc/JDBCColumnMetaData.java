@@ -86,9 +86,24 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         this.name = metaData.getColumnName(index);
         boolean hasData = false;
 
-        String fetchedTableName = metaData.getTableName(index);
-        String fetchedCatalogName = metaData.getCatalogName(index);
-        String fetchedSchemaName = metaData.getSchemaName(index);
+        String fetchedTableName = null;
+        try {
+            fetchedTableName = metaData.getTableName(index);
+        } catch (SQLException e) {
+            log.debug(e);
+        }
+        String fetchedCatalogName = null;
+        try {
+            fetchedCatalogName = metaData.getCatalogName(index);
+        } catch (SQLException e) {
+            log.debug(e);
+        }
+        String fetchedSchemaName = null;
+        try {
+            fetchedSchemaName = metaData.getSchemaName(index);
+        } catch (SQLException e) {
+            log.debug(e);
+        }
         // Check for tables name
         // Sometimes [DBSPEC: Informix] it contains schema/catalog name inside
         if (!CommonUtils.isEmpty(fetchedTableName) && CommonUtils.isEmpty(fetchedCatalogName) && CommonUtils.isEmpty(fetchedSchemaName)) {
