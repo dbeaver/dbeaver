@@ -163,7 +163,6 @@ public class HexEditControl extends Composite {
                           ((long) event.height) << 32 | (event.y & 0x0ffffffffL)};
     }
 
-
     /**
      * Converts a hex String to byte[]. Will convert full bytes only, odd number of hex characters will
      * have a leading '0' added. Big endian.
@@ -183,7 +182,6 @@ public class HexEditControl extends Composite {
 
         return tmp;
     }
-
 
     private class ControlKeyAdapter extends KeyAdapter {
         @Override
@@ -308,7 +306,6 @@ public class HexEditControl extends Composite {
         }
     }
 
-
     private class ControlPaintAdapter implements PaintListener {
         boolean hexContent = false;
 
@@ -336,7 +333,6 @@ public class HexEditControl extends Composite {
             }
         }
     }
-
 
     private class ControlSelectionAdapter extends SelectionAdapter implements SelectionListener {
         int charLen;
@@ -380,7 +376,6 @@ public class HexEditControl extends Composite {
                 e.doit = true;
         }
     }
-
 
     private class ControlVerifyKeyAdapter implements VerifyKeyListener {
         @Override
@@ -479,6 +474,7 @@ public class HexEditControl extends Composite {
     {
         return finder;
     }
+
     /**
      * compose byte-to-char map
      */
@@ -521,7 +517,6 @@ public class HexEditControl extends Composite {
         charset = name;
         composeByteToCharMap();
     }
-
 
     public StyledText getHexText()
     {
@@ -570,7 +565,6 @@ public class HexEditControl extends Composite {
         if (!longSelectionListeners.contains(listener))
             longSelectionListeners.add(listener);
     }
-
 
     /**
      * This method initializes composite
