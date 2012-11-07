@@ -35,7 +35,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.BeanUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
@@ -495,6 +498,36 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     }
 
     @Override
+    public String getSchema() throws SQLException
+    {
+        try {
+            // Use reflection to read JDBC API 7 function
+            Object schema = BeanUtils.invokeObjectMethod(getConnection(), "getSchema", null, null);
+            if (schema != null) {
+                return schema.toString();
+            }
+        } catch (Exception e) {
+            JDBCUtils.rethrowSQLException(e);
+            // ignore
+            log.debug(e);
+        }
+        return null;
+    }
+
+    @Override
+    public void setSchema(String schema) throws SQLException
+    {
+        try {
+            // Use reflection to read JDBC API 7 function
+            BeanUtils.invokeObjectMethod(getConnection(), "setSchema", new Class[] {String.class}, new Object[] {schema});
+        } catch (Exception e) {
+            JDBCUtils.rethrowSQLException(e);
+            // ignore
+            log.debug(e);
+        }
+    }
+
+    @Override
     public Clob createClob()
         throws SQLException
     {
@@ -554,6 +587,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
             if (e instanceof SQLClientInfoException) {
                 throw (SQLClientInfoException)e;
             } else {
+                log.debug(e);
                 throw new SQLClientInfoException();
             }
         }

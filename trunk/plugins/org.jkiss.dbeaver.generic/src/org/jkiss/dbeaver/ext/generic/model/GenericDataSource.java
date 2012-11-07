@@ -65,6 +65,7 @@ public class GenericDataSource extends JDBCDataSource
     private String querySetActiveDB;
     private String selectedEntityType;
     private String selectedEntityName;
+    private boolean selectedEntityFromAPI;
 
     public GenericDataSource(DBSDataSourceContainer container)
         throws DBException
@@ -302,36 +303,8 @@ public class GenericDataSource extends JDBCDataSource
                     this.structureContainer = new DataSourceObjectContainer();
                 }
             }
+            determineSelectedEntity(context);
 
-            // Get selected entity (catalog or schema)
-            if (CommonUtils.isEmpty(queryGetActiveDB)) {
-                try {
-                    selectedEntityName = context.getCatalog();
-                }
-                catch (SQLException e) {
-                    // Seems to be not supported
-                    log.debug(e);
-                    selectedEntityName = null;
-                }
-            } else {
-                try {
-                    JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
-                    try {
-                        JDBCResultSet resultSet = dbStat.executeQuery();
-                        try {
-                            resultSet.next();
-                            selectedEntityName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
-                        } finally {
-                            resultSet.close();
-                        }
-                    } finally {
-                        dbStat.close();
-                    }
-                } catch (SQLException e) {
-                    log.debug(e);
-                    selectedEntityName = null;
-                }
-            }
 
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
@@ -531,6 +504,9 @@ public class GenericDataSource extends JDBCDataSource
     @Override
     public boolean supportsObjectSelect()
     {
+        if (selectedEntityFromAPI) {
+            return true;
+        }
         if (!CommonUtils.isEmpty(querySetActiveDB)) {
             if (CommonUtils.isEmpty(selectedEntityType)) {
                 return !CommonUtils.isEmpty(getCatalogs()) || !CommonUtils.isEmpty(getSchemas());
@@ -594,19 +570,79 @@ public class GenericDataSource extends JDBCDataSource
         return selectedEntityName;
     }
 
+    void determineSelectedEntity(JDBCExecutionContext context)
+    {
+        // Get selected entity (catalog or schema)
+        selectedEntityName = null;
+        if (CommonUtils.isEmpty(queryGetActiveDB)) {
+            try {
+                selectedEntityName = context.getCatalog();
+                if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
+                    selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
+                    selectedEntityFromAPI = true;
+                }
+            }
+            catch (SQLException e) {
+                // Seems to be not supported
+                log.debug(e);
+            }
+            if (CommonUtils.isEmpty(selectedEntityName)) {
+                // Try to use current schema
+                try {
+                    selectedEntityName = context.getSchema();
+                    if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
+                        selectedEntityType = GenericConstants.ENTITY_TYPE_SCHEMA;
+                        selectedEntityFromAPI = true;
+                    }
+                } catch (SQLException e) {
+                    log.debug(e);
+                }
+            }
+        } else {
+            try {
+                JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
+                try {
+                    JDBCResultSet resultSet = dbStat.executeQuery();
+                    try {
+                        resultSet.next();
+                        selectedEntityName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
+                    } finally {
+                        resultSet.close();
+                    }
+                } finally {
+                    dbStat.close();
+                }
+            } catch (SQLException e) {
+                log.debug(e);
+                selectedEntityName = null;
+            }
+        }
+    }
+
     void setActiveEntityName(DBRProgressMonitor monitor, DBSObject entity) throws DBException
     {
-        if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericObjectContainer)) {
-            throw new DBException("Active database can't be changed for this kind of datasource!");
-        }
-        String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement(changeQuery);
-            try {
-                dbStat.execute();
-            } finally {
-                dbStat.close();
+            if (selectedEntityFromAPI) {
+                // Use JDBC API to change entity
+                if (selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
+                    context.setCatalog(entity.getName());
+                } else if (selectedEntityType.equals(GenericConstants.ENTITY_TYPE_SCHEMA)) {
+                    context.setSchema(entity.getName());
+                } else {
+                    throw new DBException("No API to change active entity if type '" + selectedEntityType + "'");
+                }
+            } else {
+                if (CommonUtils.isEmpty(querySetActiveDB) || !(entity instanceof GenericObjectContainer)) {
+                    throw new DBException("Active database can't be changed for this kind of datasource!");
+                }
+                String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
+                JDBCPreparedStatement dbStat = context.prepareStatement(changeQuery);
+                try {
+                    dbStat.execute();
+                } finally {
+                    dbStat.close();
+                }
             }
         } catch (SQLException e) {
             throw new DBException(e);
