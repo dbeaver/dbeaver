@@ -699,6 +699,18 @@ public class SQLEditor extends SQLEditorBase
     }
 
     @Override
+    public boolean isSaveAsAllowed()
+    {
+        return true;
+    }
+
+    @Override
+    public void doSaveAs()
+    {
+        saveToExternalFile();
+    }
+
+    @Override
     public int promptToSaveOnClose()
     {
         if (curJobRunning) {
