@@ -82,7 +82,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
     @Override
     public String getCharset()
     {
-        return null;
+        return ContentUtils.getDefaultFileEncoding();
     }
 
     @Override

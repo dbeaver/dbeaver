@@ -52,6 +52,8 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -110,6 +112,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return createValueObject(context, column);
         } else if (value instanceof byte[]) {
             return new JDBCContentBytes((byte[]) value);
+        } else if (value instanceof ByteBuffer) {
+            ByteBuffer buffer = (ByteBuffer)value;
+            byte data[] = new byte[buffer.remaining()];
+            buffer.get(data);
+            return new JDBCContentBytes(data);
         } else if (value instanceof String) {
             return new JDBCContentChars((String) value);
         } else if (value instanceof Blob) {
@@ -118,6 +125,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return new JDBCContentCLOB((Clob) value);
         } else if (value instanceof SQLXML) {
             return new JDBCContentXML((SQLXML) value);
+        } else if (value instanceof CharBuffer) {
+            CharBuffer buffer = (CharBuffer)value;
+            char data[] = new char[buffer.remaining()];
+            buffer.get(data);
+            return new JDBCContentChars(new String(data));
         } else {
             throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + value.getClass().getName());
         }

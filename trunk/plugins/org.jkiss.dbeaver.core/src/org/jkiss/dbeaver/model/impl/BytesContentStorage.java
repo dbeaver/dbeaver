@@ -68,7 +68,7 @@ public class BytesContentStorage implements DBDContentStorage {
     @Override
     public String getCharset()
     {
-        return null;
+        return ContentUtils.getDefaultFileEncoding();
     }
 
     @Override
