@@ -88,6 +88,10 @@ public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
     JDBCPreparedStatement prepareStatement(String sql, String[] columnNames)
         throws SQLException;
 
+    String getSchema() throws SQLException;
+
+    void setSchema(String schema) throws SQLException;
+
     @Override
     void close();
 

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.List;
@@ -590,6 +591,18 @@ public class JDBCUtils {
         }
         for (String exc : CommonUtils.safeCollection(filter.getExclude())) {
             statement.setString(paramIndex++, exc);
+        }
+    }
+
+    public static void rethrowSQLException(Throwable e) throws SQLException
+    {
+        if (e instanceof InvocationTargetException) {
+            Throwable targetException = ((InvocationTargetException) e).getTargetException();
+            if (targetException instanceof SQLException) {
+                throw (SQLException)targetException;
+            } else {
+                throw new SQLException(targetException);
+            }
         }
     }
 
