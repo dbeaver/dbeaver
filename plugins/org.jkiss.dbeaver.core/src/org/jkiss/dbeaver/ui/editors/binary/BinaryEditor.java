@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.editors.binary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
@@ -117,10 +118,25 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void createPartControl(Composite parent)
     {
+        IEditorInput editorInput = getEditorInput();
+        IStorage storage = null;
+        {
+            IFile file = ContentUtils.getFileFromEditorInput(editorInput);
+            if (file != null) {
+                storage = file;
+            }
+        }
+        if (storage == null) {
+            storage = (IStorage)editorInput.getAdapter(IStorage.class);
+        }
+
         manager = new HexManager();
         manager.setTextFont(HexPreferencesPage.getPrefFontData());
         manager.setMenuListener(this);
         int editorStyle = SWT.NONE;
+        if (storage != null && storage.isReadOnly()) {
+            editorStyle = SWT.READ_ONLY;
+        }
         manager.createEditorPart(parent, editorStyle);
         FillLayout fillLayout = new FillLayout();
         parent.setLayout(fillLayout);
