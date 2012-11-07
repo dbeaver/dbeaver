@@ -63,7 +63,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
             // Empty content
             return new ByteArrayInputStream(new byte[0]);
         } else {
-            return new ByteArrayInputStream(data.getBytes());
+            return new ByteArrayInputStream(data.getBytes(getCharset()));
         }
     }
 
@@ -138,7 +138,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     @Override
     public String getCharset()
     {
-        return null;
+        return ContentUtils.getDefaultFileEncoding();
     }
 
     @Override
