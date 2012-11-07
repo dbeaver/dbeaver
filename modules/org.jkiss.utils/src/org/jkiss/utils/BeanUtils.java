@@ -348,4 +348,14 @@ public class BeanUtils {
             paramClass == Byte.TYPE;
     }
 
+    public static Object invokeObjectMethod(Object object, String name, Class paramTypes[], Object args[])
+        throws InvocationTargetException, IllegalAccessException, NoSuchMethodException
+    {
+        Method method = object.getClass().getMethod(name, paramTypes);
+        if (!method.isAccessible()) {
+            method.setAccessible(true);
+        }
+        return method.invoke(object, args);
+    }
+
 }
