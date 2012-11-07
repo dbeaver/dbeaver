@@ -124,7 +124,7 @@ public class TextViewDialog extends ValueViewDialog {
         }
         Point minSize = null;
         if (useHex) {
-            hexEditControl = new HexEditControl(editorContainer, SWT.NONE, 6, 8);
+            hexEditControl = new HexEditControl(editorContainer, readOnly ? SWT.READ_ONLY : SWT.NONE, 6, 8);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 200;
             gd.minimumWidth = hexEditControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
