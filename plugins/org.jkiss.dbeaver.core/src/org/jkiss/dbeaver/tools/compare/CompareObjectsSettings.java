@@ -23,6 +23,8 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -33,12 +35,29 @@ import java.util.Map;
  */
 public class CompareObjectsSettings {
 
+    public enum OutputType {
+        BROWSER("Open in browser"),
+        FILE("Save to file");
+        private final String title;
+
+        private OutputType(String title)
+        {
+            this.title = title;
+        }
+
+        public String getTitle()
+        {
+            return title;
+        }
+    }
 
     private final List<DBNDatabaseNode> nodes;
     private boolean skipSystemObjects = true;
     private boolean compareLazyProperties = false;
     private boolean compareOnlyStructure = false;
     private boolean showOnlyDifferences = false;
+    private OutputType outputType = OutputType.BROWSER;
+    private String outputFolder = ContentUtils.getCurDialogFolder();
 
     public CompareObjectsSettings(List<DBNDatabaseNode> nodes)
     {
@@ -90,6 +109,26 @@ public class CompareObjectsSettings {
         this.showOnlyDifferences = showOnlyDifferences;
     }
 
+    public OutputType getOutputType()
+    {
+        return outputType;
+    }
+
+    public void setOutputType(OutputType outputType)
+    {
+        this.outputType = outputType;
+    }
+
+    public String getOutputFolder()
+    {
+        return outputFolder;
+    }
+
+    public void setOutputFolder(String outputFolder)
+    {
+        this.outputFolder = outputFolder;
+    }
+
     void loadFrom(IDialogSettings dialogSettings)
     {
         if (dialogSettings.get("skipSystem") != null) {
@@ -104,6 +143,12 @@ public class CompareObjectsSettings {
         if (dialogSettings.get("showDifference") != null) {
             showOnlyDifferences = dialogSettings.getBoolean("showDifference");
         }
+        if (dialogSettings.get("outputType") != null) {
+            outputType = OutputType.valueOf(dialogSettings.get("outputType"));
+        }
+        if (dialogSettings.get("outputFolder") != null) {
+            outputFolder = dialogSettings.get("outputFolder");
+        }
     }
 
     void saveTo(IDialogSettings dialogSettings)
@@ -112,6 +157,8 @@ public class CompareObjectsSettings {
         dialogSettings.put("compareLazy", compareLazyProperties);
         dialogSettings.put("compareStructure", compareOnlyStructure);
         dialogSettings.put("showDifference", showOnlyDifferences);
+        dialogSettings.put("outputType", outputType.name());
+        dialogSettings.put("outputFolder", outputFolder);
     }
 
 }

@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.tools.compare;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -33,6 +35,7 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
 
     private Button showOnlyDifference;
     private Combo reportTypeCombo;
+    private Text outputFolderText;
 
     CompareObjectsPageOutput() {
         super("Compare objects");
@@ -74,15 +77,43 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
         {
             Group outputSettings = new Group(composite, SWT.NONE);
             outputSettings.setText("Output");
-            gl = new GridLayout(2, false);
+            gl = new GridLayout(3, false);
             outputSettings.setLayout(gl);
             outputSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(outputSettings, "Report destination");
+            UIUtils.createControlLabel(outputSettings, "Output type");
             reportTypeCombo = new Combo(outputSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
-            reportTypeCombo.add("Open in browser");
-            reportTypeCombo.add("Save to file");
-            reportTypeCombo.select(0);
+            for (CompareObjectsSettings.OutputType outputType : CompareObjectsSettings.OutputType.values()) {
+                reportTypeCombo.add(outputType.getTitle());
+            }
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            reportTypeCombo.setLayoutData(gd);
+            reportTypeCombo.select(settings.getOutputType().ordinal());
+            reportTypeCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    for (CompareObjectsSettings.OutputType outputType : CompareObjectsSettings.OutputType.values()) {
+                        if (outputType.ordinal() == reportTypeCombo.getSelectionIndex()) {
+                            settings.setOutputType(outputType);
+                            outputFolderText.setEnabled(outputType == CompareObjectsSettings.OutputType.FILE);
+                            break;
+                        }
+                    }
+                }
+            });
+
+            outputFolderText = UIUtils.createOutputFolderChooser(outputSettings, null);
+            outputFolderText.setText(settings.getOutputFolder());
+            outputFolderText.setEnabled(settings.getOutputType() == CompareObjectsSettings.OutputType.FILE);
+            outputFolderText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e)
+                {
+                    settings.setOutputFolder(outputFolderText.getText());
+                }
+            });
         }
 
         setControl(composite);
