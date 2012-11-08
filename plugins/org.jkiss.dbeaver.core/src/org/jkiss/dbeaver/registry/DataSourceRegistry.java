@@ -341,7 +341,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     // Save in temp memory to be safe (any error during direct write will corrupt configuration)
                     ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
                     try {
-                        XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET);
+                        XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
                         xml.setButify(true);
                         xml.startElement("data-sources");
                         for (DataSourceDescriptor dataSource : dataSources) {

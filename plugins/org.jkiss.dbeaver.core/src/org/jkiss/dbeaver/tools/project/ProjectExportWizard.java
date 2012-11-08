@@ -122,7 +122,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             ZipOutputStream archiveStream = new ZipOutputStream(exportStream);
 
             // Start meta
-            XMLBuilder meta = new XMLBuilder(metaBuffer, ContentUtils.DEFAULT_FILE_CHARSET);
+            XMLBuilder meta = new XMLBuilder(metaBuffer, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
             meta.startElement(ExportConstants.TAG_ARCHIVE);
             meta.addAttribute(ExportConstants.ATTR_VERSION, ExportConstants.ARCHIVE_VERSION_CURRENT);
 

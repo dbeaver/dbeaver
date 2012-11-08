@@ -45,6 +45,7 @@ import org.jkiss.utils.CommonUtils;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.io.*;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,7 +58,11 @@ public class ContentUtils {
     static final int STREAM_COPY_BUFFER_SIZE = 10000;
 
     static final Log log = LogFactory.getLog(ContentUtils.class);
-    public static final String DEFAULT_FILE_CHARSET = "UTF-8";
+    public static final String DEFAULT_FILE_CHARSET_NAME = "UTF-8";
+
+    public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");
+    public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
+    public static final Charset DEFAULT_FILE_CHARSET = UTF8_CHARSET;
 
     private static final Map<String, byte[]> BOM_MAP = new HashMap<String, byte[]>();
 
@@ -113,7 +118,7 @@ public class ContentUtils {
 
     public static String getDefaultFileEncoding()
     {
-        return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET);
+        return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
     }
 
     public static String getDefaultLineSeparator()
@@ -487,7 +492,7 @@ public class ContentUtils {
     {
         InputStream fileStream = new FileInputStream(file);
         try {
-            UnicodeReader unicodeReader = new UnicodeReader(fileStream, ContentUtils.DEFAULT_FILE_CHARSET);
+            UnicodeReader unicodeReader = new UnicodeReader(fileStream, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
             StringBuilder result = new StringBuilder((int) file.length());
             char[] buffer = new char[4000];
             for (;;) {

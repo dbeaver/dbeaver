@@ -155,7 +155,7 @@ public class DataFormatterRegistry
         try {
             OutputStream os = new FileOutputStream(storeFile);
             try {
-                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
+                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
                 xml.setButify(true);
                 xml.startElement(RegistryConstants.TAG_PROFILES);
                 for (DBDDataFormatterProfile profile : customProfiles) {
