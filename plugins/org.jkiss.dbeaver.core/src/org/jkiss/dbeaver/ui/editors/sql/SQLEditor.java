@@ -144,7 +144,7 @@ public class SQLEditor extends SQLEditorBase
             return true;
         }
         // Acquire ds container
-        if (dataContainer != null) {
+        if (dataSourceContainer != null) {
             dataSourceContainer.release(this);
             dataSourceContainer = null;
         }

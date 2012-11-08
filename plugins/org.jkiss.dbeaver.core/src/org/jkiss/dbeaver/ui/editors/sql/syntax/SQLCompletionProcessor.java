@@ -178,8 +178,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, null);
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
-                    if (dataSource instanceof DBSObjectSelector) {
-                        DBSObject selectedObject = ((DBSObjectSelector)dataSource).getSelectedObject();
+                    DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+                    if (objectSelector != null) {
+                        DBSObject selectedObject = objectSelector.getSelectedObject();
                         if (selectedObject != null) {
                             makeProposalsFromChildren(monitor, selectedObject, null, proposals);
                         }
