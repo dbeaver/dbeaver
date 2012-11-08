@@ -1605,37 +1605,55 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return removedRows.contains(new RowInfo(row));
     }
 
-    void deleteCurrentRow()
+    void deleteSelectedRows()
     {
         GridPos curPos = spreadsheet.getCursorPosition();
-        int rowNum;
+        TreeSet<Integer> rowNumbers = new TreeSet<Integer>();
         if (mode == ResultSetMode.RECORD) {
-            rowNum = this.curRowNum;
+            rowNumbers.add(this.curRowNum);
         } else {
-            rowNum = curPos.row;
+            for (GridPos pos : spreadsheet.getSelection()) {
+                rowNumbers.add(pos.row);
+            }
         }
-        if (rowNum < 0 || rowNum >= curRows.size()) {
+        for (Iterator<Integer> iter = rowNumbers.iterator(); iter.hasNext(); ) {
+            int rowNum = iter.next();
+            if (rowNum < 0 || rowNum >= curRows.size()) {
+                iter.remove();
+            }
+        }
+        if (rowNumbers.isEmpty()) {
             return;
         }
 
-        RowInfo rowInfo = new RowInfo(rowNum);
-        if (addedRows.contains(rowInfo)) {
-            // Remove just added row 
-            addedRows.remove(rowInfo);
-            cleanupRow(rowNum);
-
-            refreshSpreadsheet(true);
-
-        } else {
-            // Mark row as deleted
-            removedRows.add(rowInfo);
-            // Move one row down (if we are in grid mode)
-            if (mode == ResultSetMode.GRID && curPos.row < spreadsheet.getItemCount() - 1) {
-                curPos.row++;
-                spreadsheet.setCursor(curPos, false);
+        int rowsRemoved = 0;
+        int lastRowNum = -1;
+        for (Iterator<Integer> iter = rowNumbers.descendingIterator(); iter.hasNext(); ) {
+            int rowNum = iter.next();
+            if (rowNum > lastRowNum) {
+                lastRowNum = rowNum;
+            }
+            RowInfo rowInfo = new RowInfo(rowNum);
+            if (addedRows.contains(rowInfo)) {
+                // Remove just added row
+                addedRows.remove(rowInfo);
+                cleanupRow(rowNum);
+                rowsRemoved++;
+            } else {
+                // Mark row as deleted
+                removedRows.add(rowInfo);
             }
         }
-        spreadsheet.redrawGrid();
+        // Move one row down (if we are in grid mode)
+        if (mode == ResultSetMode.GRID && lastRowNum < spreadsheet.getItemCount() - 1) {
+            curPos.row = lastRowNum - rowsRemoved + 1;
+            spreadsheet.setCursor(curPos, false);
+        }
+        if (rowsRemoved > 0) {
+            refreshSpreadsheet(true);
+        } else {
+            spreadsheet.redrawGrid();
+        }
         updateEditControls();
         fireResultSetChange();
     }
