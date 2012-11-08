@@ -618,7 +618,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                     });
 
                     try {
-                        ContentUtils.saveContentToFile(new StringReader(getDocument().get()), saveFile, ContentUtils.DEFAULT_FILE_CHARSET, monitor);
+                        ContentUtils.saveContentToFile(new StringReader(getDocument().get()), saveFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }

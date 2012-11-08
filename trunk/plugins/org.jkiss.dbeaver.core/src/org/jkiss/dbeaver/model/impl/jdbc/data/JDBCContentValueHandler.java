@@ -347,7 +347,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     try {
                         DBDContentStorage storage;
                         if (ContentUtils.isTextContent(value)) {
-                            storage = new ExternalContentStorage(openFile, ContentUtils.DEFAULT_FILE_CHARSET);
+                            storage = new ExternalContentStorage(openFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
                         } else {
                             storage = new ExternalContentStorage(openFile);
                         }
@@ -396,7 +396,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                             ContentUtils.saveContentToFile(
                                 storage.getContentReader(),
                                 saveFile,
-                                ContentUtils.DEFAULT_FILE_CHARSET,
+                                ContentUtils.DEFAULT_FILE_CHARSET_NAME,
                                 monitor
                             );
                         } else {

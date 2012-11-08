@@ -393,7 +393,7 @@ public class DiagramLoader
         Map<ERDEntity, TableSaveInfo> infoMap = new IdentityHashMap<ERDEntity, TableSaveInfo>();
 
         // Save as XML
-        XMLBuilder xml = new XMLBuilder(out, ContentUtils.DEFAULT_FILE_CHARSET);
+        XMLBuilder xml = new XMLBuilder(out, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
         xml.setButify(true);
         if (verbose) {
             xml.addContent(

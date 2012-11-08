@@ -106,7 +106,7 @@ public class SQLQueryParameterRegistry
         try {
             OutputStream os = new FileOutputStream(storeFile);
             try {
-                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
+                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
                 xml.setButify(true);
                 xml.startElement("bindings");
                 for (Map.Entry<String, String> binding : parameterMap.entrySet()) {

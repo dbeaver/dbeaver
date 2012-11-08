@@ -47,6 +47,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
 
     private byte[] originalData;
     private byte[] data;
+    private static final int MAX_STRING_BYTES = 64;
 
     public JDBCContentBytes(byte[] data) {
         this.data = this.originalData = data;
@@ -186,7 +187,24 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         if (data == null) {
             return null;
         }
-        return "binary [" + data.length + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+        // Convert bytes to string
+        int length = data.length;
+        if (length > MAX_STRING_BYTES) {
+            length = MAX_STRING_BYTES;
+        }
+        char[] chars = new char[length];
+        for (int i = 0; i < length; i++) {
+            int b = data[i];
+            if (b < 0) {
+                b = -b + 127;
+            }
+            chars[i] = (char) b;
+        }
+        String strValue = new String(chars);
+        if (data.length > length) {
+            strValue += "...";
+        }
+        return strValue;
     }
 
     @Override

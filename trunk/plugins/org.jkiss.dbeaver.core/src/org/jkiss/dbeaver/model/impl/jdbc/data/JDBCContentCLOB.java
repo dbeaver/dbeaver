@@ -97,7 +97,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     throw new DBCException(e);
                 }
                 try {
-                    ContentUtils.copyReaderToFile(monitor, clob.getCharacterStream(), contentLength, ContentUtils.DEFAULT_FILE_CHARSET, tempFile);
+                    ContentUtils.copyReaderToFile(monitor, clob.getCharacterStream(), contentLength, ContentUtils.DEFAULT_FILE_CHARSET_NAME, tempFile);
                 } catch (Exception e) {
                     ContentUtils.deleteTempFile(monitor, tempFile);
                     throw new DBCException(e);
