@@ -384,7 +384,8 @@ public class GridColumn extends Item {
             int topIndex = parent.getTopIndex();
             int bottomIndex = parent.getBottomIndex();
             if (topIndex >= 0 && bottomIndex >= topIndex) {
-                for (int i = topIndex; i <= bottomIndex; i++) {
+                int itemCount = parent.getItemCount();
+                for (int i = topIndex; i <= bottomIndex && i < itemCount; i++) {
                     newWidth = Math.max(newWidth, computeCellWidth(columnIndex, i));
                 }
             }
