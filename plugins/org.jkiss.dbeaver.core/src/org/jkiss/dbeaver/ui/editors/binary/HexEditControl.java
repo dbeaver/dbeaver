@@ -202,8 +202,11 @@ public class HexEditControl extends Composite {
                         long newPos = doNavigateKeyPressed(ctrlKey, e.keyCode, getCaretPos(), false);
                         shiftStartAndEnd(newPos);
                     } else {  // if no modifier or control or alt
-                        endPosition = startPosition = doNavigateKeyPressed(ctrlKey, e.keyCode, getCaretPos(),
-                                                               e.widget == hexText && !isInserting);
+                        endPosition = startPosition = doNavigateKeyPressed(
+                            ctrlKey,
+                            e.keyCode,
+                            getCaretPos(),
+                            e.widget == hexText && !isInserting);
                         caretStickToStart = false;
                     }
                     ensureCaretIsVisible();
@@ -490,7 +493,7 @@ public class HexEditControl extends Composite {
         CharBuffer cb = CharBuffer.allocate(1);
         for (int i = 0; i < 256; ++i) {
             if (i < 0x20 || i == 0x7f) {
-                byteToChar[i] = '.';
+                byteToChar[i] = (char)(160 + i);
             } else {
                 bb.clear();
                 bb.put((byte) i);
@@ -937,8 +940,10 @@ public class HexEditControl extends Composite {
                 int offset = (int) (getCaretPos() - textAreasStart);
                 hexText.replaceTextRange(offset * 3, 2, byteToHex[tmpRawBuffer[0] & 0x0ff]);
                 hexText.setStyleRange(new StyleRange(offset * 3, 2, COLOR_BLUE, null));
-                previewText.replaceTextRange(offset, 1,
-                                             Character.toString(byteToChar[tmpRawBuffer[0] & 0x0ff]));
+                previewText.replaceTextRange(
+                    offset,
+                    1,
+                    Character.toString(byteToChar[tmpRawBuffer[0]]));
                 previewText.setStyleRange(new StyleRange(offset, 1, COLOR_BLUE, null));
             }
         }
