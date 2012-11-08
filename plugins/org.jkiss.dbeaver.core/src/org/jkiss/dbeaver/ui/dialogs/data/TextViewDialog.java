@@ -235,6 +235,7 @@ public class TextViewDialog extends ValueViewDialog {
             case 0:
                 return textEdit.getText();
             case 1:
+                System.out.println(getBinaryContent());
                 return getBinaryContent();
             default:
                 return null;
