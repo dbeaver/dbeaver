@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -70,15 +71,17 @@ public class SQLEntityResolver extends TemplateVariableResolver {
 
     static void resolveTables(DBRProgressMonitor monitor, DBPDataSource dataSource, List<DBSEntity> entities) throws DBException
     {
-        if (dataSource instanceof DBSObjectSelector) {
-            DBSObject selectedObject = ((DBSObjectSelector) dataSource).getSelectedObject();
-            if (selectedObject instanceof DBSObjectContainer) {
-                makeProposalsFromChildren(monitor, (DBSObjectContainer) selectedObject, entities);
+        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+        if (objectSelector != null) {
+            DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
+            if (objectContainer != null) {
+                makeProposalsFromChildren(monitor, objectContainer, entities);
                 return;
             }
         }
-        if (dataSource instanceof DBSObjectContainer) {
-            makeProposalsFromChildren(monitor, (DBSObjectContainer) dataSource, entities);
+        DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        if (objectContainer != null) {
+            makeProposalsFromChildren(monitor, objectContainer, entities);
         }
     }
 

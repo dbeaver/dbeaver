@@ -107,23 +107,23 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         @Override
         public IStatus run(DBRProgressMonitor monitor)
         {
-            DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, getDataSource());
-            DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, getDataSource());
-            if (oc == null || os == null) {
+            DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, getDataSource());
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, getDataSource());
+            if (objectContainer == null || objectSelector == null) {
                 return Status.CANCEL_STATUS;
             }
             try {
                 monitor.beginTask(CoreMessages.toolbar_datasource_selector_action_read_databases, 1);
-                Class<? extends DBSObject> childType = oc.getChildType(monitor);
+                Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
                 if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
                     enabled = false;
                 } else {
                     enabled = true;
-                    Collection<? extends DBSObject> children = oc.getChildren(monitor);
+                    Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
                     databasesInfo.list = CommonUtils.isEmpty(children) ?
                         Collections.<DBSObject>emptyList() :
                         new ArrayList<DBSObject>(children);
-                    databasesInfo.active = os.getSelectedObject();
+                    databasesInfo.active = objectSelector.getSelectedObject();
                 }
             }
             catch (DBException e) {
@@ -137,7 +137,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
                     DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                     for (DBSObject database : databasesInfo.list) {
-                        if (database instanceof DBSObjectContainer) {
+                        if (DBUtils.getAdapter(DBSObjectContainer.class, database) != null) {
                             navigatorModel.getNodeByObject(monitor, database, true);
                         }
                     }
@@ -451,87 +451,88 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private void fillDatabaseCombo()
     {
         if (databaseCombo != null && !databaseCombo.isDisposed()) {
-            databaseCombo.setRedraw(false);
-            try {
-                // Remove all but first item (which is constant)
-                databaseCombo.removeAll();
+            final DBSDataSourceContainer dsContainer = getDataSourceContainer();
+            if (dsContainer != null && dsContainer.isConnected()) {
+                final DBPDataSource dataSource = dsContainer.getDataSource();
 
-                boolean isEnabled = false;
-                final DBSDataSourceContainer dsContainer = getDataSourceContainer();
-                if (dsContainer != null && dsContainer.isConnected()) {
-                    final DBPDataSource dataSource = dsContainer.getDataSource();
-
-                    DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-                    DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-                    if (oc != null && os != null && os.supportsObjectSelect())
-                    {
-                        synchronized (dbListReads) {
-                            for (DatabaseListReader reader : dbListReads) {
-                                if (reader.getDataSource() == dataSource) {
-                                    return;
-                                }
+                DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+                DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+                if (oc != null && os != null && os.supportsObjectSelect())
+                {
+                    synchronized (dbListReads) {
+                        for (DatabaseListReader reader : dbListReads) {
+                            if (reader.getDataSource() == dataSource) {
+                                return;
                             }
-                            DatabaseListReader databaseReader = new DatabaseListReader(dataSource);
-                            databaseReader.addJobChangeListener(new JobChangeAdapter() {
-                                @Override
-                                public void done(IJobChangeEvent event)
-                                {
-                                    final DatabaseListReader job = (DatabaseListReader) event.getJob();
-                                    synchronized (dbListReads) {
-                                        dbListReads.remove(job);
+                        }
+                        DatabaseListReader databaseReader = new DatabaseListReader(dataSource);
+                        databaseReader.addJobChangeListener(new JobChangeAdapter() {
+                            @Override
+                            public void done(final IJobChangeEvent event)
+                            {
+                                UIUtils.runInUI(null, new Runnable() {
+                                    @Override
+                                    public void run()
+                                    {
+                                        fillDatabaseList((DatabaseListReader) event.getJob(), dsContainer);
                                     }
-                                    if (!job.enabled || dsContainer.getDataSource() != job.getDataSource()) {
-                                        return;
-                                    }
-                                    UIUtils.runInUI(null, new Runnable() {
-                                        @Override
-                                        public void run()
-                                        {
-                                            if (databaseCombo.isDisposed()) {
-                                                return;
-                                            }
-                                            if (job.databasesInfo.list != null && !job.databasesInfo.list.isEmpty()) {
-                                                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                                                for (DBSObject database : job.databasesInfo.list) {
-                                                    if (database instanceof DBSObjectContainer) {
-                                                        DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(database);
-                                                        if (dbNode != null) {
-                                                            databaseCombo.add(
-                                                                dbNode.getNodeIconDefault(),
-                                                                database.getName(),
-                                                                database);
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            if (job.databasesInfo.active != null) {
-                                                int dbCount = databaseCombo.getItemCount();
-                                                for (int i = 0; i < dbCount; i++) {
-                                                    String dbName = databaseCombo.getItem(i);
-                                                    if (dbName.equals(job.databasesInfo.active.getName())) {
-                                                        databaseCombo.select(i);
-                                                        break;
-                                                    }
-                                                }
-                                            }
-                                            databaseCombo.setEnabled(job.enabled);
-                                        }
-                                    });
-                                }
-                            });
-                            dbListReads.add(databaseReader);
-                            databaseReader.schedule();
+                                });
+                            }
+                        });
+                        dbListReads.add(databaseReader);
+                        databaseReader.schedule();
+                    }
+                }
+                curDataSourceContainer = new SoftReference<DBSDataSourceContainer>(dsContainer);
+            } else {
+                curDataSourceContainer = null;
+            }
+        }
+    }
+
+    private synchronized void fillDatabaseList(DatabaseListReader reader, DBSDataSourceContainer dsContainer)
+    {
+        databaseCombo.setRedraw(false);
+        try {
+            // Remove all but first item (which is constant)
+            databaseCombo.removeAll();
+            synchronized (dbListReads) {
+                dbListReads.remove(reader);
+            }
+            if (!reader.enabled || dsContainer.getDataSource() != reader.getDataSource()) {
+                return;
+            }
+            if (databaseCombo.isDisposed()) {
+                return;
+            }
+            if (reader.databasesInfo.list != null && !reader.databasesInfo.list.isEmpty()) {
+                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                for (DBSObject database : reader.databasesInfo.list) {
+                    if (database instanceof DBSObjectContainer) {
+                        DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(database);
+                        if (dbNode != null) {
+                            databaseCombo.add(
+                                dbNode.getNodeIconDefault(),
+                                database.getName(),
+                                database);
                         }
                     }
-                    curDataSourceContainer = new SoftReference<DBSDataSourceContainer>(dsContainer);
-                } else {
-                    curDataSourceContainer = null;
                 }
-                databaseCombo.setEnabled(isEnabled);
             }
-            finally {
-                databaseCombo.setRedraw(true);
+            if (reader.databasesInfo.active != null) {
+                int dbCount = databaseCombo.getItemCount();
+                for (int i = 0; i < dbCount; i++) {
+                    String dbName = databaseCombo.getItem(i);
+                    if (dbName.equals(reader.databasesInfo.active.getName())) {
+                        databaseCombo.select(i);
+                        break;
+                    }
+                }
             }
+            databaseCombo.setEnabled(reader.enabled);
+        }
+        finally {
+            databaseCombo.setRedraw(true);
         }
     }
 

@@ -232,10 +232,11 @@ public final class DBUtils {
         } else {
             // Child is not a table. May be catalog/schema names was omitted.
             // Try to use active child
-            if (rootSC instanceof DBSObjectSelector) {
-                DBSObject activeChild = ((DBSObjectSelector) rootSC).getSelectedObject();
-                if (activeChild instanceof DBSObjectContainer && DBSTable.class.isAssignableFrom(((DBSObjectContainer)activeChild).getChildType(monitor))) {
-                    return ((DBSObjectContainer)activeChild).getChild(monitor, tableName);
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, rootSC);
+            if (objectSelector != null) {
+                DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
+                if (objectContainer != null && DBSTable.class.isAssignableFrom(objectContainer.getChildType(monitor))) {
+                    return objectContainer.getChild(monitor, tableName);
                 }
             }
 
@@ -254,10 +255,11 @@ public final class DBUtils {
             String childName = names.get(i);
             DBSObject child = parent.getChild(monitor, childName);
             if (child == null) {
-                if (parent instanceof DBSObjectSelector) {
-                    DBSObject activeChild = ((DBSObjectSelector) parent).getSelectedObject();
-                    if (activeChild instanceof DBSObjectContainer) {
-                        parent = (DBSObjectContainer)activeChild;
+                DBSObjectSelector selector = DBUtils.getAdapter(DBSObjectSelector.class, parent);
+                if (selector != null) {
+                    DBSObjectContainer container = DBUtils.getAdapter(DBSObjectContainer.class, selector.getSelectedObject());
+                    if (container != null) {
+                        parent = container;
                         child = parent.getChild(monitor, childName);
                     }
                 }
