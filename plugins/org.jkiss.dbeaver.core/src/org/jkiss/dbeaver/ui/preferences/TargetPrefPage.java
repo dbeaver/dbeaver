@@ -26,6 +26,8 @@ import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferencePage;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.pde.internal.core.NLResourceHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -145,7 +147,8 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                     enableDataSourceSpecificSettings(enabled);
                 }
             });
-            dataSourceSettingsButton.setText(CoreMessages.pref_page_target_button_use_datasource_settings);
+            String dataSourceName = containerNode.getDataSourceContainer().getName();
+            dataSourceSettingsButton.setText(NLS.bind(CoreMessages.pref_page_target_button_use_datasource_settings, dataSourceName));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             dataSourceSettingsButton.setLayoutData(gd);
 
@@ -153,7 +156,9 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
         } else if (supportsDataSourceSpecificOptions()) {
-            changeSettingsTargetLink = createLink(parent, CoreMessages.pref_page_target_link_show_datasource_settings);
+            changeSettingsTargetLink = createLink(
+                parent,
+                CoreMessages.pref_page_target_link_show_datasource_settings);
             changeSettingsTargetLink.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
         }
 
