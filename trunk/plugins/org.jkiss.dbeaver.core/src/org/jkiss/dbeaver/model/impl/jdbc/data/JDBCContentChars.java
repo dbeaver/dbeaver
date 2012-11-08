@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
@@ -47,7 +48,8 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     private String originalData;
     private String data;
 
-    public JDBCContentChars(String data) {
+    public JDBCContentChars(DBPDataSource dataSource, String data) {
+        super(dataSource);
         this.data = this.originalData = data;
     }
 
@@ -138,7 +140,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     @Override
     public String getCharset()
     {
-        return ContentUtils.getDefaultFileEncoding();
+        return ContentUtils.getDefaultBinaryFileEncoding(dataSource);
     }
 
     @Override
@@ -173,7 +175,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     @Override
     public JDBCContentChars makeNull()
     {
-        return new JDBCContentChars(null);
+        return new JDBCContentChars(dataSource, null);
     }
 
     @Override
@@ -198,7 +200,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     @Override
     public JDBCContentChars cloneValue(DBRProgressMonitor monitor)
     {
-        return new JDBCContentChars(data);
+        return new JDBCContentChars(dataSource, data);
     }
 
 }

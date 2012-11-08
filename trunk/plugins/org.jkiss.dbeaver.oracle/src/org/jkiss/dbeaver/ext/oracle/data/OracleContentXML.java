@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -35,15 +36,15 @@ import java.sql.SQLXML;
  * XML content
  */
 public class OracleContentXML extends JDBCContentXML {
-    public OracleContentXML(SQLXML xml)
+    public OracleContentXML(DBPDataSource dataSource, SQLXML xml)
     {
-        super(xml);
+        super(dataSource, xml);
     }
 
     @Override
     protected OracleContentXML createNewContent()
     {
-        return new OracleContentXML(null);
+        return new OracleContentXML(dataSource, null);
     }
 
     @Override

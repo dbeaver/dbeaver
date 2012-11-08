@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
@@ -47,9 +49,9 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
 
     private byte[] originalData;
     private byte[] data;
-    private static final int MAX_STRING_BYTES = 64;
 
-    public JDBCContentBytes(byte[] data) {
+    public JDBCContentBytes(DBPDataSource dataSource, byte[] data) {
+        super(dataSource);
         this.data = this.originalData = data;
     }
 
@@ -83,7 +85,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
     @Override
     public String getCharset()
     {
-        return ContentUtils.getDefaultFileEncoding();
+        return ContentUtils.getDefaultBinaryFileEncoding(dataSource);
     }
 
     @Override
@@ -172,7 +174,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
     @Override
     public JDBCContentBytes makeNull()
     {
-        return new JDBCContentBytes(null);
+        return new JDBCContentBytes(dataSource, null);
     }
 
     @Override
@@ -187,10 +189,15 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         if (data == null) {
             return null;
         }
+        boolean showStrings = dataSource.getContainer().getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
+        if (!showStrings) {
+            return "binary [" + data.length + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        int maxLength = dataSource.getContainer().getPreferenceStore().getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
         // Convert bytes to string
         int length = data.length;
-        if (length > MAX_STRING_BYTES) {
-            length = MAX_STRING_BYTES;
+        if (length > maxLength) {
+            length = maxLength;
         }
         char[] chars = new char[length];
         for (int i = 0; i < length; i++) {
@@ -200,17 +207,19 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
             }
             chars[i] = (char) b;
         }
-        String strValue = new String(chars);
+        StringBuilder strValue = new StringBuilder(length + 10);
+        strValue.append(chars);
         if (data.length > length) {
-            strValue += "...";
+            strValue.append("...");
+            strValue.append(" [").append(data.length).append("]");
         }
-        return strValue;
+        return strValue.toString();
     }
 
     @Override
     public JDBCContentBytes cloneValue(DBRProgressMonitor monitor)
     {
-        return new JDBCContentBytes(data);
+        return new JDBCContentBytes(dataSource, data);
     }
 
 }
