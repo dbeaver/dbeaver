@@ -1486,6 +1486,8 @@ public class LightGrid extends Canvas {
         currentVisibleItems = 0;
         focusItem = -1;
         focusColumn = null;
+        topIndex = -1;
+        bottomIndex = -1;
 
         List<GridColumn> columnsCopy = new ArrayList<GridColumn>(columns);
         for (GridColumn column : columnsCopy) {
