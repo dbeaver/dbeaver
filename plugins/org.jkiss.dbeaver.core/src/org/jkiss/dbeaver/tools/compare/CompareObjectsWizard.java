@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -145,7 +146,23 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
     private void renderReport(DBRProgressMonitor monitor, CompareReport report)
     {
         try {
-            File reportFile = File.createTempFile("compare-report", ".html");
+            File reportFile;
+            switch (settings.getOutputType()) {
+                case BROWSER:
+                    reportFile = File.createTempFile("compare-report", ".html");
+                    break;
+                default:
+                {
+                    StringBuilder fileName = new StringBuilder("compare");//"compare-report.html";
+                    for (DBNDatabaseNode node : report.getNodes()) {
+                        fileName.append("-").append(CommonUtils.escapeIdentifier(node.getName()));
+                    }
+                    fileName.append("-report.html");
+                    reportFile = new File(settings.getOutputFolder(), fileName.toString());
+                    break;
+                }
+            }
+
             reportFile.deleteOnExit();
             OutputStream outputStream = new FileOutputStream(reportFile);
             try {

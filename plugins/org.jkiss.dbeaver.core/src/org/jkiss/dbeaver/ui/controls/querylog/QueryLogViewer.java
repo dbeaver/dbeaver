@@ -74,6 +74,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.Locale;
 
 /**
  * QueryLogViewer
@@ -109,7 +110,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     }
 
     private static LogColumn COLUMN_TIME = new LogColumn(CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
-        private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss"); //$NON-NLS-1$
+        private DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         @Override
         String getText(QMMObject object)
         {
