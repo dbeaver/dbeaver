@@ -211,7 +211,7 @@ public class DataSourceProviderRegistry
         try {
             OutputStream os = new FileOutputStream(driversConfig);
             try {
-                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET);
+                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
                 xml.setButify(true);
                 xml.startElement(RegistryConstants.TAG_DRIVERS);
                 for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {

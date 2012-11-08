@@ -147,15 +147,17 @@ public class TextViewDialog extends ValueViewDialog {
             public void widgetSelected(SelectionEvent event)
             {
                 getDialogSettings().put(VALUE_TYPE_SELECTOR, editorContainer.getSelectionIndex());
+/*
                 switch (editorContainer.getSelectionIndex()) {
                     case 0: {
-                        setTextContent();
+                        textEdit.setText(getBinaryContent());
                         break;
                     }
                     case 1:
                         setBinaryContent(textEdit.getText());
                         break;
                 }
+*/
             }
         });
         updateValueLength();
@@ -171,7 +173,7 @@ public class TextViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
-    private void setTextContent()
+    private String getBinaryContent()
     {
         BinaryContent content = hexEditControl.getContent();
         ByteBuffer buffer = ByteBuffer.allocate((int) content.length());
@@ -196,7 +198,7 @@ public class TextViewDialog extends ValueViewDialog {
             log.error(e);
             stringValue = new String(buffer.array());
         }
-        textEdit.setText(stringValue);
+        return stringValue;
     }
 
     private void setBinaryContent(String stringValue)
@@ -229,10 +231,14 @@ public class TextViewDialog extends ValueViewDialog {
     @Override
     protected Object getEditorValue()
     {
-        if (editorContainer.getSelectionIndex() == 1) {
-            setTextContent();
+        switch (editorContainer.getSelectionIndex()) {
+            case 0:
+                return textEdit.getText();
+            case 1:
+                return getBinaryContent();
+            default:
+                return null;
         }
-        return textEdit.getText();
     }
 
     private void updateValueLength()

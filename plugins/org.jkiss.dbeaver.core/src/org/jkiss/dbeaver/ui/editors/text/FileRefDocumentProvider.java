@@ -218,7 +218,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
         try {
             if (encoding == null) {
-                encoding = ContentUtils.DEFAULT_FILE_CHARSET;
+                encoding = ContentUtils.DEFAULT_FILE_CHARSET_NAME;
             }
 
             in = new BufferedReader(new InputStreamReader(contentStream, encoding), DEFAULT_BUFFER_SIZE);
