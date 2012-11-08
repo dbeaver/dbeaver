@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -47,7 +48,8 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
     private OPAQUE_TYPE opaque;
     private InputStream tmpStream;
 
-    public OracleContentOpaque(OPAQUE_TYPE opaque) {
+    public OracleContentOpaque(DBPDataSource dataSource, OPAQUE_TYPE opaque) {
+        super(dataSource);
         this.opaque = opaque;
     }
 

@@ -39,7 +39,6 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     private Button autoCommitCheck;
     private Button keepStatementOpenCheck;
     private Button rollbackOnErrorCheck;
-    private Spinner resultSetSize;
     private Spinner memoryContentSize;
     private Button readExpensiveCheck;
     private Button caseSensitiveNamesCheck;
@@ -55,7 +54,6 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
             store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
             store.contains(PrefConstants.KEEP_STATEMENT_OPEN) ||
@@ -88,18 +86,6 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
         }
 
         {
-            Group queriesGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_queries, 2, SWT.NONE, 0);
-            UIUtils.createControlLabel(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_max_size);
-
-            resultSetSize = new Spinner(queriesGroup, SWT.BORDER);
-            resultSetSize.setSelection(0);
-            resultSetSize.setDigits(0);
-            resultSetSize.setIncrement(1);
-            resultSetSize.setMinimum(1);
-            resultSetSize.setMaximum(1024 * 1024);
-        }
-
-        {
             Group performanceGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_performance, 2, SWT.NONE, 0);
 
             readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, false);
@@ -129,7 +115,6 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
             autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
             keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
             rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
-            resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
             memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
             readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
             caseSensitiveNamesCheck.setSelection(store.getBoolean(PrefConstants.META_CASE_SENSITIVE));
@@ -145,7 +130,6 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
             store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
             store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
-            store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
             store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
             store.setValue(PrefConstants.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
@@ -161,7 +145,6 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
         store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
         store.setToDefault(PrefConstants.KEEP_STATEMENT_OPEN);
         store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
-        store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
         store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
         store.setToDefault(PrefConstants.READ_EXPENSIVE_PROPERTIES);
         store.setToDefault(PrefConstants.META_CASE_SENSITIVE);

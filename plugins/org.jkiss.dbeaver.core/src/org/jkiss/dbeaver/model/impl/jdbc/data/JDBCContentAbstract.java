@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -31,6 +32,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  * @author Serge Rider
  */
 public abstract class JDBCContentAbstract implements DBDContent, DBDValueCloneable {
+
+    protected final DBPDataSource dataSource;
+
+    protected JDBCContentAbstract(DBPDataSource dataSource)
+    {
+        this.dataSource = dataSource;
+    }
 
     public abstract void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement preparedStatement, DBSTypedObject columnType, int paramIndex)
         throws DBCException;

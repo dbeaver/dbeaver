@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -47,7 +48,8 @@ public class JDBCContentXML extends JDBCContentLOB {
     private SQLXML xml;
     protected Reader tmpReader;
 
-    public JDBCContentXML(SQLXML xml) {
+    public JDBCContentXML(DBPDataSource dataSource, SQLXML xml) {
+        super(dataSource);
         this.xml = xml;
     }
 
@@ -166,7 +168,7 @@ public class JDBCContentXML extends JDBCContentLOB {
     @Override
     protected JDBCContentLOB createNewContent()
     {
-        return new JDBCContentXML(null);
+        return new JDBCContentXML(dataSource, null);
     }
 
     @Override
