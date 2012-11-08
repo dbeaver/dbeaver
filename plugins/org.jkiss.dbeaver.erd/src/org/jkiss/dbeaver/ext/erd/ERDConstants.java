@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
  */
 public class ERDConstants {
 
+    public static final String ERD_CONTROL_ID = "org.jkiss.dbeaver.erd.ERDEditor";
+
     public static final String PREF_PRINT_PAGE_MODE = "erd.print.page-mode";
     public static final String PREF_PRINT_MARGIN_TOP = "erd.print.margin-top";
     public static final String PREF_PRINT_MARGIN_BOTTOM = "erd.print.margin-bottom";
