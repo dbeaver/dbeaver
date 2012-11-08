@@ -109,20 +109,20 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         if (value == null) {
             return createValueObject(context, column);
         } else if (value instanceof byte[]) {
-            return new JDBCContentBytes((byte[]) value);
+            return new JDBCContentBytes(context.getDataSource(), (byte[]) value);
 //        } else if (value instanceof ByteBuffer) {
 //            ByteBuffer buffer = (ByteBuffer)value;
 //            byte data[] = new byte[buffer.remaining()];
 //            buffer.duplicate().get(data);
 //            return new JDBCContentBytes(data);
         } else if (value instanceof String) {
-            return new JDBCContentChars((String) value);
+            return new JDBCContentChars(context.getDataSource(), (String) value);
         } else if (value instanceof Blob) {
-            return new JDBCContentBLOB((Blob) value);
+            return new JDBCContentBLOB(context.getDataSource(), (Blob) value);
         } else if (value instanceof Clob) {
-            return new JDBCContentCLOB((Clob) value);
+            return new JDBCContentCLOB(context.getDataSource(), (Clob) value);
         } else if (value instanceof SQLXML) {
-            return new JDBCContentXML((SQLXML) value);
+            return new JDBCContentXML(context.getDataSource(), (SQLXML) value);
 //        } else if (value instanceof CharBuffer) {
 //            CharBuffer buffer = (CharBuffer)value;
 //            char data[] = new char[buffer.remaining()];
@@ -185,18 +185,18 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             case java.sql.Types.NVARCHAR:
             case java.sql.Types.LONGVARCHAR:
             case java.sql.Types.LONGNVARCHAR:
-                return new JDBCContentChars(null);
+                return new JDBCContentChars(context.getDataSource(), null);
             case java.sql.Types.CLOB:
             case java.sql.Types.NCLOB:
-                return new JDBCContentCLOB(null);
+                return new JDBCContentCLOB(context.getDataSource(), null);
             case java.sql.Types.BINARY:
             case java.sql.Types.VARBINARY:
             case java.sql.Types.LONGVARBINARY:
-                return new JDBCContentBytes(null);
+                return new JDBCContentBytes(context.getDataSource(), null);
             case java.sql.Types.BLOB:
-                return new JDBCContentBLOB(null);
+                return new JDBCContentBLOB(context.getDataSource(), null);
             case java.sql.Types.SQLXML:
-                return new JDBCContentXML(null);
+                return new JDBCContentXML(context.getDataSource(), null);
             default:
                 throw new DBCException(CoreMessages.model_jdbc_unsupported_column_type_ + column.getTypeName());
         }
@@ -280,7 +280,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     public Object getValueFromControl(Text control)
                     {
                         String newValue = control.getText();
-                        return new JDBCContentChars(newValue);
+                        return new JDBCContentChars(controller.getDataSource(), newValue);
                     }
                 });
                 editor.setText(value.getData() == null ? "" : value.getData()); //$NON-NLS-1$

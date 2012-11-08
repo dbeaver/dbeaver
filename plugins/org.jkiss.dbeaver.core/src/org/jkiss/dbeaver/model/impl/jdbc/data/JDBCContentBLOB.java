@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -51,7 +52,8 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     private Blob blob;
     private InputStream tmpStream;
 
-    public JDBCContentBLOB(Blob blob) {
+    public JDBCContentBLOB(DBPDataSource dataSource, Blob blob) {
+        super(dataSource);
         this.blob = blob;
     }
 
@@ -184,7 +186,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     @Override
     protected JDBCContentLOB createNewContent()
     {
-        return new JDBCContentBLOB(null);
+        return new JDBCContentBLOB(dataSource, null);
     }
 
     @Override

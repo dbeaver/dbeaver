@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
@@ -38,6 +39,11 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
 
     private DBDContentStorage originalStorage;
     protected DBDContentStorage storage;
+
+    protected JDBCContentLOB(DBPDataSource dataSource)
+    {
+        super(dataSource);
+    }
 
     @Override
     public long getContentLength() throws DBCException {

@@ -49,9 +49,9 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
         if (object == null) {
             return createValueObject(context, column);
         } else if (object.getClass().getName().equals("oracle.xdb.XMLType")) {
-            return new OracleContentXML(new OracleXMLWrapper(object));
+            return new OracleContentXML(context.getDataSource(), new OracleXMLWrapper(object));
         } else if (object instanceof SQLXML) {
-            return new OracleContentXML((SQLXML) object);
+            return new OracleContentXML(context.getDataSource(), (SQLXML) object);
         } else {
             throw new DBCException("Unsupported object type: " + object.getClass().getName());
         }
