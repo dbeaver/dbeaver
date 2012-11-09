@@ -18,8 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle;
 
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
@@ -41,7 +41,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         connectionsProps = new HashMap<String, String>();
 
         // Program name
-        connectionsProps.put("v$session.program", "DBeaver " + Platform.getProduct().getDefiningBundle().getVersion());
+        connectionsProps.put("v$session.program", "DBeaver " + DBeaverCore.getVersion());
     }
 
     public static Map<String,String> getConnectionsProps() {
