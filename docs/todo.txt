@@ -19,3 +19,4 @@ Plugin:
 Customize resource roots
 Disable Quick Access toolbar
 column variable in template
+Variable number of columns in RS (cassandra)
