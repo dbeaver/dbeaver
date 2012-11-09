@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.runtime.qm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMController;
@@ -135,6 +136,8 @@ public class QMControllerImpl implements QMController {
         RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
             DBCExecutionPurpose.USER + "," +
             DBCExecutionPurpose.USER_SCRIPT);
+        RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_LOG_DIRECTORY, Platform.getLogFileLocation().toFile().getParent());
     }
 
     private class NotifyInvocationHandler implements InvocationHandler {
