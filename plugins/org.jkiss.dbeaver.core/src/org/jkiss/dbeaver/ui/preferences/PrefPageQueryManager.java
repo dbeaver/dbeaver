@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -98,6 +100,13 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             checkStoreLog.setLayoutData(gd);
+            checkStoreLog.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
+                }
+            });
             textOutputFolder = UIUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null);
             textHistoryDays = UIUtils.createLabelText(storageSettings, CoreMessages.pref_page_query_manager_label_days_to_store_log, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
             textHistoryDays.setEnabled(false);
@@ -128,6 +137,10 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
 
         textHistoryDays.setText(store.getString(QMConstants.PROP_HISTORY_DAYS));
         textEntriesPerPage.setText(store.getString(QMConstants.PROP_ENTRIES_PER_PAGE));
+
+        checkStoreLog.setSelection(store.getBoolean(QMConstants.PROP_STORE_LOG_FILE));
+        textOutputFolder.setText(store.getString(QMConstants.PROP_LOG_DIRECTORY));
+        UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
 
         super.performDefaults();
     }
@@ -161,6 +174,8 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         if (entriesPerPage != null) {
             store.setValue(QMConstants.PROP_ENTRIES_PER_PAGE, entriesPerPage);
         }
+        store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
+        store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());
         RuntimeUtils.savePreferenceStore(store);
 
         return super.performOk();
