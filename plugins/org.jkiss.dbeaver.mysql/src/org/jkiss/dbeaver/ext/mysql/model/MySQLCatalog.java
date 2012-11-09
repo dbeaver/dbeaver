@@ -308,7 +308,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, MySQLCatalog owner)
             throws SQLException
         {
-            return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(getDataSource(), getName()));
+            return context.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this));
         }
 
         @Override
@@ -602,7 +602,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             throws SQLException
         {
             return context.prepareStatement(
-                "SHOW FULL TRIGGERS FROM " + getName());
+                "SHOW FULL TRIGGERS FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this));
         }
 
         @Override
