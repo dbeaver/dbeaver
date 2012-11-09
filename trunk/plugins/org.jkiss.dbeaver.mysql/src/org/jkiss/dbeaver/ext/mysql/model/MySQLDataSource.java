@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
@@ -379,7 +380,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             // Provide client info
             IProduct product = Platform.getProduct();
             if (product != null) {
-                String appName = "DBeaver " + product.getDefiningBundle().getVersion().toString();
+                String appName = "DBeaver " + DBeaverCore.getVersion().toString();
                 try {
                     ((Connection)mysqlConnection).setClientInfo("ApplicationName", appName);
                 } catch (Throwable e) {
