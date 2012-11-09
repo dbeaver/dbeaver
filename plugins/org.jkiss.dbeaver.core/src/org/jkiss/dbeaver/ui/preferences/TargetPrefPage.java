@@ -27,7 +27,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.pde.internal.core.NLResourceHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
