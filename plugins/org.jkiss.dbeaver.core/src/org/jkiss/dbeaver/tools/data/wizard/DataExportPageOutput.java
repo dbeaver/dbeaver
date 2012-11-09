@@ -71,14 +71,14 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
 
         {
             Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
-            directoryText = UIUtils.createOutputFolderChooser(generalSettings, new ModifyListener() {
+            directoryText = UIUtils.createOutputFolderChooser(generalSettings, null, new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
                     getWizard().getSettings().setOutputFolder(directoryText.getText());
                     updatePageCompletion();
                 }
             });
-            ((GridData)directoryText.getLayoutData()).horizontalSpan = 3;
+            ((GridData)directoryText.getParent().getLayoutData()).horizontalSpan = 4;
 
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);

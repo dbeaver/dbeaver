@@ -81,7 +81,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
         proxyPasswordText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_password, "", SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
 
         Group drivers = UIUtils.createControlGroup(composite, "Drivers location", 3, GridData.FILL_HORIZONTAL, 300);
-        customDriversHome = UIUtils.createOutputFolderChooser(drivers, null);
+        customDriversHome = UIUtils.createOutputFolderChooser(drivers, null, null);
 
         performDefaults();
 

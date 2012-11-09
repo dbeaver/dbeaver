@@ -26,8 +26,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -77,7 +75,7 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
         {
             Group outputSettings = new Group(composite, SWT.NONE);
             outputSettings.setText("Output");
-            gl = new GridLayout(3, false);
+            gl = new GridLayout(2, false);
             outputSettings.setLayout(gl);
             outputSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -86,9 +84,6 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
             for (CompareObjectsSettings.OutputType outputType : CompareObjectsSettings.OutputType.values()) {
                 reportTypeCombo.add(outputType.getTitle());
             }
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 2;
-            reportTypeCombo.setLayoutData(gd);
             reportTypeCombo.select(settings.getOutputType().ordinal());
             reportTypeCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -97,16 +92,16 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
                     for (CompareObjectsSettings.OutputType outputType : CompareObjectsSettings.OutputType.values()) {
                         if (outputType.ordinal() == reportTypeCombo.getSelectionIndex()) {
                             settings.setOutputType(outputType);
-                            outputFolderText.setEnabled(outputType == CompareObjectsSettings.OutputType.FILE);
+                            UIUtils.enableWithChildren(outputFolderText.getParent(), outputType == CompareObjectsSettings.OutputType.FILE);
                             break;
                         }
                     }
                 }
             });
 
-            outputFolderText = UIUtils.createOutputFolderChooser(outputSettings, null);
+            outputFolderText = UIUtils.createOutputFolderChooser(outputSettings, null, null);
             outputFolderText.setText(settings.getOutputFolder());
-            outputFolderText.setEnabled(settings.getOutputType() == CompareObjectsSettings.OutputType.FILE);
+            UIUtils.enableWithChildren(outputFolderText.getParent(), settings.getOutputType() == CompareObjectsSettings.OutputType.FILE);
             outputFolderText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e)
