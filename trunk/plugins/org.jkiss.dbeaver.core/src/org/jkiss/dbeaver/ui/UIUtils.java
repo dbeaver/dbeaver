@@ -924,12 +924,13 @@ public class UIUtils {
             helpContextID);
     }
 
-    public static Text createOutputFolderChooser(final Composite parent, ModifyListener changeListener)
+    public static Text createOutputFolderChooser(final Composite parent, String label, ModifyListener changeListener)
     {
-        UIUtils.createControlLabel(parent, CoreMessages.dialog_export_wizard_output_label_directory);
-        final Text directoryText = new Text(parent, SWT.BORDER);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        directoryText.setLayoutData(gd);
+        UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.dialog_export_wizard_output_label_directory);
+        Composite chooserPlaceholder = UIUtils.createPlaceholder(parent, 2);
+        chooserPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        final Text directoryText = new Text(chooserPlaceholder, SWT.BORDER);
+        directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (changeListener != null) {
             directoryText.addModifyListener(changeListener);
         }
@@ -959,8 +960,9 @@ public class UIUtils {
             }
         });
 
-        Button openFolder = new Button(parent, SWT.PUSH);
+        Button openFolder = new Button(chooserPlaceholder, SWT.PUSH | SWT.FLAT);
         openFolder.setImage(DBIcon.TREE_FOLDER.getImage());
+        openFolder.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER));
         openFolder.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -1108,6 +1110,18 @@ public class UIUtils {
             return partSite.getSelectionProvider();
         } else {
             return null;
+        }
+    }
+
+    public static void enableWithChildren(Composite composite, boolean enable)
+    {
+        composite.setEnabled(enable);
+        for (Control child : composite.getChildren()) {
+            if (child instanceof Composite) {
+                enableWithChildren((Composite) child, enable);
+            } else {
+                child.setEnabled(enable);
+            }
         }
     }
 
