@@ -34,6 +34,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -116,10 +118,6 @@ public class QMControllerImpl implements QMController {
         return metaHandler.getPastEvents();
     }
 
-    DataSourceProviderRegistry getDataSourceRegistry() {
-        return dataSourceRegistry;
-    }
-
     List<QMExecutionHandler> getHandlers()
     {
         return handlers;
@@ -130,9 +128,7 @@ public class QMControllerImpl implements QMController {
         RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);
         RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_ENTRIES_PER_PAGE, 200);
         RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_OBJECT_TYPES,
-            QMConstants.OBJECT_TYPE_TRANSACTION + "," +
-            QMConstants.OBJECT_TYPE_QUERY + "," +
-            QMConstants.OBJECT_TYPE_SCRIPT);
+            QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query)));
         RuntimeUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
             DBCExecutionPurpose.USER + "," +
             DBCExecutionPurpose.USER_SCRIPT);
