@@ -34,10 +34,12 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.QMConstants;
+import org.jkiss.dbeaver.runtime.qm.QMObjectType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -48,7 +50,6 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.qm"; //$NON-NLS-1$
     private Button checkObjectTypeSessions;
     private Button checkObjectTypeTxn;
-    private Button checkObjectTypeScripts;
     private Button checkObjectTypeQueries;
     private Button checkQueryTypeUser;
     private Button checkQueryTypeScript;
@@ -78,7 +79,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         Group groupObjects = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_query_manager_group_object_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 170);
         checkObjectTypeSessions = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_sessions, false);
         checkObjectTypeTxn = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_transactions, false);
-        checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_scripts, false);
+        //checkObjectTypeScripts = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_scripts, false);
         checkObjectTypeQueries = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_query_manager_checkbox_queries, false);
 
         Group groupQueryTypes = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_query_manager_group_query_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 170);
@@ -120,13 +121,12 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
     protected void performDefaults()
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
-        List<String> objectTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_OBJECT_TYPES), ',');
-        List<String> queryTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',');
+        Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
+        Collection<String> queryTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',');
 
-        checkObjectTypeSessions.setSelection(objectTypes.contains(QMConstants.OBJECT_TYPE_SESSION));
-        checkObjectTypeTxn.setSelection(objectTypes.contains(QMConstants.OBJECT_TYPE_TRANSACTION));
-        checkObjectTypeScripts.setSelection(objectTypes.contains(QMConstants.OBJECT_TYPE_SCRIPT));
-        checkObjectTypeQueries.setSelection(objectTypes.contains(QMConstants.OBJECT_TYPE_QUERY));
+        checkObjectTypeSessions.setSelection(objectTypes.contains(QMObjectType.session));
+        checkObjectTypeTxn.setSelection(objectTypes.contains(QMObjectType.txn));
+        checkObjectTypeQueries.setSelection(objectTypes.contains(QMObjectType.query));
 
         checkQueryTypeUser.setSelection(queryTypes.contains(DBCExecutionPurpose.USER.name()));
         checkQueryTypeScript.setSelection(queryTypes.contains(DBCExecutionPurpose.USER_SCRIPT.name()));
@@ -148,12 +148,11 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
     @Override
     public boolean performOk()
     {
-        List<String> objectTypes = new ArrayList<String>();
+        List<QMObjectType> objectTypes = new ArrayList<QMObjectType>();
         List<String> queryTypes = new ArrayList<String>();
-        if (checkObjectTypeSessions.getSelection()) objectTypes.add(QMConstants.OBJECT_TYPE_SESSION);
-        if (checkObjectTypeTxn.getSelection()) objectTypes.add(QMConstants.OBJECT_TYPE_TRANSACTION);
-        if (checkObjectTypeScripts.getSelection()) objectTypes.add(QMConstants.OBJECT_TYPE_SCRIPT);
-        if (checkObjectTypeQueries.getSelection()) objectTypes.add(QMConstants.OBJECT_TYPE_QUERY);
+        if (checkObjectTypeSessions.getSelection()) objectTypes.add(QMObjectType.session);
+        if (checkObjectTypeTxn.getSelection()) objectTypes.add(QMObjectType.txn);
+        if (checkObjectTypeQueries.getSelection()) objectTypes.add(QMObjectType.query);
 
         if (checkQueryTypeUser.getSelection()) queryTypes.add(DBCExecutionPurpose.USER.name());
         if (checkQueryTypeScript.getSelection()) queryTypes.add(DBCExecutionPurpose.USER_SCRIPT.name());
@@ -166,7 +165,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         Integer entriesPerPage = UIUtils.getTextInteger(textEntriesPerPage);
 
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
-        store.setValue(QMConstants.PROP_OBJECT_TYPES, CommonUtils.makeString(objectTypes, ','));
+        store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(objectTypes));
         store.setValue(QMConstants.PROP_QUERY_TYPES, CommonUtils.makeString(queryTypes, ','));
         if (historyDays != null) {
             store.setValue(QMConstants.PROP_HISTORY_DAYS, historyDays);

@@ -33,9 +33,4 @@ public class QMConstants {
     public static final String PROP_STORE_LOG_FILE = PROP_PREFIX + "storeLogs";
     public static final String PROP_LOG_DIRECTORY = PROP_PREFIX + "logDirectory";
 
-    public static final String OBJECT_TYPE_SESSION = "session";
-    public static final String OBJECT_TYPE_TRANSACTION = "txn";
-    public static final String OBJECT_TYPE_SCRIPT = "script";
-    public static final String OBJECT_TYPE_QUERY = "query";
-
 }

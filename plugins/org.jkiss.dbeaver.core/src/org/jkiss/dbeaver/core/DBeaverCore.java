@@ -51,12 +51,12 @@ import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
+import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -101,6 +101,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
     private DBNModel navigatorModel;
     private QMControllerImpl queryManager;
+    private QMLogFileWriter qmLogWriter;
     private SharedTextColors sharedTextColors;
     private ProjectRegistry projectRegistry;
 
@@ -187,6 +188,8 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         this.networkHandlerRegistry = new NetworkHandlerRegistry(extensionRegistry);
 
         this.queryManager = new QMControllerImpl(dataSourceProviderRegistry);
+        this.qmLogWriter = new QMLogFileWriter();
+        this.queryManager.registerMetaListener(qmLogWriter);
 
         // Init preferences
         initDefaultPreferences();
@@ -292,6 +295,10 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             }
         }
 
+        if (qmLogWriter != null) {
+            this.queryManager.unregisterMetaListener(qmLogWriter);
+            this.qmLogWriter = null;
+        }
         if (queryManager != null) {
             queryManager.dispose();
             //queryManager = null;
@@ -510,14 +517,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             // do nothing
         }
     }
-
-/*
-    public IFolder getAutosaveFolder(DBRProgressMonitor monitor)
-        throws IOException
-    {
-        return getTempFolder(monitor, AUTOSAVE_DIR);
-    }
-*/
 
     public IFolder getLobFolder(IProgressMonitor monitor)
         throws IOException
