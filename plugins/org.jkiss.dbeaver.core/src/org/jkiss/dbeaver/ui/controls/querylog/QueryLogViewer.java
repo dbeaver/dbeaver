@@ -61,6 +61,7 @@ import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.qm.QMConstants;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
+import org.jkiss.dbeaver.runtime.qm.QMObjectType;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TableToolTip;
@@ -71,10 +72,7 @@ import org.jkiss.utils.LongKeyMap;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * QueryLogViewer
@@ -252,7 +250,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
     private boolean showSessions = false;
     private boolean showTransactions = false;
-    private boolean showScripts = false;
     private boolean showQueries = false;
 
     private java.util.List<DBCExecutionPurpose> showPurposes = new ArrayList<DBCExecutionPurpose>();
@@ -366,16 +363,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         UIUtils.dispose(boldFont);
     }
 
-    public IQueryLogFilter getFilter()
-    {
-        return filter;
-    }
-
-    public void setFilter(IQueryLogFilter filter)
-    {
-        this.filter = filter;
-    }
-
     @Override
     public Control getControl()
     {
@@ -482,11 +469,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
-        java.util.List<String> objectTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_OBJECT_TYPES), ',');
-        this.showSessions = objectTypes.contains(QMConstants.OBJECT_TYPE_SESSION);
-        this.showTransactions = objectTypes.contains(QMConstants.OBJECT_TYPE_TRANSACTION);
-        this.showScripts = objectTypes.contains(QMConstants.OBJECT_TYPE_SCRIPT);
-        this.showQueries = objectTypes.contains(QMConstants.OBJECT_TYPE_QUERY);
+        Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
+        this.showSessions = objectTypes.contains(QMObjectType.session);
+        this.showTransactions = objectTypes.contains(QMObjectType.txn);
+        this.showQueries = objectTypes.contains(QMObjectType.query);
 
         this.showPurposes.clear();
         for (String queryType : CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',')) {
