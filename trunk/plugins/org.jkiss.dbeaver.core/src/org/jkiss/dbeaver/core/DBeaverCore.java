@@ -295,21 +295,22 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             }
         }
 
-        if (qmLogWriter != null) {
+        if (this.qmLogWriter != null) {
             this.queryManager.unregisterMetaListener(qmLogWriter);
+            this.qmLogWriter.dispose();
             this.qmLogWriter = null;
         }
-        if (queryManager != null) {
-            queryManager.dispose();
+        if (this.queryManager != null) {
+            this.queryManager.dispose();
             //queryManager = null;
         }
-        if (navigatorModel != null) {
-            navigatorModel.dispose();
+        if (this.navigatorModel != null) {
+            this.navigatorModel.dispose();
             //navigatorModel = null;
         }
         if (this.networkHandlerRegistry != null) {
-            networkHandlerRegistry.dispose();
-            networkHandlerRegistry = null;
+            this.networkHandlerRegistry.dispose();
+            this.networkHandlerRegistry = null;
         }
         if (this.dataExportersRegistry != null) {
             this.dataExportersRegistry.dispose();
@@ -332,10 +333,10 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             this.dataSourceProviderRegistry = null;
         }
 
-        if (editorsAdapter != null) {
+        if (this.editorsAdapter != null) {
             // Unregister properties adapter
-            Platform.getAdapterManager().unregisterAdapters(editorsAdapter);
-            editorsAdapter = null;
+            Platform.getAdapterManager().unregisterAdapters(this.editorsAdapter);
+            this.editorsAdapter = null;
         }
 
         if (this.sharedTextColors != null) {
@@ -345,7 +346,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         //progressProvider.shutdown();
         //progressProvider = null;
 
-        instance = null;
+        DBeaverCore.instance = null;
     }
 
     public Plugin getPlugin()
