@@ -124,6 +124,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
     @Override
     public void closeValueEditor() {
+        if (this.valueController != null) {
+            this.valueController.unregisterEditor(this);
+            this.valueController = null;
+        }
         this.setReturnCode(CANCEL);
         this.close();
     }
@@ -234,6 +238,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
             dialogCount--;
             if (this.valueController != null) {
                 this.valueController.unregisterEditor(this);
+                this.valueController = null;
             }
         }
     }
