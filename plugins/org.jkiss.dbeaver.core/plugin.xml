@@ -289,6 +289,12 @@
                 <equals value="org.jkiss.dbeaver.ui.qm.log"/>
             </with>
         </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.inlineCellEditor">
+            <with variable="activeFocusControlId">
+                <equals value="org.jkiss.dbeaver.CellValueInlineEditor"/>
+            </with>
+        </definition>
+
         <definition id="org.jkiss.dbeaver.core.ui.querylog.view">
             <with variable="activePart">
                 <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
@@ -980,32 +986,22 @@
 
         <!-- Set default behaviour for standard widgets -->
         <handler commandId="org.eclipse.ui.edit.copy" class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:copy">
-            <activeWhen>
-                <with variable="activeFocusControlId">
-                    <equals value="org.jkiss.dbeaver.CellValueInlineEditor"/>
-                </with>
-            </activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineCellEditor"/></activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.paste" class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:paste">
-            <activeWhen>
-                <with variable="activeFocusControlId">
-                    <equals value="org.jkiss.dbeaver.CellValueInlineEditor"/>
-                </with>
-            </activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineCellEditor"/></activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.cut" class="org.eclipse.ui.internal.handlers.WidgetMethodHandler:cut">
-            <activeWhen>
-                <with variable="activeFocusControlId">
-                    <equals value="org.jkiss.dbeaver.CellValueInlineEditor"/>
-                </with>
-            </activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineCellEditor"/></activeWhen>
         </handler>
         <handler commandId="org.eclipse.ui.edit.selectAll" class="org.eclipse.ui.internal.handlers.SelectAllHandler">
-            <activeWhen>
-                <with variable="activeFocusControlId">
-                    <equals value="org.jkiss.dbeaver.CellValueInlineEditor"/>
-                </with>
-            </activeWhen>
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineCellEditor"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.goto.lineStart" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:lineStart">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineCellEditor"/></activeWhen>
+        </handler>
+        <handler commandId="org.eclipse.ui.edit.text.goto.lineEnd" class="org.jkiss.dbeaver.ui.WidgetCommandDirector:lineEnd">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.inlineCellEditor"/></activeWhen>
         </handler>
 
         <!--handler commandId="org.eclipse.ui.edit.undo" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
