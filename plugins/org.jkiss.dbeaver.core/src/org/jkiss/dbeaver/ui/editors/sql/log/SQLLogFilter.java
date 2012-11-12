@@ -19,15 +19,15 @@
 package org.jkiss.dbeaver.ui.editors.sql.log;
 
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.runtime.qm.QMEventFilter;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
-import org.jkiss.dbeaver.ui.controls.querylog.IQueryLogFilter;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
  * SQL log filter
  */
-class SQLLogFilter implements IQueryLogFilter {
+class SQLLogFilter implements QMEventFilter {
 
     private SQLEditor editor;
 
@@ -52,8 +52,6 @@ class SQLLogFilter implements IQueryLogFilter {
         } else if (object instanceof QMMStatementInfo) {
             DBCStatement statement = ((QMMStatementInfo) object).getReference();
             return statement != null && statement.getUserData() == editor.getResultsView().getDataReceiver();
-        } else if (object instanceof QMMStatementScripInfo) {
-            return false;
         } else if (object instanceof QMMTransactionInfo) {
             return ((QMMTransactionInfo)object).getSession().getReference() == editor.getDataSource();
         } else if (object instanceof QMMTransactionSavepointInfo) {
