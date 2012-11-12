@@ -30,9 +30,11 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
 
     private Writer logWriter;
     private QMEventFilter eventFilter;
+    private final String lineSeparator;
 
     public QMLogFileWriter()
     {
+        lineSeparator = ContentUtils.getDefaultLineSeparator();
         DBeaverCore.getInstance().getGlobalPreferenceStore().addPropertyChangeListener(this);
         initLogFile();
     }
@@ -104,18 +106,28 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
             (object instanceof QMMStatementExecuteInfo && action != QMMetaEvent.Action.END)) {
             return;
         }
-        String lineSeparator = ContentUtils.getDefaultLineSeparator();
 
         // Entry
-        buffer.append("!ENTRY ").append(DBeaverConstants.PLUGIN_ID).append(" ").append(IStatus.INFO).append(" 0 ");
-        appendDate(buffer, object.getOpenTime());
-        buffer.append(lineSeparator);
+        int severity = object instanceof QMMStatementExecuteInfo ? IStatus.INFO : IStatus.OK;
+        buffer.append("!ENTRY ");
+        appendEntryInfo(buffer, severity, object.getObjectId(), object.getOpenTime());
 
         // Message
         buffer.append("!MESSAGE ");
         if (object instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo executeInfo = (QMMStatementExecuteInfo)object;
             buffer.append(executeInfo.getQueryString());
+            buffer.append(lineSeparator);
+            buffer.append("!SUBENTRY 1 ");
+            int subSeverity = executeInfo.hasError() ? IStatus.ERROR : severity;
+            appendEntryInfo(buffer, subSeverity, executeInfo.getErrorCode(), object.getCloseTime());
+            buffer.append("!MESSAGE ");
+            if (executeInfo.hasError()) {
+                buffer.append(executeInfo.getErrorMessage());
+            } else {
+                buffer.append("SUCCESS [").append(executeInfo.getRowCount()).append("]");
+            }
+
         } else if (object instanceof QMMTransactionInfo) {
             QMMTransactionInfo transactionInfo = (QMMTransactionInfo)object;
             if (transactionInfo.isCommited()) {
@@ -129,6 +141,13 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
         }
         buffer.append(lineSeparator);
 
+        buffer.append(lineSeparator);
+    }
+
+    private void appendEntryInfo(StringBuilder buffer, int severity, long code, long time)
+    {
+        buffer.append(DBeaverConstants.PLUGIN_ID).append(" ").append(severity).append(" ").append(code).append(" ");
+        appendDate(buffer, time);
         buffer.append(lineSeparator);
     }
 

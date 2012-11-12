@@ -121,7 +121,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         monitor.subTask(CoreMessages.model_jdbc_fetch_table_data);
         DBCStatement dbStat = DBUtils.prepareStatement(
             context,
-            DBCStatementType.QUERY,
+            DBCStatementType.SCRIPT,
             query.toString(),
             firstRow,
             maxRows);
