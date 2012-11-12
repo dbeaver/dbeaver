@@ -300,19 +300,6 @@
                 <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
             </with>
         </definition>
-        <definition id="org.jkiss.dbeaver.core.ui.active.db.object">
-            <or>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-                    </iterate>
-                </with>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.ext.IDataSourceProvider"/>
-                </with>
-            </or>
-        </definition>
         <definition id="org.jkiss.dbeaver.core.ui.sqlEditorBase.control">
             <with variable="activeFocusControlId">
                 <equals value="org.jkiss.dbeaver.ui.sqlEditorBase"/>
