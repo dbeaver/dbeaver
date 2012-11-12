@@ -16,29 +16,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.runtime.qm.meta;
+
+package org.jkiss.dbeaver.runtime.qm;
 
 /**
- * Query script info
+ * Query log filter
  */
-public class QMMStatementScripInfo extends QMMObject {
+public interface QMEventFilter {
 
-    private final QMMSessionInfo session;
-
-    QMMStatementScripInfo(QMMSessionInfo session)
-    {
-        this.session = session;
-    }
-
-    @Override
-    protected void close()
-    {
-        super.close();
-    }
-
-    public QMMSessionInfo getSession()
-    {
-        return session;
-    }
+    boolean accept(QMMetaEvent event);
 
 }

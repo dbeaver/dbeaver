@@ -31,15 +31,13 @@ public class QMMStatementInfo extends QMMObject {
     private final QMMSessionInfo session;
     private SoftReference<DBCStatement> reference;
     private final DBCExecutionPurpose purpose;
-    private final QMMStatementScripInfo script;
     private final QMMStatementInfo previous;
 
-    QMMStatementInfo(QMMSessionInfo session, DBCStatement reference, QMMStatementScripInfo script, QMMStatementInfo previous)
+    QMMStatementInfo(QMMSessionInfo session, DBCStatement reference, QMMStatementInfo previous)
     {
         this.session = session;
         this.reference = new SoftReference<DBCStatement>(reference);
         this.purpose = reference.getContext().getPurpose();
-        this.script = script;
         this.previous = previous;
     }
 
@@ -62,11 +60,6 @@ public class QMMStatementInfo extends QMMObject {
     public DBCExecutionPurpose getPurpose()
     {
         return purpose;
-    }
-
-    public QMMStatementScripInfo getScript()
-    {
-        return script;
     }
 
     public QMMStatementInfo getPrevious()
