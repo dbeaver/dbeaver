@@ -4,9 +4,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.commands.IHandlerListener;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -15,9 +12,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 /**
  * Command director
  */
-public class WidgetCommandDirector implements IHandler, IExecutableExtension {
-
-    private String methodName;
+public class WidgetCommandDirector implements IHandler {
 
     @Override
     public void addHandlerListener(IHandlerListener handlerListener)
@@ -34,12 +29,13 @@ public class WidgetCommandDirector implements IHandler, IExecutableExtension {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        String commandID = event.getCommand().getId();
         Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
         if (control instanceof Text) {
             Text text = (Text)control;
-            if ("lineStart".equals(methodName)) {
+            if (ITextEditorActionDefinitionIds.LINE_START.equals(commandID)) {
                 text.setSelection(0);
-            } else if ("lineEnd".equals(methodName)) {
+            } else if (ITextEditorActionDefinitionIds.LINE_END.equals(commandID)) {
                 text.setSelection(text.getCharCount());
             }
         }
@@ -65,9 +61,4 @@ public class WidgetCommandDirector implements IHandler, IExecutableExtension {
 
     }
 
-    @Override
-    public void setInitializationData(IConfigurationElement config, String propertyName, Object data) throws CoreException
-    {
-        methodName = data.toString();
-    }
 }
