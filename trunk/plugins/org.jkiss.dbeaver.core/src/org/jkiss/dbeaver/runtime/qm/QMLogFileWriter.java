@@ -2,18 +2,20 @@ package org.jkiss.dbeaver.runtime.qm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
+import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMObject;
-import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -27,6 +29,7 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
     private boolean enabled;
 
     private Writer logWriter;
+    private QMEventFilter eventFilter;
 
     public QMLogFileWriter()
     {
@@ -57,6 +60,7 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
                 logWriter = null;
             }
         }
+        eventFilter = new DefaultEventFilter();
     }
 
     @Override
@@ -67,16 +71,15 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
         }
 
         StringBuilder logBuffer = new StringBuilder(4000);
-        for (int i = 0; i < events.size(); i++) {
-            QMMetaEvent event = events.get(i - 1);
-            QMMObject object = event.getObject();
-            if (object instanceof QMMStatementExecuteInfo) {
-
+        for (QMMetaEvent event : events) {
+            if (eventFilter.accept(event)) {
+                writeEvent(logBuffer, event);
             }
         }
 
         try {
             logWriter.write(logBuffer.toString());
+            logWriter.flush();
         } catch (IOException e) {
             log.warn("IO error writing QM log. Disable log file writer", e);
             ContentUtils.close(logWriter);
@@ -90,6 +93,70 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
         if (event.getProperty().startsWith(QMConstants.PROP_PREFIX)) {
             initLogFile();
         }
+    }
+
+    private void writeEvent(StringBuilder buffer, QMMetaEvent event)
+    {
+        QMMObject object = event.getObject();
+        QMMetaEvent.Action action = event.getAction();
+        // Filter
+        if (object instanceof QMMStatementInfo || object instanceof QMMTransactionSavepointInfo ||
+            (object instanceof QMMStatementExecuteInfo && action != QMMetaEvent.Action.END)) {
+            return;
+        }
+        String lineSeparator = ContentUtils.getDefaultLineSeparator();
+
+        // Entry
+        buffer.append("!ENTRY ").append(DBeaverConstants.PLUGIN_ID).append(" ").append(IStatus.INFO).append(" 0 ");
+        appendDate(buffer, object.getOpenTime());
+        buffer.append(lineSeparator);
+
+        // Message
+        buffer.append("!MESSAGE ");
+        if (object instanceof QMMStatementExecuteInfo) {
+            QMMStatementExecuteInfo executeInfo = (QMMStatementExecuteInfo)object;
+            buffer.append(executeInfo.getQueryString());
+        } else if (object instanceof QMMTransactionInfo) {
+            QMMTransactionInfo transactionInfo = (QMMTransactionInfo)object;
+            if (transactionInfo.isCommited()) {
+                buffer.append("COMMIT");
+            } else {
+                buffer.append("ROLLBACK");
+            }
+        } else if (object instanceof QMMSessionInfo) {
+            QMMSessionInfo sessionInfo = (QMMSessionInfo)object;
+            buffer.append(action).append(" SESSION [").append(sessionInfo.getContainer().getName()).append("]");
+        }
+        buffer.append(lineSeparator);
+
+        buffer.append(lineSeparator);
+    }
+
+    private void appendDate(StringBuilder sb, long timestamp) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(timestamp);
+        appendPaddedInt(c.get(Calendar.YEAR), 4, sb).append('-');
+        appendPaddedInt(c.get(Calendar.MONTH) + 1, 2, sb).append('-');
+        appendPaddedInt(c.get(Calendar.DAY_OF_MONTH), 2, sb).append(' ');
+        appendPaddedInt(c.get(Calendar.HOUR_OF_DAY), 2, sb).append(':');
+        appendPaddedInt(c.get(Calendar.MINUTE), 2, sb).append(':');
+        appendPaddedInt(c.get(Calendar.SECOND), 2, sb).append('.');
+        appendPaddedInt(c.get(Calendar.MILLISECOND), 3, sb);
+    }
+
+    private StringBuilder appendPaddedInt(int value, int pad, StringBuilder buffer) {
+        pad = pad - 1;
+        if (pad == 0)
+            return buffer.append(Integer.toString(value));
+        int padding = (int) Math.pow(10, pad);
+        if (value >= padding)
+            return buffer.append(Integer.toString(value));
+        while (padding > value && padding > 1) {
+            buffer.append('0');
+            padding = padding / 10;
+        }
+        buffer.append(value);
+        return buffer;
     }
 
 }

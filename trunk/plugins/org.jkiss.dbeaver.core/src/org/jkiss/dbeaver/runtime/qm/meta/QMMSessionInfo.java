@@ -114,7 +114,7 @@ public class QMMSessionInfo extends QMMObject {
 
     QMMStatementInfo openStatement(DBCStatement statement)
     {
-        return this.statementStack = new QMMStatementInfo(this, statement, null, this.statementStack);
+        return this.statementStack = new QMMStatementInfo(this, statement, this.statementStack);
     }
 
     QMMStatementInfo closeStatement(DBCStatement statement)

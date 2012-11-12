@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.querylog;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
@@ -53,15 +51,11 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.SQLUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
-import org.jkiss.dbeaver.runtime.qm.QMConstants;
-import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
-import org.jkiss.dbeaver.runtime.qm.QMMetaListener;
-import org.jkiss.dbeaver.runtime.qm.QMObjectType;
+import org.jkiss.dbeaver.runtime.qm.*;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TableToolTip;
@@ -72,14 +66,15 @@ import org.jkiss.utils.LongKeyMap;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.Locale;
 
 /**
  * QueryLogViewer
  */
 public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyChangeListener {
-
-    static final Log log = LogFactory.getLog(QueryLogViewer.class);
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
 
@@ -239,7 +234,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<ColumnDescriptor>();
     private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<TableItem>();
-    private IQueryLogFilter filter;
+    private QMEventFilter filter;
 
     private final Color colorLightGreen;
     private final Color colorLightRed;
@@ -248,15 +243,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     private final Font boldFont;
     private DragSource dndSource;
 
-    private boolean showSessions = false;
-    private boolean showTransactions = false;
-    private boolean showQueries = false;
-
-    private java.util.List<DBCExecutionPurpose> showPurposes = new ArrayList<DBCExecutionPurpose>();
+    private QMEventFilter defaultFilter;
 
     private int entriesPerPage = 0;
 
-    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, IQueryLogFilter filter)
+    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter)
     {
         super();
 
@@ -408,8 +399,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             return CoreMessages.model_navigator_Connection;
         } else if (object instanceof QMMStatementInfo || object instanceof QMMStatementExecuteInfo) {
             return "SQL"; //$NON-NLS-1$
-        } else if (object instanceof QMMStatementScripInfo) {
-            return CoreMessages.controls_querylog_script;
+//        } else if (object instanceof QMMStatementScripInfo) {
+//            return CoreMessages.controls_querylog_script;
         } else if (object instanceof QMMTransactionInfo) {
             return CoreMessages.controls_querylog_transaction;
         } else if (object instanceof QMMTransactionSavepointInfo) {
@@ -469,20 +460,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
 
-        Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
-        this.showSessions = objectTypes.contains(QMObjectType.session);
-        this.showTransactions = objectTypes.contains(QMObjectType.txn);
-        this.showQueries = objectTypes.contains(QMObjectType.query);
-
-        this.showPurposes.clear();
-        for (String queryType : CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',')) {
-            try {
-                this.showPurposes.add(DBCExecutionPurpose.valueOf(queryType));
-            } catch (IllegalArgumentException e) {
-                log.warn(e);
-            }
-        }
-
+        this.defaultFilter = new DefaultEventFilter();
         this.entriesPerPage = store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE);
 
         clearLog();
@@ -505,22 +483,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                     break;
                 }
                 QMMetaEvent event = events.get(i - 1);
-                if (filter != null && !filter.accept(event)) {
+                if (!defaultFilter.accept(event) || (filter != null && !filter.accept(event))) {
                     continue;
                 }
                 QMMObject object = event.getObject();
                 if (object instanceof QMMStatementExecuteInfo) {
-                    if (!showQueries) {
-                        continue;
-                    }
-                    if (!showPurposes.contains(((QMMStatementExecuteInfo)object).getStatement().getPurpose())) {
-                        continue;
-                    }
                     itemIndex = createOrUpdateItem(object, itemIndex);
                 } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
-                    if (!showTransactions) {
-                        continue;
-                    }
                     itemIndex = createOrUpdateItem(object, itemIndex);
                     // Update all dependent statements
                     if (object instanceof QMMTransactionInfo) {
@@ -532,9 +501,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
                         updateExecutions((QMMTransactionSavepointInfo) object);
                     }
                 } else if (object instanceof QMMSessionInfo) {
-                    if (!showSessions) {
-                        continue;
-                    }
                     QMMetaEvent.Action action = event.getAction();
                     if (action == QMMetaEvent.Action.BEGIN || action == QMMetaEvent.Action.END) {
                         TableItem item = new TableItem(logTable, SWT.NONE, itemIndex++);
