@@ -19,61 +19,45 @@
 
 <contexts>
     <context id="driver-manager">
-        <description>Диалог менеджера драйверов. Управление драйверами баз данных.</description>
         <topic href="docs/help/html/dialogs/driver-manager.html" label="Менеджер драйверов"/>
     </context>
     <context id="driver-editor">
-        <description>Диалог редактора драйвера. Редактирование библиотек и свойств драйвера.</description>
         <topic href="docs/help/html/dialogs/driver-editor.html" label="Редактор драйвера"/>
     </context>
     <context id="con-wizard-driver">
-        <description>Мастер нового соединения. Выбор драйвера</description>
         <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Выбор драйвера для соединения"/>
     </context>
     <context id="con-wizard-settings">
-        <description>Свойства соединения</description>
         <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Свойства соединения"/>
     </context>
     <context id="con-wizard-final">
-        <description>Дополнительные свойства соединения</description>
         <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Дополнительные свойства соединения"/>
     </context>
 
     <context id="sql-editor">
-        <description>Редактор SQL. Редактирование, выполнение SQL-запросов и скриптов.</description>
         <topic href="docs/help/html/editors/sql-editor.html" label="Редактор SQL"/>
-        <topic href="docs/help/html/editors/result-set.html" label="Просмотр результатов"/>
     </context>
     <context id="result-set-viewer">
-        <description>Просмотрщик результатов.</description>
         <topic href="docs/help/html/editors/result-set.html" label="Просмотрщик результатов"/>
     </context>
     <context id="data-filter">
-        <description>Диалог упорядочивания и фильтрации данных.</description>
         <topic href="docs/help/html/dialogs/data-filter.html" label="Диалог упорядочивания и фильтрации данных"/>
     </context>
 
     <context id="entity-editor">
-        <description>Редактор сущности. Управление объектами базы данных.</description>
         <topic href="docs/help/html/editors/entity-editor.html" label="Редактор сущности"/>
     </context>
 
     <context id="view-database-navigator">
-        <description>Окно баз данных. Просмотр баз данных проекта и их структуры.</description>
         <topic href="docs/help/html/views/database-navigator.html" label="Окно баз данных"/>
     </context>
     <context id="view-project-explorer">
-        <description>Окно проекта. Управление ресурсами проекта (за исключением мета-объектов базы данных) - скриптами, закладками и т.д.</description>
         <topic href="docs/help/html/views/project-explorer.html" label="Окно проекта"/>
     </context>
     <context id="view-project-navigator">
-        <description>Окно проектов. Управление всеми проектами и их содержимым.</description>
         <topic href="docs/help/html/views/project-navigator.html" label="Окно проектов"/>
-        <topic href="docs/help/html/views/database-navigator.html" label="Окно базы данных"/>
-        <topic href="docs/help/html/views/project-explorer.html" label="Просмотр проекта"/>
     </context>
     <context id="view-query-manager">
-        <description>Менеджер запросов. История всех выполненных SQL-утверждений и операций-транзакций.</description>
         <topic href="docs/help/html/views/query-manager.html" label="Менеджер запросов"/>
     </context>
 
