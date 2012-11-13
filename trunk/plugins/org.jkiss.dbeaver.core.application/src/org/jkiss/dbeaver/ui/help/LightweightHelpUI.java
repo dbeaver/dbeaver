@@ -3,20 +3,19 @@ package org.jkiss.dbeaver.ui.help;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.help.IContext;
 import org.eclipse.help.IHelpResource;
+import org.eclipse.help.internal.toc.HrefUtil;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.help.AbstractHelpUI;
-import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.application.ApplicationWorkbenchWindowAdvisor;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Bundle;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -41,16 +40,18 @@ public class LightweightHelpUI extends AbstractHelpUI {
             }
             IHelpResource relatedTopic = relatedTopics[0];
             String topicRef = relatedTopic.getHref();
-            //URL entry = DBeaverActivator.getInstance().getBundle().getEntry(topicRef);
-            URL platformURL = FileLocator.find(new URL("platform:/plugin" + topicRef));
-            URL fileURL = FileLocator.toFileURL(platformURL);
+            String pluginID = HrefUtil.getPluginIDFromHref(topicRef);
+            String topicPath = HrefUtil.getResourcePathFromHref(topicRef);
+            Bundle plugin = Platform.getBundle(pluginID);
+            URL bundleURL = FileLocator.find(plugin, new Path(topicPath), null);
+            //URL platformURL = FileLocator.toFileURL(new URL("platform", "plugin", topicRef));
+            URL fileURL = FileLocator.toFileURL(bundleURL);
+
+//            URL platformURL = FileLocator.find(new URL("platform:/plugin" + topicRef));
+//            URL fileURL = FileLocator.toFileURL(platformURL);
             getExternalBrowser().openURL(fileURL);
 
-        } catch (PartInitException e) {
-            log.error(e);
-        } catch (MalformedURLException e) {
-            log.error(e);
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e);
         }
     }
