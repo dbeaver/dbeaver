@@ -47,13 +47,30 @@
 
     <versions>
         <version>
+            <number>2.0.2</number>
+            <type>beta</type>
+            <date>18.11.2012</date>
+
+            <release-notes>
+                - 2.0 Final Release
+                - SQL templates (snippets) support
+                - Database compare feature
+                - Data editor improvements
+                - Hex editor for strings
+                - XML data export
+                - SQL log persistence
+                - A lot of UI bugfixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.0.0.rc1</number>
             <type>beta</type>
-            <date>22.10.2012</date>
+            <date>05.11.2012</date>
 
             <release-notes>
                 - 2.0 Release Candidate 1
-                - SQL templates (features) support
+                - SQL templates (snippets) support
                 - Database compare feature
                 - Hex editor for strings
                 - A lot of UI bugfixes
