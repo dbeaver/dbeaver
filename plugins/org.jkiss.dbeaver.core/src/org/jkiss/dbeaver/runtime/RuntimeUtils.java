@@ -112,7 +112,7 @@ public class RuntimeUtils {
         if (ex.getMessage() != null) {
             msg.append(ex.getMessage());
         } else {
-            msg.append(CommonUtils.getShortClassName(ex.getClass()));
+            msg.append(ex.getClass().getSimpleName());
         }
         return msg.toString().trim();
     }

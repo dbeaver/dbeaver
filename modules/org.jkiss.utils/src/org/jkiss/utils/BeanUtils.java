@@ -70,7 +70,7 @@ public class BeanUtils {
 	/**
 	 * Returns a set method matching the property name.
 	 */
-	public static Method getSetMethod(Class cl, String propertyName)
+	public static Method getSetMethod(Class<?> cl, String propertyName)
 	{
 		Method method = getSetMethod(cl, propertyName, false);
 
@@ -85,7 +85,7 @@ public class BeanUtils {
 	 * Returns a set method matching the property name.
 	 */
 	public static Method getSetMethod(
-		Class cl,
+		Class<?> cl,
 		String propertyName,
 		boolean ignoreCase)
 	{
@@ -100,7 +100,7 @@ public class BeanUtils {
 	/**
 	 * Returns a get method matching the property name.
 	 */
-	public static Method getGetMethod(Class cl, String propertyName)
+	public static Method getGetMethod(Class<?> cl, String propertyName)
 	{
 		Method method = getGetMethod(cl, propertyName, false);
 
@@ -113,7 +113,7 @@ public class BeanUtils {
 	 * Returns a get method matching the property name.
 	 */
 	public static Method getGetMethod(
-		Class cl,
+		Class<?> cl,
 		String propertyName,
 		boolean ignoreCase)
 	{
@@ -168,12 +168,12 @@ public class BeanUtils {
 
 	public static boolean isArrayType(Type type)
 	{
-		return (type instanceof Class && ((Class)type).isArray());
+		return (type instanceof Class && ((Class<?>)type).isArray());
 	}
 
 	public static boolean isCollectionType(Type type)
 	{
-		if (type instanceof Class && Collection.class.isAssignableFrom((Class) type)) {
+		if (type instanceof Class && Collection.class.isAssignableFrom((Class<?>) type)) {
 /*
             if (type instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType)type;
@@ -187,22 +187,22 @@ public class BeanUtils {
 		return isArrayType(type);
 	}
 
-	public static Class getCollectionType(Type type)
+	public static Class<?> getCollectionType(Type type)
 	{
 		if (type instanceof ParameterizedType) {
 			ParameterizedType pt = (ParameterizedType)type;
 			if (pt.getActualTypeArguments().length == 1) {
                 final Type argType = pt.getActualTypeArguments()[0];
                 if (argType instanceof Class) {
-				    return (Class)argType;
+				    return (Class<?>)argType;
                 } else if (argType instanceof WildcardType) {
                     final Type[] upperBounds = ((WildcardType) argType).getUpperBounds();
                     if (upperBounds.length > 0 && upperBounds[0] instanceof Class) {
-                        return (Class) upperBounds[0];
+                        return (Class<?>) upperBounds[0];
                     }
                     final Type[] lowerBounds = ((WildcardType) argType).getLowerBounds();
                     if (lowerBounds.length > 0 && lowerBounds[0] instanceof Class) {
-                        return (Class) lowerBounds[0];
+                        return (Class<?>) lowerBounds[0];
                     }
                 }
 			}
@@ -313,7 +313,7 @@ public class BeanUtils {
 		return paramClass == Boolean.class || paramClass == Boolean.TYPE;
 	}
 
-	public static Object getDefaultPrimitiveValue(Class paramClass)
+	public static Object getDefaultPrimitiveValue(Class<?> paramClass)
 	{
 		if (paramClass == Boolean.TYPE) {
 			return Boolean.FALSE;
@@ -336,7 +336,7 @@ public class BeanUtils {
 		}
 	}
 
-    public static boolean isNumericType(Class paramClass)
+    public static boolean isNumericType(Class<?> paramClass)
     {
         return
             Number.class.isAssignableFrom(paramClass) ||
@@ -348,7 +348,7 @@ public class BeanUtils {
             paramClass == Byte.TYPE;
     }
 
-    public static Object invokeObjectMethod(Object object, String name, Class paramTypes[], Object args[])
+    public static Object invokeObjectMethod(Object object, String name, Class<?> paramTypes[], Object args[])
         throws InvocationTargetException, IllegalAccessException, NoSuchMethodException
     {
         Method method = object.getClass().getMethod(name, paramTypes);
