@@ -433,7 +433,21 @@
                     webURL="http://www.mysql.com/products/connector/"
                     description="Driver for MySQL 3.x and earlier">
                     <file type="license" path="drivers/mysql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/LICENSE.txt"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/mysql-connector-java-5.1.13-bin.jar"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/mysql-connector-java-5.1.22-bin.jar"/>
+                </driver>
+                <driver
+                    id="cassandra_jkiss"
+                    label="Cassandra"
+                    class="org.jkiss.jdbc.cassandra.CassandraDriver"
+                    sampleURL="jdbc:jkiss:cassandra://{host}[:{port}]/{database}"
+                    defaultPort="9160"
+                    webURL="http://cassandra.jkiss.org/"
+                    description="Driver for Apache Cassandra">
+                    <file type="license" path="drivers/cassandra/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/LICENSE.txt"/>
+                    <file type="jar" path="drivers/cassandra/cassandra-jkiss-jdbc-1.0.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/cassandra-jkiss-jdbc-1.0.jar"/>
+                    <file type="jar" path="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/apache-cassandra-thrift-1.1.6.jar"/>
+                    <file type="jar" path="drivers/cassandra/libthrift-0.7.0.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/libthrift-0.7.0.jar"/>
+                    <file type="jar" path="drivers/cassandra/slf4j-api-1.6.1.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/slf4j-api-1.6.1.jar"/>
                 </driver>
             </drivers>
 
