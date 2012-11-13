@@ -1896,14 +1896,6 @@
        </contexts>
     </extension>
 
-    <!--extension point="org.eclipse.help.contentExtension">
-    </extension-->
-
-    <extension point="org.eclipse.help.contentProducer">
-       <contentProducer producer="org.jkiss.dbeaver.ui.help.HelpContentProducer">
-       </contentProducer>
-    </extension>
-
     <extension point="org.eclipse.ui.keywords">
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="auto commit cursor rollback resultset lob script"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="format date number string locale language"/>
