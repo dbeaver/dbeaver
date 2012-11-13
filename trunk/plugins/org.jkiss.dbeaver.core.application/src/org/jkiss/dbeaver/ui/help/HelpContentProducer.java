@@ -20,9 +20,6 @@ package org.jkiss.dbeaver.ui.help;
 
 //import org.eclipse.help.IHelpContentProducer;
 
-import java.io.InputStream;
-import java.util.Locale;
-
 public class HelpContentProducer /*implements IHelpContentProducer*/ {
 
 /*	@Override
