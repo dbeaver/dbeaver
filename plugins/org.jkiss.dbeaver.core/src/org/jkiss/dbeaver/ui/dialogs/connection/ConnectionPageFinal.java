@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.help.IHelpContextIds;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

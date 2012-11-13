@@ -249,4 +249,9 @@
         </splashHandlerProductBinding>
     </extension>
 
+    <extension point="org.eclipse.ui.helpSupport">
+        <config class="org.jkiss.dbeaver.ui.help.LightweightHelpUI">
+        </config>
+    </extension>
+
 </plugin>

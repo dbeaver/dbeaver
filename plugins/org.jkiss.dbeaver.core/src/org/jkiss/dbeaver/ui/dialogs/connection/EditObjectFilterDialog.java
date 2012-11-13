@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
-import org.jkiss.dbeaver.ui.help.IHelpContextIds;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
