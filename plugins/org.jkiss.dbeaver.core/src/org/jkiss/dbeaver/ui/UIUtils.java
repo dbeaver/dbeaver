@@ -113,7 +113,7 @@ public class UIUtils {
         if (object instanceof Number) {
             return NumberFormat.getInstance().format(object);
         }
-        Class eClass = object.getClass();
+        Class<?> eClass = object.getClass();
         if (eClass.isArray()) {
             if (eClass == byte[].class)
                 return Arrays.toString((byte[]) object);

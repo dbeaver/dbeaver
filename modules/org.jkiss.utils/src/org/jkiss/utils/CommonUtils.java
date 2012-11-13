@@ -216,14 +216,7 @@ public class CommonUtils {
 		return rootCause;
 	}
 
-	public static String getShortClassName(Class clas)
-	{
-		String name = clas.getName();
-		int divPos = name.lastIndexOf('.');
-		return divPos == -1 ? name : name.substring(divPos + 1);
-	}
-
-	public static String formatSentence(String sent)
+    public static String formatSentence(String sent)
 	{
 		if (sent == null) {
 			return "";
