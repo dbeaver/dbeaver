@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.registry.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
-import org.jkiss.dbeaver.ui.help.IHelpContextIds;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 
 import java.util.ArrayList;
 import java.util.HashMap;
