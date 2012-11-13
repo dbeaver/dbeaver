@@ -59,6 +59,7 @@
                 - Hex editor for strings
                 - XML data export
                 - SQL log persistence
+                - Apache Cassandra driver
                 - A lot of UI bugfixes
             </release-notes>
         </version>
