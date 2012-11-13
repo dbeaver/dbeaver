@@ -1,23 +1,4 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!--
- * Copyright (C) 2010-2012 Serge Rieder
- * serge@jkiss.org
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  -->
-
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
@@ -273,6 +254,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -335,6 +323,13 @@
                </documentation>
             </annotation>
          </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
@@ -365,6 +360,7 @@
             <element ref="propertyGroup" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="query" minOccurs="0" maxOccurs="unbounded"/>
             <element ref="parameter"/>
+            <element ref="file"/>
          </sequence>
          <attribute name="label" type="string" use="required">
             <annotation>
@@ -428,6 +424,27 @@
             <annotation>
                <documentation>
                   Driver ID
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="category" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="anonymous" type="boolean">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="os" type="string">
+            <annotation>
+               <documentation>
+                  
                </documentation>
             </annotation>
          </attribute>
@@ -676,6 +693,46 @@ View must implement interface(s) depending on targetID.
                <appInfo>
                   <meta.attribute kind="java" basedOn="org.eclipse.ui.part.EditorPart:"/>
                </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="file">
+      <complexType>
+         <attribute name="type" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="path" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="url" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="os" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="arch" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
