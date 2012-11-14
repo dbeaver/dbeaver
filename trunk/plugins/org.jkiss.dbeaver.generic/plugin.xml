@@ -35,57 +35,57 @@
             label="Generic"
             icon="icons/database.png">
             <tree path="generic" label="Generic data source">
-                <items label="#catalog" path="catalog" property="catalogs" iconId="#database" optional="true">
-                    <items label="#schema" path="schema" property="schemas" iconId="#schema" optional="true">
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" iconId="#folder_table" description="Tables">
+                <items label="#catalog" path="catalog" property="catalogs" icon="#database" optional="true">
+                    <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
                             <items label="%tree.table.node.name" path="table" property="tables">
-                                <icon iconId="#table" default="true"/>
-                                <icon iconId="#view" if="object.view"/>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" iconId="#columns" description="Table columns">
-                                    <items label="%tree.column.node.name" path="attribute" property="attributes" iconId="#column">
+                                <icon icon="#table" default="true"/>
+                                <icon icon="#view" if="object.view"/>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" iconId="#constraints" description="Table unique keys" visibleIf="!object.view">
-                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" iconId="#unique-key">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" iconId="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
-                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" iconId="#foreign-key">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" iconId="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
-                                    <items label="%tree.index.node.name" path="index" property="indexes" iconId="#index">
-                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" iconId="#column" navigable="false" inline="true">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey" label="%tree.references.node.name" iconId="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
-                                    <items label="%tree.reference.node.name" path="reference" property="references" iconId="#reference" virtual="true">
+                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" iconId="#table" recursive=".." visibleIf="!object.view">
+                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" iconId="#indexes" description="Indexes">
-                            <items iconId="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
-                                <items iconId="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" virtual="true">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
+                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" virtual="true">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode" label="%tree.procedures.node.name" iconId="#procedures" description="Procedures">
-                            <items label="%tree.package.node.name" path="package" property="packages" iconId="#package">
-                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" iconId="#procedure">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
                                 </items>
                             </items>
-                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" iconId="#procedure">
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                 <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>

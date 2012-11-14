@@ -84,197 +84,197 @@
                   icon="icons/oracle_icon.png"
                   label="Oracle data source"
                   path="oracle">
-                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchema" label="%tree.schemas.node.name" iconId="#folder_schema" description="Database schemas">
-                    <items label="%tree.schema.node.name" path="schema" property="schemas" iconId="#schema">
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTable" label="%tree.tables.node.name" iconId="#folder_table" description="Tables">
-                            <items label="%tree.table.node.name" path="table" property="tables" iconId="#table">
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" iconId="#columns" description="Table columns">
-                                    <items label="%tree.column.node.name" path="column" property="attributes" iconId="#column">
+                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Database schemas">
+                    <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="column" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" iconId="#constraints" description="Table constraints">
-                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" iconId="#unique-key">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
                                         <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey" label="%tree.foreign_keys.node.name" iconId="#foreign-keys" description="Table foreign keys">
-                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" iconId="#foreign-key">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey" label="%tree.references.node.name" iconId="#references" description="Table references" virtual="true">
-                                    <items label="%tree.reference_key.node.name" path="referenceKey" property="references" iconId="#reference" virtual="true">
+                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                    <items label="%tree.reference_key.node.name" path="referenceKey" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger" label="%tree.triggers.node.name" iconId="#triggers" description="Triggers">
-                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" iconId="#trigger">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                                         <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex" label="%tree.indexes.node.name" iconId="#indexes" description="Table indexes">
-                                    <items label="%tree.index.node.name" path="index" property="indexes" iconId="#index">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="%tree.partitions.node.name" iconId="#partitions" description="Table partitions">
-                                    <items label="%tree.partition.node.name" path="partition" property="partitions" iconId="#partition">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePartitionBase" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions">
+                                    <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
                                         <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true" visibleIf="object.hasSubPartitions()">
                                         </items>
                                     </items>
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleView" label="%tree.views.node.name" iconId="#folder_view" description="Views">
-                            <items label="%tree.view.node.name" path="view" property="views" iconId="#view">
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" iconId="#columns" description="View columns">
-                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" iconId="#column">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleView" label="%tree.views.node.name" icon="#folder_view" description="Views">
+                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" iconId="#constraints" description="View constraints">
-                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" iconId="#unique-key">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="View constraints">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
                                         <items label="%tree.constraint.node.name columns" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger" label="%tree.triggers.node.name" iconId="#triggers" description="Triggers">
-                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" iconId="#trigger">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                                         <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false">
                                         </items>
                                     </items>
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView" label="%tree.materialized_views.node.name" iconId="#folder_view" description="Materialized Views">
-                            <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" iconId="#view">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleMaterializedView" label="%tree.materialized_views.node.name" icon="#folder_view" description="Materialized Views">
+                            <items label="%tree.materialized_view.node.name" path="view" property="materializedViews" icon="#view">
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="%tree.sequences.node.name" iconId="#sequences" description="Sequences">
-                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" iconId="#sequence">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
+                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence">
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" iconId="#data_types" description="Types">
-                            <items label="%tree.type.node.name" path="type" property="dataTypes" iconId="#data_type">
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeAttribute" label="%tree.attributes.node.name" iconId="#attributes" description="Type attributes" visibleIf="object.hasAttributes()">
-                                    <items label="%tree.attribute.node.name" path="attribute" property="attributes" iconId="#attribute"/>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" icon="#data_types" description="Types">
+                            <items label="%tree.type.node.name" path="type" property="dataTypes" icon="#data_type">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeAttribute" label="%tree.attributes.node.name" icon="#attributes" description="Type attributes" visibleIf="object.hasAttributes()">
+                                    <items label="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeMethod" label="%tree.methods.node.name" iconId="#procedures" description="Type methods" visibleIf="object.hasMethods()">
-                                    <items label="%tree.method.node.name" path="method" property="methods" iconId="#procedure">
-                                        <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" iconId="#argument" navigable="false" inline="false">
+                                <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeMethod" label="%tree.methods.node.name" icon="#procedures" description="Type methods" visibleIf="object.hasMethods()">
+                                    <items label="%tree.method.node.name" path="method" property="methods" icon="#procedure">
+                                        <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false">
                                         </items>
                                     </items>
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="%tree.packages.node.name" iconId="#packages" description="Packages">
-                            <items label="%tree.package.node.name" path="package" property="packages" iconId="#package">
-                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" iconId="#procedure" id="Procedure">
-                                    <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" iconId="#argument" navigable="false" inline="false">
-                                        <items label="%tree.attributes.node.name" itemLabel="%tree.attribute.node.name" path="attribute" property="attributes" iconId="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePackage" label="%tree.packages.node.name" icon="#packages" description="Packages">
+                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure" id="Procedure">
+                                    <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="argument" property="parameters" icon="#argument" navigable="false" inline="false">
+                                        <items label="%tree.attributes.node.name" itemLabel="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute" navigable="false" inline="true" id="ProcedureArgumentAttributes" visibleIf="object.hasAttributes()">
                                             <items ref="ProcedureArgumentAttributes"/>
                                         </items>
                                     </items>
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.procedures.node.name" iconId="#procedures" description="Procedures">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
                             <items ref="Procedure"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="%tree.synonyms.node.name" iconId="#synonyms" description="Synonyms">
-                            <items label="%tree.synonym.node.name" path="synonym" property="synonyms" iconId="#synonym"/>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="%tree.synonyms.node.name" icon="#synonyms" description="Synonyms">
+                            <items label="%tree.synonym.node.name" path="synonym" property="synonyms" icon="#synonym"/>
                         </folder>
 
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.triggers.node.name" iconId="#triggers" description="Triggers">
-                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" iconId="#trigger">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                                 <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="columns" navigable="false" inline="false">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.database_links.node.name" iconId="#links" description="Database Links (DBLinks)">
-                            <items label="%tree.database_links.node.name" path="databaseLink" property="databaseLinks" iconId="#link"/>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.database_links.node.name" icon="#links" description="Database Links (DBLinks)">
+                            <items label="%tree.database_links.node.name" path="databaseLink" property="databaseLinks" icon="#link"/>
                         </folder>
-                        <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" iconId="#java" description="Java Classes">
-                            <items label="Java Class" path="class" property="javaClasses" iconId="#javaClass"/>
+                        <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" icon="#java" description="Java Classes">
+                            <items label="Java Class" path="class" property="javaClasses" icon="#javaClass"/>
                         </folder-->
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" iconId="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible">
-                            <items label="%tree.recycled_object.node.name" path="object" property="recycledObjects" iconId="#recycle_bin"/>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.recycle_bin.node.name" icon="#recycle_bin" description="Recycle Bin" visibleIf="object.dataSource.adminVisible">
+                            <items label="%tree.recycled_object.node.name" path="object" property="recycledObjects" icon="#recycle_bin"/>
                         </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.global_metadata.node.name" iconId="#logical" description="Global metadata objects">
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" iconId="#data_types" description="Types">
-                        <items label="%tree.data_type.node.name" path="type" property="dataTypes" iconId="#data_type"/>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" icon="#data_types" description="Types">
+                        <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="%tree.public_synonyms.node.name" iconId="#synonyms" description="Public synonyms">
-                        <items label="%tree.synonym.node.name" path="synonym" property="publicSynonyms" iconId="#synonym"/>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSynonym" label="%tree.public_synonyms.node.name" icon="#synonyms" description="Public synonyms">
+                        <items label="%tree.synonym.node.name" path="synonym" property="publicSynonyms" icon="#synonym"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.public_database_links.node.name" iconId="#links" description="Public database links">
-                        <items label="%tree.database_link.node.name" path="databaseLink" property="publicDatabaseLinks" iconId="#link"/>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.public_database_links.node.name" icon="#links" description="Public database links">
+                        <items label="%tree.database_link.node.name" path="databaseLink" property="publicDatabaseLinks" icon="#link"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.user_recycle_bin.node.name" iconId="#recycle_bin" description="Current user's recycle bin">
-                        <items label="%tree.recycled_object.node.name" path="object" property="userRecycledObjects" iconId="#recycle_bin"/>
-                    </folder>
-                </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" iconId="#storage" description="Storage management">
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablespace" label="%tree.tablespaces.node.name" iconId="#tablespaces" description="Tablespaces">
-                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" iconId="#tablespace">
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataFile" label="%tree.files.node.name" iconId="#files" description="Data Files">
-                                <items label="%tree.file.node.name" path="file" property="files" iconId="#file"/>
-                            </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSegment" label="%tree.objects.node.name" iconId="#segments" description="Objects (segments)">
-                                <items label="%tree.segment.node.name" path="segment" property="segments" iconId="#segment"/>
-                            </folder>
-                        </items>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="%tree.user_recycle_bin.node.name" icon="#recycle_bin" description="Current user's recycle bin">
+                        <items label="%tree.recycled_object.node.name" path="object" property="userRecycledObjects" icon="#recycle_bin"/>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" iconId="#security" description="Security management" visibleIf="object.dataSource.adminVisible">
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" iconId="#folder_user" description="Users">
-                        <items label="%tree.user.node.name" path="users" property="users" iconId="#user">
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" iconId="#folder_role" description="User roles" navigable="false">
-                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" iconId="#role">
-                                </items>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
+                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataFile" label="%tree.files.node.name" icon="#files" description="Data Files">
+                                <items label="%tree.file.node.name" path="file" property="files" icon="#file"/>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" iconId="#folder_privilege" description="System Privileges" navigable="false">
-                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" iconId="#privilege">
-                                </items>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleSegment" label="%tree.objects.node.name" icon="#segments" description="Objects (segments)">
+                                <items label="%tree.segment.node.name" path="segment" property="segments" icon="#segment"/>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivObject" label="%tree.objects.node.name" iconId="#folder_privilege" description="Objects" navigable="false">
-                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" iconId="#privilege">
-                                </items>
-                            </folder>
-                        </items>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRole" label="%tree.roles.node.name" iconId="#folder_role" description="Roles">
-                        <items label="%tree.role.node.name" path="roles" property="roles" iconId="#role">
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" iconId="#folder_role" description="Roles" navigable="false">
-                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" iconId="#role">
-                                </items>
-                            </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" iconId="#folder_privilege" description="System Privileges" navigable="false">
-                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" iconId="#privilege">
-                                </items>
-                            </folder>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivObject" label="%tree.objects.node.name" iconId="#folder_privilege" description="Objects" navigable="false">
-                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" iconId="#privilege">
-                                </items>
-                            </folder>
-                        </items>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUserProfile" label="%tree.profiles.node.name" iconId="#folder_profile" description="User profiles">
-                        <items label="%tree.profile.node.name" path="profiles" property="profiles" iconId="#profile">
-                            <items label="%tree.resource.node.name" path="resource" property="resources" iconId="#resource"/>
                         </items>
                     </folder>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" iconId="#folder_admin" description="Maintenance/Settings" visibleIf="object.dataSource.adminVisible">
-                    <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor" label="%tree.sessions.node.name" iconId="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"/>
-                    <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="Global Recycle Bin" iconId="#recycle_bin" description="Global recycle bin" visibleIf="object.dataSource.admin">
-                        <items label="Recycled Object" path="object" property="adminRecycleBin" iconId="#recycle_bin"/>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="#security" description="Security management" visibleIf="object.dataSource.adminVisible">
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
+                        <items label="%tree.user.node.name" path="users" property="users" icon="#user">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="User roles" navigable="false">
+                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#role">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" icon="#folder_privilege" description="System Privileges" navigable="false">
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivObject" label="%tree.objects.node.name" icon="#folder_privilege" description="Objects" navigable="false">
+                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege">
+                                </items>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
+                        <items label="%tree.role.node.name" path="roles" property="roles" icon="#role">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivRole" label="%tree.roles.node.name" icon="#folder_role" description="Roles" navigable="false">
+                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#role">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivSystem" label="%tree.system_privileges.node.name" icon="#folder_privilege" description="System Privileges" navigable="false">
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OraclePrivObject" label="%tree.objects.node.name" icon="#folder_privilege" description="Objects" navigable="false">
+                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege">
+                                </items>
+                            </folder>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUserProfile" label="%tree.profiles.node.name" icon="#folder_profile" description="User profiles">
+                        <items label="%tree.profile.node.name" path="profiles" property="profiles" icon="#profile">
+                            <items label="%tree.resource.node.name" path="resource" property="resources" icon="#resource"/>
+                        </items>
+                    </folder>
+                </folder>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings" visibleIf="object.dataSource.adminVisible">
+                    <object type="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor" label="%tree.sessions.node.name" icon="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"/>
+                    <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleRecycledObject" label="Global Recycle Bin" icon="#recycle_bin" description="Global recycle bin" visibleIf="object.dataSource.admin">
+                        <items label="Recycled Object" path="object" property="adminRecycleBin" icon="#recycle_bin"/>
                     </folder-->
                 </folder>
 
@@ -431,10 +431,6 @@
             class="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
             id="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor">
         </editor>
-    </extension>
-
-    <extension
-        point="org.eclipse.ui.popupMenus">
     </extension>
 
 </plugin>
