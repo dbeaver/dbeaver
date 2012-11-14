@@ -71,7 +71,6 @@ public class RegistryConstants {
     public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
-    public static final String ATTR_ICON_ID = "iconId"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
@@ -81,7 +80,6 @@ public class RegistryConstants {
     public static final String ATTR_MAIN = "main"; //$NON-NLS-1$
     public static final String ATTR_POSITION = "position"; //$NON-NLS-1$
     public static final String ATTR_OBJECT_TYPE = "objectType"; //$NON-NLS-1$
-    public static final String ATTR_EXTENSIONS = "extensions"; //$NON-NLS-1$
     public static final String ATTR_EXTENSION = "extension"; //$NON-NLS-1$
     public static final String ATTR_SAMPLE_CLASS = "sampleClass"; //$NON-NLS-1$
     public static final String ATTR_SOURCE_TYPE = "sourceType"; //$NON-NLS-1$

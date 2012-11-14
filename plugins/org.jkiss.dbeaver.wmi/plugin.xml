@@ -34,8 +34,8 @@
                   label="WMI data source"
                   path="wmi">
                 <!--folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" description="WMI classes">
-                    <items label="Classes" itemLabel="Class" path="allClass" property="allClasses" iconId="icons/class.png">
-                        <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassProperty" label="Properties" iconId="#columns" description="Class properties" navigable="false" id="ClassAttributes">
+                    <items label="Classes" itemLabel="Class" path="allClass" property="allClasses" icon="icons/class.png">
+                        <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassProperty" label="Properties" icon="#columns" description="Class properties" navigable="false" id="ClassAttributes">
                             <items label="Properties" itemLabel="Property" path="property" property="attributes"/>
                         </folder>
                     </items>
@@ -43,18 +43,18 @@
                 <!--folder type="org.jkiss.dbeaver.ext.wmi.model.WMIContainer" label="Hierarchy" description="WMI namespace and class hierarchy"-->
                     <items label="Namespaces" itemLabel="Namespace" path="namespace" property="namespaces" icon="icons/namespace.png" id="Namespace">
                         <items ref="Namespace"/>
-                        <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" iconId="icons/classes.png" description="Classes">
-                            <items label="Classes" itemLabel="Class" path="class" property="classes" iconId="icons/class.png" id="Class">
-                                <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassAttribute" label="Properties" iconId="#columns" description="Class properties" navigable="false" id="ClassAttributes">
+                        <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Classes" icon="icons/classes.png" description="Classes">
+                            <items label="Classes" itemLabel="Class" path="class" property="classes" icon="icons/class.png" id="Class">
+                                <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassAttribute" label="Properties" icon="#columns" description="Class properties" navigable="false" id="ClassAttributes">
                                     <items label="Properties" itemLabel="Property" path="attribute" property="allAttributes"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassMethod" label="Methods" iconId="#procedures" description="Class methods" navigable="false" id="ClassMethods">
+                                <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClassMethod" label="Methods" icon="#procedures" description="Class methods" navigable="false" id="ClassMethods">
                                     <items label="Methods" itemLabel="Method" path="method" property="methods"/>
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Associations" iconId="icons/associations.png" description="Class Associations">
-                            <items label="Associations" itemLabel="Association" path="association" property="associations" iconId="icons/association.png" id="Association">
+                        <folder type="org.jkiss.dbeaver.ext.wmi.model.WMIClass" label="Associations" icon="icons/associations.png" description="Class Associations">
+                            <items label="Associations" itemLabel="Association" path="association" property="associations" icon="icons/association.png" id="Association">
                                 <items ref="ClassAttributes"/>
                             </items>
                         </folder>

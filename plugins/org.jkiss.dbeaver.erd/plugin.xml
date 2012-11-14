@@ -43,10 +43,6 @@
         </contexts>
     </extension>
 
-    <extension
-        point="org.eclipse.ui.popupMenus">
-    </extension>
-
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
             id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
