@@ -46,104 +46,104 @@
                   icon="icons/mysql_icon.png"
                   label="MySQL data source"
                   path="mysql">
-                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%tree.databases.node.name" iconId="#folder_database" description="Server databases">
-                    <items label="%tree.database.node.name" path="database" property="catalogs" iconId="#database">
-                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" iconId="#folder_table" description="Tables">
-                            <items label="%tree.table.node.name" path="table" property="tables" iconId="#table">
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn" label="%tree.columns.node.name" iconId="#columns" description="Table columns">
-                                    <items label="%tree.column.node.name" path="attribute" property="attributes" iconId="#column">
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%tree.databases.node.name" icon="#folder_database" description="Server databases">
+                    <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint" label="%tree.constraints.node.name" iconId="#constraints" description="Table constraints">
-                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" iconId="#unique-key">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
                                         <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" iconId="#foreign-keys" description="Table foreign keys">
-                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" iconId="#foreign-key">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
                                         <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey" label="%tree.references.node.name" iconId="#references" description="Table references" virtual="true">
-                                    <items label="%tree.reference_key.node.name" path="referenceKey" property="references" iconId="#reference" virtual="true">
+                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                    <items label="%tree.reference_key.node.name" path="referenceKey" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger" label="%tree.triggers.node.name" iconId="#triggers" description="Triggers">
-                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" iconId="#trigger">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex" label="%tree.indexes.node.name" iconId="#indexes" description="Table indexes">
-                                    <items label="%tree.index.node.name" path="index" property="indexes" iconId="#index">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
                                         <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" iconId="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
-                                    <items label="%tree.partition.node.name" path="partition" property="partitions" iconId="#partition">
+                                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
+                                    <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
                                         <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true">
                                         </items>
                                     </items>
                                 </folder>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLView" label="%tree.views.node.name" iconId="#folder_view" description="Views">
-                            <items label="%tree.view.node.name" path="view" property="views" iconId="#view">
-                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" iconId="#column">
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLView" label="%tree.views.node.name" icon="#folder_view" description="Views">
+                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" icon="#column">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" iconId="#indexes" description="Indexes" virtual="true">
-                            <items label="%tree.index.node.name" path="index" property="indexes" iconId="#index" virtual="true">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" virtual="true">
+                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index" virtual="true">
                                 <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure" label="%tree.procedures.node.name" iconId="#procedures" description="Procedures">
-                            <items label="%tree.procedure.node.name" path="procedure" property="procedures" iconId="#procedure">
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                            <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                 <items label="Procedure columns" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.triggers.node.name" iconId="#triggers" description="Triggers">
-                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" iconId="#trigger">
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                             </items>
                         </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLUser" label="%tree.users.node.name" iconId="#folder_user" description="Users">
-                    <items label="%tree.user.node.name" path="users" property="users" iconId="#user"/>
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
+                    <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
                 </folder>
-                <folder type="" label="%tree.administer.node.name" iconId="#folder_admin" description="Maintenance/Settings">
-                    <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="%tree.sessions.node.name" iconId="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <object type="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor" label="%tree.sessions.node.name" icon="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"/>
                 </folder>
 
-                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLInformation" label="%tree.system_info.node.name" iconId="#folder_info" description="Database system information">
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.session_status.node.name" iconId="#info" description="Session status">
-                        <items label="%tree.variable.node.name" path="sessionStatus" property="sessionStatus" iconId="#info" navigable="false" virtual="true"/>
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLInformation" label="%tree.system_info.node.name" icon="#folder_info" description="Database system information">
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.session_status.node.name" icon="#info" description="Session status">
+                        <items label="%tree.variable.node.name" path="sessionStatus" property="sessionStatus" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.global_status.node.name" iconId="#info" description="Global status">
-                        <items label="%tree.variable.node.name" path="globalStatus" property="globalStatus" iconId="#info" navigable="false" virtual="true"/>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.global_status.node.name" icon="#info" description="Global status">
+                        <items label="%tree.variable.node.name" path="globalStatus" property="globalStatus" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.session_variables.node.name" iconId="#info" description="Session variables">
-                        <items label="%tree.variable.node.name" path="sessionVariables" property="sessionVariables" iconId="#info" navigable="false" virtual="true"/>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.session_variables.node.name" icon="#info" description="Session variables">
+                        <items label="%tree.variable.node.name" path="sessionVariables" property="sessionVariables" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.global_variables.node.name" iconId="#info" description="Global variables">
-                        <items label="%tree.variable.node.name" path="globalVariables" property="globalVariables" iconId="#info" navigable="false" virtual="true"/>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLParameter" label="%tree.global_variables.node.name" icon="#info" description="Global variables">
+                        <items label="%tree.variable.node.name" path="globalVariables" property="globalVariables" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEngine" label="%tree.engines.node.name" iconId="#info" description="Database engines">
-                        <items label="%tree.engine.node.name" path="engines" property="engines" iconId="#info" navigable="false" virtual="true"/>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEngine" label="%tree.engines.node.name" icon="#info" description="Database engines">
+                        <items label="%tree.engine.node.name" path="engines" property="engines" icon="#info" navigable="false" virtual="true"/>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCharset" label="%tree.charsets.node.name" iconId="#info" description="Database charsets">
-                        <items label="%tree.charset.node.name" path="charsets" property="charsets" iconId="#info">
-                            <items label="%tree.collation.node.name" path="collations" property="collations" iconId="#info" navigable="false"/>
+                    <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCharset" label="%tree.charsets.node.name" icon="#info" description="Database charsets">
+                        <items label="%tree.charset.node.name" path="charsets" property="charsets" icon="#info">
+                            <items label="%tree.collation.node.name" path="collations" property="collations" icon="#info" navigable="false"/>
                         </items>
                     </folder>
-                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="%tree.user_privileges.node.name" iconId="#info" description="User privileges">
-                        <items label="%tree.privilege.node.name" path="privileges" property="privileges" iconId="#info" navigable="false" virtual="true"/>
+                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="%tree.user_privileges.node.name" icon="#info" description="User privileges">
+                        <items label="%tree.privilege.node.name" path="privileges" property="privileges" icon="#info" navigable="false" virtual="true"/>
                     </folder>
                 </folder>
 
@@ -294,10 +294,6 @@
             class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
             id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor">
         </editor>
-    </extension>
-
-    <extension
-        point="org.eclipse.ui.popupMenus">
     </extension>
 
 </plugin>

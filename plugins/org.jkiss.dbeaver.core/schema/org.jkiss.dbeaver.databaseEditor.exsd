@@ -1,23 +1,4 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!--
- * Copyright (C) 2010-2012 Serge Rieder
- * serge@jkiss.org
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  -->
-
 <!-- Schema file written by PDE -->
 <schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
@@ -138,9 +119,20 @@
                <documentation>
                   
                </documentation>
-               <appInfo>
-                  <meta.attribute kind="resource"/>
-               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="contributor" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="type" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
@@ -156,6 +148,13 @@
                <appInfo>
                   <meta.attribute kind="java"/>
                </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="if" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>
@@ -180,6 +179,16 @@
                </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.model.struct.DBSObject"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="label" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
                </appInfo>
             </annotation>
          </attribute>
