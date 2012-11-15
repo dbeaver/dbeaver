@@ -34,7 +34,8 @@ import org.jkiss.dbeaver.DBeaverConstants;
 public class SubEditorSite implements IEditorSite {
     private final IWorkbenchPartSite parentSite;
     private final IActionBars actionBars;
-    private final IKeyBindingService keyBindingService;
+    @SuppressWarnings("deprecation")
+	private final IKeyBindingService keyBindingService;
     private final ISelectionProvider selectionProvider;
 
     public SubEditorSite(IWorkbenchPartSite parentSite)
@@ -165,7 +166,8 @@ public class SubEditorSite implements IEditorSite {
         return parentSite.hasService(api);
     }
 
-    private static class FakeKeyBindingService implements IKeyBindingService {
+    @SuppressWarnings("deprecation")
+	private static class FakeKeyBindingService implements IKeyBindingService {
         @Override
         public String[] getScopes()
         {

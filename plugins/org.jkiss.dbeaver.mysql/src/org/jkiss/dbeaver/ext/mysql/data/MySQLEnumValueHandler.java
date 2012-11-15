@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
 import java.sql.SQLException;
 import java.util.List;

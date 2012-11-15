@@ -2,8 +2,6 @@ package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.DBeaverConstants;
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 public class Activator extends AbstractUIPlugin {

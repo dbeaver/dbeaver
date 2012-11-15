@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 

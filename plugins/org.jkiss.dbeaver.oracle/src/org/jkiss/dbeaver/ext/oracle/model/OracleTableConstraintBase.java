@@ -20,16 +20,12 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 

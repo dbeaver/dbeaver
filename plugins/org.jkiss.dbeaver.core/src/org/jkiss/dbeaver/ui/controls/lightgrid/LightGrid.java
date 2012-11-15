@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.ScrollBarAdapter;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
 
 import java.util.*;

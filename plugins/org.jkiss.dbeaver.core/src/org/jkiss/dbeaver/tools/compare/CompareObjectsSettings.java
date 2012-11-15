@@ -20,15 +20,10 @@
 package org.jkiss.dbeaver.tools.compare;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.registry.DataExporterDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Compare settings

@@ -8,7 +8,9 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * SQL context

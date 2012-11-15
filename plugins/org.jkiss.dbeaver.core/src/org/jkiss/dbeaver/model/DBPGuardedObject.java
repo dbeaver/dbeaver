@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Object with lock state.

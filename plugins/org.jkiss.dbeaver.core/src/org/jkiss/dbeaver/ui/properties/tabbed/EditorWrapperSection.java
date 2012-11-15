@@ -165,7 +165,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
 //        }
     }
 
-    @SuppressWarnings("deprecated")
+    @SuppressWarnings("deprecation")
     private void activateSectionSite(boolean activate)
     {
         if (nestedEditorSite instanceof INestable) {
@@ -176,7 +176,7 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
             }
         }
         if (nestedEditorSite instanceof MultiPageEditorSite) {
-            final IKeyBindingService keyBindingService = ((MultiPageEditorSite) nestedEditorSite).getMultiPageEditor().getEditorSite()
+			final IKeyBindingService keyBindingService = ((MultiPageEditorSite) nestedEditorSite).getMultiPageEditor().getEditorSite()
 					.getKeyBindingService();
             if (keyBindingService instanceof INestableKeyBindingService) {
                 ((INestableKeyBindingService) keyBindingService).activateKeyBindingService(activate ? nestedEditorSite : null);

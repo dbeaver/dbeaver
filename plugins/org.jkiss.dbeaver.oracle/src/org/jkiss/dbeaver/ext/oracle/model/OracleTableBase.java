@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * OracleTable base

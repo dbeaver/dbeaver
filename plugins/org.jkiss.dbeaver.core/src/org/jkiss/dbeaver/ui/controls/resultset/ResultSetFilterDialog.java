@@ -41,10 +41,10 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.query.DBQCondition;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.utils.CommonUtils;
 
 public class ResultSetFilterDialog extends HelpEnabledDialog {

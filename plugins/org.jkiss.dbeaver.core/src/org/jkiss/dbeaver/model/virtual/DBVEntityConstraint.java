@@ -2,7 +2,10 @@ package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
 import java.util.ArrayList;
 import java.util.Collection;

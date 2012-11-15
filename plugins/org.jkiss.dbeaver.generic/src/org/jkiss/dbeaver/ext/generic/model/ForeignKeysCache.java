@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
