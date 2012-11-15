@@ -161,9 +161,6 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             }
 
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
-            if (commandTarget == null) {
-                return true;
-            }
             if (confirmResult == ConfirmResult.DETAILS) {
                 if (!showScript(workbenchWindow, commandTarget.getContext(), CoreMessages.actions_navigator_delete_script)) {
                     commandTarget.getContext().resetChanges();

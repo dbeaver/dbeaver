@@ -19,12 +19,10 @@
 
 package org.jkiss.dbeaver.model.navigator;
 
-import java.util.EventObject;
-
 /**
- * DBPEvent
+ * Navigator model event
  */
-public class DBNEvent extends EventObject {
+public class DBNEvent {
     public enum Action
     {
         ADD,
@@ -40,6 +38,7 @@ public class DBNEvent extends EventObject {
         UNLOCK,
     }
 
+    private Object source;
     private Action action;
     private NodeChange nodeChange;
     private DBNNode node;
@@ -53,10 +52,15 @@ public class DBNEvent extends EventObject {
 
     public DBNEvent(Object source, Action action, NodeChange nodeChange, DBNNode node)
     {
-        super(source);
+        this.source = source;
         this.action = action;
         this.nodeChange = nodeChange;
         this.node = node;
+    }
+
+    public Object getSource()
+    {
+        return source;
     }
 
     public Action getAction()

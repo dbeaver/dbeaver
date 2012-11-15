@@ -67,7 +67,7 @@ public class VersionUpdateDialog extends Dialog {
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_current_version);
         new Label(propGroup, SWT.NONE)
-            .setText(DBeaverCore.getInstance().getVersion().toString());
+            .setText(DBeaverCore.getVersion().toString());
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_new_version);
         new Label(propGroup, SWT.NONE)

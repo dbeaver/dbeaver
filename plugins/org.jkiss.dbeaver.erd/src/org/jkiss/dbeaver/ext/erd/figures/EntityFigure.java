@@ -55,7 +55,7 @@ public class EntityFigure extends Figure {
         nameLabel.setForegroundColor(ColorConstants.black);
 
         ToolbarLayout layout = new ToolbarLayout();
-        layout.setVertical(true);
+        layout.setHorizontal(false);
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
         setBorder(new LineBorder(ColorConstants.black, 1));

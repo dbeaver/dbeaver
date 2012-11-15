@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.bindings.Scheme;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;

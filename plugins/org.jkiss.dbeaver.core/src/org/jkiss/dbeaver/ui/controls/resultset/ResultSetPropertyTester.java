@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;

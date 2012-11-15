@@ -50,7 +50,7 @@ public class DBeaverVersionChecker extends AbstractJob {
     {
         try {
             VersionDescriptor versionDescriptor = new VersionDescriptor(VersionDescriptor.DEFAULT_VERSION_URL);
-            if (versionDescriptor.getProgramVersion().compareTo(DBeaverCore.getInstance().getVersion()) > 0) {
+            if (versionDescriptor.getProgramVersion().compareTo(DBeaverCore.getVersion()) > 0) {
                 showUpdaterDialog(versionDescriptor);
             } else if (showAlways) {
                 showUpdaterDialog(null);

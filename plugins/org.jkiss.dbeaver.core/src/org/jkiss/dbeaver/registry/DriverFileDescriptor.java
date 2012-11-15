@@ -26,7 +26,6 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.model.DBPDriverFileType;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -145,7 +144,7 @@ public class DriverFileDescriptor implements DBPDriverFile
             file = new File(DBeaverCore.getInstance().getWorkspace().getRoot().getLocation().toFile(), path);
             if (!file.exists()) {
                 // USe custom drivers path
-                file = new File(driver.getCustomDriversHome(), path);
+                file = new File(DriverDescriptor.getCustomDriversHome(), path);
             }
         }
         return file;
