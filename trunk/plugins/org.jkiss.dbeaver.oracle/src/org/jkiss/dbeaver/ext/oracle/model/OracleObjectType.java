@@ -168,8 +168,8 @@ public enum OracleObjectType implements DBSObjectType {
         return typeMap.get(typeName);
     }
 
-    private static interface ObjectFinder<OBJECT_TYPE extends DBSObject> {
-        OBJECT_TYPE findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException;
+    private static interface ObjectFinder {
+        DBSObject findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException;
     }
     
     private final String objectType;
@@ -177,7 +177,7 @@ public enum OracleObjectType implements DBSObjectType {
     private final Class<? extends DBSObject> typeClass;
     private final ObjectFinder finder;
 
-    <OBJECT_TYPE extends DBSObject> OracleObjectType(String objectType, Image image, Class<OBJECT_TYPE> typeClass, ObjectFinder<OBJECT_TYPE> finder)
+    <OBJECT_TYPE extends DBSObject> OracleObjectType(String objectType, Image image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder)
     {
         this.objectType = objectType;
         this.image = image;
