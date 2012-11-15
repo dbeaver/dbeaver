@@ -21,8 +21,10 @@ package org.jkiss.dbeaver.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -45,6 +47,7 @@ import org.jkiss.utils.CommonUtils;
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.io.*;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -532,7 +535,20 @@ public class ContentUtils {
 
     public static IFile convertPathToWorkspaceFile(IPath path)
     {
-        return DBeaverCore.getInstance().getWorkspace().getRoot().getFileForLocation(path);
+        IWorkspaceRoot root = DBeaverCore.getInstance().getWorkspace().getRoot();
+        IFile file = root.getFileForLocation(path);
+        if (file != null) {
+            return file;
+        }
+        // Probably we have a path to some linked resource
+        IPath folderPath = path.removeLastSegments(1);
+        URI folderURI = folderPath.toFile().toURI();
+        IContainer[] containers = root.findContainersForLocationURI(folderURI);
+        if (!CommonUtils.isEmpty(containers)) {
+            IContainer container = containers[0];
+            file = container.getFile(path.removeFirstSegments(path.segmentCount() - 1));
+        }
+        return file;
     }
 
     public static IPath convertPathToWorkspacePath(IPath path)
