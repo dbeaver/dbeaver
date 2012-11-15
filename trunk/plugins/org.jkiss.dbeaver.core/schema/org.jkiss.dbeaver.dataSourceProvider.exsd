@@ -59,6 +59,7 @@
             <element ref="drivers" minOccurs="0" maxOccurs="1"/>
             <element ref="views" minOccurs="0" maxOccurs="1"/>
             <element ref="tools" minOccurs="0" maxOccurs="1"/>
+            <element ref="templates" minOccurs="0" maxOccurs="1"/>
          </sequence>
          <attribute name="id" type="string" use="required">
             <annotation>
@@ -850,6 +851,46 @@ View must implement interface(s) depending on targetID.
                </documentation>
                <appInfo>
                   <meta.attribute kind="java"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="templates">
+      <complexType>
+         <sequence>
+            <element ref="resolver" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+      </complexType>
+   </element>
+
+   <element name="resolver">
+      <complexType>
+         <attribute name="type" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute kind="java"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="description" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+               <appInfo>
+                  <meta.attribute translatable="true"/>
                </appInfo>
             </annotation>
          </attribute>

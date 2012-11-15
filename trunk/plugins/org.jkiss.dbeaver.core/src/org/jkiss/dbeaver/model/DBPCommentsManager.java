@@ -21,9 +21,6 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.utils.Pair;
 
-import java.util.List;
-import java.util.Set;
-
 /**
  * Comments manager.
  * <p/>

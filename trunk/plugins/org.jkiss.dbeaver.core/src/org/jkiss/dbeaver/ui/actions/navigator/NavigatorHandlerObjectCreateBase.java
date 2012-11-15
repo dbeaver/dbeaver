@@ -82,9 +82,6 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             if (result == null) {
                 return true;
             }
-            if (commandTarget == null) {
-                throw new DBException("Non-database container '" + container + "' must save new objects itself - command context is not accessible");
-            }
 
             if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
                 // Save object manager's content

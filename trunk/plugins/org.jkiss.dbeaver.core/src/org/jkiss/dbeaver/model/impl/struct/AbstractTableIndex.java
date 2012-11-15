@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 /**

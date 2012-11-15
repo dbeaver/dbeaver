@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;

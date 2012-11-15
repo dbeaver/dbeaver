@@ -49,7 +49,7 @@ import java.util.Map;
 /**
  * Oracle data type
  */
-public class OracleDataType extends OracleObject
+public class OracleDataType extends OracleObject<DBSObject>
     implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObjectEx {
 
     static final Log log = LogFactory.getLog(OracleTableForeignKey.class);
@@ -133,7 +133,6 @@ public class OracleDataType extends OracleObject
     private boolean flagFinal;
     private boolean flagInstantiable;
     private TypeDesc typeDesc;
-    private int precision = 0;
     private int valueType = java.sql.Types.OTHER;
     private String sourceDeclaration;
     private String sourceDefinition;
@@ -273,9 +272,6 @@ public class OracleDataType extends OracleObject
     @Override
     public int getPrecision()
     {
-        if (precision != 0) {
-            return precision;
-        }
         return typeDesc == null ? 0 : typeDesc.precision;
     }
 
@@ -312,6 +308,7 @@ public class OracleDataType extends OracleObject
         return typeCode;
     }
 
+    @Property(hidden = true, viewable = false, editable = false)
     public byte[] getTypeOID()
     {
         return typeOID;
@@ -370,16 +367,6 @@ public class OracleDataType extends OracleObject
         return flagInstantiable;
     }
 
-    public boolean hasAttributes()
-    {
-        return attributeCache != null;
-    }
-
-    public boolean hasMethods()
-    {
-        return methodCache != null;
-    }
-
     @Override
     public DBSEntityType getEntityType()
     {
@@ -400,6 +387,7 @@ public class OracleDataType extends OracleObject
         return null;
     }
 
+    @Override
     public OracleDataTypeAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
     {
         return attributeCache != null ? attributeCache.getObject(monitor, this, attributeName) : null;

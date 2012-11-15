@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.tools.project.ProjectCreateWizard;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 public class NavigatorHandlerProjectCreate extends NavigatorHandlerObjectBase {
 
