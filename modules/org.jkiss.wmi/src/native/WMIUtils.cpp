@@ -257,7 +257,6 @@ jobject MakeJavaFromVariant(JNIEnv* pJavaEnv, CComVariant& var, CIMTYPE cimType)
 	case VT_VARIANT:
 	default:
 		// Unsupported type
-		// TODO: warning
 		THROW_COMMON_EXCEPTION(L"Unsupported VARIANT type");
 		return NULL;
 	}
