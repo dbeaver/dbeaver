@@ -102,7 +102,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             }
         });
         viewer.getTree().setHeaderVisible(true);
-        viewer.getTree().setLinesVisible(true);
+        //viewer.getTree().setLinesVisible(true);
         //UIUtils.packColumns(viewer.getTree());
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
 
@@ -115,10 +115,14 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         });
         updateTitle();
         viewer.getTree().addControlListener(new ControlAdapter() {
+            boolean resized = false;
             @Override
             public void controlResized(ControlEvent e)
             {
-                UIUtils.packColumns(viewer.getTree(), true, null);
+                if (!resized) {
+                    UIUtils.packColumns(viewer.getTree(), true, null);
+                    resized = true;
+                }
             }
         });
     }
