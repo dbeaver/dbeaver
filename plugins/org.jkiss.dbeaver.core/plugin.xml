@@ -321,7 +321,7 @@
                         <and>
                             <adapt type="org.jkiss.dbeaver.model.DBPNamedObject"/>
                             <not>
-                                <adapt type="org.jkiss.dbeaver.model.struct.DBSFolder"/>
+                                <adapt type="org.jkiss.dbeaver.model.navigator.DBNContainer"/>
                             </not>
                         </and>
                     </iterate>
