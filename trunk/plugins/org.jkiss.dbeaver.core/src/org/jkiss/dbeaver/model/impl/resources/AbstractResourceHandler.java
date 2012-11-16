@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+
+import java.util.Collection;
 
 /**
  * Abstract resource handler
@@ -66,6 +69,12 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     public String getResourceDescription(IResource resource)
     {
         return resource.getName();
+    }
+
+    @Override
+    public Collection<DBSDataSourceContainer> getAssociatedDataSources(IResource resource)
+    {
+        return null;
     }
 
 }

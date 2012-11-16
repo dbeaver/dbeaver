@@ -42,6 +42,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -181,4 +183,13 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+    @Override
+    public Collection<DBSDataSourceContainer> getAssociatedDataSources(IResource resource)
+    {
+        if (resource instanceof IFile) {
+            DBSDataSourceContainer dataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
+            return dataSource == null ? null : Collections.singleton(dataSource);
+        }
+        return null;
+    }
 }

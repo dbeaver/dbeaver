@@ -77,7 +77,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     protected DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
     {
         // Create tree
-        DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, SWT.MULTI);
+        DatabaseNavigatorTree navigatorTree = new DatabaseNavigatorTree(parent, rootNode, getTreeStyle());
 
         navigatorTree.getViewer().addSelectionChangedListener(
             new ISelectionChangedListener()
@@ -138,6 +138,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
 
         return navigatorTree;
+    }
+
+    protected int getTreeStyle()
+    {
+        return SWT.MULTI;
     }
 
     @Override

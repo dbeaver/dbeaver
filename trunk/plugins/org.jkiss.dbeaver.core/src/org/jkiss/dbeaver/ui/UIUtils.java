@@ -274,6 +274,7 @@ public class UIUtils {
                     if (columns.length > 0) {
                         if (ratios == null || ratios.length < columns.length) {
                             extraSpace /= columns.length;
+                            extraSpace--;
                             for (TreeColumn tc : columns) {
                                 tc.setWidth((int) (tc.getWidth() + extraSpace));
                             }
