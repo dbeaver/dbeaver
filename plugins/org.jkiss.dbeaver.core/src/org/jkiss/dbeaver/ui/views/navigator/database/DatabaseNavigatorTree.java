@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -79,6 +80,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         checkEnabled = (style & SWT.CHECK) != 0;
 
         // Create tree
+        final ISelection defaultSelection = new StructuredSelection(rootNode);
         // TODO: there are problems with this tree when we have a lot of items.
         // TODO: I may set SWT.SINGLE style and it'll solve the problem at least when traversing tree
         // TODO: But we need multiple selection (to copy, export, etc)
@@ -87,7 +89,14 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         if (checkEnabled) {
             this.viewer = new CheckboxTreeViewer(this, treeStyle);
         } else {
-            this.viewer = new TreeViewer(this, treeStyle);
+            this.viewer = new TreeViewer(this, treeStyle) {
+                @Override
+                public ISelection getSelection()
+                {
+                    ISelection selection = super.getSelection();
+                    return selection.isEmpty() ? defaultSelection : selection;
+                }
+            };
         }
         this.viewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         this.viewer.setUseHashlookup(true);
