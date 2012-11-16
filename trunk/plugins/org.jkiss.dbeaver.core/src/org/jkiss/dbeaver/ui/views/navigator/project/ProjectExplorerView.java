@@ -120,7 +120,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             public void controlResized(ControlEvent e)
             {
                 if (!resized) {
-                    UIUtils.packColumns(viewer.getTree(), true, null);
+                    UIUtils.packColumns(viewer.getTree(), true, new float[] {0.6f, 0.4f});
                     resized = true;
                 }
             }
@@ -144,7 +144,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     public void handleActiveProjectChange(IProject oldValue, IProject newValue)
     {
         getNavigatorTree().reloadTree(getRootNode());
-        UIUtils.packColumns(getNavigatorTree().getViewer().getTree());
+        //UIUtils.packColumns(getNavigatorTree().getViewer().getTree());
         updateTitle();
     }
 
