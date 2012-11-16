@@ -24,6 +24,9 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+
+import java.util.Collection;
 
 /**
  * Resource handler
@@ -45,4 +48,6 @@ public interface DBPResourceHandler {
     String getTypeName(IResource resource);
 
     String getResourceDescription(IResource resource);
+
+    Collection<DBSDataSourceContainer> getAssociatedDataSources(IResource resource);
 }
