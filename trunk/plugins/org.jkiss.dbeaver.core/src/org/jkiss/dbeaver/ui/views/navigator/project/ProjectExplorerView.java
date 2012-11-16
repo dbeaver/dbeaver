@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 import org.jkiss.utils.CommonUtils;
 
@@ -63,10 +64,10 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     {
         super.createPartControl(parent);
         final TreeViewer viewer = getNavigatorViewer();
+        viewer.getTree().setHeaderVisible(true);
         final LabelProvider mainLabelProvider = (LabelProvider)viewer.getLabelProvider();
-        TreeViewerColumn nameColumn = new TreeViewerColumn(viewer, SWT.LEFT);
-        nameColumn.getColumn().setText("Name");
-        nameColumn.setLabelProvider(new CellLabelProvider() {
+        ViewerColumnController columnController = new ViewerColumnController("projectExplorer", viewer);
+        columnController.addColumn("Name", SWT.LEFT, true, true, new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell)
             {
@@ -75,9 +76,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             }
         });
 
-        TreeViewerColumn dsColumn = new TreeViewerColumn(viewer, SWT.LEFT);
-        dsColumn.getColumn().setText("DataSource");
-        dsColumn.setLabelProvider(new CellLabelProvider() {
+        columnController.addColumn("DataSource", SWT.LEFT, true, false, new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell)
             {
@@ -101,9 +100,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
             }
         });
-        viewer.getTree().setHeaderVisible(true);
-        //viewer.getTree().setLinesVisible(true);
-        //UIUtils.packColumns(viewer.getTree());
+        columnController.createColumns();
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
 
         this.getNavigatorViewer().addFilter(new ViewerFilter() {
@@ -114,17 +111,6 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             }
         });
         updateTitle();
-        viewer.getTree().addControlListener(new ControlAdapter() {
-            boolean resized = false;
-            @Override
-            public void controlResized(ControlEvent e)
-            {
-                if (!resized) {
-                    UIUtils.packColumns(viewer.getTree(), true, new float[] {0.6f, 0.4f});
-                    resized = true;
-                }
-            }
-        });
     }
 
     @Override
