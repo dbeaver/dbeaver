@@ -18,14 +18,12 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.project;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -65,9 +63,24 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         super.createPartControl(parent);
         final TreeViewer viewer = getNavigatorViewer();
         viewer.getTree().setHeaderVisible(true);
+        createColumns(viewer);
+        UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
+
+        this.getNavigatorViewer().addFilter(new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element)
+            {
+                return !(element instanceof DBNProjectDatabases);
+            }
+        });
+        updateTitle();
+    }
+
+    private void createColumns(TreeViewer viewer)
+    {
         final LabelProvider mainLabelProvider = (LabelProvider)viewer.getLabelProvider();
         ViewerColumnController columnController = new ViewerColumnController("projectExplorer", viewer);
-        columnController.addColumn("Name", SWT.LEFT, true, true, new CellLabelProvider() {
+        columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell)
             {
@@ -76,7 +89,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             }
         });
 
-        columnController.addColumn("DataSource", SWT.LEFT, true, false, new CellLabelProvider() {
+        columnController.addColumn("DataSource", "Datasource(s) associated with resource", SWT.LEFT, true, false, new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell)
             {
@@ -100,17 +113,20 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
             }
         });
-        columnController.createColumns();
-        UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
-
-        this.getNavigatorViewer().addFilter(new ViewerFilter() {
+        columnController.addColumn("Size", "File size", SWT.LEFT, false, false, new CellLabelProvider() {
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element)
+            public void update(ViewerCell cell)
             {
-                return !(element instanceof DBNProjectDatabases);
+                DBNNode node = (DBNNode) cell.getElement();
+                if (node instanceof DBNResource) {
+                    IResource resource = ((DBNResource) node).getResource();
+                    if (resource instanceof IFile) {
+                        cell.setText(String.valueOf(resource.getLocation().toFile().length()));
+                    }
+                }
             }
         });
-        updateTitle();
+        columnController.createColumns();
     }
 
     @Override
