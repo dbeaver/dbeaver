@@ -426,7 +426,7 @@ public final class DBUtils {
                     continue;
                 }
                 // We got table name and column name
-                // To be editable we need this result set contain set of columns from the same table
+                // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
                 DBDValueLocator valueLocator = locatorMap.get(meta.getEntity().getEntity(monitor));
                 if (valueLocator == null) {
