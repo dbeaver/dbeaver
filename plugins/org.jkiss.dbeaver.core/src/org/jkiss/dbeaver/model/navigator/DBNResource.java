@@ -27,13 +27,11 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * DBNResource
@@ -335,6 +333,11 @@ public class DBNResource extends DBNNode
                 throw new DBException(e);
             }
         }
+    }
+
+    public Collection<DBSDataSourceContainer> getAssociatedDataSources()
+    {
+        return handler.getAssociatedDataSources(resource);
     }
 
     void handleResourceChange(IResourceDelta delta)
