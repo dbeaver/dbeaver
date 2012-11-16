@@ -53,29 +53,31 @@ public class DBNResource extends DBNNode
     @Override
     protected void dispose(boolean reflect)
     {
-        this.resource = null;
-        this.handler = null;
-        if (children != null) {
-            for (DBNNode child : children) {
-                child.dispose(reflect);
+        if (this.handler != null) {
+            this.resource = null;
+            this.handler = null;
+            if (children != null) {
+                for (DBNNode child : children) {
+                    child.dispose(reflect);
+                }
+                children = null;
             }
-            children = null;
-        }
-        if (reflect) {
-            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
+            if (reflect) {
+                DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
+            }
         }
         super.dispose(reflect);
     }
 
     public int getFeatures()
     {
-        return handler.getFeatures(resource);
+        return handler == null ? 0 : handler.getFeatures(resource);
     }
 
     @Override
     public String getNodeType()
     {
-        return handler.getTypeName(resource);
+        return handler == null ? null :handler.getTypeName(resource);
     }
 
     @Override
@@ -95,7 +97,7 @@ public class DBNResource extends DBNNode
     @Override
     public String getNodeDescription()
     {
-        return handler.getResourceDescription(getResource());
+        return handler == null ? null : handler.getResourceDescription(getResource());
     }
 
     @Override
@@ -337,7 +339,7 @@ public class DBNResource extends DBNNode
 
     public Collection<DBSDataSourceContainer> getAssociatedDataSources()
     {
-        return handler.getAssociatedDataSources(resource);
+        return handler == null ? null : handler.getAssociatedDataSources(resource);
     }
 
     void handleResourceChange(IResourceDelta delta)

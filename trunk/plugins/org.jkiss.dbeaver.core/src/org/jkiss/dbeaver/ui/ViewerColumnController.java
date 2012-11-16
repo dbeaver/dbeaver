@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -13,6 +14,7 @@ public class ViewerColumnController {
 
     private static class ColumnInfo {
         final String name;
+        final String description;
         final int style;
         final boolean defaultVisible;
         final boolean required;
@@ -22,9 +24,10 @@ public class ViewerColumnController {
         int order;
         ViewerColumn column;
 
-        private ColumnInfo(String name, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider, int order)
+        private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider, int order)
         {
             this.name = name;
+            this.description = description;
             this.style = style;
             this.defaultVisible = defaultVisible;
             this.required = required;
@@ -45,10 +48,10 @@ public class ViewerColumnController {
         this.viewer = viewer;
     }
 
-    public void addColumn(String name, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider)
+    public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider)
     {
         columns.add(
-            new ColumnInfo(name, style, defaultVisible, required, labelProvider, columns.size()));
+            new ColumnInfo(name, description, style, defaultVisible, required, labelProvider, columns.size()));
     }
 
     public void createColumns()
@@ -72,7 +75,11 @@ public class ViewerColumnController {
     public void repackColumns()
     {
         if (viewer instanceof TreeViewer) {
-            UIUtils.packColumns(((TreeViewer) viewer).getTree(), true, new float[]{0.6f, 0.4f});
+            float[] ratios = null;
+            if (((TreeViewer) viewer).getTree().getColumnCount() == 2) {
+                ratios = new float[]{0.6f, 0.4f};
+            }
+            UIUtils.packColumns(((TreeViewer) viewer).getTree(), true, ratios);
         } else if (viewer instanceof TableViewer) {
             UIUtils.packColumns(((TableViewer)viewer).getTable());
         }
@@ -85,12 +92,18 @@ public class ViewerColumnController {
                 TreeViewerColumn item = new TreeViewerColumn((TreeViewer) viewer, column.style);
                 item.getColumn().setText(column.name);
                 item.getColumn().setMoveable(columnsMovable);
+                if (!CommonUtils.isEmpty(column.description)) {
+                    item.getColumn().setToolTipText(column.description);
+                }
                 item.setLabelProvider(column.labelProvider);
                 column.column = item;
             } else if (viewer instanceof TableViewer) {
                 TableViewerColumn item = new TableViewerColumn((TableViewer) viewer, column.style);
                 item.getColumn().setText(column.name);
                 item.getColumn().setMoveable(columnsMovable);
+                if (!CommonUtils.isEmpty(column.description)) {
+                    item.getColumn().setToolTipText(column.description);
+                }
                 item.setLabelProvider(column.labelProvider);
                 column.column = item;
             }
