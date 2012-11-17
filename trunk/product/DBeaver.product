@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="2.0.0" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="2.0.2" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <text>
@@ -51,7 +51,7 @@ See the GNU Lesser General Public License for more details.
    </plugins>
 
    <features>
-      <feature id="org.jkiss.dbeaver.standalone" version="2.0.0"/>
+      <feature id="org.jkiss.dbeaver.standalone"/>
    </features>
 
 

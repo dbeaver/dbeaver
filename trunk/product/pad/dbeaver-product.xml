@@ -59,7 +59,9 @@
                 - Hex editor for strings
                 - XML data export
                 - SQL log persistence
+                - Project explorer UI improvement
                 - Apache Cassandra driver
+                - Misc fixes in generic JDBC/ODBC support
                 - A lot of UI bugfixes
             </release-notes>
         </version>
