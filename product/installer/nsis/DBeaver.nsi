@@ -25,8 +25,8 @@
   VIAddVersionKey "LegalTrademarks" "DBeaver is a trademark of JKISS"
   VIAddVersionKey "LegalCopyright" "JKISS"
   VIAddVersionKey "FileDescription" "DBeaver"
-  VIAddVersionKey "FileVersion" "2.0"
-  VIProductVersion "2.0.0.0"
+  VIAddVersionKey "FileVersion" "@productVersion@"
+  VIProductVersion "@productVersion@.0"
 
 ; Definitions for Java 6.0
   !define JRE_VERSION "6.0"

@@ -444,7 +444,7 @@
                     webURL="http://cassandra.jkiss.org/"
                     description="Driver for Apache Cassandra">
                     <file type="license" path="drivers/cassandra/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/LICENSE.txt"/>
-                    <file type="jar" path="drivers/cassandra/cassandra-jkiss-jdbc-1.0.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/cassandra-jkiss-jdbc-1.0.jar"/>
+                    <file type="jar" path="drivers/cassandra/cassandra-jkiss-jdbc-1.0.1.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/cassandra-jkiss-jdbc-1.0.1.jar"/>
                     <file type="jar" path="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/apache-cassandra-thrift-1.1.6.jar"/>
                     <file type="jar" path="drivers/cassandra/libthrift-0.7.0.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/libthrift-0.7.0.jar"/>
                     <file type="jar" path="drivers/cassandra/slf4j-api-1.6.1.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/slf4j-api-1.6.1.jar"/>
