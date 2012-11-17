@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
@@ -106,8 +107,8 @@ public class OracleCompilerDialog extends TrayDialog
                 table.setHeaderVisible(true);
             }
 
-            final TableViewerColumn pathColumn = UIUtils.createTableViewerColumn(unitTable, SWT.NONE, OracleMessages.views_oracle_compiler_dialog_column_name);
-            pathColumn.setLabelProvider(new CellLabelProvider() {
+            ViewerColumnController columnController = new ViewerColumnController("OracleCompilerDialog", unitTable);
+            columnController.addColumn(OracleMessages.views_oracle_compiler_dialog_column_name, null, SWT.NONE, true, true, new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
                 {
@@ -121,8 +122,7 @@ public class OracleCompilerDialog extends TrayDialog
                     }
                 }
             });
-            final TableViewerColumn versionColumn = UIUtils.createTableViewerColumn(unitTable, SWT.NONE, OracleMessages.views_oracle_compiler_dialog_column_type);
-            versionColumn.setLabelProvider(new CellLabelProvider() {
+            columnController.addColumn(OracleMessages.views_oracle_compiler_dialog_column_type, null, SWT.NONE, true, true, new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
                 {
@@ -135,6 +135,7 @@ public class OracleCompilerDialog extends TrayDialog
                     }
                 }
             });
+            columnController.createColumns();
             unitTable.addSelectionChangedListener(new ISelectionChangedListener() {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event)
@@ -157,7 +158,6 @@ public class OracleCompilerDialog extends TrayDialog
             });
             unitTable.setContentProvider(new ListContentProvider());
             unitTable.setInput(compileUnits);
-            UIUtils.packColumns(unitTable.getTable());
         }
 
         {
@@ -170,7 +170,7 @@ public class OracleCompilerDialog extends TrayDialog
             infoGroup.setLayoutData(gd);
             infoGroup.setLayout(new GridLayout(1, false));
 
-            compileLog = new ObjectCompilerLogViewer(infoGroup);
+            compileLog = new ObjectCompilerLogViewer(infoGroup, true);
             compileLog.setLevel(ObjectCompilerLogViewer.LOG_LEVEL_ALL);
         }
 
