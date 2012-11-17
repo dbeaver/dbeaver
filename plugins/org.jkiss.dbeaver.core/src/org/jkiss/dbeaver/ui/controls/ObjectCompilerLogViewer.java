@@ -40,16 +40,16 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
 
     private Table infoTable;
 
-    public ObjectCompilerLogViewer(Composite parent)
+    public ObjectCompilerLogViewer(Composite parent, boolean bordered)
     {
         super();
 
-        infoTable = new Table(parent, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
+        infoTable = new Table(parent, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION | (bordered ? SWT.BORDER : SWT.NONE));
         infoTable.setHeaderVisible(true);
         infoTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        TableColumn messageColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, "Message");
-        TableColumn lineColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, "Line");
-        TableColumn posColumn = UIUtils.createTableColumn(infoTable, SWT.LEFT, "Pos");
+        UIUtils.createTableColumn(infoTable, SWT.LEFT, "Message");
+        UIUtils.createTableColumn(infoTable, SWT.LEFT, "Line");
+        UIUtils.createTableColumn(infoTable, SWT.LEFT, "Pos");
 
         createContextMenu();
     }
