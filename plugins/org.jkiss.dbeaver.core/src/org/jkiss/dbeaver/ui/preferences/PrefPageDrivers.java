@@ -24,6 +24,8 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -35,7 +37,10 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -54,6 +59,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     private SecuredPasswordEncrypter encrypter;
 
     private Text customDriversHome;
+    private List sourceList;
 
     @Override
     public void init(IWorkbench workbench)
@@ -80,8 +86,79 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
         proxyUserText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_user, ""); //$NON-NLS-2$
         proxyPasswordText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_password, "", SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
 
-        Group drivers = UIUtils.createControlGroup(composite, CoreMessages.pref_page_drivers_group_location, 3, GridData.FILL_HORIZONTAL, 300);
-        customDriversHome = UIUtils.createOutputFolderChooser(drivers, null, null);
+        {
+            Group drivers = UIUtils.createControlGroup(composite, CoreMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
+            customDriversHome = UIUtils.createOutputFolderChooser(drivers, "Local folder", null);
+            Label sourcesLabel = UIUtils.createControlLabel(drivers, "Drivers' sources");
+            sourcesLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+            Composite sourcePH = UIUtils.createPlaceholder(drivers, 2, 5);
+            sourcePH.setLayoutData(new GridData(GridData.FILL_BOTH));
+            sourceList = new List(sourcePH, SWT.BORDER | SWT.SINGLE);
+            sourceList.setLayoutData(new GridData(GridData.FILL_BOTH));
+            Composite buttonsPH = UIUtils.createPlaceholder(sourcePH, 1);
+            UIUtils.createToolButton(buttonsPH, "Add", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    String url = EnterNameDialog.chooseName(getShell(), "Enter drivers location URL", "http://");
+                    if (url != null) {
+                        sourceList.add(url);
+                    }
+                }
+            });
+            final Button removeButton = UIUtils.createToolButton(buttonsPH, "Remove", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    sourceList.remove(sourceList.getSelectionIndices());
+                    sourceList.notifyListeners(SWT.Selection, new Event());
+                }
+            });
+            removeButton.setEnabled(false);
+            final Button upButton = UIUtils.createToolButton(buttonsPH, "Up", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    int index = sourceList.getSelectionIndex();
+                    String prevValue = sourceList.getItem(index - 1);
+                    sourceList.setItem(index - 1, sourceList.getItem(index));
+                    sourceList.setItem(index, prevValue);
+                    sourceList.setSelection(index - 1);
+                    sourceList.notifyListeners(SWT.Selection, new Event());
+                }
+            });
+            upButton.setEnabled(false);
+            final Button downButton = UIUtils.createToolButton(buttonsPH, "Down", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    int index = sourceList.getSelectionIndex();
+                    String nextValue = sourceList.getItem(index + 1);
+                    sourceList.setItem(index + 1, sourceList.getItem(index));
+                    sourceList.setItem(index, nextValue);
+                    sourceList.setSelection(index + 1);
+                    sourceList.notifyListeners(SWT.Selection, new Event());
+                }
+            });
+            downButton.setEnabled(false);
+
+            sourceList.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    if (sourceList.getSelectionIndex() >= 0) {
+                        removeButton.setEnabled(sourceList.getItemCount() > 1);
+                        upButton.setEnabled(sourceList.getSelectionIndex() > 0);
+                        downButton.setEnabled(sourceList.getSelectionIndex() < sourceList.getItemCount() - 1);
+                    } else {
+                        removeButton.setEnabled(false);
+                        upButton.setEnabled(false);
+                        downButton.setEnabled(false);
+                    }
+                }
+            });
+        }
+
 
         performDefaults();
 
@@ -109,6 +186,9 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
         proxyPasswordText.setText(passwordString);
         customDriversHome.setText(DriverDescriptor.getCustomDriversHome().getAbsolutePath());
 
+        for (String source : DriverDescriptor.getDriversSources()) {
+            sourceList.add(source);
+        }
         super.performDefaults();
     }
 
@@ -131,6 +211,13 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
         }
         store.setValue(PrefConstants.UI_PROXY_PASSWORD, password);
         store.setValue(PrefConstants.UI_DRIVERS_HOME, customDriversHome.getText());
+
+        StringBuilder sources = new StringBuilder();
+        for (String item : sourceList.getItems()) {
+            if (sources.length() > 0) sources.append('|');
+            sources.append(item);
+        }
+        store.setValue(PrefConstants.UI_DRIVERS_SOURCES, sources.toString());
         RuntimeUtils.savePreferenceStore(store);
 
         return super.performOk();
