@@ -2,6 +2,8 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -9,6 +11,7 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -21,37 +24,6 @@ import java.util.List;
 public class ViewerColumnController {
 
     private static final String DATA_KEY = ViewerColumnController.class.getSimpleName();
-
-    private static class ColumnInfo {
-        final String name;
-        final String description;
-        final int style;
-        final boolean defaultVisible;
-        final boolean required;
-        final CellLabelProvider labelProvider;
-
-        boolean visible;
-        int order;
-        ViewerColumn column;
-
-        private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider, int order)
-        {
-            this.name = name;
-            this.description = description;
-            this.style = style;
-            this.defaultVisible = defaultVisible;
-            this.required = required;
-            this.visible = defaultVisible;
-            this.labelProvider = labelProvider;
-            this.order = order;
-        }
-
-        public int getWidth()
-        {
-            return column instanceof TreeViewerColumn ? ((TreeViewerColumn) column).getColumn().getWidth() :
-                (column instanceof TableViewerColumn ? ((TableViewerColumn) column).getColumn().getWidth() : 0);
-        }
-    }
 
     private final String configId;
     private final ColumnViewer viewer;
@@ -194,10 +166,87 @@ public class ViewerColumnController {
 
     private void configureColumns()
     {
+        ConfigDialog configDialog = new ConfigDialog();
+        if (configDialog.open() != IDialogConstants.OK_ID) {
+            return;
+        }
         IDialogSettings settings = UIUtils.getDialogSettings(configId);
         for (ColumnInfo columnInfo : columns) {
             settings.put(String.valueOf(columnInfo.order), columnInfo.visible + ":" + columnInfo.getWidth() + ":" + columnInfo.name);
-            //settings.put(columnInfo.name, columnInfo.visible + ":" + columnInfo.order + ":" + columnInfo.getWidth());
+        }
+    }
+
+    private static class ColumnInfo {
+        final String name;
+        final String description;
+        final int style;
+        final boolean defaultVisible;
+        final boolean required;
+        final CellLabelProvider labelProvider;
+
+        boolean visible;
+        int order;
+        ViewerColumn column;
+
+        private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider, int order)
+        {
+            this.name = name;
+            this.description = description;
+            this.style = style;
+            this.defaultVisible = defaultVisible;
+            this.required = required;
+            this.visible = defaultVisible;
+            this.labelProvider = labelProvider;
+            this.order = order;
+        }
+
+        public int getWidth()
+        {
+            return column instanceof TreeViewerColumn ? ((TreeViewerColumn) column).getColumn().getWidth() :
+                (column instanceof TableViewerColumn ? ((TableViewerColumn) column).getColumn().getWidth() : 0);
+        }
+    }
+
+    private class ConfigDialog extends Dialog {
+
+        protected ConfigDialog()
+        {
+            super(viewer.getControl().getShell());
+        }
+
+        @Override
+        protected boolean isResizable() {
+            return true;
+        }
+
+        @Override
+        protected Control createDialogArea(Composite parent)
+        {
+            getShell().setText("Configure columns");
+
+            Composite composite = (Composite) super.createDialogArea(parent);
+
+            UIUtils.createControlLabel(composite, "Select columns you want to display");
+
+            Set<ColumnInfo> orderedList = new TreeSet<ColumnInfo>(new Comparator<ColumnInfo>() {
+                @Override
+                public int compare(ColumnInfo o1, ColumnInfo o2)
+                {
+                    return o1.order - o2.order;
+                }
+            });
+            orderedList.addAll(columns);
+            for (ColumnInfo columnInfo : orderedList) {
+                Button check = new Button(composite, SWT.CHECK);
+                check.setText(columnInfo.name);
+                check.setSelection(columnInfo.visible);
+                //if (columnInfo.required) {
+                    check.setEnabled(false);
+                //}
+            }
+
+
+            return parent;
         }
     }
 
