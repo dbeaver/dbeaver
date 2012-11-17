@@ -150,6 +150,12 @@ public class NavigatorUtils {
             @Override
             public void menuAboutToShow(final IMenuManager manager)
             {
+                ViewerColumnController columnController = ViewerColumnController.getFromControl(control);
+                if (columnController != null && columnController.isClickOnHeader()) {
+                    columnController.fillConfigMenu(manager);
+                    manager.add(new Separator());
+                    return;
+                }
                 // Fill context menu
                 final IStructuredSelection selection = (IStructuredSelection)selectionProvider.getSelection();
 
