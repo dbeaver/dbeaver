@@ -25,11 +25,8 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -154,41 +151,9 @@ public class UIUtils {
 
     public static TableColumn createTableColumn(Table table, int style, String text)
     {
-        table.setRedraw(false);
-        try {
-            TableColumn column = new TableColumn(table, style);
-            column.setText(text);
-            return column;
-        } finally {
-            table.setRedraw(true);
-        }
-    }
-
-    public static TableViewerColumn createTableViewerColumn(TableViewer viewer, int style, String text)
-    {
-        TableViewerColumn column = new TableViewerColumn(viewer, style);
-        column.getColumn().setText(text);
+        TableColumn column = new TableColumn(table, style);
+        column.setText(text);
         return column;
-    }
-
-    public static void packColumn(Item column)
-    {
-        if (column instanceof TableColumn) {
-            ((TableColumn) column).pack();
-        } else if (column instanceof TreeColumn) {
-            ((TreeColumn) column).pack();
-        }
-    }
-
-    public static int getColumnWidth(Item column)
-    {
-        if (column instanceof TableColumn) {
-            return ((TableColumn) column).getWidth();
-        } else if (column instanceof TreeColumn) {
-            return ((TreeColumn) column).getWidth();
-        } else {
-            return 0;
-        }
     }
 
     public static void packColumns(Table table)
@@ -879,32 +844,6 @@ public class UIUtils {
             button.setImage(image);
         }
         return button;
-    }
-
-    public static Button createHelpButton(
-        final TrayDialog dialog,
-        final Composite parent,
-        final String pluginId,
-        final String helpContextID)
-    {
-        Button help = new Button(parent, SWT.PUSH);
-        help.setText(CoreMessages.ui_common_button_help);
-        Image img = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_LCL_LINKTO_HELP);
-        help.setImage(img);
-
-        help.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                //parent.getShell().setData(ECLIPSE_HELP, contextHelpID);
-                if (dialog.getTray() != null) {
-                    dialog.closeTray();
-                } else {
-                    //PlatformUI.getWorkbench().getHelpSystem().displayHelp(pluginId + "." + helpContextID); //$NON-NLS-1$
-                }
-            }
-        });
-        return help;
     }
 
     public static void setHelp(Control control, String pluginId, String helpContextID)

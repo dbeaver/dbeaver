@@ -111,7 +111,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         super.createPartControl(editorSash);
 
         editorControl = editorSash.getChildren()[0];
-        compileLog = new ObjectCompilerLogViewer(editorSash);
+        compileLog = new ObjectCompilerLogViewer(editorSash, false);
 
         // Create new or substitute progress control
         ProgressPageControl progressControl = null;
