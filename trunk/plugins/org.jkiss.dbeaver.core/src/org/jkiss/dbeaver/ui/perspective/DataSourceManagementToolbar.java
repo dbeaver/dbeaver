@@ -100,6 +100,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         public DatabaseListReader(DBPDataSource dataSource)
         {
             super(CoreMessages.toolbar_datasource_selector_action_read_databases, null, dataSource);
+            setSystem(true);
             this.databasesInfo = new CurrentDatabasesInfo();
             this.enabled = false;
         }
