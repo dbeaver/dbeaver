@@ -85,7 +85,7 @@
     </target>
 
     <target name="copy-drivers">
-        <copy todir="../contrib/drivers">
+        <copy todir="${driversDirectory}">
             <fileset dir="../contrib/drivers">
                 <include name="**" />
                 <exclude name="**/.svn" />
