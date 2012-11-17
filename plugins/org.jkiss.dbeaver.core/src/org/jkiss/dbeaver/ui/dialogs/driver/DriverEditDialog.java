@@ -314,8 +314,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             });
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-            libTable.getControl().addListener(SWT.Selection, new Listener()
-            {
+            libTable.getControl().addListener(SWT.Selection, new Listener() {
                 @Override
                 public void handleEvent(Event event)
                 {
@@ -386,13 +385,9 @@ public class DriverEditDialog extends HelpEnabledDialog
         libsControlGroup.setLayout(new GridLayout(1, true));
         libsControlGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-        Button newButton = new Button(libsControlGroup, SWT.PUSH);
-        newButton.setText(CoreMessages.dialog_edit_driver_button_add_file);
-        newButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        newButton.addListener(SWT.Selection, new Listener()
-        {
+        UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_add_file, new SelectionAdapter() {
             @Override
-            public void handleEvent(Event event)
+            public void widgetSelected(SelectionEvent e)
             {
                 FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
                 fd.setText(CoreMessages.dialog_edit_driver_dialog_open_driver_library);
@@ -418,13 +413,9 @@ public class DriverEditDialog extends HelpEnabledDialog
             }
         });
 
-        Button newDirButton = new Button(libsControlGroup, SWT.PUSH);
-        newDirButton.setText(CoreMessages.dialog_edit_driver_button_add_folder);
-        newDirButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        newDirButton.addListener(SWT.Selection, new Listener()
-        {
+        UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_add_folder, new SelectionAdapter() {
             @Override
-            public void handleEvent(Event event)
+            public void widgetSelected(SelectionEvent e)
             {
                 DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.MULTI);
                 fd.setText(CoreMessages.dialog_edit_driver_dialog_open_driver_directory);
@@ -441,13 +432,9 @@ public class DriverEditDialog extends HelpEnabledDialog
             }
         });
 
-        deleteButton = new Button(libsControlGroup, SWT.PUSH);
-        deleteButton.setText(CoreMessages.dialog_edit_driver_button_delete);
-        deleteButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        deleteButton.addListener(SWT.Selection, new Listener()
-        {
+        deleteButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_delete, new SelectionAdapter() {
             @Override
-            public void handleEvent(Event event)
+            public void widgetSelected(SelectionEvent e)
             {
                 libList.remove(getSelectedLibrary());
                 changeLibContent();
@@ -455,14 +442,9 @@ public class DriverEditDialog extends HelpEnabledDialog
         });
         deleteButton.setEnabled(false);
 
-        upButton = new Button(libsControlGroup, SWT.PUSH);
-        upButton.setText(CoreMessages.dialog_edit_driver_button_up);
-        upButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        upButton.setEnabled(false);
-        upButton.addListener(SWT.Selection, new Listener()
-        {
+        upButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_up, new SelectionAdapter() {
             @Override
-            public void handleEvent(Event event)
+            public void widgetSelected(SelectionEvent e)
             {
                 DriverFileDescriptor selectedLib = getSelectedLibrary();
                 int selIndex = libList.indexOf(selectedLib);
@@ -471,15 +453,11 @@ public class DriverEditDialog extends HelpEnabledDialog
                 changeLibSelection();
             }
         });
+        upButton.setEnabled(false);
 
-        downButton = new Button(libsControlGroup, SWT.PUSH);
-        downButton.setText(CoreMessages.dialog_edit_driver_button_down);
-        downButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        downButton.setEnabled(false);
-        downButton.addListener(SWT.Selection, new Listener()
-        {
+        downButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_down, new SelectionAdapter() {
             @Override
-            public void handleEvent(Event event)
+            public void widgetSelected(SelectionEvent e)
             {
                 DriverFileDescriptor selectedLib = getSelectedLibrary();
                 int selIndex = libList.indexOf(selectedLib);
@@ -488,14 +466,11 @@ public class DriverEditDialog extends HelpEnabledDialog
                 changeLibSelection();
             }
         });
+        downButton.setEnabled(false);
 
-        Button cpButton = new Button(libsControlGroup, SWT.PUSH);
-        cpButton.setText(CoreMessages.dialog_edit_driver_button_classpath);
-        cpButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        cpButton.addListener(SWT.Selection, new Listener()
-        {
+        Button cpButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_classpath, new SelectionAdapter() {
             @Override
-            public void handleEvent(Event event)
+            public void widgetSelected(SelectionEvent e)
             {
                 ViewClasspathDialog cpDialog = new ViewClasspathDialog(getShell());
                 cpDialog.open();
@@ -623,7 +598,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         driverDescText.setText(CommonUtils.getString(driver.getOrigDescription()));
         driverClassText.setText(CommonUtils.getString(driver.getOrigClassName()));
         driverURLText.setText(CommonUtils.getString(driver.getOrigSampleURL()));
-        driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort().toString()); //$NON-NLS-1$
+        driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort()); //$NON-NLS-1$
         if (!CommonUtils.isEmpty(driver.getCategory())) {
             driverCategoryCombo.setText(driver.getCategory());
         } else if (!CommonUtils.isEmpty(defaultCategory)) {

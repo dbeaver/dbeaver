@@ -1246,6 +1246,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return homeFolder;
     }
 
+    public static String[] getDriversSources()
+    {
+        String sourcesString = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
+        List<String> pathList = CommonUtils.splitString(sourcesString, '|');
+        return pathList.toArray(new String[pathList.size()]);
+    }
+
     static class DriversParser implements SAXListener
     {
         DataSourceProviderDescriptor curProvider;
