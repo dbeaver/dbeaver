@@ -1027,7 +1027,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
             proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         }
-        URL url = new URL(file.getExternalURL());
+        String externalURL = file.getExternalURL();
+        if (RegistryConstants.MAPPED_URL.equals(externalURL)) {
+            String primarySource = DriverDescriptor.getDriversPrimarySource();
+            if (!primarySource.endsWith("/") && !file.getPath().startsWith("/")) {
+                primarySource += '/';
+            }
+            externalURL = primarySource + file.getPath();
+        }
+
+        URL url = new URL(externalURL);
         monitor.beginTask("Check file " + url.toString() + "...", 1);
         monitor.subTask("Connecting to the server");
         final HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
@@ -1251,6 +1260,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         String sourcesString = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
         return pathList.toArray(new String[pathList.size()]);
+    }
+
+    public static String getDriversPrimarySource()
+    {
+        String sourcesString = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
+        int divPos = sourcesString.indexOf('|');
+        return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
     }
 
     static class DriversParser implements SAXListener

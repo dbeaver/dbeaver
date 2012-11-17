@@ -113,8 +113,8 @@
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
-                    <file type="jar" path="drivers/postgresql/postgresql-9.1-901.jdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/postgresql-9.1-901.jdbc4.jar"/>
-                    <file type="license" path="drivers/postgresql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/postgresql/LICENSE.txt"/>
+                    <file type="jar" path="drivers/postgresql/postgresql-9.1-901.jdbc4.jar" url="*"/>
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?"/>
                     <parameter name="active-entity-type" value="schema"/>
@@ -127,8 +127,8 @@
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver">
-                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/>
-                    <file type="license" path="drivers/oracle/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/LICENSE.txt"/>
+                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="*"/>
+                    <file type="license" path="drivers/oracle/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
                     <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
                 </driver>
@@ -140,9 +140,9 @@
                     defaultPort="50000"
                     webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
-					<file type="jar" path="drivers/db2/db2jcc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc.jar"/>
-					<file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/db2jcc_license_cu.jar"/>
-                    <file type="license" path="drivers/db2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/db2/LICENSE.txt"/>
+					<file type="jar" path="drivers/db2/db2jcc.jar" url="*"/>
+					<file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="*"/>
+                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -161,10 +161,10 @@
                     description="jTDS SQL Server driver">
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
-                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x86/ntlmauth.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/SSO/x64/ntlmauth.dll"/>
-                    <file type="license" path="drivers/jtds/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/LICENSE.txt"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="*"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="*"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="*"/>
+                    <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
                 </driver>
 
                 <driver
@@ -178,12 +178,12 @@
                     description="Microsoft JDBC Driver for SQL Server ">
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
-                    <file type="jar" path="drivers/mssql/sqljdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/sqljdbc4.jar"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/auth/x86/sqljdbc_auth.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/auth/x64/sqljdbc_auth.dll"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/xa/x86/sqljdbc_xa.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/xa/x86/sqljdbc_xa.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/xa/x64/sqljdbc_xa.dll"/>
-                    <file type="license" path="drivers/mssql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mssql/LICENSE.txt"/>
+                    <file type="jar" path="drivers/mssql/sqljdbc4.jar" url="*"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" url="*"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" url="*"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/xa/x86/sqljdbc_xa.dll" url="*"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll" url="*"/>
+                    <file type="license" path="drivers/mssql/LICENSE.txt" url="*"/>
                 </driver>
 
                 <driver
@@ -196,8 +196,8 @@
                     description="Sybase JTDS driver">
                     <!--parameter name="query-get-active-db">select db_name()</query>
                     <parameter name="query-set-active-db">use ?</query-->
-                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/jtds-1.2.5.jar"/>
-                    <file type="license" path="drivers/jtds/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/jtds/LICENSE.txt"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="*"/>
+                    <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="sap_maxdb"
@@ -207,8 +207,8 @@
                     defaultPort="7200"
                     webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
                     description="SAP MaxDB - The SAP Database System">
-                    <file type="jar" path="drivers/maxdb/sapdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/sapdbc.jar"/>
-                    <file type="license" path="drivers/maxdb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/maxdb/LICENSE.txt"/>
+                    <file type="jar" path="drivers/maxdb/sapdbc.jar" url="*"/>
+                    <file type="license" path="drivers/maxdb/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
                     <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
                 </driver>
@@ -220,9 +220,9 @@
                     defaultPort="1533"
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
-                    <file type="jar" path="drivers/informix/ifxjdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxjdbc.jar"/>
-                    <file type="jar" path="drivers/informix/ifxlang.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/ifxlang.jar"/>
-                    <file type="license" path="drivers/informix/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/informix/LICENSE.txt"/>
+                    <file type="jar" path="drivers/informix/ifxjdbc.jar" url="*"/>
+                    <file type="jar" path="drivers/informix/ifxlang.jar" url="*"/>
+                    <file type="license" path="drivers/informix/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value=""/>
                 </driver>
@@ -235,8 +235,8 @@
                     defaultPort="9092"
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
-                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
-                    <file type="license" path="drivers/h2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/LICENSE.txt"/>
+                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="*"/>
+                    <file type="license" path="drivers/h2/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="h2_embedded"
@@ -246,8 +246,8 @@
                     sampleURL="jdbc:h2:{database}"
                     webURL="http://www.h2database.com/"
                     description="H2 Embedded">
-                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/h2-1.2.147.jar"/>
-                    <file type="license" path="drivers/h2/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/h2/LICENSE.txt"/>
+                    <file type="jar" path="drivers/h2/h2-1.2.147.jar" url="*"/>
+                    <file type="license" path="drivers/h2/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="odbc"
@@ -268,8 +268,8 @@
                     anonymous="true"
                     description="Derby (Java DB) embedded driver">
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
-                    <file type="jar" path="drivers/derby/derby.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derby.jar"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/LICENSE.txt"/>
+                    <file type="jar" path="drivers/derby/derby.jar" url="*"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                 </driver>
@@ -282,8 +282,8 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
-                    <file type="jar" path="drivers/derby/derbyclient.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/derbyclient.jar"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/derby/LICENSE.txt"/>
+                    <file type="jar" path="drivers/derby/derbyclient.jar" url="*"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                 </driver>
@@ -295,7 +295,7 @@
                     defaultPort="1360"
                     webURL="http://developer.mimer.com/"
                     description="Mimer SQL TCP/IP driver">
-                    <file type="jar" path="drivers/mimer/mimjdbc3.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mimer/mimjdbc3.jar"/>
+                    <file type="jar" path="drivers/mimer/mimjdbc3.jar" url="*"/>
                 </driver>
                 <driver
                     id="hsqldb_server"
@@ -306,8 +306,8 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
-                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
-                    <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="*"/>
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="active-entity-type" value="schema"/>
@@ -321,8 +321,8 @@
                     webURL="http://hsqldb.org/"
                     anonymous="true"
                     description="HyperSQL DataBase - Embedded Mode">
-                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/hsqldb.jar"/>
-                    <file type="license" path="drivers/hsqldb/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/hsqldb/LICENSE.txt"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb.jar" url="*"/>
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt" url="*"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -336,8 +336,8 @@
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
                     description="Intersystems Cache">
-                    <file type="jar" path="drivers/cache/CacheDB.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/CacheDB.jar"/>
-                    <file type="license" path="drivers/cache/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cache/LICENSE.txt"/>
+                    <file type="jar" path="drivers/cache/CacheDB.jar" url="*"/>
+                    <file type="license" path="drivers/cache/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="ingres"
@@ -347,8 +347,8 @@
                     defaultPort="II7"
                     webURL="http://www.ingres.com/products/ingres-database/"
                     description="Ingres Database">
-                    <file type="jar" path="drivers/ingres/iijdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/ingres/iijdbc.jar"/>
-                    <file type="license" path="drivers/ingres/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/ingres/LICENSE.txt"/>
+                    <file type="jar" path="drivers/ingres/iijdbc.jar" url="*"/>
+                    <file type="license" path="drivers/ingres/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="linter"
@@ -358,9 +358,9 @@
                     defaultPort="1070"
                     webURL="http://linter.ru/"
                     description="Linter (ЛИНТЕР) Database">
-                    <file type="jar" path="drivers/linter/LinJdbc.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/LinJdbc.jar"/>
-                    <file type="jar" path="drivers/linter/linjdbc-1.4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/linjdbc-1.4.jar"/>
-                    <file type="license" path="drivers/linter/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/linter/LICENSE.txt"/>
+                    <file type="jar" path="drivers/linter/LinJdbc.jar" url="*"/>
+                    <file type="jar" path="drivers/linter/linjdbc-1.4.jar" url="*"/>
+                    <file type="license" path="drivers/linter/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="firebird_jaybird"
@@ -370,8 +370,8 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
-                    <file type="jar" path="drivers/firebird/jaybird-full-2.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/jaybird-full-2.1.6.jar"/>
-                    <file type="license" path="drivers/firebird/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/firebird/LICENSE.txt"/>
+                    <file type="jar" path="drivers/firebird/jaybird-full-2.1.6.jar" url="*"/>
+                    <file type="license" path="drivers/firebird/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="sqlite_zentus"
@@ -382,8 +382,8 @@
                     defaultPort=""
                     webURL="http://www.zentus.com/sqlitejdbc/"
                     description="SQLite3 JDBC driver by David Crawshaw (Windows, Linux and Mac OS)">
-                    <file type="jar" path="drivers/sqlite/zentus/sqlitejdbc-v056.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/zentus/sqlitejdbc-v056.jar"/>
-                    <file type="license" path="drivers/sqlite/zentus/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/zentus/LICENSE.txt"/>
+                    <file type="jar" path="drivers/sqlite/zentus/sqlitejdbc-v056.jar" url="*"/>
+                    <file type="license" path="drivers/sqlite/zentus/LICENSE.txt" url="*"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                 </driver>
@@ -396,8 +396,8 @@
                     defaultPort=""
                     webURL="http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC/"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar"/>
-                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/xerial/LICENSE.txt"/>
+                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="*"/>
+                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
                     <parameter name="supports-references" value="false"/>
                     <parameter name="supports-indexes" value="false"/>
                 </driver>
@@ -410,8 +410,8 @@
                     defaultPort=""
                     webURL="http://www.ch-werner.de/javasqlite/"
                     description="SQLite3 JDBC driver by Christian Werner (Windows only)">
-                    <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/werner/sqlite.jar"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/sqlite/werner/sqlite_jni.dll"/>
+                    <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="*"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="*"/>
                 </driver>
                 <driver
                     id="teradata"
@@ -420,9 +420,9 @@
                     sampleURL="jdbc:teradata://{host}/{database}"
                     defaultPort=""
                     description="Teradata JDBC driver">
-                    <file type="jar" path="drivers/teradata/terajdbc4.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/terajdbc4.jar"/>
-                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/tdgssconfig.jar"/>
-                    <file type="license" path="drivers/teradata/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/teradata/LICENSE.txt"/>
+                    <file type="jar" path="drivers/teradata/terajdbc4.jar" url="*"/>
+                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" url="*"/>
+                    <file type="license" path="drivers/teradata/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="mysql3"
@@ -432,8 +432,8 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="Driver for MySQL 3.x and earlier">
-                    <file type="license" path="drivers/mysql/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/LICENSE.txt"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/mysql/mysql-connector-java-5.1.22-bin.jar"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="*"/>
                 </driver>
                 <driver
                     id="cassandra_jkiss"
@@ -443,11 +443,11 @@
                     defaultPort="9160"
                     webURL="http://cassandra.jkiss.org/"
                     description="Driver for Apache Cassandra">
-                    <file type="license" path="drivers/cassandra/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/LICENSE.txt"/>
-                    <file type="jar" path="drivers/cassandra/cassandra-jkiss-jdbc-1.0.1.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/cassandra-jkiss-jdbc-1.0.1.jar"/>
-                    <file type="jar" path="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/apache-cassandra-thrift-1.1.6.jar"/>
-                    <file type="jar" path="drivers/cassandra/libthrift-0.7.0.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/libthrift-0.7.0.jar"/>
-                    <file type="jar" path="drivers/cassandra/slf4j-api-1.6.1.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/cassandra/slf4j-api-1.6.1.jar"/>
+                    <file type="license" path="drivers/cassandra/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/cassandra/cassandra-jkiss-jdbc-1.0.1.jar" url="*"/>
+                    <file type="jar" path="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar" url="*"/>
+                    <file type="jar" path="drivers/cassandra/libthrift-0.7.0.jar" url="*"/>
+                    <file type="jar" path="drivers/cassandra/slf4j-api-1.6.1.jar" url="*"/>
                 </driver>
             </drivers>
 
