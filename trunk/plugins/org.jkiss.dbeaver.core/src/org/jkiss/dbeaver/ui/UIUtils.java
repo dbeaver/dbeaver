@@ -529,6 +529,17 @@ public class UIUtils {
         return combo;
     }
 
+    public static Button createToolButton(Composite parent, String text, SelectionListener selectionListener)
+    {
+        Button button = new Button(parent, SWT.PUSH);
+        button.setText(text);
+        button.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (selectionListener != null) {
+            button.addSelectionListener(selectionListener);
+        }
+        return button;
+    }
+
     public static Shell getActiveShell()
     {
         IWorkbench workbench = PlatformUI.getWorkbench();
