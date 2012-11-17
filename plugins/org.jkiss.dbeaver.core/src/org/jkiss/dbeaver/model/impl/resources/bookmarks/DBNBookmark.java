@@ -28,10 +28,13 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * DBNBookmark
@@ -63,12 +66,10 @@ public class DBNBookmark extends DBNResource
     public String getNodeDescription()
     {
         String dsInfo = "";
-        DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(getResource().getProject());
-        if (dataSourceRegistry != null) {
-            DataSourceDescriptor dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
-            if (dataSource != null) {
-                dsInfo = " ('" + dataSource.getName() + "' - " + dataSource.getDriver().getName() + ")";
-            }
+        Collection<DBSDataSourceContainer> dataSources = getAssociatedDataSources();
+        if (!CommonUtils.isEmpty(dataSources)) {
+            DBSDataSourceContainer dataSource = dataSources.iterator().next();
+            dsInfo = " ('" + dataSource.getName() + "' - " + dataSource.getDriver().getName() + ")";
         }
         return storage.getDescription() + dsInfo;
     }
@@ -90,4 +91,18 @@ public class DBNBookmark extends DBNResource
             throw new DBException(e);
         }
     }
+
+    @Override
+    public Collection<DBSDataSourceContainer> getAssociatedDataSources()
+    {
+        DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(getResource().getProject());
+        if (dataSourceRegistry != null) {
+            DBSDataSourceContainer dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
+            if (dataSource != null) {
+                return Collections.singleton(dataSource);
+            }
+        }
+        return null;
+    }
+
 }
