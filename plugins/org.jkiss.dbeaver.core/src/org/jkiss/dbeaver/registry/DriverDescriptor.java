@@ -555,11 +555,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return anonymousAccess;
     }
 
-    public void setAnonymousAccess(boolean anonymousAccess)
-    {
-        this.anonymousAccess = anonymousAccess;
-    }
-
     @Override
     public boolean isCustomDriverLoader()
     {
@@ -615,11 +610,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void addClientHomeId(String homeId)
     {
         clientHomeIds.add(homeId);
-    }
-
-    public void removeClientHomeId(String homeId)
-    {
-        clientHomeIds.remove(homeId);
     }
 
     @Override
@@ -694,12 +684,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         pathList.add(path);
     }
     
-    public void setPathList(List<DriverPathDescriptor> pathList)
-    {
-        this.pathList.clear();
-        this.pathList.addAll(pathList);
-    }
-
     @Override
     public List<IPropertyDescriptor> getConnectionPropertyDescriptors()
     {

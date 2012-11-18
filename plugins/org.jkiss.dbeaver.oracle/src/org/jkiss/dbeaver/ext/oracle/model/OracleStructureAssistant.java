@@ -253,14 +253,16 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
                     if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && oracleObjectTypes.contains(objectType))
                     {
-                        objects.add(new AbstractObjectReference(objectName, dataSource.getSchema(context.getProgressMonitor(), schemaName), null, objectType) {
+                        OracleSchema objectSchema = dataSource.getSchema(context.getProgressMonitor(), schemaName);
+                        if (objectSchema == null) {
+                            log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
+                            continue;
+                        }
+                        objects.add(new AbstractObjectReference(objectName, objectSchema, null, objectType) {
                             @Override
                             public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
                             {
-                                OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(context.getProgressMonitor(), schemaName);
-                                if (tableSchema == null) {
-                                    throw new DBException("Schema '" + schemaName + "' not found");
-                                }
+                                OracleSchema tableSchema = (OracleSchema)getContainer();
                                 DBSObject object = objectType.findObject(context.getProgressMonitor(), tableSchema, objectName);
                                 if (object == null) {
                                     throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
