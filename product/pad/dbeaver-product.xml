@@ -53,6 +53,7 @@
 
             <release-notes>
                 - 2.0 Final Release
+                - Eclipse plugin version
                 - SQL templates (snippets) support
                 - Database compare feature
                 - Data editor improvements
