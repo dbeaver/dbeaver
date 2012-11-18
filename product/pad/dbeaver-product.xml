@@ -62,7 +62,7 @@
                 - Project explorer UI improvement
                 - Apache Cassandra driver
                 - Misc fixes in generic JDBC/ODBC support
-                - A lot of UI bugfixes
+                - A lot of UI fixes
             </release-notes>
         </version>
 
