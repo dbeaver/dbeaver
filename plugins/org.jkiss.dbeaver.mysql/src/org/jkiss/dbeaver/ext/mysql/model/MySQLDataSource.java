@@ -335,7 +335,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
         try {
-            JDBCPreparedStatement dbStat = context.prepareStatement("use " + object.getName());
+            JDBCPreparedStatement dbStat = context.prepareStatement("use " + DBUtils.getQuotedIdentifier(object));
             try {
                 dbStat.execute();
             } finally {
