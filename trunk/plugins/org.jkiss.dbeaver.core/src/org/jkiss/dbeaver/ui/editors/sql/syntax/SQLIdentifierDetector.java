@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.jkiss.utils.CommonUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,7 +51,9 @@ public class SQLIdentifierDetector extends SQLWordDetector
 
     public boolean containsSeparator(String identifier)
     {
-        if (catalogSeparator.length() == 1) {
+        if (CommonUtils.isEmpty(catalogSeparator)) {
+            return false;
+        } else if (catalogSeparator.length() == 1) {
             return identifier.indexOf(catalogSeparator.charAt(0)) != -1;
         } else {
             for (int i = 0; i < catalogSeparator.length(); i++) {
@@ -63,6 +67,10 @@ public class SQLIdentifierDetector extends SQLWordDetector
 
     public List<String> splitIdentifier(String identifier)
     {
+        if (CommonUtils.isEmpty(catalogSeparator)) {
+            return Collections.singletonList(identifier);
+        }
+
         if (!containsSeparator(identifier)) {
             return Collections.singletonList(identifier);
         }
@@ -87,11 +95,14 @@ public class SQLIdentifierDetector extends SQLWordDetector
 
     public boolean isQuoted(String token)
     {
-        return token.startsWith(quoteSymbol);
+        return quoteSymbol != null && !quoteSymbol.isEmpty() && token.startsWith(quoteSymbol);
     }
 
     public String removeQuotes(String name)
     {
+        if (quoteSymbol == null || quoteSymbol.isEmpty()) {
+            return name;
+        }
         if (name.startsWith(quoteSymbol)) {
             name = name.substring(quoteSymbol.length());
         }
