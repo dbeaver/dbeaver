@@ -24,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
@@ -32,6 +31,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class VersionUpdateDialog extends Dialog {
@@ -126,7 +126,7 @@ public class VersionUpdateDialog extends Dialog {
     {
         if (buttonId == INFO_ID) {
             if (newVersion != null) {
-                Program.launch(newVersion.getBaseURL());
+                RuntimeUtils.launchProgram(newVersion.getBaseURL());
             }
         }
         close();

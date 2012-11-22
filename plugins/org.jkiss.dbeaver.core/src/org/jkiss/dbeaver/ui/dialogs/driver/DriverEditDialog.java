@@ -35,7 +35,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -44,6 +43,7 @@ import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -229,7 +229,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-                        Program.launch(driver.getWebURL());
+                        RuntimeUtils.launchProgram(driver.getWebURL());
                     }
                 });
                 //urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

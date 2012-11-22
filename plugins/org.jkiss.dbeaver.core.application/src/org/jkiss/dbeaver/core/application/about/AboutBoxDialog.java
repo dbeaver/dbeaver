@@ -34,7 +34,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.Activator;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -156,7 +156,7 @@ public class AboutBoxDialog extends Dialog
         siteLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Program.launch(e.text);
+                RuntimeUtils.launchProgram(e.text);
             }
         });
         gd = new GridData();
@@ -169,7 +169,7 @@ public class AboutBoxDialog extends Dialog
         emailLink.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Program.launch("mailto:" + e.text); //$NON-NLS-1$
+                RuntimeUtils.launchProgram("mailto:" + e.text); //$NON-NLS-1$
             }
         });
         gd = new GridData();
