@@ -9,7 +9,6 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
@@ -27,7 +26,6 @@ public class ViewerColumnController {
 
     private final String configId;
     private final ColumnViewer viewer;
-    private boolean columnsMovable = true;
     private final List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
     private boolean clickOnHeader;
 
@@ -142,21 +140,13 @@ public class ViewerColumnController {
                 final TreeViewerColumn item = new TreeViewerColumn((TreeViewer) viewer, columnInfo.style);
                 final TreeColumn column = item.getColumn();
                 column.setText(columnInfo.name);
-                column.setMoveable(columnsMovable);
+                column.setMoveable(true);
                 column.setWidth(columnInfo.width);
                 if (!CommonUtils.isEmpty(columnInfo.description)) {
                     column.setToolTipText(columnInfo.description);
                 }
                 item.setLabelProvider(columnInfo.labelProvider);
-                column.addControlListener(new ControlListener() {
-                    @Override
-                    public void controlMoved(ControlEvent e)
-                    {
-//                        if (orderChanged(column.getParent().getColumnOrder())) {
-//                            updateColumnOrder(column.getParent().getColumns(), column.getParent().getColumnOrder());
-//                        }
-                    }
-
+                column.addControlListener(new ControlAdapter() {
                     @Override
                     public void controlResized(ControlEvent e)
                     {
@@ -169,21 +159,13 @@ public class ViewerColumnController {
                 final TableViewerColumn item = new TableViewerColumn((TableViewer) viewer, columnInfo.style);
                 final TableColumn column = item.getColumn();
                 column.setText(columnInfo.name);
-                column.setMoveable(columnsMovable);
+                column.setMoveable(true);
                 column.setWidth(columnInfo.width);
                 if (!CommonUtils.isEmpty(columnInfo.description)) {
                     column.setToolTipText(columnInfo.description);
                 }
                 item.setLabelProvider(columnInfo.labelProvider);
-                column.addControlListener(new ControlListener() {
-                    @Override
-                    public void controlMoved(ControlEvent e)
-                    {
-//                        if (orderChanged(column.getParent().getColumnOrder())) {
-//                            updateColumnOrder(column.getParent().getColumns(), column.getParent().getColumnOrder());
-//                        }
-                    }
-
+                column.addControlListener(new ControlAdapter() {
                     @Override
                     public void controlResized(ControlEvent e)
                     {
@@ -226,13 +208,7 @@ public class ViewerColumnController {
 
     private Collection<ColumnInfo> getVisibleColumns()
     {
-        Set<ColumnInfo> visibleList = new TreeSet<ColumnInfo>(new Comparator<ColumnInfo>() {
-            @Override
-            public int compare(ColumnInfo o1, ColumnInfo o2)
-            {
-                return o1.order - o2.order;
-            }
-        });
+        Set<ColumnInfo> visibleList = new TreeSet<ColumnInfo>(new ColumnInfoComparator());
         for (ColumnInfo column : columns) {
             if (column.visible) {
                 visibleList.add(column);
@@ -307,13 +283,6 @@ public class ViewerColumnController {
             this.labelProvider = labelProvider;
             this.order = order;
         }
-
-        public int getWidth()
-        {
-            return column instanceof TreeColumn ? ((TreeColumn) column).getWidth() :
-                (column instanceof TableColumn ? ((TableColumn) column).getWidth() :
-                    0);
-        }
     }
 
     private class ConfigDialog extends Dialog {
@@ -338,18 +307,15 @@ public class ViewerColumnController {
 
             UIUtils.createControlLabel(composite, "Select columns you want to display");
 
-            Set<ColumnInfo> orderedList = new TreeSet<ColumnInfo>(new Comparator<ColumnInfo>() {
-                @Override
-                public int compare(ColumnInfo o1, ColumnInfo o2)
-                {
-                    return o1.order - o2.order;
-                }
-            });
+            Set<ColumnInfo> orderedList = new TreeSet<ColumnInfo>(new ColumnInfoComparator());
             orderedList.addAll(columns);
             for (ColumnInfo columnInfo : orderedList) {
                 Button check = new Button(composite, SWT.CHECK);
                 check.setText(columnInfo.name);
                 check.setSelection(columnInfo.visible);
+                if (!CommonUtils.isEmpty(columnInfo.description)) {
+                    check.setToolTipText(columnInfo.description);
+                }
                 if (columnInfo.required) {
                     check.setEnabled(false);
                 }
@@ -374,6 +340,14 @@ public class ViewerColumnController {
             }
             super.okPressed();
         }
+
     }
 
+    private static class ColumnInfoComparator implements Comparator<ColumnInfo> {
+        @Override
+        public int compare(ColumnInfo o1, ColumnInfo o2)
+        {
+            return o1.order - o2.order;
+        }
+    }
 }
