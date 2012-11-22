@@ -98,30 +98,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         return new ObjectCreateCommand(object, CoreMessages.model_jdbc_create_new_object);
     }
 
-/*
-    protected void makeInitialCommands(
-        OBJECT_TYPE object,
-        DBECommandContext context,
-        DBECommand<OBJECT_TYPE> createCommand)
-    {
-        List<DBECommand> commands = new ArrayList<DBECommand>();
-        commands.add(createCommand);
-
-        PropertyCollector propertyCollector = new PropertyCollector(object, false);
-        propertyCollector.collectProperties();
-        for (IPropertyDescriptor prop : propertyCollector.getPropertyDescriptors()) {
-            if (prop instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) prop).isEditPossible()) {
-                final Object propertyValue = propertyCollector.getPropertyValue(prop.getId());
-                if (propertyValue != null) {
-                    commands.add(new DBECommandProperty<OBJECT_TYPE>(object, new PropertyHandler(prop), propertyValue, propertyValue));
-                }
-            }
-        }
-
-        context.addCommandBatch(commands, new CreateObjectReflector(), true);
-    }
-*/
-
     protected abstract OBJECT_TYPE createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
         IEditorPart activeEditor,
