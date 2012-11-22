@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -844,6 +846,20 @@ public final class DBUtils {
         } else {
             return object.getName();
         }
+    }
+
+    public static String generateScript(DBPDataSource dataSource, IDatabasePersistAction[] persistActions)
+    {
+        String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        StringBuilder script = new StringBuilder(1000);
+        for (IDatabasePersistAction action : CommonUtils.safeArray(persistActions)) {
+            if (script.length() > 0) {
+                script.append(lineSeparator);
+            }
+            script.append(action.getScript());
+            script.append(dataSource.getInfo().getScriptDelimiter()).append(lineSeparator);
+        }
+        return script.toString();
     }
 
     public static DBSDataKind getDataKind(DBSTypedObject type)

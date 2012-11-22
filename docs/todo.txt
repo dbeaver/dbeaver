@@ -18,5 +18,5 @@ scripts refactoring
 Plugin:
 Customize resource roots
 Disable Quick Access toolbar
-column variable in template
 Variable number of columns in RS (cassandra)
+Use Babel for 4.2.x
