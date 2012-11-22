@@ -9,9 +9,9 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -27,7 +27,7 @@ public class ViewerColumnController {
 
     private final String configId;
     private final ColumnViewer viewer;
-    private boolean columnsMovable = false;
+    private boolean columnsMovable = true;
     private final List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
     private boolean clickOnHeader;
 
@@ -58,7 +58,6 @@ public class ViewerColumnController {
                 }
             });
         }
-
     }
 
     public boolean isClickOnHeader()
@@ -86,20 +85,35 @@ public class ViewerColumnController {
     public void createColumns()
     {
         readColumnsConfiguration();
-        createVisibleColumns();
+        recreateColumns();
+    }
 
-        viewer.getControl().addControlListener(new ControlAdapter() {
-            boolean resized = false;
-
-            @Override
-            public void controlResized(ControlEvent e)
-            {
-                if (!resized) {
-                    repackColumns();
-                    resized = true;
-                }
+    private void recreateColumns()
+    {
+        for (ColumnInfo columnInfo : columns) {
+            if (columnInfo.column != null) {
+                columnInfo.column.dispose();
+                columnInfo.column = null;
             }
-        });
+        }
+        createVisibleColumns();
+        boolean allSized = true;
+        for (ColumnInfo columnInfo : getVisibleColumns()) {
+            if (columnInfo.width <= 0) {
+                allSized = false;
+                break;
+            }
+        }
+        if (!allSized) {
+            viewer.getControl().addControlListener(new ControlAdapter() {
+                @Override
+                public void controlResized(ControlEvent e)
+                {
+                    viewer.getControl().removeControlListener(this);
+                    repackColumns();
+                }
+            });
+        }
     }
 
     public void repackColumns()
@@ -117,25 +131,55 @@ public class ViewerColumnController {
 
     private void createVisibleColumns()
     {
-        for (ColumnInfo column : getVisibleColumns()) {
+        for (final ColumnInfo columnInfo : getVisibleColumns()) {
             if (viewer instanceof TreeViewer) {
-                TreeViewerColumn item = new TreeViewerColumn((TreeViewer) viewer, column.style);
-                item.getColumn().setText(column.name);
-                item.getColumn().setMoveable(columnsMovable);
-                if (!CommonUtils.isEmpty(column.description)) {
-                    item.getColumn().setToolTipText(column.description);
+                final TreeViewerColumn item = new TreeViewerColumn((TreeViewer) viewer, columnInfo.style);
+                final TreeColumn column = item.getColumn();
+                column.setText(columnInfo.name);
+                column.setMoveable(columnsMovable);
+                column.setWidth(columnInfo.width);
+                if (!CommonUtils.isEmpty(columnInfo.description)) {
+                    column.setToolTipText(columnInfo.description);
                 }
-                item.setLabelProvider(column.labelProvider);
-                column.column = item;
+                item.setLabelProvider(columnInfo.labelProvider);
+                column.addControlListener(new ControlListener() {
+                    @Override
+                    public void controlMoved(ControlEvent e)
+                    {
+                    }
+
+                    @Override
+                    public void controlResized(ControlEvent e)
+                    {
+                        columnInfo.width = column.getWidth();
+                        saveColumnConfig();
+                    }
+                });
+                columnInfo.column = column;
             } else if (viewer instanceof TableViewer) {
-                TableViewerColumn item = new TableViewerColumn((TableViewer) viewer, column.style);
-                item.getColumn().setText(column.name);
-                item.getColumn().setMoveable(columnsMovable);
-                if (!CommonUtils.isEmpty(column.description)) {
-                    item.getColumn().setToolTipText(column.description);
+                final TableViewerColumn item = new TableViewerColumn((TableViewer) viewer, columnInfo.style);
+                final TableColumn column = item.getColumn();
+                column.setText(columnInfo.name);
+                column.setMoveable(columnsMovable);
+                column.setWidth(columnInfo.width);
+                if (!CommonUtils.isEmpty(columnInfo.description)) {
+                    column.setToolTipText(columnInfo.description);
                 }
-                item.setLabelProvider(column.labelProvider);
-                column.column = item;
+                item.setLabelProvider(columnInfo.labelProvider);
+                column.addControlListener(new ControlListener() {
+                    @Override
+                    public void controlMoved(ControlEvent e)
+                    {
+                    }
+
+                    @Override
+                    public void controlResized(ControlEvent e)
+                    {
+                        columnInfo.width = column.getWidth();
+                        saveColumnConfig();
+                    }
+                });
+                columnInfo.column = column;
             }
         }
     }
@@ -161,7 +205,23 @@ public class ViewerColumnController {
     private void readColumnsConfiguration()
     {
         IDialogSettings settings = UIUtils.getDialogSettings(configId);
-        //settings.get
+        for (int i = 0;; i++) {
+            String columnDesc = settings.get(String.valueOf(i));
+            if (columnDesc == null) {
+                break;
+            }
+            StringTokenizer st = new StringTokenizer(columnDesc, ":");
+            boolean visible = Boolean.valueOf(st.nextToken());
+            int width = Integer.parseInt(st.nextToken());
+            String name = st.nextToken();
+            for (ColumnInfo columnInfo : columns) {
+                if (columnInfo.name.equals(name)) {
+                    columnInfo.visible = visible;
+                    columnInfo.width = width;
+                    break;
+                }
+            }
+        }
     }
 
     private void configureColumns()
@@ -170,9 +230,14 @@ public class ViewerColumnController {
         if (configDialog.open() != IDialogConstants.OK_ID) {
             return;
         }
+        saveColumnConfig();
+    }
+
+    private void saveColumnConfig()
+    {
         IDialogSettings settings = UIUtils.getDialogSettings(configId);
         for (ColumnInfo columnInfo : columns) {
-            settings.put(String.valueOf(columnInfo.order), columnInfo.visible + ":" + columnInfo.getWidth() + ":" + columnInfo.name);
+            settings.put(String.valueOf(columnInfo.order), columnInfo.visible + ":" + columnInfo.width + ":" + columnInfo.name);
         }
     }
 
@@ -186,7 +251,8 @@ public class ViewerColumnController {
 
         boolean visible;
         int order;
-        ViewerColumn column;
+        int width;
+        Item column;
 
         private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider, int order)
         {
@@ -202,13 +268,15 @@ public class ViewerColumnController {
 
         public int getWidth()
         {
-            return column instanceof TreeViewerColumn ? ((TreeViewerColumn) column).getColumn().getWidth() :
-                (column instanceof TableViewerColumn ? ((TableViewerColumn) column).getColumn().getWidth() : 0);
+            return column instanceof TreeColumn ? ((TreeColumn) column).getWidth() :
+                (column instanceof TableColumn ? ((TableColumn) column).getWidth() :
+                    0);
         }
     }
 
     private class ConfigDialog extends Dialog {
 
+        private final Map<ColumnInfo, Button> buttonMap = new HashMap<ColumnInfo, Button>();
         protected ConfigDialog()
         {
             super(viewer.getControl().getShell());
@@ -240,13 +308,30 @@ public class ViewerColumnController {
                 Button check = new Button(composite, SWT.CHECK);
                 check.setText(columnInfo.name);
                 check.setSelection(columnInfo.visible);
-                //if (columnInfo.required) {
+                if (columnInfo.required) {
                     check.setEnabled(false);
-                //}
+                }
+                buttonMap.put(columnInfo, check);
             }
 
-
             return parent;
+        }
+
+        @Override
+        protected void okPressed()
+        {
+            boolean recreateColumns = false;
+            for (Map.Entry<ColumnInfo, Button> cbEntry : buttonMap.entrySet()) {
+                if (cbEntry.getValue().getSelection() != cbEntry.getKey().visible) {
+                    cbEntry.getKey().visible = cbEntry.getValue().getSelection();
+                    recreateColumns = true;
+                }
+            }
+            if (recreateColumns) {
+                recreateColumns();
+                viewer.refresh();
+            }
+            super.okPressed();
         }
     }
 
