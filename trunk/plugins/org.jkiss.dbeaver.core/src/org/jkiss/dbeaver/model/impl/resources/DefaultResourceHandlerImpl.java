@@ -42,7 +42,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public static final String DEFAULT_ROOT = "Resources"; //$NON-NLS-1$
     public static final DefaultResourceHandlerImpl INSTANCE = new DefaultResourceHandlerImpl();
 
-    private static class ProgramInfo {
+    public static class ProgramInfo {
         final Program program;
         Image image;
 
@@ -50,11 +50,21 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
         {
             this.program = program;
         }
+
+        public Program getProgram()
+        {
+            return program;
+        }
+
+        public Image getImage()
+        {
+            return image;
+        }
     }
 
     private static final Map<String, ProgramInfo> programMap = new HashMap<String, ProgramInfo>();
 
-    private static ProgramInfo getProgram(IResource resource)
+    public static ProgramInfo getProgram(IResource resource)
     {
         if (resource instanceof IFile) {
             final String fileExtension = CommonUtils.getString(resource.getFileExtension());
