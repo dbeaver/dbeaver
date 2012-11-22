@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
@@ -97,7 +96,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
                 MySQLMessages.tools_db_export_wizard_title,
                 NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getDatabaseObject().getName()),
                 SWT.ICON_INFORMATION);
-        Program.launch(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
+        RuntimeUtils.launchProgram(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
 	}
 
     @Override

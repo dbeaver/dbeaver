@@ -25,10 +25,10 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.impl.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ViewerColumnController;
@@ -151,7 +151,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 DBNNode node = (DBNNode) cell.getElement();
                 if (node instanceof DBNResource) {
                     IResource resource = ((DBNResource) node).getResource();
-                    DefaultResourceHandlerImpl.ProgramInfo program = DefaultResourceHandlerImpl.getProgram(resource);
+                    RuntimeUtils.ProgramInfo program = RuntimeUtils.getProgram(resource);
                     if (program != null) {
                         cell.setText(program.getProgram().getName());
                     }
