@@ -25,7 +25,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.program.Program;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
@@ -173,7 +172,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
             } finally {
                 ContentUtils.close(outputStream);
             }
-            Program.launch(reportFile.getAbsolutePath());
+            RuntimeUtils.launchProgram(reportFile.getAbsolutePath());
         } catch (IOException e) {
             showError(e.getMessage());
             log.error(e);

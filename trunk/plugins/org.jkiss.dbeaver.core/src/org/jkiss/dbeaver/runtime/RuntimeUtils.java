@@ -23,12 +23,17 @@ import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.JexlException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPersistentPreferenceStore;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
@@ -51,6 +56,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -395,6 +401,54 @@ public class RuntimeUtils {
     public static String getNativeBinaryName(String binName)
     {
         return DBeaverCore.getInstance().getLocalSystem().isWindows() ? binName + ".exe" : binName;
+    }
+
+    public static class ProgramInfo {
+        final Program program;
+        Image image;
+
+        private ProgramInfo(Program program)
+        {
+            this.program = program;
+        }
+
+        public Program getProgram()
+        {
+            return program;
+        }
+
+        public Image getImage()
+        {
+            return image;
+        }
+    }
+
+    private static final Map<String, ProgramInfo> programMap = new HashMap<String, ProgramInfo>();
+
+    public static ProgramInfo getProgram(IResource resource)
+    {
+        if (resource instanceof IFile) {
+            final String fileExtension = CommonUtils.getString(resource.getFileExtension());
+            ProgramInfo programInfo = programMap.get(fileExtension);
+            if (programInfo == null) {
+                Program program = Program.findProgram(fileExtension);
+                programInfo = new ProgramInfo(program);
+                if (program != null) {
+                    final ImageData imageData = program.getImageData();
+                    if (imageData != null) {
+                        programInfo.image = new Image(DBeaverCore.getDisplay(), imageData);
+                    }
+                }
+                programMap.put(fileExtension, programInfo);
+            }
+            return programInfo.program == null ? null : programInfo;
+        }
+        return null;
+    }
+
+    public static void launchProgram(String path)
+    {
+        Program.launch(path);
     }
 
     private static class SaveRunner implements Runnable {

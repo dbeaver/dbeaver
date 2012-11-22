@@ -20,12 +20,12 @@
 package org.jkiss.dbeaver.tools.data.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.swt.program.Program;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -110,7 +110,7 @@ public class DataExportSettings {
                 DBeaverCore.getDisplay().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        Program.launch(outputFolder);
+                        RuntimeUtils.launchProgram(outputFolder);
                     }
                 });
             }
