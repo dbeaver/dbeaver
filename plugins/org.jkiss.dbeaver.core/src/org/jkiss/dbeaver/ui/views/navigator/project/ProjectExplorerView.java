@@ -25,6 +25,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.impl.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -34,7 +35,9 @@ import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * ProjectExplorerView
@@ -122,6 +125,35 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                     IResource resource = ((DBNResource) node).getResource();
                     if (resource instanceof IFile) {
                         cell.setText(String.valueOf(resource.getLocation().toFile().length()));
+                    }
+                }
+            }
+        });
+        columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new CellLabelProvider() {
+            @Override
+            public void update(ViewerCell cell)
+            {
+                DBNNode node = (DBNNode) cell.getElement();
+                if (node instanceof DBNResource) {
+                    IResource resource = ((DBNResource) node).getResource();
+                    if (resource instanceof IFile) {
+                        cell.setText(
+                            SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.SHORT)
+                                .format(new Date(resource.getLocation().toFile().lastModified())));
+                    }
+                }
+            }
+        });
+        columnController.addColumn("Type", "Resource type", SWT.LEFT, false, false, new CellLabelProvider() {
+            @Override
+            public void update(ViewerCell cell)
+            {
+                DBNNode node = (DBNNode) cell.getElement();
+                if (node instanceof DBNResource) {
+                    IResource resource = ((DBNResource) node).getResource();
+                    DefaultResourceHandlerImpl.ProgramInfo program = DefaultResourceHandlerImpl.getProgram(resource);
+                    if (program != null) {
+                        cell.setText(program.getProgram().getName());
                     }
                 }
             }

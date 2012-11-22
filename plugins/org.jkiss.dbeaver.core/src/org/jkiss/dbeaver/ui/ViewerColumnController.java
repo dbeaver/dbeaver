@@ -90,10 +90,12 @@ public class ViewerColumnController {
 
     private void recreateColumns()
     {
+        boolean needRefresh = false;
         for (ColumnInfo columnInfo : columns) {
             if (columnInfo.column != null) {
                 columnInfo.column.dispose();
                 columnInfo.column = null;
+                needRefresh = true;
             }
         }
         createVisibleColumns();
@@ -105,6 +107,7 @@ public class ViewerColumnController {
             }
         }
         if (!allSized) {
+            repackColumns();
             viewer.getControl().addControlListener(new ControlAdapter() {
                 @Override
                 public void controlResized(ControlEvent e)
@@ -113,6 +116,9 @@ public class ViewerColumnController {
                     repackColumns();
                 }
             });
+        }
+        if (needRefresh) {
+            viewer.refresh();
         }
     }
 
@@ -146,6 +152,9 @@ public class ViewerColumnController {
                     @Override
                     public void controlMoved(ControlEvent e)
                     {
+//                        if (orderChanged(column.getParent().getColumnOrder())) {
+//                            updateColumnOrder(column.getParent().getColumns(), column.getParent().getColumnOrder());
+//                        }
                     }
 
                     @Override
@@ -170,6 +179,9 @@ public class ViewerColumnController {
                     @Override
                     public void controlMoved(ControlEvent e)
                     {
+//                        if (orderChanged(column.getParent().getColumnOrder())) {
+//                            updateColumnOrder(column.getParent().getColumns(), column.getParent().getColumnOrder());
+//                        }
                     }
 
                     @Override
@@ -183,6 +195,34 @@ public class ViewerColumnController {
             }
         }
     }
+
+/*
+    private void updateColumnOrder(Item[] items, int[] orderList)
+    {
+        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+            Item item = items[i];
+            int order = orderList[i];
+            for (ColumnInfo columnInfo : columns) {
+                if (columnInfo.column == item) {
+                    columnInfo.order = order;
+                    break;
+                }
+            }
+        }
+        recreateColumns();
+        saveColumnConfig();
+    }
+
+    private boolean orderChanged(int[] order)
+    {
+        for (int i = 0; i < order.length; i++) {
+            if (order[i] != i) {
+                return true;
+            }
+        }
+        return false;
+    }
+*/
 
     private Collection<ColumnInfo> getVisibleColumns()
     {
@@ -212,11 +252,13 @@ public class ViewerColumnController {
             }
             StringTokenizer st = new StringTokenizer(columnDesc, ":");
             boolean visible = Boolean.valueOf(st.nextToken());
+            int order = Integer.parseInt(st.nextToken());
             int width = Integer.parseInt(st.nextToken());
             String name = st.nextToken();
             for (ColumnInfo columnInfo : columns) {
                 if (columnInfo.name.equals(name)) {
                     columnInfo.visible = visible;
+                    columnInfo.order = order;
                     columnInfo.width = width;
                     break;
                 }
@@ -237,7 +279,7 @@ public class ViewerColumnController {
     {
         IDialogSettings settings = UIUtils.getDialogSettings(configId);
         for (ColumnInfo columnInfo : columns) {
-            settings.put(String.valueOf(columnInfo.order), columnInfo.visible + ":" + columnInfo.width + ":" + columnInfo.name);
+            settings.put(String.valueOf(columnInfo.order), columnInfo.visible + ":" + columnInfo.order + ":" + columnInfo.width + ":" + columnInfo.name);
         }
     }
 
@@ -329,7 +371,6 @@ public class ViewerColumnController {
             }
             if (recreateColumns) {
                 recreateColumns();
-                viewer.refresh();
             }
             super.okPressed();
         }
