@@ -316,7 +316,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         {
             //Composite buttonsGroup = UIUtils.createPlaceholder(group, 3);
             Composite buttonsGroup = new Composite(group, SWT.NONE);
-            gl = new GridLayout(3, false);
+            gl = new GridLayout(2, false);
             gl.verticalSpacing = 0;
             gl.horizontalSpacing = 10;
             gl.marginHeight = 0;

@@ -36,14 +36,6 @@ import java.util.List;
 public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_TYPE extends DBSObjectContainer>
     extends JDBCStructEditor<OBJECT_TYPE, CONTAINER_TYPE>
 {
-/*
-    @Override
-    protected DBSObjectCache<CONTAINER_TYPE, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object)
-    {
-        return object.getCache();
-    }
-*/
-
     @Override
     public long getMakerOptions()
     {
