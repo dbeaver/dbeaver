@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -341,17 +342,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 });
                 return IDialogConstants.CANCEL_ID;
             }
-            IDatabasePersistAction[] persistActions = command.getPersistActions();
-            if (!CommonUtils.isEmpty(persistActions)) {
-                for (IDatabasePersistAction action : persistActions) {
-                    if (script.length() > 0) {
-                        script.append(ContentUtils.getDefaultLineSeparator());
-                    }
-                    script.append(action.getScript());
-                    script.append(getCommandContext().getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
-                    script.append(ContentUtils.getDefaultLineSeparator());
-                }
-            }
+            script.append(DBUtils.generateScript(
+                getDataSource(),
+                command.getPersistActions()));
         }
 
         ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);

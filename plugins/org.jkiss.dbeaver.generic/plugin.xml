@@ -471,6 +471,18 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor
+                id="org.jkiss.dbeaver.ext.generic.edit.GenericDDLEditor"
+                class="org.jkiss.dbeaver.ext.generic.edit.GenericDDLEditor"
+                main="false"
+                label="DDL"
+                description="Table DDL"
+                position="additions_end"
+                icon="#sql_text"
+                type="section">
+            <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>
+        </editor>
+
         <manager
             class="org.jkiss.dbeaver.ext.generic.edit.GenericTableManager"
             objectType="org.jkiss.dbeaver.ext.generic.model.GenericTable"/>

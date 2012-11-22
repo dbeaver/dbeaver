@@ -147,7 +147,9 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
 
         //selectionProvider.setSelection(new StructuredSelection());
 
-        actionContributor.setActiveEditor(editor);
+        if (actionContributor != null) {
+            actionContributor.setActiveEditor(editor);
+        }
         activateSectionSite(true);
         //sqlViewer.handleActivate();
     }
@@ -159,7 +161,9 @@ public class EditorWrapperSection extends AbstractPropertySection implements IDa
             ((IActiveWorkbenchPart) editor).deactivatePart();
         }
         activateSectionSite(false);
-        actionContributor.setActiveEditor(null);
+        if (actionContributor != null) {
+            actionContributor.setActiveEditor(null);
+        }
 //        if (sqlViewer != null) {
 //            //sqlViewer.enableUndoManager(false);
 //        }

@@ -41,7 +41,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
     protected abstract IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command);
 
     @Override
-    ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
+    public StructCreateCommand makeCreateCommand(OBJECT_TYPE object)
     {
         return new StructCreateCommand(object, CoreMessages.model_jdbc_create_new_object);
     }
@@ -87,6 +87,7 @@ public abstract class JDBCStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveab
         public StructCreateCommand(OBJECT_TYPE object, String table)
         {
             super(object, table);
+            objectCommands.put(getObject(), this);
         }
 
         public Map<DBPObject, NestedObjectCommand> getObjectCommands()
