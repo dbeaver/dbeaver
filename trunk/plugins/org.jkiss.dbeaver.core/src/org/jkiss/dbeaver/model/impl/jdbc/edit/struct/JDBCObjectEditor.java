@@ -77,7 +77,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             return null;
         }
 
-        //context.addCommandBatch(commands, );
         final ObjectCreateCommand createCommand = makeCreateCommand(newObject);
         commandContext.getUserParams().put(newObject, createCommand);
         commandContext.addCommand(createCommand, new CreateObjectReflector(), true);
@@ -93,7 +92,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
             new DeleteObjectReflector<OBJECT_TYPE>(), true);
     }
 
-    ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
+    public ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
     {
         return new ObjectCreateCommand(object, CoreMessages.model_jdbc_create_new_object);
     }

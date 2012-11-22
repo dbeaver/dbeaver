@@ -20,12 +20,16 @@ package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Generic table manager
@@ -59,4 +63,25 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
 
         return table;
     }
+
+    public IDatabasePersistAction[] getTableDDL(DBRProgressMonitor monitor, GenericTable table) throws DBException
+    {
+        GenericTableColumnManager tcm = new GenericTableColumnManager();
+        GenericPrimaryKeyManager pkm = new GenericPrimaryKeyManager();
+        GenericIndexManager im = new GenericIndexManager();
+
+        StructCreateCommand command = makeCreateCommand(table);
+        // Aggregate nested column, constraint and index commands
+        for (GenericTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+            command.aggregateCommand(tcm.makeCreateCommand(column));
+        }
+        for (GenericPrimaryKey primaryKey : CommonUtils.safeCollection(table.getConstraints(monitor))) {
+            command.aggregateCommand(pkm.makeCreateCommand(primaryKey));
+        }
+        for (GenericTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
+            command.aggregateCommand(im.makeCreateCommand(index));
+        }
+        return command.getPersistActions();
+    }
+
 }

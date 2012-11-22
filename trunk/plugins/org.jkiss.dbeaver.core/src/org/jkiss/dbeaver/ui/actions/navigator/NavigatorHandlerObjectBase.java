@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
@@ -169,16 +170,9 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
-            IDatabasePersistAction[] persistActions = command.getPersistActions();
-            if (!CommonUtils.isEmpty(persistActions)) {
-                for (IDatabasePersistAction action : persistActions) {
-                    if (script.length() > 0) {
-                        script.append('\n');
-                    }
-                    script.append(action.getScript());
-                    script.append(commandContext.getDataSourceContainer().getDataSource().getInfo().getScriptDelimiter());
-                }
-            }
+            script.append(DBUtils.generateScript(
+                commandContext.getDataSourceContainer().getDataSource(),
+                command.getPersistActions()));
         }
         DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
         if (view != null) {
