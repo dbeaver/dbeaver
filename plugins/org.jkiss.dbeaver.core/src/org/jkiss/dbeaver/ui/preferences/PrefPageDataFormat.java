@@ -236,9 +236,6 @@ public class PrefPageDataFormat extends TargetPrefPage
                 typeCombo.select(0);
             }
             reloadFormatter();
-            //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
-            //rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
-            //resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
         } catch (Exception e) {
             log.warn(e);
         }

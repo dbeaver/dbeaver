@@ -129,11 +129,8 @@ class ProjectImportWizardPageFile extends WizardPage {
                 updateState();
             }
         });
-        TableColumn sourceName = new TableColumn(projectsTable, SWT.LEFT);
-        sourceName.setText(CoreMessages.dialog_project_import_wizard_file_column_source_name);
-
-        TableColumn targetName = new TableColumn(projectsTable, SWT.LEFT);
-        targetName.setText(CoreMessages.dialog_project_import_wizard_file_column_target_name);
+        UIUtils.createTableColumn(projectsTable, SWT.LEFT, CoreMessages.dialog_project_import_wizard_file_column_source_name);
+        UIUtils.createTableColumn(projectsTable, SWT.LEFT, CoreMessages.dialog_project_import_wizard_file_column_target_name);
 
         final TableEditor tableEditor = new TableEditor(projectsTable);
         tableEditor.horizontalAlignment = SWT.LEFT;

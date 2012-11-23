@@ -52,9 +52,13 @@
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.misc.qm" class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" name="%pref.page.name.query.manager">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.qm"/>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.ui.general" class="org.jkiss.dbeaver.ui.preferences.PrefPageDrivers" name="%pref.page.name.drivers">
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.ui.drivers" class="org.jkiss.dbeaver.ui.preferences.PrefPageDrivers" name="%pref.page.name.drivers">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.general"/>
         </page>
+<!--
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.ui.resources" class="org.jkiss.dbeaver.ui.preferences.PrefPageResources" name="%pref.page.name.resources">
+        </page>
+-->
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations"/>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageEmpty" name="Editors"/>
 

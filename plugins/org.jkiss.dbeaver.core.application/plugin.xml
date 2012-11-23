@@ -206,6 +206,10 @@
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.drivers" class="org.jkiss.dbeaver.ui.preferences.PrefPageDrivers" name="%pref.page.name.drivers">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.ui.general"/>
         </page>
+<!--
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.resources" class="org.jkiss.dbeaver.ui.preferences.PrefPageResources" name="%pref.page.name.resources">
+        </page>
+-->
 
         <page id="org.jkiss.dbeaver.preferences.editors" class="org.eclipse.ui.ExtensionFactory:editorsPreferencePage" name="%pref.page.name.db.editors"/>
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">

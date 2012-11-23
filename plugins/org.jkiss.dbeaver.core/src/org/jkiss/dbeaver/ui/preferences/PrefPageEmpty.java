@@ -29,8 +29,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  */
 public class PrefPageEmpty extends PreferencePage implements IWorkbenchPreferencePage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.ui.preferences.PrefPageEmpty";
-
     public PrefPageEmpty()
     {
         super();
