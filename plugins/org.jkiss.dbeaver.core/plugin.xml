@@ -111,7 +111,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.views">
-        <category id="org.jkiss.dbeaver.core.category" name="DBeaver Core View Category"/>
+        <category id="org.jkiss.dbeaver.core.category" name="DBeaver"/>
         <view
                 id="org.jkiss.dbeaver.core.databaseNavigator"
                 category="org.jkiss.dbeaver.core.category"
