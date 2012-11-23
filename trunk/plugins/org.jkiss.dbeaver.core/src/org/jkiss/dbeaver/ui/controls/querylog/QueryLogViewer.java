@@ -335,8 +335,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         columns.clear();
 
         for (LogColumn logColumn : ALL_COLUMNS) {
-            TableColumn tableColumn = new TableColumn(logTable, SWT.NONE);
-            tableColumn.setText(logColumn.title);
+            TableColumn tableColumn = UIUtils.createTableColumn(logTable, SWT.NONE, logColumn.title);
             tableColumn.setToolTipText(logColumn.toolTip);
             tableColumn.setWidth(logColumn.widthHint);
 

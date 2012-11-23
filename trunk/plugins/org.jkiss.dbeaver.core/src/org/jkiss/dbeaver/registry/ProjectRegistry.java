@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ProjectRegistry implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
@@ -184,6 +181,11 @@ public class ProjectRegistry implements IResourceChangeListener {
             handler = DefaultResourceHandlerImpl.INSTANCE;
         }
         return handler;
+    }
+
+    public Collection<ResourceHandlerDescriptor> getResourceHandlers()
+    {
+        return handlerDescriptors;
     }
 
     public IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType)

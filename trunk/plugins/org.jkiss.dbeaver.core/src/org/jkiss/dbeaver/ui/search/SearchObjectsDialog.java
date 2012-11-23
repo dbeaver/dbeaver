@@ -350,10 +350,8 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 });
                 typesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-                TableColumn typeColumn = new TableColumn(typesTable, SWT.LEFT);
-                typeColumn.setText(CoreMessages.dialog_search_objects_column_type);
-                TableColumn descColumn = new TableColumn(typesTable, SWT.LEFT);
-                descColumn.setText(CoreMessages.dialog_search_objects_column_description);
+                UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_type);
+                UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_description);
             }
         }
 

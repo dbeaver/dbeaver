@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -127,6 +128,16 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
             }
         }
         return false;
+    }
+
+    public Collection<IContentType> getContentTypes()
+    {
+        return contentTypes;
+    }
+
+    public Collection<ObjectType> getResourceTypes()
+    {
+        return resourceTypes;
     }
 
     public String getDefaultRoot()

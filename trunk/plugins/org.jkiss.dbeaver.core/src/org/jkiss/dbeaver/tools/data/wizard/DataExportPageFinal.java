@@ -66,11 +66,8 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
                 }
             });
 
-            TableColumn columnTable = new TableColumn(resultTable, SWT.LEFT);
-            columnTable.setText(CoreMessages.dialog_export_wizard_final_column_table);
-
-            TableColumn columnOutput = new TableColumn(resultTable, SWT.LEFT);
-            columnOutput.setText(CoreMessages.dialog_export_wizard_final_column_output);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_table);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_output);
 
             UIUtils.packColumns(resultTable);
         }

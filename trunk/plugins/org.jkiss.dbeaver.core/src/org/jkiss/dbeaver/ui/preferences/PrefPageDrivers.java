@@ -51,6 +51,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     static final Log log = LogFactory.getLog(PrefPageDrivers.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers"; //$NON-NLS-1$
+
     private Button automaticUpdateCheck;
     private Text proxyHostText;
     private Spinner proxyPortSpinner;
