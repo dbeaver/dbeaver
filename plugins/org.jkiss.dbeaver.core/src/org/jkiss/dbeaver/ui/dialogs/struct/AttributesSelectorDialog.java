@@ -121,20 +121,16 @@ public abstract class AttributesSelectorDialog extends Dialog {
             }
         });
 
-        TableColumn colName = new TableColumn(columnsTable, SWT.NONE);
-        colName.setText(CoreMessages.dialog_struct_columns_select_column);
+        TableColumn colName = UIUtils.createTableColumn(columnsTable, SWT.NONE, CoreMessages.dialog_struct_columns_select_column);
         colName.addListener(SWT.Selection, new SortListener(0));
 
-        TableColumn colPosition = new TableColumn(columnsTable, SWT.CENTER);
-        colPosition.setText("#"); //$NON-NLS-1$
+        TableColumn colPosition = UIUtils.createTableColumn(columnsTable, SWT.CENTER, "#"); //$NON-NLS-1$
         colPosition.addListener(SWT.Selection, new SortListener(1));
 
-        TableColumn colType = new TableColumn(columnsTable, SWT.RIGHT);
-        colType.setText("Type"); //$NON-NLS-1$
+        TableColumn colType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, "Type"); //$NON-NLS-1$
         colType.addListener(SWT.Selection, new SortListener(2));
 
-        TableColumn lengthType = new TableColumn(columnsTable, SWT.RIGHT);
-        lengthType.setText("Length"); //$NON-NLS-1$
+        TableColumn lengthType = UIUtils.createTableColumn(columnsTable, SWT.RIGHT, "Length"); //$NON-NLS-1$
         lengthType.addListener(SWT.Selection, new SortListener(3));
 
         toggleButton = new Button(columnsGroup, SWT.PUSH);

@@ -36,7 +36,7 @@
               default-charset="utf-8"
               file-extensions="sql"
               id="org.jkiss.dbeaver.sql"
-              name="SQL"
+              name="SQL Script"
               priority="high"
               describer="org.jkiss.dbeaver.ui.editors.sql.SQLContentTypeDescriber"/>
         <content-type
