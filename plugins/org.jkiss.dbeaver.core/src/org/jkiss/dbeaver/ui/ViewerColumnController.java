@@ -1,5 +1,7 @@
 package org.jkiss.dbeaver.ui;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.Dialog;
@@ -21,6 +23,8 @@ import java.util.List;
  * Tree/table viewer column controller
  */
 public class ViewerColumnController {
+
+    static final Log log = LogFactory.getLog(ViewerColumnController.class);
 
     private static final String DATA_KEY = ViewerColumnController.class.getSimpleName();
 
@@ -82,7 +86,12 @@ public class ViewerColumnController {
 
     public void createColumns()
     {
-        readColumnsConfiguration();
+        try {
+            readColumnsConfiguration();
+        } catch (Exception e) {
+            // Possibly incompatible format from previous version
+            log.warn("Failed to load configuration for '" + this.configId + "'", e);
+        }
         recreateColumns();
     }
 

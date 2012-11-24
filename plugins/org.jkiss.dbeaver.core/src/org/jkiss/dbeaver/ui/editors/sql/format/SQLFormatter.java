@@ -143,80 +143,79 @@ public class SQLFormatter {
         boolean encounterBetween = false;
         for (int index = 0; index < argList.size(); index++) {
             token = argList.get(index);
+            String tokenString = token.getString().toUpperCase();
             if (token.getType() == SQLFormatterConstants.SYMBOL) {
-                if (token.getString().equals("(")) { //$NON-NLS-1$
+                if (tokenString.equals("(")) { //$NON-NLS-1$
                     functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
                     bracketIndent.add(indent);
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
-                }
-                else if (token.getString().equals(")")) { //$NON-NLS-1$
+                } else if (tokenString.equals(")")) { //$NON-NLS-1$
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
                     index += insertReturnAndIndent(argList, index, indent);
                     functionBracket.remove(functionBracket.size() - 1);
-                }
-                else if (token.getString().equals(",")) { //$NON-NLS-1$
+                } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     index += insertReturnAndIndent(argList, index + 1, indent);
-                } else if (token.getString().equals(";")) { //$NON-NLS-1$
+                } else if (tokenString.equals(";")) { //$NON-NLS-1$
                     indent = 0;
                     index += insertReturnAndIndent(argList, index, indent);
                 }
             } else if (token.getType() == SQLFormatterConstants.KEYWORD) {
-                if (token.getString().equalsIgnoreCase("DELETE") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("SELECT") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("UPDATE")) //$NON-NLS-1$
+                if (tokenString.equals("DELETE") //$NON-NLS-1$
+                        || tokenString.equals("SELECT") //$NON-NLS-1$
+                        || tokenString.equals("UPDATE")) //$NON-NLS-1$
                 {
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
-                if (token.getString().equalsIgnoreCase("INSERT") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("INTO") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("CREATE") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("DROP") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("TRUNCATE") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("TABLE") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("CASE")) { //$NON-NLS-1$
+                if (tokenString.equals("INSERT") //$NON-NLS-1$
+                        || tokenString.equals("INTO") //$NON-NLS-1$
+                        || tokenString.equals("CREATE") //$NON-NLS-1$
+                        || tokenString.equals("DROP") //$NON-NLS-1$
+                        || tokenString.equals("TRUNCATE") //$NON-NLS-1$
+                        || tokenString.equals("TABLE") //$NON-NLS-1$
+                        || tokenString.equals("CASE")) { //$NON-NLS-1$
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
-                if (token.getString().equalsIgnoreCase("FROM") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("WHERE") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("SET") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("ORDER BY") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("GROUP BY") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("HAVING")) { //$NON-NLS-1$
+                if (tokenString.equals("FROM") //$NON-NLS-1$
+                        || tokenString.equals("WHERE") //$NON-NLS-1$
+                        || tokenString.equals("SET") //$NON-NLS-1$
+                        || tokenString.equals("ORDER BY") //$NON-NLS-1$
+                        || tokenString.equals("GROUP BY") //$NON-NLS-1$
+                        || tokenString.equals("HAVING")) { //$NON-NLS-1$
                     index += insertReturnAndIndent(argList, index, indent - 1);
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
-                if (token.getString().equalsIgnoreCase("VALUES")) { //$NON-NLS-1$
+                if (tokenString.equals("VALUES")) { //$NON-NLS-1$
                     indent--;
                     index += insertReturnAndIndent(argList, index, indent);
                 }
-                if (token.getString().equalsIgnoreCase("END")) { //$NON-NLS-1$
+                if (tokenString.equals("END")) { //$NON-NLS-1$
                     indent--;
                     index += insertReturnAndIndent(argList, index, indent);
                 }
-                if (token.getString().equalsIgnoreCase("OR") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("THEN") //$NON-NLS-1$
-                        || token.getString().equalsIgnoreCase("ELSE")) { //$NON-NLS-1$
+                if (tokenString.equals("OR") //$NON-NLS-1$
+                        || tokenString.equals("THEN") //$NON-NLS-1$
+                        || tokenString.equals("ELSE")) { //$NON-NLS-1$
                     index += insertReturnAndIndent(argList, index, indent);
                 }
-                if (token.getString().equalsIgnoreCase("ON") || token.getString().equalsIgnoreCase("USING")) { //$NON-NLS-1$ //$NON-NLS-2$
+                if (tokenString.equals("ON") || tokenString.equals("USING")) { //$NON-NLS-1$ //$NON-NLS-2$
                     index += insertReturnAndIndent(argList, index, indent + 1);
                 }
-                if (token.getString().equalsIgnoreCase("UNION") //$NON-NLS-1$
-                    || token.getString().equalsIgnoreCase("INTERSECT") //$NON-NLS-1$
-                    || token.getString().equalsIgnoreCase("EXCEPT")) //$NON-NLS-1$
+                if (tokenString.equals("UNION") //$NON-NLS-1$
+                    || tokenString.equals("INTERSECT") //$NON-NLS-1$
+                    || tokenString.equals("EXCEPT")) //$NON-NLS-1$
                 {
                     indent -= 2;
                     index += insertReturnAndIndent(argList, index, indent);
                     //index += insertReturnAndIndent(argList, index + 1, indent);
                     indent++;
                 }
-                if (token.getString().equalsIgnoreCase("BETWEEN")) { //$NON-NLS-1$
+                if (tokenString.equals("BETWEEN")) { //$NON-NLS-1$
                     encounterBetween = true;
                 }
-                if (token.getString().equalsIgnoreCase("AND")) { //$NON-NLS-1$
+                if (tokenString.equals("AND")) { //$NON-NLS-1$
                     if (!encounterBetween) {
                         index += insertReturnAndIndent(argList, index, indent);
                     }
@@ -269,6 +268,10 @@ public class SQLFormatter {
                 }
                 if (formatterCfg.isFunction(prev.getString())
                         && token.getString().equals("(")) { //$NON-NLS-1$
+                    continue;
+                }
+                if (token.getType() == SQLFormatterConstants.VALUE && prev.getType() == SQLFormatterConstants.NAME) {
+                    // Do not add space between name and value [JDBC:MSSQL]
                     continue;
                 }
                 argList.add(index, new SQLFormatterToken(SQLFormatterConstants.SPACE, " ")); //$NON-NLS-1$
