@@ -1227,17 +1227,6 @@ public class CImageCombo extends Composite {
         return string;
     }
 
-    @Override
-    public void setRedraw(boolean redraw)
-    {
-/*
-        if (this.table != null && !this.table.isDisposed()) {
-            this.table.setRedraw(redraw);
-        }
-*/
-        super.setRedraw(redraw);
-    }
-
     void initAccessible()
     {
         AccessibleAdapter accessibleAdapter = new AccessibleAdapter() {
@@ -1502,33 +1491,4 @@ public class CImageCombo extends Composite {
         }
     }
 
-    @Override
-    public void layout()
-    {
-        super.layout();    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void layout(boolean changed)
-    {
-        super.layout(changed);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void layout(boolean changed, boolean all)
-    {
-        super.layout(changed, all);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void layout(Control[] changed)
-    {
-        super.layout(changed);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void layout(Control[] changed, int flags)
-    {
-        super.layout(changed, flags);    //To change body of overridden methods use File | Settings | File Templates.
-    }
 }
