@@ -26,7 +26,7 @@
     <screenshot-1>http://dbeaver.jkiss.org/product/Screenshot_Main.png</screenshot-1>
     <icon-1>http://dbeaver.jkiss.org/product/dbeaver.gif</icon-1>
     <keywords>sql,database manager,database client,mysql,postgresql,mssql,db2,oracle,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc</keywords>
-    <description>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase and any database which has JDBC driver.</description>
+    <description>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, Derby, Cassandra and any database which has JDBC driver.</description>
 
     <company>
         <name>JKISS</name>
@@ -47,8 +47,24 @@
 
     <versions>
         <version>
+            <number>2.0.3</number>
+            <type>hotfix</type>
+            <date>27.11.2012</date>
+
+            <release-notes>
+                - Support of DDL generation for generic drivers
+                - MySQL active DB selection fix
+                - Informix autocomplete fix
+                - MSSQL script formatting fix
+                - Project explorer columns configuration
+                - Localization fixes
+                - Plugin version minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.0.2</number>
-            <type>beta</type>
+            <type>stable</type>
             <date>18.11.2012</date>
 
             <release-notes>
