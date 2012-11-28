@@ -44,9 +44,9 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>2.0.2</Program_Version>
+    <Program_Version>2.0.3</Program_Version>
     <Program_Release_Month>11</Program_Release_Month>
-    <Program_Release_Day>18</Program_Release_Day>
+    <Program_Release_Day>28</Program_Release_Day>
     <Program_Release_Year>2012</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -55,18 +55,13 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - 2.0 Final Release
-        - Eclipse plugin version
-        - SQL templates (snippets) support
-        - Database compare feature
-        - Data editor improvements
-        - Hex editor for strings
-        - XML data export
-        - SQL log persistence
-        - Project explorer UI improvement
-        - Apache Cassandra driver
-        - Misc fixes in generic JDBC/ODBC support
-        - A lot of UI fixes
+        - Support of DDL generation for generic drivers
+        - MySQL active DB selection fix
+        - Informix autocomplete fix
+        - MSSQL script formatting fix
+        - Project explorer columns configuration
+        - Localization fixes
+        - Plugin version minor UI fixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -97,8 +92,8 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.2-x86-setup.exe</Primary_Download_URL>
-      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.2-x86_64-setup.exe</Secondary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.3-x86-setup.exe</Primary_Download_URL>
+      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.3-x86_64-setup.exe</Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
     </Download_URLs>
