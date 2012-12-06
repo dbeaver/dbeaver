@@ -22,21 +22,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.jface.resource.StringConverter;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPConnectionType;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
+import org.xml.sax.Attributes;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class DataSourceProviderRegistry
 {
@@ -45,6 +46,7 @@ public class DataSourceProviderRegistry
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<DBPRegistryListener>();
+    private final Map<String, DBPConnectionType> connectionTypes = new HashMap<String, DBPConnectionType>();
 
     public DataSourceProviderRegistry()
     {
@@ -102,6 +104,12 @@ public class DataSourceProviderRegistry
                     }
                 }
             }
+        }
+
+        // Load connection types
+        File ctConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME, true);
+        if (ctConfig.exists()) {
+            loadConnectionTypes(ctConfig);
         }
     }
 
@@ -175,33 +183,17 @@ public class DataSourceProviderRegistry
             try {
                 InputStream is = new FileInputStream(driversConfig);
                 try {
-                    try {
-                        loadDrivers(is);
-                    } catch (DBException ex) {
-                        log.warn("Can't load drivers config from " + driversConfig.getPath(), ex);
-                    }
-                    finally {
-                        is.close();
-                    }
+                    new SAXReader(is).parse(new DriverDescriptor.DriversParser());
                 }
-                catch (IOException ex) {
-                    log.warn("IO error", ex);
+                catch (XMLException ex) {
+                    log.warn("Drivers config parse error", ex);
                 }
-            } catch (FileNotFoundException ex) {
-                log.warn("Can't open config file " + driversConfig.getPath(), ex);
+                finally {
+                    is.close();
+                }
+            } catch (Exception ex) {
+                log.warn("Error loading drivers from " + driversConfig.getPath(), ex);
             }
-        }
-    }
-
-    private void loadDrivers(InputStream is)
-        throws DBException, IOException
-    {
-        SAXReader parser = new SAXReader(is);
-        try {
-            parser.parse(new DriverDescriptor.DriversParser());
-        }
-        catch (XMLException ex) {
-            throw new DBException("Datasource config parse error", ex);
         }
     }
 
@@ -210,29 +202,92 @@ public class DataSourceProviderRegistry
         File driversConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME, false);
         try {
             OutputStream os = new FileOutputStream(driversConfig);
-            try {
-                XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
-                xml.setButify(true);
-                xml.startElement(RegistryConstants.TAG_DRIVERS);
-                for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
-                    xml.startElement(RegistryConstants.TAG_PROVIDER);
-                    xml.addAttribute(RegistryConstants.ATTR_ID, provider.getId());
-                    for (DriverDescriptor driver : provider.getDrivers()) {
-                        if (driver.isModified()) {
-                            driver.serialize(xml, false);
-                        }
+            XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+            xml.setButify(true);
+            xml.startElement(RegistryConstants.TAG_DRIVERS);
+            for (DataSourceProviderDescriptor provider : this.dataSourceProviders) {
+                xml.startElement(RegistryConstants.TAG_PROVIDER);
+                xml.addAttribute(RegistryConstants.ATTR_ID, provider.getId());
+                for (DriverDescriptor driver : provider.getDrivers()) {
+                    if (driver.isModified()) {
+                        driver.serialize(xml, false);
                     }
-                    xml.endElement();
                 }
                 xml.endElement();
-                xml.flush();
-                os.close();
             }
-            catch (IOException ex) {
-                log.warn("IO error", ex);
+            xml.endElement();
+            xml.flush();
+            os.close();
+        }
+        catch (Exception ex) {
+            log.warn("Error saving drivers", ex);
+        }
+    }
+
+    private void loadConnectionTypes(File configFile)
+    {
+        try {
+            InputStream is = new FileInputStream(configFile);
+            try {
+                new SAXReader(is).parse(new ConnectionTypeParser());
+            } catch (XMLException ex) {
+                log.warn("Can't load connection types config from " + configFile.getPath(), ex);
             }
-        } catch (FileNotFoundException ex) {
-            log.warn("Can't open config file " + driversConfig.getPath(), ex);
+            finally {
+                is.close();
+            }
+        }
+        catch (Exception ex) {
+            log.warn("Error parsing connection types", ex);
+        }
+    }
+
+    public DBPConnectionType getConnectionType(String id, DBPConnectionType defaultType)
+    {
+        DBPConnectionType connectionType = connectionTypes.get(id);
+        return connectionType == null ? defaultType : connectionType;
+    }
+
+    public void addConnectionType(DBPConnectionType connectionType)
+    {
+        if (this.connectionTypes.containsKey(connectionType.getId())) {
+            log.warn("Duplicate connection type id: " + connectionType.getId());
+            return;
+        }
+        this.connectionTypes.put(connectionType.getId(), connectionType);
+    }
+
+    public void removeConnectionType(DBPConnectionType connectionType)
+    {
+        if (!this.connectionTypes.containsKey(connectionType.getId())) {
+            log.warn("Connection type doesn't exist: " + connectionType.getId());
+            return;
+        }
+        this.connectionTypes.remove(connectionType.getId());
+    }
+
+    public void saveConnectionTypes()
+    {
+        File ctConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME, false);
+        try {
+            OutputStream os = new FileOutputStream(ctConfig);
+            XMLBuilder xml = new XMLBuilder(os, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+            xml.setButify(true);
+            xml.startElement(RegistryConstants.TAG_TYPES);
+            for (DBPConnectionType connectionType : connectionTypes.values()) {
+                xml.startElement(RegistryConstants.TAG_TYPE);
+                xml.addAttribute(RegistryConstants.ATTR_ID, connectionType.getId());
+                xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(connectionType.getName()));
+                xml.addAttribute(RegistryConstants.ATTR_COLOR, StringConverter.asString(connectionType.getColor().getRGB()));
+                xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, CommonUtils.toString(connectionType.getDescription()));
+                xml.endElement();
+            }
+            xml.endElement();
+            xml.flush();
+            os.close();
+        }
+        catch (Exception ex) {
+            log.warn("Error saving drivers", ex);
         }
     }
 
@@ -262,4 +317,28 @@ public class DataSourceProviderRegistry
             }
         }
     }
+
+    class ConnectionTypeParser implements SAXListener
+    {
+        @Override
+        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
+            throws XMLException
+        {
+            if (localName.equals(RegistryConstants.TAG_TYPE)) {
+                DBPConnectionType connectionType = new DBPConnectionType(
+                    atts.getValue(RegistryConstants.ATTR_ID),
+                    atts.getValue(RegistryConstants.ATTR_NAME),
+                    StringConverter.asRGB(RegistryConstants.ATTR_COLOR),
+                    atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                connectionTypes.put(connectionType.getId(), connectionType);
+            }
+        }
+
+        @Override
+        public void saxText(SAXReader reader, String data) {}
+
+        @Override
+        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {}
+    }
+
 }

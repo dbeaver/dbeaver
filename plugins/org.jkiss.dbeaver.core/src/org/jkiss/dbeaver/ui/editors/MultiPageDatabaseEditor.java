@@ -59,4 +59,11 @@ public abstract class MultiPageDatabaseEditor extends MultiPageAbstractEditor im
         return getEditorInput().getDataSource();
     }
 
+    @Override
+    protected void createPages()
+    {
+        super.createPages();
+        DatabaseEditorUtils.setPartBackground(this, getContainer());
+    }
+
 }

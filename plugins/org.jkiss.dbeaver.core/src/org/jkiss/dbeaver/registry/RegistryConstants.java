@@ -24,6 +24,7 @@ package org.jkiss.dbeaver.registry;
 public class RegistryConstants {
 
     public static final String DRIVERS_FILE_NAME = "drivers.xml"; //$NON-NLS-1$
+    public static final String CONNECTION_TYPES_FILE_NAME = "connection-types.xml"; //$NON-NLS-1$
 
     public static final String TAG_DRIVERS = "drivers"; //$NON-NLS-1$
     public static final String TAG_DRIVER = "driver"; //$NON-NLS-1$
@@ -40,6 +41,7 @@ public class RegistryConstants {
     public static final String TAG_PROFILES = "profiles"; //$NON-NLS-1$
     public static final String TAG_PROFILE = "profile"; //$NON-NLS-1$
 
+    public static final String TAG_TYPES = "types"; //$NON-NLS-1$
     public static final String TAG_TYPE = "type"; //$NON-NLS-1$
     public static final String TAG_DATASOURCE = "datasource"; //$NON-NLS-1$
     public static final String TAG_OS = "os"; //NON-NLS-1
@@ -72,6 +74,7 @@ public class RegistryConstants {
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
+    public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
 
     public static final String ATTR_TARGET_ID = "targetID"; //$NON-NLS-1$
     public static final String ATTR_TYPE = "type"; //$NON-NLS-1$
