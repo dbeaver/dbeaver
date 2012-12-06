@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
@@ -596,6 +597,8 @@ public class SQLEditor extends SQLEditorBase
 
     private void onDataSourceChange()
     {
+        DatabaseEditorUtils.setPartBackground(this, sashForm);
+
         if (resultsView != null) {
             if (getDataSource() == null) {
                 resultsView.setStatus(CoreMessages.editors_sql_status_not_connected_to_database);

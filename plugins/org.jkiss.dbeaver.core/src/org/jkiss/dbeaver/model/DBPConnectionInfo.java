@@ -41,6 +41,7 @@ public class DBPConnectionInfo implements DBPObject
     private final Map<Object, Object> properties;
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
     private final List<DBWHandlerConfiguration> handlers;
+    private DBPConnectionType connectionType;
 
     public DBPConnectionInfo()
     {
@@ -69,18 +70,6 @@ public class DBPConnectionInfo implements DBPObject
             this.handlers.add(new DBWHandlerConfiguration(handler));
         }
     }
-
-/*
-	public DBPConnectionInfo(DBPDriver driver)
-	{
-		this.driver = driver;
-	}
-
-	public DBPDriver getDriver()
-	{
-		return driver;
-	}
-*/
 
     public String getClientHomeId()
     {
@@ -217,6 +206,16 @@ public class DBPConnectionInfo implements DBPObject
             }
         }
         return null;
+    }
+
+    public DBPConnectionType getConnectionType()
+    {
+        return connectionType;
+    }
+
+    public void setConnectionType(DBPConnectionType connectionType)
+    {
+        this.connectionType = connectionType;
     }
 
 }
