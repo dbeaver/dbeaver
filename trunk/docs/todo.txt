@@ -20,3 +20,4 @@ Customize resource roots
 Disable Quick Access toolbar
 Variable number of columns in RS (cassandra)
 Use Babel for 4.2.x
+DROP USER in Oracle

@@ -356,7 +356,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         statusLabel = new Text(statusBar, SWT.READ_ONLY);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         statusLabel.setLayoutData(gd);
-        statusLabel.setBackground(statusBar.getBackground());
         statusLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDoubleClick(MouseEvent e)

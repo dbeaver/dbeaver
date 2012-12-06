@@ -26,6 +26,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.util.Arrays;
 
@@ -190,18 +191,18 @@ public class CImageCombo extends Composite {
         };
 
         int[] comboEvents = {SWT.Dispose, SWT.Move, SWT.Resize};
-        for (int i = 0; i < comboEvents.length; i++) {
-            this.addListener(comboEvents[i], this.listener);
+        for (int comboEvent : comboEvents) {
+            this.addListener(comboEvent, this.listener);
         }
 
         int[] textEvents = {SWT.KeyDown, SWT.KeyUp, SWT.Modify, SWT.MouseDown, SWT.MouseUp, SWT.Traverse, SWT.FocusIn};
-        for (int i = 0; i < textEvents.length; i++) {
-            this.text.addListener(textEvents[i], this.listener);
+        for (int textEvent : textEvents) {
+            this.text.addListener(textEvent, this.listener);
         }
 
         int[] arrowEvents = {SWT.Selection, SWT.FocusIn};
-        for (int i = 0; i < arrowEvents.length; i++) {
-            this.arrow.addListener(arrowEvents[i], this.listener);
+        for (int arrowEvent : arrowEvents) {
+            this.arrow.addListener(arrowEvent, this.listener);
         }
 
         createPopup(-1);
