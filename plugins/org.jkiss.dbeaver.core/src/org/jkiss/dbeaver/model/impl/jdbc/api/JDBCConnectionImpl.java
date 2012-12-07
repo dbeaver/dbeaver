@@ -48,7 +48,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
 
     static final Log log = LogFactory.getLog(JDBCConnectionImpl.class);
 
-    private JDBCConnector connector;
+    private final JDBCConnector connector;
     private boolean isolated;
     private Connection isolatedConnection;
 
@@ -98,7 +98,9 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     @Override
     public boolean isConnected() {
         try {
-            return !isClosed();
+            synchronized (connector) {
+                return !isClosed();
+            }
         } catch (SQLException e) {
             log.error("could not check connection state", e);
             return false;

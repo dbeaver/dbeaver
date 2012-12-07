@@ -261,14 +261,18 @@ public abstract class JDBCDataSource
     @Override
     public void close()
     {
-        if (connection != null) {
-            try {
-                if (!connection.isClosed()) {
-                    connection.close();
+        // [JDBC] Need sync here because real connection close could take some time
+        // while UI may invoke callbacks to operate with connection
+        synchronized (this) {
+            if (connection != null) {
+                try {
+                    if (!connection.isClosed()) {
+                        connection.close();
+                    }
                 }
-            }
-            catch (SQLException ex) {
-                log.error(ex);
+                catch (SQLException ex) {
+                    log.error(ex);
+                }
             }
             connection = null;
         }
