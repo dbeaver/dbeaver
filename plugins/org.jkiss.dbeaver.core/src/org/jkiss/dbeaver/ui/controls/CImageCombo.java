@@ -26,7 +26,6 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.util.Arrays;
 
@@ -251,7 +250,9 @@ public class CImageCombo extends Composite {
     /**
      * Adds the argument to the end of the receiver's list.
      *
+     *
      * @param string the new item
+     * @param background item background color
      * @throws IllegalArgumentException <ul>
      *                                  <li>ERROR_NULL_ARGUMENT - if the string is null</li>
      *                                  </ul>
@@ -260,7 +261,7 @@ public class CImageCombo extends Composite {
      *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                                  </ul>
      */
-    public void add(Image image, String string, Object data)
+    public void add(Image image, String string, Color background, Object data)
     {
         checkWidget();
         if (string == null) {
@@ -273,6 +274,9 @@ public class CImageCombo extends Composite {
         if (image != null) {
             newItem.setImage(image);
             //this.imageLabel.setImage(image);
+        }
+        if (background != null) {
+            newItem.setBackground(background);
         }
     }
 
@@ -399,8 +403,8 @@ public class CImageCombo extends Composite {
         int textWidth = 0;
         GC gc = new GC(this.comboComposite);
         int spacer = gc.stringExtent(" ").x; //$NON-NLS-1$
-        for (int i = 0; i < items.length; i++) {
-            textWidth = Math.max(gc.stringExtent(items[i]).x, textWidth);
+        for (String item : items) {
+            textWidth = Math.max(gc.stringExtent(item).x, textWidth);
         }
         gc.dispose();
         Point textSize = this.comboComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
@@ -740,15 +744,38 @@ public class CImageCombo extends Composite {
         if (index == -1) {
             this.table.deselectAll();
             this.text.setText(""); //$NON-NLS-1$
+            this.setBackground(null);
             return;
         }
         if (0 <= index && index < this.table.getItemCount()) {
             if (index != getSelectionIndex()) {
-                this.imageLabel.setImage(this.table.getItem(index).getImage());
-                this.text.setText(this.table.getItem(index).getText());
+                TableItem item = this.table.getItem(index);
+                if (item.getImage() != null) {
+                    this.imageLabel.setImage(item.getImage());
+                }
+                if (item.getBackground() != null) {
+                    this.setBackground(item.getBackground());
+                }
+                this.text.setText(item.getText());
                 //this.text.selectAll();
                 this.table.select(index);
                 this.table.showSelection();
+            }
+        }
+    }
+
+    public void select(Object data)
+    {
+        checkWidget();
+        if (data == null) {
+            select(-1);
+            return;
+        }
+        int itemCount = this.table.getItemCount();
+        for (int i = 0; i < itemCount; i++) {
+            if (this.table.getItem(i).getData() == data) {
+                select(i);
+                break;
             }
         }
     }
@@ -925,12 +952,12 @@ public class CImageCombo extends Composite {
         }
 
         int[] popupEvents = {SWT.Close, SWT.Paint, SWT.Deactivate};
-        for (int i = 0; i < popupEvents.length; i++) {
-            this.popup.addListener(popupEvents[i], this.listener);
+        for (int popupEvent : popupEvents) {
+            this.popup.addListener(popupEvent, this.listener);
         }
         int[] listEvents = {SWT.MouseUp, SWT.Selection, SWT.Traverse, SWT.KeyDown, SWT.KeyUp, SWT.FocusIn, SWT.Dispose};
-        for (int i = 0; i < listEvents.length; i++) {
-            this.table.addListener(listEvents[i], this.listener);
+        for (int listEvent : listEvents) {
+            this.table.addListener(listEvent, this.listener);
         }
 
         if (selectionIndex != -1) {
@@ -1020,9 +1047,15 @@ public class CImageCombo extends Composite {
                 if (index == -1) {
                     return;
                 }
-                this.text.setText(this.table.getItem(index).getText());
+                TableItem item = this.table.getItem(index);
+                this.text.setText(item.getText());
                 this.text.selectAll();
-                this.imageLabel.setImage(this.table.getItem(index).getImage());
+                if (item.getImage() != null) {
+                    this.imageLabel.setImage(item.getImage());
+                }
+                if (item.getBackground() != null) {
+                    this.setBackground(item.getBackground());
+                }
                 this.table.setSelection(index);
                 Event e = new Event();
                 e.time = event.time;
