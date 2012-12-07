@@ -11,7 +11,7 @@ public class DBPConnectionType {
 
     public static final DBPConnectionType DEV = new DBPConnectionType("dev", "Development", new RGB(0xFF, 0xFF, 0xFF), "Regular development database");
     public static final DBPConnectionType TEST = new DBPConnectionType("test", "Test", new RGB(0xC4, 0xFF, 0xB5), "Test (QA) database");
-    public static final DBPConnectionType PROD = new DBPConnectionType("prod", "Production", new RGB(0xFF, 0xE4, 0xB5), "Production database");
+    public static final DBPConnectionType PROD = new DBPConnectionType("prod", "Production", new RGB(0xF7, 0x9F, 0x81), "Production database");
 
     public static final DBPConnectionType[] SYSTEM_TYPES = { DEV, TEST, PROD };
     public static final DBPConnectionType DEFAULT_TYPE = DEV;
