@@ -33,8 +33,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPConnectionType;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -44,6 +46,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -62,6 +65,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
+    private CImageCombo connectionTypeCombo;
     private Button savePasswordCheck;
     private Button showSystemObjects;
     private Button readOnlyConnection;
@@ -72,6 +76,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private Button eventsButton;
     private java.util.List<FilterInfo> filters = new ArrayList<FilterInfo>();
     private Group filtersGroup;
+    private boolean activated = false;
 
     private static class FilterInfo {
         final Class<?> type;
@@ -164,10 +169,12 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 }
             }
         }
-        if (dataSourceDescriptor != null) {
+        if (dataSourceDescriptor != null && !activated) {
+            connectionTypeCombo.select(dataSourceDescriptor.getConnectionInfo().getConnectionType());
             savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
             showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
             readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
+            activated = true;
         }
         long features = 0;
         try {
@@ -235,6 +242,11 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 ConnectionPageFinal.this.getContainer().updateButtons();
             }
         });
+
+        UIUtils.createControlLabel(group, "Connection type");
+        connectionTypeCombo = new CImageCombo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        loadConnectionTypes();
+        connectionTypeCombo.select(0);
 
         {
             Group securityGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.FILL_HORIZONTAL, 0);
@@ -370,6 +382,14 @@ class ConnectionPageFinal extends ActiveWizardPage {
         UIUtils.setHelp(group, IHelpContextIds.CTX_CON_WIZARD_FINAL);
     }
 
+    private void loadConnectionTypes()
+    {
+        connectionTypeCombo.removeAll();
+        for (DBPConnectionType ct : DBeaverCore.getInstance().getDataSourceProviderRegistry().getConnectionTypes()) {
+            connectionTypeCombo.add(null, ct.getName(), ct.getColor(), ct);
+        }
+    }
+
     @Override
     public boolean isPageComplete()
     {
@@ -385,6 +405,10 @@ class ConnectionPageFinal extends ActiveWizardPage {
         dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
+        }
+        if (connectionTypeCombo.getSelectionIndex() >= 0) {
+            dataSource.getConnectionInfo().setConnectionType(
+                (DBPConnectionType) connectionTypeCombo.getData(connectionTypeCombo.getSelectionIndex()));
         }
         for (FilterInfo filterInfo : filters) {
             if (filterInfo.filter != null) {
