@@ -274,26 +274,23 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 part = part.getSite().getPage().getActiveEditor();
             }
         }
-        if (activePart == part) {
-            UIUtils.updateMainWindowTitle(workbenchWindow);
-            return;
-        }
+        if (activePart != part || activePart == null) {
+            // Update previous statuses
+            DBSDataSourceContainer container = getDataSourceContainer();
+            if (container != null) {
+                container.getPreferenceStore().removePropertyChangeListener(this);
+            }
+            activePart = part;
+            container = getDataSourceContainer();
 
-        // Update previous statuses
-        DBSDataSourceContainer container = getDataSourceContainer();
-        if (container != null) {
-            container.getPreferenceStore().removePropertyChangeListener(this);
-        }
-        activePart = part;
-        container = getDataSourceContainer();
+            if (container != null) {
+                // Update editor actions
+                container.getPreferenceStore().addPropertyChangeListener(this);
+            }
 
-        if (container != null) {
-            // Update editor actions
-            container.getPreferenceStore().addPropertyChangeListener(this);
+            // Update controls and actions
+            updateControls(false);
         }
-
-        // Update controls and actions
-        updateControls(false);
 
         UIUtils.updateMainWindowTitle(workbenchWindow);
     }
@@ -457,34 +454,30 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             if (dsContainer != null && dsContainer.isConnected()) {
                 final DBPDataSource dataSource = dsContainer.getDataSource();
 
-                DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-                DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-                if (oc != null && os != null && os.supportsObjectSelect())
-                {
-                    synchronized (dbListReads) {
-                        for (DatabaseListReader reader : dbListReads) {
-                            if (reader.getDataSource() == dataSource) {
-                                return;
-                            }
+                synchronized (dbListReads) {
+                    for (DatabaseListReader reader : dbListReads) {
+                        if (reader.getDataSource() == dataSource) {
+                            return;
                         }
-                        DatabaseListReader databaseReader = new DatabaseListReader(dataSource);
-                        databaseReader.addJobChangeListener(new JobChangeAdapter() {
-                            @Override
-                            public void done(final IJobChangeEvent event)
-                            {
-                                UIUtils.runInUI(null, new Runnable() {
-                                    @Override
-                                    public void run()
-                                    {
-                                        fillDatabaseList((DatabaseListReader) event.getJob(), dsContainer);
-                                    }
-                                });
-                            }
-                        });
-                        dbListReads.add(databaseReader);
-                        databaseReader.schedule();
                     }
+                    DatabaseListReader databaseReader = new DatabaseListReader(dataSource);
+                    databaseReader.addJobChangeListener(new JobChangeAdapter() {
+                        @Override
+                        public void done(final IJobChangeEvent event)
+                        {
+                            UIUtils.runInUI(null, new Runnable() {
+                                @Override
+                                public void run()
+                                {
+                                    fillDatabaseList((DatabaseListReader) event.getJob(), dsContainer);
+                                }
+                            });
+                        }
+                    });
+                    dbListReads.add(databaseReader);
+                    databaseReader.schedule();
                 }
+
                 curDataSourceContainer = new SoftReference<DBSDataSourceContainer>(dsContainer);
             } else {
                 curDataSourceContainer = null;
@@ -502,6 +495,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 dbListReads.remove(reader);
             }
             if (!reader.enabled || dsContainer.getDataSource() != reader.getDataSource()) {
+                databaseCombo.setEnabled(reader.enabled);
                 return;
             }
             if (databaseCombo.isDisposed()) {
@@ -809,6 +803,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 DataSourceManagementToolbar.this.dispose();
             }
         });
+
+        if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
+            setActivePart(workbenchWindow.getActivePage().getActivePart());
+        }
+
         return comboGroup;
     }
 
