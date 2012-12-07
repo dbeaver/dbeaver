@@ -351,7 +351,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             connectionCombo.add(
                                 dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
                                 ds.getName(),
-                                null, ds);
+                                dsNode.getDataSourceContainer().getConnectionInfo().getConnectionType().getColor(),
+                                ds);
                         }
                         if (dataSourceContainer == ds) {
                             selectionIndex = i + 1;
@@ -372,7 +373,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     {
         if (event.getAction() == DBPEvent.Action.OBJECT_ADD ||
             event.getAction() == DBPEvent.Action.OBJECT_REMOVE ||
-            (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null && event.getObject() == getDataSourceContainer()) ||
+            (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() == getDataSourceContainer()) ||
             (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) && event.getObject().getDataSource().getContainer() == getDataSourceContainer())
             )
         {
@@ -512,10 +513,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     if (database instanceof DBSObjectContainer) {
                         DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(database);
                         if (dbNode != null) {
+                            DBPDataSource dataSource = database.getDataSource();
                             databaseCombo.add(
                                 dbNode.getNodeIconDefault(),
                                 database.getName(),
-                                null, database);
+                                dataSource == null ? null : dataSource.getContainer().getConnectionInfo().getConnectionType().getColor(),
+                                database);
                         }
                     }
                 }
