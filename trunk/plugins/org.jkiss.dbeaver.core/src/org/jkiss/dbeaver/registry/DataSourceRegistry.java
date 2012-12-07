@@ -415,6 +415,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
                 xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
             }
+            if (connectionInfo.getConnectionType() != null) {
+                xml.addAttribute(RegistryConstants.ATTR_TYPE, connectionInfo.getConnectionType().getId());
+            }
             if (connectionInfo.getProperties() != null) {
 
                 for (Map.Entry<Object, Object> entry : connectionInfo.getProperties().entrySet()) {
@@ -632,6 +635,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curDataSource.getConnectionInfo().setUserName(atts.getValue(RegistryConstants.ATTR_USER));
                     curDataSource.getConnectionInfo().setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
                     curDataSource.getConnectionInfo().setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
+                    curDataSource.getConnectionInfo().setConnectionType(
+                        DBeaverCore.getInstance().getDataSourceProviderRegistry().getConnectionType(
+                            CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_TYPE)),
+                            DBPConnectionType.DEFAULT_TYPE)
+                        );
                 }
             } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
                 if (curNetworkHandler != null) {

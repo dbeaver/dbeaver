@@ -351,7 +351,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             connectionCombo.add(
                                 dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
                                 ds.getName(),
-                                ds);
+                                null, ds);
                         }
                         if (dataSourceContainer == ds) {
                             selectionIndex = i + 1;
@@ -515,7 +515,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                             databaseCombo.add(
                                 dbNode.getNodeIconDefault(),
                                 database.getName(),
-                                database);
+                                null, database);
                         }
                     }
                 }
@@ -731,7 +731,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.setVisibleItemCount(15);
         connectionCombo.setWidthHint(160);
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
-        connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
+        connectionCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null, null);
         connectionCombo.select(0);
         fillDataSourceList(true);
         connectionCombo.addSelectionListener(new SelectionListener()
@@ -757,7 +757,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         databaseCombo.setVisibleItemCount(15);
         databaseCombo.setWidthHint(140);
         databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
-        databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null);
+        databaseCombo.add(DBIcon.TREE_DATABASE.getImage(), EMPTY_SELECTION_TEXT, null, null);
         databaseCombo.select(0);
         databaseCombo.addSelectionListener(new SelectionListener() {
             @Override

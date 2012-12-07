@@ -3,15 +3,6 @@ package org.jkiss.dbeaver.model;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DriverFileDescriptor;
-import org.jkiss.dbeaver.registry.DriverPathDescriptor;
-import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.SAXListener;
-import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLException;
-import org.xml.sax.Attributes;
 
 /**
  * Connection type
@@ -19,8 +10,11 @@ import org.xml.sax.Attributes;
 public class DBPConnectionType {
 
     public static final DBPConnectionType DEV = new DBPConnectionType("dev", "Development", new RGB(0xFF, 0xFF, 0xFF), "Regular development database");
-    public static final DBPConnectionType TEST = new DBPConnectionType("test", "Test", new RGB(0xFF, 0xFF, 0xFF), "Test (QA) database");
-    public static final DBPConnectionType PROD = new DBPConnectionType("prod", "Production", new RGB(0xFF, 0xFF, 0xFF), "Production database");
+    public static final DBPConnectionType TEST = new DBPConnectionType("test", "Test", new RGB(0xFF, 0xE4, 0xB5), "Test (QA) database");
+    public static final DBPConnectionType PROD = new DBPConnectionType("prod", "Production", new RGB(0xC4, 0xFF, 0xB5), "Production database");
+
+    public static final DBPConnectionType[] SYSTEM_TYPES = { DEV, TEST, PROD };
+    public static final DBPConnectionType DEFAULT_TYPE = DEV;
 
     private String id;
     private String name;

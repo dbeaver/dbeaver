@@ -46,7 +46,7 @@ public class DataSourceProviderRegistry
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<DBPRegistryListener>();
-    private final Map<String, DBPConnectionType> connectionTypes = new HashMap<String, DBPConnectionType>();
+    private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<String, DBPConnectionType>();
 
     public DataSourceProviderRegistry()
     {
@@ -107,9 +107,14 @@ public class DataSourceProviderRegistry
         }
 
         // Load connection types
-        File ctConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME, true);
-        if (ctConfig.exists()) {
-            loadConnectionTypes(ctConfig);
+        {
+            for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
+                connectionTypes.put(ct.getId(), ct);
+            }
+            File ctConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME, true);
+            if (ctConfig.exists()) {
+                loadConnectionTypes(ctConfig);
+            }
         }
     }
 
@@ -240,6 +245,11 @@ public class DataSourceProviderRegistry
         catch (Exception ex) {
             log.warn("Error parsing connection types", ex);
         }
+    }
+
+    public Collection<DBPConnectionType> getConnectionTypes()
+    {
+        return connectionTypes.values();
     }
 
     public DBPConnectionType getConnectionType(String id, DBPConnectionType defaultType)
