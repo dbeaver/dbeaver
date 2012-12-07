@@ -217,7 +217,15 @@ public class CImageCombo extends Composite {
     {
         if (force || enabled != isEnabled()) {
             super.setEnabled(enabled);
-            setBackground(Display.getDefault().getSystemColor(enabled ? SWT.COLOR_LIST_BACKGROUND : SWT.COLOR_WIDGET_BACKGROUND));
+            if (!enabled) {
+                setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+            } else {
+                if (getSelectionIndex() >= 0) {
+                    select(getSelectionIndex());
+                } else {
+                    setBackground(Display.getDefault().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+                }
+            }
         }
     }
 
