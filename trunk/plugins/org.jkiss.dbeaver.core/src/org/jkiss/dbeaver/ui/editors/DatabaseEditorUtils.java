@@ -35,7 +35,8 @@ public class DatabaseEditorUtils {
             rootComposite.setBackground(null);
             return;
         }
-        rootComposite.setBackground(DBeaverCore.getInstance().getSharedTextColors().getColor(new RGB(0xC4, 0xFF, 0xB5)));
+        rootComposite.setBackground(
+            dataSource.getContainer().getConnectionInfo().getConnectionType().getColor());
     }
 
 }
