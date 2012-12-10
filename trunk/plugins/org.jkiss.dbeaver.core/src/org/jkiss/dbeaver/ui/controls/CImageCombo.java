@@ -219,7 +219,7 @@ public class CImageCombo extends Composite {
             super.setEnabled(enabled);
             if (!enabled) {
                 setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-            } else {
+            } else if (table != null) {
                 if (getSelectionIndex() >= 0) {
                     select(getSelectionIndex());
                 } else {
@@ -407,12 +407,14 @@ public class CImageCombo extends Composite {
     {
         checkWidget();
         int width, height;
-        String[] items = getStringsFromTable();
         int textWidth = 0;
         GC gc = new GC(this.comboComposite);
         int spacer = gc.stringExtent(" ").x; //$NON-NLS-1$
-        for (String item : items) {
-            textWidth = Math.max(gc.stringExtent(item).x, textWidth);
+        if (this.table != null) {
+            String[] items = getStringsFromTable();
+            for (String item : items) {
+                textWidth = Math.max(gc.stringExtent(item).x, textWidth);
+            }
         }
         gc.dispose();
         Point textSize = this.comboComposite.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
