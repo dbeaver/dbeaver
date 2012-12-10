@@ -1446,7 +1446,11 @@
     </extension>
 
     <extension point="org.eclipse.ui.perspectives">
-        <perspective name="%perspective.name" class="org.jkiss.dbeaver.ui.perspective.DBeaverPerspective" id="org.jkiss.dbeaver.core.perspective"/>
+        <perspective
+              class="org.jkiss.dbeaver.ui.perspective.DBeaverPerspective"
+              icon="icons/full/view16/dbeaver_perspective.gif"
+              id="org.jkiss.dbeaver.core.perspective"
+              name="%perspective.name"/>
     </extension>
 
     <extension point="org.eclipse.ui.editors">
