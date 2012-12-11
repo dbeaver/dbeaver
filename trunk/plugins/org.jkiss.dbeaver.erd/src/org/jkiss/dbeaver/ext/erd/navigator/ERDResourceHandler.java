@@ -54,6 +54,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
     public static IFolder getDiagramsFolder(IProject project, boolean forceCreate) throws CoreException
     {
+    	if (project == null) {
+			return null;
+		}
         final IFolder diagramsFolder = project.getFolder(ERD_DIR);
         if (!diagramsFolder.exists() && forceCreate) {
             diagramsFolder.create(true, true, new NullProgressMonitor());

@@ -18,9 +18,18 @@
  */
 package org.jkiss.dbeaver.ext.erd.navigator;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
@@ -38,25 +47,40 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 public class DiagramCreateWizard extends Wizard implements INewWizard {
 
     private IFolder folder;
     private EntityDiagram diagram = new EntityDiagram(null, "");
     private DiagramCreateWizardPage pageContent;
+	private String errorMessage;
 
-    public DiagramCreateWizard(IFolder folder) {
-        this.folder = folder;
+    public DiagramCreateWizard() {
 	}
 
 	@Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(ERDMessages.wizard_diagram_create_title);
         setNeedsProgressMonitor(true);
+        IFolder diagramFolder = null;
+        if (selection != null) {
+            Object element = selection.getFirstElement();
+            if (element != null) {
+                diagramFolder = (IFolder) Platform.getAdapterManager().getAdapter(element, IFolder.class);
+			}
+        }
+        if (diagramFolder == null) {
+        	IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        	if (activeProject == null) {
+				errorMessage = "Can't create diagram without active project";
+			} else {
+	        	try {
+					diagramFolder = ERDResourceHandler.getDiagramsFolder(activeProject, true);
+				} catch (CoreException e) {
+					errorMessage = e.getMessage();
+				}
+			}
+        }
+        this.folder = diagramFolder;
     }
 
     @Override
@@ -64,8 +88,21 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
         super.addPages();
         pageContent = new DiagramCreateWizardPage(diagram);
         addPage(pageContent);
+        if (getContainer() != null) {
+            //WizardDialog call
+            pageContent.setErrorMessage(errorMessage);
+		}
     }
-
+    
+    @Override
+    public void setContainer(IWizardContainer wizardContainer) {
+    	super.setContainer(wizardContainer);
+    	if (pageContent != null) {
+    		//New Wizard call
+            pageContent.setErrorMessage(errorMessage);
+		}
+    }
+    
 	@Override
 	public boolean performFinish() {
         try {

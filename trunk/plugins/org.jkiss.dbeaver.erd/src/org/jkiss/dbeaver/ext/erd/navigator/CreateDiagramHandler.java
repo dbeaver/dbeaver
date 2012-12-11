@@ -20,13 +20,7 @@ package org.jkiss.dbeaver.ext.erd.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
@@ -35,21 +29,9 @@ public class CreateDiagramHandler extends DataSourceHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        IFolder diagramFolder = null;
-        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
-            final Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
-                diagramFolder = (IFolder) ((DBNResource)element).getResource();
-            }
-        }
-        if (diagramFolder == null && DBeaverCore.getInstance().getProjectRegistry().getActiveProject() == null) {
-            UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "ERD Error", "Can't create diagram without active project");
-            return null;
-        }
         ActiveWizardDialog dialog = new ActiveWizardDialog(
             HandlerUtil.getActiveWorkbenchWindow(event),
-            new DiagramCreateWizard(diagramFolder));
+            new DiagramCreateWizard());
         dialog.open();
 
         return null;
