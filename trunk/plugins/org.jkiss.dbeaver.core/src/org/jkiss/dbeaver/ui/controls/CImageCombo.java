@@ -481,10 +481,16 @@ public class CImageCombo extends Composite {
      *                                  <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
      *                                  </ul>
      */
-    public String getItem(int index)
+    public String getItemText(int index)
     {
         checkWidget();
         return this.table.getItem(index).getText();
+    }
+
+    public TableItem getItem(int index)
+    {
+        checkWidget();
+        return this.table.getItem(index);
     }
 
     /**
@@ -783,7 +789,7 @@ public class CImageCombo extends Composite {
         }
         int itemCount = this.table.getItemCount();
         for (int i = 0; i < itemCount; i++) {
-            if (this.table.getItem(i).getData() == data) {
+            if (data.equals(this.table.getItem(i).getData())) {
                 select(i);
                 break;
             }
