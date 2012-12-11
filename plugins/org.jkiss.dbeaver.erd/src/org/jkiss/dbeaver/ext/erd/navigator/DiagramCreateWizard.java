@@ -49,9 +49,6 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
     private EntityDiagram diagram = new EntityDiagram(null, "");
     private DiagramCreateWizardPage pageContent;
 
-    public DiagramCreateWizard() {
-	}
-
     public DiagramCreateWizard(IFolder folder) {
         this.folder = folder;
 	}
