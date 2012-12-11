@@ -224,7 +224,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
 
-            autocommitCheck = UIUtils.createCheckbox(groupSettings, "Autocommit", false);
+            autocommitCheck = UIUtils.createCheckbox(groupSettings, "Auto-commit by default", false);
             autocommitCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -233,7 +233,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                 }
             });
             autocommitCheck.setLayoutData(gd);
-            confirmCheck = UIUtils.createCheckbox(groupSettings, "Confirm execution", false);
+            confirmCheck = UIUtils.createCheckbox(groupSettings, "Confirm SQL execution", false);
             confirmCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)

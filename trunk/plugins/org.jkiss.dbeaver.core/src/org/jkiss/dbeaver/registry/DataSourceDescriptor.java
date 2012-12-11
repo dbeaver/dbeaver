@@ -491,7 +491,13 @@ public class DataSourceDescriptor
             try {
                 DBCTransactionManager txnManager = context.getTransactionManager();
                 boolean autoCommit = txnManager.isAutoCommit();
-                boolean newAutoCommit = getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+                AbstractPreferenceStore store = getPreferenceStore();
+                boolean newAutoCommit;
+                if (!store.contains(PrefConstants.DEFAULT_AUTO_COMMIT)) {
+                    newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
+                } else {
+                    newAutoCommit = store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+                }
                 if (autoCommit != newAutoCommit) {
                     // Change auto-commit state
                     txnManager.setAutoCommit(newAutoCommit);
