@@ -894,6 +894,12 @@ public class DataSourceDescriptor
         return null;
     }
 
+    @Property(order = 9)
+    public String getPropertyConnectType()
+    {
+        return connectionInfo.getConnectionType().getName();
+    }
+
     @Override
     public void editObject(IWorkbenchWindow workbenchWindow)
     {
