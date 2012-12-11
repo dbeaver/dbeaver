@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -63,6 +64,9 @@ class DiagramCreateWizardPage extends WizardPage {
     @Override
     public boolean isPageComplete()
     {
+    	if (getErrorMessage() != null) {
+			return false;
+		}
         return !CommonUtils.isEmpty(diagram.getName());
     }
 
@@ -88,6 +92,10 @@ class DiagramCreateWizardPage extends WizardPage {
         contentLabel.setLayoutData(gd);
 
         final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+        if (rootNode == null) {
+            setControl(placeholder);
+			return;
+		}
         contentTree = new DatabaseNavigatorTree(configGroup, rootNode.getDatabases(), SWT.SINGLE | SWT.CHECK);
         gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
@@ -124,6 +132,9 @@ class DiagramCreateWizardPage extends WizardPage {
 
     Collection<DBNNode> getInitialContent()
     {
+    	if (contentTree == null) {
+			return Collections.emptyList();
+		}
         List<DBNNode> nodes = new ArrayList<DBNNode>();
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) contentTree.getViewer();
         for (Object obj : viewer.getCheckedElements()) {
