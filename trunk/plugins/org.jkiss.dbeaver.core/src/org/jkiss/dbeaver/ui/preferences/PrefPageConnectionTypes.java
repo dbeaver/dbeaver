@@ -33,11 +33,14 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionType;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -323,6 +326,33 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     @Override
     public boolean performOk()
     {
+        DataSourceProviderRegistry registry = DBeaverCore.getInstance().getDataSourceProviderRegistry();
+        java.util.List<DBPConnectionType> toRemove = new ArrayList<DBPConnectionType>();
+        for (DBPConnectionType type : registry.getConnectionTypes()) {
+            if (!changedInfo.values().contains(type)) {
+                // Remove
+                toRemove.add(type);
+            }
+        }
+        for (DBPConnectionType connectionType : toRemove) {
+            registry.removeConnectionType(connectionType);
+        }
+
+        for (DBPConnectionType changed : changedInfo.keySet()) {
+            DBPConnectionType source = changedInfo.get(changed);
+            if (source == changed) {
+                // New type
+                registry.addConnectionType(changed);
+            } else {
+                // Changed type
+                source.setName(changed.getName());
+                source.setDescription(changed.getDescription());
+                source.setAutocommit(changed.isAutocommit());
+                source.setConfirmExecute(changed.isConfirmExecute());
+                source.setColor(changed.getColor());
+            }
+        }
+        registry.saveConnectionTypes();
         return super.performOk();
     }
 

@@ -104,4 +104,5 @@ public class DBPConnectionType {
     {
         this.confirmExecute = confirmExecute;
     }
+
 }
