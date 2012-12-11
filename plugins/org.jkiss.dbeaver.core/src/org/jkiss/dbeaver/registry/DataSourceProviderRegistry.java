@@ -340,7 +340,7 @@ public class DataSourceProviderRegistry
                 DBPConnectionType connectionType = new DBPConnectionType(
                     atts.getValue(RegistryConstants.ATTR_ID),
                     atts.getValue(RegistryConstants.ATTR_NAME),
-                    StringConverter.asRGB(RegistryConstants.ATTR_COLOR),
+                    StringConverter.asRGB(atts.getValue(RegistryConstants.ATTR_COLOR)),
                     atts.getValue(RegistryConstants.ATTR_DESCRIPTION),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT)),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE)));
