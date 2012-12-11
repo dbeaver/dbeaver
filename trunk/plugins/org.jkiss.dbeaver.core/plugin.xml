@@ -1199,7 +1199,7 @@
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.eclipse.core.resources.IFolder">
-                                <test property="org.jkiss.dbeaver.core.resource.type" value="scripts"/>
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="script folder"/>
                             </adapt>
                         </iterate>
                     </with>
