@@ -247,7 +247,7 @@
                         <count value="1"/>
                         <iterate operator="and">
                             <adapt type="org.eclipse.core.resources.IFolder">
-                                <test property="org.jkiss.dbeaver.core.resource.type" value="erd"/>
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
                             </adapt>
                         </iterate>
                     </with>
