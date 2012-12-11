@@ -520,7 +520,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             if (reader.databasesInfo.active != null) {
                 int dbCount = databaseCombo.getItemCount();
                 for (int i = 0; i < dbCount; i++) {
-                    String dbName = databaseCombo.getItem(i);
+                    String dbName = databaseCombo.getItemText(i);
                     if (dbName.equals(reader.databasesInfo.active.getName())) {
                         databaseCombo.select(i);
                         break;
@@ -576,7 +576,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             return;
         }
         DBSDataSourceContainer dsContainer = getDataSourceContainer();
-        final String newName = databaseCombo.getItem(databaseCombo.getSelectionIndex());
+        final String newName = databaseCombo.getItemText(databaseCombo.getSelectionIndex());
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             try {

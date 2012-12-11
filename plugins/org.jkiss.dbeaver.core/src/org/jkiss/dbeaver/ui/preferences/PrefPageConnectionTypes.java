@@ -21,12 +21,9 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
@@ -39,6 +36,10 @@ import org.jkiss.dbeaver.model.DBPConnectionType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.SecurityUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * PrefPageConnectionTypes
@@ -54,9 +55,11 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     private Text typeName;
     private Text typeDescription;
     private CImageCombo colorPicker;
-    private Button confirmSQL;
-    private Button confirmDDL;
+    private Button autocommitCheck;
+    private Button confirmCheck;
     private Button deleteButton;
+
+    private Map<DBPConnectionType, DBPConnectionType> changedInfo = new HashMap<DBPConnectionType, DBPConnectionType>();
 
     @Override
     public void init(IWorkbench workbench)
@@ -79,7 +82,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    selectType((DBPConnectionType) e.item.getData());
+                    showSelectedType(getSelectedType());
                 }
             });
 
@@ -88,9 +91,60 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
 
             Button newButton = new Button(tableGroup, SWT.PUSH);
             newButton.setText("New");
+            newButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    String name;
+                    for (int i = 1;; i++) {
+                        name = "Type" + i;
+                        boolean hasName = false;
+                        for (DBPConnectionType type : changedInfo.keySet()) {
+                            if (type.getName().equals(name)) {
+                                hasName = true;
+                                break;
+                            }
+                        }
+                        if (!hasName) {
+                            break;
+                        }
+                    }
+                    DBPConnectionType newType = new DBPConnectionType(
+                        SecurityUtils.generateUniqueId(),
+                        name,
+                        new RGB(0xFF, 0xFF, 0xFF),
+                        "New type",
+                        true,
+                        false);
+                    addTypeToTable(newType, newType);
+                    typeTable.select(typeTable.getItemCount() - 1);
+                    typeTable.showSelection();
+                    showSelectedType(newType);
+                }
+            });
 
             deleteButton = new Button(tableGroup, SWT.PUSH);
             deleteButton.setText("Delete");
+            deleteButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    DBPConnectionType connectionType = getSelectedType();
+                    if (!UIUtils.confirmAction(
+                        deleteButton.getShell(),
+                        "Delete connection type", "Are you sure you want to delete connection type '" + connectionType.getName() + "'?\n" +
+                        "All connections of this type will be reset to default type (" + DBPConnectionType.DEFAULT_TYPE.getName() + ")"))
+                    {
+                        return;
+                    }
+                    changedInfo.remove(connectionType);
+                    int index = typeTable.getSelectionIndex();
+                    typeTable.remove(index);
+                    if (index > 0) index--;
+                    typeTable.select(index);
+                    showSelectedType(getSelectedType());
+                }
+            });
         }
 
         {
@@ -98,7 +152,24 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
             groupSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             typeName = UIUtils.createLabelText(groupSettings, "Name", "");
+            typeName.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e)
+                {
+                    getSelectedType().setName(typeName.getText());
+                    updateTableInfo();
+
+                }
+            });
             typeDescription = UIUtils.createLabelText(groupSettings, "Description", "");
+            typeDescription.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e)
+                {
+                    getSelectedType().setDescription(typeDescription.getText());
+                    updateTableInfo();
+                }
+            });
 
             {
                 UIUtils.createControlLabel(groupSettings, "Color");
@@ -107,6 +178,14 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
 
                 colorPicker = new CImageCombo(colorGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
                 colorPicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                colorPicker.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        getSelectedType().setColor(colorPicker.getItem(colorPicker.getSelectionIndex()).getBackground());
+                        updateTableInfo();
+                    }
+                });
                 Button pickerButton = new Button(colorGroup, SWT.PUSH);
                 pickerButton.setText("...");
                 pickerButton.addSelectionListener(new SelectionAdapter() {
@@ -118,7 +197,22 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                         colorDialog.setRGB(connectionType.getColor().getRGB());
                         RGB rgb = colorDialog.open();
                         if (rgb != null) {
-
+                            Color color = null;
+                            int count = colorPicker.getItemCount();
+                            for (int i = 0; i < count; i++) {
+                                TableItem item = colorPicker.getItem(i);
+                                if (item.getBackground() != null && item.getBackground().getRGB().equals(rgb)) {
+                                    color = item.getBackground();
+                                    break;
+                                }
+                            }
+                            if (color == null) {
+                                color = new Color(colorPicker.getDisplay(), rgb);
+                                colorPicker.add(null, COLOR_TEXT, color, color);
+                            }
+                            colorPicker.select(color);
+                            getSelectedType().setColor(color);
+                            updateTableInfo();
                         }
                     }
                 });
@@ -126,10 +220,25 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
 
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
-            confirmSQL = UIUtils.createCheckbox(groupSettings, "Confirm SQL execution", false);
-            confirmSQL.setLayoutData(gd);
-            confirmDDL = UIUtils.createCheckbox(groupSettings, "Confirm DDL execution", false);
-            confirmDDL.setLayoutData(gd);
+
+            autocommitCheck = UIUtils.createCheckbox(groupSettings, "Autocommit", false);
+            autocommitCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    getSelectedType().setAutocommit(autocommitCheck.getSelection());
+                }
+            });
+            autocommitCheck.setLayoutData(gd);
+            confirmCheck = UIUtils.createCheckbox(groupSettings, "Confirm execution", false);
+            confirmCheck.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    getSelectedType().setConfirmExecute(confirmCheck.getSelection());
+                }
+            });
+            confirmCheck.setLayoutData(gd);
         }
 
         performDefaults();
@@ -137,13 +246,34 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
         return composite;
     }
 
-    private void selectType(DBPConnectionType connectionType)
+    private DBPConnectionType getSelectedType()
+    {
+        return (DBPConnectionType) typeTable.getItem(typeTable.getSelectionIndex()).getData();
+    }
+
+    private void showSelectedType(DBPConnectionType connectionType)
     {
         colorPicker.select(connectionType.getColor());
         typeName.setText(connectionType.getName());
         typeDescription.setText(connectionType.getDescription());
+        autocommitCheck.setSelection(connectionType.isAutocommit());
+        confirmCheck.setSelection(connectionType.isConfirmExecute());
 
         deleteButton.setEnabled(!connectionType.isPredefined());
+    }
+
+    private void updateTableInfo()
+    {
+        DBPConnectionType connectionType = getSelectedType();
+        for (TableItem item : typeTable.getItems()) {
+            if (item.getData() == connectionType) {
+                item.setText(0, connectionType.getName());
+                item.setText(1, connectionType.getDescription());
+                item.setBackground(0, connectionType.getColor());
+                item.setBackground(1, connectionType.getColor());
+                break;
+            }
+        }
     }
 
     @Override
@@ -151,16 +281,8 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     {
         typeTable.removeAll();
         colorPicker.removeAll();
-        for (DBPConnectionType connectionType : DBeaverCore.getInstance().getDataSourceProviderRegistry().getConnectionTypes()) {
-            TableItem item = new TableItem(typeTable, SWT.LEFT);
-            item.setText(0, connectionType.getName());
-            item.setText(1, CommonUtils.toString(connectionType.getDescription()));
-            if (connectionType.getColor() != null) {
-                item.setBackground(0, connectionType.getColor());
-                item.setBackground(1, connectionType.getColor());
-                colorPicker.add(null, COLOR_TEXT, connectionType.getColor(), connectionType.getColor());
-            }
-            item.setData(connectionType);
+        for (DBPConnectionType source : DBeaverCore.getInstance().getDataSourceProviderRegistry().getConnectionTypes()) {
+            addTypeToTable(source, new DBPConnectionType(source));
         }
         typeTable.select(0);
         // Ad predefined colors
@@ -172,15 +294,30 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
             Color color = colorPicker.getShell().getDisplay().getSystemColor(colorCode);
             colorPicker.add(null, COLOR_TEXT, color, color);
         }
-        selectType(getSelectedType());
+        showSelectedType(getSelectedType());
 
-        UIUtils.packColumns(typeTable);
+        typeTable.addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e)
+            {
+                UIUtils.packColumns(typeTable, true);
+            }
+        });
         super.performDefaults();
     }
 
-    private DBPConnectionType getSelectedType()
+    private void addTypeToTable(DBPConnectionType source, DBPConnectionType connectionType)
     {
-        return (DBPConnectionType) typeTable.getItem(typeTable.getSelectionIndex()).getData();
+        changedInfo.put(connectionType, source);
+        TableItem item = new TableItem(typeTable, SWT.LEFT);
+        item.setText(0, connectionType.getName());
+        item.setText(1, CommonUtils.toString(connectionType.getDescription()));
+        if (connectionType.getColor() != null) {
+            item.setBackground(0, connectionType.getColor());
+            item.setBackground(1, connectionType.getColor());
+            colorPicker.add(null, COLOR_TEXT, connectionType.getColor(), connectionType.getColor());
+        }
+        item.setData(connectionType);
     }
 
     @Override
