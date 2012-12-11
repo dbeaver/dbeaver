@@ -36,7 +36,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 
-    private Button autoCommitCheck;
+    //private Button autoCommitCheck;
     private Button keepStatementOpenCheck;
     private Button rollbackOnErrorCheck;
     private Spinner memoryContentSize;
@@ -55,7 +55,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
-            store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
+            //store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
             store.contains(PrefConstants.KEEP_STATEMENT_OPEN) ||
             store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
             store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES) ||
@@ -80,7 +80,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
             txnGroup.setText(CoreMessages.pref_page_database_general_group_transactions);
             txnGroup.setLayout(new GridLayout(2, false));
 
-            autoCommitCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_auto_commit_by_default, false);
+            //autoCommitCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_auto_commit_by_default, false);
             keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
             rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
         }
@@ -112,7 +112,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
+            //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
             keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
             rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
             memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
@@ -127,7 +127,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
+            //store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
             store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
@@ -142,7 +142,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
-        store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
+        //store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
         store.setToDefault(PrefConstants.KEEP_STATEMENT_OPEN);
         store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
