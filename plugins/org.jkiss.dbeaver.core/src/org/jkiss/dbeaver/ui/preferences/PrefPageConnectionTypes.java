@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
@@ -40,7 +38,6 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,10 +46,8 @@ import java.util.Map;
  */
 public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    static final Log log = LogFactory.getLog(PrefPageConnectionTypes.class);
-
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.connectionTypes"; //$NON-NLS-1$
-    public static final String COLOR_TEXT = "               ";
+    public static final String COLOR_TEXT = "";
 
     private Table typeTable;
     private Text typeName;
