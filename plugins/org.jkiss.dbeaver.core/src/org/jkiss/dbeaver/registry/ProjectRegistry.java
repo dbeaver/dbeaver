@@ -172,9 +172,12 @@ public class ProjectRegistry implements IResourceChangeListener {
         }
         if (handler == null && resource instanceof IFolder) {
             IPath relativePath = resource.getFullPath().makeRelativeTo(resource.getProject().getFullPath());
-            ResourceHandlerDescriptor handlerDescriptor = rootMapping.get(relativePath.toString());
-            if (handlerDescriptor != null) {
-                handler = handlerDescriptor.getHandler();
+            while (relativePath.segmentCount() > 0) {
+                ResourceHandlerDescriptor handlerDescriptor = rootMapping.get(relativePath.toString());
+                if (handlerDescriptor != null) {
+                    handler = handlerDescriptor.getHandler();
+                }
+                relativePath = relativePath.removeLastSegments(1);
             }
         }
         if (handler == null) {
