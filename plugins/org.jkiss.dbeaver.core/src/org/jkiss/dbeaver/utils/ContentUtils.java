@@ -21,10 +21,7 @@ package org.jkiss.dbeaver.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -34,6 +31,7 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -535,7 +533,7 @@ public class ContentUtils {
 
     public static IFile convertPathToWorkspaceFile(IPath path)
     {
-        IWorkspaceRoot root = DBeaverCore.getInstance().getWorkspace().getRoot();
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
         IFile file = root.getFileForLocation(path);
         if (file != null) {
             return file;
