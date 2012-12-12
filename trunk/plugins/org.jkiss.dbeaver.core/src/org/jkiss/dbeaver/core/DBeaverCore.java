@@ -107,11 +107,15 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private ProjectRegistry projectRegistry;
 
     private boolean isClosing;
+    private static boolean disposed = false;
 
     public static DBeaverCore getInstance()
     {
         if (instance == null) {
             synchronized (DBeaverCore.class) {
+                if (disposed) {
+                    throw new IllegalStateException("DBeaver core already disposed");
+                }
                 if (instance == null) {
                     // Initialize DBeaver Core
                     DBeaverCore.createInstance(DBeaverActivator.getInstance());
@@ -348,6 +352,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         //progressProvider = null;
 
         DBeaverCore.instance = null;
+        DBeaverCore.disposed = true;
     }
 
     public Plugin getPlugin()
