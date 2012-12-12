@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -65,7 +64,7 @@ public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPag
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                File file = ContentUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                File file = UIUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 if (file != null) {
                     inputFileText.setText(file.getAbsolutePath());
                 }
