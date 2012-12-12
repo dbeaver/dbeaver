@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,12 +55,12 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
-            //store.contains(PrefConstants.DEFAULT_AUTO_COMMIT) ||
-            store.contains(PrefConstants.KEEP_STATEMENT_OPEN) ||
-            store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
-            store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES) ||
-            store.contains(PrefConstants.META_CASE_SENSITIVE)
+            store.contains(CorePrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
+            //store.contains(DBeaverPrefConstants.DEFAULT_AUTO_COMMIT) ||
+            store.contains(CorePrefConstants.KEEP_STATEMENT_OPEN) ||
+            store.contains(CorePrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
+            store.contains(CorePrefConstants.READ_EXPENSIVE_PROPERTIES) ||
+            store.contains(CorePrefConstants.META_CASE_SENSITIVE)
             ;
     }
 
@@ -113,11 +114,11 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     {
         try {
             //autoCommitCheck.setSelection(store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT));
-            keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
-            rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
-            memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
-            readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
-            caseSensitiveNamesCheck.setSelection(store.getBoolean(PrefConstants.META_CASE_SENSITIVE));
+            keepStatementOpenCheck.setSelection(store.getBoolean(CorePrefConstants.KEEP_STATEMENT_OPEN));
+            rollbackOnErrorCheck.setSelection(store.getBoolean(CorePrefConstants.QUERY_ROLLBACK_ON_ERROR));
+            memoryContentSize.setSelection(store.getInt(CorePrefConstants.MEMORY_CONTENT_MAX_SIZE));
+            readExpensiveCheck.setSelection(store.getBoolean(CorePrefConstants.READ_EXPENSIVE_PROPERTIES));
+            caseSensitiveNamesCheck.setSelection(store.getBoolean(CorePrefConstants.META_CASE_SENSITIVE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -128,11 +129,11 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     {
         try {
             //store.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommitCheck.getSelection());
-            store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
-            store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
-            store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
-            store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
-            store.setValue(PrefConstants.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
+            store.setValue(CorePrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
+            store.setValue(CorePrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
+            store.setValue(CorePrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
+            store.setValue(CorePrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
+            store.setValue(CorePrefConstants.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -143,11 +144,11 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     protected void clearPreferences(IPreferenceStore store)
     {
         //store.setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
-        store.setToDefault(PrefConstants.KEEP_STATEMENT_OPEN);
-        store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
-        store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
-        store.setToDefault(PrefConstants.READ_EXPENSIVE_PROPERTIES);
-        store.setToDefault(PrefConstants.META_CASE_SENSITIVE);
+        store.setToDefault(CorePrefConstants.KEEP_STATEMENT_OPEN);
+        store.setToDefault(CorePrefConstants.QUERY_ROLLBACK_ON_ERROR);
+        store.setToDefault(CorePrefConstants.MEMORY_CONTENT_MAX_SIZE);
+        store.setToDefault(CorePrefConstants.READ_EXPENSIVE_PROPERTIES);
+        store.setToDefault(CorePrefConstants.META_CASE_SENSITIVE);
     }
 
     @Override

@@ -27,9 +27,16 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
@@ -37,7 +44,6 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -91,10 +97,10 @@ public class SQLQueryJob extends DataSourceJob
         {
             // Read config form preference store
             IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
-            this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_COMMIT_TYPE));
-            this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_ERROR_HANDLING));
+            this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(CorePrefConstants.SCRIPT_COMMIT_TYPE));
+            this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(CorePrefConstants.SCRIPT_ERROR_HANDLING));
             this.fetchResultSets = (queries.size() == 1);
-            this.rsMaxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+            this.rsMaxRows = preferenceStore.getInt(CorePrefConstants.RESULT_SET_MAX_ROWS);
         }
     }
 
@@ -477,7 +483,7 @@ public class SQLQueryJob extends DataSourceJob
     {
         // Only in single query mode and if pref option set to true
         return queries.size() == 1 &&
-            getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.KEEP_STATEMENT_OPEN);
+            getDataSource().getContainer().getPreferenceStore().getBoolean(CorePrefConstants.KEEP_STATEMENT_OPEN);
     }
 
     private void closeStatement()

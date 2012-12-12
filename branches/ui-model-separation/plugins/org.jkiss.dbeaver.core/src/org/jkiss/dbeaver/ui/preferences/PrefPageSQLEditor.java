@@ -22,12 +22,17 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.eclipse.ui.texteditor.rulers.RulerColumnPreferenceAdapter;
 import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
@@ -69,12 +74,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(PrefConstants.STATEMENT_TIMEOUT) ||
-            store.contains(PrefConstants.SCRIPT_COMMIT_TYPE) ||
-            store.contains(PrefConstants.SCRIPT_ERROR_HANDLING) ||
-            store.contains(PrefConstants.SCRIPT_COMMIT_LINES) ||
-            store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS) ||
-            store.contains(PrefConstants.SCRIPT_AUTO_FOLDERS)
+            store.contains(CorePrefConstants.STATEMENT_TIMEOUT) ||
+            store.contains(CorePrefConstants.SCRIPT_COMMIT_TYPE) ||
+            store.contains(CorePrefConstants.SCRIPT_ERROR_HANDLING) ||
+            store.contains(CorePrefConstants.SCRIPT_COMMIT_LINES) ||
+            store.contains(CorePrefConstants.SCRIPT_FETCH_RESULT_SETS) ||
+            store.contains(CorePrefConstants.SCRIPT_AUTO_FOLDERS)
         ;
     }
 
@@ -193,13 +198,13 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            executeTimeoutText.setSelection(store.getInt(PrefConstants.STATEMENT_TIMEOUT));
+            executeTimeoutText.setSelection(store.getInt(CorePrefConstants.STATEMENT_TIMEOUT));
 
-            commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(PrefConstants.SCRIPT_COMMIT_TYPE)).ordinal());
-            errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(PrefConstants.SCRIPT_ERROR_HANDLING)).ordinal());
-            commitLinesText.setSelection(store.getInt(PrefConstants.SCRIPT_COMMIT_LINES));
-            fetchResultSetsCheck.setSelection(store.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS));
-            autoFoldersCheck.setSelection(store.getBoolean(PrefConstants.SCRIPT_AUTO_FOLDERS));
+            commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(CorePrefConstants.SCRIPT_COMMIT_TYPE)).ordinal());
+            errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(CorePrefConstants.SCRIPT_ERROR_HANDLING)).ordinal());
+            commitLinesText.setSelection(store.getInt(CorePrefConstants.SCRIPT_COMMIT_LINES));
+            fetchResultSetsCheck.setSelection(store.getBoolean(CorePrefConstants.SCRIPT_FETCH_RESULT_SETS));
+            autoFoldersCheck.setSelection(store.getBoolean(CorePrefConstants.SCRIPT_AUTO_FOLDERS));
             csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
@@ -221,18 +226,18 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
+            store.setValue(CorePrefConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
 
             store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
 
-            store.setValue(PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
-            store.setValue(PrefConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
-            store.setValue(PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.fromOrdinal(errorHandlingCombo.getSelectionIndex()).name());
-            store.setValue(PrefConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
-            store.setValue(PrefConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
+            store.setValue(CorePrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.fromOrdinal(commitTypeCombo.getSelectionIndex()).name());
+            store.setValue(CorePrefConstants.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
+            store.setValue(CorePrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.fromOrdinal(errorHandlingCombo.getSelectionIndex()).name());
+            store.setValue(CorePrefConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
+            store.setValue(CorePrefConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
 
             final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
                     store,
@@ -249,18 +254,18 @@ public class PrefPageSQLEditor extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
-        store.setToDefault(PrefConstants.STATEMENT_TIMEOUT);
+        store.setToDefault(CorePrefConstants.STATEMENT_TIMEOUT);
 
         store.setToDefault(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
         store.setToDefault(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY);
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
 
-        store.setToDefault(PrefConstants.SCRIPT_COMMIT_TYPE);
-        store.setToDefault(PrefConstants.SCRIPT_COMMIT_LINES);
-        store.setToDefault(PrefConstants.SCRIPT_ERROR_HANDLING);
-        store.setToDefault(PrefConstants.SCRIPT_FETCH_RESULT_SETS);
-        store.setToDefault(PrefConstants.SCRIPT_AUTO_FOLDERS);
+        store.setToDefault(CorePrefConstants.SCRIPT_COMMIT_TYPE);
+        store.setToDefault(CorePrefConstants.SCRIPT_COMMIT_LINES);
+        store.setToDefault(CorePrefConstants.SCRIPT_ERROR_HANDLING);
+        store.setToDefault(CorePrefConstants.SCRIPT_FETCH_RESULT_SETS);
+        store.setToDefault(CorePrefConstants.SCRIPT_AUTO_FOLDERS);
     }
 
     @Override

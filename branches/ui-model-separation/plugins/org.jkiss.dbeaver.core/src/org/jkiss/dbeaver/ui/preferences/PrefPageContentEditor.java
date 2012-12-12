@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -109,7 +110,7 @@ public class PrefPageContentEditor extends TargetPrefPage
             editLongAsLobCheck.setSelection(store.getBoolean(PrefConstants.RS_EDIT_LONG_AS_LOB));
             commitOnEditApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_EDIT_APPLY));
             commitOnContentApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY));
-            UIUtils.setComboSelection(encodingCombo, store.getString(PrefConstants.CONTENT_HEX_ENCODING));
+            UIUtils.setComboSelection(encodingCombo, store.getString(CorePrefConstants.CONTENT_HEX_ENCODING));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -123,7 +124,7 @@ public class PrefPageContentEditor extends TargetPrefPage
             store.setValue(PrefConstants.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
             store.setValue(PrefConstants.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
             store.setValue(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
-            store.setValue(PrefConstants.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
+            store.setValue(CorePrefConstants.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -137,7 +138,7 @@ public class PrefPageContentEditor extends TargetPrefPage
         store.setToDefault(PrefConstants.RS_EDIT_LONG_AS_LOB);
         store.setToDefault(PrefConstants.RS_COMMIT_ON_EDIT_APPLY);
         store.setToDefault(PrefConstants.RS_COMMIT_ON_CONTENT_APPLY);
-        store.setToDefault(PrefConstants.CONTENT_HEX_ENCODING);
+        store.setToDefault(CorePrefConstants.CONTENT_HEX_ENCODING);
     }
 
     @Override

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.action.IAction;
@@ -54,6 +55,7 @@ import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
@@ -64,6 +66,8 @@ import java.util.*;
  */
 @SuppressWarnings("restriction")
 public class UIUtils {
+
+	private static String curDialogFolder = System.getProperty("user.dir");
 
     static final Log log = LogFactory.getLog(UIUtils.class);
 
@@ -1118,5 +1122,92 @@ public class UIUtils {
             }
         }
     }
+
+	public static String openFileDialog(FileDialog fileDialog)
+	{
+	    if (curDialogFolder == null) {
+	        fileDialog.setFilterPath(curDialogFolder);
+	    }
+	    String fileName = fileDialog.open();
+	    if (!CommonUtils.isEmpty(fileName)) {
+	        curDialogFolder = fileDialog.getFilterPath();
+	    }
+	    return fileName;
+	}
+
+	public static String getCurDialogFolder()
+	{
+	    return curDialogFolder;
+	}
+
+	public static void setCurDialogFolder(String dialogFolder)
+	{
+	    curDialogFolder = dialogFolder;
+	}
+
+	public static File selectFileForSave(Shell parentShell, String title, String[] filterExt, String fileName)
+	{
+	    FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
+	    fileDialog.setText(title);
+	    fileDialog.setOverwrite(true);
+	    if (filterExt != null) {
+	        fileDialog.setFilterExtensions(filterExt);
+	    }
+	    if (fileName != null) {
+	        fileDialog.setFileName(fileName);
+	    }
+	
+	    fileName = openFileDialog(fileDialog);
+	    if (CommonUtils.isEmpty(fileName)) {
+	        return null;
+	    }
+	    final File saveFile = new File(fileName);
+	    File saveDir = saveFile.getParentFile();
+	    if (!saveDir.exists()) {
+	        showErrorDialog(parentShell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
+	        return null;
+	    }
+	    return saveFile;
+	}
+
+	public static File openFile(Shell parentShell)
+	{
+	    return UIUtils.openFile(parentShell, null);
+	}
+
+	public static File openFile(Shell parentShell, String[] filterExt)
+	{
+	    FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN);
+	    if (filterExt != null) {
+	        fileDialog.setFilterExtensions(filterExt);
+	    }
+	    String fileName = openFileDialog(fileDialog);
+	    if (CommonUtils.isEmpty(fileName)) {
+	        return null;
+	    }
+	    final File loadFile = new File(fileName);
+	    if (!loadFile.exists()) {
+	        MessageBox aMessageBox = new MessageBox(parentShell, SWT.ICON_WARNING | SWT.OK);
+	        aMessageBox.setText("File doesn't exists");
+	        aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
+	        aMessageBox.open();
+	        return null;
+	    }
+	    return loadFile;
+	}
+
+	public static File selectFileForSave(Shell parentShell)
+	{
+	    return selectFileForSave(parentShell, "Save Content As", null, null);
+	}
+
+	public static IFile getFileFromEditorInput(IEditorInput editorInput)
+	{
+	    if (editorInput instanceof IPathEditorInput) {
+	        return ContentUtils.convertPathToWorkspaceFile(((IPathEditorInput) editorInput).getPath());
+	    } else {
+	        return null;
+	    }
+	}
     
 }

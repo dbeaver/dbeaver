@@ -28,6 +28,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
@@ -74,7 +74,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
 
                         // Update data source settings
                         IPreferenceStore preferenceStore = dataSourceContainer.getPreferenceStore();
-                        preferenceStore.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, newAutoCommit);
+                        preferenceStore.setValue(CorePrefConstants.DEFAULT_AUTO_COMMIT, newAutoCommit);
                         dataSourceContainer.getRegistry().flushConfig();
                     } catch (DBCException e) {
                         throw new InvocationTargetException(e);

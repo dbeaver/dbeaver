@@ -49,6 +49,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
@@ -1347,7 +1348,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return 0;
         }
         IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
-        return preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
+        return preferenceStore.getInt(CorePrefConstants.RESULT_SET_MAX_ROWS);
     }
 
     private synchronized void runDataPump(

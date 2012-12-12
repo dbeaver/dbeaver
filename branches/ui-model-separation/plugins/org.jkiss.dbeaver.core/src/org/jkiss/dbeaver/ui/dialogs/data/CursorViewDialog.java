@@ -26,8 +26,13 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeValue;
+import org.jkiss.dbeaver.model.data.DBDCursor;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -67,12 +72,12 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
 
         if (value instanceof DBDCursor) {
             IPreferenceStore globalPreferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
-            if (!globalPreferenceStore.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN)) {
+            if (!globalPreferenceStore.getBoolean(CorePrefConstants.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
                         getShell(),
                         PrefConstants.CONFIRM_KEEP_STATEMENT_OPEN,
                         ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID) {
-                    globalPreferenceStore.setValue(PrefConstants.KEEP_STATEMENT_OPEN, true);
+                    globalPreferenceStore.setValue(CorePrefConstants.KEEP_STATEMENT_OPEN, true);
                     ((SQLEditor)valueController.getValueSite().getPart()).getResultsView().refresh();
                 }
                 dialogGroup.getDisplay().asyncExec(new Runnable()

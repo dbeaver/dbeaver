@@ -28,8 +28,18 @@ import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPClientHome;
+import org.jkiss.dbeaver.model.DBPConnectionInfo;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceHandler;
+import org.jkiss.dbeaver.model.DBPDataSourceUser;
+import org.jkiss.dbeaver.model.DBPEvent;
+import org.jkiss.dbeaver.model.DBPGuardedObject;
+import org.jkiss.dbeaver.model.DBPKeywordManager;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
@@ -45,7 +55,11 @@ import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
@@ -62,7 +76,15 @@ import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.DateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * DataSourceDescriptor
@@ -493,10 +515,10 @@ public class DataSourceDescriptor
                 boolean autoCommit = txnManager.isAutoCommit();
                 AbstractPreferenceStore store = getPreferenceStore();
                 boolean newAutoCommit;
-                if (!store.contains(PrefConstants.DEFAULT_AUTO_COMMIT)) {
+                if (!store.contains(CorePrefConstants.DEFAULT_AUTO_COMMIT)) {
                     newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
                 } else {
-                    newAutoCommit = store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+                    newAutoCommit = store.getBoolean(CorePrefConstants.DEFAULT_AUTO_COMMIT);
                 }
                 if (autoCommit != newAutoCommit) {
                     // Change auto-commit state

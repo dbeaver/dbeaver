@@ -22,6 +22,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -50,9 +51,9 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
-            store.contains(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS) ||
-            store.contains(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN)
+            store.contains(CorePrefConstants.RESULT_SET_MAX_ROWS) ||
+            store.contains(CorePrefConstants.RESULT_SET_BINARY_SHOW_STRINGS) ||
+            store.contains(CorePrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN)
             ;
     }
 
@@ -101,9 +102,9 @@ public class PrefPageResultSet extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
-            binaryShowStrings.setSelection(store.getBoolean(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS));
-            binaryStringMaxLength.setSelection(store.getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN));
+            resultSetSize.setSelection(store.getInt(CorePrefConstants.RESULT_SET_MAX_ROWS));
+            binaryShowStrings.setSelection(store.getBoolean(CorePrefConstants.RESULT_SET_BINARY_SHOW_STRINGS));
+            binaryStringMaxLength.setSelection(store.getInt(CorePrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -113,9 +114,9 @@ public class PrefPageResultSet extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
-            store.setValue(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, binaryShowStrings.getSelection());
-            store.setValue(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
+            store.setValue(CorePrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
+            store.setValue(CorePrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, binaryShowStrings.getSelection());
+            store.setValue(CorePrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -125,9 +126,9 @@ public class PrefPageResultSet extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
-        store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
-        store.setToDefault(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
-        store.setToDefault(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
+        store.setToDefault(CorePrefConstants.RESULT_SET_MAX_ROWS);
+        store.setToDefault(CorePrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
+        store.setToDefault(CorePrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
     }
 
     @Override

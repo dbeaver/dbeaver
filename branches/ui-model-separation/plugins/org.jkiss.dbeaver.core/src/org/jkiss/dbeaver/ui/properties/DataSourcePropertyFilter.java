@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.IFilter;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 /**
  * Datasource property filter
@@ -36,7 +36,7 @@ public class DataSourcePropertyFilter implements IFilter {
         IPreferenceStore store = dataSource != null ?
             dataSource.getContainer().getPreferenceStore() :
             DBeaverCore.getInstance().getGlobalPreferenceStore();
-        this.showExpensive = store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES);
+        this.showExpensive = store.getBoolean(CorePrefConstants.READ_EXPENSIVE_PROPERTIES);
     }
 
     @Override

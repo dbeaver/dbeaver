@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -30,9 +31,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLWarning;
+import java.sql.Statement;
 
 /**
  * Managable statement.
@@ -270,7 +274,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     protected SQLException handleExecuteError(Throwable ex)
     {
         executeError = ex;
-        if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR)) {
+        if (connection.getDataSource().getContainer().getPreferenceStore().getBoolean(CorePrefConstants.QUERY_ROLLBACK_ON_ERROR)) {
             try {
                 if (!connection.isClosed() && !connection.getAutoCommit()) {
                     connection.rollback();

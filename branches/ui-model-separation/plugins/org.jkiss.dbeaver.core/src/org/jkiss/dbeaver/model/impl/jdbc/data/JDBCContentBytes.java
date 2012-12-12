@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -31,7 +32,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
@@ -189,11 +189,11 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         if (data == null) {
             return null;
         }
-        boolean showStrings = dataSource.getContainer().getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
+        boolean showStrings = dataSource.getContainer().getPreferenceStore().getBoolean(CorePrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
         if (!showStrings) {
             return "binary [" + data.length + "]"; //$NON-NLS-1$ //$NON-NLS-2$
         }
-        int maxLength = dataSource.getContainer().getPreferenceStore().getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
+        int maxLength = dataSource.getContainer().getPreferenceStore().getInt(CorePrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
         // Convert bytes to string
         int length = data.length;
         if (length > maxLength) {

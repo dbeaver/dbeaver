@@ -552,25 +552,25 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         IPreferenceStore store = getGlobalPreferenceStore();
 
         // Common
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.KEEP_STATEMENT_OPEN, false);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.QUERY_ROLLBACK_ON_ERROR, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.DEFAULT_AUTO_COMMIT, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.KEEP_STATEMENT_OPEN, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.QUERY_ROLLBACK_ON_ERROR, false);
 
         // SQL execution
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_COMMIT_LINES, 1000);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_FETCH_RESULT_SETS, false);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.SCRIPT_AUTO_FOLDERS, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.SCRIPT_COMMIT_LINES, 1000);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.SCRIPT_FETCH_RESULT_SETS, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.SCRIPT_AUTO_FOLDERS, false);
 
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.STATEMENT_TIMEOUT, 10 * 1000);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.MEMORY_CONTENT_MAX_SIZE, 10000);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.READ_EXPENSIVE_PROPERTIES, true);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.META_CASE_SENSITIVE, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.STATEMENT_TIMEOUT, 10 * 1000);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.MEMORY_CONTENT_MAX_SIZE, 10000);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.READ_EXPENSIVE_PROPERTIES, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.META_CASE_SENSITIVE, false);
 
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_MAX_TEXT_SIZE, 10 * 1000000);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_EDIT_LONG_AS_LOB, true);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.CONTENT_HEX_ENCODING, ContentUtils.getDefaultFileEncoding());
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.CONTENT_HEX_ENCODING, ContentUtils.getDefaultFileEncoding());
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_EDIT_APPLY, false);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RS_COMMIT_ON_CONTENT_APPLY, false);
 
@@ -603,13 +603,13 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.UI_DRIVERS_SOURCES, DBeaverConstants.DEFAULT_DRIVERS_SOURCE);
 
         // Network
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NET_TUNNEL_PORT_MIN, 10000);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NET_TUNNEL_PORT_MAX, 60000);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.NET_TUNNEL_PORT_MIN, 10000);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.NET_TUNNEL_PORT_MAX, 60000);
 
         // ResultSet
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_MAX_ROWS, 200);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, true);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, 32);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.RESULT_SET_MAX_ROWS, 200);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, CorePrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, 32);
 
         // QM
         queryManager.initDefaultPreferences(store);

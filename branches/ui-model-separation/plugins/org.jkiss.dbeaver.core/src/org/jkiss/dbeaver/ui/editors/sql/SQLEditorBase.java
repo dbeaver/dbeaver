@@ -563,7 +563,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     public void loadFromExternalFile()
     {
-        final File loadFile = ContentUtils.openFile(getSite().getShell(), new String[] { "*.sql", "*.txt", "*.*"});
+        final File loadFile = UIUtils.openFile(getSite().getShell(), new String[] { "*.sql", "*.txt", "*.*"});
         if (loadFile == null) {
             return;
         }
@@ -599,7 +599,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         String fileName = (editorInput instanceof ProjectFileEditorInput ?
             ((ProjectFileEditorInput)getEditorInput()).getFile().getName() : null);
 
-        final File saveFile = ContentUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[] { "*.sql", "*.txt", "*.*"}, fileName);
+        final File saveFile = UIUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[] { "*.sql", "*.txt", "*.*"}, fileName);
         if (saveFile == null) {
             return;
         }

@@ -44,6 +44,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -120,7 +121,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         IEditorInput editorInput = getEditorInput();
         IStorage storage = null;
         {
-            IFile file = ContentUtils.getFileFromEditorInput(editorInput);
+            IFile file = UIUtils.getFileFromEditorInput(editorInput);
             if (file != null) {
                 storage = file;
             }
@@ -261,7 +262,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         IEditorInput editorInput = getEditorInput();
         // Sync file changes
-        IFile file = ContentUtils.getFileFromEditorInput(editorInput);
+        IFile file = UIUtils.getFileFromEditorInput(editorInput);
         if (file != null) {
             final IPath absolutePath = file.getLocation();
             File systemFile = absolutePath.toFile();

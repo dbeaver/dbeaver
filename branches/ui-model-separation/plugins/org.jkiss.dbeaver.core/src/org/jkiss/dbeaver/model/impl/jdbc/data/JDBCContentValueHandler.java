@@ -333,7 +333,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
 
         Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File openFile = ContentUtils.openFile(shell);
+        final File openFile = UIUtils.openFile(shell);
         if (openFile == null) {
             return;
         }
@@ -379,7 +379,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
 
         Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File saveFile = ContentUtils.selectFileForSave(shell);
+        final File saveFile = UIUtils.selectFileForSave(shell);
         if (saveFile == null) {
             return;
         }

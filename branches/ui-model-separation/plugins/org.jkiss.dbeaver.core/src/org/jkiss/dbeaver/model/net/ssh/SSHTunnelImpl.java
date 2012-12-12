@@ -25,13 +25,13 @@ import com.jcraft.jsch.UserInfo;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
@@ -143,8 +143,8 @@ public class SSHTunnelImpl implements DBWTunnel {
     private int findFreePort()
     {
         IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
-        int minPort = store.getInt(PrefConstants.NET_TUNNEL_PORT_MIN);
-        int maxPort = store.getInt(PrefConstants.NET_TUNNEL_PORT_MAX);
+        int minPort = store.getInt(CorePrefConstants.NET_TUNNEL_PORT_MIN);
+        int maxPort = store.getInt(CorePrefConstants.NET_TUNNEL_PORT_MAX);
         int portRange = Math.abs(maxPort - minPort);
         while (true) {
             int portNum = minPort + SecurityUtils.getRandom().nextInt(portRange);

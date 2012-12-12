@@ -21,30 +21,38 @@ package org.jkiss.dbeaver.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.resources.*;
+import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IPathEditorInput;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
-import java.io.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
@@ -83,18 +91,6 @@ public class ContentUtils {
       '8', '9', 'a', 'b',
       'c', 'd', 'e', 'f'
     };
-    private static String curDialogFolder = System.getProperty("user.dir");
-
-    public static String getCurDialogFolder()
-    {
-        return curDialogFolder;
-    }
-
-    public static void setCurDialogFolder(String curDialogFolder)
-    {
-        ContentUtils.curDialogFolder = curDialogFolder;
-    }
-
     public static byte[] getCharsetBOM(String charsetName)
     {
         return BOM_MAP.get(charsetName.toUpperCase());
@@ -135,7 +131,7 @@ public class ContentUtils {
         } else {
             preferenceStore = dataSource.getContainer().getPreferenceStore();
         }
-        String fileEncoding = preferenceStore.getString(PrefConstants.CONTENT_HEX_ENCODING);
+        String fileEncoding = preferenceStore.getString(CorePrefConstants.CONTENT_HEX_ENCODING);
         if (CommonUtils.isEmpty(fileEncoding)) {
             fileEncoding = getDefaultFileEncoding();
         }
@@ -179,74 +175,6 @@ public class ContentUtils {
         catch (CoreException e) {
             log.warn("Could not delete temporary file '" + file.getFullPath().toString() + "'", e);
         }
-    }
-
-    public static File selectFileForSave(Shell parentShell)
-    {
-        return selectFileForSave(parentShell, "Save Content As", null, null);
-    }
-
-    public static File selectFileForSave(Shell parentShell, String title, String[] filterExt, String fileName)
-    {
-        FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
-        fileDialog.setText(title);
-        fileDialog.setOverwrite(true);
-        if (filterExt != null) {
-            fileDialog.setFilterExtensions(filterExt);
-        }
-        if (fileName != null) {
-            fileDialog.setFileName(fileName);
-        }
-
-        fileName = openFileDialog(fileDialog);
-        if (CommonUtils.isEmpty(fileName)) {
-            return null;
-        }
-        final File saveFile = new File(fileName);
-        File saveDir = saveFile.getParentFile();
-        if (!saveDir.exists()) {
-            UIUtils.showErrorDialog(parentShell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
-            return null;
-        }
-        return saveFile;
-    }
-
-    public static File openFile(Shell parentShell)
-    {
-        return openFile(parentShell, null);
-    }
-
-    public static File openFile(Shell parentShell, String[] filterExt)
-    {
-        FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN);
-        if (filterExt != null) {
-            fileDialog.setFilterExtensions(filterExt);
-        }
-        String fileName = openFileDialog(fileDialog);
-        if (CommonUtils.isEmpty(fileName)) {
-            return null;
-        }
-        final File loadFile = new File(fileName);
-        if (!loadFile.exists()) {
-            MessageBox aMessageBox = new MessageBox(parentShell, SWT.ICON_WARNING | SWT.OK);
-            aMessageBox.setText("File doesn't exists");
-            aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
-            aMessageBox.open();
-            return null;
-        }
-        return loadFile;
-    }
-
-    public static String openFileDialog(FileDialog fileDialog)
-    {
-        if (curDialogFolder == null) {
-            fileDialog.setFilterPath(curDialogFolder);
-        }
-        String fileName = fileDialog.open();
-        if (!CommonUtils.isEmpty(fileName)) {
-            curDialogFolder = fileDialog.getFilterPath();
-        }
-        return fileName;
     }
 
     public static void saveContentToFile(InputStream contentStream, File file, DBRProgressMonitor monitor)
@@ -520,15 +448,6 @@ public class ContentUtils {
             }
         }
         return mimeType;
-    }
-
-    public static IFile getFileFromEditorInput(IEditorInput editorInput)
-    {
-        if (editorInput instanceof IPathEditorInput) {
-            return convertPathToWorkspaceFile(((IPathEditorInput) editorInput).getPath());
-        } else {
-            return null;
-        }
     }
 
     public static IFile convertPathToWorkspaceFile(IPath path)

@@ -41,6 +41,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.CorePrefConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
@@ -61,8 +62,6 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
-import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
@@ -208,7 +207,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     {
         final IAdaptable activeObject = getActiveObject();
         if (activeObject instanceof IEditorInput) {
-            final IFile file = ContentUtils.getFileFromEditorInput((IEditorInput) activeObject);
+            final IFile file = UIUtils.getFileFromEditorInput((IEditorInput) activeObject);
             if (file != null) {
                 return file.getProject();
             }
@@ -397,7 +396,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 resultSetSize.setText(""); //$NON-NLS-1$
             } else {
                 resultSetSize.setEnabled(true);
-                resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS)));
+                resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(CorePrefConstants.RESULT_SET_MAX_ROWS)));
             }
         }
 
@@ -415,7 +414,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 rsSize = "1"; //$NON-NLS-1$
             }
             IPreferenceStore store = dsContainer.getPreferenceStore();
-            store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, rsSize);
+            store.setValue(CorePrefConstants.RESULT_SET_MAX_ROWS, rsSize);
             RuntimeUtils.savePreferenceStore(store);
         }
     }
@@ -618,7 +617,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     @Override
     public void propertyChange(PropertyChangeEvent event)
     {
-        if (event.getProperty().equals(PrefConstants.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
+        if (event.getProperty().equals(CorePrefConstants.RESULT_SET_MAX_ROWS) && !resultSetSize.isDisposed()) {
             if (event.getNewValue() != null) {
                 resultSetSize.setText(event.getNewValue().toString());
             }
@@ -779,7 +778,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         resultSetSize.setToolTipText(CoreMessages.toolbar_datasource_selector_resultset_segment_size);
         final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
-            resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(PrefConstants.RESULT_SET_MAX_ROWS)));
+            resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(CorePrefConstants.RESULT_SET_MAX_ROWS)));
         }
         //resultSetSize.setDigits(7);
         resultSetSize.setLayoutData(gd);
