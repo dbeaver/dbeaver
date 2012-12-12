@@ -966,12 +966,13 @@ public class CImageCombo extends Composite {
         if (this.font != null) {
             this.table.setFont(this.font);
         }
+        new TableColumn(table, SWT.LEFT);
 
         int[] popupEvents = {SWT.Close, SWT.Paint, SWT.Deactivate};
         for (int popupEvent : popupEvents) {
             this.popup.addListener(popupEvent, this.listener);
         }
-        int[] listEvents = {SWT.MouseUp, SWT.Selection, SWT.Traverse, SWT.KeyDown, SWT.KeyUp, SWT.FocusIn, SWT.Dispose};
+        int[] listEvents = {SWT.MouseUp, SWT.Selection, SWT.Traverse, SWT.KeyDown, SWT.KeyUp, SWT.FocusIn, SWT.Dispose, SWT.Resize};
         for (int listEvent : listEvents) {
             this.table.addListener(listEvent, this.listener);
         }
@@ -1140,6 +1141,10 @@ public class CImageCombo extends Composite {
                 notifyListeners(SWT.KeyDown, e);
                 break;
 
+            }
+            case SWT.Resize: {
+                table.getColumn(0).setWidth(table.getBounds().width);
+                break;
             }
         }
     }
