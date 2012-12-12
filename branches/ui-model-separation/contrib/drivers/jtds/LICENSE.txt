@@ -1,0 +1,5 @@
+jTDS is Free Software. jTDS is made available under the terms of the GNU Lesser General Public License. The LGPL is sufficiently flexible to allow the use of jTDS in both open source and commercial projects. Using jTDS is considered to be dynamic linking; hence our interpretation of the LGPL is that the use of the unmodified jTDS source or binary does not affect the license of your application code.
+
+If you modify jTDS and redistribute your modifications, the LGPL applies, basically meaning that you'll have to make the modified version publicly available under the LGPL license too. This ensures that all users of the software have access to all future improvements.
+
+jTDS was initially based on software released under a BSD license by CDS Networks, Inc. and/or Craig Spannring, the author of the original FreeTDS JDBC driver from which jTDS is derived. Between releases 0.8.1 and 0.9 jTDS was completely rewritten so the original BSD license no longer applies.

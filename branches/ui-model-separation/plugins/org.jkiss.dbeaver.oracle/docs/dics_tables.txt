@@ -1,0 +1,4 @@
+ALL_PROCEDURES - procedures inside of packages
+ALL_OBJECTS TYPE IN (PROCEDURE,FUNCTION) - standalone procedures
+ALL_ARGUMENTS - for all
+ALL_SOURCES - sources

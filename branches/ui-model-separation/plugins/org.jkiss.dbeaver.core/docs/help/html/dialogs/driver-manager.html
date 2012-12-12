@@ -1,0 +1,53 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <title>Driver Manager</title>
+    </head>
+
+    <body>
+        <h1>Driver Manager</h1>
+
+        <p>
+            A database driver is a third-party library which provides the ability to work with specific database engines.
+            Most drivers in DBeaver are JDBC (Java-Database-Connectivity) drivers provided by database vendors.
+            The driver manager dialog allows you to create, delete and <a href="driver-editor.html">edit</a> driver descriptions.
+        </p>
+        <p>
+            In the driver manager dialog you may see a driver "tree".
+            Elements in top level are "Driver providers". "Driver providers" is a DBeaver plugin.
+            Usually driver providers are designed for some particular database engine, for example MySQL.
+            There is one exception - the "Generic" provider which allows you to work with any database using it's JDBC driver.
+            Generic providers don't "know" anything about a particular database, their specific features, metadata structure, etc. It only provides a very basic interface.
+        </p>
+        <p>
+            You may edit only "manageable" drivers. All drivers under the "Generic" provider are manageable.
+            Specific database drivers are not usually manageable and their settings can't be change.
+        </p>
+        <p>
+            DBeaver ships with many predefined drivers.
+            Additionally, you may create your own drivers to use with DBeaver.
+        </p>
+
+    </body>
+</html>

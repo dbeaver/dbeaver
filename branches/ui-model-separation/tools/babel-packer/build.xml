@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<!--
+  ~ Copyright (c) 2011, Serge Rieder and others. All Rights Reserved.
+  -->
+
+<project name="babel" default="build">
+    <!--<property file="build.properties"/>-->
+
+    <target name="build">
+        <mkdir dir="build"/>
+        <javac srcdir="src" destdir="build" includeantruntime="true"/>
+    </target>
+
+    <target name="declare" depends="build">
+        <taskdef name="repack-babel"
+                 classname="org.jkiss.tools.ant.babel.BabelRepackerTask"
+                 classpath="build"/>
+    </target>
+
+    <target name="babel-repack" depends="declare">
+        <repack-babel eclipseDirectory="${baseLocation}" babelLocation="${babelLocation}" locales="${locales}"/>
+    </target>
+</project>

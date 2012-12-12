@@ -1,0 +1,7 @@
+1. MySQL
+
+	INFORMATION_SCHEMA.COLUMNS is cached for new created tables.
+	So if you create new table and then alter it - column list will be unchanged
+	untill you reconnect or execute FLUSH TABLES
+
+	It is reproducible in MySQL 5.1 and seems to be fixed in MySQL 5.5

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.jkiss.dbeaver.runtime_2.0.0.jar" id="org.jkiss.dbeaver.runtime" version="2.0.0">
+      <category name="org.jkiss.dbeaver"/>
+   </feature>
+   <category-def name="org.jkiss.dbeaver" label="DBeaver">
+      <description>
+         Universal Database Manager
+      </description>
+   </category-def>
+</site>

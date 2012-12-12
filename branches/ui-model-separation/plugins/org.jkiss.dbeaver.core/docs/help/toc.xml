@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<toc label="DBeaver Help">
+	<topic label="About DBeaver" href="docs/help/html/about.html">
+        <topic href="docs/help/html/techdoc.html" label="Technical description"/>
+	</topic>
+    <topic label="Manage connections">
+        <topic href="docs/help/html/dialogs/driver-manager.html" label="Manage drivers"/>
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Driver editor dialog"/>
+        <topic label="Connection wizard">
+            <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Driver selection"/>
+            <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Connection settings"/>
+            <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Additional settings"/>
+        </topic>
+    </topic>
+    <topic label="Work with data">
+        <topic href="docs/help/html/editors/sql-editor.html" label="SQL Editor"/>
+        <topic href="docs/help/html/editors/result-set.html" label="Result Set"/>
+    </topic>
+    <topic label="Work with metadata">
+        <topic href="docs/help/html/views/database-navigator.html" label="Database Navigator"/>
+        <topic href="docs/help/html/editors/entity-editor.html" label="Entity Editor"/>
+    </topic>
+    <topic label="Projects">
+        <topic href="docs/help/html/views/project-navigator.html" label="Project Navigator"/>
+        <topic href="docs/help/html/views/project-explorer.html" label="Project Explorer"/>
+    </topic>
+    <topic label="Miscellaneous">
+        <topic href="docs/help/html/views/query-manager.html" label="Query Manager"/>
+    </topic>
+</toc>

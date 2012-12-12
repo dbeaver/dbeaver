@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.runtime" version="2.0.2" useFeatures="true" includeLaunchers="false">
+
+   <aboutInfo>
+      <text>
+         DBeaver - Universal Database Manager
+      </text>
+   </aboutInfo>
+
+   <configIni use="">
+   </configIni>
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="org.jkiss.dbeaver.runtime"/>
+   </features>
+
+
+</product>

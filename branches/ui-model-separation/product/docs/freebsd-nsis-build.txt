@@ -1,0 +1,30 @@
+wget http://downloads.sourceforge.net/project/nsis/NSIS%202/2.46/nsis-2.46-src.tar.bz2
+
+tar -xzvf ./nsis-2.46-src.tar.bz2
+
+wget http://downloads.sourceforge.net/project/nsis/NSIS%202/2.46/nsis-2.46.zip
+
+unzip nsis-2.46.zip
+
+su
+
+ln -s nsis-2.39 /usr/local/share/nsis
+
+cd nsis-2.46-src
+
+# !!!! For 2.46 remove ExDLL plugin dependency - it is not compiled under FreeBSD !!!!
+
+
+scons SKIPSTUBS=all SKIPPLUGINS=all SKIPUTILS=all SKIPMISC=all NSIS_CONFIG_CONST_DATA_PATH=yes \
+ APPEND_LIBPATH="/usr/local/lib" APPEND_CPPPATH="/usr/local/include" NSISDIR=/usr/local/share/nsis \
+ PREFIX_CONF=/usr/local/etc PREFIX_BIN=/usr/local/bin PREFIX_DATA=/usr/local/share/nsis \
+ PREFIX=/usr/local/share/nsis
+
+
+scons SKIPSTUBS=all SKIPPLUGINS=all SKIPUTILS=all SKIPMISC=all NSIS_CONFIG_CONST_DATA_PATH=yes \
+ APPEND_LIBPATH="/usr/local/lib" APPEND_CPPPATH="/usr/local/include" NSISDIR=/usr/local/share/nsis \
+ PREFIX_CONF=/usr/local/etc PREFIX_BIN=/usr/local/bin PREFIX_DATA=/usr/local/share/nsis \
+ PREFIX=/usr/local/share/nsis install-compiler
+
+
+------------------------

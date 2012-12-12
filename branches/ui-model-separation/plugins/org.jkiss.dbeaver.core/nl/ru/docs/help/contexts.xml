@@ -1,0 +1,64 @@
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<contexts>
+    <context id="driver-manager">
+        <topic href="docs/help/html/dialogs/driver-manager.html" label="Менеджер драйверов"/>
+    </context>
+    <context id="driver-editor">
+        <topic href="docs/help/html/dialogs/driver-editor.html" label="Редактор драйвера"/>
+    </context>
+    <context id="con-wizard-driver">
+        <topic href="docs/help/html/dialogs/con-wizard-driver.html" label="Выбор драйвера для соединения"/>
+    </context>
+    <context id="con-wizard-settings">
+        <topic href="docs/help/html/dialogs/con-wizard-settings.html" label="Свойства соединения"/>
+    </context>
+    <context id="con-wizard-final">
+        <topic href="docs/help/html/dialogs/con-wizard-final.html" label="Дополнительные свойства соединения"/>
+    </context>
+
+    <context id="sql-editor">
+        <topic href="docs/help/html/editors/sql-editor.html" label="Редактор SQL"/>
+    </context>
+    <context id="result-set-viewer">
+        <topic href="docs/help/html/editors/result-set.html" label="Просмотрщик результатов"/>
+    </context>
+    <context id="data-filter">
+        <topic href="docs/help/html/dialogs/data-filter.html" label="Диалог упорядочивания и фильтрации данных"/>
+    </context>
+
+    <context id="entity-editor">
+        <topic href="docs/help/html/editors/entity-editor.html" label="Редактор сущности"/>
+    </context>
+
+    <context id="view-database-navigator">
+        <topic href="docs/help/html/views/database-navigator.html" label="Окно баз данных"/>
+    </context>
+    <context id="view-project-explorer">
+        <topic href="docs/help/html/views/project-explorer.html" label="Окно проекта"/>
+    </context>
+    <context id="view-project-navigator">
+        <topic href="docs/help/html/views/project-navigator.html" label="Окно проектов"/>
+    </context>
+    <context id="view-query-manager">
+        <topic href="docs/help/html/views/query-manager.html" label="Менеджер запросов"/>
+    </context>
+
+</contexts>
