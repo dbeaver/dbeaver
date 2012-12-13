@@ -57,10 +57,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
         composite.setLayout(new GridLayout(2, false));
-        hostText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_host_ip, ""); //$NON-NLS-2$
+        hostText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_host_ip, null); //$NON-NLS-2$
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         portText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, 0, 65535);
-        userNameText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_user_name, ""); //$NON-NLS-2$
+        userNameText = UIUtils.createLabelText(composite, CoreMessages.model_ssh_configurator_label_user_name, null); //$NON-NLS-2$
         userNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         authMethodCombo = UIUtils.createLabelCombo(composite, CoreMessages.model_ssh_configurator_combo_auth_method, SWT.DROP_DOWN | SWT.READ_ONLY);

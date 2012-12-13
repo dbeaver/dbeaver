@@ -61,7 +61,7 @@ public class EnterNameDialog extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         propGroup.setLayoutData(gd);
 
-        propNameText = UIUtils.createLabelText(propGroup, propertyName, "");
+        propNameText = UIUtils.createLabelText(propGroup, propertyName, null);
         if (propertyValue != null) {
             propNameText.setText(propertyValue);
             propNameText.selectAll();

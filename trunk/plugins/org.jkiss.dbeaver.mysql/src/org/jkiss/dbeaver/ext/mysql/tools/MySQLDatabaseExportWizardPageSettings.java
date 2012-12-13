@@ -82,7 +82,7 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
         commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 3, GridData.FILL_HORIZONTAL, 0);
-        outputFileText = UIUtils.createLabelText(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, ""); //$NON-NLS-2$
+        outputFileText = UIUtils.createLabelText(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, null);
         if (wizard.getOutputFile() != null) {
             outputFileText.setText(wizard.getOutputFile().getAbsolutePath());
         }

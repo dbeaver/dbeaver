@@ -149,7 +149,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
             Group groupSettings = UIUtils.createControlGroup(composite, "Settings", 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
             groupSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            typeName = UIUtils.createLabelText(groupSettings, "Name", "");
+            typeName = UIUtils.createLabelText(groupSettings, "Name", null);
             typeName.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e)
@@ -159,7 +159,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
 
                 }
             });
-            typeDescription = UIUtils.createLabelText(groupSettings, "Description", "");
+            typeDescription = UIUtils.createLabelText(groupSettings, "Description", null);
             typeDescription.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e)

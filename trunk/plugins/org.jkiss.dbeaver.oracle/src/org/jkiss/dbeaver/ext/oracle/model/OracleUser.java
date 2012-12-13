@@ -52,6 +52,12 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     private Object tempTablespace;
     private Object profile;
     private String consumerGroup;
+    private transient String password;
+
+    public OracleUser(OracleDataSource dataSource)
+    {
+        super(dataSource);
+    }
 
     public OracleUser(OracleDataSource dataSource, ResultSet resultSet) {
         super(dataSource);
@@ -80,6 +86,11 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     @Property(viewable = true, order = 2)
     public String getName() {
         return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
     }
 
     @Property(order = 3)
@@ -151,6 +162,20 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     public String getConsumerGroup()
     {
         return consumerGroup;
+    }
+
+    /**
+     * Passwords are never read from database. It is used to create/alter schema/user
+     * @return password or null
+     */
+    public String getPassword()
+    {
+        return password;
+    }
+
+    public void setPassword(String password)
+    {
+        this.password = password;
     }
 
     @Override
