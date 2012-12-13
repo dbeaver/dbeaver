@@ -59,7 +59,7 @@ public class CreateEntityDialog extends TrayDialog {
         gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_entity_group_name, ""); //$NON-NLS-2$
+        final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_entity_group_name, null); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)

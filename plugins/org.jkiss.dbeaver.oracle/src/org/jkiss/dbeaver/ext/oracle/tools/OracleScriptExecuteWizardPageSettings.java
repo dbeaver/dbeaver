@@ -58,7 +58,7 @@ public class OracleScriptExecuteWizardPageSettings extends AbstractToolWizardPag
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         Group outputGroup = UIUtils.createControlGroup(composite, OracleMessages.tools_script_execute_wizard_page_settings_group_input, 3, GridData.FILL_HORIZONTAL, 0);
-        inputFileText = UIUtils.createLabelText(outputGroup, OracleMessages.tools_script_execute_wizard_page_settings_label_input_file, ""); //$NON-NLS-2$
+        inputFileText = UIUtils.createLabelText(outputGroup, OracleMessages.tools_script_execute_wizard_page_settings_label_input_file, null); //$NON-NLS-2$
         Button browseButton = new Button(outputGroup, SWT.PUSH);
         browseButton.setText(OracleMessages.tools_script_execute_wizard_page_settings_button_browse);
         browseButton.addSelectionListener(new SelectionAdapter() {

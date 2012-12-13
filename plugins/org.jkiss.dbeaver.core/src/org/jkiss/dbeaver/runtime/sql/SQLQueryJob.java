@@ -364,9 +364,11 @@ public class SQLQueryJob extends DataSourceJob
                 if (hasResultSet && fetchResultSets) {
                     fetchQueryData(result, context);
                 }
-                long updateCount = curStatement.getUpdateRowCount();
-                if (updateCount >= 0) {
-                    result.setUpdateCount(updateCount);
+                if (!hasResultSet) {
+                    long updateCount = curStatement.getUpdateRowCount();
+                    if (updateCount >= 0) {
+                        result.setUpdateCount(updateCount);
+                    }
                 }
             }
             finally {

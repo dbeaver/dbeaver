@@ -56,7 +56,7 @@ public class CreateProcedureDialog extends TrayDialog {
         gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, ""); //$NON-NLS-2$
+        final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)
