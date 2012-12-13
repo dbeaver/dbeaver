@@ -211,6 +211,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (rootContainer == null) {
             return;
         }
+        DBSObjectContainer selectedContainer = null;
+        {
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+            if (objectSelector != null) {
+                DBSObject selectedObject = objectSelector.getSelectedObject();
+                if (selectedObject != null) {
+                    selectedContainer = DBUtils.getAdapter(DBSObjectContainer.class, selectedObject);
+                }
+            }
+        }
+
         DBSObjectContainer sc = rootContainer;
         DBSObject childObject = sc;
         List<String> tokens = wordDetector.splitWordPart();
@@ -229,6 +240,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             try {
                 String objectName = DBObjectNameCaseTransformer.transformName(dataSource, token);
                 childObject = sc.getChild(monitor, objectName);
+                if (childObject == null && i == 0 && selectedContainer != null) {
+                    // Probably it is from selected object, let's try it
+                    childObject = selectedContainer.getChild(monitor, objectName);
+                    if (childObject != null) {
+                        sc = selectedContainer;
+                    }
+                }
                 if (childObject == null) {
                     if (i == 0) {
                         // Assume it's a table alias ?
