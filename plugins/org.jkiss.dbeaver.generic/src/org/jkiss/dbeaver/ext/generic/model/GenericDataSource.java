@@ -598,6 +598,17 @@ public class GenericDataSource extends JDBCDataSource
                     log.debug(e);
                 }
             }
+            if (CommonUtils.isEmpty(selectedEntityName)) {
+                // If we have only one catalog then it is our selected entity
+                // [JDBC: PostgreSQL and Vertica]
+                if (!CommonUtils.isEmpty(catalogs) && catalogs.size() == 1) {
+                    selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
+                    selectedEntityName = catalogs.get(0).getName();
+                } else if (!CommonUtils.isEmpty(schemas) && schemas.size() == 1) {
+                    selectedEntityType = GenericConstants.ENTITY_TYPE_SCHEMA;
+                    selectedEntityName = schemas.get(0).getName();
+                }
+            }
         } else {
             try {
                 JDBCPreparedStatement dbStat = context.prepareStatement(queryGetActiveDB);
