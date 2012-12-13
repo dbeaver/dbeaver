@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleUser;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
@@ -79,7 +81,7 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
         OracleUser user = command.getObject().getUser();
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(OracleMessages.edit_oracle_schema_manager_action_create_schema,
-                "CREATE USER " + DBUtils.getQuotedIdentifier(user) + " IDENTIFIED BY '" + user.getPassword() + "'")
+                "CREATE USER " + DBUtils.getQuotedIdentifier(user) + " IDENTIFIED BY \"" + user.getPassword() + "\"")
         };
     }
 
@@ -116,15 +118,23 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
         }
 
         @Override
+        protected boolean isResizable()
+        {
+            return true;
+        }
+
+        @Override
         protected Control createDialogArea(Composite parent)
         {
             getShell().setText("Set schema/user properties");
             Control container = super.createDialogArea(parent);
             Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            nameText = UIUtils.createLabelText(composite, "Name", null);
-            passwordText = UIUtils.createLabelText(composite, "Password", null, SWT.BORDER | SWT.PASSWORD);
-
+            nameText = UIUtils.createLabelText(composite, "Schema/User Name", null);
+            nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            passwordText = UIUtils.createLabelText(composite, "User Password", null, SWT.BORDER | SWT.PASSWORD);
+            passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             return parent;
         }
@@ -132,7 +142,7 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
         @Override
         protected void okPressed()
         {
-            user.setName(nameText.getText());
+            user.setName(DBObjectNameCaseTransformer.transformName(user, nameText.getText()));
             user.setPassword(passwordText.getText());
             super.okPressed();
         }
