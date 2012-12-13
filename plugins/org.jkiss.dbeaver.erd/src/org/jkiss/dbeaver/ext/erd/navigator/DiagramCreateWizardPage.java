@@ -76,7 +76,7 @@ class DiagramCreateWizardPage extends WizardPage {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
         Composite configGroup = UIUtils.createControlGroup(placeholder, ERDMessages.wizard_page_diagram_create_group_settings, 2, GridData.FILL_BOTH, 0);
 
-        final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", ""); //$NON-NLS-1$ //$NON-NLS-2$
+        final Text projectNameText = UIUtils.createLabelText(configGroup, "Name", null); //$NON-NLS-1$
         projectNameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)

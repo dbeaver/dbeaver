@@ -54,7 +54,7 @@ class ProjectCreateWizardPageSettings extends WizardPage {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
         Composite configGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_project_create_settings_group_general, 2, GridData.FILL_HORIZONTAL, 0);
 
-        final Text projectNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_create_settings_label_name, ""); //$NON-NLS-2$
+        final Text projectNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_create_settings_label_name, null); //$NON-NLS-2$
         projectNameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)
@@ -64,7 +64,7 @@ class ProjectCreateWizardPageSettings extends WizardPage {
             }
         });
 
-        final Text projectDescriptionText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_create_settings_label_description, ""); //$NON-NLS-2$
+        final Text projectDescriptionText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_create_settings_label_description, null); //$NON-NLS-2$
         projectDescriptionText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)

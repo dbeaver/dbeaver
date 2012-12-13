@@ -67,7 +67,7 @@ class ProjectImportWizardPageFile extends WizardPage {
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
         Composite configGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_project_import_wizard_file_group_input, 3, GridData.FILL_HORIZONTAL, 0);
 
-        final Text fileNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_import_wizard_file_label_file, ""); //$NON-NLS-2$
+        final Text fileNameText = UIUtils.createLabelText(configGroup, CoreMessages.dialog_project_import_wizard_file_label_file, null); //$NON-NLS-2$
         fileNameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)

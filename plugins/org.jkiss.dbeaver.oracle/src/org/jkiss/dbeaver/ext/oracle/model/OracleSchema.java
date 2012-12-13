@@ -69,6 +69,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     private long id;
     private String name;
+    private transient OracleUser user;
 
     OracleSchema(OracleDataSource dataSource, long id, String name)
     {
@@ -95,6 +96,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return OracleConstants.USER_PUBLIC.equals(this.name);
     }
 
+    @Property(viewable = false, order = 200)
+    public long getId()
+    {
+        return id;
+    }
+
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName()
@@ -113,12 +120,20 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return null;
     }
 
-    @Property(viewable = false, order = 200)
-    public long getId()
+    /**
+     * User reference never read directly from database.
+     * It is used by managers to create/delete/alter schemas
+     * @return user reference or null
+     */
+    public OracleUser getUser()
     {
-        return id;
+        return user;
     }
 
+    public void setUser(OracleUser user)
+    {
+        this.user = user;
+    }
 
     @Association
     public Collection<OracleTableIndex> getIndexes(DBRProgressMonitor monitor)

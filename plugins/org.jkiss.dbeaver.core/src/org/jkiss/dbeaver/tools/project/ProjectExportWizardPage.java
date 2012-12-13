@@ -131,7 +131,7 @@ class ProjectExportWizardPage extends WizardPage {
 
         final Composite fileNameGroup = UIUtils.createPlaceholder(placeholder, 2);
         fileNameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fileNameText = UIUtils.createLabelText(fileNameGroup, CoreMessages.dialog_project_export_wizard_start_label_output_file, ""); //$NON-NLS-2$
+        fileNameText = UIUtils.createLabelText(fileNameGroup, CoreMessages.dialog_project_export_wizard_start_label_output_file, null); //$NON-NLS-2$
         fileNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         fileNameText.addModifyListener(new ModifyListener() {
             @Override
