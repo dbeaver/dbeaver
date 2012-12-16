@@ -44,9 +44,9 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>2.0.3</Program_Version>
-    <Program_Release_Month>11</Program_Release_Month>
-    <Program_Release_Day>28</Program_Release_Day>
+    <Program_Version>2.0.4</Program_Version>
+    <Program_Release_Month>12</Program_Release_Month>
+    <Program_Release_Day>16</Program_Release_Day>
     <Program_Release_Year>2012</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -55,13 +55,12 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Support of DDL generation for generic drivers
-        - MySQL active DB selection fix
-        - Informix autocomplete fix
-        - MSSQL script formatting fix
-        - Project explorer columns configuration
-        - Localization fixes
-        - Plugin version minor UI fixes
+        - Connection types (dev, test, prod) support
+        - Oracle create/drop schema actions fixed
+        - Vertica driver added + Vertica autocomplete fixed
+        - Plugin mode fixes (perspective, branding)
+        - UI fixes (database selector, copy/paste in dialogs)
+        - Misc bugfixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>

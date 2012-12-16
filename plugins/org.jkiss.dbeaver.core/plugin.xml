@@ -94,7 +94,7 @@
                 class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
                 id="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
                 namespace="org.jkiss.dbeaver.core.resultset"
-                properties="hasData,canCopy,canCopy,canPaste,canCut,canMove,editable,changed,canToggle"
+                properties="hasData,canCopy,canPaste,canCut,canMove,editable,changed,canToggle"
                 type="org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"

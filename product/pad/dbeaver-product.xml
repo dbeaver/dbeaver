@@ -47,6 +47,21 @@
 
     <versions>
         <version>
+            <number>2.0.4</number>
+            <type>stable</type>
+            <date>16.12.2012</date>
+
+            <release-notes>
+                - Connection types (dev, test, prod) support
+                - Oracle create/drop schema actions fixed
+                - Vertica driver added + Vertica autocomplete fixed
+                - Plugin mode fixes (perspective, branding)
+                - UI fixes (database selector, copy/paste in dialogs)
+                - Misc bugfixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.0.3</number>
             <type>hotfix</type>
             <date>28.11.2012</date>
