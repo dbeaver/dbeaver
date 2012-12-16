@@ -436,6 +436,16 @@
                     <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="*"/>
                 </driver>
                 <driver
+                    id="vertica"
+                    label="Vertica"
+                    class="com.vertica.jdbc.Driver"
+                    sampleURL="jdbc:vertica://{host}:{port}/{database}"
+                    defaultPort="5433"
+                    webURL="http://www.vertica.com/"
+                    description="Driver for Vertica Database">
+                    <file type="jar" path="drivers/vertica/vertica-jdk5-6.0.1-0.jar" url="*"/>
+                </driver>
+                <driver
                     id="cassandra_jkiss"
                     label="Cassandra"
                     class="org.jkiss.jdbc.cassandra.CassandraDriver"
