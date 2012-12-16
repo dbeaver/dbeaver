@@ -39,6 +39,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
@@ -1036,6 +1037,17 @@ public class UIUtils {
             }
         }
         return partSite;
+    }
+
+    public static boolean isContextActive(String contextId)
+    {
+        Collection contextIds = ((IContextService) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(IContextService.class)).getActiveContextIds();
+        for (Object id : contextIds) {
+            if (contextId.equals(id)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static ISelectionProvider getSelectionProvider(IServiceLocator serviceLocator)
