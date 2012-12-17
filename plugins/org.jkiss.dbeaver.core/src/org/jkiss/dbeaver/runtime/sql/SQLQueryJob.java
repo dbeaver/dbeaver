@@ -365,9 +365,16 @@ public class SQLQueryJob extends DataSourceJob
                     fetchQueryData(result, context);
                 }
                 if (!hasResultSet) {
-                    long updateCount = curStatement.getUpdateRowCount();
-                    if (updateCount >= 0) {
-                        result.setUpdateCount(updateCount);
+                    try {
+                        long updateCount = curStatement.getUpdateRowCount();
+                        if (updateCount >= 0) {
+                            result.setUpdateCount(updateCount);
+                        }
+                    } catch (DBCException e) {
+                        // In some cases we can't read update count
+                        // This is bad but we can live with it
+                        // Jsut print a warning
+                        log.warn("Can't obtain update count", e);
                     }
                 }
             }
