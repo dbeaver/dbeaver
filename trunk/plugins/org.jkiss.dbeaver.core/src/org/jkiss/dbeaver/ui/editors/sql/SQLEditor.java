@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -634,6 +635,17 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public void dispose()
     {
+/*
+        IFile fileToDelete = null;
+        // If it is close then delete it
+        final IDocument document = getDocument();
+        if (document != null) {
+            if (document.get().trim().isEmpty()) {
+                fileToDelete = ContentUtils.getFileFromEditorInput(getEditorInput());
+            }
+        }
+*/
+
         // Acquire ds container
         final DBSDataSourceContainer dsContainer = getDataSourceContainer();
         if (dsContainer != null) {
