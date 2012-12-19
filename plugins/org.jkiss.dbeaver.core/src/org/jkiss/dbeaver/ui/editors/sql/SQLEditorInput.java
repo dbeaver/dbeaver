@@ -42,41 +42,25 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 
     static final Log log = LogFactory.getLog(SQLEditorInput.class);
 
-    private DBSDataSourceContainer dataSourceContainer;
     private String scriptName;
 
     public SQLEditorInput(IFile file)
     {
         super(file);
         this.scriptName = file.getFullPath().removeFileExtension().lastSegment();
-        this.dataSourceContainer = getScriptDataSource(file);
-        if (this.dataSourceContainer == null) {
-            setScriptDataSource(getFile(), null);
-        }
     }
 
     @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
-        return dataSourceContainer;
-    }
-
-    public void setDataSourceContainer(DBSDataSourceContainer container)
-    {
-        if (dataSourceContainer == container) {
-            return;
-        }
-        dataSourceContainer = container;
-        IFile file = getFile();
-        if (file != null) {
-            setScriptDataSource(file, dataSourceContainer);
-        }
+        return getScriptDataSource(getFile());
     }
 
     @Override
     public String getName()
     {
         String dsName = "<None>";
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             dsName = dataSourceContainer.getName();
         }
@@ -86,6 +70,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     @Override
     public String getToolTipText()
     {
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer == null) {
             return super.getName();
         }
