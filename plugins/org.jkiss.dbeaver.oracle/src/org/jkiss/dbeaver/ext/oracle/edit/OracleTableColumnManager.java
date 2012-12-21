@@ -54,15 +54,9 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
     {
         StringBuilder decl = super.getNestedDeclaration(owner, command);
         final OracleTableColumn column = command.getObject();
-        if (column.isSequence()) {
-            decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
-        }
-        if (!CommonUtils.isEmpty(column.getDefaultValue())) {
-            decl.append(" DEFAULT '").append(column.getDefaultValue()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-        if (!CommonUtils.isEmpty(column.getComment())) {
-            decl.append(" COMMENT '").append(column.getComment()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
+//        if (!CommonUtils.isEmpty(column.getComment())) {
+//            decl.append(" COMMENT '").append(column.getComment()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
+//        }
         return decl;
     }
 
@@ -89,6 +83,6 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
                 OracleMessages.edit_oracle_table_column_manager_action_alter_table_column,
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY " + getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

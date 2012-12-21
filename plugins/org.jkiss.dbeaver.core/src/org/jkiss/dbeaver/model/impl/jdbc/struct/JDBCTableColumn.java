@@ -38,6 +38,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
 
     private final TABLE_TYPE table;
     private boolean persisted;
+    private String defaultValue;
 
     protected JDBCTableColumn(TABLE_TYPE table, boolean persisted)
     {
@@ -45,9 +46,10 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         this.persisted = persisted;
     }
 
-    protected JDBCTableColumn(TABLE_TYPE table, boolean persisted, String name, String typeName, int valueType, int ordinalPosition, long maxLength, int scale, int precision, boolean nullable)
+    protected JDBCTableColumn(TABLE_TYPE table, boolean persisted, String name, String typeName, int valueType, int ordinalPosition, long maxLength, int scale, int precision, boolean nullable, String defaultValue)
     {
         super(name, typeName, valueType, ordinalPosition, maxLength, scale, precision, nullable);
+        this.defaultValue = defaultValue;
         this.table = table;
         this.persisted = persisted;
     }
@@ -90,6 +92,18 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     public boolean isRequired()
     {
         return super.isRequired();
+    }
+
+    @Property(viewable = true, editable = true, order = 70)
+    @Override
+    public String getDefaultValue()
+    {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue)
+    {
+        this.defaultValue = defaultValue;
     }
 
     @Override

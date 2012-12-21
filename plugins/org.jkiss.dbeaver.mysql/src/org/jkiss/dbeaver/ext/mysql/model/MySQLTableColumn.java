@@ -66,7 +66,6 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     private String comment;
-    private String defaultValue;
     private long charLength;
     private boolean autoIncrement;
     private MySQLCollation collation;
@@ -117,7 +116,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         setRequired(!"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE)));
         setScale(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
         setPrecision(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
-        this.defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
+        setDefaultValue(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT));
         this.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION_NAME));
 
         String extra = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_EXTRA);
@@ -184,12 +183,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     @Property(viewable = true, editable = true, updatable = true, order = 70)
     public String getDefaultValue()
     {
-        return defaultValue;
-    }
-
-    public void setDefaultValue(String defaultValue)
-    {
-        this.defaultValue = defaultValue;
+        return super.getDefaultValue();
     }
 
     @Override
