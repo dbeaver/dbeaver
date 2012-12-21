@@ -56,9 +56,6 @@ public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableCo
         if (column.isSequence()) {
             decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
-        if (!CommonUtils.isEmpty(column.getDefaultValue())) {
-            decl.append(" DEFAULT '").append(column.getDefaultValue()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
         if (!CommonUtils.isEmpty(column.getComment())) {
             decl.append(" COMMENT '").append(column.getComment()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
         }

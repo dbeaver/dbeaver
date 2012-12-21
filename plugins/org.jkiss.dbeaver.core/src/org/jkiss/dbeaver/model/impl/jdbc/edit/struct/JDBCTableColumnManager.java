@@ -42,6 +42,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
     extends JDBCObjectEditor<OBJECT_TYPE, TABLE_TYPE>
 {
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
+    public static final String QUOTE = "'";
 
 /*
     @Override
@@ -143,6 +144,25 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         }
         if (notNull) {
             decl.append(" NOT NULL"); //$NON-NLS-1$
+        }
+
+        String defaultValue = CommonUtils.toString(column.getDefaultValue());
+        if (!CommonUtils.isEmpty(defaultValue)) {
+            boolean useQuotes = true;
+            try {
+                Double.parseDouble(defaultValue);
+                useQuotes = false;
+            }
+            catch (NumberFormatException e) {
+            // not a number
+            }
+            if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
+                useQuotes = false;
+            }
+            decl.append(" DEFAULT "); //$NON-NLS-1$
+            if (useQuotes) decl.append(QUOTE);
+            decl.append(defaultValue);
+            if (useQuotes) decl.append(QUOTE);
         }
 
         return decl;

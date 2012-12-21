@@ -388,18 +388,43 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
 
     private String getLocalizedString(String string, String type, String defaultValue) {
         if (Property.DEFAULT_LOCAL_STRING.equals(string)) {
-            Class<?> propOwner = getGetter().getDeclaringClass();
+            Method getter = getGetter();
+            String propertyName = BeanUtils.getPropertyNameFromGetter(getter.getName());
+            Class<?> propOwner = getter.getDeclaringClass();
             Bundle bundle = FrameworkUtil.getBundle(propOwner);
             ResourceBundle resourceBundle = Platform.getResourceBundle(bundle);
-            String messageID = "meta." + propOwner.getName() + "." + BeanUtils.getPropertyNameFromGetter(getGetter().getName()) + "." + type;
-            String result;
+            String messageID = "meta." + propOwner.getName() + "." + propertyName + "." + type;
+            String result = null;
             try {
                 result = resourceBundle.getString(messageID);
             } catch (Exception e) {
-                if (type.equals(Property.RESOURCE_TYPE_NAME)) {
-                    log.warn("Resource '" + messageID + "' not found in bundle " + bundle.getSymbolicName());
+                // Try to find the same property in parent classes
+                for (Class parent = getter.getDeclaringClass().getSuperclass(); parent != Object.class; parent = parent.getSuperclass()) {
+                    try {
+                        Method parentGetter = parent.getMethod(getter.getName(), getter.getParameterTypes());
+                        Class<?> parentOwner = parentGetter.getDeclaringClass();
+                        Bundle parentBundle = FrameworkUtil.getBundle(parentOwner);
+                        if (parentBundle == null || parentBundle == bundle) {
+                            continue;
+                        }
+                        ResourceBundle parentResourceBundle = Platform.getResourceBundle(parentBundle);
+                        messageID = "meta." + parentOwner.getName() + "." + propertyName + "." + type;
+                        try {
+                            result = parentResourceBundle.getString(messageID);
+                            break;
+                        } catch (Exception e1) {
+                            // Just skip it
+                        }
+                    } catch (NoSuchMethodException e1) {
+                        // Just skip it
+                    }
                 }
-                return defaultValue;
+                if (result == null) {
+                    if (type.equals(Property.RESOURCE_TYPE_NAME)) {
+                        log.warn("Resource '" + messageID + "' not found in bundle " + bundle.getSymbolicName());
+                    }
+                    return defaultValue;
+                }
             }
             if (!result.equals(messageID)) {
                 return result;

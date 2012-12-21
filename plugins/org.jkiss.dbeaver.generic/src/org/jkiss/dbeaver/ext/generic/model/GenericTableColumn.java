@@ -33,7 +33,6 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
 {
     private int radix;
     private String remarks;
-    private String defaultValue;
     private int sourceType;
     private long charLength;
     private boolean autoIncrement;
@@ -69,9 +68,9 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
             columnSize,
             scale,
             precision,
-            notNull);
+            notNull,
+            defaultValue);
         this.sourceType = sourceType;
-        this.defaultValue = defaultValue;
         this.charLength = charLength;
         this.autoIncrement = autoIncrement;
         this.remarks = remarks;
@@ -82,12 +81,6 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     public GenericDataSource getDataSource()
     {
         return getTable().getDataSource();
-    }
-
-    @Override
-    public String getDefaultValue()
-    {
-        return defaultValue;
     }
 
     public int getSourceType()
