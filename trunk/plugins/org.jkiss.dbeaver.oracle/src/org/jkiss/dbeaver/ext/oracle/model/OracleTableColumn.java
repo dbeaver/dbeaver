@@ -45,7 +45,6 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     private OracleDataType type;
     private OracleDataTypeModifier typeMod;
     private String comment;
-    private String defaultValue;
     private boolean hidden;
 
     public OracleTableColumn(OracleTableBase table)
@@ -61,8 +60,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     {
         super(table, true);
 
-        this.name = JDBCUtils.safeGetString(dbResult, "COLUMN_NAME");
-        this.ordinalPosition = JDBCUtils.safeGetInt(dbResult, "COLUMN_ID");
+        setName(JDBCUtils.safeGetString(dbResult, "COLUMN_NAME"));
+        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLUMN_ID"));
         this.typeName = JDBCUtils.safeGetString(dbResult, "DATA_TYPE");
         this.type = OracleDataType.resolveDataType(
             monitor,
@@ -74,11 +73,11 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             this.typeName = type.getName();
             this.valueType = type.getValueType();
         }
-        this.maxLength = JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH");
-        this.required = !"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE"));
-        this.scale = JDBCUtils.safeGetInt(dbResult, "DATA_SCALE");
-        this.precision = JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION");
-        this.defaultValue = JDBCUtils.safeGetString(dbResult, "DATA_DEFAULT");
+        setMaxLength(JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH"));
+        setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
+        setScale(JDBCUtils.safeGetInt(dbResult, "DATA_SCALE"));
+        setPrecision(JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION"));
+        setDefaultValue(JDBCUtils.safeGetString(dbResult, "DATA_DEFAULT"));
         this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
         this.hidden = JDBCUtils.safeGetBoolean(dbResult, "HIDDEN_COLUMN", OracleConstants.YES);
     }
@@ -142,22 +141,17 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return super.isRequired();
     }
 
-    @Override
     @Property(viewable = true, editable = true, updatable = true, order = 70)
+    @Override
     public String getDefaultValue()
     {
-        return defaultValue;
+        return super.getDefaultValue();
     }
 
     @Override
     public boolean isSequence()
     {
         return false;
-    }
-
-    public void setDefaultValue(String defaultValue)
-    {
-        this.defaultValue = defaultValue;
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 100)
