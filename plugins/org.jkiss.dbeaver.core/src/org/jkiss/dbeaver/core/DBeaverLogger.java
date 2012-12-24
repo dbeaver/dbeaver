@@ -115,7 +115,13 @@ public class DBeaverLogger implements Log, Serializable
     @Override
     public void debug(Object message, Throwable t)
     {
-        PrintStream debugWriter = DBeaverActivator.getInstance().getDebugWriter();
+        DBeaverActivator activator = DBeaverActivator.getInstance();
+        PrintStream debugWriter;
+        if (activator == null) {
+            debugWriter = System.err;
+        } else {
+            debugWriter = activator.getDebugWriter();
+        }
         if (debugWriter != null) {
             synchronized (DBeaverLogger.class) {
                 debugWriter.print(sdf.format(new Date()));

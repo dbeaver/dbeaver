@@ -32,6 +32,10 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Oracle table manager
@@ -62,13 +66,23 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
-        query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
-        appendTableModifiers(command.getObject(), command, query);
+        final OracleTable table = command.getObject();
+        boolean hasComment = command.getProperty("comment") != null;
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
+        if (!hasComment || command.getProperties().size() > 1) {
+            StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
+            query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
+            appendTableModifiers(command.getObject(), command, query);
+            actions.add(new AbstractDatabasePersistAction(query.toString()));
+        }
+        if (hasComment) {
+            actions.add(new AbstractDatabasePersistAction(
+                "Comment table",
+                "COMMENT ON TABLE " + table.getFullQualifiedName() +
+                    " IS '" + table.getComment() + "'"));
+        }
 
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(query.toString())
-        };
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
     @Override
@@ -81,7 +95,7 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                OracleMessages.edit_oracle_table_manager_action_rename_table,
+                "Rename table",
                 "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
                     " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         };

@@ -23,7 +23,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -91,15 +90,15 @@ public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQ
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(MySQLMessages.edit_procedure_manager_action_drop_procedure, "DROP PROCEDURE " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+            new AbstractDatabasePersistAction("Drop procedure", "DROP PROCEDURE " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
     private IDatabasePersistAction[] createOrReplaceProcedureQuery(MySQLProcedure procedure)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(MySQLMessages.edit_procedure_manager_action_drop_procedure, "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()), //$NON-NLS-2$ //$NON-NLS-3$
-            new AbstractDatabasePersistAction(MySQLMessages.edit_procedure_manager_action_create_procedure, "CREATE " + procedure.getClientBody()) //$NON-NLS-2$
+            new AbstractDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()), //$NON-NLS-2$ //$NON-NLS-3$
+            new AbstractDatabasePersistAction("Create procedure", "CREATE " + procedure.getClientBody()) //$NON-NLS-2$
         };
     }
 

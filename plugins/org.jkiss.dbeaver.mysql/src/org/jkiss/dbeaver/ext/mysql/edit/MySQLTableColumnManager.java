@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -83,7 +82,7 @@ public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableCo
 
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                MySQLMessages.edit_table_column_manager_action_alter_table_column,
+                "Modify column",
                 "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 }

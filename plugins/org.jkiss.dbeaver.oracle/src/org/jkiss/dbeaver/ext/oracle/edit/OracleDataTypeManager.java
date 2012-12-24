@@ -76,7 +76,7 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
     {
         final OracleDataType object = objectDeleteCommand.getObject();
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_data_type_manager_action_drop_data_type,
+            new AbstractDatabasePersistAction("Drop type",
                 "DROP TYPE " + object.getFullQualifiedName()) //$NON-NLS-1$
         };
     }
@@ -100,14 +100,14 @@ public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, Orac
         if (!CommonUtils.isEmpty(header)) {
             actions.add(
                 new AbstractDatabasePersistAction(
-                    OracleMessages.edit_oracle_data_type_manager_action_create_type_header,
+                    "Create type header",
                     "CREATE OR REPLACE " + header)); //$NON-NLS-1$
         }
         String body = OracleUtils.normalizeSourceName(dataType, true);
         if (!CommonUtils.isEmpty(body)) {
             actions.add(
                 new AbstractDatabasePersistAction(
-                    OracleMessages.edit_oracle_data_type_manager_action_create_type_body,
+                    "Create type body",
                     "CREATE OR REPLACE " + body)); //$NON-NLS-1$
         }
         OracleUtils.addSchemaChangeActions(actions, dataType);
