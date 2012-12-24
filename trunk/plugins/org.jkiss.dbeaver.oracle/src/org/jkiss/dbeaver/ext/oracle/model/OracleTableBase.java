@@ -128,7 +128,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             this);
     }
 
-    @Property(viewable = true, editable = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, order = 100)
     @LazyProperty(cacheValidator = CommentsValidator.class)
     public synchronized String getComment(DBRProgressMonitor monitor)
         throws DBException
@@ -152,6 +152,16 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             }
         }
         return comment;
+    }
+
+    public String getComment()
+    {
+        return comment;
+    }
+
+    public void setComment(String comment)
+    {
+        this.comment = comment;
     }
 
     @Override

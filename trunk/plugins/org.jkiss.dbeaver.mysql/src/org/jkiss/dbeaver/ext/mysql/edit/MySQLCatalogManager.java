@@ -66,7 +66,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(MySQLMessages.edit_catalog_manager_action_create_schema, "CREATE SCHEMA " + command.getObject().getName()) //$NON-NLS-2$
+            new AbstractDatabasePersistAction("Create schema", "CREATE SCHEMA " + command.getObject().getName()) //$NON-NLS-2$
         };
     }
 
@@ -74,7 +74,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(MySQLMessages.edit_catalog_manager_action_drop_schema, "DROP SCHEMA " + command.getObject().getName()) //$NON-NLS-2$
+            new AbstractDatabasePersistAction("Drop schema", "DROP SCHEMA " + command.getObject().getName()) //$NON-NLS-2$
         };
     }
 
