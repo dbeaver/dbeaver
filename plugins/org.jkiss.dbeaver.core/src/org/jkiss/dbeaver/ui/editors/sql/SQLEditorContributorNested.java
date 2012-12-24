@@ -46,7 +46,7 @@ public class SQLEditorContributorNested extends SQLEditorContributor {
     @Override
     protected boolean isNestedEditor()
     {
-        return false;//nestedId > 0;
+        return true;//nestedId > 0;
     }
 
 }
