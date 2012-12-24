@@ -22,7 +22,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
@@ -87,7 +86,7 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLTableBase, MySQLCata
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(MySQLMessages.edit_view_manager_action_drop_view, "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+            new AbstractDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
@@ -102,7 +101,7 @@ public class MySQLViewManager extends JDBCObjectEditor<MySQLTableBase, MySQLCata
             decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(MySQLMessages.edit_view_manager_action_create_view, decl.toString())
+            new AbstractDatabasePersistAction("Create view", decl.toString())
         };
     }
 

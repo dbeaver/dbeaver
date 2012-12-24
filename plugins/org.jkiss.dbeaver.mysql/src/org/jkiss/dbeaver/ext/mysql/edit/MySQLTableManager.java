@@ -22,7 +22,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -116,7 +115,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
     {
         return new IDatabasePersistAction[] {
             new AbstractDatabasePersistAction(
-                MySQLMessages.edit_table_manager_action_rename_table,
+                "Rename table",
                 "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
                     " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         };

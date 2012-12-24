@@ -21,10 +21,10 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -34,9 +34,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Oracle table column manager
@@ -79,10 +80,20 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         final OracleTableColumn column = command.getObject();
-
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(
-                OracleMessages.edit_oracle_table_column_manager_action_alter_table_column,
-                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY " + getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
+        boolean hasComment = command.getProperty("comment") != null;
+        if (!hasComment || command.getProperties().size() > 1) {
+            actions.add(new AbstractDatabasePersistAction(
+                "Modify column",
+                "ALTER TABLE " + column.getTable().getFullQualifiedName() + //$NON-NLS-1$
+                " MODIFY " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$
+        }
+        if (hasComment) {
+            actions.add(new AbstractDatabasePersistAction(
+                "Comment column",
+                "COMMENT ON COLUMN " + column.getTable().getFullQualifiedName() + "." + DBUtils.getQuotedIdentifier(column) +
+                    " IS '" + column.getComment() + "'"));
+        }
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 }

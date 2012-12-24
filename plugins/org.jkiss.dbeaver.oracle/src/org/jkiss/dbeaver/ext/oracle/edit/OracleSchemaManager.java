@@ -30,7 +30,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUser;
@@ -80,7 +79,7 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
     {
         OracleUser user = command.getObject().getUser();
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_schema_manager_action_create_schema,
+            new AbstractDatabasePersistAction("Create schema",
                 "CREATE USER " + DBUtils.getQuotedIdentifier(user) + " IDENTIFIED BY \"" + user.getPassword() + "\"")
         };
     }
@@ -89,7 +88,7 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_schema_manager_action_drop_schema,
+            new AbstractDatabasePersistAction("Drop schema",
                 "DROP USER " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
         };
     }

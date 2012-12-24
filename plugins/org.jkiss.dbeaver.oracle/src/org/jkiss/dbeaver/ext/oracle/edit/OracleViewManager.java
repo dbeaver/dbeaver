@@ -22,16 +22,19 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleView;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * OracleViewManager
@@ -72,32 +75,42 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
     @Override
     protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
-        return createOrReplaceViewQuery(command.getObject());
+        return createOrReplaceViewQuery(command);
     }
 
     @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        return createOrReplaceViewQuery(command.getObject());
+        return createOrReplaceViewQuery(command);
     }
 
     @Override
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_view_manager_action_drop_view, "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+            new AbstractDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
-    private IDatabasePersistAction[] createOrReplaceViewQuery(OracleView view)
+    private IDatabasePersistAction[] createOrReplaceViewQuery(DBECommandComposite<OracleView, PropertyHandler> command)
     {
-        StringBuilder decl = new StringBuilder(200);
-        final String lineSeparator = ContentUtils.getDefaultLineSeparator();
-        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
-            .append("AS ").append(view.getAdditionalInfo().getText()); //$NON-NLS-1$
-        return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(OracleMessages.edit_oracle_view_manager_action_create_view, decl.toString())
-        };
+        final OracleView view = command.getObject();
+        boolean hasComment = command.getProperty("comment") != null;
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
+        if (!hasComment || command.getProperties().size() > 1) {
+            StringBuilder decl = new StringBuilder(200);
+            final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+            decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
+                .append("AS ").append(view.getAdditionalInfo().getText()); //$NON-NLS-1$
+            actions.add(new AbstractDatabasePersistAction("Create view", decl.toString()));
+        }
+        if (hasComment) {
+            actions.add(new AbstractDatabasePersistAction(
+                "Comment table",
+                "COMMENT ON TABLE " + view.getFullQualifiedName() +
+                    " IS '" + view.getComment() + "'"));
+        }
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
 }
