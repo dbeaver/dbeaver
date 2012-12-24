@@ -82,13 +82,13 @@
                 class="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.text"
-                properties="canComment"
-                type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor"/>
+                properties="canComment,canLoad,canSave"
+                type="org.eclipse.ui.IEditorPart"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql"
-                properties="canExecute,canExplain,canNavigate"
+                properties="active,canExecute,canExplain,canNavigate"
                 type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
@@ -298,11 +298,6 @@
         <definition id="org.jkiss.dbeaver.core.ui.querylog.view">
             <with variable="activePart">
                 <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
-            </with>
-        </definition>
-        <definition id="org.jkiss.dbeaver.core.ui.sqlEditorBase.control">
-            <with variable="activeFocusControlId">
-                <equals value="org.jkiss.dbeaver.ui.sqlEditorBase"/>
             </with>
         </definition>
         <definition id="DBeaverPerspectiveActive">
@@ -702,27 +697,31 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SaveSQLFileHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></enabledWhen>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" class="org.jkiss.dbeaver.ui.editors.text.handlers.SaveTextFileHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <test property="org.jkiss.dbeaver.ui.editors.text.canSave"/>
+                </with>
+            </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLFileHandler">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sqlEditorBase.control"/></enabledWhen>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" class="org.jkiss.dbeaver.ui.editors.text.handlers.LoadTextFileHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <test property="org.jkiss.dbeaver.ui.editors.text.canLoad"/>
+                </with>
+            </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleSingleLineCommentHandler">
             <enabledWhen>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
-                    </adapt>
+                <with variable="activeEditor">
+                    <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleMultiLineCommentHandler">
             <enabledWhen>
-                <with variable="activePart">
-                    <adapt type="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
-                    </adapt>
+                <with variable="activeEditor">
+                    <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
                 </with>
             </enabledWhen>
         </handler>

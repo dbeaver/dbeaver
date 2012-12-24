@@ -19,8 +19,10 @@
 package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.editors.text.handlers.AbstractTextHandler;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -29,6 +31,8 @@ import org.jkiss.utils.CommonUtils;
 public class TextEditorPropertyTester extends PropertyTester
 {
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.text";
+    public static final String PROP_CAN_LOAD = "canLoad";
+    public static final String PROP_CAN_SAVE = "canSave";
     public static final String PROP_CAN_COMMENT = "canComment";
 
     public TextEditorPropertyTester() {
@@ -37,11 +41,15 @@ public class TextEditorPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (!(receiver instanceof BaseTextEditor)) {
+        BaseTextEditor editor = AbstractTextHandler.getTextEditor((IEditorPart)receiver);
+        if (editor == null) {
             return false;
         }
-        BaseTextEditor editor = (BaseTextEditor)receiver;
-        if (property.equals(PROP_CAN_COMMENT)) {
+        if (property.equals(PROP_CAN_SAVE)) {
+            return true;
+        } else if (property.equals(PROP_CAN_LOAD)) {
+            return !editor.isReadOnly();
+        } else if (property.equals(PROP_CAN_COMMENT)) {
             if (editor.getSelectionProvider().getSelection().isEmpty()) {
                 return false;
             }
