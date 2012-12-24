@@ -37,16 +37,12 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 /**
  * This class contains all of the shared functionality for comment handlers
  */
-public abstract class AbstractCommentHandler extends AbstractHandler {
+public abstract class AbstractCommentHandler extends AbstractTextHandler {
 
     static protected final Log log = LogFactory.getLog(AbstractCommentHandler.class);
 
     public final Object execute(ExecutionEvent event) throws ExecutionException {
-        IEditorPart editor = HandlerUtil.getActiveEditor(event);
-        BaseTextEditor textEditor = null;
-        if (editor instanceof BaseTextEditor) {
-            textEditor = (BaseTextEditor) editor;
-        }
+        BaseTextEditor textEditor = getEditor(event);
         if (textEditor != null) {
             IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
             if (document != null) {

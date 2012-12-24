@@ -23,19 +23,30 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.revisions.IRevisionRulerColumn;
 import org.eclipse.jface.text.source.*;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.eclipse.ui.texteditor.rulers.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -66,6 +77,12 @@ public abstract class BaseTextEditor extends StatusTextEditor {
                 return fLineNumberRulerColumn;
         }
         return super.getAdapter(adapter);
+    }
+
+    public Document getDocument()
+    {
+        IDocumentProvider provider = getDocumentProvider();
+        return provider == null ? null : (Document)provider.getDocument(getEditorInput());
     }
 
     @Override
@@ -329,4 +346,80 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     {
         return null;
     }
+
+    protected boolean isReadOnly()
+    {
+        return false;
+    }
+
+    public void loadFromExternalFile()
+    {
+        final File loadFile = ContentUtils.openFile(getSite().getShell(), new String[]{"*.sql", "*.txt", "*.*"});
+        if (loadFile == null) {
+            return;
+        }
+
+        String newContent = null;
+        try {
+            Reader reader = new InputStreamReader(
+                new FileInputStream(loadFile),
+                ContentUtils.DEFAULT_FILE_CHARSET);
+            try {
+                StringWriter buffer = new StringWriter();
+                IOUtils.copyText(reader, buffer, 10000);
+                newContent = buffer.toString();
+            }
+            finally {
+                reader.close();
+            }
+        }
+        catch (IOException e) {
+            UIUtils.showErrorDialog(
+                getSite().getShell(),
+                "Can't load file",
+                "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());
+        }
+        if (newContent != null) {
+            getDocument().set(newContent);
+        }
+    }
+
+    public void saveToExternalFile()
+    {
+        IEditorInput editorInput = getEditorInput();
+        String fileName = (editorInput instanceof ProjectFileEditorInput ?
+            ((ProjectFileEditorInput)getEditorInput()).getFile().getName() : null);
+
+        final File saveFile = ContentUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[] { "*.sql", "*.txt", "*.*"}, fileName);
+        if (saveFile == null) {
+            return;
+        }
+
+        try {
+            DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
+                @Override
+                public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    UIUtils.runInUI(getSite().getShell(), new Runnable() {
+                        @Override
+                        public void run()
+                        {
+                            doSave(monitor.getNestedMonitor());
+                        }
+                    });
+
+                    try {
+                        ContentUtils.saveContentToFile(new StringReader(getDocument().get()), saveFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InterruptedException e) {
+            // do nothing
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(getSite().getShell(), "Save failed", null, e.getTargetException());
+        }
+    }
+
 }

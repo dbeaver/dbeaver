@@ -16,19 +16,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.editors.sql.handlers;
+package org.jkiss.dbeaver.ui.editors.text.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
-public class SaveSQLFileHandler extends BaseSQLEditorHandler
+public class SaveTextFileHandler extends AbstractTextHandler
 {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        SQLEditorBase editor = getActiveControl(event);
+        BaseTextEditor editor = getEditor(event);
         if (editor == null) {
             return null;
         }
