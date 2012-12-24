@@ -35,15 +35,11 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
@@ -52,13 +48,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TextUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
@@ -67,12 +59,8 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLDelimiterToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -81,8 +69,6 @@ import java.util.*;
 public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider
 {
     static protected final Log log = LogFactory.getLog(SQLEditorBase.class);
-
-    private static final String SQL_EDITOR_CONTROL_ID = "org.jkiss.dbeaver.ui.sqlEditorBase";
 
     private SQLSyntaxManager syntaxManager;
 
@@ -119,12 +105,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         return syntaxManager;
     }
 
-    public Document getDocument()
-    {
-        IDocumentProvider provider = getDocumentProvider();
-        return provider == null ? null : (Document)provider.getDocument(getEditorInput());
-    }
-
     public ProjectionAnnotationModel getAnnotationModel()
     {
         return annotationModel;
@@ -136,19 +116,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         setRangeIndicator(new DefaultRangeIndicator());
 
         super.createPartControl(new SQLEditorControl(parent, this));
-
-        {
-            final StyledText textControl = getTextViewer().getTextWidget();
-
-            UIUtils.addFocusTracker(getSite(), SQL_EDITOR_CONTROL_ID, textControl);
-            textControl.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e)
-                {
-                    UIUtils.removeFocusTracker(getSite(), textControl);
-                }
-            });
-        }
 
         ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
         projectionSupport = new ProjectionSupport(
@@ -559,76 +526,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             getSourceViewer() == null ||
             getSourceViewer().getTextWidget() == null ||
             getSourceViewer().getTextWidget().isDisposed();
-    }
-
-    public void loadFromExternalFile()
-    {
-        final File loadFile = ContentUtils.openFile(getSite().getShell(), new String[] { "*.sql", "*.txt", "*.*"});
-        if (loadFile == null) {
-            return;
-        }
-
-        String newContent = null;
-        try {
-            Reader reader = new InputStreamReader(
-                new FileInputStream(loadFile),
-                ContentUtils.DEFAULT_FILE_CHARSET);
-            try {
-                StringWriter buffer = new StringWriter();
-                IOUtils.copyText(reader, buffer, 10000);
-                newContent = buffer.toString();
-            }
-            finally {
-                reader.close();
-            }
-        }
-        catch (IOException e) {
-            UIUtils.showErrorDialog(
-                getSite().getShell(),
-                "Can't load file",
-                "Can't load file '" + loadFile.getAbsolutePath() + "' - " + e.getMessage());
-        }
-        if (newContent != null) {
-            getDocument().set(newContent);
-        }
-    }
-
-    public void saveToExternalFile()
-    {
-        IEditorInput editorInput = getEditorInput();
-        String fileName = (editorInput instanceof ProjectFileEditorInput ?
-            ((ProjectFileEditorInput)getEditorInput()).getFile().getName() : null);
-
-        final File saveFile = ContentUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[] { "*.sql", "*.txt", "*.*"}, fileName);
-        if (saveFile == null) {
-            return;
-        }
-
-        try {
-            DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
-                @Override
-                public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    UIUtils.runInUI(getSite().getShell(), new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            doSave(monitor.getNestedMonitor());
-                        }
-                    });
-
-                    try {
-                        ContentUtils.saveContentToFile(new StringReader(getDocument().get()), saveFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-        } catch (InterruptedException e) {
-            // do nothing
-        } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(getSite().getShell(), "Save failed", null, e.getTargetException());
-        }
     }
 
     @Override

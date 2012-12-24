@@ -181,11 +181,6 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
     }
 
-    protected boolean isReadOnly()
-    {
-        return false;
-    }
-
     protected String getCompileCommandId()
     {
         return null;
@@ -282,12 +277,12 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         @Override
         protected void fillCustomToolbar(ToolBarManager toolBarManager) {
-            toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
-            toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
+            toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
+            toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
             String compileCommandId = getCompileCommandId();
             if (compileCommandId != null) {
                 toolBarManager.add(new Separator());
-                toolBarManager.add(ActionUtils.makeCommandContribution(DBeaverCore.getActiveWorkbenchWindow(), compileCommandId));
+                toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
                 toolBarManager.add(new ViewLogAction());
             }
         }

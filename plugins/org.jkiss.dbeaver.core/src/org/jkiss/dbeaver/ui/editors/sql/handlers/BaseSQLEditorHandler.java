@@ -26,8 +26,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -36,24 +34,10 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorControl;
 
 public abstract class BaseSQLEditorHandler extends DataSourceHandler {
 
     static final Log log = LogFactory.getLog(BaseSQLEditorHandler.class);
-
-    protected SQLEditorBase getActiveControl(ExecutionEvent event)
-    {
-        Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
-        if (!(control instanceof Composite)) return null;
-        for (Composite parent = ((Composite)control).getParent(); parent != null; parent = parent.getParent()) {
-            if (parent instanceof SQLEditorControl) {
-                return ((SQLEditorControl) parent).getEditor();
-            }
-        }
-        return null;
-    }
 
     protected DBSDataSourceContainer getCurrentConnection(ExecutionEvent event)
     {
