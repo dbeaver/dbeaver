@@ -78,6 +78,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         if (prop.getValueTransformer() != null) {
             newValue = prop.getValueTransformer().transform(editableValue, newValue);
         }
+        final Object oldValue = getPropertyValue(editableValue, prop);
         if (!updatePropertyValue(editableValue, prop, newValue, false)) {
             return;
         }
@@ -90,7 +91,6 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
             final DBEPropertyHandler<DBPObject> propertyHandler = objectEditor.makePropertyHandler(
                 (DBPObject)editableValue,
                 prop);
-            final Object oldValue = getPropertyValue(editableValue, prop);
             PropertyChangeCommand curCommand = new PropertyChangeCommand((DBPObject) editableValue, prop, propertyHandler, oldValue, newValue);
             getCommandContext().addCommand(curCommand, commandReflector);
             lastCommand = curCommand;

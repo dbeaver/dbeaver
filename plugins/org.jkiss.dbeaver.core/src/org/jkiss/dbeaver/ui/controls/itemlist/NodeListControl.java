@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEStructEditor;
+import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -353,8 +352,9 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
             if (valueObject == null) {
                 return false;
             }
-            DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(valueObject.getClass(), DBEStructEditor.class);
-            return structEditor != null && RuntimeUtils.isTypeSupported(curClass, structEditor.getChildTypes());
+            return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(curClass, DBEObjectEditor.class) != null;
+//            DBEStructEditor structEditor = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(valueObject.getClass(), DBEStructEditor.class);
+//            return structEditor != null && RuntimeUtils.isTypeSupported(curClass, structEditor.getChildTypes());
         }
 
         @Override
