@@ -448,7 +448,7 @@ public class ContentUtils {
             }
         }
         catch (CoreException e) {
-            throw new DBException("Can't handle content charset", e);
+            log.warn("Can't set content charset", e);
         }
         File file = localFile.getLocation().toFile();
         try {
