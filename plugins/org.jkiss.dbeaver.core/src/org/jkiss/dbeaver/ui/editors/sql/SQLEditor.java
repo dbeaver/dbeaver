@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
@@ -482,7 +482,7 @@ public class SQLEditor extends SQLEditorBase
                 {
                     curJobRunning = true;
                     if (!isSingleQuery) {
-                        asyncExec(new Runnable() {
+                        UIUtils.runInUI(null, new Runnable() {
                             @Override
                             public void run()
                             {
@@ -544,6 +544,8 @@ public class SQLEditor extends SQLEditorBase
                                 if (queries.size() < 2) {
                                     getSelectionProvider().setSelection(originalSelection);
                                 }
+
+                                DBeaverUI.taskFinished();
                             }
                         });
                     }
@@ -556,7 +558,7 @@ public class SQLEditor extends SQLEditorBase
                     if (isDisposed()) {
                         return;
                     }
-                    asyncExec(new Runnable() {
+                    UIUtils.runInUI(null, new Runnable() {
                         @Override
                         public void run()
                         {
