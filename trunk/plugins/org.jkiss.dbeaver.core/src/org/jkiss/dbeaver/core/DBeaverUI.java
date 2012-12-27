@@ -54,6 +54,11 @@ public class DBeaverUI {
         return instance.sharedTextColors;
     }
 
+    public static TrayItem getTrayItem()
+    {
+        return instance.trayItem;
+    }
+
     private void dispose()
     {
         this.trayItem.dispose();
@@ -188,5 +193,18 @@ public class DBeaverUI {
         } catch (InterruptedException e) {
             // do nothing
         }
+    }
+
+    public static void taskFinished()
+    {
+/*
+        DBeaverUI.getTrayItem().setToolTipText("FINISHED!");
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+        }
+        DBeaverUI.getActiveWorkbenchWindow().getShell().forceActive();
+        DBeaverUI.getTrayItem().getDisplay().getFocusControl();
+*/
     }
 }
