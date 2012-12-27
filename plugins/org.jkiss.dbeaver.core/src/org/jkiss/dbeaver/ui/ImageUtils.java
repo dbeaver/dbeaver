@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 
 /**
  * Image-related utils
@@ -82,7 +83,7 @@ public class ImageUtils {
             imageCheckboxDisabledOff = DBIcon.CHECK_OFF.getImage();
             return;
         }
-        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         Button checkBox = new Button(shell, SWT.CHECK);
         checkBox.setVisible(true);
         final Color borderColor = shell.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);

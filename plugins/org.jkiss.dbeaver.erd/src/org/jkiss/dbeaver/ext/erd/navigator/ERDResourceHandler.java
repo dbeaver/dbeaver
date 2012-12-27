@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
@@ -152,7 +153,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                 }
             };
             if (monitor == null) {
-                DBeaverCore.getInstance().runInProgressService(runnable);
+                DBeaverUI.runInProgressService(runnable);
             } else {
                 runnable.run(monitor);
             }

@@ -47,6 +47,7 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -190,8 +191,8 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 
         //In the future, a preference page will be added to customize foreground and background.
-        Color foreground = new Color(DBeaverCore.getDisplay(), 0, 0, 0);
-        Color background = new Color(DBeaverCore.getDisplay(), 255, 255, 255);
+        Color foreground = new Color(DBeaverUI.getDisplay(), 0, 0, 0);
+        Color background = new Color(DBeaverUI.getDisplay(), 255, 255, 255);
 
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
         assistant.setContextInformationPopupForeground(foreground);

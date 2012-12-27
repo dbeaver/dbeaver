@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -112,7 +113,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
         try {
             DisconnectTask disconnectTask = new DisconnectTask();
-            DBeaverCore.getInstance().runInProgressService(disconnectTask);
+            DBeaverUI.runInProgressService(disconnectTask);
             return disconnectTask.disconnected;
         } catch (InvocationTargetException e) {
             log.error("Can't close opened connections", e.getTargetException());

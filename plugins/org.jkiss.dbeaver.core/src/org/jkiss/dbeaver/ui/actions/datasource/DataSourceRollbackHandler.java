@@ -22,7 +22,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -50,7 +50,7 @@ public class DataSourceRollbackHandler extends DataSourceHandler
     public static void execute(Shell shell, final DBSDataSourceContainer dataSourceContainer) {
         final DBPDataSource dataSource = dataSourceContainer.getDataSource();
         try {
-            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException

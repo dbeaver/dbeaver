@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateVariableResolver;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,7 +40,7 @@ public class SQLEntityResolver extends TemplateVariableResolver {
         final List<DBSEntity> entities = new ArrayList<DBSEntity>();
         if (context instanceof IDataSourceProvider) {
             try {
-                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException

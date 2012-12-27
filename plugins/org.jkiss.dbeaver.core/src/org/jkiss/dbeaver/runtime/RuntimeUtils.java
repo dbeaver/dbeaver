@@ -38,6 +38,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -367,7 +368,7 @@ public class RuntimeUtils {
         final DBRShellCommand command,
         final Map<String, Object> variables)
     {
-        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
         if (command.isShowProcessPanel()) {
             shell.getDisplay().asyncExec(new Runnable() {
@@ -376,7 +377,7 @@ public class RuntimeUtils {
                 {
                     try {
                         final ShellProcessView processView =
-                            (ShellProcessView) DBeaverCore.getActiveWorkbenchWindow().getActivePage().showView(
+                            (ShellProcessView) DBeaverUI.getActiveWorkbenchWindow().getActivePage().showView(
                                 ShellProcessView.VIEW_ID,
                                 ShellProcessView.getNextId(),
                                 IWorkbenchPage.VIEW_VISIBLE
@@ -436,7 +437,7 @@ public class RuntimeUtils {
                 if (program != null) {
                     final ImageData imageData = program.getImageData();
                     if (imageData != null) {
-                        programInfo.image = new Image(DBeaverCore.getDisplay(), imageData);
+                        programInfo.image = new Image(DBeaverUI.getDisplay(), imageData);
                     }
                 }
                 programMap.put(fileExtension, programInfo);
@@ -481,7 +482,7 @@ public class RuntimeUtils {
                     shell = ((IWorkbenchPart) saveable).getSite().getShell();
                     saveableName = ((IWorkbenchPart) saveable).getTitle();
                 } else {
-                    shell = DBeaverCore.getActiveWorkbenchShell();
+                    shell = DBeaverUI.getActiveWorkbenchShell();
                     saveableName = CommonUtils.toString(saveable);
                 }
                 int confirmResult = ConfirmationDialog.showConfirmDialog(

@@ -36,6 +36,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -934,7 +935,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 final File libraryFile = file.getLocalFile();
                 if (!libraryFile.exists()) {
                     try {
-                        DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                             @Override
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
@@ -953,7 +954,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     try {
                         String licenseText = ContentUtils.readFileToString(libraryFile);
                         if (!AcceptLicenseDialog.acceptLicense(
-                            DBeaverCore.getActiveWorkbenchShell(),
+                            DBeaverUI.getActiveWorkbenchShell(),
                             "You have to accept license of '" + this.getFullName() + " ' to continue",
                             licenseText)) {
                             return false;
@@ -971,7 +972,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private int downloadLibraryFile(final DriverFileDescriptor file)
     {
         try {
-            DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
+            DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
@@ -1030,7 +1031,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         connection.setInstanceFollowRedirects(true);
         connection.setRequestProperty(
             "User-Agent",  //$NON-NLS-1$
-            "DBeaver " + DBeaverCore.getVersion()); //$NON-NLS-1$
+            DBeaverCore.getProductTitle());
         connection.connect();
         if (connection.getResponseCode() != 200) {
             throw new IOException("Can't find driver file '" + url + "': " + connection.getResponseMessage());

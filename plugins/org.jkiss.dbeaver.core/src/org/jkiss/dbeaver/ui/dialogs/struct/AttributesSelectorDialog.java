@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -169,7 +170,7 @@ public abstract class AttributesSelectorDialog extends Dialog {
         // Collect attributes
         final List<DBSEntityAttribute> attributes = new ArrayList<DBSEntityAttribute>();
         try {
-            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {

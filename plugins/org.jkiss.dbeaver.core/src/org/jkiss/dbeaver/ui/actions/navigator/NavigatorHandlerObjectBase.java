@@ -27,9 +27,9 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -154,7 +153,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (node == null) {
             NodeLoader nodeLoader = new NodeLoader(model, object);
             try {
-                DBeaverCore.getInstance().runInProgressService(nodeLoader);
+                DBeaverUI.runInProgressService(nodeLoader);
             } catch (InvocationTargetException e) {
                 log.warn("Could not load node for object '" + object.getName() + "'", e.getTargetException());
             } catch (InterruptedException e) {

@@ -29,7 +29,7 @@ import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.graphics.RGB;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 
 public class XMLConfiguration extends SourceViewerConfiguration {
     static final RGB COLOR_XML_COMMENT = new RGB(128, 0, 0);
@@ -41,7 +41,7 @@ public class XMLConfiguration extends SourceViewerConfiguration {
 	private final ISharedTextColors colorManager;
 
 	public XMLConfiguration() {
-		this.colorManager = DBeaverCore.getInstance().getSharedTextColors();
+		this.colorManager = DBeaverUI.getSharedTextColors();
 	}
 	
 	@Override

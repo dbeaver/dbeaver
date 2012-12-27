@@ -380,7 +380,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             // Provide client info
             IProduct product = Platform.getProduct();
             if (product != null) {
-                String appName = "DBeaver " + DBeaverCore.getVersion().toString();
+                String appName = DBeaverCore.getProductTitle();
                 try {
                     ((Connection)mysqlConnection).setClientInfo("ApplicationName", appName);
                 } catch (Throwable e) {

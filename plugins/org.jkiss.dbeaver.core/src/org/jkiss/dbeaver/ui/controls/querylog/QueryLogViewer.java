@@ -50,6 +50,7 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -254,7 +255,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         this.site = site;
 
         // Prepare colors
-        ISharedTextColors sharedColors = DBeaverCore.getInstance().getSharedTextColors();
+        ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
 
         colorLightGreen = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
         colorLightRed = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));

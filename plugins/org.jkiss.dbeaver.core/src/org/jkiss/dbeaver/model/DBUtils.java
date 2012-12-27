@@ -22,7 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -461,7 +461,7 @@ public final class DBUtils {
             if (monitor != null) {
                 finder.run(monitor);
             } else {
-                DBeaverCore.getInstance().runInProgressService(finder);
+                DBeaverUI.runInProgressService(finder);
             }
         }
         catch (InvocationTargetException e) {

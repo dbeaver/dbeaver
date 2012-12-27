@@ -6,7 +6,7 @@ import org.eclipse.jface.text.templates.TemplateContext;
 import org.eclipse.jface.text.templates.TemplateVariable;
 import org.eclipse.jface.text.templates.TemplateVariableResolver;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -59,7 +59,7 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
                             }
                         }
                     };
-                    DBeaverCore.getInstance().runInProgressService(runnable);
+                    DBeaverUI.runInProgressService(runnable);
                 } catch (InvocationTargetException e) {
                     log.error(e.getTargetException());
                 } catch (InterruptedException e) {

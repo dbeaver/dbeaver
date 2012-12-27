@@ -38,6 +38,7 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -267,7 +268,7 @@ public class EditForeignKeyDialog extends Dialog {
             final DBeaverCore core = DBeaverCore.getInstance();
             if (refTableNode != null) {
                 final DBSTable refTable = (DBSTable) refTableNode.getObject();
-                core.runInProgressService(new DBRRunnableWithProgress() {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
