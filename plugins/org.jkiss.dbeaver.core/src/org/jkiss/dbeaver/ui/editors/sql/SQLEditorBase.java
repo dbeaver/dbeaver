@@ -516,11 +516,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         curAnnotations.putAll(newAnnotations);
     }
 
-    protected void asyncExec(Runnable runnable)
-    {
-        Display.getDefault().asyncExec(runnable);
-    }
-
     public boolean isDisposed()
     {
         return
