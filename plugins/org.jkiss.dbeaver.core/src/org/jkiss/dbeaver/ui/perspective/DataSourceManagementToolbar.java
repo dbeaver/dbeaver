@@ -42,6 +42,7 @@ import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
@@ -580,7 +581,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
             try {
-                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException
@@ -820,7 +821,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         @Override
         protected Control createControl(Composite parent)
         {
-            DataSourceManagementToolbar toolbar = new DataSourceManagementToolbar(DBeaverCore.getActiveWorkbenchWindow());
+            DataSourceManagementToolbar toolbar = new DataSourceManagementToolbar(DBeaverUI.getActiveWorkbenchWindow());
             return toolbar.createControl(parent);
         }
     }

@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionDelegate;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -49,7 +49,7 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
                 final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
                     DBSObjectSelector.class, databaseNode.getObject());
                 try {
-                    DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException

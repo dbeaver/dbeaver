@@ -28,6 +28,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
@@ -97,7 +98,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                     null,
                     workbenchPart != null ?
                         workbenchPart.getSite().getWorkbenchWindow() :
-                        DBeaverCore.getActiveWorkbenchWindow());
+                        DBeaverUI.getActiveWorkbenchWindow());
             }
         });
 

@@ -34,7 +34,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -246,7 +246,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             }
 
             if (!(newSelection.getData() instanceof DBNNode) ||
-                !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart()))) {
+                !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart()))) {
                 curSelection = null;
                 return;
             }
@@ -317,7 +317,7 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                     disposeOldEditor();
                     viewer.getTree().setFocus();
                     if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
-                        NavigatorHandlerObjectRename.renameNode(DBeaverCore.getActiveWorkbenchWindow(), node, newName);
+                        NavigatorHandlerObjectRename.renameNode(DBeaverUI.getActiveWorkbenchWindow(), node, newName);
                     }
                 } else if (e.keyCode == SWT.ESC) {
                     disposeOldEditor();

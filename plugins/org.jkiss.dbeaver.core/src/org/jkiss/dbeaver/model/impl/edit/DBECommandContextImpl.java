@@ -25,6 +25,7 @@ import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -641,7 +642,7 @@ public class DBECommandContextImpl implements DBECommandContext {
 
     private void refreshCommandState()
     {
-        ICommandService commandService = (ICommandService) DBeaverCore.getActiveWorkbenchWindow().getService(ICommandService.class);
+        ICommandService commandService = (ICommandService) DBeaverUI.getActiveWorkbenchWindow().getService(ICommandService.class);
         if (commandService != null) {
             commandService.refreshElements(IWorkbenchCommandConstants.EDIT_UNDO, null);
             commandService.refreshElements(IWorkbenchCommandConstants.EDIT_REDO, null);

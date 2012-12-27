@@ -34,7 +34,7 @@ import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -162,7 +162,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (cellValue instanceof DBSObject) {
                     DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
                     if (node != null) {
-                        NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverCore.getActiveWorkbenchWindow());
+                        NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverUI.getActiveWorkbenchWindow());
                     }
                 }
             }

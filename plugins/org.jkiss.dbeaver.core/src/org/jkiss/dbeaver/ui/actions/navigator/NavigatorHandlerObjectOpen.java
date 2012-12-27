@@ -34,6 +34,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.ui.IFolderedPart;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
@@ -101,7 +102,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     {
         DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject(object);
         if (node != null) {
-            return NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverCore.getActiveWorkbenchWindow());
+            return NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverUI.getActiveWorkbenchWindow());
         }
         return null;
     }

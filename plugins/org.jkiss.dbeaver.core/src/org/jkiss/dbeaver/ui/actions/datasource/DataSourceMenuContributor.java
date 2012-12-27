@@ -29,7 +29,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -51,7 +51,7 @@ public abstract class DataSourceMenuContributor extends CompoundContributionItem
         DBPDataSource dataSource = null;
         DBSObject selectedObject = null;
         IWorkbenchPart activePart = null;
-        IWorkbenchPage activePage = DBeaverCore.getActiveWorkbenchWindow().getActivePage();
+        IWorkbenchPage activePage = DBeaverUI.getActiveWorkbenchWindow().getActivePage();
         IEditorPart activeEditor = activePage.getActiveEditor();
         if (activeEditor != null) {
             activePart = activeEditor;

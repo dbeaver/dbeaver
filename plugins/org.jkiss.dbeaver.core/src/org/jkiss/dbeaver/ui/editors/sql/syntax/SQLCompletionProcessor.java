@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -114,7 +115,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             if (editor.getDataSource() != null) {
                 try {
                     final QueryType qt = queryType;
-                    DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException

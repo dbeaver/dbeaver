@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
@@ -1030,7 +1031,7 @@ public class UIUtils {
         if (partSite == null) {
             IWorkbenchPart activePart = (IWorkbenchPart) serviceLocator.getService(IWorkbenchPart.class);
             if (activePart == null) {
-                activePart = DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart();
+                activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
             }
             if (activePart != null) {
                 partSite = activePart.getSite();
@@ -1060,7 +1061,7 @@ public class UIUtils {
         if (partSite == null) {
             IWorkbenchPart activePart = (IWorkbenchPart) serviceLocator.getService(IWorkbenchPart.class);
             if (activePart == null) {
-                activePart = DBeaverCore.getActiveWorkbenchWindow().getActivePage().getActivePart();
+                activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
             }
             if (activePart != null) {
                 partSite = activePart.getSite();

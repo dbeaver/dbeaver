@@ -21,10 +21,9 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.runtime.IAdapterManager;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.contexts.IContextIds;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.utils.CommonUtils;
 
@@ -69,7 +67,7 @@ public class ObjectPropertyTester extends PropertyTester
             return false;
         }
         Display display = Display.getCurrent();
-        if (display == null || DBeaverCore.getActiveWorkbenchShell() != display.getActiveShell()) {
+        if (display == null || DBeaverUI.getActiveWorkbenchShell() != display.getActiveShell()) {
             return false;
         }
         DBNNode node = (DBNNode)receiver;

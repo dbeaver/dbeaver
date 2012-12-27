@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.tools.data.wizard;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
@@ -107,7 +108,7 @@ public class DataExportSettings {
             if (!folderOpened) {
                 // Last one
                 folderOpened = true;
-                DBeaverCore.getDisplay().asyncExec(new Runnable() {
+                DBeaverUI.getDisplay().asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         RuntimeUtils.launchProgram(outputFolder);

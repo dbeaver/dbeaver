@@ -26,7 +26,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.ViewPart;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProcessController;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -70,7 +70,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         if (processDescriptor != null) {
             if (processDescriptor.isRunning()) {
                 processDescriptor.terminate();
-                DBeaverCore.getActiveWorkbenchShell().getDisplay().asyncExec(new Runnable() {
+                DBeaverUI.getActiveWorkbenchShell().getDisplay().asyncExec(new Runnable() {
                     @Override
                     public void run()
                     {
@@ -152,7 +152,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         if (line.isEmpty()) {
             return;
         }
-        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         if (shell == null) {
             return;
         }

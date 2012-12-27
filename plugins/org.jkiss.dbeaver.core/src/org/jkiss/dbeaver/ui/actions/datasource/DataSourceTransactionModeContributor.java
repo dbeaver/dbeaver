@@ -22,7 +22,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.menus.CommandContributionItem;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
@@ -53,7 +53,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         try {
             final DBCTransactionManager txnManager = context.getTransactionManager();
             menuItems.add(ActionUtils.makeCommandContribution(
-                DBeaverCore.getActiveWorkbenchWindow(),
+                DBeaverUI.getActiveWorkbenchWindow(),
                 ICommandIds.CMD_TOGGLE_AUTOCOMMIT,
                 CommandContributionItem.STYLE_CHECK));
 
@@ -115,8 +115,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         public void run()
         {
             try {
-                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress()
-                {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {

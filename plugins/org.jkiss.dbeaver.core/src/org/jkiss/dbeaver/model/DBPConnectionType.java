@@ -2,7 +2,7 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 
 /**
  * Connection type
@@ -38,7 +38,7 @@ public class DBPConnectionType {
     {
         this.id = id;
         this.name = name;
-        this.color = DBeaverCore.getInstance().getSharedTextColors().getColor(rgb);
+        this.color = DBeaverUI.getSharedTextColors().getColor(rgb);
         this.description = description;
         this.autocommit = autocommit;
         this.confirmExecute = confirmExecute;

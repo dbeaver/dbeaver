@@ -27,17 +27,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.*;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.source.ISharedTextColors;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.model.DBPApplication;
@@ -45,17 +36,13 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWGlobalAuthenticator;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
-import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -76,7 +63,7 @@ import java.util.Locale;
 /**
  * DBeaverCore
  */
-public class DBeaverCore implements DBPApplication, DBRRunnableContext {
+public class DBeaverCore implements DBPApplication {
 
     static final Log log = LogFactory.getLog(DBeaverCore.class);
 
@@ -103,7 +90,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private DBNModel navigatorModel;
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
-    private SharedTextColors sharedTextColors;
     private ProjectRegistry projectRegistry;
 
     private boolean isClosing;
@@ -165,21 +151,23 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
         return DBeaverActivator.getInstance().getBundle().getVersion();
     }
 
+    public static String getProductTitle()
+    {
+        return "DBeaver " + getVersion();
+    }
+
     private void initialize()
     {
-        //progressProvider = new DBeaverProgressProvider();
-        this.sharedTextColors = new SharedTextColors();
-
         // Register properties adapter
         this.editorsAdapter = new DatabaseEditorAdapterFactory();
         IAdapterManager mgr = Platform.getAdapterManager();
         mgr.registerAdapters(editorsAdapter, IWorkbenchPart.class);
 
-        DBeaverIcons.initRegistry(plugin.getBundle());
-
         this.workspace = ResourcesPlugin.getWorkspace();
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
+
+        DBeaverUI.initializeUI();
 
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
@@ -216,9 +204,9 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     private void initializeTempProject()
     {
         try {
-            PlatformUI.getWorkbench().getProgressService().run(false, false, new IRunnableWithProgress() {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
-                public void run(IProgressMonitor monitor)
+                public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
                     try {
@@ -231,7 +219,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                                 TEMP_PROJECT_NAME + "." + CommonUtils.escapeIdentifier(workspace.getRoot().getLocation().toString()));
                             if (tempProject.exists()) {
                                 try {
-                                    tempProject.delete(true, true, monitor);
+                                    tempProject.delete(true, true, monitor.getNestedMonitor());
                                 } catch (CoreException e) {
                                     log.error("Can't delete temp project", e);
                                 }
@@ -246,19 +234,19 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
                             description.setName(TEMP_PROJECT_NAME);
                             description.setComment("Project for DBeaver temporary content");
                             try {
-                                tempProject.create(description, monitor);
+                                tempProject.create(description, monitor.getNestedMonitor());
                             } catch (CoreException e) {
                                 log.error("Can't create temp project", e);
                             }
 
-                            tempProject.open(monitor);
+                            tempProject.open(monitor.getNestedMonitor());
                             tempProject.setHidden(true);
                         } catch (CoreException e) {
                             log.error("Cannot open temp project", e); //$NON-NLS-1$
                         }
 
                         // Projects registry
-                        projectRegistry.loadProjects(workspace, monitor);
+                        projectRegistry.loadProjects(workspace, monitor.getNestedMonitor());
                     } catch (CoreException ex) {
                         throw new InvocationTargetException(ex);
                     }
@@ -344,10 +332,7 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             this.editorsAdapter = null;
         }
 
-        if (this.sharedTextColors != null) {
-            this.sharedTextColors.dispose();
-            this.sharedTextColors = null;
-        }
+        DBeaverUI.disposeUI();
         //progressProvider.shutdown();
         //progressProvider = null;
 
@@ -386,11 +371,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
             configFile = new File(Platform.getLocation().toFile(), fileName);
         }
         return configFile;
-    }
-
-    public ISharedTextColors getSharedTextColors()
-    {
-        return sharedTextColors;
     }
 
     public OSDescriptor getLocalSystem()
@@ -442,87 +422,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
     public IPreferenceStore getGlobalPreferenceStore()
     {
         return plugin.getPreferenceStore();
-    }
-
-    @Override
-    public void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InterruptedException, InvocationTargetException
-    {
-        try {
-            IRunnableContext runnableContext;
-            IWorkbench workbench = PlatformUI.getWorkbench();
-            IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
-            if (workbenchWindow != null) {
-                runnableContext = new ProgressMonitorDialog(workbench.getActiveWorkbenchWindow().getShell());
-            } else {
-                runnableContext = workbench.getProgressService();
-            }
-            runnableContext.run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    runnable.run(RuntimeUtils.makeMonitor(monitor));
-                }
-            });
-        } catch (InterruptedException e) {
-            // do nothing
-        }
-    }
-
-    public void runInProgressService(final DBRRunnableWithProgress runnable)
-        throws InvocationTargetException, InterruptedException
-    {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        if (workbench == null || workbench.getProgressService() == null) {
-            runnable.run(VoidProgressMonitor.INSTANCE);
-        } else {
-            workbench.getProgressService().run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    runnable.run(RuntimeUtils.makeMonitor(monitor));
-                }
-            });
-        }
-    }
-
-    public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
-    {
-        AbstractUIJob job = new AbstractUIJob(jobName) {
-            @Override
-            public IStatus runInUIThread(DBRProgressMonitor monitor)
-            {
-                try {
-                    runnableWithProgress.run(monitor);
-                } catch (InvocationTargetException e) {
-                    return RuntimeUtils.makeExceptionStatus(e);
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-        return job;
-    }
-
-    public void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable)
-    {
-        try {
-            PlatformUI.getWorkbench().getProgressService().runInUI(context, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    runnable.run(RuntimeUtils.makeMonitor(monitor));
-                }
-            }, DBeaverActivator.getWorkspace().getRoot());
-        } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-        } catch (InterruptedException e) {
-            // do nothing
-        }
     }
 
     public IFolder getLobFolder(IProgressMonitor monitor)
@@ -616,41 +515,6 @@ public class DBeaverCore implements DBPApplication, DBRRunnableContext {
 
         // Data formats
         DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
-    }
-
-    public static IWorkbenchWindow getActiveWorkbenchWindow()
-    {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        if (window != null) {
-            return window;
-        }
-        IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
-        if (windows.length > 0) {
-            return windows[0];
-        }
-        return null;
-    }
-
-    public static Shell getActiveWorkbenchShell()
-    {
-        IWorkbenchWindow window = getActiveWorkbenchWindow();
-        if (window != null) {
-            return window.getShell();
-        }
-        IWorkbenchWindow[] windows = instance.plugin.getWorkbench().getWorkbenchWindows();
-        if (windows.length > 0)
-            return windows[0].getShell();
-        return null;
-    }
-
-    public static Display getDisplay()
-    {
-        Shell shell = getActiveWorkbenchShell();
-        if (shell != null)
-            return shell.getDisplay();
-        else
-            return Display.getDefault();
     }
 
     public List<IProject> getLiveProjects()

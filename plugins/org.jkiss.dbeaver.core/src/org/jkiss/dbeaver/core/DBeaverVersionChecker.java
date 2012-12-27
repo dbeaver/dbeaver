@@ -63,7 +63,7 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     private void showUpdaterDialog(final VersionDescriptor versionDescriptor)
     {
-        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         shell.getDisplay().asyncExec(new Runnable() {
             @Override
             public void run()

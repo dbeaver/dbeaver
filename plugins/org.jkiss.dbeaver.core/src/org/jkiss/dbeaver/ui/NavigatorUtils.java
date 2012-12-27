@@ -38,6 +38,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -195,7 +196,7 @@ public class NavigatorUtils {
                 if (workbenchPart != null) {
                     serviceLocator = workbenchPart.getSite();
                 } else {
-                    serviceLocator = DBeaverCore.getActiveWorkbenchWindow();
+                    serviceLocator = DBeaverUI.getActiveWorkbenchWindow();
                 }
                 // Add properties button
                 if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {

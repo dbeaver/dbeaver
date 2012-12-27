@@ -22,6 +22,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -86,7 +87,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
                 // Save object manager's content
                 ObjectSaver objectSaver = new ObjectSaver(commandTarget.getContext());
-                DBeaverCore.getInstance().runInProgressService(objectSaver);
+                DBeaverUI.runInProgressService(objectSaver);
             }
 
             final DBNNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(result);

@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
@@ -55,7 +56,7 @@ public class DBWGlobalAuthenticator extends Authenticator {
             String userPassword = decryptPassword(store.getString(PrefConstants.UI_PROXY_PASSWORD));
             if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
                 // Ask user
-                final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+                final Shell shell = DBeaverUI.getActiveWorkbenchShell();
                 final BaseAuthDialog authDialog = new BaseAuthDialog(shell, "Auth proxy '" + proxyHost + "'", DBIcon.CONNECTIONS.getImage());
                 authDialog.setUserName(userName);
                 authDialog.setUserPassword(userPassword);

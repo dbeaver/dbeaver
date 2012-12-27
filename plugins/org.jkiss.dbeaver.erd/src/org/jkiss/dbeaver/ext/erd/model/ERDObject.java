@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -100,7 +101,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
 
     public void openEditor() {
         if (object instanceof DBSObject) {
-            DBeaverCore.runUIJob("Open object editor", new DBRRunnableWithProgress() {
+            DBeaverUI.runUIJob("Open object editor", new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException

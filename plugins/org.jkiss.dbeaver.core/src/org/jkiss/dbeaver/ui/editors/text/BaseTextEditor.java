@@ -37,6 +37,7 @@ import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.eclipse.ui.texteditor.rulers.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -242,7 +243,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
      */
     protected IVerticalRulerColumn createLineNumberRulerColumn()
     {
-        fLineNumberRulerColumn = new LineNumberChangeRulerColumn(DBeaverCore.getInstance().getSharedTextColors());
+        fLineNumberRulerColumn = new LineNumberChangeRulerColumn(DBeaverUI.getSharedTextColors());
         ((IChangeRulerColumn) fLineNumberRulerColumn).setHover(new TextChangeHover());
         initializeLineNumberRulerColumn(fLineNumberRulerColumn);
         return fLineNumberRulerColumn;
@@ -396,7 +397,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         }
 
         try {
-            DBeaverCore.getInstance().runInProgressDialog(new DBRRunnableWithProgress() {
+            DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                 @Override
                 public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {

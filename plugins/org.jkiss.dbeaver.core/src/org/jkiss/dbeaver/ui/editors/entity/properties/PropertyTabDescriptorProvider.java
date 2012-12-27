@@ -28,6 +28,7 @@ import org.eclipse.ui.views.properties.tabbed.ITabDescriptorProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -132,7 +133,7 @@ public class PropertyTabDescriptorProvider implements ITabDescriptorProvider {
         };
         try {
             if (node.isLazyNode()) {
-                DBeaverCore.getInstance().runInProgressService(tabsCollector);
+                DBeaverUI.runInProgressService(tabsCollector);
             } else {
                 tabsCollector.run(VoidProgressMonitor.INSTANCE);
             }
