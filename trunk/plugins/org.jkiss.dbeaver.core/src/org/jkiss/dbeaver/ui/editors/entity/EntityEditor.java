@@ -23,16 +23,12 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
 import org.jkiss.dbeaver.ext.ui.IFolderListener;
@@ -68,7 +64,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -257,7 +252,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 // So we'll get actual data from database
                 final DBNDatabaseNode treeNode = getEditorInput().getTreeNode();
                 try {
-                    DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {
@@ -492,7 +487,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         DBNDatabaseNode node = getEditorInput().getTreeNode();
         try {
             if (node.isLazyNode()) {
-                DBeaverCore.getInstance().runInProgressService(tabsCollector);
+                DBeaverUI.runInProgressService(tabsCollector);
             } else {
                 tabsCollector.run(VoidProgressMonitor.INSTANCE);
             }

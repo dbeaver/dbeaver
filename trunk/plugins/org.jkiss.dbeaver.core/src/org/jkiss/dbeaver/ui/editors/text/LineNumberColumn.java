@@ -35,6 +35,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 
 /**
  * The line number ruler contribution. Encapsulates a {@link org.eclipse.jface.text.source.LineNumberChangeRulerColumn} as a
@@ -261,7 +262,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     }
 
     private ISharedTextColors getSharedColors() {
-        return DBeaverCore.getInstance().getSharedTextColors();
+        return DBeaverUI.getSharedTextColors();
     }
 
     /**

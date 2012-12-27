@@ -45,6 +45,7 @@ import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -179,7 +180,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     protected ISharedTextColors getSharedColors()
     {
-        return DBeaverCore.getInstance().getSharedTextColors();
+        return DBeaverUI.getSharedTextColors();
     }
 
     @Override

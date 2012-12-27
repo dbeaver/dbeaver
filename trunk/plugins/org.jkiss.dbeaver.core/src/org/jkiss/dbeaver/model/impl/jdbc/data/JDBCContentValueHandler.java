@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -339,7 +339,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         final DBDContent value = (DBDContent)controller.getValue();
         try {
-            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
@@ -385,7 +385,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         final DBDContent value = (DBDContent)controller.getValue();
         try {
-            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException

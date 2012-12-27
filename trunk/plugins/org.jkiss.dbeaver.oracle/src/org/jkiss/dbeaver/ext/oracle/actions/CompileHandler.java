@@ -33,7 +33,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
@@ -91,7 +91,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 compileLog.clearLog();
                 Throwable error = null;
                 try {
-                    DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                         {

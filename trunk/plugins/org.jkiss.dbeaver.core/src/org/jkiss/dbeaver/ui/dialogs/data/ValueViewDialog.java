@@ -40,6 +40,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -326,7 +327,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 public void widgetSelected(SelectionEvent e) {
                     // Open
                     final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
-                    DBeaverCore.getInstance().runInUI(window, new DBRRunnableWithProgress() {
+                    DBeaverUI.runInUI(window, new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException

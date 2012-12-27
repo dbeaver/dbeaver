@@ -22,7 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIClassLoader;
@@ -406,7 +406,7 @@ public class OracleDataSource extends JDBCDataSource
             if (planTableName == null) {
                 // Plan table not found - try to create new one
                 if (!UIUtils.confirmAction(
-                    DBeaverCore.getActiveWorkbenchShell(),
+                    DBeaverUI.getActiveWorkbenchShell(),
                     "Oracle PLAN_TABLE missing",
                     "PLAN_TABLE not found in current user's context. " +
                         "Do you want DBeaver to create new PLAN_TABLE?"))

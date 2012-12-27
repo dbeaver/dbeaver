@@ -34,6 +34,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -116,7 +117,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
             DiagramCreator creator = new DiagramCreator(rootObjects);
             RuntimeUtils.run(getContainer(), true, true, creator);
 
-            NavigatorHandlerObjectOpen.openResource(creator.diagramFile, DBeaverCore.getActiveWorkbenchWindow());
+            NavigatorHandlerObjectOpen.openResource(creator.diagramFile, DBeaverUI.getActiveWorkbenchWindow());
         }
         catch (InterruptedException ex) {
             return false;

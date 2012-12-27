@@ -27,7 +27,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
@@ -60,7 +60,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
     {
         boolean hasTools = false;
         if (!CommonUtils.isEmpty(tools)) {
-            IWorkbenchWindow workbenchWindow = DBeaverCore.getActiveWorkbenchWindow();
+            IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
             if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
                 IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
                 if (activePart != null) {

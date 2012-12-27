@@ -49,7 +49,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -169,7 +169,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.resultSetProvider = resultSetProvider;
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-        ISharedTextColors sharedColors = DBeaverCore.getInstance().getSharedTextColors();
+        ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
         this.backgroundAdded = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
         this.backgroundDeleted = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
         this.backgroundModified = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
@@ -1529,7 +1529,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         final Object[] cells = new Object[metaColumns.length];
         final int currentRowNumber = rowNum;
         try {
-            DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
@@ -3033,7 +3033,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public void run()
         {
-            DBeaverCore.runUIJob("Edit virtual key", new DBRRunnableWithProgress() {
+            DBeaverUI.runUIJob("Edit virtual key", new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {

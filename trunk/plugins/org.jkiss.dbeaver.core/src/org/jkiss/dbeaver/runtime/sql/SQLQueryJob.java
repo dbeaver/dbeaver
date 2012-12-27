@@ -27,6 +27,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -416,7 +417,7 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean bindStatementParameters(final List<SQLStatementParameter> parameters)
     {
-        final Shell shell = DBeaverCore.getActiveWorkbenchShell();
+        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
             @Override
             public void run()

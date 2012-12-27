@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.ui.IEditorDescriptor;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -41,7 +41,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
         super(parent);
         this.meta = meta;
         DBNModel.getInstance().addNode(this);
-        this.editorDescriptor = DBeaverCore.getActiveWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(meta.getEditorId());
+        this.editorDescriptor = DBeaverUI.getActiveWorkbenchWindow().getWorkbench().getEditorRegistry().findEditor(meta.getEditorId());
     }
 
     @Override

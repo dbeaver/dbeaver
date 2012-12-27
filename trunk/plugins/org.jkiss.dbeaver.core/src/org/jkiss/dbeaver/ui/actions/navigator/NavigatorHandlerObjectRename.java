@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -117,7 +118,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                                 return false;
                             } else {
                                 ObjectSaver deleter = new ObjectSaver(commandTarget.getContext());
-                                DBeaverCore.getInstance().runInProgressService(deleter);
+                                DBeaverUI.runInProgressService(deleter);
                             }
                         }
                         return true;

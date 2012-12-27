@@ -36,7 +36,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
@@ -202,9 +202,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
             final Document document = new Document();
 
             try {
-                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
                         try {
                             String sourceText = getSourceText(monitor);
                             if (sourceText != null) {

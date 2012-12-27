@@ -41,7 +41,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         connectionsProps = new HashMap<String, String>();
 
         // Program name
-        connectionsProps.put("v$session.program", "DBeaver " + DBeaverCore.getVersion());
+        connectionsProps.put("v$session.program", DBeaverCore.getProductTitle());
     }
 
     public static Map<String,String> getConnectionsProps() {

@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -171,7 +172,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
                 // Persist object deletion - only if there is no host editor and we have a command context
                 ObjectSaver deleter = new ObjectSaver(commandTarget.getContext());
-                DBeaverCore.getInstance().runInProgressService(deleter);
+                DBeaverUI.runInProgressService(deleter);
             }
 
         } catch (InterruptedException e) {

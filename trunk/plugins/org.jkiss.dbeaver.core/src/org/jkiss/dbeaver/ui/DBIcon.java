@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.core.DBeaverIcons;
  */
 public enum DBIcon
 {
+    DBEAVER_LOGO("dbeaver_logo", "icons/dbeaver.png"), //$NON-NLS-1$ //$NON-NLS-2$
+
     GEN_DATABASE("gen_database", "icons/database.png"), //$NON-NLS-1$ //$NON-NLS-2$
     GEN_DATABASE_TYPE("gen_database_type", "icons/database_type.png"), //$NON-NLS-1$ //$NON-NLS-2$
 

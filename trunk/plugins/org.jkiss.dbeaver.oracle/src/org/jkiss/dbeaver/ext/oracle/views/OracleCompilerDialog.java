@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.actions.CompileHandler;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -207,7 +208,7 @@ public class OracleCompilerDialog extends TrayDialog
 
         if (!CommonUtils.isEmpty(toCompile)) {
             try {
-                DBeaverCore.getInstance().runInProgressService(new DBRRunnableWithProgress() {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
