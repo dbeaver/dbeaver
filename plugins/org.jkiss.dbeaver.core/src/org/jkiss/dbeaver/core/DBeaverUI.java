@@ -1,5 +1,7 @@
 package org.jkiss.dbeaver.core;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -7,12 +9,8 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.source.ISharedTextColors;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.TrayItem;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
@@ -23,18 +21,28 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.SharedTextColors;
+import org.osgi.framework.Bundle;
 
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 
 /**
  * DBeaver UI core
  */
 public class DBeaverUI {
 
+    static final Log log = LogFactory.getLog(DBeaverUI.class);
+
     private static DBeaverUI instance;
 
     private SharedTextColors sharedTextColors;
-    private TrayItem trayItem;
+    // AWT tray icon. SWT TrayItem do not support displayMessage function
+    private TrayIcon trayItem;
 
     static void initializeUI()
     {
@@ -54,24 +62,50 @@ public class DBeaverUI {
         return instance.sharedTextColors;
     }
 
-    public static TrayItem getTrayItem()
-    {
-        return instance.trayItem;
-    }
-
     private void dispose()
     {
-        this.trayItem.dispose();
+        //this.trayItem.dispose();
         this.sharedTextColors.dispose();
     }
 
     private void initialize()
     {
-        DBeaverIcons.initRegistry(DBeaverActivator.getInstance().getBundle());
+        Bundle coreBundle = DBeaverActivator.getInstance().getBundle();
+        DBeaverIcons.initRegistry(coreBundle);
 
         //progressProvider = new DBeaverProgressProvider();
         this.sharedTextColors = new SharedTextColors();
 
+        URL logoURL = coreBundle.getEntry(DBIcon.DBEAVER_LOGO.getPath());
+        trayItem = new TrayIcon(Toolkit.getDefaultToolkit().getImage(logoURL));
+        trayItem.setImageAutoSize(true);
+        trayItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+
+            }
+        });
+        trayItem.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e)
+            {
+            }
+        });
+
+
+        // Add tooltip and menu to trayicon
+        trayItem.setToolTip(DBeaverCore.getProductTitle());
+
+        // Add the trayIcon to system tray/notification
+        // area
+
+        try {
+            SystemTray.getSystemTray().add(trayItem);
+        } catch (AWTException e) {
+            log.error(e);
+        }
+/*
         trayItem = new TrayItem(Display.getDefault().getSystemTray(), SWT.NONE);
         trayItem.setText(DBeaverCore.getProductTitle());
         trayItem.setImage(DBIcon.DBEAVER_LOGO.getImage());
@@ -81,6 +115,7 @@ public class DBeaverUI {
             {
             }
         });
+*/
     }
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
@@ -197,14 +232,7 @@ public class DBeaverUI {
 
     public static void taskFinished()
     {
-/*
-        DBeaverUI.getTrayItem().setToolTipText("FINISHED!");
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-        }
-        DBeaverUI.getActiveWorkbenchWindow().getShell().forceActive();
-        DBeaverUI.getTrayItem().getDisplay().getFocusControl();
-*/
+        instance.trayItem.displayMessage("DBeaver", "TASK FINISHED", TrayIcon.MessageType.ERROR);
     }
+
 }
