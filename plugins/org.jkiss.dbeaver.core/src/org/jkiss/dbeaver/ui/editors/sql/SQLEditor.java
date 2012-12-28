@@ -545,7 +545,9 @@ public class SQLEditor extends SQLEditorBase
                                     getSelectionProvider().setSelection(originalSelection);
                                 }
 
-                                DBeaverUI.taskFinished();
+                                if (result.getQueryTime() > 0) {
+                                    DBeaverUI.taskFinished();
+                                }
                             }
                         });
                     }
