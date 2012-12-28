@@ -34,7 +34,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.texteditor.templates.AbstractTemplatesPage;
-import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -134,7 +134,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     @Override
     protected IPreferenceStore getTemplatePreferenceStore()
     {
-        return DBeaverActivator.getInstance().getPreferenceStore();
+        return DBeaverCore.getGlobalPreferenceStore();
     }
 
     @Override

@@ -23,7 +23,6 @@ import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.jkiss.dbeaver.DBeaverConstants;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -185,7 +184,7 @@ public class SQLTemplateStore extends TemplateStore {
     private static class CustomTemplatesStore extends AbstractPreferenceStore {
         private CustomTemplatesStore()
         {
-            super(DBeaverActivator.getInstance().getPreferenceStore());
+            super(DBeaverCore.getGlobalPreferenceStore());
             try {
                 File configurationFile = getConfigurationFile();
                 if (configurationFile.exists()) {
