@@ -32,7 +32,7 @@ public class DataSourcePreferenceStore extends AbstractPreferenceStore
 
     DataSourcePreferenceStore(DataSourceDescriptor dataSourceDescriptor)
     {
-        super(DBeaverCore.getInstance().getGlobalPreferenceStore());
+        super(DBeaverCore.getGlobalPreferenceStore());
         this.dataSourceDescriptor = dataSourceDescriptor;
     }
 

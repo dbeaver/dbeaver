@@ -173,7 +173,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                     manager.setTextFont((FontData) event.getNewValue());
             }
         };
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.addPropertyChangeListener(preferencesChangeListener);
 
         manager.addLongSelectionListener(new SelectionAdapter() {
@@ -244,7 +244,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             manager = null;
         }
 
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.removePropertyChangeListener(preferencesChangeListener);
 
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);

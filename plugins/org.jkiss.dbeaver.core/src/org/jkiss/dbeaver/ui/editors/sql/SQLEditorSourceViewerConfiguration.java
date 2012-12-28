@@ -160,7 +160,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         if (editor instanceof IDataSourceContainerProvider) {
             final DBSDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
             if (container != null) {

@@ -189,7 +189,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         {
             IPreferenceStore store = useDataSourceSettings() ?
                 getDataSourceContainer().getPreferenceStore() :
-                DBeaverCore.getInstance().getGlobalPreferenceStore();
+                DBeaverCore.getGlobalPreferenceStore();
             loadPreferences(store);
         }
 
@@ -310,7 +310,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     {
         IPreferenceStore store = isDataSourcePreferencePage() ?
             getDataSourceContainer().getPreferenceStore() :
-            DBeaverCore.getInstance().getGlobalPreferenceStore();
+            DBeaverCore.getGlobalPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
             clearPreferences(store);

@@ -309,7 +309,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
         QMUtils.registerMetaListener(this);
 
-        DBeaverCore.getInstance().getGlobalPreferenceStore().addPropertyChangeListener(this);
+        DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
     }
 
     private void showEventDetails(QMMObject object)
@@ -347,7 +347,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
     private void dispose()
     {
-        DBeaverCore.getInstance().getGlobalPreferenceStore().removePropertyChangeListener(this);
+        DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(this);
         QMUtils.unregisterMetaListener(this);
         UIUtils.dispose(dndSource);
         UIUtils.dispose(logTable);
@@ -458,7 +458,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
     private void reloadEvents()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         this.defaultFilter = new DefaultEventFilter();
         this.entriesPerPage = store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE);

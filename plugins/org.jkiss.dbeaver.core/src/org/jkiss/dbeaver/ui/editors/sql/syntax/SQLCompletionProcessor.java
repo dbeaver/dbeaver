@@ -494,7 +494,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         Image image,
         boolean isObject)
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         if (editor.getDataSource() != null) {
             store = editor.getDataSource().getContainer().getPreferenceStore();
         }

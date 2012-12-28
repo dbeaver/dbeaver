@@ -46,7 +46,7 @@ public class DefaultEventFilter implements QMEventFilter {
 
     public void reloadPreferences()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
         this.showSessions = objectTypes.contains(QMObjectType.session);

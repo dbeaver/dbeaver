@@ -82,7 +82,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     {
         if (storage == null && clob != null) {
             long contentLength = getContentLength();
-            if (contentLength < DBeaverCore.getInstance().getGlobalPreferenceStore().getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE)) {
+            if (contentLength < DBeaverCore.getGlobalPreferenceStore().getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
                 }

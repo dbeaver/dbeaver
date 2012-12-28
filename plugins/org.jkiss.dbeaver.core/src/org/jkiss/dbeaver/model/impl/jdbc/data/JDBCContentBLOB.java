@@ -81,12 +81,12 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     {
         if (storage == null && blob != null) {
             long contentLength = getContentLength();
-            if (contentLength < DBeaverCore.getInstance().getGlobalPreferenceStore().getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE)) {
+            if (contentLength < DBeaverCore.getGlobalPreferenceStore().getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     storage = BytesContentStorage.createFromStream(
                         blob.getBinaryStream(),
                         contentLength,
-                        DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PrefConstants.CONTENT_HEX_ENCODING));
+                        DBeaverCore.getGlobalPreferenceStore().getString(PrefConstants.CONTENT_HEX_ENCODING));
                 }
                 catch (Exception e) {
                     throw new DBCException(e);
