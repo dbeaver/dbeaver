@@ -75,7 +75,7 @@ public class ConnectJob extends EventProcessorJob
 
             return new Status(
                 Status.OK,
-                DBeaverCore.getInstance().getPluginID(),
+                DBeaverCore.getCorePluginID(),
                 CoreMessages.runtime_jobs_connect_status_connected);
         }
         catch (Throwable ex) {

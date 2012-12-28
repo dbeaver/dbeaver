@@ -25,6 +25,10 @@ public final class PrefConstants
 {
     public static final String NATIVE_LIB_PATH = "native.lib.path"; //$NON-NLS-1$
 
+    public static final String AGENT_ENABLED = "agent.enabled"; //$NON-NLS-1$
+    public static final String AGENT_LONG_OPERATION_NOTIFY = "agent.long.operation.notify"; //$NON-NLS-1$
+    public static final String AGENT_LONG_OPERATION_TIMEOUT = "agent.long.operation.timeout"; //$NON-NLS-1$
+
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
     public static final String QUERY_ROLLBACK_ON_ERROR = "query.rollback-on-error"; //$NON-NLS-1$
