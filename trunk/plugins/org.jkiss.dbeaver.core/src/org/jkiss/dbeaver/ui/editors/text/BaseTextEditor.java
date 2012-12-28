@@ -36,7 +36,7 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.eclipse.ui.texteditor.rulers.*;
-import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -89,7 +89,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
     @Override
     public void createPartControl(Composite parent)
     {
-        setPreferenceStore(DBeaverActivator.getInstance().getPreferenceStore());
+        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
 
         super.createPartControl(parent);
     }

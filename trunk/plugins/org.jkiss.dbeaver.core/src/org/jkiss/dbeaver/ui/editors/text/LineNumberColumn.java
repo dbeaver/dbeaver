@@ -34,7 +34,7 @@ import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
-import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 
 /**
@@ -258,7 +258,7 @@ public class LineNumberColumn implements IContributedRulerColumn, IVerticalRuler
     }
 
     private IPreferenceStore getPreferenceStore() {
-        return DBeaverActivator.getInstance().getPreferenceStore();
+        return DBeaverCore.getGlobalPreferenceStore();
     }
 
     private ISharedTextColors getSharedColors() {

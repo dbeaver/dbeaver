@@ -114,8 +114,12 @@ public class DBeaverCore implements DBPApplication {
     private static DBeaverCore createInstance()
     {
         log.debug("Initializing " + getProductTitle());
-        Bundle definingBundle = Platform.getProduct().getDefiningBundle();
-        log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
+        if (Platform.getProduct() != null) {
+            Bundle definingBundle = Platform.getProduct().getDefiningBundle();
+            if (definingBundle != null) {
+                log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
+            }
+        }
 
         instance = new DBeaverCore();
         instance.initialize();
