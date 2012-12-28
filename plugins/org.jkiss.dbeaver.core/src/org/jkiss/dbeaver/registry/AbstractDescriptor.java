@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverIcons;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -182,7 +183,7 @@ public abstract class AbstractDescriptor {
     {
         Class<?> objectClass = null;
         try {
-            objectClass = DBeaverCore.getInstance().getPlugin().getBundle().loadClass(className);
+            objectClass = DBeaverActivator.getInstance().getBundle().loadClass(className);
         } catch (Throwable ex) {
             // do nothing
             //log.warn("Can't load object class '" + className + "'", ex);

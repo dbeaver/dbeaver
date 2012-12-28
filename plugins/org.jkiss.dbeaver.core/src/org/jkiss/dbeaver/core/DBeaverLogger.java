@@ -38,11 +38,14 @@ public class DBeaverLogger implements Log, Serializable
 	 * 
 	 */
 	private static final long serialVersionUID = -4079924783238318027L;
-	private String name;
+    private static String corePluginID;
+
+    private String name;
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     public DBeaverLogger()
     {
+        corePluginID = DBeaverActivator.getInstance().getBundle().getSymbolicName();
     }
 
     public DBeaverLogger(String name)
@@ -143,9 +146,9 @@ public class DBeaverLogger implements Log, Serializable
             info(message.toString(), (Throwable)message);
             return;
         }
-        DBeaverCore.getInstance().getPluginLog().log(new Status(
+        DBeaverActivator.getInstance().getLog().log(new Status(
             Status.INFO,
-            DBeaverCore.getInstance().getPluginID(),
+            corePluginID,
             message == null ? null : message.toString()));
     }
 
@@ -162,9 +165,9 @@ public class DBeaverLogger implements Log, Serializable
             warn(message.toString(), (Throwable)message);
             return;
         }
-        DBeaverCore.getInstance().getPluginLog().log(new Status(
+        DBeaverActivator.getInstance().getLog().log(new Status(
             Status.WARNING,
-            DBeaverCore.getInstance().getPluginID(),
+            corePluginID,
             message == null ? null : message.toString()));
     }
 
@@ -181,9 +184,9 @@ public class DBeaverLogger implements Log, Serializable
             error(message.toString(), (Throwable)message);
             return;
         }
-        DBeaverCore.getInstance().getPluginLog().log(new Status(
+        DBeaverActivator.getInstance().getLog().log(new Status(
             Status.ERROR,
-            DBeaverCore.getInstance().getPluginID(),
+            corePluginID,
             message == null ? null : message.toString()));
     }
 
@@ -208,13 +211,13 @@ public class DBeaverLogger implements Log, Serializable
     private static void writeExceptionStatus(int severity, Object message, Throwable t)
     {
         if (t == null) {
-            DBeaverCore.getInstance().getPluginLog().log(new Status(
+            DBeaverActivator.getInstance().getLog().log(new Status(
                 severity,
-                DBeaverCore.getInstance().getPluginID(),
+                corePluginID,
                 message == null ? null : message.toString()));
         } else {
-            DBeaverCore.getInstance().getPluginLog().log(new MultiStatus(
-                DBeaverCore.getInstance().getPluginID(),
+            DBeaverActivator.getInstance().getLog().log(new MultiStatus(
+                corePluginID,
                 0,
                 new IStatus[]{ RuntimeUtils.makeExceptionStatus(severity, t) },
                 message == null ? null : message.toString(),

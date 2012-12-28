@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
 import java.io.File;
@@ -74,7 +75,6 @@ public class DBeaverCore implements DBPApplication {
     private static DBeaverCore instance;
     private static boolean standalone = false;
 
-    private DBeaverActivator plugin;
     private DatabaseEditorAdapterFactory editorsAdapter;
     //private DBeaverProgressProvider progressProvider;
     private IWorkspace workspace;
@@ -104,36 +104,27 @@ public class DBeaverCore implements DBPApplication {
                 }
                 if (instance == null) {
                     // Initialize DBeaver Core
-                    DBeaverCore.createInstance(DBeaverActivator.getInstance());
+                    DBeaverCore.createInstance();
                 }
             }
         }
         return instance;
     }
 
-    private static DBeaverCore createInstance(DBeaverActivator plugin)
+    private static DBeaverCore createInstance()
     {
-        log.debug("Initializing DBeaver");
-        log.debug("Host plugin: " + plugin.getBundle().getSymbolicName() + " " + plugin.getBundle().getVersion());
+        log.debug("Initializing " + getProductTitle());
+        Bundle definingBundle = Platform.getProduct().getDefiningBundle();
+        log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
 
-        instance = new DBeaverCore(plugin);
+        instance = new DBeaverCore();
         instance.initialize();
         return instance;
     }
 
-    DBeaverCore(DBeaverActivator plugin)
+    public static String getCorePluginID()
     {
-        this.plugin = plugin;
-    }
-
-    public boolean isClosing()
-    {
-        return isClosing;
-    }
-
-    public void setClosing(boolean closing)
-    {
-        isClosing = closing;
+        return DBeaverActivator.getInstance().getBundle().getSymbolicName();
     }
 
     public static boolean isStandalone()
@@ -154,6 +145,25 @@ public class DBeaverCore implements DBPApplication {
     public static String getProductTitle()
     {
         return "DBeaver " + getVersion();
+    }
+
+    public static IPreferenceStore getGlobalPreferenceStore()
+    {
+        return DBeaverActivator.getInstance().getPreferenceStore();
+    }
+
+    DBeaverCore()
+    {
+    }
+
+    public boolean isClosing()
+    {
+        return isClosing;
+    }
+
+    public void setClosing(boolean closing)
+    {
+        isClosing = closing;
     }
 
     private void initialize()
@@ -340,21 +350,6 @@ public class DBeaverCore implements DBPApplication {
         DBeaverCore.disposed = true;
     }
 
-    public Plugin getPlugin()
-    {
-        return plugin;
-    }
-
-    public String getPluginID()
-    {
-        return plugin.getBundle().getSymbolicName();
-    }
-
-    public ILog getPluginLog()
-    {
-        return plugin.getLog();
-    }
-
     public IWorkspace getWorkspace()
     {
         return workspace;
@@ -419,11 +414,6 @@ public class DBeaverCore implements DBPApplication {
         return projectRegistry;
     }
 
-    public static IPreferenceStore getGlobalPreferenceStore()
-    {
-        return DBeaverActivator.getInstance().getPreferenceStore();
-    }
-
     public IFolder getLobFolder(IProgressMonitor monitor)
         throws IOException
     {
@@ -449,6 +439,11 @@ public class DBeaverCore implements DBPApplication {
     private void initDefaultPreferences()
     {
         IPreferenceStore store = getGlobalPreferenceStore();
+
+        // Agent
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_ENABLED, true);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_NOTIFY, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, 30);
 
         // Common
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);

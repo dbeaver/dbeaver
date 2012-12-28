@@ -792,11 +792,11 @@ public class UIUtils {
         for (String error : errorMessages) {
             messageStatuses.add(new Status(
                 Status.ERROR,
-                DBeaverCore.getInstance().getPluginID(),
+                DBeaverCore.getCorePluginID(),
                 error));
         }
         MultiStatus status = new MultiStatus(
-            DBeaverCore.getInstance().getPluginID(),
+            DBeaverCore.getCorePluginID(),
             0,
             messageStatuses.toArray(new IStatus[messageStatuses.size()]),
             message,
