@@ -1002,7 +1002,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     private void downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
     {
-        IPreferenceStore prefs = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
         String proxyHost = prefs.getString(PrefConstants.UI_PROXY_HOST);
         Proxy proxy = null;
         if (!CommonUtils.isEmpty(proxyHost)) {
@@ -1225,7 +1225,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         File homeFolder;
         // Try to use custom drivers path from preferences
-        String driversHome = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_HOME);
+        String driversHome = DBeaverCore.getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_HOME);
         if (!CommonUtils.isEmpty(driversHome)) {
             homeFolder = new File(driversHome);
         } else {
@@ -1242,14 +1242,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public static String[] getDriversSources()
     {
-        String sourcesString = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
+        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
         return pathList.toArray(new String[pathList.size()]);
     }
 
     public static String getDriversPrimarySource()
     {
-        String sourcesString = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
+        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(PrefConstants.UI_DRIVERS_SOURCES);
         int divPos = sourcesString.indexOf('|');
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
     }

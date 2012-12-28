@@ -94,7 +94,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
         super(shell, IHelpContextIds.CTX_SQL_EDITOR);
         setShellStyle(SWT.DIALOG_TRIM | SWT.MAX | SWT.RESIZE | getDefaultOrientation());
         this.currentDataSource = currentDataSource;
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         nameMask = store.getString(PROP_MASK);
         caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
@@ -120,7 +120,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
 
     public void saveState()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(PROP_MASK, nameMask);
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);

@@ -74,7 +74,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     public PrefPageDataFormat()
     {
         super();
-        setPreferenceStore(DBeaverCore.getInstance().getGlobalPreferenceStore());
+        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
     }
 
     @Override

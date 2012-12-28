@@ -46,7 +46,7 @@ public class DBWGlobalAuthenticator extends Authenticator {
 
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         final String proxyHost = store.getString(PrefConstants.UI_PROXY_HOST);
         if (!CommonUtils.isEmpty(proxyHost) && proxyHost.equalsIgnoreCase(getRequestingHost()) &&

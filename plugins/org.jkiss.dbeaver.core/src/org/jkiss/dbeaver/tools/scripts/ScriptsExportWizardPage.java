@@ -99,7 +99,7 @@ class ScriptsExportWizardPage extends WizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        String outDir = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(PREF_SCRIPTS_EXPORT_OUT_DIR);
+        String outDir = DBeaverCore.getGlobalPreferenceStore().getString(PREF_SCRIPTS_EXPORT_OUT_DIR);
         if (CommonUtils.isEmpty(outDir)) {
             outDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }
@@ -188,7 +188,7 @@ class ScriptsExportWizardPage extends WizardPage {
         }
 
         final String outputDir = directoryText.getText();
-        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue(PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
+        DBeaverCore.getGlobalPreferenceStore().setValue(PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
         return new ScriptsExportData(result, overwriteCheck.getSelection(), new File(outputDir));
     }
 

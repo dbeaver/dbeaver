@@ -142,7 +142,7 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     private int findFreePort()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         int minPort = store.getInt(PrefConstants.NET_TUNNEL_PORT_MIN);
         int maxPort = store.getInt(PrefConstants.NET_TUNNEL_PORT_MAX);
         int portRange = Math.abs(maxPort - minPort);

@@ -77,7 +77,7 @@ class ScriptsImportWizardPage extends WizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        String externalDir = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR);
+        String externalDir = DBeaverCore.getGlobalPreferenceStore().getString(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR);
         if (CommonUtils.isEmpty(externalDir)) {
             externalDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }
@@ -187,7 +187,7 @@ class ScriptsImportWizardPage extends WizardPage {
             dataSourceContainer = (DBSDataSourceContainer) scriptsDataSources.getData(dsIndex);
         }
         final String outputDir = directoryText.getText();
-        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
+        DBeaverCore.getGlobalPreferenceStore().setValue(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);
         return new ScriptsImportData(
             new File(outputDir),
             extensionsText.getText(),

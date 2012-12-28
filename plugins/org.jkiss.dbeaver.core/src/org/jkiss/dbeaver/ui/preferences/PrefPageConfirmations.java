@@ -100,7 +100,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
     @Override
     protected void performDefaults()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
             String id = entry.getKey();
@@ -120,7 +120,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
     @Override
     public boolean performOk()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         for (Map.Entry<String, Combo> entry : confirmChecks.entrySet()) {
             String id = entry.getKey();

@@ -36,7 +36,6 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
@@ -135,7 +134,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         {
             SQLSymbolInserter symbolInserter = new SQLSymbolInserter(this);
 
-            IPreferenceStore preferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
+            IPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
             boolean closeSingleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
             boolean closeDoubleQuotes = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
             boolean closeBrackets = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);

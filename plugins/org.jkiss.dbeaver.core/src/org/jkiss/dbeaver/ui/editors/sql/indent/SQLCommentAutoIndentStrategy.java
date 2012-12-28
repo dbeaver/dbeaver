@@ -98,7 +98,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
                         // SQL multi-line comment started on this line
                         buf.append(" * "); //$NON-NLS-1$
 
-                        if (DBeaverCore.getInstance().getGlobalPreferenceStore().getBoolean(
+                        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(
                             SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS)
                             && isNewComment(d, c.offset, partitioning)) {
                             String lineDelimiter = getLineDelimiter(d);
@@ -546,7 +546,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
 
     private static IPreferenceStore getPreferenceStore()
     {
-        return DBeaverCore.getInstance().getGlobalPreferenceStore();
+        return DBeaverCore.getGlobalPreferenceStore();
     }
 
     /**

@@ -126,7 +126,7 @@ public class PrefPageResources extends PreferencePage implements IWorkbenchPrefe
     @Override
     public boolean performOk()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         //store.setValue(PrefConstants.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
         RuntimeUtils.savePreferenceStore(store);
 

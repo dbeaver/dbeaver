@@ -66,7 +66,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         if (value instanceof DBDCursor) {
-            IPreferenceStore globalPreferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
+            IPreferenceStore globalPreferenceStore = DBeaverCore.getGlobalPreferenceStore();
             if (!globalPreferenceStore.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
                         getShell(),

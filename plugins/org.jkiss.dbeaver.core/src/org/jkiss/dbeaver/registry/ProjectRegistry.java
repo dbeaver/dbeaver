@@ -35,6 +35,8 @@ import java.util.*;
 public class ProjectRegistry implements IResourceChangeListener {
     static final Log log = LogFactory.getLog(ProjectRegistry.class);
 
+    private static final String PROP_PROJECT_ACTIVE = "project.active";
+
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
     private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<String, ResourceHandlerDescriptor>();
 
@@ -67,7 +69,7 @@ public class ProjectRegistry implements IResourceChangeListener {
     public void loadProjects(IWorkspace workspace, IProgressMonitor monitor) throws CoreException
     {
         final DBeaverCore core = DBeaverCore.getInstance();
-        String activeProjectName = core.getGlobalPreferenceStore().getString("project.active");
+        String activeProjectName = DBeaverCore.getGlobalPreferenceStore().getString(PROP_PROJECT_ACTIVE);
 
         List<IProject> projects = core.getLiveProjects();
         if (DBeaverCore.isStandalone() && CommonUtils.isEmpty(projects)) {
@@ -236,7 +238,7 @@ public class ProjectRegistry implements IResourceChangeListener {
     {
         final IProject oldValue = this.activeProject;
         this.activeProject = project;
-        DBeaverCore.getInstance().getGlobalPreferenceStore().setValue("project.active", project == null ? "" : project.getName());
+        DBeaverCore.getGlobalPreferenceStore().setValue(PROP_PROJECT_ACTIVE, project == null ? "" : project.getName());
 
         GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_ACTIVE_PROJECT);
 
