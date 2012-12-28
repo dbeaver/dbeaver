@@ -89,6 +89,11 @@ public class SQLQueryResult
         this.updateCount = updateCount;
     }
 
+    public boolean hasError()
+    {
+        return error != null;
+    }
+
     public Throwable getError()
     {
         return error;

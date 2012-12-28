@@ -9,6 +9,7 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.source.ISharedTextColors;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
@@ -21,6 +22,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.SharedTextColors;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.osgi.framework.Bundle;
 
 import java.awt.*;
@@ -230,9 +232,20 @@ public class DBeaverUI {
         }
     }
 
-    public static void taskFinished()
+    public static void notifyAgent(String message, int status)
     {
-        instance.trayItem.displayMessage("DBeaver", "TASK FINISHED", TrayIcon.MessageType.ERROR);
+        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY)) {
+            // Notifications disabled
+            return;
+        }
+        TrayIcon.MessageType type;
+        switch (status) {
+            case IStatus.INFO: type = TrayIcon.MessageType.INFO; break;
+            case IStatus.ERROR: type = TrayIcon.MessageType.ERROR; break;
+            case IStatus.WARNING: type = TrayIcon.MessageType.WARNING; break;
+            default: type = TrayIcon.MessageType.NONE; break;
+        }
+        instance.trayItem.displayMessage(DBeaverCore.getProductTitle(), message, type);
     }
 
 }
