@@ -231,7 +231,7 @@ public class SQLQueryJob extends DataSourceJob
                 // Return error
                 return new Status(
                     Status.ERROR,
-                    DBeaverCore.getInstance().getPluginID(),
+                    DBeaverCore.getInstance().getCorePluginID(),
                     code,
                     lastError.getMessage(),
                     null);
@@ -239,7 +239,7 @@ public class SQLQueryJob extends DataSourceJob
                 // Return success
                 return new Status(
                     Status.OK,
-                    DBeaverCore.getInstance().getPluginID(),
+                    DBeaverCore.getInstance().getCorePluginID(),
                     "SQL job completed");
             }
 */
@@ -248,7 +248,7 @@ public class SQLQueryJob extends DataSourceJob
                 // Return success
                 return new Status(
                     Status.OK,
-                    DBeaverCore.getInstance().getPluginID(),
+                    DBeaverCore.getCorePluginID(),
                     "SQL job completed");
             }
             finally {
@@ -258,7 +258,7 @@ public class SQLQueryJob extends DataSourceJob
         catch (Throwable ex) {
             return new Status(
                 Status.ERROR,
-                DBeaverCore.getInstance().getPluginID(),
+                DBeaverCore.getCorePluginID(),
                 "Error during SQL job execution: " + ex.getMessage());
         }
         finally {

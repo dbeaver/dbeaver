@@ -86,7 +86,7 @@ public class RuntimeUtils {
         if (cause == null) {
             return new Status(
                 severity,
-                DBeaverCore.getInstance().getPluginID(),
+                DBeaverCore.getCorePluginID(),
                 getExceptionMessage(ex),
                 null);
         } else {
@@ -95,7 +95,7 @@ public class RuntimeUtils {
                 return makeExceptionStatus(cause);
             }
             return new MultiStatus(
-                DBeaverCore.getInstance().getPluginID(),
+                DBeaverCore.getCorePluginID(),
                 0,
                 new IStatus[]{makeExceptionStatus(severity, cause)},
                 getExceptionMessage(ex),
@@ -106,7 +106,7 @@ public class RuntimeUtils {
     public static IStatus makeExceptionStatus(String message, Throwable ex)
     {
         return new MultiStatus(
-            DBeaverCore.getInstance().getPluginID(),
+            DBeaverCore.getCorePluginID(),
             0,
             new IStatus[]{makeExceptionStatus(ex)},
             message,
