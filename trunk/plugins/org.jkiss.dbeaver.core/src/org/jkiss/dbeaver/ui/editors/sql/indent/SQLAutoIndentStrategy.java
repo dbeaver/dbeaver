@@ -153,7 +153,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private void clearCachedValues()
     {
         autoCompletionMap.clear();
-        IPreferenceStore preferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
         boolean closeBeginEnd = preferenceStore.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END);
         if (closeBeginEnd) {
             autoCompletionMap.put(Symbols.Tokenbegin, Symbols.beginTrail);

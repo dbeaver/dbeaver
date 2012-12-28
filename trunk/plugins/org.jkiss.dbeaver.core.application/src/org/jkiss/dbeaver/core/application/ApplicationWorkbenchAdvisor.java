@@ -107,8 +107,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     private void startVersionChecker()
     {
-        if (DBeaverCore.getInstance().getGlobalPreferenceStore().getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK)) {
-            long lastVersionCheckTime = DBeaverCore.getInstance().getGlobalPreferenceStore().getLong(PrefConstants.UI_UPDATE_CHECK_TIME);
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK)) {
+            long lastVersionCheckTime = DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.UI_UPDATE_CHECK_TIME);
             if (lastVersionCheckTime > 0) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTimeInMillis(lastVersionCheckTime);
@@ -119,7 +119,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     return;
                 }
             }
-            DBeaverCore.getInstance().getGlobalPreferenceStore().setValue(PrefConstants.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
+            DBeaverCore.getGlobalPreferenceStore().setValue(PrefConstants.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
             DBeaverVersionChecker checker = new DBeaverVersionChecker(false);
             checker.schedule(3000);
         }

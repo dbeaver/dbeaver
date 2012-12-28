@@ -37,9 +37,7 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -169,7 +167,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     @Override
     protected void performDefaults()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         automaticUpdateCheck.setSelection(store.getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK));
         proxyHostText.setText(store.getString(PrefConstants.UI_PROXY_HOST));
@@ -196,7 +194,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     @Override
     public boolean performOk()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.setValue(PrefConstants.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
         store.setValue(PrefConstants.UI_PROXY_HOST, proxyHostText.getText());
         store.setValue(PrefConstants.UI_PROXY_PORT, proxyPortSpinner.getSelection());

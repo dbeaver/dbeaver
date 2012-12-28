@@ -50,7 +50,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
      */
     public static FontData getPrefFontData()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         String fontName = store.getString(PrefConstants.HEX_FONT_NAME);
         int fontStyle = store.getInt(PrefConstants.HEX_FONT_STYLE);
         int fontSize = store.getInt(PrefConstants.HEX_FONT_SIZE);
@@ -101,7 +101,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
     @Override
     public boolean performOk()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         FontData fontData = preferences.getFontData();
         store.setValue(PrefConstants.HEX_FONT_NAME, fontData.getName());
         store.setValue(PrefConstants.HEX_FONT_STYLE, fontData.getStyle());

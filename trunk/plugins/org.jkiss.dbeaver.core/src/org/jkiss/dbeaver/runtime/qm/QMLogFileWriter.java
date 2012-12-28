@@ -35,20 +35,20 @@ public class QMLogFileWriter implements QMMetaListener, IPropertyChangeListener 
     public QMLogFileWriter()
     {
         lineSeparator = ContentUtils.getDefaultLineSeparator();
-        DBeaverCore.getInstance().getGlobalPreferenceStore().addPropertyChangeListener(this);
+        DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
         initLogFile();
     }
 
     public void dispose()
     {
-        DBeaverCore.getInstance().getGlobalPreferenceStore().removePropertyChangeListener(this);
+        DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(this);
     }
 
     private synchronized void initLogFile()
     {
-        enabled = DBeaverCore.getInstance().getGlobalPreferenceStore().getBoolean(QMConstants.PROP_STORE_LOG_FILE);
+        enabled = DBeaverCore.getGlobalPreferenceStore().getBoolean(QMConstants.PROP_STORE_LOG_FILE);
         if (enabled) {
-            String logFolder = DBeaverCore.getInstance().getGlobalPreferenceStore().getString(QMConstants.PROP_LOG_DIRECTORY);
+            String logFolder = DBeaverCore.getGlobalPreferenceStore().getString(QMConstants.PROP_LOG_DIRECTORY);
             String logFileName = "dbeaver_sql_" + RuntimeUtils.getCurrentDate() + ".log";
             logFile = new File(logFolder, logFileName);
             try {

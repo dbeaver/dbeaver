@@ -88,7 +88,7 @@ public class DataFormatterRegistry
         if (globalProfile == null) {
             globalProfile = new DataFormatterProfile(
                 "Global",
-                DBeaverCore.getInstance().getGlobalPreferenceStore());
+                DBeaverCore.getGlobalPreferenceStore());
         }
         return globalProfile;
     }
@@ -205,7 +205,7 @@ public class DataFormatterRegistry
     private class CustomProfileStore extends AbstractPreferenceStore {
         private CustomProfileStore()
         {
-            super(DBeaverCore.getInstance().getGlobalPreferenceStore());
+            super(DBeaverCore.getGlobalPreferenceStore());
         }
 
         @Override

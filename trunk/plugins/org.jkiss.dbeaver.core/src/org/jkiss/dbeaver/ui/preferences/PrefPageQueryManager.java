@@ -120,7 +120,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
     @Override
     protected void performDefaults()
     {
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
         Collection<String> queryTypes = CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',');
 
@@ -164,7 +164,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         Integer historyDays = UIUtils.getTextInteger(textHistoryDays);
         Integer entriesPerPage = UIUtils.getTextInteger(textEntriesPerPage);
 
-        IPreferenceStore store = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(objectTypes));
         store.setValue(QMConstants.PROP_QUERY_TYPES, CommonUtils.makeString(queryTypes, ','));
         if (historyDays != null) {

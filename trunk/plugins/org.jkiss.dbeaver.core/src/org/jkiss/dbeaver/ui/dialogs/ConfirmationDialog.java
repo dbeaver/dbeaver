@@ -66,7 +66,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         boolean toggleState,
         String key)
     {
-        IPreferenceStore prefStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
+        IPreferenceStore prefStore = DBeaverCore.getGlobalPreferenceStore();
         if (ConfirmationDialog.ALWAYS.equals(prefStore.getString(key))) {
             if (kind == QUESTION || kind == QUESTION_WITH_CANCEL) {
                 return IDialogConstants.YES_ID;

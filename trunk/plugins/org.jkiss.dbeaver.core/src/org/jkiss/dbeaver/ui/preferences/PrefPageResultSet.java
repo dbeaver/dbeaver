@@ -42,7 +42,7 @@ public class PrefPageResultSet extends TargetPrefPage
     public PrefPageResultSet()
     {
         super();
-        setPreferenceStore(DBeaverCore.getInstance().getGlobalPreferenceStore());
+        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
     }
 
     @Override

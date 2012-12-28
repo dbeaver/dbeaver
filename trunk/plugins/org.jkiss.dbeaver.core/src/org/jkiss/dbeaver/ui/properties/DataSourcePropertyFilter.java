@@ -35,7 +35,7 @@ public class DataSourcePropertyFilter implements IFilter {
     {
         IPreferenceStore store = dataSource != null ?
             dataSource.getContainer().getPreferenceStore() :
-            DBeaverCore.getInstance().getGlobalPreferenceStore();
+            DBeaverCore.getGlobalPreferenceStore();
         this.showExpensive = store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES);
     }
 

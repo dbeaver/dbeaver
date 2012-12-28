@@ -46,7 +46,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     public PrefPageDatabaseGeneral()
     {
         super();
-        setPreferenceStore(DBeaverCore.getInstance().getGlobalPreferenceStore());
+        setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
     }
 
     @Override

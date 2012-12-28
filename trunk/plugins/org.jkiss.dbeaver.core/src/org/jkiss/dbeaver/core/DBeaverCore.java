@@ -419,9 +419,9 @@ public class DBeaverCore implements DBPApplication {
         return projectRegistry;
     }
 
-    public IPreferenceStore getGlobalPreferenceStore()
+    public static IPreferenceStore getGlobalPreferenceStore()
     {
-        return plugin.getPreferenceStore();
+        return DBeaverActivator.getInstance().getPreferenceStore();
     }
 
     public IFolder getLobFolder(IProgressMonitor monitor)

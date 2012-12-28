@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPathEditorInput;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -131,7 +130,7 @@ public class ContentUtils {
     {
         IPreferenceStore preferenceStore;
         if (dataSource == null) {
-            preferenceStore = DBeaverCore.getInstance().getGlobalPreferenceStore();
+            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
         } else {
             preferenceStore = dataSource.getContainer().getPreferenceStore();
         }
