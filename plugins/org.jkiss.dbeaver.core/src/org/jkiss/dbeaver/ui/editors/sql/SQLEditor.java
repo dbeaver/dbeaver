@@ -100,8 +100,8 @@ public class SQLEditor extends SQLEditorBase
 
     private ExplainPlanViewer planView;
 
-    private SQLQueryJob curJob;
-    private boolean curJobRunning;
+    private volatile SQLQueryJob curJob;
+    private volatile int curJobRunning = 0;
     private DataContainer dataContainer;
 
     private static Image imgDataGrid;
@@ -448,7 +448,7 @@ public class SQLEditor extends SQLEditorBase
             // Nothing to process
             return;
         }
-        if (curJobRunning) {
+        if (curJobRunning > 0) {
             UIUtils.showErrorDialog(
                 getSite().getShell(),
                 CoreMessages.editors_sql_error_cant_execute_query_title,
@@ -482,7 +482,6 @@ public class SQLEditor extends SQLEditorBase
                 @Override
                 public void onStartJob()
                 {
-                    curJobRunning = true;
                     if (!isSingleQuery) {
                         UIUtils.runInUI(null, new Runnable() {
                             @Override
@@ -496,6 +495,7 @@ public class SQLEditor extends SQLEditorBase
                 @Override
                 public void onStartQuery(final SQLStatementInfo query)
                 {
+                    curJobRunning++;
                     final long curTime = System.currentTimeMillis();
                     if (lastUIUpdateTime <= 0 || (curTime - lastUIUpdateTime >= SCRIPT_UI_UPDATE_PERIOD)) {
                         UIUtils.runInUI(null, new Runnable() {
@@ -513,6 +513,8 @@ public class SQLEditor extends SQLEditorBase
                 @Override
                 public void onEndQuery(final SQLQueryResult result)
                 {
+                    curJobRunning--;
+
                     if (isDisposed()) {
                         return;
                     }
@@ -554,13 +556,14 @@ public class SQLEditor extends SQLEditorBase
                                 }
                             }
                         });
+                        synchronized (this) {
+                            curJob = null;
+                        }
                     }
                 }
                 @Override
                 public void onEndJob(final boolean hasErrors)
                 {
-                    curJobRunning = false;
-
                     if (isDisposed()) {
                         return;
                     }
@@ -578,8 +581,8 @@ public class SQLEditor extends SQLEditorBase
                     });
                 }
             });
-            closeJob();
             if (isSingleQuery) {
+                closeJob();
                 curJob = job;
                 resultsView.refresh();
             } else {
@@ -599,7 +602,7 @@ public class SQLEditor extends SQLEditorBase
     private void closeJob()
     {
         if (curJob != null) {
-            curJob.close();
+            curJob.cancel();
             curJob = null;
         }
     }
@@ -736,7 +739,7 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public int promptToSaveOnClose()
     {
-        if (curJobRunning) {
+        if (curJobRunning > 0) {
             MessageBox messageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
             messageBox.setMessage(CoreMessages.editors_sql_save_on_close_message);
             messageBox.setText(CoreMessages.editors_sql_save_on_close_text);
@@ -766,7 +769,7 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public boolean isReadyToRun()
     {
-        return curJob != null && !curJobRunning;
+        return curJob != null && curJobRunning == 0;
     }
 
     private class DataContainer implements DBSDataContainer {

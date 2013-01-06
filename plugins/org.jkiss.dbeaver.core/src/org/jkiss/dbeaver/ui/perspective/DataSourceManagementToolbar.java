@@ -344,12 +344,15 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                     for (int i = 0; i < dataSources.size(); i++) {
                         DBSDataSourceContainer ds = dataSources.get(i);
+                        if (ds == null) {
+                            continue;
+                        }
                         if (update) {
                             DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(ds);
                             connectionCombo.add(
                                 dsNode == null ? DBIcon.TREE_DATABASE.getImage() : dsNode.getNodeIconDefault(),
                                 ds.getName(),
-                                dsNode.getDataSourceContainer().getConnectionInfo().getConnectionType().getColor(),
+                                dsNode == null ? null : dsNode.getDataSourceContainer().getConnectionInfo().getConnectionType().getColor(),
                                 ds);
                         }
                         if (dataSourceContainer == ds) {
