@@ -546,9 +546,4 @@ public class SQLQueryJob extends DataSourceJob
         return rowCount;
     }
 
-    public void close()
-    {
-        closeStatement();
-    }
-
 }
