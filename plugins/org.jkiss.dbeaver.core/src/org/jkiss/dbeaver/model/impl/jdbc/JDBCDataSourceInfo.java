@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCStateType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -40,7 +41,6 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
 {
     static final Log log = LogFactory.getLog(JDBCDataSourceInfo.class);
 
-    public static final String STRUCT_SEPARATOR = "."; //$NON-NLS-1$
     public static final String TERM_SCHEMA = CoreMessages.model_jdbc_Schema;
     public static final String TERM_PROCEDURE = CoreMessages.model_jdbc_Procedure;
     public static final String TERM_CATALOG = CoreMessages.model_jdbc_Database;
@@ -215,11 +215,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         try {
             this.catalogSeparator = metaData.getCatalogSeparator();
             if (CommonUtils.isEmpty(this.catalogSeparator)) {
-                this.catalogSeparator = STRUCT_SEPARATOR;
+                this.catalogSeparator = SQLConstants.STRUCT_SEPARATOR;
             }
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.catalogSeparator = STRUCT_SEPARATOR;
+            this.catalogSeparator = SQLConstants.STRUCT_SEPARATOR;
         }
         try {
             catalogUsage = 
@@ -429,7 +429,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     @Override
     public String getStructSeparator()
     {
-        return STRUCT_SEPARATOR;
+        return SQLConstants.STRUCT_SEPARATOR;
     }
 
     @Override

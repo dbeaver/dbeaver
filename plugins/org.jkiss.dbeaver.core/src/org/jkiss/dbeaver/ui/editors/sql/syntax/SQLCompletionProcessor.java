@@ -315,12 +315,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         Matcher matcher;
         Pattern aliasPattern;
-        String quote = editor.getDataSource().getInfo().getIdentifierQuoteString();
+        DBPDataSourceInfo dataSourceInfo = editor.getDataSource().getInfo();
+        String quote = dataSourceInfo.getIdentifierQuoteString();
         if (quote == null) {
             quote = SQLConstants.STR_QUOTE_DOUBLE;
         }
         quote = "\\" + quote;
-        String tableNamePattern = "((" + quote + "([.[^" + quote + "]]+)" + quote + ")|([\\w]+))";
+        String catalogSeparator = dataSourceInfo.getCatalogSeparator();
+        if (catalogSeparator == null) {
+            catalogSeparator = SQLConstants.STRUCT_SEPARATOR;
+        }
+        String tableNamePattern = "((" + quote + "([.[^" + quote + "]]+)" + quote + ")|([\\w\\" + catalogSeparator + "]+))";
         String structNamePattern;
         if (CommonUtils.isEmpty(token)) {
             structNamePattern = "from\\s*" + tableNamePattern + "\\s*where";
@@ -353,20 +358,21 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 return null;
             }
         }
-        nameList.add(startName);
+        nameList.addAll(CommonUtils.splitString(startName, catalogSeparator.charAt(0)));
         if (groupCount >= 8) {
             String nextName = matcher.group(8);
             if (nextName == null && groupCount >= 9) {
                 nextName = matcher.group(9);
             }
             if (nextName != null) {
-                nameList.add(nextName);
+                nameList.addAll(CommonUtils.splitString(nextName, catalogSeparator.charAt(0)));
             }
         }
 
         if (nameList.isEmpty()) {
             return null;
         }
+
         for (int i = 0; i < nameList.size(); i++) {
             nameList.set(i,
                     DBObjectNameCaseTransformer.transformName(sc.getDataSource(), nameList.get(i)));
