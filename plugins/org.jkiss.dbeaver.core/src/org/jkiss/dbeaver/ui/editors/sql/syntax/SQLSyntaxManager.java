@@ -61,7 +61,8 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
     private DBPKeywordManager keywordManager;
     private String quoteSymbol;
-    private String structSeparator;
+    private char structSeparator;
+    private String catalogSeparator;
     private String statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
 
     private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<Integer, SQLScriptPosition>();
@@ -84,9 +85,14 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         return keywordManager;
     }
 
-    public String getStructSeparator()
+    public char getStructSeparator()
     {
         return structSeparator;
+    }
+
+    public String getCatalogSeparator()
+    {
+        return catalogSeparator;
     }
 
     public String getStatementDelimiter()
@@ -127,13 +133,15 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         if (dataSource == null) {
             keywordManager = EmptyKeywordManager.INSTANCE;
             quoteSymbol = null;
-            structSeparator = ".";
+            structSeparator = SQLConstants.STRUCT_SEPARATOR;
+            catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             escapeChar = '\\';
             statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
         } else {
             keywordManager = dataSource.getContainer().getKeywordManager();
             quoteSymbol = dataSource.getInfo().getIdentifierQuoteString();
             structSeparator = dataSource.getInfo().getStructSeparator();
+            catalogSeparator = dataSource.getInfo().getCatalogSeparator();
             dataSource.getInfo().getSearchStringEscape();
             escapeChar = '\\';
             statementDelimiter = dataSource.getInfo().getScriptDelimiter();

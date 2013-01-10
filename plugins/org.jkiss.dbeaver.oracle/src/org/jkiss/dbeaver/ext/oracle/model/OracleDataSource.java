@@ -99,7 +99,7 @@ public class OracleDataSource extends JDBCDataSource
     @Override
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
-        final JDBCDataSourceInfo info = new JDBCDataSourceInfo(this, metaData);
+        final JDBCDataSourceInfo info = new JDBCDataSourceInfo(metaData);
         for (String kw : OracleConstants.ADVANCED_KEYWORDS) {
             info.addSQLKeyword(kw);
         }

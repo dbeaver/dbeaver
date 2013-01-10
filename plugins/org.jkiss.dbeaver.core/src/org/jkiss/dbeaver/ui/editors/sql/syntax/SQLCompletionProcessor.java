@@ -320,12 +320,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         if (quote == null) {
             quote = SQLConstants.STR_QUOTE_DOUBLE;
         }
-        quote = "\\" + quote;
+        quote = Pattern.quote(quote);
         String catalogSeparator = dataSourceInfo.getCatalogSeparator();
         if (catalogSeparator == null) {
-            catalogSeparator = SQLConstants.STRUCT_SEPARATOR;
+            catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
         }
-        String tableNamePattern = "((" + quote + "([.[^" + quote + "]]+)" + quote + ")|([\\w\\" + catalogSeparator + "]+))";
+
+        String tableNamePattern = "((" + quote + "([.[^" + quote + "]]+)" + quote + ")|([\\w" + Pattern.quote(catalogSeparator) + "]+))";
         String structNamePattern;
         if (CommonUtils.isEmpty(token)) {
             structNamePattern = "from\\s*" + tableNamePattern + "\\s*where";
