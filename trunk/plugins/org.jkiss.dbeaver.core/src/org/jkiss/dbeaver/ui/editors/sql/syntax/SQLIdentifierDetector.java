@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.jkiss.utils.CommonUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,52 +28,27 @@ import java.util.StringTokenizer;
  */
 public class SQLIdentifierDetector extends SQLWordDetector
 {
-    private String catalogSeparator;
+    private char structSeparator;
     private String quoteSymbol;
 
-    public SQLIdentifierDetector(String catalogSeparator, String quoteSymbol)
+    public SQLIdentifierDetector(char structSeparator, String quoteSymbol)
     {
-        this.catalogSeparator = catalogSeparator;
+        this.structSeparator = structSeparator;
         this.quoteSymbol = quoteSymbol;
-    }
-
-    public String getCatalogSeparator()
-    {
-        return catalogSeparator;
-    }
-
-    public String getQuoteSymbol()
-    {
-        return quoteSymbol;
     }
 
     public boolean containsSeparator(String identifier)
     {
-        if (CommonUtils.isEmpty(catalogSeparator)) {
-            return false;
-        } else if (catalogSeparator.length() == 1) {
-            return identifier.indexOf(catalogSeparator.charAt(0)) != -1;
-        } else {
-            for (int i = 0; i < catalogSeparator.length(); i++) {
-                if (identifier.indexOf(catalogSeparator.charAt(i)) != -1) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        return identifier.indexOf(structSeparator) != -1;
     }
 
     public List<String> splitIdentifier(String identifier)
     {
-        if (CommonUtils.isEmpty(catalogSeparator)) {
-            return Collections.singletonList(identifier);
-        }
-
         if (!containsSeparator(identifier)) {
             return Collections.singletonList(identifier);
         }
         List<String> tokens = new ArrayList<String>();
-        StringTokenizer st = new StringTokenizer(identifier, catalogSeparator);
+        StringTokenizer st = new StringTokenizer(identifier, String.valueOf(structSeparator));
         while (st.hasMoreTokens()) {
             tokens.add(st.nextToken());
         }
@@ -86,7 +59,7 @@ public class SQLIdentifierDetector extends SQLWordDetector
     public boolean isWordPart(char c) {
         return super.isWordPart(c) ||
             (quoteSymbol != null && quoteSymbol.indexOf(c) != -1) ||
-            (catalogSeparator != null && catalogSeparator.indexOf(c) != -1);
+            structSeparator == c;
     }
 
     public boolean isPlainWordPart(char c) {

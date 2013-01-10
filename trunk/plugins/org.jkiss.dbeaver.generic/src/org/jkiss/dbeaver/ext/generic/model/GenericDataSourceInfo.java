@@ -42,9 +42,9 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
         //EXEC_KEYWORDS.add("DECLARE");
     }
 
-    public GenericDataSourceInfo(DBSObject owner, JDBCDatabaseMetaData metaData)
+    public GenericDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
-        super(owner, metaData);
+        super(metaData);
     }
 
     @Override

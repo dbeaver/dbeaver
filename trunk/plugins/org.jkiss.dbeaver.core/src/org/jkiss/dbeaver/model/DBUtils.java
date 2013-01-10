@@ -125,7 +125,7 @@ public final class DBUtils {
     public static String getFullQualifiedName(DBPDataSource dataSource, DBSObject ... path)
     {
         final DBPDataSourceInfo info = dataSource.getInfo();
-        StringBuilder name = new StringBuilder();
+        StringBuilder name = new StringBuilder(20);
         DBSObject parent = null;
         for (DBSObject namePart : path) {
             if (namePart == null) {

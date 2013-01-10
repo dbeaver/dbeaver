@@ -76,11 +76,11 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     {
         String fullWord = wordDetector.getFullWord();
         int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
-        String structSeparator = syntaxManager.getStructSeparator();
+        char structSeparator = syntaxManager.getStructSeparator();
         int startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
         int endOffset = fullWord.indexOf(structSeparator, curOffset);
         if (startOffset != -1) {
-            startOffset += wordDetector.getStartOffset() + structSeparator.length();
+            startOffset += wordDetector.getStartOffset() + 1;
         } else {
             startOffset = wordDetector.getStartOffset();
         }

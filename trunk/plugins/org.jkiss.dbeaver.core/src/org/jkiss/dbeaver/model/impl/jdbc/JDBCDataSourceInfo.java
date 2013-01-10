@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCStateType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -77,7 +76,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsReferences = true;
     private boolean supportsIndexes = true;
 
-    public JDBCDataSourceInfo(DBSObject owner, JDBCDatabaseMetaData metaData)
+    public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
         try {
             this.readOnly = metaData.isReadOnly();
@@ -215,11 +214,11 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         try {
             this.catalogSeparator = metaData.getCatalogSeparator();
             if (CommonUtils.isEmpty(this.catalogSeparator)) {
-                this.catalogSeparator = SQLConstants.STRUCT_SEPARATOR;
+                this.catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             }
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.catalogSeparator = SQLConstants.STRUCT_SEPARATOR;
+            this.catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
         }
         try {
             catalogUsage = 
@@ -427,7 +426,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
-    public String getStructSeparator()
+    public char getStructSeparator()
     {
         return SQLConstants.STRUCT_SEPARATOR;
     }

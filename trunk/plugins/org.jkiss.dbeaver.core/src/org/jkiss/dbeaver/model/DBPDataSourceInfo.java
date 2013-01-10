@@ -196,7 +196,7 @@ public interface DBPDataSourceInfo
      *
      * @return the separator string
      */
-    String getStructSeparator();
+    char getStructSeparator();
 
     /**
      * Retrieves whether a catalog appears at the start of a fully qualified
