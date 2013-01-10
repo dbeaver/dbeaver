@@ -156,9 +156,9 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     }
 
     @Override
-    public String getStructSeparator()
+    public char getStructSeparator()
     {
-        return ".";
+        return '.';
     }
 
     @Override

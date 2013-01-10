@@ -326,7 +326,7 @@ public abstract class JDBCDataSource
 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
-        return new JDBCDataSourceInfo(this, metaData);
+        return new JDBCDataSourceInfo(metaData);
     }
 
 }

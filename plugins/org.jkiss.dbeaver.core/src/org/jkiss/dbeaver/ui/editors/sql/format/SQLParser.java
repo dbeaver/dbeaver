@@ -32,11 +32,13 @@ public class SQLParser {
     private String fBefore;
     private int fPos;
     private static final String[] twoCharacterSymbol = { "<>", "<=", ">=", "||", "()", "!=", ":=" };
+    private char structSeparator;
     private String catalogSeparator;
 
     public SQLParser(SQLFormatterConfiguration configuration) {
         this.configuration = configuration;
-        this.catalogSeparator = configuration.getSyntaxManager().getStructSeparator();
+        this.structSeparator = configuration.getSyntaxManager().getStructSeparator();
+        this.catalogSeparator = configuration.getSyntaxManager().getCatalogSeparator();
     }
 
     public static boolean isSpace(final char argChar) {
@@ -121,7 +123,7 @@ public class SQLParser {
             return new SQLFormatterToken(SQLFormatterConstants.VALUE, s.toString(), start_pos);
         } else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
-            while (isLetter(fChar) || isDigit(fChar) || catalogSeparator.indexOf(fChar) != -1) {
+            while (isLetter(fChar) || isDigit(fChar) || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
                 s.append(fChar);
                 fPos++;
                 if (fPos >= fBefore.length()) {

@@ -117,12 +117,12 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
                     fetchedCatalogName = fetchedTableName.substring(0, catDivPos);
                     fetchedTableName = fetchedTableName.substring(catDivPos + catalogSeparator.length());
                 }
-                final String structSeparator = dsInfo.getStructSeparator();
+                final char structSeparator = dsInfo.getStructSeparator();
                 final int schemaDivPos = fetchedTableName.indexOf(structSeparator);
                 if (schemaDivPos != -1 && (dsInfo.getSchemaUsage() & DBPDataSourceInfo.USAGE_DML) != 0) {
                     // Schema in table name - extract it
                     fetchedSchemaName = fetchedTableName.substring(0, schemaDivPos);
-                    fetchedTableName = fetchedTableName.substring(schemaDivPos + structSeparator.length());
+                    fetchedTableName = fetchedTableName.substring(schemaDivPos + 1);
                 }
             }
         }

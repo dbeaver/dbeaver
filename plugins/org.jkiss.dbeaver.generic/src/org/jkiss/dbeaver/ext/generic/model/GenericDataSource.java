@@ -85,7 +85,7 @@ public class GenericDataSource extends JDBCDataSource
     @Override
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
-        final GenericDataSourceInfo info = new GenericDataSourceInfo(this, metaData);
+        final GenericDataSourceInfo info = new GenericDataSourceInfo(metaData);
 
         final Object supportsReferences = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_REFERENCES);
         if (supportsReferences != null) {

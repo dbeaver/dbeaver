@@ -324,5 +324,5 @@ public class SQLConstants {
         ":NEW",
         ":OLD",
     };
-    public static final String STRUCT_SEPARATOR = "."; //$NON-NLS-1$
+    public static final char STRUCT_SEPARATOR = '.'; //$NON-NLS-1$
 }
