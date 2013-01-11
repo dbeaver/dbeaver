@@ -132,14 +132,14 @@ public class OracleHomeDescriptor extends JDBCClientHome
             }
         };
         File oraHome = getHomePath();
-        Collections.addAll(list, CommonUtils.safeArray(oraHome.listFiles(jarFilter)));
+        list.addAll(CommonUtils.safeArray(oraHome.listFiles(jarFilter)));
         File jdbcPath = new File(oraHome, "jdbc/lib");
         if (jdbcPath.exists()) {
-            Collections.addAll(list, CommonUtils.safeArray(jdbcPath.listFiles(jarFilter)));
+            list.addAll(CommonUtils.safeArray(jdbcPath.listFiles(jarFilter)));
         }
         File libPath = new File(oraHome, "lib");
         if (libPath.exists()) {
-            Collections.addAll(list, CommonUtils.safeArray(libPath.listFiles(jarFilter)));
+            list.addAll(CommonUtils.safeArray(libPath.listFiles(jarFilter)));
         }
         Map<String, File> libMap = new TreeMap<String, File>();
         for (File lib : list) {
