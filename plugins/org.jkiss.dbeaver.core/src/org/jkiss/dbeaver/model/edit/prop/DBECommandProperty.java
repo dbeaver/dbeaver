@@ -48,6 +48,9 @@ public class DBECommandProperty<OBJECT_TYPE extends DBPObject> extends DBEComman
         this(object, handler);
         this.oldValue = oldValue;
         this.newValue = newValue;
+        if (handler instanceof DBEPropertyReflector) {
+            ((DBEPropertyReflector<OBJECT_TYPE>)handler).reflectValueChange(getObject(), oldValue, this.newValue);
+        }
     }
 
     public DBEPropertyHandler<OBJECT_TYPE> getHandler()

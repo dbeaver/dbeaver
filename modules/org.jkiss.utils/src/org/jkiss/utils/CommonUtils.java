@@ -482,11 +482,11 @@ public class CommonUtils {
         }
     }
 
-    public static <T> T[] safeArray(T[] array) {
+    public static <T> Collection<T> safeArray(T[] array) {
         if (array == null) {
-            return (T[]) EMPTY_ARRAY;
+            return Collections.emptyList();
         } else {
-            return array;
+            return Arrays.asList(array);
         }
     }
 
