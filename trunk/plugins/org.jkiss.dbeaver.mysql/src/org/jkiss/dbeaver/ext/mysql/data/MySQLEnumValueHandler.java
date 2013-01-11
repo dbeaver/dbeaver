@@ -46,6 +46,16 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public static final MySQLEnumValueHandler INSTANCE = new MySQLEnumValueHandler();
 
     @Override
+    public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
+    {
+        if (column instanceof MySQLTableColumn) {
+            return new MySQLTypeEnum((MySQLTableColumn)column, null);
+        } else {
+            throw new DBCException("Enum type supported only for tables");
+        }
+    }
+
+    @Override
     public String getValueDisplayString(DBSTypedObject column, Object value) {
         if (!(value instanceof MySQLTypeEnum)) {
             return super.getValueDisplayString(column, value);
