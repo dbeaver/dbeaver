@@ -851,7 +851,7 @@ public final class DBUtils {
     public static String generateScript(DBPDataSource dataSource, IDatabasePersistAction[] persistActions)
     {
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
-        StringBuilder script = new StringBuilder(1000);
+        StringBuilder script = new StringBuilder(512);
         for (IDatabasePersistAction action : CommonUtils.safeArray(persistActions)) {
             if (script.length() > 0) {
                 script.append(lineSeparator);
