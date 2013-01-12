@@ -75,7 +75,6 @@ public class DBeaverUI {
         Bundle coreBundle = DBeaverActivator.getInstance().getBundle();
         DBeaverIcons.initRegistry(coreBundle);
 
-        //progressProvider = new DBeaverProgressProvider();
         this.sharedTextColors = new SharedTextColors();
 
         URL logoURL = coreBundle.getEntry(DBIcon.DBEAVER_LOGO.getPath());
@@ -96,28 +95,16 @@ public class DBeaverUI {
         });
 
 
-        // Add tooltip and menu to trayicon
+        // Add tooltip and menu to tray icon
         trayItem.setToolTip(DBeaverCore.getProductTitle());
 
         // Add the trayIcon to system tray/notification
         // area
-
         try {
             SystemTray.getSystemTray().add(trayItem);
         } catch (AWTException e) {
             log.error(e);
         }
-/*
-        trayItem = new TrayItem(Display.getDefault().getSystemTray(), SWT.NONE);
-        trayItem.setText(DBeaverCore.getProductTitle());
-        trayItem.setImage(DBIcon.DBEAVER_LOGO.getImage());
-        trayItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        });
-*/
     }
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)

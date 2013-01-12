@@ -44,7 +44,7 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>2.0.4</Program_Version>
+    <Program_Version>2.0.5</Program_Version>
     <Program_Release_Month>12</Program_Release_Month>
     <Program_Release_Day>16</Program_Release_Day>
     <Program_Release_Year>2012</Program_Release_Year>
@@ -55,12 +55,16 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Connection types (dev, test, prod) support
-        - Oracle create/drop schema actions fixed
-        - Vertica driver added + Vertica autocomplete fixed
-        - Plugin mode fixes (perspective, branding)
-        - UI fixes (database selector, copy/paste in dialogs)
-        - Misc bugfixes
+        - Tray icon and long-running tasks notification
+        - Support of column default values
+        - SQL editor misc fixes
+        - UI freeze on multiple queries fixed
+        - Table columns autocomplete improved
+        - Undo/redo manager fixed
+        - Oracle metadata editors fixed
+        - MySQL enum/set types support fix
+        - MySQL user management fixed
+        - Many minor bug fixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -91,8 +95,8 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.4-x86-setup.exe</Primary_Download_URL>
-      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.4-x86_64-setup.exe</Secondary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.5-x86-setup.exe</Primary_Download_URL>
+      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.5-x86_64-setup.exe</Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
     </Download_URLs>

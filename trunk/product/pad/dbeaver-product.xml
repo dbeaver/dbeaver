@@ -47,6 +47,25 @@
 
     <versions>
         <version>
+            <number>2.0.5</number>
+            <type>stable</type>
+            <date>13.01.2013</date>
+
+            <release-notes>
+                - Tray icon and long-running tasks notification
+                - Support of column default values
+                - SQL editor misc fixes
+                - UI freeze on multiple queries fixed
+                - Table columns autocomplete improved
+                - Undo/redo manager fixed
+                - Oracle metadata editors fixed
+                - MySQL enum/set types support fix
+                - MySQL user management fixed
+                - Many minor bug fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.0.4</number>
             <type>stable</type>
             <date>16.12.2012</date>
