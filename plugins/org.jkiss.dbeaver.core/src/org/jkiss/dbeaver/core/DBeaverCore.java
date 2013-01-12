@@ -445,8 +445,8 @@ public class DBeaverCore implements DBPApplication {
         IPreferenceStore store = getGlobalPreferenceStore();
 
         // Agent
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_ENABLED, true);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_NOTIFY, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_ENABLED, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_NOTIFY, true);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, 30);
 
         // Common
