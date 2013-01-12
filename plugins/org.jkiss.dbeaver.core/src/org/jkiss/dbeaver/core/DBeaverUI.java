@@ -68,6 +68,8 @@ public class DBeaverUI {
     {
         //this.trayItem.dispose();
         this.sharedTextColors.dispose();
+
+        closeTrayIcon();
     }
 
     private void initialize()
@@ -77,6 +79,13 @@ public class DBeaverUI {
 
         this.sharedTextColors = new SharedTextColors();
 
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.AGENT_ENABLED)) {
+            createTrayIcon(coreBundle);
+        }
+    }
+
+    private void createTrayIcon(Bundle coreBundle)
+    {
         URL logoURL = coreBundle.getEntry(DBIcon.DBEAVER_LOGO.getPath());
         trayItem = new TrayIcon(Toolkit.getDefaultToolkit().getImage(logoURL));
         trayItem.setImageAutoSize(true);
@@ -104,6 +113,13 @@ public class DBeaverUI {
             SystemTray.getSystemTray().add(trayItem);
         } catch (AWTException e) {
             log.error(e);
+        }
+    }
+
+    private void closeTrayIcon()
+    {
+        if (trayItem != null) {
+            SystemTray.getSystemTray().remove(trayItem);
         }
     }
 
@@ -221,7 +237,7 @@ public class DBeaverUI {
 
     public static void notifyAgent(String message, int status)
     {
-        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY)) {
+        if (instance.trayItem == null || !DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY)) {
             // Notifications disabled
             return;
         }
