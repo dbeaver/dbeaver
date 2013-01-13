@@ -1,7 +1,5 @@
 package org.jkiss.dbeaver.core;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -30,8 +28,6 @@ import java.lang.reflect.InvocationTargetException;
  * DBeaver UI core
  */
 public class DBeaverUI {
-
-    static final Log log = LogFactory.getLog(DBeaverUI.class);
 
     private static DBeaverUI instance;
 
