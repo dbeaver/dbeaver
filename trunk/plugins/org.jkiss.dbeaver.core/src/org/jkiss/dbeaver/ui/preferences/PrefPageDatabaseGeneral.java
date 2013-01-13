@@ -36,7 +36,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 
-    private Button agentEnabledCheck;
+    //private Button agentEnabledCheck;
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
 
@@ -85,7 +85,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
             agentGroup.setText("Taskbar");
             agentGroup.setLayout(new GridLayout(2, false));
 
-            agentEnabledCheck = UIUtils.createLabelCheckbox(agentGroup, "Enable taskbar agent", false);
+            //agentEnabledCheck = UIUtils.createLabelCheckbox(agentGroup, "Enable taskbar agent", false);
             longOperationsCheck = UIUtils.createLabelCheckbox(agentGroup, "Enable long-time operations notification", false);
             longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, "Long-time operation timeout", 0, 0, Integer.MAX_VALUE);
         }
@@ -127,7 +127,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
-            agentEnabledCheck.setSelection(store.getBoolean(PrefConstants.AGENT_ENABLED));
+            //agentEnabledCheck.setSelection(store.getBoolean(PrefConstants.AGENT_ENABLED));
             longOperationsCheck.setSelection(store.getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY));
             longOperationsTimeout.setSelection(store.getInt(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT));
             keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
@@ -144,7 +144,7 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
-            store.setValue(PrefConstants.AGENT_ENABLED, agentEnabledCheck.getSelection());
+            //store.setValue(PrefConstants.AGENT_ENABLED, agentEnabledCheck.getSelection());
             store.setValue(PrefConstants.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
             store.setValue(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
             store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
