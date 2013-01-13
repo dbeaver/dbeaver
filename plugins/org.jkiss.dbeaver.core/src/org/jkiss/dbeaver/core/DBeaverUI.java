@@ -9,7 +9,6 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.source.ISharedTextColors;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
@@ -20,18 +19,12 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.SharedTextColors;
+import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.osgi.framework.Bundle;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
 
 /**
  * DBeaver UI core
@@ -43,8 +36,7 @@ public class DBeaverUI {
     private static DBeaverUI instance;
 
     private SharedTextColors sharedTextColors;
-    // AWT tray icon. SWT TrayItem do not support displayMessage function
-    private TrayIcon trayItem;
+    private TrayIconHandler trayItem;
 
     static void initializeUI()
     {
@@ -69,7 +61,9 @@ public class DBeaverUI {
         //this.trayItem.dispose();
         this.sharedTextColors.dispose();
 
-        closeTrayIcon();
+        if (trayItem != null) {
+            trayItem.hide();
+        }
     }
 
     private void initialize()
@@ -79,48 +73,7 @@ public class DBeaverUI {
 
         this.sharedTextColors = new SharedTextColors();
 
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.AGENT_ENABLED)) {
-            createTrayIcon(coreBundle);
-        }
-    }
-
-    private void createTrayIcon(Bundle coreBundle)
-    {
-        URL logoURL = coreBundle.getEntry(DBIcon.DBEAVER_LOGO.getPath());
-        trayItem = new TrayIcon(Toolkit.getDefaultToolkit().getImage(logoURL));
-        trayItem.setImageAutoSize(true);
-        trayItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-
-            }
-        });
-        trayItem.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseReleased(MouseEvent e)
-            {
-            }
-        });
-
-
-        // Add tooltip and menu to tray icon
-        trayItem.setToolTip(DBeaverCore.getProductTitle());
-
-        // Add the trayIcon to system tray/notification
-        // area
-        try {
-            SystemTray.getSystemTray().add(trayItem);
-        } catch (AWTException e) {
-            log.error(e);
-        }
-    }
-
-    private void closeTrayIcon()
-    {
-        if (trayItem != null) {
-            SystemTray.getSystemTray().remove(trayItem);
-        }
+        this.trayItem = new TrayIconHandler();
     }
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
@@ -237,18 +190,11 @@ public class DBeaverUI {
 
     public static void notifyAgent(String message, int status)
     {
-        if (instance.trayItem == null || !DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY)) {
+        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY)) {
             // Notifications disabled
             return;
         }
-        TrayIcon.MessageType type;
-        switch (status) {
-            case IStatus.INFO: type = TrayIcon.MessageType.INFO; break;
-            case IStatus.ERROR: type = TrayIcon.MessageType.ERROR; break;
-            case IStatus.WARNING: type = TrayIcon.MessageType.WARNING; break;
-            default: type = TrayIcon.MessageType.NONE; break;
-        }
-        instance.trayItem.displayMessage(DBeaverCore.getProductTitle(), message, type);
+        instance.trayItem.notify(message, status);
     }
 
 }
