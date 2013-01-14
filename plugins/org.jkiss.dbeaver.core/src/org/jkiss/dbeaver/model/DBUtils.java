@@ -389,6 +389,10 @@ public final class DBUtils {
     public static DBDAttributeBinding getColumnBinding(DBCExecutionContext context, DBCAttributeMetaData attributeMeta)
     {
         DBSTypedObject columnMeta = attributeMeta;
+        // We won't query for real column because we don't want make (possibly) another
+        // query in the the middle of currently fetching one.
+        // Maybe sometimes its possible so leave this code commented
+/*
         try {
             DBSEntityAttribute entityAttribute = attributeMeta.getAttribute(context.getProgressMonitor());
             if (entityAttribute != null) {
@@ -397,6 +401,7 @@ public final class DBUtils {
         } catch (DBException e) {
             log.warn("Can't obtain entity attribute", e);
         }
+*/
         return new DBDAttributeBinding(
                 attributeMeta,
             getColumnValueHandler(context, columnMeta));
