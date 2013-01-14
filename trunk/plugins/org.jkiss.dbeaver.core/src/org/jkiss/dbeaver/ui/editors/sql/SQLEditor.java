@@ -556,9 +556,6 @@ public class SQLEditor extends SQLEditorBase
                                 }
                             }
                         });
-                        synchronized (this) {
-                            curJob = null;
-                        }
                     }
                 }
                 @Override
@@ -601,8 +598,9 @@ public class SQLEditor extends SQLEditorBase
 
     private void closeJob()
     {
-        if (curJob != null) {
-            curJob.cancel();
+        final SQLQueryJob job = curJob;
+        if (job != null) {
+            job.cancel();
             curJob = null;
         }
     }
@@ -783,10 +781,11 @@ public class SQLEditor extends SQLEditorBase
         @Override
         public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
         {
-            if (curJob != null) {
-                curJob.setDataReceiver(dataReceiver);
-                curJob.setResultSetLimit(firstRow, maxRows);
-                return curJob.extractData(context);
+            final SQLQueryJob job = curJob;
+            if (job != null) {
+                job.setDataReceiver(dataReceiver);
+                job.setResultSetLimit(firstRow, maxRows);
+                return job.extractData(context);
             } else {
                 return 0;
             }
@@ -843,8 +842,9 @@ public class SQLEditor extends SQLEditorBase
         @Override
         public String getName()
         {
-            String name = curJob == null ? null :
-                curJob.getLastQuery() == null ? null : CommonUtils.truncateString(curJob.getLastQuery().getQuery(), 200);
+            final SQLQueryJob job = curJob;
+            String name = job == null ? null :
+                job.getLastQuery() == null ? null : CommonUtils.truncateString(job.getLastQuery().getQuery(), 200);
             if (name == null) {
                 name = "SQL";
             }
