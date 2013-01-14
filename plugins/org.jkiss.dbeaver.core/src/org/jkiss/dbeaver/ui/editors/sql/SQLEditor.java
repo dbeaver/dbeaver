@@ -843,8 +843,12 @@ public class SQLEditor extends SQLEditorBase
         @Override
         public String getName()
         {
-            return curJob == null ? null :
+            String name = curJob == null ? null :
                 curJob.getLastQuery() == null ? null : CommonUtils.truncateString(curJob.getLastQuery().getQuery(), 200);
+            if (name == null) {
+                name = "SQL";
+            }
+            return name;
         }
     }
 
