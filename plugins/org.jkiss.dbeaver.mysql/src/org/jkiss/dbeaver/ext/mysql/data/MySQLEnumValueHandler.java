@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -99,11 +100,18 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public void bindParameter(JDBCExecutionContext context, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value)
         throws SQLException
     {
-        MySQLTypeEnum e = (MySQLTypeEnum)value;
-        if (e == null || e.isNull()) {
+        // Sometimes we have String in value instead of MySQLTypeEnum
+        // It happens when we edit result sets as MySQL reports RS column type as CHAR for enum/set types
+        String strValue;
+        if (value instanceof MySQLTypeEnum) {
+            strValue = ((MySQLTypeEnum)value).getValue();
+        } else {
+            strValue = CommonUtils.toString(value);
+        }
+        if (strValue == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
         } else {
-            statement.setString(paramIndex, e.getValue());
+            statement.setString(paramIndex, strValue);
         }
     }
 
