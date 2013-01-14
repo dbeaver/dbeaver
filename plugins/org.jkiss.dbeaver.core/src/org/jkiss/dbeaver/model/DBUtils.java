@@ -388,9 +388,18 @@ public final class DBUtils {
 
     public static DBDAttributeBinding getColumnBinding(DBCExecutionContext context, DBCAttributeMetaData attributeMeta)
     {
+        DBSTypedObject columnMeta = attributeMeta;
+        try {
+            DBSEntityAttribute entityAttribute = attributeMeta.getAttribute(context.getProgressMonitor());
+            if (entityAttribute != null) {
+                columnMeta = entityAttribute;
+            }
+        } catch (DBException e) {
+            log.warn("Can't obtain entity attribute", e);
+        }
         return new DBDAttributeBinding(
                 attributeMeta,
-            getColumnValueHandler(context, attributeMeta));
+            getColumnValueHandler(context, columnMeta));
     }
 
     public static DBDValueHandler getColumnValueHandler(DBCExecutionContext context, DBSTypedObject column)

@@ -122,8 +122,6 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
                     int selIndex = control.getSelectionIndex();
                     if (selIndex < 0) {
                         return new MySQLTypeEnum(value.getColumn(), null);
-                    } else if (selIndex == 0) {
-                        return new MySQLTypeEnum(value.getColumn(), null);
                     } else {
                         return new MySQLTypeEnum(value.getColumn(), control.getItem(selIndex));
                     }
