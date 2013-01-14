@@ -102,12 +102,12 @@ public class SQLEditor extends SQLEditorBase
 
     private volatile SQLQueryJob curJob;
     private volatile int curJobRunning = 0;
-    private DataContainer dataContainer;
+    private final DataContainer dataContainer;
+    private DBSDataSourceContainer dataSourceContainer;
 
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
     private static Image imgLog;
-    private DBSDataSourceContainer dataSourceContainer;
 
     static {
         imgDataGrid = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
