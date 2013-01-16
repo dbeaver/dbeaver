@@ -37,7 +37,6 @@ public class JDBCStruct implements DBDValue, DBDValueCloneable {
     static final Log log = LogFactory.getLog(JDBCStruct.class);
 
     private Struct contents;
-    private JDBCArrayType type;
 
     public JDBCStruct(Struct contents)
     {

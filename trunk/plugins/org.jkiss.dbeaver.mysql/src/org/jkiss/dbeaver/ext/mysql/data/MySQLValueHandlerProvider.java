@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -46,7 +46,7 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
             return MySQLEnumValueHandler.INSTANCE;
         } else if (MySQLConstants.TYPE_NAME_SET.equalsIgnoreCase(typeName)) {
             return MySQLSetValueHandler.INSTANCE;
-        } else if (JDBCUtils.getDataKind(typeName, valueType) == DBSDataKind.DATETIME) {
+        } else if (JDBCDataType.getDataKind(typeName, valueType) == DBSDataKind.DATETIME) {
             return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;

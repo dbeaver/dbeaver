@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBSTypedObject extends DBPObject
 {
+    //DBSDataType getDataType();
+
     /**
      * Database specific type name
      * @return type name
