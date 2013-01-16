@@ -17,11 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.impl.jdbc;
+package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -30,10 +33,10 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class JDBCDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataType> {
+public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataType> {
     private final DBSObject owner;
 
-    public JDBCDataTypeCache(DBSObject owner)
+    public JDBCBasicDataTypeCache(DBSObject owner)
     {
         this.owner = owner;
         setCaseSensitive(false);

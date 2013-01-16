@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataTypeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -59,7 +59,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 {
     static final Log log = LogFactory.getLog(MySQLDataSource.class);
 
-    private final JDBCDataTypeCache dataTypeCache;
+    private final JDBCBasicDataTypeCache dataTypeCache;
     private List<MySQLEngine> engines;
     private final CatalogCache catalogCache = new CatalogCache();
     private List<MySQLPrivilege> privileges;
@@ -73,7 +73,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         throws DBException
     {
         super(container);
-        dataTypeCache = new JDBCDataTypeCache(container);
+        dataTypeCache = new JDBCBasicDataTypeCache(container);
     }
 
     @Override
