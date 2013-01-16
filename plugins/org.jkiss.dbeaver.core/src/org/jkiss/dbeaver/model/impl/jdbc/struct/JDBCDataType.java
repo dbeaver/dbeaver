@@ -93,7 +93,7 @@ public class JDBCDataType implements DBSDataType
     @Override
     public DBSDataKind getDataKind()
     {
-        return getDataKind(valueType);
+        return getDataKind(name, valueType);
     }
 
     public boolean isUnsigned()
@@ -135,17 +135,34 @@ public class JDBCDataType implements DBSDataType
         return true;
     }
 
-    public static DBSDataKind getDataKind(int valueType)
+    public static int getValueTypeByTypeName(String typeName, int valueType)
     {
-        switch (valueType) {
+        // [JDBC: SQLite driver uses VARCHAR value type for all LOBs]
+        if (valueType == java.sql.Types.OTHER || valueType == java.sql.Types.VARCHAR) {
+            if ("BLOB".equalsIgnoreCase(typeName)) {
+                return java.sql.Types.BLOB;
+            } else if ("CLOB".equalsIgnoreCase(typeName)) {
+                return java.sql.Types.CLOB;
+            } else if ("NCLOB".equalsIgnoreCase(typeName)) {
+                return java.sql.Types.NCLOB;
+            }
+        }
+        return valueType;
+    }
+
+    public static DBSDataKind getDataKind(String typeName, int valueType)
+    {
+        switch (getValueTypeByTypeName(typeName, valueType)) {
             case java.sql.Types.BOOLEAN:
                 return DBSDataKind.BOOLEAN;
             case java.sql.Types.CHAR:
             case java.sql.Types.VARCHAR:
+            case java.sql.Types.NVARCHAR:
             case java.sql.Types.LONGVARCHAR:
+            case java.sql.Types.LONGNVARCHAR:
+
                 return DBSDataKind.STRING;
             case java.sql.Types.BIGINT:
-            case java.sql.Types.BIT:
             case java.sql.Types.DECIMAL:
             case java.sql.Types.DOUBLE:
             case java.sql.Types.FLOAT:
@@ -153,21 +170,34 @@ public class JDBCDataType implements DBSDataType
             case java.sql.Types.NUMERIC:
             case java.sql.Types.REAL:
             case java.sql.Types.SMALLINT:
-            case java.sql.Types.TINYINT:
                 return DBSDataKind.NUMERIC;
+            case java.sql.Types.BIT:
+            case java.sql.Types.TINYINT:
+                if (typeName.toLowerCase().contains("bool")) {
+                    // Declared as numeric but actually it's a boolean
+                    return DBSDataKind.BOOLEAN;
+                } else {
+                    return DBSDataKind.NUMERIC;
+                }
             case java.sql.Types.DATE:
             case java.sql.Types.TIME:
             case java.sql.Types.TIMESTAMP:
                 return DBSDataKind.DATETIME;
-            case java.sql.Types.BLOB:
-            case java.sql.Types.CLOB:
+            case java.sql.Types.BINARY:
             case java.sql.Types.VARBINARY:
             case java.sql.Types.LONGVARBINARY:
+                return DBSDataKind.BINARY;
+            case java.sql.Types.BLOB:
+            case java.sql.Types.CLOB:
+            case java.sql.Types.NCLOB:
                 return DBSDataKind.LOB;
             case java.sql.Types.STRUCT:
                 return DBSDataKind.STRUCT;
             case java.sql.Types.ARRAY:
                 return DBSDataKind.ARRAY;
+            case java.sql.Types.ROWID:
+                // threat ROWID as string
+                return DBSDataKind.STRING;
         }
         return DBSDataKind.UNKNOWN;
     }

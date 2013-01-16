@@ -266,7 +266,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     @Override
     public DBSDataKind getDataKind()
     {
-        return JDBCDataType.getDataKind(valueType);
+        return JDBCDataType.getDataKind(getName(), valueType);
     }
 
     @Override

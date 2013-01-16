@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -876,9 +876,10 @@ public final class DBUtils {
         return script.toString();
     }
 
+    @Deprecated
     public static DBSDataKind getDataKind(DBSTypedObject type)
     {
-        return JDBCUtils.getDataKind(type.getTypeName(), type.getTypeID());
+        return JDBCDataType.getDataKind(type.getTypeName(), type.getTypeID());
     }
 
     public static DBIcon getDataIcon(DBSTypedObject type)

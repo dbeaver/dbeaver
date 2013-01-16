@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -148,7 +149,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         boolean autoIncrement = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.IS_AUTOINCREMENT));
         if (!CommonUtils.isEmpty(typeName)) {
             // Try to determine value type from type name
-            valueType = JDBCUtils.getValueTypeByTypeName(typeName, valueType);
+            valueType = JDBCDataType.getValueTypeByTypeName(typeName, valueType);
         }
         // Check for identity modifier [DBSPEC: MS SQL]
         if (typeName.toUpperCase().endsWith(GenericConstants.TYPE_MODIFIER_IDENTITY)) {
