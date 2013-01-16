@@ -523,41 +523,47 @@ public class SQLEditor extends SQLEditorBase
                             @Override
                             public void run()
                             {
-                                if (!result.hasError()) {
-                                    if (result.getRowCount() != null) {
-                                        // No status message for selected rows - this info is set by RS viewer itself
-    /*
-                                        status = result.getRowCount() + " row(s) fetched";
-                                        if (result.getRowOffset() != null) {
-                                            status += " (" + result.getRowOffset() + " - " + (result.getRowOffset() + result.getRowCount()) + ")";
-                                        }
-    */
-                                    } else if (result.getUpdateCount() != null) {
-                                        if (result.getUpdateCount() == 0) {
-                                            setStatus(CoreMessages.editors_sql_status_statement_executed_no_rows_updated, false);
-                                        } else {
-                                            setStatus(String.valueOf(result.getUpdateCount()) + CoreMessages.editors_sql_status_rows_updated, false);
-                                        }
-                                    } else {
-                                        setStatus(CoreMessages.editors_sql_status_statement_executed, false);
-                                    }
-                                    resultsView.setExecutionTime(result.getQueryTime());
-                                } else {
-                                    setStatus(result.getError().getMessage(), true);
-                                }
-                                if (queries.size() < 2) {
-                                    getSelectionProvider().setSelection(originalSelection);
-                                }
-
-                                if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
-                                    DBeaverUI.notifyAgent(
-                                        "Query completed" + ContentUtils.getDefaultLineSeparator() +
-                                        CommonUtils.truncateString(result.getStatement().getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
-                                }
+                                processQueryResult(result);
                             }
                         });
                     }
                 }
+
+                private void processQueryResult(SQLQueryResult result)
+                {
+                    if (!result.hasError()) {
+                        if (result.getRowCount() != null) {
+                            // No status message for selected rows - this info is set by RS viewer itself
+/*
+                            status = result.getRowCount() + " row(s) fetched";
+                            if (result.getRowOffset() != null) {
+                                status += " (" + result.getRowOffset() + " - " + (result.getRowOffset() + result.getRowCount()) + ")";
+                            }
+*/
+                        } else if (result.getUpdateCount() != null) {
+                            if (result.getUpdateCount() == 0) {
+                                setStatus(CoreMessages.editors_sql_status_statement_executed_no_rows_updated, false);
+                            } else {
+                                setStatus(String.valueOf(result.getUpdateCount()) + CoreMessages.editors_sql_status_rows_updated, false);
+                            }
+                        } else {
+                            setStatus(CoreMessages.editors_sql_status_statement_executed, false);
+                        }
+                        resultsView.setExecutionTime(result.getQueryTime());
+                    } else {
+                        setStatus(result.getError().getMessage(), true);
+                    }
+                    if (queries.size() < 2) {
+                        getSelectionProvider().setSelection(originalSelection);
+                    }
+
+                    if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
+                        DBeaverUI.notifyAgent(
+                            "Query completed" + ContentUtils.getDefaultLineSeparator() +
+                                CommonUtils.truncateString(result.getStatement().getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
+                    }
+                }
+
                 @Override
                 public void onEndJob(final boolean hasErrors)
                 {
@@ -578,6 +584,7 @@ public class SQLEditor extends SQLEditorBase
                     });
                 }
             });
+
             if (isSingleQuery) {
                 closeJob();
                 curJob = job;
