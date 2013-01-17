@@ -2726,7 +2726,24 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Image getImage(Object element)
         {
-            return null;
+            GridPos cell = (GridPos)element;
+            DBDAttributeBinding attr;
+            if (mode == ResultSetMode.RECORD) {
+                if (cell.row >= metaColumns.length) {
+                    return null;
+                }
+                attr = metaColumns[cell.row];
+            } else {
+                if (cell.col >= metaColumns.length) {
+                    return null;
+                }
+                attr = metaColumns[cell.col];
+            }
+            if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
+                return getColumnImage(attr);
+            } else {
+                return null;
+            }
         }
 
         @Override
