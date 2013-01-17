@@ -24,12 +24,14 @@ import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
@@ -67,11 +69,22 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         throws DBCException, SQLException
     {
         Object value = resultSet.getObject(columnIndex);
-
+        String typeName;
+        if (value instanceof Struct) {
+            typeName = ((Struct) value).getSQLTypeName();
+        } else {
+            typeName = column.getTypeName();
+        }
+        DBSDataType dataType = null;
+        try {
+            dataType = DBUtils.resolveDataType(context.getProgressMonitor(), context.getDataSource(), typeName);
+        } catch (DBException e) {
+            log.error("Error resolving data type '" + typeName + "'", e);
+        }
         if (value == null) {
-            return new JDBCStruct(null);
+            return new JDBCStruct(dataType, null);
         } else if (value instanceof Struct) {
-            return new JDBCStruct((Struct) value);
+            return new JDBCStruct(dataType, (Struct) value);
         } else {
             throw new DBCException("Unsupported struct type: " + value.getClass().getName());
         }

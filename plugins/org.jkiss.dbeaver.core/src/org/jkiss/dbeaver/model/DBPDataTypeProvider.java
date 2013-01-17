@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.util.Collection;
@@ -37,10 +39,19 @@ public interface DBPDataTypeProvider
     /**
      * Gets data type with specified name
      *
-     *
      * @param typeName type name
      * @return data type of null
      */
     DBSDataType getDataType(String typeName);
+
+    /**
+     * Resolve data type by it's full name.
+     * @param monitor progress monitor
+     * @param typeFullName full qualified type name
+     * @return data type or null if type not found
+     * @throws DBException on any DB access error
+     */
+    DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName)
+        throws DBException;
 
 }

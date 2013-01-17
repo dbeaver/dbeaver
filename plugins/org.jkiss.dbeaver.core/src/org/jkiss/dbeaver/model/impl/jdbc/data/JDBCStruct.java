@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -36,10 +37,12 @@ public class JDBCStruct implements DBDValue, DBDValueCloneable {
 
     static final Log log = LogFactory.getLog(JDBCStruct.class);
 
+    private DBSDataType type;
     private Struct contents;
 
-    public JDBCStruct(Struct contents)
+    public JDBCStruct(DBSDataType type, Struct contents)
     {
+        this.type = type;
         this.contents = contents;
     }
 
@@ -51,7 +54,7 @@ public class JDBCStruct implements DBDValue, DBDValueCloneable {
     @Override
     public DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
     {
-        return new JDBCStruct(contents);
+        return new JDBCStruct(type, contents);
     }
 
     @Override
@@ -63,7 +66,7 @@ public class JDBCStruct implements DBDValue, DBDValueCloneable {
     @Override
     public DBDValue makeNull()
     {
-        return new JDBCStruct(null);
+        return new JDBCStruct(type, null);
     }
 
     @Override
