@@ -108,8 +108,7 @@ public interface DBDValueHandler
      * @return value (return null only in case of NULL value in clipboard)
      * @throws org.jkiss.dbeaver.DBException on unexpected error (IO, etc)
      */
-    Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
-    ;
+    Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard);
 
     /**
      * Release any internal resources associated with this value.
