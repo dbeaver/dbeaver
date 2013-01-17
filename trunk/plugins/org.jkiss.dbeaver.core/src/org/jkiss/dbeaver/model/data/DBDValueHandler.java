@@ -37,6 +37,7 @@ public interface DBDValueHandler
     public static final int FEATURE_VIEWER = 1;
     public static final int FEATURE_EDITOR = 2;
     public static final int FEATURE_INLINE_EDITOR = 4;
+    public static final int FEATURE_SHOW_ICON = 8;
 
     int getFeatures();
 
@@ -120,7 +121,7 @@ public interface DBDValueHandler
     /**
      * Converts value to human readable format
      * @param column column
-     * @param value value  @return string representation
+     * @param value value
      * @return formatted string
      */
     String getValueDisplayString(DBSTypedObject column, Object value);

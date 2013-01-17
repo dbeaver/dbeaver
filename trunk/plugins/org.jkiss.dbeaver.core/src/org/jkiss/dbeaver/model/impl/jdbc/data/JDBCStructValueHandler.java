@@ -50,6 +50,12 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
 
+    @Override
+    public int getFeatures()
+    {
+        return FEATURE_SHOW_ICON;
+    }
+
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
      */
@@ -100,12 +106,6 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         throws DBCException, SQLException
     {
         throw new DBCException("Unsupported value type: " + value);
-    }
-
-    @Override
-    public int getFeatures()
-    {
-        return FEATURE_NONE;
     }
 
     @Override
