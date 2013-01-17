@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Driver;
@@ -386,6 +387,24 @@ public class OracleDataSource extends JDBCDataSource
     public DBSDataType getDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);
+    }
+
+    @Override
+    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException
+    {
+        int divPos = typeFullName.indexOf(SQLConstants.STRUCT_SEPARATOR);
+        if (divPos == -1) {
+            // Simple type name
+            return getDataType(typeFullName);
+        } else {
+            String schemaName = typeFullName.substring(0, divPos);
+            String typeName = typeFullName.substring(divPos + 1);
+            OracleSchema schema = getSchema(monitor, schemaName);
+            if (schema == null) {
+                return null;
+            }
+            return schema.getDataType(monitor, typeName);
+        }
     }
 
     public String getPlanTableName(JDBCExecutionContext context)

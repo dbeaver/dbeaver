@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
@@ -319,6 +320,12 @@ public abstract class JDBCDataSource
 
         }
         return null;
+    }
+
+    @Override
+    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException
+    {
+        return getDataType(typeFullName);
     }
 
     /////////////////////////////////////////////////
