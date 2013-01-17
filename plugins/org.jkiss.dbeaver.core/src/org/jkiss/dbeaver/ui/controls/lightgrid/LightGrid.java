@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
@@ -46,7 +47,7 @@ import java.util.List;
  *
  * @author chris.gross@us.ibm.com
  */
-public class LightGrid extends Canvas {
+public abstract class LightGrid extends Canvas {
 
     public static final int MAX_TOOLTIP_LENGTH = 1000;
 
@@ -73,11 +74,6 @@ public class LightGrid extends Canvas {
         MOUSE,
         KEYBOARD,
     }
-
-    private IGridContentProvider contentProvider;
-    private ILabelProvider contentLabelProvider;
-    private ILabelProvider columnLabelProvider;
-    private ILabelProvider rowLabelProvider;
 
     private GridPos gridSize;
     /**
@@ -462,40 +458,13 @@ public class LightGrid extends Canvas {
         setDragDetect(false);
     }
 
-    public IGridContentProvider getContentProvider() {
-        return contentProvider;
-    }
+    public abstract IGridContentProvider getContentProvider();
 
-    public void setContentProvider(IGridContentProvider contentProvider) {
-        this.contentProvider = contentProvider;
-        this.refreshData();
-    }
+    public abstract ILabelProvider getContentLabelProvider();
 
-    public ILabelProvider getContentLabelProvider() {
-        return contentLabelProvider;
-    }
+    public abstract ILabelProvider getColumnLabelProvider();
 
-    public void setContentLabelProvider(ILabelProvider contentLabelProvider) {
-        this.contentLabelProvider = contentLabelProvider;
-        this.redraw();
-    }
-
-    public ILabelProvider getColumnLabelProvider() {
-        return columnLabelProvider;
-    }
-
-    public void setColumnLabelProvider(ILabelProvider columnLabelProvider) {
-        this.columnLabelProvider = columnLabelProvider;
-        this.redraw();
-    }
-
-    public ILabelProvider getRowLabelProvider() {
-        return rowLabelProvider;
-    }
-
-    public void setRowLabelProvider(ILabelProvider rowLabelProvider) {
-        this.rowLabelProvider = rowLabelProvider;
-    }
+    public abstract ILabelProvider getRowLabelProvider();
 
     public int getMaxColumnDefWidth() {
         return maxColumnDefWidth;
@@ -511,10 +480,11 @@ public class LightGrid extends Canvas {
     public void refreshData()
     {
         this.removeAll();
+        IGridContentProvider contentProvider = getContentProvider();
         if (contentProvider == null) {
             return;
         }
-        this.gridSize = this.contentProvider.getSize();
+        this.gridSize = contentProvider.getSize();
         this.currentVisibleItems = this.gridSize.row;
         this.topIndex = 0;
         this.bottomIndex = -1;
@@ -522,47 +492,44 @@ public class LightGrid extends Canvas {
         this.endColumnIndex = -1;
 
         // Add columns
-        if (contentProvider != null) {
-            int columnCount = contentProvider.getSize().col;
-            for (int i = 0; i < columnCount; i++) {
-                GridColumn column = new GridColumn(this, SWT.NONE);
-                column.setText(columnLabelProvider.getText(i));
-                column.setImage(columnLabelProvider.getImage(i));
-                contentProvider.updateColumn(column);
-            }
+        int columnCount = contentProvider.getSize().col;
+        for (int i = 0; i < columnCount; i++) {
+            GridColumn column = new GridColumn(this, SWT.NONE);
+            column.setText(getColumnLabelProvider().getText(i));
+            column.setImage(getColumnLabelProvider().getImage(i));
+            contentProvider.updateColumn(column);
+        }
 
-            if (getColumnCount() == 1) {
-                getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x);
-            } else {
-                int totalWidth = 0;
+        if (getColumnCount() == 1) {
+            getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x);
+        } else {
+            int totalWidth = 0;
+            for (GridColumn curColumn : columns) {
+                curColumn.pack();
+                totalWidth += curColumn.getWidth();
+            }
+            // If grid width more than screen - lets narrow too long columns
+            int clientWidth = getClientArea().width;
+            if (totalWidth > clientWidth) {
+                int normalWidth = 0;
+                List<GridColumn> fatColumns = new ArrayList<GridColumn>();
                 for (GridColumn curColumn : columns) {
-                    curColumn.pack();
-                    totalWidth += curColumn.getWidth();
-                }
-                // If grid width more than screen - lets narrow too long columns
-                int clientWidth = getClientArea().width;
-                if (totalWidth > clientWidth) {
-                    int normalWidth = 0;
-                    List<GridColumn> fatColumns = new ArrayList<GridColumn>();
-                    for (GridColumn curColumn : columns) {
-                        if (curColumn.getWidth() > maxColumnDefWidth) {
-                            fatColumns.add(curColumn);
-                        } else {
-                            normalWidth += curColumn.getWidth();
-                        }
+                    if (curColumn.getWidth() > maxColumnDefWidth) {
+                        fatColumns.add(curColumn);
+                    } else {
+                        normalWidth += curColumn.getWidth();
                     }
-                    if (!fatColumns.isEmpty()) {
-                        // Narrow fat columns on decWidth
-                        int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - (vScroll.getControl() == null ? 0 : vScroll.getControl().getSize().x))
-                            / fatColumns.size();
-                        int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
-                        for (GridColumn curColumn : fatColumns) {
-                            curColumn.setWidth(newFatWidth);
-                        }
+                }
+                if (!fatColumns.isEmpty()) {
+                    // Narrow fat columns on decWidth
+                    int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - (vScroll.getControl() == null ? 0 : vScroll.getControl().getSize().x))
+                        / fatColumns.size();
+                    int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
+                    for (GridColumn curColumn : fatColumns) {
+                        curColumn.setWidth(newFatWidth);
                     }
                 }
             }
-
         }
 
         updateScrollbars();
@@ -2575,7 +2542,7 @@ public class LightGrid extends Canvas {
 
         if (x < getClientArea().width) {
             emptyColumnFooterRenderer.setBounds(x, getClientArea().height - footerHeight, getClientArea().width - x,
-                                                footerHeight);
+                footerHeight);
             emptyColumnFooterRenderer.paint(gc);
         }
 
@@ -3044,7 +3011,7 @@ public class LightGrid extends Canvas {
             col.dispose();
         }
 
-        sizingGC.dispose();
+//        UIUtils.dispose(sizingGC);
     }
 
     /**
@@ -4688,6 +4655,7 @@ public class LightGrid extends Canvas {
 
     public String getCellText(int column, int row)
     {
+        ILabelProvider contentLabelProvider = getContentLabelProvider();
         if (contentLabelProvider != null) {
             String text = contentLabelProvider.getText(new GridPos(column, row));
             // Truncate too long texts (they are really bad for performance)
@@ -4701,6 +4669,7 @@ public class LightGrid extends Canvas {
 
     public String getCellToolTip(int column, int row)
     {
+        ILabelProvider contentLabelProvider = getContentLabelProvider();
         if (contentLabelProvider != null) {
             String toolTip = getCellText(column, row);
             if (toolTip == null) {
@@ -4736,6 +4705,7 @@ public class LightGrid extends Canvas {
 
     public Image getCellImage(int column, int row)
     {
+        ILabelProvider contentLabelProvider = getContentLabelProvider();
         if (contentLabelProvider != null) {
             return contentLabelProvider.getImage(new GridPos(column,  row));
         }
@@ -4744,6 +4714,7 @@ public class LightGrid extends Canvas {
 
     public Color getCellBackground(int column, int row)
     {
+        ILabelProvider contentLabelProvider = getContentLabelProvider();
         Color color = null;
         if (contentLabelProvider instanceof IColorProvider) {
             color = ((IColorProvider)contentLabelProvider).getBackground(new GridPos(column,  row));
@@ -4753,6 +4724,7 @@ public class LightGrid extends Canvas {
 
     public Color getCellForeground(int column, int row)
     {
+        ILabelProvider contentLabelProvider = getContentLabelProvider();
         Color color = null;
         if (contentLabelProvider instanceof IColorProvider) {
             color = ((IColorProvider)contentLabelProvider).getForeground(new GridPos(column,  row));

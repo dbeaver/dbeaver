@@ -218,10 +218,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 updateGridCursor(event.x, event.y);
             }
         });
-        this.spreadsheet.getGrid().setTopLeftRenderer(new ResultSetTopLeftRenderer(this));
+        this.spreadsheet.setTopLeftRenderer(new ResultSetTopLeftRenderer(this));
         applyThemeSettings();
 
-        spreadsheet.getGrid().addFocusListener(new FocusListener() {
+        spreadsheet.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e)
             {
@@ -466,7 +466,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             for (int i = 0, metaColumnsLength = metaColumns.length; i < metaColumnsLength; i++) {
                 DBDAttributeBinding column = metaColumns[i];
                 DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getColumnName());
-                GridColumn gridColumn = spreadsheet.getGrid().getColumn(i);
+                GridColumn gridColumn = spreadsheet.getColumn(i);
                 if (columnOrder == null) {
                     gridColumn.setSort(SWT.DEFAULT);
                 } else {
@@ -552,7 +552,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         UIUtils.dispose(this.boldFont);
         if (toolBarManager != null) {
-            toolBarManager.dispose();
+            try {
+                toolBarManager.dispose();
+            } catch (Throwable e) {
+                // ignore
+                log.debug("Error disposing toolbar", e);
+            }
         }
     }
 
@@ -1174,9 +1179,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return this.viewerPanel;
     }
 
-    public LightGrid getGridControl()
+    public Spreadsheet getGridControl()
     {
-        return this.spreadsheet.getGrid();
+        return this.spreadsheet;
     }
 
     @Override
@@ -1982,8 +1987,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             spreadsheet.cancelInlineEditor();
             int colOffset = next ? 1 : -1;
             int rowOffset = 0;
-            final int rowCount = spreadsheet.getGrid().getItemCount();
-            final int colCount = spreadsheet.getGrid().getColumnCount();
+            final int rowCount = spreadsheet.getItemCount();
+            final int colCount = spreadsheet.getColumnCount();
             final GridPos curPosition = spreadsheet.getCursorPosition();
             if (colOffset > 0 && curPosition.col + colOffset >= colCount) {
                 colOffset = -colCount;
