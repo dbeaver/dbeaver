@@ -782,6 +782,23 @@ public final class DBUtils {
         return null;
     }
 
+    public static DBSDataType resolveDataType(
+        DBRProgressMonitor monitor,
+        DBPDataSource dataSource,
+        String fullTypeName)
+        throws DBException
+    {
+        if (!(dataSource instanceof DBPDataTypeProvider)) {
+            // NoSuchElementException data type provider
+            return null;
+        }
+        DBSDataType dataType = ((DBPDataTypeProvider) dataSource).resolveDataType(monitor, fullTypeName);
+        if (dataType == null) {
+            log.debug("Data type '" + fullTypeName + "' can't be resolved by '" + dataSource + "'");
+        }
+        return dataType;
+    }
+
     public static <T extends DBPNamedObject> void orderObjects(List<T> objects)
     {
         Collections.sort(objects, new Comparator<T>() {
