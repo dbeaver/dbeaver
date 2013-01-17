@@ -71,20 +71,6 @@ public class JDBCStruct implements DBDValue, DBDValueCloneable {
     {
     }
 
-    public String toString()
-    {
-        if (isNull()) {
-            return DBConstants.NULL_VALUE_LABEL;
-        } else {
-            try {
-                return makeStructString();
-            } catch (SQLException e) {
-                log.error(e);
-                return contents.toString();
-            }
-        }
-    }
-
     public String getTypeName()
     {
         try {
@@ -95,26 +81,42 @@ public class JDBCStruct implements DBDValue, DBDValueCloneable {
         }
     }
 
-    public String makeStructString() throws SQLException
+    public String getStringRepresentation()
     {
-        if (isNull()) {
-            return null;
+        try {
+            return makeStructString(contents);
+        } catch (SQLException e) {
+            log.error(e);
+            return contents.toString();
         }
+    }
+
+    private static String makeStructString(Struct contents) throws SQLException
+    {
         if (contents == null) {
-            return null;
+            return DBConstants.NULL_VALUE_LABEL;
         }
         StringBuilder str = new StringBuilder(200);
-        String typeName = getTypeName();
+        String typeName = contents.getSQLTypeName();
         if (typeName != null) {
             str.append(typeName);
         }
         str.append("(");
         final Object[] attributes = contents.getAttributes();
         for (int i = 0, attributesLength = attributes.length; i < attributesLength; i++) {
+            Object item = attributes[i];
+            if (item == null) {
+                continue;
+            }
             if (i > 0) str.append(',');
             str.append('\'');
-            Object item = attributes[i];
-            str.append(item == null ? DBConstants.NULL_VALUE_LABEL : item.toString());
+            if (item instanceof Struct) {
+                // Nested structure
+                str.append(makeStructString((Struct) item));
+            } else {
+                // Childish, but we can't use anything but toString
+                str.append(item.toString());
+            }
             str.append('\'');
         }
         str.append(")");

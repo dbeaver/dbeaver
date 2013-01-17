@@ -210,7 +210,7 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         Map<String, DBSEntityAttribute> stringColumns = new TreeMap<String, DBSEntityAttribute>();
         for (DBSEntityAttribute column : allColumns) {
             if (column != keyColumn &&
-                DBUtils.getDataKind(column) == DBSDataKind.STRING &&
+                column.getDataKind() == DBSDataKind.STRING &&
                 column.getMaxLength() < MAX_DESC_COLUMN_LENGTH &&
                 column.getMaxLength() >= MIN_DESC_COLUMN_LENGTH)
             {

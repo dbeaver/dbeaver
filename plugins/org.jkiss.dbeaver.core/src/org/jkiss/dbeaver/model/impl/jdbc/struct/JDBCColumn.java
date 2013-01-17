@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
 
@@ -34,6 +35,9 @@ import java.util.Map;
  * JDBC abstract column
  */
 public abstract class JDBCColumn extends AbstractAttribute implements IObjectImageProvider {
+
+    private static final Map<Image, Map<JDBCColumnKeyType, Image>> overlayCache = new IdentityHashMap<Image, Map<JDBCColumnKeyType, Image>>();
+
     protected JDBCColumn()
     {
     }
@@ -60,7 +64,11 @@ public abstract class JDBCColumn extends AbstractAttribute implements IObjectIma
         return null;
     }
 
-    private static final Map<Image, Map<JDBCColumnKeyType, Image>> overlayCache = new IdentityHashMap<Image, Map<JDBCColumnKeyType, Image>>();
+    @Override
+    public DBSDataKind getDataKind()
+    {
+        return JDBCDataType.getDataKind(typeName, valueType);
+    }
 
     protected static Image getOverlayImage(Image columnImage, JDBCColumnKeyType keyType)
     {

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -61,7 +62,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private String catalogName;
     private String schemaName;
     private String tableName;
-    private int type;
+    private int typeID;
     private String typeName;
     private boolean readOnly;
     private boolean writable;
@@ -143,7 +144,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
                 this.catalogName = tableParent instanceof DBSCatalog ? tableParent.getName() : tableGrandParent instanceof DBSCatalog ? tableGrandParent.getName() : null;
                 this.schemaName = tableParent instanceof DBSSchema ? tableParent.getName() : null;
                 this.tableName = fetchedTableName;
-                this.type = this.tableColumn.getTypeID();
+                this.typeID = this.tableColumn.getTypeID();
                 this.typeName = this.tableColumn.getTypeName();
                 this.readOnly = false;
                 this.writable = true;
@@ -174,7 +175,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             this.catalogName = fetchedCatalogName;
             this.schemaName = fetchedSchemaName;
             this.tableName = fetchedTableName;
-            this.type = metaData.getColumnType(index);
+            this.typeID = metaData.getColumnType(index);
             this.typeName = metaData.getColumnTypeName(index);
             this.readOnly = metaData.isReadOnly(index);
             this.writable = metaData.isWritable(index);
@@ -273,7 +274,13 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     @Override
     public int getTypeID()
     {
-        return type;
+        return typeID;
+    }
+
+    @Override
+    public DBSDataKind getDataKind()
+    {
+        return JDBCDataType.getDataKind(typeName, typeID);
     }
 
     @Override
@@ -405,7 +412,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             CommonUtils.equalObjects(catalogName, col.catalogName) &&
             CommonUtils.equalObjects(schemaName, col.schemaName) &&
             CommonUtils.equalObjects(tableName, col.tableName) &&
-            type == col.type &&
+            typeID == col.typeID &&
             CommonUtils.equalObjects(typeName, col.typeName) &&
             readOnly == col.readOnly &&
             writable == col.writable;

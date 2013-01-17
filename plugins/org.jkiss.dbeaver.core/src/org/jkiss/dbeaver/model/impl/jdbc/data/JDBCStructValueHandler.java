@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -46,6 +47,16 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     static final Log log = LogFactory.getLog(JDBCStructValueHandler.class);
 
     public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
+
+    /**
+     * NumberFormat is not thread safe thus this method is synchronized.
+     */
+    @Override
+    public synchronized String getValueDisplayString(DBSTypedObject column, Object value)
+    {
+        JDBCStruct struct = (JDBCStruct)value;
+        return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : struct.getStringRepresentation();
+    }
 
     @Override
     protected Object getColumnValue(

@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
@@ -29,13 +31,13 @@ import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
  */
 public class JDBCArrayType implements DBSTypedObject {
     private String typeName;
-    private int valueType;
+    private int typeID;
     private DBDValueHandler valueHandler;
 
-    public JDBCArrayType(String typeName, int valueType)
+    public JDBCArrayType(String typeName, int typeID)
     {
         this.typeName = typeName;
-        this.valueType = valueType;
+        this.typeID = typeID;
     }
 
     @Override
@@ -47,7 +49,13 @@ public class JDBCArrayType implements DBSTypedObject {
     @Override
     public int getTypeID()
     {
-        return valueType;
+        return typeID;
+    }
+
+    @Override
+    public DBSDataKind getDataKind()
+    {
+        return JDBCDataType.getDataKind(typeName, typeID);
     }
 
     @Override
@@ -75,9 +83,9 @@ public class JDBCArrayType implements DBSTypedObject {
 
     boolean resolveHandler(DBCExecutionContext context)
     {
-        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(context.getDataSource(), typeName, valueType);
+        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(context.getDataSource(), typeName, typeID);
         if (typeProvider != null) {
-            valueHandler = typeProvider.getInstance().getHandler(context, typeName, valueType);
+            valueHandler = typeProvider.getInstance().getHandler(context, typeName, typeID);
         }
         return valueHandler != null;
     }

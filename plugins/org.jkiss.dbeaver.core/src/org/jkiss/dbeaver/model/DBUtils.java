@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -876,30 +875,23 @@ public final class DBUtils {
         return script.toString();
     }
 
-    @Deprecated
-    public static DBSDataKind getDataKind(DBSTypedObject type)
-    {
-        return JDBCDataType.getDataKind(type.getTypeName(), type.getTypeID());
-    }
-
     public static DBIcon getDataIcon(DBSTypedObject type)
     {
-        switch (getDataKind(type)) {
+        switch (type.getDataKind()) {
             case BOOLEAN:
                 return DBIcon.TYPE_BOOLEAN;
             case STRING:
                 return DBIcon.TYPE_STRING;
             case NUMERIC:
-                if (type.getTypeID() == java.sql.Types.BIT) {
-                    return DBIcon.TYPE_BOOLEAN;
-                } else {
-                    return DBIcon.TYPE_NUMBER;
-                }
+                return DBIcon.TYPE_NUMBER;
             case DATETIME:
                 return DBIcon.TYPE_DATETIME;
             case BINARY:
                 return DBIcon.TYPE_BINARY;
             case LOB:
+                if (type.getTypeName().toUpperCase().contains("XML")) {
+                    return DBIcon.TYPE_XML;
+                }
                 return DBIcon.TYPE_LOB;
             case ARRAY:
                 return DBIcon.TYPE_ARRAY;
@@ -908,9 +900,6 @@ public final class DBUtils {
             case OBJECT:
                 return DBIcon.TYPE_OBJECT;
             default:
-                if (type.getTypeID() == java.sql.Types.SQLXML) {
-                    return DBIcon.TYPE_XML;
-                }
                 return DBIcon.TYPE_UNKNOWN;
         }
     }
