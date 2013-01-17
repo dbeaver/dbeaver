@@ -26,8 +26,6 @@ import java.util.*;
  * Common utils
  */
 public class CommonUtils {
-    //static final Log log = LogFactory.getLog(CommonUtils.class);
-    private static Object[] EMPTY_ARRAY = new Object[0];
 
 	public static boolean isJavaIdentifier(CharSequence str)
 	{
@@ -487,6 +485,19 @@ public class CommonUtils {
             return Collections.emptyList();
         } else {
             return Arrays.asList(array);
+        }
+    }
+
+    public static <T> T getItem(Collection<T> collection, int index)
+    {
+        if (collection instanceof List) {
+            return ((List<T>)collection).get(index);
+        } else {
+            Iterator<T> iter = collection.iterator();
+            for (int i = 0; i < index; i++) {
+                iter.next();
+            }
+            return iter.next();
         }
     }
 

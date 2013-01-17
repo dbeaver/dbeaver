@@ -20,12 +20,15 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -33,7 +36,7 @@ import java.sql.Struct;
 /**
  * Struct holder
  */
-public class JDBCStruct implements DBDValue, DBDValueCloneable {
+public class JDBCStruct implements DBDStructure {
 
     static final Log log = LogFactory.getLog(JDBCStruct.class);
 
@@ -49,12 +52,6 @@ public class JDBCStruct implements DBDValue, DBDValueCloneable {
     public Struct getValue() throws DBCException
     {
         return contents;
-    }
-
-    @Override
-    public DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
-    {
-        return new JDBCStruct(type, contents);
     }
 
     @Override
@@ -124,6 +121,50 @@ public class JDBCStruct implements DBDValue, DBDValueCloneable {
         }
         str.append(")");
         return str.toString();
+    }
+
+    @Override
+    public DBSEntity getStructType()
+    {
+        return type instanceof DBSEntity ? (DBSEntity) type : null;
+    }
+
+    @Override
+    public Object getAttributeValue(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBCException
+    {
+        DBSEntity entity = getStructType();
+        if (entity == null) {
+            throw new DBCException("Non-structure record '" + getTypeName() + "' doesn't have attributes");
+        }
+        int index = -1, i = 0;
+        try {
+            for (DBSEntityAttribute attr : entity.getAttributes(monitor)) {
+                if (attr == attribute) {
+                    index = i;
+                }
+                i++;
+            }
+        } catch (DBException e) {
+            throw new DBCException("Can't obtain attributes meta information", e);
+        }
+        if (index < 0) {
+            throw new DBCException("Attribute '" + attribute.getName() + "' doesn't belong to structure type '" + getTypeName() + "'");
+        }
+        try {
+            Object[] values = contents.getAttributes();
+            if (index >= values.length) {
+                throw new DBCException("Attribute index is out of range (" + index + ">=" + values.length + ")");
+            }
+            return values[i];
+        } catch (SQLException e) {
+            throw new DBCException("Error getting structure attribute values", e);
+        }
+    }
+
+    @Override
+    public void setAttributeValue(DBRProgressMonitor monitor, DBSEntityAttribute attribute, Object value) throws DBCException
+    {
+        throw new DBCException("Not Implemented");
     }
 
 }
