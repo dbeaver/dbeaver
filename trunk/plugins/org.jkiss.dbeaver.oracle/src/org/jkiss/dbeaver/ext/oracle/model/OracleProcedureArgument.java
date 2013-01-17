@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 import org.jkiss.utils.CommonUtils;
@@ -167,6 +168,12 @@ public class OracleProcedureArgument implements DBSProcedureParameter
     public int getTypeID()
     {
         return type.getValueType();
+    }
+
+    @Override
+    public DBSDataKind getDataKind()
+    {
+        return type.getDataKind();
     }
 
     @Override

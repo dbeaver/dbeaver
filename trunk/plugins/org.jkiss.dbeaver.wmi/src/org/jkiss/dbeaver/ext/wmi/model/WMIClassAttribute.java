@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
@@ -50,6 +51,12 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
     public int getTypeID()
     {
         return element.getType();
+    }
+
+    @Override
+    public DBSDataKind getDataKind()
+    {
+        return getDataKindById(element.getType());
     }
 
     @Override
@@ -131,6 +138,32 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
                 return DBIcon.TYPE_DATETIME.getImage();
             default:
                 return DBIcon.TYPE_UNKNOWN.getImage();
+        }
+    }
+
+    public static DBSDataKind getDataKindById(int type)
+    {
+        switch (type) {
+            case WMIConstants.CIM_SINT8:
+            case WMIConstants.CIM_UINT8:
+            case WMIConstants.CIM_SINT16:
+            case WMIConstants.CIM_UINT16:
+            case WMIConstants.CIM_SINT32:
+            case WMIConstants.CIM_UINT32:
+            case WMIConstants.CIM_SINT64:
+            case WMIConstants.CIM_UINT64:
+            case WMIConstants.CIM_REAL32:
+            case WMIConstants.CIM_REAL64:
+                return DBSDataKind.NUMERIC;
+            case WMIConstants.CIM_BOOLEAN:
+                return DBSDataKind.BOOLEAN;
+            case WMIConstants.CIM_STRING:
+            case WMIConstants.CIM_CHAR16:
+                return DBSDataKind.STRING;
+            case WMIConstants.CIM_DATETIME:
+                return DBSDataKind.DATETIME;
+            default:
+                return DBSDataKind.OBJECT;
         }
     }
 

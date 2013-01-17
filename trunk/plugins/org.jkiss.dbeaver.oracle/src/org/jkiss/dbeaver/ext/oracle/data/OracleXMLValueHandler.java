@@ -47,7 +47,7 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
         }
 
         if (object == null) {
-            return createValueObject(context, column);
+            return new OracleContentXML(context.getDataSource(), null);
         } else if (object.getClass().getName().equals("oracle.xdb.XMLType")) {
             return new OracleContentXML(context.getDataSource(), new OracleXMLWrapper(object));
         } else if (object instanceof SQLXML) {

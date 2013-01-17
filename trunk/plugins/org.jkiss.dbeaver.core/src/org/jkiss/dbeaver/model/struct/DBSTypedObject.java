@@ -25,8 +25,6 @@ import org.jkiss.dbeaver.model.DBPObject;
  */
 public interface DBSTypedObject extends DBPObject
 {
-    //DBSDataType getDataType();
-
     /**
      * Database specific type name
      * @return type name
@@ -39,6 +37,12 @@ public interface DBSTypedObject extends DBPObject
      * @return value type
      */
     int getTypeID();
+
+    /**
+     * Determines kind of data for this typed object.
+     * @return data kind
+     */
+    DBSDataKind getDataKind();
 
     /**
      * Value scale
