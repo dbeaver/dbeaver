@@ -54,16 +54,15 @@ import java.util.List;
 /**
  * ResultSetControl
  */
-public class Spreadsheet extends Composite implements Listener {
+public class Spreadsheet extends LightGrid implements Listener {
     static final Log log = LogFactory.getLog(Spreadsheet.class);
 
     private static final String SPREADSHEET_CONTROL_ID = "org.jkiss.dbeaver.ui.spreadsheet";
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
     public static final int MAX_INLINE_EDIT_WITH = 300;
 
-    private static final int Event_ChangeCursor = 1000;
+    private static final int Event_ChangeCursor = 2000;
 
-    private LightGrid grid;
     private GridEditor tableEditor;
 
     private IWorkbenchPartSite site;
@@ -87,17 +86,17 @@ public class Spreadsheet extends Composite implements Listener {
     private SelectionListener gridSelectionListener;
 
     public Spreadsheet(
-        Composite parent,
-        int style,
-        IWorkbenchPartSite site,
-        ISpreadsheetController spreadsheetController,
-        IGridContentProvider contentProvider,
-        ILabelProvider contentLabelProvider,
-        ILabelProvider columnLabelProvider,
-        ILabelProvider rowLabelProvider
+        final Composite parent,
+        final int style,
+        final IWorkbenchPartSite site,
+        final ISpreadsheetController spreadsheetController,
+        final IGridContentProvider contentProvider,
+        final ILabelProvider contentLabelProvider,
+        final ILabelProvider columnLabelProvider,
+        final ILabelProvider rowLabelProvider
         )
     {
-        super(parent, SWT.NONE);
+        super(parent, style);
         GridLayout layout = new GridLayout(1, true);
         layout.numColumns = 1;
         layout.makeColumnsEqualWidth = false;
@@ -122,17 +121,56 @@ public class Spreadsheet extends Composite implements Listener {
 
         this.clipboard = new Clipboard(getDisplay());
 
-        this.createControl(style);
-    }
+        super.setRowHeaderVisible(true);
+        super.setLinesVisible(true);
+        super.setHeaderVisible(true);
+        super.setMaxColumnDefWidth(MAX_DEF_COLUMN_WIDTH);
 
-    public static Spreadsheet getFromGrid(LightGrid grid)
-    {
-        return grid != null && !grid.isDisposed() && grid.getParent() instanceof Spreadsheet ? (Spreadsheet)grid.getParent() : null;
-    }
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        super.setLayoutData(gd);
 
-    public LightGrid getGrid()
-    {
-        return grid;
+        super.addListener(SWT.MouseDoubleClick, this);
+        super.addListener(SWT.MouseDown, this);
+        super.addListener(SWT.KeyDown, this);
+        super.addListener(LightGrid.Event_ChangeSort, this);
+        //Event_ChangeSort
+        gridSelectionListener = new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                //Integer row = (Integer) e.data;
+                GridPos pos = (GridPos) e.data;
+                Event event = new Event();
+                event.x = pos.col;
+                event.y = pos.row;
+                notifyListeners(Event_ChangeCursor, event);
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+        };
+        super.addSelectionListener(gridSelectionListener);
+
+        tableEditor = new GridEditor(this);
+        tableEditor.horizontalAlignment = SWT.LEFT;
+        tableEditor.verticalAlignment = SWT.TOP;
+        tableEditor.grabHorizontal = true;
+        tableEditor.grabVertical = true;
+        tableEditor.minimumWidth = 50;
+
+        hookContextMenu();
+
+        {
+            UIUtils.addFocusTracker(site, SPREADSHEET_CONTROL_ID, this);
+            super.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    UIUtils.removeFocusTracker(site, Spreadsheet.this);
+                }
+            });
+        }
     }
 
     public ISpreadsheetController getController()
@@ -163,7 +201,7 @@ public class Spreadsheet extends Composite implements Listener {
     public void setForegroundSelected(Color foregroundSelected)
     {
         this.foregroundSelected = foregroundSelected;
-        this.grid.redraw();
+        super.redraw();
     }
 
     public Color getBackgroundNormal()
@@ -184,37 +222,30 @@ public class Spreadsheet extends Composite implements Listener {
     public void setBackgroundSelected(Color backgroundSelected)
     {
         this.backgroundSelected = backgroundSelected;
-        this.grid.redraw();
-    }
-
-    @Override
-    public void setFont(Font font)
-    {
-        grid.setFont(font);
-        //gridPanel.setFont(font);
+        super.redraw();
     }
 
     public Collection<GridPos> getSelection()
     {
-        return grid.getCellSelection();
+        return super.getCellSelection();
     }
 
     public int getCurrentRow()
     {
-        return grid.getFocusItem();
+        return super.getFocusItem();
     }
 
     public GridPos getCursorPosition()
     {
-        if (grid.isDisposed()) {
+        if (super.isDisposed()) {
             return new GridPos(-1, -1);
         }
-        return grid.getFocusCell();
+        return super.getFocusCell();
     }
 
     public void setRowHeaderWidth(int width)
     {
-        grid.setItemHeaderWidth(width);
+        super.setItemHeaderWidth(width);
     }
 
     public boolean shiftCursor(int xOffset, int yOffset, boolean keepSelection)
@@ -257,25 +288,25 @@ public class Spreadsheet extends Composite implements Listener {
     public void setCursor(GridPos newPos, boolean keepSelection)
     {
         Event fakeEvent = new Event();
-        fakeEvent.widget = grid;
+        fakeEvent.widget = this;
         SelectionEvent selectionEvent = new SelectionEvent(fakeEvent);
         // Move row
         if (newPos.row >= 0 && newPos.row < getItemCount()) {
             selectionEvent.data = newPos.row;
-            grid.setFocusItem(newPos.row);
-            grid.showItem(newPos.row);
+            super.setFocusItem(newPos.row);
+            super.showItem(newPos.row);
         }
         // Move column
         if (newPos.col >= 0 && newPos.col < getColumnsCount()) {
-            grid.setFocusColumn(newPos.col);
-            grid.showColumn(newPos.col);
+            super.setFocusColumn(newPos.col);
+            super.showColumn(newPos.col);
         }
         if (!keepSelection) {
-            grid.deselectAll();
+            super.deselectAll();
         }
-        grid.selectCell(newPos);
+        super.selectCell(newPos);
         //spreadsheet.s
-        grid.redraw();
+        super.redraw();
 
         // Change selection event
         selectionEvent.data = new GridPos(newPos.col, newPos.row);
@@ -292,81 +323,10 @@ public class Spreadsheet extends Composite implements Listener {
         super.removeListener(Event_ChangeCursor, listener);
     }
 
-    private void createControl(int style)
-    {
-        grid = new LightGrid(this, style);
-        grid.setRowHeaderVisible(true);
-        //grid.setFooterVisible(true);
-        //spreadsheet.set
-        //spreadsheet.setRowHeaderRenderer(new IGridRenderer() {
-        //});
-
-        grid.setLinesVisible(true);
-        grid.setHeaderVisible(true);
-        grid.setMaxColumnDefWidth(MAX_DEF_COLUMN_WIDTH);
-
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        grid.setLayoutData(gd);
-
-        grid.addListener(SWT.MouseDoubleClick, this);
-        grid.addListener(SWT.MouseDown, this);
-        grid.addListener(SWT.KeyDown, this);
-        grid.addListener(LightGrid.Event_ChangeSort, this);
-        //Event_ChangeSort
-        gridSelectionListener = new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                //Integer row = (Integer) e.data;
-                GridPos pos = (GridPos) e.data;
-                //GridPos focusCell = grid.getFocusCell();
-                //if (focusCell != null) {
-                    Event event = new Event();
-                    //event.data = row;
-                    //event.data = e.data;
-                    event.x = pos.col;
-                    event.y = pos.row;
-                    notifyListeners(Event_ChangeCursor, event);
-                //}
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        };
-        grid.addSelectionListener(gridSelectionListener);
-
-        tableEditor = new GridEditor(grid);
-        tableEditor.horizontalAlignment = SWT.LEFT;
-        tableEditor.verticalAlignment = SWT.TOP;
-        tableEditor.grabHorizontal = true;
-        tableEditor.grabVertical = true;
-        tableEditor.minimumWidth = 50;
-
-        hookContextMenu();
-
-        grid.setContentProvider(contentProvider);
-        grid.setContentLabelProvider(contentLabelProvider);
-        grid.setColumnLabelProvider(columnLabelProvider);
-        grid.setRowLabelProvider(rowLabelProvider);
-
-        {
-            UIUtils.addFocusTracker(site, SPREADSHEET_CONTROL_ID, grid);
-            grid.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    UIUtils.removeFocusTracker(site, grid);
-                }
-            });
-        }
-
-    }
-
 
 /*
     private void initContextHandling() {
-        ((IContextService) site.getService(IContextService.class)).activateContext("org.jkiss.dbeaver.ui.spreadsheet.grid.context", new Expression() {
+        ((IContextService) site.getService(IContextService.class)).activateContext("org.jkiss.dbeaver.ui.spreadsheet.super.context", new Expression() {
             @Override
             public void collectExpressionInfo(ExpressionInfo info) {
                 super.collectExpressionInfo(info);
@@ -420,14 +380,14 @@ public class Spreadsheet extends Composite implements Listener {
                 } else if (event.keyCode == SWT.ESC) {
                     // Reset cell value
                     if (spreadsheetController != null) {
-                        spreadsheetController.resetCellValue(grid.getFocusCell(), false);
+                        spreadsheetController.resetCellValue(super.getFocusCell(), false);
                     }
                 }
                 break;
             case SWT.MouseDoubleClick:
-                GridPos pos = grid.getCell(new Point(event.x, event.y));
-                GridPos focusPos = grid.getFocusCell();
-                if (pos != null && focusPos != null && pos.equals(grid.getFocusCell())) {
+                GridPos pos = super.getCell(new Point(event.x, event.y));
+                GridPos focusPos = super.getFocusCell();
+                if (pos != null && focusPos != null && pos.equals(super.getFocusCell())) {
                     openCellViewer(false);
                 }
                 break;
@@ -473,16 +433,16 @@ public class Spreadsheet extends Composite implements Listener {
     {
         cancelInlineEditor();
         // Repack columns
-        grid.refreshData();
+        super.refreshData();
 
         setCursor(new GridPos(-1, -1), false);
     }
 
     public int getVisibleRowsCount()
     {
-        Rectangle clientArea = grid.getClientArea();
-        int itemHeight = grid.getItemHeight();
-        int count = (clientArea.height - grid.getHeaderHeight() + itemHeight - 1) / itemHeight;
+        Rectangle clientArea = super.getClientArea();
+        int itemHeight = super.getItemHeight();
+        int count = (clientArea.height - super.getHeaderHeight() + itemHeight - 1) / itemHeight;
         if (count == 0) {
             count = 1;
         }
@@ -493,7 +453,7 @@ public class Spreadsheet extends Composite implements Listener {
     {
         //spreadsheet.setSelection(new int[0]);
         cancelInlineEditor();
-        grid.removeAll();
+        super.removeAll();
     }
 
     public void copySelectionToClipboard(boolean copyHeader)
@@ -520,7 +480,7 @@ public class Spreadsheet extends Composite implements Listener {
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
             for (int colIndex : colsSelected) {
-                GridColumn column = grid.getColumn(colIndex);
+                GridColumn column = super.getColumn(colIndex);
                 if (tdt.length() > 0) {
                     tdt.append('\t');
                 }
@@ -574,51 +534,19 @@ public class Spreadsheet extends Composite implements Listener {
     private void hookContextMenu()
     {
         MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(grid);
+        Menu menu = menuMgr.createContextMenu(this);
         menuMgr.addMenuListener(new IMenuListener() {
             @Override
             public void menuAboutToShow(IMenuManager manager)
             {
-/*
-                IAction copyAction = new Action("Copy selection") {
-                    public void run()
-                    {
-                        copySelectionToClipboard(false);
-                    }
-                };
-                copyAction.setEnabled(grid.getCellSelectionCount() > 0);
-                copyAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_COPY);
-
-                IAction copySpecialAction = new Action("Copy selection with header") {
-                    public void run()
-                    {
-                        copySelectionToClipboard(true);
-                    }
-                };
-                copySpecialAction.setEnabled(grid.getCellSelectionCount() > 0);
-                copySpecialAction.setActionDefinitionId(ICommandIds.CMD_COPY_SPECIAL);
-
-                IAction selectAllAction = new Action("Select All") {
-                    public void run()
-                    {
-                        grid.selectAll();
-                    }
-                };
-                selectAllAction.setEnabled(grid.getCellSelectionCount() > 0);
-                selectAllAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_SELECT_ALL);
-
-                manager.add(copyAction);
-                manager.add(copySpecialAction);
-                manager.add(selectAllAction);
-*/
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
                 // Let controlles to provide it's own menu items
-                spreadsheetController.fillContextMenu(grid.getFocusCell(), manager);
+                spreadsheetController.fillContextMenu(getFocusCell(), manager);
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
-        grid.setMenu(menu);
+        super.setMenu(menu);
         site.registerContextMenu(menuMgr, selectionProvider);
     }
 
@@ -628,7 +556,7 @@ public class Spreadsheet extends Composite implements Listener {
             return;
         }
         // The control that will be the editor must be a child of the Table
-        final GridPos focusCell = grid.getFocusCell();
+        final GridPos focusCell = super.getFocusCell();
         //GridPos pos = getPosFromPoint(event.x, event.y);
         if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
             return;
@@ -636,7 +564,7 @@ public class Spreadsheet extends Composite implements Listener {
         if (!spreadsheetController.isValidCell(focusCell)) {
             return;
         }
-        //GridItem item = grid.getItem(focusCell.y);
+        //GridItem item = super.getItem(focusCell.y);
 
         Composite placeholder = null;
         if (inline) {
@@ -645,8 +573,8 @@ public class Spreadsheet extends Composite implements Listener {
             }
             cancelInlineEditor();
 
-            placeholder = new Composite(grid, SWT.NONE);
-            placeholder.setFont(grid.getFont());
+            placeholder = new Composite(this, SWT.NONE);
+            placeholder.setFont(super.getFont());
             placeholder.setLayout(new FillLayout());
 
             GridData gd = new GridData(GridData.FILL_BOTH);
@@ -689,29 +617,48 @@ public class Spreadsheet extends Composite implements Listener {
         if (oldEditor != null) {
             oldEditor.dispose();
             tableEditor.setEditor(null);
-            this.getGrid().setFocus();
+            this.setFocus();
         }
     }
 
-    public int getItemCount()
+    @Override
+    public IGridContentProvider getContentProvider()
     {
-        return grid.getItemCount();
+        return contentProvider;
+    }
+
+    @Override
+    public ILabelProvider getContentLabelProvider()
+    {
+        return contentLabelProvider;
+    }
+
+    @Override
+    public ILabelProvider getColumnLabelProvider()
+    {
+        return columnLabelProvider;
+    }
+
+    @Override
+    public ILabelProvider getRowLabelProvider()
+    {
+        return rowLabelProvider;
     }
 
     public int getColumnsCount()
     {
-        return grid.getColumnCount();
+        return super.getColumnCount();
     }
 
     public void redrawGrid()
     {
-        Rectangle bounds = grid.getBounds();
-        grid.redraw(bounds.x, bounds.y, bounds.width, bounds.height, true);
+        Rectangle bounds = super.getBounds();
+        super.redraw(bounds.x, bounds.y, bounds.width, bounds.height, true);
     }
 
     public boolean isRowVisible(int rowNum)
     {
-        return rowNum >= grid.getTopIndex() && rowNum <= grid.getBottomIndex();
+        return rowNum >= super.getTopIndex() && rowNum <= super.getBottomIndex();
     }
 
 }

@@ -77,9 +77,6 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     private static int dialogCount = 0;
     public static final String SETTINGS_SECTION_DI = "ValueViewDialog";
 
-    public static final String COLUMN_INFO_VISIBLE = "columnInfoVisible";
-    public static final String DIALOG_SIZE = "-dialogSize";
-
     private DBDValueController valueController;
     private DBSEntityReferrer refConstraint;
     private Text editor;
@@ -97,8 +94,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         this.valueController = valueController;
         this.valueController.registerEditor(this);
         dialogSettings = UIUtils.getDialogSettings(SETTINGS_SECTION_DI);
-        if (dialogSettings.get(COLUMN_INFO_VISIBLE) != null) {
-            columnInfoVisible = dialogSettings.getBoolean(COLUMN_INFO_VISIBLE);
+        if (dialogSettings.get(getInfoVisiblePrefId()) != null) {
+            columnInfoVisible = dialogSettings.getBoolean(getInfoVisiblePrefId());
         }
         dialogCount++;
     }
@@ -155,7 +152,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
             public void widgetSelected(SelectionEvent e)
             {
                 columnInfoVisible = !columnInfoVisible;
-                dialogSettings.put(COLUMN_INFO_VISIBLE, columnInfoVisible);
+                dialogSettings.put(getInfoVisiblePrefId(), columnInfoVisible);
                 initColumnInfoVisibility(columnHideLink);
                 getShell().layout();
                 int width = getShell().getSize().x;
@@ -208,7 +205,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
 
         Shell shell = getShell();
 
-        String sizeString = dialogSettings.get(getClass().getSimpleName() + DIALOG_SIZE);
+        String sizeString = dialogSettings.get(getDialogSizePrefId());
         if (!CommonUtils.isEmpty(sizeString) && sizeString.contains(":")) {
             int divPos = sizeString.indexOf(':');
             shell.setSize(new Point(
@@ -224,6 +221,20 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         x += dialogCount * 20;
         y += dialogCount * 20;
         shell.setLocation (x, y);
+    }
+
+    private String getInfoVisiblePrefId()
+    {
+        return getClass().getSimpleName() + "-" +
+            CommonUtils.escapeIdentifier(getValueController().getAttributeMetaData().getTypeName()) +
+            "-columnInfoVisible";
+    }
+
+    private String getDialogSizePrefId()
+    {
+        return getClass().getSimpleName() + "-" +
+            CommonUtils.escapeIdentifier(getValueController().getAttributeMetaData().getTypeName()) +
+            "-dialogSize";
     }
 
     @Override
@@ -262,7 +273,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     protected void buttonPressed(int buttonId) {
         Point size = getShell().getSize();
         String sizeString = size.x + ":" + size.y;
-        dialogSettings.put(getClass().getSimpleName() + DIALOG_SIZE, sizeString);
+        dialogSettings.put(getDialogSizePrefId(), sizeString);
 
         if (buttonId == IDialogConstants.IGNORE_ID) {
             if (!valueController.isReadOnly()) {
