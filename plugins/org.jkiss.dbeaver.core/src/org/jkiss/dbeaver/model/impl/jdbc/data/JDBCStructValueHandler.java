@@ -57,7 +57,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     public synchronized String getValueDisplayString(DBSTypedObject column, Object value)
     {
         JDBCStruct struct = (JDBCStruct)value;
-        return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : struct.getStringRepresentation();
+        return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : "[" + struct.getTypeName() + "]";
     }
 
     @Override
