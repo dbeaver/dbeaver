@@ -32,7 +32,7 @@ public class ResultSetTopLeftRenderer extends AbstractRenderer {
     private Button cfgButton;
 
     public ResultSetTopLeftRenderer(final ResultSetViewer resultSetViewer) {
-        super(resultSetViewer.getSpreadsheet().getGrid());
+        super(resultSetViewer.getSpreadsheet());
 
         cfgButton = new Button(grid, SWT.FLAT | SWT.NO_FOCUS);
         cfgButton.setImage(DBIcon.FILTER.getImage());

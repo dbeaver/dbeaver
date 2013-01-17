@@ -339,14 +339,22 @@ public class UIUtils {
     public static void dispose(Widget widget)
     {
         if (widget != null && !widget.isDisposed()) {
-            widget.dispose();
+            try {
+                widget.dispose();
+            } catch (Exception e) {
+                log.debug("widget dispose error", e);
+            }
         }
     }
 
     public static void dispose(Resource resource)
     {
         if (resource != null && !resource.isDisposed()) {
-            resource.dispose();
+            try {
+                resource.dispose();
+            } catch (Exception e) {
+                log.debug("Resource dispose error", e);
+            }
         }
     }
 

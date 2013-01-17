@@ -28,25 +28,19 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
  * Standard command handler
  */
 public class SpreadsheetCommandHandler extends AbstractHandler {
 
-    public static LightGrid getActiveGrid(ExecutionEvent event)
-    {
-        Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
-        if (!(control instanceof LightGrid)) {
-            return null;
-        }
-        return (LightGrid)control;
-    }
-
     public static Spreadsheet getActiveSpreadsheet(ExecutionEvent event)
     {
-        return Spreadsheet.getFromGrid(getActiveGrid(event));
+        Object control = HandlerUtil.getVariable(event, ISources.ACTIVE_FOCUS_CONTROL_NAME);
+        if (!(control instanceof Spreadsheet)) {
+            return null;
+        }
+        return (Spreadsheet)control;
     }
 
     @Override
@@ -56,11 +50,10 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
         if (spreadsheet == null) {
             return null;
         }
-        LightGrid grid = spreadsheet.getGrid();
 
         String actionId = event.getCommand().getId();
         if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL)) {
-            grid.selectAll();
+            spreadsheet.selectAll();
             return null;
         }
         if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
@@ -95,7 +88,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
             keyEvent.keyCode = SWT.END;
             keyEvent.stateMask = SWT.MOD1 | SWT.MOD2;
         }
-        grid.onKeyDown(keyEvent);
+        spreadsheet.onKeyDown(keyEvent);
         return null;
     }
 

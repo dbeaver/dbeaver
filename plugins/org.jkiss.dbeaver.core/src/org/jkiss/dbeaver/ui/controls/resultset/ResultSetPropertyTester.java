@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 
 import java.util.HashMap;
@@ -49,7 +48,7 @@ public class ResultSetPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        Spreadsheet spreadsheet = Spreadsheet.getFromGrid((LightGrid) receiver);
+        Spreadsheet spreadsheet = (Spreadsheet) receiver;
         if (spreadsheet == null) {
             return false;
         }
