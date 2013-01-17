@@ -1061,7 +1061,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (column.getTableColumn() == null) {
                 return;
             }
-            DBSDataKind dataKind = DBUtils.getDataKind(column.getAttribute());
+            DBSDataKind dataKind = column.getAttribute().getDataKind();
             if (!column.getAttribute().isRequired()) {
                 filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.NONE, column));
                 filtersMenu.add(new FilterByColumnAction("IS NOT NULL", FilterByColumnType.NONE, column));

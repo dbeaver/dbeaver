@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.runtime.sql;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
@@ -128,6 +129,12 @@ public class SQLStatementParameter implements DBSAttributeBase {
     public int getTypeID()
     {
         return paramType == null ? -1 : paramType.getValueType();
+    }
+
+    @Override
+    public DBSDataKind getDataKind()
+    {
+        return paramType.getDataKind();
     }
 
     @Override

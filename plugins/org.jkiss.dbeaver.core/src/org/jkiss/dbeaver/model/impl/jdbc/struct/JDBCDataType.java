@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.Types;
+
 /**
  * JDBCDataType
  */
@@ -138,13 +140,13 @@ public class JDBCDataType implements DBSDataType
     public static int getValueTypeByTypeName(String typeName, int valueType)
     {
         // [JDBC: SQLite driver uses VARCHAR value type for all LOBs]
-        if (valueType == java.sql.Types.OTHER || valueType == java.sql.Types.VARCHAR) {
+        if (valueType == Types.OTHER || valueType == Types.VARCHAR) {
             if ("BLOB".equalsIgnoreCase(typeName)) {
-                return java.sql.Types.BLOB;
+                return Types.BLOB;
             } else if ("CLOB".equalsIgnoreCase(typeName)) {
-                return java.sql.Types.CLOB;
+                return Types.CLOB;
             } else if ("NCLOB".equalsIgnoreCase(typeName)) {
-                return java.sql.Types.NCLOB;
+                return Types.NCLOB;
             }
         }
         return valueType;
@@ -153,49 +155,51 @@ public class JDBCDataType implements DBSDataType
     public static DBSDataKind getDataKind(String typeName, int valueType)
     {
         switch (getValueTypeByTypeName(typeName, valueType)) {
-            case java.sql.Types.BOOLEAN:
+            case Types.BOOLEAN:
                 return DBSDataKind.BOOLEAN;
-            case java.sql.Types.CHAR:
-            case java.sql.Types.VARCHAR:
-            case java.sql.Types.NVARCHAR:
-            case java.sql.Types.LONGVARCHAR:
-            case java.sql.Types.LONGNVARCHAR:
-
+            case Types.CHAR:
+            case Types.VARCHAR:
+            case Types.NVARCHAR:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
                 return DBSDataKind.STRING;
-            case java.sql.Types.BIGINT:
-            case java.sql.Types.DECIMAL:
-            case java.sql.Types.DOUBLE:
-            case java.sql.Types.FLOAT:
-            case java.sql.Types.INTEGER:
-            case java.sql.Types.NUMERIC:
-            case java.sql.Types.REAL:
-            case java.sql.Types.SMALLINT:
+            case Types.BIGINT:
+            case Types.DECIMAL:
+            case Types.DOUBLE:
+            case Types.FLOAT:
+            case Types.INTEGER:
+            case Types.NUMERIC:
+            case Types.REAL:
+            case Types.SMALLINT:
                 return DBSDataKind.NUMERIC;
-            case java.sql.Types.BIT:
-            case java.sql.Types.TINYINT:
+            case Types.BIT:
+                return DBSDataKind.BOOLEAN;
+            case Types.TINYINT:
                 if (typeName.toLowerCase().contains("bool")) {
                     // Declared as numeric but actually it's a boolean
                     return DBSDataKind.BOOLEAN;
                 } else {
                     return DBSDataKind.NUMERIC;
                 }
-            case java.sql.Types.DATE:
-            case java.sql.Types.TIME:
-            case java.sql.Types.TIMESTAMP:
+            case Types.DATE:
+            case Types.TIME:
+            case Types.TIMESTAMP:
                 return DBSDataKind.DATETIME;
-            case java.sql.Types.BINARY:
-            case java.sql.Types.VARBINARY:
-            case java.sql.Types.LONGVARBINARY:
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
                 return DBSDataKind.BINARY;
-            case java.sql.Types.BLOB:
-            case java.sql.Types.CLOB:
-            case java.sql.Types.NCLOB:
+            case Types.BLOB:
+            case Types.CLOB:
+            case Types.NCLOB:
                 return DBSDataKind.LOB;
-            case java.sql.Types.STRUCT:
+            case Types.SQLXML:
+                return DBSDataKind.LOB;
+            case Types.STRUCT:
                 return DBSDataKind.STRUCT;
-            case java.sql.Types.ARRAY:
+            case Types.ARRAY:
                 return DBSDataKind.ARRAY;
-            case java.sql.Types.ROWID:
+            case Types.ROWID:
                 // threat ROWID as string
                 return DBSDataKind.STRING;
         }

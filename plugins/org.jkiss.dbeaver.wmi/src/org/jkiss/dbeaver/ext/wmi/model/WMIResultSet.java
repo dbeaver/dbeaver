@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
@@ -240,6 +241,12 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         public int getTypeID()
         {
             return attribute.getType();
+        }
+
+        @Override
+        public DBSDataKind getDataKind()
+        {
+            return WMIClassAttribute.getDataKindById(attribute.getType());
         }
 
         @Override
