@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * ResultSetCommandHandler
  */
-public class ResultSetModeToggleHandler extends ResultSetCommandHandler implements IElementUpdater {
+public class ResultSetModeToggleModeHandler extends ResultSetCommandHandler implements IElementUpdater {
 
     @Override
     public void updateElement(UIElement element, Map parameters)
