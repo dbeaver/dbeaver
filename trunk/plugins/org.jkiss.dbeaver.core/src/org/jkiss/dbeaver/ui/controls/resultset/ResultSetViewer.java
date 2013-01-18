@@ -61,10 +61,7 @@ import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
@@ -78,7 +75,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -121,7 +117,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private final SashForm resultsSash;
     private final Spreadsheet spreadsheet;
-    private final Composite previewPane;
+    private final ViewValuePanel previewPane;
 
     private ResultSetProvider resultSetProvider;
     private ResultSetDataReceiver dataReceiver;
@@ -298,6 +294,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
             updateToolbar();
+            previewValue();
         }
     }
 
@@ -443,6 +440,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return metaColumns;
     }
 
+    ////////////////////////////////////////////////////////////
+    // Filters
+
     public DBDDataFilter getDataFilter()
     {
         return dataFilter;
@@ -499,6 +499,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
+    ////////////////////////////////////////////////////////////
+    // Grid/Record mode
+
     public ResultSetMode getMode()
     {
         return mode;
@@ -511,25 +514,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
         if (commandService != null) {
             commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_MODE, null);
-        }
-    }
-
-    public boolean isPreviewVisible()
-    {
-        return resultsSash.getMaximizedControl() == null;
-    }
-
-    public void togglePreview()
-    {
-        if (resultsSash.getMaximizedControl() == null) {
-            resultsSash.setMaximizedControl(spreadsheet);
-        } else {
-            resultsSash.setMaximizedControl(null);
-        }
-        // Refresh elements
-        ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
-        if (commandService != null) {
-            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PREVIEW, null);
         }
     }
 
@@ -577,6 +561,48 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         spreadsheet.setRowHeaderWidth(defaultWidth + DEFAULT_ROW_HEADER_WIDTH);
     }
+
+    ////////////////////////////////////////////////////////////
+    // Value preview
+
+    public boolean isPreviewVisible()
+    {
+        return resultsSash.getMaximizedControl() == null;
+    }
+
+    public void togglePreview()
+    {
+        if (resultsSash.getMaximizedControl() == null) {
+            resultsSash.setMaximizedControl(spreadsheet);
+        } else {
+            resultsSash.setMaximizedControl(null);
+            previewValue();
+        }
+        // Refresh elements
+        ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PREVIEW, null);
+        }
+    }
+
+    void previewValue()
+    {
+        if (!isPreviewVisible()) {
+            return;
+        }
+        final GridPos cell = translateGridPos(getCurrentPosition());
+        if (!cell.isValid() || cell.col >= metaColumns.length || cell.row >= curRows.size()) {
+            return;
+        }
+        final ResultSetValueController valueController = new ResultSetValueController(
+            curRows.get(cell.row),
+            cell.col,
+            previewPane.getViewPlaceholder());
+        previewPane.viewValue(valueController);
+    }
+
+    ////////////////////////////////////////////////////////////
+    // Misc
 
     public void dispose()
     {
@@ -931,7 +957,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (mode == ResultSetMode.GRID) {
             return (pos.col >= 0 && pos.row >= 0);
         } else {
-            return curRowNum >= 0;
+            return curRowNum >= 0 && pos.row >= 0;
         }
     }
 
@@ -1762,10 +1788,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private Image getColumnImage(DBDAttributeBinding column)
+    public static Image getAttributeImage(DBSAttributeBase column)
     {
-        if (column.getAttribute() instanceof IObjectImageProvider) {
-            return ((IObjectImageProvider)column.getAttribute()).getObjectImage();
+        if (column instanceof IObjectImageProvider) {
+            return ((IObjectImageProvider)column).getObjectImage();
         } else {
             return DBIcon.TREE_COLUMN.getImage();
         }
@@ -2781,7 +2807,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 attr = metaColumns[cell.col];
             }
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
-                return getColumnImage(attr);
+                return getAttributeImage(attr.getAttribute());
             } else {
                 return null;
             }
@@ -2827,7 +2853,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (mode == ResultSetMode.GRID) {
                 int colNumber = ((Number)element).intValue();
-                return getColumnImage(metaColumns[colNumber]);
+                return getAttributeImage(metaColumns[colNumber].getAttribute());
             }
             return null;
         }
@@ -2878,7 +2904,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (mode == ResultSetMode.RECORD) {
                 int rowNumber = ((Number) element).intValue();
-                return getColumnImage(metaColumns[rowNumber]);
+                return getAttributeImage(metaColumns[rowNumber].getAttribute());
             }
             return null;
         }

@@ -43,7 +43,7 @@ public interface DBDValueController
 
     /**
      * Column value
-     * @return
+     * @return value
      */
     Object getValue();
 

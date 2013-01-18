@@ -25,12 +25,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -120,6 +119,19 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             "column_size", //$NON-NLS-1$
             CoreMessages.model_jdbc_column_size,
             controller.getAttributeMetaData().getMaxLength());
+    }
+
+    @Override
+    public DBDValueViewer createValueViewer(final DBDValueController controller) throws DBException
+    {
+        final Text text = new Text(controller.getInlinePlaceholder(), SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        return new DBDValueViewer() {
+            @Override
+            public void showValue(DBDValueController controller1)
+            {
+                text.setText(getValueDisplayString(controller1.getAttributeMetaData(), controller1.getValue()));
+            }
+        };
     }
 
     protected static interface ValueExtractor <T extends Control> {

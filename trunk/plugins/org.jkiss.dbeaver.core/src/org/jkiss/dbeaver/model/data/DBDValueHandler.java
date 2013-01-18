@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -150,6 +151,16 @@ public interface DBDValueHandler
      * @param controller value controller
      */
     void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller);
+
+    /**
+     * Create value viewer for specified controller's column.
+     * @param controller column value controller
+     * @return value viewer. Visually viewer should be created as child widget of inline placeholder of controller.
+     *  Single viewer should be able to process multiple values of the same type.
+     * @throws DBException on error
+     */
+    DBDValueViewer createValueViewer(DBDValueController controller)
+        throws DBException;
 
     /**
      * Shows value editor.

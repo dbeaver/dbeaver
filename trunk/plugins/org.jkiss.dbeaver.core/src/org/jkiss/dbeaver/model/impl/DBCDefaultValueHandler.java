@@ -22,10 +22,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.dnd.Clipboard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
@@ -113,6 +110,12 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
 
     @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller) {
+    }
+
+    @Override
+    public DBDValueViewer createValueViewer(DBDValueController controller) throws DBException
+    {
+        return null;
     }
 
     @Override
