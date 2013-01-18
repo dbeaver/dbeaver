@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
@@ -124,7 +126,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     @Override
     public DBDValueViewer createValueViewer(final DBDValueController controller) throws DBException
     {
-        final Text text = new Text(controller.getInlinePlaceholder(), SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        final Text text = new Text(controller.getInlinePlaceholder(), SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
         return new DBDValueViewer() {
             @Override
             public void showValue(DBDValueController controller1)

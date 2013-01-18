@@ -28,6 +28,8 @@ import java.util.Map;
 
 public class SharedTextColors implements ISharedTextColors {
 
+    public static final RGB NOTE_BACKGROUND_COLOR = new RGB(0xff, 0xff, 0xe1);
+
     /**
      * The display table.
      */
