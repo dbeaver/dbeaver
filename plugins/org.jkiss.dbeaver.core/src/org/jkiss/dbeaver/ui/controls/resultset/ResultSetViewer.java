@@ -36,6 +36,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -100,6 +101,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
+    private final Composite previewPane;
 
     public enum ResultSetMode {
         GRID,
@@ -156,7 +158,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private Font boldFont;
 
     private ResultSetDataPumpJob dataPumpJob;
-    //private static final String RESULT_SET_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset";
 
     private final List<ResultSetListener> listeners = new ArrayList<ResultSetListener>();
 
@@ -167,6 +168,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.site = site;
         this.mode = ResultSetMode.GRID;
         this.resultSetProvider = resultSetProvider;
+        this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
         ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
@@ -186,18 +188,27 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.filtersText.setLayoutData(gd);
         this.filtersText.setVisible(false);
 
+        {
+            SashForm resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
+            resultsSash.setLayoutData(new GridData(GridData.FILL_BOTH));
+            resultsSash.setSashWidth(5);
+            resultsSash.setBackground(resultsSash.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
-        this.spreadsheet = new Spreadsheet(
-            viewerPanel,
-            SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
-            site,
-            this,
-            new ContentProvider(),
-            new ContentLabelProvider(),
-            new ColumnLabelProvider(),
-            new RowLabelProvider());
-        this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
-        this.dataReceiver = new ResultSetDataReceiver(this);
+            this.spreadsheet = new Spreadsheet(
+                resultsSash,
+                SWT.MULTI | SWT.VIRTUAL | SWT.H_SCROLL | SWT.V_SCROLL,
+                site,
+                this,
+                new ContentProvider(),
+                new ContentLabelProvider(),
+                new ColumnLabelProvider(),
+                new RowLabelProvider());
+            this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            this.previewPane = new ViewValuePanel(resultsSash);
+
+            resultsSash.setWeights(new int[] {75, 25});
+        }
 
         createStatusBar(viewerPanel);
         changeMode(ResultSetMode.GRID);
