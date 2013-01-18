@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -19,6 +20,9 @@ abstract class ViewValuePanel extends Composite {
 
     private final Label columnImageLabel;
     private final Label columnNameLabel;
+    private final Composite viewPlaceholder;
+
+    private DBDValueController previewController;
 
     ViewValuePanel(Composite parent)
     {
@@ -55,8 +59,24 @@ abstract class ViewValuePanel extends Composite {
                 hidePanel();
             }
         });
+
+        viewPlaceholder = UIUtils.createPlaceholder(this, 1);
+        viewPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
     }
 
     protected abstract void hidePanel();
+
+    public Composite getViewPlaceholder()
+    {
+        return viewPlaceholder;
+    }
+
+    public void viewValue(DBDValueController valueController)
+    {
+        if (previewController == null || valueController.getAttributeMetaData() != previewController.getAttributeMetaData()) {
+            columnImageLabel.setImage(ResultSetViewer.getAttributeImage(valueController.getAttributeMetaData()));
+            columnNameLabel.setText(valueController.getAttributeMetaData().getName());
+        }
+    }
 
 }
