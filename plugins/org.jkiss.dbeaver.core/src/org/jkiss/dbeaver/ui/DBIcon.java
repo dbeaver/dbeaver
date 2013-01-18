@@ -112,6 +112,8 @@ public enum DBIcon
     RS_REFRESH("rs_refresh", "/icons/sql/resultset_refresh.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_TOGGLE_RECORD("rs_toggle_record", "icons/sql/resultset_record.png"), //$NON-NLS-1$ //$NON-NLS-2$
     RS_TOGGLE_GRID("rs_toggle_grid", "icons/sql/resultset_grid.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    RS_PREVIEW_SHOW("rs_preview_show", "icons/sql/resultset_preview_show.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    RS_PREVIEW_HIDE("rs_preview_hide", "icons/sql/resultset_preview_hide.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     TXN_COMMIT_AUTO("txn_commit_auto", "icons/sql/txn_auto.png"), //$NON-NLS-1$ //$NON-NLS-2$
     TXN_COMMIT_MANUAL("txn_commit_manual", "icons/sql/txn_manual.png"), //$NON-NLS-1$ //$NON-NLS-2$

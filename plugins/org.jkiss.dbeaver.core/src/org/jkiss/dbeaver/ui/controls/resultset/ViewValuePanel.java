@@ -1,6 +1,8 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -13,7 +15,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * RSV value view panel
  */
-class ViewValuePanel extends Composite {
+abstract class ViewValuePanel extends Composite {
 
     private final Label columnImageLabel;
     private final Label columnNameLabel;
@@ -46,5 +48,15 @@ class ViewValuePanel extends Composite {
         hideToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
         ToolItem hideItem = new ToolItem(hideToolbar, SWT.PUSH);
         hideItem.setText("Hide");
+        hideItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                hidePanel();
+            }
+        });
     }
+
+    protected abstract void hidePanel();
+
 }
