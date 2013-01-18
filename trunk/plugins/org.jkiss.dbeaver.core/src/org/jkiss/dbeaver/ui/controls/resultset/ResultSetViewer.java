@@ -101,7 +101,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
-    private final Composite previewPane;
 
     public enum ResultSetMode {
         GRID,
@@ -119,7 +118,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private ResultSetMode mode;
     private Composite viewerPanel;
     private Text filtersText;
-    private Spreadsheet spreadsheet;
+
+    private final SashForm resultsSash;
+    private final Spreadsheet spreadsheet;
+    private final Composite previewPane;
+
     private ResultSetProvider resultSetProvider;
     private ResultSetDataReceiver dataReceiver;
     private IThemeManager themeManager;
@@ -189,7 +192,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.filtersText.setVisible(false);
 
         {
-            SashForm resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
+            resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
             resultsSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultsSash.setSashWidth(5);
             resultsSash.setBackground(resultsSash.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -205,9 +208,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 new RowLabelProvider());
             this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            this.previewPane = new ViewValuePanel(resultsSash);
+            this.previewPane = new ViewValuePanel(resultsSash) {
+                @Override
+                protected void hidePanel()
+                {
+                    togglePreview();
+                }
+            };
 
-            resultsSash.setWeights(new int[] {75, 25});
+            resultsSash.setWeights(new int[]{75, 25});
+            resultsSash.setMaximizedControl(spreadsheet);
         }
 
         createStatusBar(viewerPanel);
@@ -410,6 +420,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE));
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PREVIEW));
         toolBarManager.add(new ConfigAction());
 
         toolBarManager.createControl(statusBar);
@@ -500,6 +511,25 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
         if (commandService != null) {
             commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_MODE, null);
+        }
+    }
+
+    public boolean isPreviewVisible()
+    {
+        return resultsSash.getMaximizedControl() == null;
+    }
+
+    public void togglePreview()
+    {
+        if (resultsSash.getMaximizedControl() == null) {
+            resultsSash.setMaximizedControl(spreadsheet);
+        } else {
+            resultsSash.setMaximizedControl(null);
+        }
+        // Refresh elements
+        ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_PREVIEW, null);
         }
     }
 
@@ -2908,6 +2938,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             menuManager.add(new DictionaryEditAction());
             menuManager.add(new Separator());
             menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
+            menuManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PREVIEW, CommandContributionItem.STYLE_CHECK));
             menuManager.add(new Separator());
             menuManager.add(new Action("Preferences") {
                 @Override

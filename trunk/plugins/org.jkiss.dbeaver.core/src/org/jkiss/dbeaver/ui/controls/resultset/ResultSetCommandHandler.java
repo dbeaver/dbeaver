@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
  * ResultSetCommandHandler
  */
 public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
+    public static final String CMD_TOGGLE_PREVIEW = "org.jkiss.dbeaver.core.resultset.togglePreview";
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
     public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
     public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
@@ -59,6 +60,8 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
             resultSet.refresh();
         } else if (actionId.equals(CMD_TOGGLE_MODE)) {
             resultSet.toggleMode();
+        } else if (actionId.equals(CMD_TOGGLE_PREVIEW)) {
+            resultSet.togglePreview();
         } else if (actionId.equals(CMD_ROW_PREVIOUS) || actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.PREVIOUS);
         } else if (actionId.equals(CMD_ROW_NEXT) || actionId.equals(ITextEditorActionDefinitionIds.WORD_NEXT)) {
