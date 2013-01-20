@@ -268,60 +268,64 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
-        if (controller.isInlineEdit()) {
-            // Open inline editor
-            if (controller.getValue() instanceof JDBCContentChars) {
-                // String editor
-                JDBCContentChars value = (JDBCContentChars)controller.getValue();
+        switch (controller.getEditType()) {
+            case INLINE:
+                // Open inline editor
+                if (controller.getValue() instanceof JDBCContentChars) {
+                    // String editor
+                    JDBCContentChars value = (JDBCContentChars)controller.getValue();
 
-                Text editor = new Text(controller.getInlinePlaceholder(), SWT.NONE);
-                initInlineControl(controller, editor, new ValueExtractor<Text>() {
-                    @Override
-                    public Object getValueFromControl(Text control)
-                    {
-                        String newValue = control.getText();
-                        return new JDBCContentChars(controller.getDataSource(), newValue);
+                    Text editor = new Text(controller.getEditPlaceholder(), SWT.NONE);
+                    initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                        @Override
+                        public Object getValueFromControl(Text control)
+                        {
+                            String newValue = control.getText();
+                            return new JDBCContentChars(controller.getDataSource(), newValue);
+                        }
+                    });
+                    editor.setText(value.getData() == null ? "" : value.getData()); //$NON-NLS-1$
+                    editor.setEditable(!controller.isReadOnly());
+                    long maxLength = controller.getAttributeMetaData().getMaxLength();
+                    if (maxLength <= 0) {
+                        maxLength = MAX_STRING_LENGTH;
+                    } else {
+                        maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
                     }
-                });
-                editor.setText(value.getData() == null ? "" : value.getData()); //$NON-NLS-1$
-                editor.setEditable(!controller.isReadOnly());
-                long maxLength = controller.getAttributeMetaData().getMaxLength();
-                if (maxLength <= 0) {
-                    maxLength = MAX_STRING_LENGTH;
+                    editor.setTextLimit((int)maxLength);
+                    editor.selectAll();
+                    editor.setFocus();
+                    return true;
                 } else {
-                    maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
+                    controller.showMessage(CoreMessages.model_jdbc_lob_and_binary_data_cant_be_edited_inline, true);
+                    return false;
                 }
-                editor.setTextLimit((int)maxLength);
-                editor.selectAll();
-                editor.setFocus();
-                return true;
-            } else {
-                controller.showMessage(CoreMessages.model_jdbc_lob_and_binary_data_cant_be_edited_inline, true);
+            case EDITOR:
+                // Open LOB editor
+                Object value = controller.getValue();
+                if (value instanceof DBDContent && controller instanceof DBDAttributeController) {
+                    DBDContent content = (DBDContent)value;
+                    boolean isText = ContentUtils.isTextContent(content);
+                    List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
+                    if (isText) {
+                        parts.add(new ContentTextEditorPart());
+                        if (MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType())) {
+                            parts.add(new ContentXMLEditorPart());
+                        }
+                    } else {
+                        parts.add(new ContentBinaryEditorPart());
+                        parts.add(new ContentTextEditorPart());
+                        parts.add(new ContentImageEditorPart());
+                    }
+                    return ContentEditor.openEditor(
+                        (DBDAttributeController)controller,
+                        parts.toArray(new IContentEditorPart[parts.size()]) );
+                } else {
+                    controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
+                    return false;
+                }
+            default:
                 return false;
-            }
-        }
-        // Open LOB editor
-        Object value = controller.getValue();
-        if (value instanceof DBDContent && controller instanceof DBDAttributeController) {
-            DBDContent content = (DBDContent)value;
-            boolean isText = ContentUtils.isTextContent(content);
-            List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
-            if (isText) {
-                parts.add(new ContentTextEditorPart());
-                if (MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType())) {
-                    parts.add(new ContentXMLEditorPart());
-                }
-            } else {
-                parts.add(new ContentBinaryEditorPart());
-                parts.add(new ContentTextEditorPart());
-                parts.add(new ContentImageEditorPart());
-            }
-            return ContentEditor.openEditor(
-                (DBDAttributeController)controller,
-                parts.toArray(new IContentEditorPart[parts.size()]) );
-        } else {
-            controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
-            return false;
         }
     }
 

@@ -87,30 +87,34 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
-        if (controller.isInlineEdit()) {
-            Object value = controller.getValue();
+        switch (controller.getEditType()) {
+            case INLINE:
+                Object value = controller.getValue();
 
-            CCombo editor = new CCombo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
-            initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
-                @Override
-                public Object getValueFromControl(CCombo control)
-                {
-                    switch (control.getSelectionIndex()) {
-                        case 0: return Boolean.FALSE;
-                        case 1: return Boolean.TRUE;
-                        default: return null;
+                CCombo editor = new CCombo(controller.getEditPlaceholder(), SWT.READ_ONLY);
+                initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
+                    @Override
+                    public Object getValueFromControl(CCombo control)
+                    {
+                        switch (control.getSelectionIndex()) {
+                            case 0: return Boolean.FALSE;
+                            case 1: return Boolean.TRUE;
+                            default: return null;
+                        }
                     }
-                }
-            });
-            editor.add("FALSE");
-            editor.add("TRUE");
-            editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
-            editor.setFocus();
-            return true;
-        } else {
-            NumberViewDialog dialog = new NumberViewDialog(controller);
-            dialog.open();
-            return true;
+                });
+                editor.add("FALSE");
+                editor.add("TRUE");
+                editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
+                editor.setFocus();
+                return true;
+
+            case EDITOR:
+                NumberViewDialog dialog = new NumberViewDialog(controller);
+                dialog.open();
+                return true;
+            default:
+                return false;
         }
     }
 

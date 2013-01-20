@@ -39,8 +39,7 @@ import java.sql.SQLException;
 /**
  * JDBC string value handler
  */
-public class JDBCStringValueHandler extends JDBCAbstractValueHandler
-{
+public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCStringValueHandler INSTANCE = new JDBCStringValueHandler();
 
@@ -73,28 +72,29 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
-        if (controller.isInlineEdit()) {
-
-            Object value = controller.getValue();
-            Text editor = new Text(controller.getInlinePlaceholder(), SWT.BORDER);
-            initInlineControl(controller, editor, new ValueExtractor<Text>()
-            {
-                @Override
-                public Object getValueFromControl(Text control)
-                {
-                    return control.getText();
-                }
-            });
-            editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
-            editor.setEditable(!controller.isReadOnly());
-            editor.setTextLimit(MAX_STRING_LENGTH);
-            editor.selectAll();
-            editor.setFocus();
-            return true;
-        } else {
-            TextViewDialog dialog = new TextViewDialog(controller);
-            dialog.open();
-            return true;
+        switch (controller.getEditType()) {
+            case INLINE:
+                Object value = controller.getValue();
+                Text editor = new Text(controller.getEditPlaceholder(), SWT.BORDER);
+                initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                    @Override
+                    public Object getValueFromControl(Text control)
+                    {
+                        return control.getText();
+                    }
+                });
+                editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
+                editor.setEditable(!controller.isReadOnly());
+                editor.setTextLimit(MAX_STRING_LENGTH);
+                editor.selectAll();
+                editor.setFocus();
+                return true;
+            case EDITOR:
+                TextViewDialog dialog = new TextViewDialog(controller);
+                dialog.open();
+                return true;
+            default:
+                return false;
         }
     }
 

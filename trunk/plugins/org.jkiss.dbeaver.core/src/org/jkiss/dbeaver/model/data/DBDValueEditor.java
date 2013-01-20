@@ -27,6 +27,8 @@ public interface DBDValueEditor
 {
     DBDValueController getValueController();
 
+    //void refreshValue(DBDValueController controller);
+
     /**
      * Brings editor to the top of screen
      */
@@ -34,7 +36,7 @@ public interface DBDValueEditor
 
     /**
      * Closes this editor.
-     * Implementor must call removeEditor on it's value controller
+     * Implementor must call unregisterEditor on it's value controller
      */
     void closeValueEditor();
 

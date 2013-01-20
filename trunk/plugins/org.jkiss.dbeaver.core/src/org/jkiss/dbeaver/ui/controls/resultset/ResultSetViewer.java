@@ -39,6 +39,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -597,6 +598,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         final ResultSetValueController valueController = new ResultSetValueController(
             curRows.get(cell.row),
             cell.col,
+            DBDValueController.EditType.PANEL,
             previewPane.getViewPlaceholder());
         previewPane.viewValue(valueController);
     }
@@ -954,6 +956,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     @Override
     public boolean isValidCell(GridPos pos) {
+        if (pos == null) {
+            return false;
+        }
         if (mode == ResultSetMode.GRID) {
             return (pos.col >= 0 && pos.row >= 0);
         } else {
@@ -985,11 +990,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     @Override
     public boolean showCellEditor(
-        GridPos cell,
-        final boolean inline,
-        final Composite inlinePlaceholder)
+        final boolean inline)
     {
-        cell = translateGridPos(cell);
+        // The control that will be the editor must be a child of the Table
+        final GridPos focusCell = spreadsheet.getFocusCell();
+        //GridPos pos = getPosFromPoint(event.x, event.y);
+        if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
+            return false;
+        }
+        if (!isValidCell(focusCell)) {
+            return false;
+        }
+
+        GridPos cell = translateGridPos(focusCell);
         if (cell.row < 0 || cell.row >= curRows.size() || cell.col < 0 || cell.col >= metaColumns.length) {
             // Out of bounds
             log.debug("Editor position is out of bounds (" + cell.col + ":" + cell.row + ")");
@@ -1013,17 +1026,49 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
             return false;
         }
+
+        Composite placeholder = null;
+        if (inline) {
+            if (isReadOnly()) {
+                return false;
+            }
+            spreadsheet.cancelInlineEditor();
+
+            placeholder = new Composite(spreadsheet, SWT.NONE);
+            placeholder.setFont(spreadsheet.getFont());
+            placeholder.setLayout(new FillLayout());
+
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalIndent = 0;
+            gd.verticalIndent = 0;
+            gd.grabExcessHorizontalSpace = true;
+            gd.grabExcessVerticalSpace = true;
+            placeholder.setLayoutData(gd);
+        }
+
         ResultSetValueController valueController = new ResultSetValueController(
             curRows.get(cell.row),
             cell.col,
-            inline ? inlinePlaceholder : null);
+            inline ? DBDValueController.EditType.INLINE : DBDValueController.EditType.EDITOR,
+            inline ? placeholder : null);
+        boolean editSuccess;
         try {
-            return metaColumn.getValueHandler().editValue(valueController);
+            editSuccess = metaColumn.getValueHandler().editValue(valueController);
         }
         catch (Exception e) {
             UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
             return false;
         }
+
+        if (inline) {
+            if (editSuccess) {
+                spreadsheet.showCellEditor(focusCell, placeholder);
+            } else {
+                // No editor was created so just drop placeholder
+                placeholder.dispose();
+            }
+        }
+        return editSuccess;
     }
 
     @Override
@@ -1050,6 +1095,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             final ResultSetValueController valueController = new ResultSetValueController(
                 curRows.get(cell.row),
                 cell.col,
+                DBDValueController.EditType.NONE,
                 null);
             final Object value = valueController.getValue();
 
@@ -1571,6 +1617,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             new ResultSetValueController(
                 this.curRows.get(cell.row),
                 cell.col,
+                DBDValueController.EditType.NONE,
                 null).updateValue(newValue);
         }
         catch (Exception e) {
@@ -1913,12 +1960,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private DBDAttributeBinding[] columns;
         private Object[] curRow;
         private int columnIndex;
+        private EditType editType;
         private Composite inlinePlaceholder;
 
-        private ResultSetValueController(Object[] curRow, int columnIndex, Composite inlinePlaceholder) {
+        private ResultSetValueController(Object[] curRow, int columnIndex, EditType editType, Composite inlinePlaceholder) {
             this.columns = ResultSetViewer.this.metaColumns;
             this.curRow = curRow;
             this.columnIndex = columnIndex;
+            this.editType = editType;
             this.inlinePlaceholder = inlinePlaceholder;
         }
 
@@ -2020,9 +2069,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public boolean isInlineEdit()
+        public EditType getEditType()
         {
-            return inlinePlaceholder != null;
+            return editType;
         }
 
         @Override
@@ -2038,7 +2087,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public Composite getInlinePlaceholder()
+        public Composite getEditPlaceholder()
         {
             return inlinePlaceholder;
         }
@@ -2065,7 +2114,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 rowOffset = -1;
             }
             spreadsheet.shiftCursor(colOffset, rowOffset, false);
-            spreadsheet.openCellViewer(true);
+            showCellEditor(true);
         }
 
         @Override

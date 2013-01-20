@@ -85,12 +85,12 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         throws DBCException, SQLException
     {
         switch (column.getTypeID()) {
-        case java.sql.Types.TIME:
-            return resultSet.getTime(columnIndex);
-        case java.sql.Types.DATE:
-            return resultSet.getDate(columnIndex);
-        default:
-            return resultSet.getTimestamp(columnIndex);
+            case java.sql.Types.TIME:
+                return resultSet.getTime(columnIndex);
+            case java.sql.Types.DATE:
+                return resultSet.getDate(columnIndex);
+            default:
+                return resultSet.getTimestamp(columnIndex);
         }
     }
 
@@ -102,15 +102,15 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             statement.setNull(paramIndex, paramType.getTypeID());
         } else {
             switch (paramType.getTypeID()) {
-            case java.sql.Types.TIME:
-                statement.setTime(paramIndex, getTimeValue(value));
-                break;
-            case java.sql.Types.DATE:
-                statement.setDate(paramIndex, getDateValue(value));
-                break;
-            default:
-                statement.setTimestamp(paramIndex, getTimestampValue(value));
-                break;
+                case java.sql.Types.TIME:
+                    statement.setTime(paramIndex, getTimeValue(value));
+                    break;
+                case java.sql.Types.DATE:
+                    statement.setDate(paramIndex, getDateValue(value));
+                    break;
+                default:
+                    statement.setTimestamp(paramIndex, getTimestampValue(value));
+                    break;
             }
         }
     }
@@ -119,63 +119,64 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
-        if (controller.isInlineEdit()) {
-            Object value = controller.getValue();
+        switch (controller.getEditType()) {
+            case INLINE:
+                Object value = controller.getValue();
 
-            final Composite dateTimeGroup = controller.getInlinePlaceholder();
+                final Composite dateTimeGroup = controller.getEditPlaceholder();
 
-            boolean isDate = controller.getAttributeMetaData().getTypeID() == java.sql.Types.DATE;
-            boolean isTime = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIME;
-            boolean isTimeStamp = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
+                boolean isDate = controller.getAttributeMetaData().getTypeID() == java.sql.Types.DATE;
+                boolean isTime = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIME;
+                boolean isTimeStamp = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
 
-            final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN) : null;
-            final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
+                final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN) : null;
+                final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
 
-            if (dateEditor != null) {
-                initInlineControl(controller, dateEditor, new ValueExtractor<DateTime>() {
+                if (dateEditor != null) {
+                    initInlineControl(controller, dateEditor, new ValueExtractor<DateTime>() {
+                        @Override
+                        public Object getValueFromControl(DateTime control)
+                        {
+                            return getDate(dateEditor, timeEditor);
+                        }
+                    });
+                    if (value instanceof Date) {
+                        Calendar cl = Calendar.getInstance();
+                        cl.setTime((Date) value);
+                        dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
+                    }
+                }
+                if (timeEditor != null) {
+                    initInlineControl(controller, timeEditor, new ValueExtractor<DateTime>() {
+                        @Override
+                        public Object getValueFromControl(DateTime control)
+                        {
+                            return getDate(dateEditor, timeEditor);
+                        }
+                    });
+                    if (value instanceof Date) {
+                        Calendar cl = Calendar.getInstance();
+                        cl.setTime((Date) value);
+                        timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+                    }
+                }
+
+                // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
+                // Let's focus on it in async mode
+                dateTimeGroup.getDisplay().asyncExec(new Runnable() {
                     @Override
-                    public Object getValueFromControl(DateTime control)
+                    public void run()
                     {
-                        return getDate(dateEditor, timeEditor);
+                        dateTimeGroup.setFocus();
                     }
                 });
-                if (value instanceof Date) {
-                    Calendar cl = Calendar.getInstance();
-                    cl.setTime((Date)value);
-                    dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
-                }
-            }
-            if (timeEditor != null) {
-                initInlineControl(controller, timeEditor, new ValueExtractor<DateTime>() {
-                    @Override
-                    public Object getValueFromControl(DateTime control)
-                    {
-                        return getDate(dateEditor, timeEditor);
-                    }
-                });
-                if (value instanceof Date) {
-                    Calendar cl = Calendar.getInstance();
-                    cl.setTime((Date)value);
-                    timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
-                }
-            }
-
-/*
-            // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
-            // Let's focus on it in async mode
-*/
-            dateTimeGroup.getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run()
-                {
-                    dateTimeGroup.setFocus();
-                }
-            });
-            return true;
-        } else {
-            DateTimeViewDialog dialog = new DateTimeViewDialog(controller);
-            dialog.open();
-            return true;
+                return true;
+            case EDITOR:
+                DateTimeViewDialog dialog = new DateTimeViewDialog(controller);
+                dialog.open();
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -186,12 +187,12 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             return super.getValueDisplayString(column, value);
         }
         switch (column.getTypeID()) {
-        case java.sql.Types.TIME:
-            return getFormatter(TYPE_NAME_TIME).formatValue(value);
-        case java.sql.Types.DATE:
-            return getFormatter(TYPE_NAME_DATE).formatValue(value);
-        default:
-            return getFormatter(TYPE_NAME_TIMESTAMP).formatValue(value);
+            case java.sql.Types.TIME:
+                return getFormatter(TYPE_NAME_TIME).formatValue(value);
+            case java.sql.Types.DATE:
+                return getFormatter(TYPE_NAME_DATE).formatValue(value);
+            default:
+                return getFormatter(TYPE_NAME_TIMESTAMP).formatValue(value);
         }
     }
 
@@ -212,15 +213,15 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         throws DBCException
     {
         if (value instanceof Timestamp) {
-            Timestamp copy = new Timestamp(((Timestamp)value).getTime());
-            copy.setNanos(((Timestamp)value).getNanos());
+            Timestamp copy = new Timestamp(((Timestamp) value).getTime());
+            copy.setNanos(((Timestamp) value).getNanos());
             return copy;
         } else if (value instanceof java.sql.Time) {
-            return new java.sql.Time(((java.sql.Time)value).getTime());
+            return new java.sql.Time(((java.sql.Time) value).getTime());
         } else if (value instanceof java.sql.Date) {
-            return new java.sql.Date(((java.sql.Date)value).getTime());
+            return new java.sql.Date(((java.sql.Date) value).getTime());
         } else if (value instanceof java.util.Date) {
-            return new java.util.Date(((java.util.Date)value).getTime());
+            return new java.util.Date(((java.util.Date) value).getTime());
         } else {
             // Not supported
             return null;
@@ -237,15 +238,15 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
         Object dateValue;
         try {
             switch (column.getTypeID()) {
-            case java.sql.Types.TIME:
-                dateValue = getFormatter(TYPE_NAME_TIME).parseValue(strValue);
-                break;
-            case java.sql.Types.DATE:
-                dateValue = getFormatter(TYPE_NAME_DATE).parseValue(strValue);
-                break;
-            default:
-                dateValue = getFormatter(TYPE_NAME_TIMESTAMP).parseValue(strValue);
-                break;
+                case java.sql.Types.TIME:
+                    dateValue = getFormatter(TYPE_NAME_TIME).parseValue(strValue);
+                    break;
+                case java.sql.Types.DATE:
+                    dateValue = getFormatter(TYPE_NAME_DATE).parseValue(strValue);
+                    break;
+                default:
+                    dateValue = getFormatter(TYPE_NAME_TIMESTAMP).parseValue(strValue);
+                    break;
             }
         } catch (ParseException e) {
             return null;
@@ -259,7 +260,8 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     {
         menuManager.add(new Action(CoreMessages.model_jdbc_set_to_current_time) {
             @Override
-            public void run() {
+            public void run()
+            {
                 controller.updateValue(new Date());
             }
         });
@@ -302,14 +304,14 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             final String month = getTwoDigitValue(cal.get(Calendar.MONTH) + 1);
             final String dayOfMonth = getTwoDigitValue(cal.get(Calendar.DAY_OF_MONTH));
             switch (column.getTypeID()) {
-            case java.sql.Types.TIME:
-                return "TO_DATE('" + hourOfDay + ":" + minutes + ":" + seconds + "','HH24:MI:SS')";
-            case java.sql.Types.DATE:
-                return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth + "','YYYY-MM-DD')";
-            default:
-                return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth +
-                    " " + hourOfDay + ":" + minutes + ":" + seconds +
-                    "','YYYY-MM-DD HH24:MI:SS')";
+                case java.sql.Types.TIME:
+                    return "TO_DATE('" + hourOfDay + ":" + minutes + ":" + seconds + "','HH24:MI:SS')";
+                case java.sql.Types.DATE:
+                    return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth + "','YYYY-MM-DD')";
+                default:
+                    return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth +
+                        " " + hourOfDay + ":" + minutes + ":" + seconds +
+                        "','YYYY-MM-DD HH24:MI:SS')";
             }
         } else {
             return getValueDisplayString(column, value);
@@ -319,7 +321,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     private static java.sql.Time getTimeValue(Object value)
     {
         if (value instanceof java.sql.Time) {
-            return (java.sql.Time)value;
+            return (java.sql.Time) value;
         } else if (value instanceof Date) {
             return new java.sql.Time(((Date) value).getTime());
         } else if (value != null) {
@@ -332,7 +334,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     private static java.sql.Date getDateValue(Object value)
     {
         if (value instanceof java.sql.Date) {
-            return (java.sql.Date)value;
+            return (java.sql.Date) value;
         } else if (value instanceof Date) {
             return new java.sql.Date(((Date) value).getTime());
         } else if (value != null) {
@@ -345,7 +347,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     private static java.sql.Timestamp getTimestampValue(Object value)
     {
         if (value instanceof java.sql.Timestamp) {
-            return (java.sql.Timestamp)value;
+            return (java.sql.Timestamp) value;
         } else if (value instanceof Date) {
             return new java.sql.Timestamp(((Date) value).getTime());
         } else if (value != null) {

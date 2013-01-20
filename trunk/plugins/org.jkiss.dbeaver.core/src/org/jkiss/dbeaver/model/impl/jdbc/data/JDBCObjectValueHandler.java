@@ -129,16 +129,18 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
-        if (controller.isInlineEdit()) {
-            return false;
+        switch (controller.getEditType()) {
+            case EDITOR:
+                final Object value = controller.getValue();
+                if (value instanceof DBDCursor) {
+                    CursorViewDialog dialog = new CursorViewDialog(controller);
+                    dialog.open();
+                    return true;
+                }
+                return false;
+            default:
+                return false;
         }
-        final Object value = controller.getValue();
-        if (value instanceof DBDCursor) {
-            CursorViewDialog dialog = new CursorViewDialog(controller);
-            dialog.open();
-            return true;
-        }
-        return false;
     }
 
 }
