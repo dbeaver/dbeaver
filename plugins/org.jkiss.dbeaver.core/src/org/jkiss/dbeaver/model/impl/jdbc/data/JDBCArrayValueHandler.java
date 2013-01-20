@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -136,10 +137,10 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
-        return false;
+        return null;
     }
 
 }

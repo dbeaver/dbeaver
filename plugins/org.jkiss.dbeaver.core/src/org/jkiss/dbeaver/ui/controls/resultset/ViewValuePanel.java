@@ -1,16 +1,21 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueViewer;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -25,7 +30,7 @@ abstract class ViewValuePanel extends Composite {
     private final Composite viewPlaceholder;
 
     private DBDValueController previewController;
-    private DBDValueViewer valueViewer;
+    private DBDValueEditor valueViewer;
 
     ViewValuePanel(Composite parent)
     {
@@ -77,26 +82,43 @@ abstract class ViewValuePanel extends Composite {
         return viewPlaceholder;
     }
 
-    public void viewValue(DBDValueController valueController)
+    public void viewValue(final DBDValueController valueController)
     {
         if (previewController == null || valueController.getAttributeMetaData() != previewController.getAttributeMetaData()) {
             // Cleanup previous viewer
             for (Control child : viewPlaceholder.getChildren()) {
                 child.dispose();
             }
+            previewController = null;
+
+            columnImageLabel.setImage(ResultSetViewer.getAttributeImage(valueController.getAttributeMetaData()));
+            columnNameLabel.setText(valueController.getAttributeMetaData().getName());
+            // Create a new one
             try {
-                valueViewer = valueController.getValueHandler().createValueViewer(valueController);
+                valueViewer = valueController.getValueHandler().createEditor(valueController);
             } catch (DBException e) {
                 UIUtils.showErrorDialog(getShell(), "Value preview", "Can't create value viewer", e);
                 return;
             }
-            columnImageLabel.setImage(ResultSetViewer.getAttributeImage(valueController.getAttributeMetaData()));
-            columnNameLabel.setText(valueController.getAttributeMetaData().getName());
+            if (valueViewer == null) {
+                final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
+                placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+                placeholder.addPaintListener(new PaintListener() {
+                    @Override
+                    public void paintControl(PaintEvent e)
+                    {
+                        Rectangle bounds = placeholder.getBounds();
+                        String message = "No editor for [" + valueController.getAttributeMetaData().getTypeName() + "]";
+                        Point ext = e.gc.textExtent(message);
+                        e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
+                    }
+                });
+            }
             previewController = valueController;
             viewPlaceholder.layout();
         }
         if (valueViewer != null) {
-            valueViewer.showValue(valueController);
+            valueViewer.refreshValue();
         }
     }
 

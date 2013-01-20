@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -71,7 +72,7 @@ public class TextViewDialog extends ValueViewDialog {
         } else {
             value = DBUtils.getDefaultValueDisplayString(value);
         }
-        String stringValue = value == null ? "" : value.toString();
+        String stringValue = CommonUtils.toString(value);
         boolean isForeignKey = super.isForeignKey();
 
         Label label = new Label(dialogGroup, SWT.NONE);
@@ -250,6 +251,16 @@ public class TextViewDialog extends ValueViewDialog {
         long maxSize = getValueController().getAttributeMetaData().getMaxLength();
         long length = textEdit.getText().length();
         lengthLabel.setText("Length: " + length + (maxSize > 0 ? " [" + maxSize + "]" : ""));
+    }
+
+    @Override
+    public void refreshValue()
+    {
+        String value = CommonUtils.toString(getValueController().getValue());
+        textEdit.setText(value);
+        if (hexEditControl != null) {
+            setBinaryContent(value);
+        }
     }
 
 }

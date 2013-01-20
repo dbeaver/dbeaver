@@ -98,4 +98,20 @@ public class DateTimeViewDialog extends ValueViewDialog {
         return JDBCDateTimeValueHandler.getDate(dateEditor, timeEditor);
     }
 
+    @Override
+    public void refreshValue()
+    {
+        Object value = getValueController().getValue();
+        if (value instanceof Date) {
+            Calendar cl = Calendar.getInstance();
+            cl.setTime((Date)value);
+            if (dateEditor != null) {
+                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
+            }
+            if (timeEditor != null) {
+                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+            }
+        }
+    }
+
 }

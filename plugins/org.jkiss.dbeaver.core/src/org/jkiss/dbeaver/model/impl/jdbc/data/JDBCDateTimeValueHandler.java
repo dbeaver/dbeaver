@@ -23,15 +23,14 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueHandler2;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -116,21 +116,32 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     }
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
-                Object value = controller.getValue();
-
-                final Composite dateTimeGroup = controller.getEditPlaceholder();
+            case PANEL:
+                boolean inline = controller.getEditType() == DBDValueController.EditType.INLINE;
+                final Composite dateTimeGroup = inline ? controller.getEditPlaceholder() : new Composite(controller.getEditPlaceholder(), SWT.BORDER);
+                if (!inline) {
+                    dateTimeGroup.setLayout(new GridLayout(2, false));
+                }
 
                 boolean isDate = controller.getAttributeMetaData().getTypeID() == java.sql.Types.DATE;
                 boolean isTime = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIME;
                 boolean isTimeStamp = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
 
-                final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN) : null;
-                final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup, SWT.BORDER | SWT.TIME | SWT.LONG) : null;
+                if (!inline && (isDate || isTimeStamp)) {
+                    UIUtils.createControlLabel(dateTimeGroup, "Date");
+                }
+                final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup,
+                    (inline ? SWT.DATE | SWT.DROP_DOWN | SWT.MEDIUM | SWT.BORDER : SWT.DATE | SWT.DROP_DOWN | SWT.LONG)) : null;
+                if (!inline && (isTime || isTimeStamp)) {
+                    UIUtils.createControlLabel(dateTimeGroup, "Time");
+                }
+                final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup,
+                    (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG) : null;
 
                 if (dateEditor != null) {
                     initInlineControl(controller, dateEditor, new ValueExtractor<DateTime>() {
@@ -140,11 +151,6 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
                             return getDate(dateEditor, timeEditor);
                         }
                     });
-                    if (value instanceof Date) {
-                        Calendar cl = Calendar.getInstance();
-                        cl.setTime((Date) value);
-                        dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
-                    }
                 }
                 if (timeEditor != null) {
                     initInlineControl(controller, timeEditor, new ValueExtractor<DateTime>() {
@@ -154,29 +160,29 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
                             return getDate(dateEditor, timeEditor);
                         }
                     });
-                    if (value instanceof Date) {
-                        Calendar cl = Calendar.getInstance();
-                        cl.setTime((Date) value);
-                        timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
-                    }
                 }
 
-                // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
-                // Let's focus on it in async mode
-                dateTimeGroup.getDisplay().asyncExec(new Runnable() {
+                return new DBDValueEditor() {
                     @Override
-                    public void run()
+                    public void refreshValue()
                     {
-                        dateTimeGroup.setFocus();
+                        Object value = controller.getValue();
+                        if (value instanceof Date) {
+                            Calendar cl = Calendar.getInstance();
+                            cl.setTime((Date) value);
+                            if (dateEditor != null) {
+                                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
+                            }
+                            if (timeEditor != null) {
+                                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+                            }
+                        }
                     }
-                });
-                return true;
+                };
             case EDITOR:
-                DateTimeViewDialog dialog = new DateTimeViewDialog(controller);
-                dialog.open();
-                return true;
+                return new DateTimeViewDialog(controller);
             default:
-                return false;
+                return null;
         }
     }
 

@@ -113,16 +113,8 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public DBDValueViewer createValueViewer(DBDValueController controller) throws DBException
-    {
-        return null;
-    }
-
-    @Override
-    public boolean editValue(DBDValueController controller) throws DBException {
-        TextViewDialog dialog = new TextViewDialog(controller);
-        dialog.open();
-        return true;
+    public DBDValueEditor createEditor(DBDValueController controller) throws DBException {
+        return new TextViewDialog(controller);
     }
 
 }

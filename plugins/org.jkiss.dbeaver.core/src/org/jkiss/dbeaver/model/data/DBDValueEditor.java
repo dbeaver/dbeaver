@@ -25,19 +25,7 @@ package org.jkiss.dbeaver.model.data;
  */
 public interface DBDValueEditor
 {
-    DBDValueController getValueController();
 
-    //void refreshValue(DBDValueController controller);
-
-    /**
-     * Brings editor to the top of screen
-     */
-    void showValueEditor();
-
-    /**
-     * Closes this editor.
-     * Implementor must call unregisterEditor on it's value controller
-     */
-    void closeValueEditor();
+    void refreshValue();
 
 }
