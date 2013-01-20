@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -69,13 +71,15 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
-                Object value = controller.getValue();
-                Text editor = new Text(controller.getEditPlaceholder(), SWT.BORDER);
+            case PANEL:
+                final boolean inline = controller.getEditType() == DBDValueController.EditType.INLINE;
+                final Text editor = new Text(controller.getEditPlaceholder(),
+                    SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
                 initInlineControl(controller, editor, new ValueExtractor<Text>() {
                     @Override
                     public Object getValueFromControl(Text control)
@@ -83,18 +87,22 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
                         return control.getText();
                     }
                 });
-                editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
                 editor.setEditable(!controller.isReadOnly());
                 editor.setTextLimit(MAX_STRING_LENGTH);
-                editor.selectAll();
-                editor.setFocus();
-                return true;
+                return new DBDValueEditor() {
+                    @Override
+                    public void refreshValue()
+                    {
+                        editor.setText(CommonUtils.toString(controller.getValue()));
+                        if (inline) {
+                            editor.selectAll();
+                        }
+                    }
+                };
             case EDITOR:
-                TextViewDialog dialog = new TextViewDialog(controller);
-                dialog.open();
-                return true;
+                return new TextViewDialog(controller);
             default:
-                return false;
+                return null;
         }
     }
 

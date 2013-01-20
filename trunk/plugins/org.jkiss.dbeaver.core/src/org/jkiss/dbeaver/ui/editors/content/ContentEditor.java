@@ -35,10 +35,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDAttributeController;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,7 +51,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageAbstractEditor implements IDataSourceProvider, DBDValueEditor, IResourceChangeListener
+public class ContentEditor extends MultiPageAbstractEditor implements IDataSourceProvider, DBDValueEditorDialog, IResourceChangeListener
 {
     @Override
     public ContentEditorInput getEditorInput()
@@ -62,12 +59,12 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         return (ContentEditorInput)super.getEditorInput();
     }
 
-    public static boolean openEditor(DBDAttributeController valueController, IContentEditorPart[] editorParts)
+    public static ContentEditor openEditor(DBDAttributeController valueController, IContentEditorPart[] editorParts)
     {
         ContentEditorInput editorInput;
         // Save data to file
         try {
-            LOBInitializer initializer = new LOBInitializer(valueController, editorParts);
+            LOBInitializer initializer = new LOBInitializer(valueController, editorParts, null);
             valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             editorInput = initializer.editorInput;
         } catch (Throwable e) {
@@ -75,18 +72,17 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
                 e = ((InvocationTargetException)e).getTargetException();
             }
             UIUtils.showErrorDialog(valueController.getValueSite().getShell(), "Cannot open content editor", null, e);
-            return false;
+            return null;
         }
         try {
-            valueController.getValueSite().getWorkbenchWindow().getActivePage().openEditor(
+            return (ContentEditor) valueController.getValueSite().getWorkbenchWindow().getActivePage().openEditor(
                 editorInput,
                 ContentEditor.class.getName());
         }
         catch (PartInitException e) {
             log.error("Could not open LOB editorPart", e);
-            return false;
+            return null;
         }
-        return true;
     }
 
     //public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
@@ -115,10 +111,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         IContentEditorPart[] editorParts;
         ContentEditorInput editorInput;
 
-        private LOBInitializer(DBDAttributeController valueController, IContentEditorPart[] editorParts)
+        private LOBInitializer(DBDAttributeController valueController, IContentEditorPart[] editorParts, ContentEditorInput editorInput)
         {
             this.valueController = valueController;
             this.editorParts = editorParts;
+            this.editorInput = editorInput;
         }
 
         @Override
@@ -126,10 +123,16 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
             throws InvocationTargetException, InterruptedException
         {
             try {
-                editorInput = new ContentEditorInput(
-                    valueController,
-                    editorParts,
-                    RuntimeUtils.makeMonitor(monitor));
+                if (editorInput == null) {
+                    editorInput = new ContentEditorInput(
+                        valueController,
+                        editorParts,
+                        RuntimeUtils.makeMonitor(monitor));
+                } else {
+                    editorInput.refreshContent
+                        (RuntimeUtils.makeMonitor(monitor),
+                        valueController);
+                }
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
@@ -231,7 +234,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         super.init(site, input);
         setPartName(input.getName());
 
-        getValueController().registerEditor(this);
         valueEditorRegistered = true;
 
         DBDContent content = getContent();
@@ -431,11 +433,24 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         }
     }
 
-    @Override
     public DBDValueController getValueController()
     {
         ContentEditorInput input = getEditorInput();
         return input == null ? null : input.getValueController();
+    }
+
+    @Override
+    public void refreshValue()
+    {
+        DBDValueController valueController = getEditorInput().getValueController();
+        LOBInitializer initializer = new LOBInitializer((DBDAttributeController)valueController, getEditorInput().getEditors(), getEditorInput());
+        try {
+            valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(valueController.getValueSite().getShell(), "Cannot refresh content editor", null, e);
+        } catch (InterruptedException e) {
+            // ignore
+        }
     }
 
     @Override

@@ -20,7 +20,9 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -35,14 +37,15 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
     public static final MySQLSetValueHandler INSTANCE = new MySQLSetValueHandler();
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
-                final MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
+            case PANEL:
+                final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
 
-                org.eclipse.swt.widgets.List editor = new org.eclipse.swt.widgets.List(controller.getEditPlaceholder(), SWT.BORDER | SWT.MULTI);
+                final org.eclipse.swt.widgets.List editor = new org.eclipse.swt.widgets.List(controller.getEditPlaceholder(), SWT.BORDER | SWT.MULTI);
                 initInlineControl(controller, editor, new ValueExtractor<org.eclipse.swt.widgets.List>() {
                     @Override
                     public Object getValueFromControl(org.eclipse.swt.widgets.List control)
@@ -56,24 +59,27 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
                             if (resultString.length() > 0) resultString.append(',');
                             resultString.append(selString);
                         }
-                        return new MySQLTypeEnum(value.getColumn(), resultString.toString());
+                        return new MySQLTypeEnum(column, resultString.toString());
                     }
                 });
-                fillSetList(editor, value);
-
-                editor.setFocus();
-                return true;
+                return new DBDValueEditor() {
+                    @Override
+                    public void refreshValue()
+                    {
+                        final MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
+                        fillSetList(editor, value);
+                    }
+                };
             case EDITOR:
-                EnumViewDialog dialog = new EnumViewDialog(controller);
-                dialog.open();
-                return true;
+                return new EnumViewDialog(controller);
             default:
-                return false;
+                return null;
         }
     }
 
     static void fillSetList(org.eclipse.swt.widgets.List editor, MySQLTypeEnum value)
     {
+        editor.removeAll();
         List<String> enumValues = value.getColumn().getEnumValues();
         String setString = value.getValue();
         List<String> setValues = new ArrayList<String>();

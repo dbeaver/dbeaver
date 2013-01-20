@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -185,15 +186,14 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
-                final Object value = controller.getValue();
-
+            case PANEL:
                 if (controller.getAttributeMetaData().getTypeID() == java.sql.Types.BIT) {
-                    CCombo editor = new CCombo(controller.getEditPlaceholder(), SWT.READ_ONLY);
+                    final CCombo editor = new CCombo(controller.getEditPlaceholder(), SWT.READ_ONLY);
                     initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
                         @Override
                         public Object getValueFromControl(CCombo control)
@@ -210,10 +210,16 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     });
                     editor.add("0"); //$NON-NLS-1$
                     editor.add("1"); //$NON-NLS-1$
-                    editor.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
-                    editor.setFocus();
+                    return new DBDValueEditor() {
+                        @Override
+                        public void refreshValue()
+                        {
+                            Object value = controller.getValue();
+                            editor.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
+                        }
+                    };
                 } else {
-                    Text editor = new Text(controller.getEditPlaceholder(), SWT.BORDER);
+                    final Text editor = new Text(controller.getEditPlaceholder(), SWT.BORDER);
                     initInlineControl(controller, editor, new ValueExtractor<Text>() {
                         @Override
                         public Object getValueFromControl(Text control)
@@ -222,14 +228,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             if (CommonUtils.isEmpty(text)) {
                                 return null;
                             }
-                            return convertStringToNumber(text, value, controller.getAttributeMetaData());
+                            return convertStringToNumber(text, controller.getValue(), controller.getAttributeMetaData());
                         }
                     });
-                    editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
                     editor.setEditable(!controller.isReadOnly());
                     editor.setTextLimit(MAX_NUMBER_LENGTH);
-                    editor.selectAll();
-                    editor.setFocus();
                     switch (controller.getAttributeMetaData().getTypeID()) {
                         case java.sql.Types.BIGINT:
                         case java.sql.Types.INTEGER:
@@ -242,14 +245,20 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             editor.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
                             break;
                     }
+                    return new DBDValueEditor() {
+                        @Override
+                        public void refreshValue()
+                        {
+                            Object value = controller.getValue();
+                            editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
+                            editor.selectAll();
+                        }
+                    };
                 }
-                return true;
             case EDITOR:
-                NumberViewDialog dialog = new NumberViewDialog(controller);
-                dialog.open();
-                return true;
+                return new NumberViewDialog(controller);
             default:
-                return false;
+                return null;
         }
     }
 

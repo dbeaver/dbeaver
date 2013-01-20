@@ -72,6 +72,12 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return valueController;
     }
 
+    public void refreshContent(DBRProgressMonitor monitor, DBDAttributeController valueController) throws DBException
+    {
+        this.valueController = valueController;
+        this.prepareContent(monitor);
+    }
+
     IContentEditorPart[] getEditors()
     {
         return editorParts;
@@ -136,6 +142,8 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     {
         DBDContent content = getContent();
         DBDContentStorage storage = content.getContents(monitor);
+
+        release(monitor);
         if (storage instanceof DBDContentStorageLocal) {
             // User content's storage directly
             contentFile = ((DBDContentStorageLocal)storage).getDataFile();

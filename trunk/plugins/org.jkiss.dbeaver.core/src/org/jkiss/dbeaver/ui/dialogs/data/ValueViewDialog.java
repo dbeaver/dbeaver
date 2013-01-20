@@ -70,7 +70,7 @@ import java.util.TreeMap;
  *
  * @author Serge Rider
  */
-public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
+public abstract class ValueViewDialog extends Dialog implements DBDValueEditorDialog {
 
     static final Log log = LogFactory.getLog(ValueViewDialog.class);
 
@@ -87,12 +87,12 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     private boolean columnInfoVisible = true;
     private ColumnInfoPanel columnPanel;
     private final IDialogSettings dialogSettings;
+    private boolean opened;
 
     protected ValueViewDialog(DBDValueController valueController) {
         super(valueController.getValueSite().getShell());
         setShellStyle(SWT.SHELL_TRIM);
         this.valueController = valueController;
-        this.valueController.registerEditor(this);
         dialogSettings = UIUtils.getDialogSettings(SETTINGS_SECTION_DI);
         if (dialogSettings.get(getInfoVisiblePrefId()) != null) {
             columnInfoVisible = dialogSettings.getBoolean(getInfoVisiblePrefId());
@@ -110,14 +110,17 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
         return getEnumerableConstraint() != null;
     }
 
-    @Override
     public DBDValueController getValueController() {
         return valueController;
     }
 
     @Override
     public void showValueEditor() {
-        getShell().setFocus();
+        if (!opened) {
+            open();
+        } else {
+            getShell().setFocus();
+        }
     }
 
     @Override
@@ -241,6 +244,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
     public final int open()
     {
         try {
+            opened = true;
             int result = super.open();
             if (result == IDialogConstants.OK_ID) {
                 getValueController().updateValue(editedValue);
@@ -390,7 +394,12 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditor {
                 TableItem[] selection = editorSelector.getSelection();
                 if (selection != null && selection.length > 0) {
                     handleEditorChange = false;
-                    editor.setText(selection[0].getText());
+                    Object value = selection[0].getData();
+                    if (value instanceof Number) {
+                        editor.setText(value.toString());
+                    } else {
+                        editor.setText(selection[0].getText());
+                    }
                     handleEditorChange = true;
                 }
             }

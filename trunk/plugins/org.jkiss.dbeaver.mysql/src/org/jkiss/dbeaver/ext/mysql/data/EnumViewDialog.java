@@ -91,4 +91,9 @@ public class EnumViewDialog extends ValueViewDialog {
         return new MySQLTypeEnum(value.getColumn(), resultString.toString());
     }
 
+    @Override
+    public void refreshValue()
+    {
+        MySQLSetValueHandler.fillSetList(enumEdit, (MySQLTypeEnum) getValueController().getValue());
+    }
 }

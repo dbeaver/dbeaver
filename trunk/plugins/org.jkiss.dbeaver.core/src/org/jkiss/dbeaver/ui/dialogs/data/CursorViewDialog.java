@@ -65,7 +65,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
 
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
-        if (value instanceof DBDCursor) {
+        if (value != null) {
             IPreferenceStore globalPreferenceStore = DBeaverCore.getGlobalPreferenceStore();
             if (!globalPreferenceStore.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN)) {
                 if (ConfirmationDialog.showConfirmDialog(
@@ -101,6 +101,12 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
     protected Object getEditorValue()
     {
         return null;
+    }
+
+    @Override
+    public void refreshValue()
+    {
+        resultSetViewer.refresh();
     }
 
     @Override

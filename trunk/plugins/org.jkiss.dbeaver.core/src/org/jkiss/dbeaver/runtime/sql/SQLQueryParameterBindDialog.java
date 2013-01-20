@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.data.DBDValueEditorDialog;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -193,7 +194,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         //placeholder.setLayout(new FillLayout(SWT.HORIZONTAL));
         ParameterValueController valueController = new ParameterValueController(param, placeholder, item);
         try {
-            if (valueHandler.editValue(valueController)) {
+            DBDValueEditor editor = valueHandler.createEditor(valueController);
+            if (editor != null) {
                 tableEditor.minimumHeight = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
                 tableEditor.setEditor(placeholder, item, 3);
             } else {
@@ -385,12 +387,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public void registerEditor(DBDValueEditor editor)
-        {
-        }
-
-        @Override
-        public void unregisterEditor(DBDValueEditor editor)
+        public void unregisterEditor(DBDValueEditorDialog editor)
         {
         }
 

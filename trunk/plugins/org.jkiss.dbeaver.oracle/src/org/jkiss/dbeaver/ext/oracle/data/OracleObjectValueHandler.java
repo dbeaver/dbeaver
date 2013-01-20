@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -81,9 +82,9 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public boolean editValue(DBDValueController controller) throws DBException
+    public DBDValueEditor createEditor(DBDValueController controller) throws DBException
     {
-        return false;
+        return null;
     }
 
 }

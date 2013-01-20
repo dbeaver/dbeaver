@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -37,7 +39,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * MySQL ENUM value handler
@@ -116,45 +118,94 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
-                final MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
-
-                Combo editor = new Combo(controller.getEditPlaceholder(), SWT.READ_ONLY);
+            {
+                final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
+                final Combo editor = new Combo(controller.getEditPlaceholder(), SWT.READ_ONLY);
                 initInlineControl(controller, editor, new ValueExtractor<Combo>() {
                     @Override
                     public Object getValueFromControl(Combo control)
                     {
                         int selIndex = control.getSelectionIndex();
                         if (selIndex < 0) {
-                            return new MySQLTypeEnum(value.getColumn(), null);
+                            return new MySQLTypeEnum(column, null);
                         } else {
-                            return new MySQLTypeEnum(value.getColumn(), control.getItem(selIndex));
+                            return new MySQLTypeEnum(column, control.getItem(selIndex));
                         }
                     }
                 });
-                List<String> enumValues = value.getColumn().getEnumValues();
-                //editor.add("");
+                Collection<String> enumValues = column.getEnumValues();
                 if (enumValues != null) {
                     for (String enumValue : enumValues) {
                         editor.add(enumValue);
                     }
                 }
-                editor.setText(value.isNull() ? "" : value.getValue());
                 if (editor.getSelectionIndex() < 0) {
                     editor.select(0);
                 }
-                editor.setFocus();
-                return true;
+                return new DBDValueEditor() {
+                    @Override
+                    public void refreshValue()
+                    {
+                        MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
+                        editor.setText(value.isNull() ? "" : value.getValue());
+                    }
+                };
+            }
+            case PANEL:
+            {
+                final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
+                final List editor = new List(controller.getEditPlaceholder(), SWT.READ_ONLY);
+                initInlineControl(controller, editor, new ValueExtractor<List>() {
+                    @Override
+                    public Object getValueFromControl(List control)
+                    {
+                        int selIndex = control.getSelectionIndex();
+                        if (selIndex < 0) {
+                            return new MySQLTypeEnum(column, null);
+                        } else {
+                            return new MySQLTypeEnum(column, control.getItem(selIndex));
+                        }
+                    }
+                });
+                Collection<String> enumValues = column.getEnumValues();
+                if (enumValues != null) {
+                    for (String enumValue : enumValues) {
+                        editor.add(enumValue);
+                    }
+                }
+                if (editor.getSelectionIndex() < 0) {
+                    editor.select(0);
+                }
+                if (controller.getEditType() == DBDValueController.EditType.INLINE) {
+                    editor.setFocus();
+                }
+                return new DBDValueEditor() {
+                    @Override
+                    public void refreshValue()
+                    {
+                        MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
+                        if (value.isNull()) {
+                            editor.setSelection(-1);
+                        }
+                        int itemCount = editor.getItemCount();
+                        for (int i = 0 ; i < itemCount; i++) {
+                            if (editor.getItem(i).equals(value.getValue())) {
+                                editor.setSelection(i);
+                                break;
+                            }
+                        }
+                    }
+                };
+            }
             case EDITOR:
-                EnumViewDialog dialog = new EnumViewDialog(controller);
-                dialog.open();
-                return true;
+                return new EnumViewDialog(controller);
             default:
-                return false;
+                return null;
         }
     }
 

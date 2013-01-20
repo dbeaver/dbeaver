@@ -22,8 +22,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -84,37 +86,63 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
-                Object value = controller.getValue();
-
-                CCombo editor = new CCombo(controller.getEditPlaceholder(), SWT.READ_ONLY);
+            {
+                final CCombo editor = new CCombo(controller.getEditPlaceholder(), SWT.READ_ONLY);
                 initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
                     @Override
                     public Object getValueFromControl(CCombo control)
                     {
                         switch (control.getSelectionIndex()) {
-                            case 0: return Boolean.FALSE;
-                            case 1: return Boolean.TRUE;
-                            default: return null;
+                            case 0:
+                                return Boolean.FALSE;
+                            case 1:
+                                return Boolean.TRUE;
+                            default:
+                                return null;
                         }
                     }
                 });
                 editor.add("FALSE");
                 editor.add("TRUE");
-                editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
-                editor.setFocus();
-                return true;
-
+                return new DBDValueEditor() {
+                    @Override
+                    public void refreshValue()
+                    {
+                        Object value = controller.getValue();
+                        editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
+                    }
+                };
+            }
+            case PANEL:
+            {
+                final List editor = new List(controller.getEditPlaceholder(), SWT.SINGLE | SWT.READ_ONLY);
+                initInlineControl(controller, editor, new ValueExtractor<List>() {
+                    @Override
+                    public Object getValueFromControl(List control)
+                    {
+                        return control.getSelectionIndex() == 1;
+                    }
+                });
+                editor.add("FALSE");
+                editor.add("TRUE");
+                return new DBDValueEditor() {
+                    @Override
+                    public void refreshValue()
+                    {
+                        Object value = controller.getValue();
+                        editor.setSelection(Boolean.TRUE.equals(value) ? 1 : 0);
+                    }
+                };
+            }
             case EDITOR:
-                NumberViewDialog dialog = new NumberViewDialog(controller);
-                dialog.open();
-                return true;
+                return new NumberViewDialog(controller);
             default:
-                return false;
+                return null;
         }
     }
 

@@ -25,11 +25,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
+import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -121,19 +122,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             controller.getAttributeMetaData().getMaxLength());
     }
 
-    @Override
-    public DBDValueViewer createValueViewer(final DBDValueController controller) throws DBException
-    {
-        final Text text = new Text(controller.getEditPlaceholder(), SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
-        return new DBDValueViewer() {
-            @Override
-            public void showValue(DBDValueController controller1)
-            {
-                text.setText(getValueDisplayString(controller1.getAttributeMetaData(), controller1.getValue()));
-            }
-        };
-    }
-
     protected static interface ValueExtractor <T extends Control> {
          Object getValueFromControl(T control);
     }
@@ -143,6 +131,29 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         final T control,
         final ValueExtractor<T> extractor)
     {
+        UIUtils.addFocusTracker(controller.getValueSite(), CELL_VALUE_INLINE_EDITOR, control);
+        control.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e)
+            {
+                UIUtils.removeFocusTracker(controller.getValueSite(), control);
+            }
+        });
+
+        if (controller.getEditType() == DBDValueController.EditType.PANEL) {
+            control.setBackground(controller.getEditPlaceholder().getBackground());
+            return;
+        }
+        // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
+        // Let's focus on it in async mode
+        control.getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run()
+            {
+                control.setFocus();
+            }
+        });
+
         control.setFont(controller.getEditPlaceholder().getFont());
         control.addTraverseListener(new TraverseListener()
         {
@@ -169,7 +180,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                 }
             }
         });
-        UIUtils.addFocusTracker(controller.getValueSite(), CELL_VALUE_INLINE_EDITOR, control);
         control.addFocusListener(new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e)
@@ -197,13 +207,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                         controller.closeInlineEditor();
                     }
                 });
-            }
-        });
-        control.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                UIUtils.removeFocusTracker(controller.getValueSite(), control);
             }
         });
     }
