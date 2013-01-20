@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -33,13 +32,22 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
  */
 public interface DBDValueHandler 
 {
-
+    // Default value, means no features are supported
     public static final int FEATURE_NONE = 0;
+    // VIEWER is ability to render value editor in separate panel
     public static final int FEATURE_VIEWER = 1;
+    // EDITOR is ability to show value editor in separate dialog or standalone editor
     public static final int FEATURE_EDITOR = 2;
+    // INLINE_EDITOR is ability to show editor in grid cell
     public static final int FEATURE_INLINE_EDITOR = 4;
+    // SHOW_ICON means grid should render type icon before cell value
     public static final int FEATURE_SHOW_ICON = 8;
 
+    /**
+     * Handler features. Bit set.
+     * See constants FEATURE_*
+     * @return features bits
+     */
     int getFeatures();
 
     /**
