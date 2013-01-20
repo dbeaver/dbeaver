@@ -25,6 +25,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -39,9 +40,12 @@ import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
@@ -270,7 +274,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     {
         switch (controller.getEditType()) {
             case INLINE:
-            case PANEL:
+            {
                 // Open inline/panel editor
                 if (controller.getValue() instanceof JDBCContentChars) {
                     // String editor
@@ -304,7 +308,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     controller.showMessage(CoreMessages.model_jdbc_lob_and_binary_data_cant_be_edited_inline, true);
                     return null;
                 }
+            }
             case EDITOR:
+            {
                 // Open LOB editor
                 Object value = controller.getValue();
                 if (value instanceof DBDContent && controller instanceof DBDAttributeController) {
@@ -328,6 +334,44 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
                     return null;
                 }
+            }
+            case PANEL:
+            {
+                final ContentBinaryEditorPart editor = new ContentBinaryEditorPart();
+                final ContentEditorInput input;
+                try {
+                    input = new ContentEditorInput((DBDAttributeController) controller, new IContentEditorPart[]{editor}, VoidProgressMonitor.INSTANCE);
+                    editor.init(new SubEditorSite(controller.getValueSite()),
+                        input);
+                } catch (PartInitException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+                editor.createPartControl(controller.getEditPlaceholder());
+                return new DBDValueEditorDialog() {
+                    @Override
+                    public void showValueEditor()
+                    {
+                        editor.setFocus();
+                    }
+
+                    @Override
+                    public void closeValueEditor()
+                    {
+
+                    }
+
+                    @Override
+                    public void refreshValue()
+                    {
+                        try {
+                            input.refreshContent(VoidProgressMonitor.INSTANCE, (DBDAttributeController) controller);
+                        } catch (DBException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+            }
             default:
                 return null;
         }
