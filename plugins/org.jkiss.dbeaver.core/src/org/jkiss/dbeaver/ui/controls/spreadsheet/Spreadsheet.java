@@ -34,10 +34,8 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -376,7 +374,7 @@ public class Spreadsheet extends LightGrid implements Listener {
                     (event.keyCode >= 'a' && event.keyCode <= 'z') ||
                     (event.keyCode >= '0' && event.keyCode <= '9'))
                 {
-                    openCellViewer(true);
+                    spreadsheetController.showCellEditor(true);
                 } else if (event.keyCode == SWT.ESC) {
                     // Reset cell value
                     if (spreadsheetController != null) {
@@ -388,12 +386,12 @@ public class Spreadsheet extends LightGrid implements Listener {
                 GridPos pos = super.getCell(new Point(event.x, event.y));
                 GridPos focusPos = super.getFocusCell();
                 if (pos != null && focusPos != null && pos.equals(super.getFocusCell())) {
-                    openCellViewer(false);
+                    spreadsheetController.showCellEditor(false);
                 }
                 break;
             case SWT.MouseDown:
                 if (event.button == 2) {
-                    openCellViewer(true);
+                    spreadsheetController.showCellEditor(true);
                 }
                 break;
             case LightGrid.Event_ChangeSort:
@@ -550,67 +548,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         site.registerContextMenu(menuMgr, selectionProvider);
     }
 
-    public void openCellViewer(final boolean inline)
-    {
-        if (spreadsheetController == null) {
-            return;
-        }
-        // The control that will be the editor must be a child of the Table
-        final GridPos focusCell = super.getFocusCell();
-        //GridPos pos = getPosFromPoint(event.x, event.y);
-        if (focusCell == null || focusCell.row < 0 || focusCell.col < 0) {
-            return;
-        }
-        if (!spreadsheetController.isValidCell(focusCell)) {
-            return;
-        }
-        //GridItem item = super.getItem(focusCell.y);
-
-        Composite placeholder = null;
-        if (inline) {
-            if (spreadsheetController.isReadOnly()) {
-                return;
-            }
-            cancelInlineEditor();
-
-            placeholder = new Composite(this, SWT.NONE);
-            placeholder.setFont(super.getFont());
-            placeholder.setLayout(new FillLayout());
-
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.horizontalIndent = 0;
-            gd.verticalIndent = 0;
-            gd.grabExcessHorizontalSpace = true;
-            gd.grabExcessVerticalSpace = true;
-            placeholder.setLayoutData(gd);
-        }
-        boolean editSuccess = spreadsheetController.showCellEditor(focusCell, inline, placeholder);
-        if (inline) {
-            if (editSuccess) {
-                int minHeight, minWidth;
-                Point editorSize = placeholder.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                minHeight = editorSize.y;
-                minWidth = editorSize.x;
-                if (minWidth > MAX_INLINE_EDIT_WITH) {
-                    minWidth = MAX_INLINE_EDIT_WITH;
-                }
-                tableEditor.minimumHeight = minHeight;// + placeholder.getBorderWidth() * 2;//placeholder.getBounds().height;
-                tableEditor.minimumWidth = minWidth;
-/*
-                if (pos.row == 0) {
-                    tableEditor.verticalAlignment = SWT.TOP;
-                } else {
-                    tableEditor.verticalAlignment = SWT.CENTER;
-                }
-*/
-                tableEditor.setEditor(placeholder, focusCell.col, focusCell.row);
-            } else {
-                // No editor was created so just drop placeholder
-                placeholder.dispose();
-            }
-        }
-    }
-
     public void cancelInlineEditor()
     {
         Control oldEditor = tableEditor.getEditor();
@@ -659,6 +596,27 @@ public class Spreadsheet extends LightGrid implements Listener {
     public boolean isRowVisible(int rowNum)
     {
         return rowNum >= super.getTopIndex() && rowNum <= super.getBottomIndex();
+    }
+
+    public void showCellEditor(GridPos cell, Composite editor)
+    {
+        int minHeight, minWidth;
+        Point editorSize = editor.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        minHeight = editorSize.y;
+        minWidth = editorSize.x;
+        if (minWidth > MAX_INLINE_EDIT_WITH) {
+            minWidth = MAX_INLINE_EDIT_WITH;
+        }
+        tableEditor.minimumHeight = minHeight;// + placeholder.getBorderWidth() * 2;//placeholder.getBounds().height;
+        tableEditor.minimumWidth = minWidth;
+/*
+                if (pos.row == 0) {
+                    tableEditor.verticalAlignment = SWT.TOP;
+                } else {
+                    tableEditor.verticalAlignment = SWT.CENTER;
+                }
+*/
+        tableEditor.setEditor(editor, cell.col, cell.row);
     }
 
 }

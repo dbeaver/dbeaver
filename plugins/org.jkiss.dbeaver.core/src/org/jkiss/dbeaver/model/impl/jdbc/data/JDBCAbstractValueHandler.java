@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
@@ -126,7 +124,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     @Override
     public DBDValueViewer createValueViewer(final DBDValueController controller) throws DBException
     {
-        final Text text = new Text(controller.getInlinePlaceholder(), SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+        final Text text = new Text(controller.getEditPlaceholder(), SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
         return new DBDValueViewer() {
             @Override
             public void showValue(DBDValueController controller1)
@@ -145,7 +143,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         final T control,
         final ValueExtractor<T> extractor)
     {
-        control.setFont(controller.getInlinePlaceholder().getFont());
+        control.setFont(controller.getEditPlaceholder().getFont());
         control.addTraverseListener(new TraverseListener()
         {
             @Override
@@ -189,7 +187,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                         Control newFocus = control.getDisplay().getFocusControl();
                         if (newFocus != null) {
                             for (Control fc = newFocus.getParent(); fc != null; fc = fc.getParent()) {
-                                if (fc == controller.getInlinePlaceholder()) {
+                                if (fc == controller.getEditPlaceholder()) {
                                     // New focus is still a child of inline placeholder - do not close it
                                     return;
                                 }
