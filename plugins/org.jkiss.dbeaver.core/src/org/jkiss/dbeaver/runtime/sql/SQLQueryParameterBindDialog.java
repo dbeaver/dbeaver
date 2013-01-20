@@ -350,9 +350,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public boolean isInlineEdit()
+        public EditType getEditType()
         {
-            return true;
+            return EditType.INLINE;
         }
 
         @Override
@@ -368,7 +368,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public Composite getInlinePlaceholder()
+        public Composite getEditPlaceholder()
         {
             return placeholder;
         }

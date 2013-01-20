@@ -71,9 +71,9 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         } else if (actionId.equals(CMD_ROW_LAST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT)) {
             resultSet.scrollToRow(ResultSetViewer.RowPosition.LAST);
         } else if (actionId.equals(CMD_ROW_EDIT)) {
-            resultSet.getSpreadsheet().openCellViewer(false);
+            resultSet.showCellEditor(false);
         } else if (actionId.equals(CMD_ROW_EDIT_INLINE)) {
-            resultSet.getSpreadsheet().openCellViewer(true);
+            resultSet.showCellEditor(true);
         } else if (actionId.equals(CMD_ROW_ADD)) {
             resultSet.addNewRow(false);
         } else if (actionId.equals(CMD_ROW_COPY)) {

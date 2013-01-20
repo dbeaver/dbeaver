@@ -38,34 +38,37 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
-        if (controller.isInlineEdit()) {
-            final MySQLTypeEnum value = (MySQLTypeEnum)controller.getValue();
+        switch (controller.getEditType()) {
+            case INLINE:
+                final MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
 
-            org.eclipse.swt.widgets.List editor = new org.eclipse.swt.widgets.List(controller.getInlinePlaceholder(), SWT.BORDER | SWT.MULTI);
-            initInlineControl(controller, editor, new ValueExtractor<org.eclipse.swt.widgets.List>() {
-                @Override
-                public Object getValueFromControl(org.eclipse.swt.widgets.List control)
-                {
-                    String[] selection = control.getSelection();
-                    StringBuilder resultString = new StringBuilder();
-                    for (String selString : selection) {
-                        if (CommonUtils.isEmpty(selString)) {
-                            continue;
+                org.eclipse.swt.widgets.List editor = new org.eclipse.swt.widgets.List(controller.getEditPlaceholder(), SWT.BORDER | SWT.MULTI);
+                initInlineControl(controller, editor, new ValueExtractor<org.eclipse.swt.widgets.List>() {
+                    @Override
+                    public Object getValueFromControl(org.eclipse.swt.widgets.List control)
+                    {
+                        String[] selection = control.getSelection();
+                        StringBuilder resultString = new StringBuilder();
+                        for (String selString : selection) {
+                            if (CommonUtils.isEmpty(selString)) {
+                                continue;
+                            }
+                            if (resultString.length() > 0) resultString.append(',');
+                            resultString.append(selString);
                         }
-                        if (resultString.length() > 0) resultString.append(',');
-                        resultString.append(selString);
+                        return new MySQLTypeEnum(value.getColumn(), resultString.toString());
                     }
-                    return new MySQLTypeEnum(value.getColumn(), resultString.toString());
-                }
-            });
-            fillSetList(editor, value);
+                });
+                fillSetList(editor, value);
 
-            editor.setFocus();
-            return true;
-        } else {
-            EnumViewDialog dialog = new EnumViewDialog(controller);
-            dialog.open();
-            return true;
+                editor.setFocus();
+                return true;
+            case EDITOR:
+                EnumViewDialog dialog = new EnumViewDialog(controller);
+                dialog.open();
+                return true;
+            default:
+                return false;
         }
     }
 

@@ -50,14 +50,15 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
     {
         if (column instanceof MySQLTableColumn) {
-            return new MySQLTypeEnum((MySQLTableColumn)column, null);
+            return new MySQLTypeEnum((MySQLTableColumn) column, null);
         } else {
             throw new DBCException("Enum type supported only for tables");
         }
     }
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value) {
+    public String getValueDisplayString(DBSTypedObject column, Object value)
+    {
         if (!(value instanceof MySQLTypeEnum)) {
             return super.getValueDisplayString(column, value);
         }
@@ -75,12 +76,11 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     {
         DBSEntityAttribute attribute = null;
         if (column instanceof DBSTableColumn) {
-            attribute = (DBSTableColumn)column;
+            attribute = (DBSTableColumn) column;
         } else if (column instanceof DBCAttributeMetaData) {
             try {
-                attribute = ((DBCAttributeMetaData)column).getAttribute(context.getProgressMonitor());
-            }
-            catch (DBException e) {
+                attribute = ((DBCAttributeMetaData) column).getAttribute(context.getProgressMonitor());
+            } catch (DBException e) {
                 throw new SQLException(e);
             }
         }
@@ -89,7 +89,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         }
         MySQLTableColumn enumColumn;
         if (attribute instanceof MySQLTableColumn) {
-            enumColumn = (MySQLTableColumn)attribute;
+            enumColumn = (MySQLTableColumn) attribute;
         } else {
             throw new SQLException("Bad column type: " + attribute.getClass().getName());
         }
@@ -104,7 +104,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         // It happens when we edit result sets as MySQL reports RS column type as CHAR for enum/set types
         String strValue;
         if (value instanceof MySQLTypeEnum) {
-            strValue = ((MySQLTypeEnum)value).getValue();
+            strValue = ((MySQLTypeEnum) value).getValue();
         } else {
             strValue = CommonUtils.toString(value);
         }
@@ -119,39 +119,42 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public boolean editValue(final DBDValueController controller)
         throws DBException
     {
-        if (controller.isInlineEdit()) {
-            final MySQLTypeEnum value = (MySQLTypeEnum)controller.getValue();
+        switch (controller.getEditType()) {
+            case INLINE:
+                final MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
 
-            Combo editor = new Combo(controller.getInlinePlaceholder(), SWT.READ_ONLY);
-            initInlineControl(controller, editor, new ValueExtractor<Combo>() {
-                @Override
-                public Object getValueFromControl(Combo control)
-                {
-                    int selIndex = control.getSelectionIndex();
-                    if (selIndex < 0) {
-                        return new MySQLTypeEnum(value.getColumn(), null);
-                    } else {
-                        return new MySQLTypeEnum(value.getColumn(), control.getItem(selIndex));
+                Combo editor = new Combo(controller.getEditPlaceholder(), SWT.READ_ONLY);
+                initInlineControl(controller, editor, new ValueExtractor<Combo>() {
+                    @Override
+                    public Object getValueFromControl(Combo control)
+                    {
+                        int selIndex = control.getSelectionIndex();
+                        if (selIndex < 0) {
+                            return new MySQLTypeEnum(value.getColumn(), null);
+                        } else {
+                            return new MySQLTypeEnum(value.getColumn(), control.getItem(selIndex));
+                        }
+                    }
+                });
+                List<String> enumValues = value.getColumn().getEnumValues();
+                //editor.add("");
+                if (enumValues != null) {
+                    for (String enumValue : enumValues) {
+                        editor.add(enumValue);
                     }
                 }
-            });
-            List<String> enumValues = value.getColumn().getEnumValues();
-            //editor.add("");
-            if (enumValues != null) {
-                for (String enumValue : enumValues) {
-                    editor.add(enumValue);
+                editor.setText(value.isNull() ? "" : value.getValue());
+                if (editor.getSelectionIndex() < 0) {
+                    editor.select(0);
                 }
-            }
-            editor.setText(value.isNull() ? "" : value.getValue());
-            if (editor.getSelectionIndex() < 0) {
-                editor.select(0);
-            }
-            editor.setFocus();
-            return true;
-        } else {
-            EnumViewDialog dialog = new EnumViewDialog(controller);
-            dialog.open();
-            return true;
+                editor.setFocus();
+                return true;
+            case EDITOR:
+                EnumViewDialog dialog = new EnumViewDialog(controller);
+                dialog.open();
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -172,7 +175,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         throws DBCException
     {
         // String are immutable
-        MySQLTypeEnum e = (MySQLTypeEnum)value;
+        MySQLTypeEnum e = (MySQLTypeEnum) value;
         return new MySQLTypeEnum(e.getColumn(), e.getValue());
     }
 

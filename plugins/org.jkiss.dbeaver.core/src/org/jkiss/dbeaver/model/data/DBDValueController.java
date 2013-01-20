@@ -28,6 +28,16 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
  */
 public interface DBDValueController
 {
+    /**
+     * Value editor type
+     */
+    enum EditType {
+        NONE,   // Void editor, should be ignored by users
+        INLINE, // Inline editor, appears right in grid's cell
+        PANEL,  // "Preview" editor, appears on a special grid panel.
+                // May be reused to edit different cells of the same type.
+        EDITOR  // Separate editor, dialog or standalone editor window
+    }
 
     /**
      * Controller's data source
@@ -53,24 +63,54 @@ public interface DBDValueController
      */
     void updateValue(Object value);
 
+    /**
+     * Associated value handler
+     * @return value handler
+     */
     DBDValueHandler getValueHandler();
 
-    boolean isInlineEdit();
+    EditType getEditType();
 
+    /**
+     * True if current cell is read-only.
+     * @return read only flag
+     */
     boolean isReadOnly();
 
+    /**
+     * Controller's host site
+     * @return
+     */
     IWorkbenchPartSite getValueSite();
 
-    Composite getInlinePlaceholder();
+    /**
+     * Inline or panel placeholder. Editor controls should be created inside of this placeholder.
+     * In case of separated editor it is null.
+     * @return placeholder control or null
+     */
+    Composite getEditPlaceholder();
 
+    /**
+     * Closes current value editor.
+     * This action may initiated by editor control (e.g. on Enter or Esc key)
+     */
     void closeInlineEditor();
 
+    /**
+     * Closes current editor and activated next cell editor
+     * @param next true for next and false for previous cell
+     */
     void nextInlineEditor(boolean next);
 
     void registerEditor(DBDValueEditor editor);
 
     void unregisterEditor(DBDValueEditor editor);
 
+    /**
+     * Show error/warning message in grid control.
+     * @param message error message
+     * @param error true for error, false for informational message
+     */
     void showMessage(String message, boolean error);
 
 }

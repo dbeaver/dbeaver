@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.ui.controls.spreadsheet;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 
@@ -37,10 +36,7 @@ public interface ISpreadsheetController {
 
     boolean isInsertable();
 
-    boolean showCellEditor(
-        GridPos cell,
-        boolean inline,
-        Composite inlinePlaceholder);
+    boolean showCellEditor(boolean inline);
 
     void resetCellValue(GridPos cell, boolean delete);
 
