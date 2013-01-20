@@ -53,7 +53,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     @Override
     public int getFeatures()
     {
-        return FEATURE_SHOW_ICON;
+        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_SHOW_ICON;
     }
 
     /**
