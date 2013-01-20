@@ -985,6 +985,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return
             !isReadOnly() &&
             singleSourceCells &&
+
             !CommonUtils.isEmpty(metaColumns);
     }
 
