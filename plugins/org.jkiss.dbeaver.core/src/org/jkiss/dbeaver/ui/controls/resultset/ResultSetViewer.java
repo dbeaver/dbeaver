@@ -47,6 +47,7 @@ import org.eclipse.ui.ISaveablePart2;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
@@ -98,6 +99,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
+    private ResultSetValueController panelValueController;
 
     public enum ResultSetMode {
         GRID,
@@ -145,7 +147,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private Text statusLabel;
 
-    private Map<ResultSetValueController, DBDValueEditor> openEditors = new HashMap<ResultSetValueController, DBDValueEditor>();
+    private Map<ResultSetValueController, DBDValueEditorDialog> openEditors = new HashMap<ResultSetValueController, DBDValueEditorDialog>();
     // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
 
@@ -595,12 +597,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (!cell.isValid() || cell.col >= metaColumns.length || cell.row >= curRows.size()) {
             return;
         }
-        final ResultSetValueController valueController = new ResultSetValueController(
-            curRows.get(cell.row),
-            cell.col,
-            DBDValueController.EditType.PANEL,
-            previewPane.getViewPlaceholder());
-        previewPane.viewValue(valueController);
+        if (panelValueController == null || panelValueController.columnIndex != cell.col) {
+            panelValueController = new ResultSetValueController(
+                curRows.get(cell.row),
+                cell.col,
+                DBDValueController.EditType.PANEL,
+                previewPane.getViewPlaceholder());
+        } else {
+            panelValueController.setCurRow(curRows.get(cell.row));
+        }
+        previewPane.viewValue(panelValueController);
     }
 
     ////////////////////////////////////////////////////////////
@@ -794,6 +800,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             });
             this.clearData();
             this.metaColumns = columns;
+            this.panelValueController = null;
             this.dataFilter = new DBDDataFilter();
         }
         return update;
@@ -852,8 +859,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     private void closeEditors() {
-        List<DBDValueEditor> editors = new ArrayList<DBDValueEditor>(openEditors.values());
-        for (DBDValueEditor editor : editors) {
+        List<DBDValueEditorDialog> editors = new ArrayList<DBDValueEditorDialog>(openEditors.values());
+        for (DBDValueEditorDialog editor : editors) {
             editor.closeValueEditor();
         }
         if (!openEditors.isEmpty()) {
@@ -1052,24 +1059,41 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             cell.col,
             inline ? DBDValueController.EditType.INLINE : DBDValueController.EditType.EDITOR,
             inline ? placeholder : null);
-        boolean editSuccess;
+        final DBDValueEditor editor;
         try {
-            editSuccess = metaColumn.getValueHandler().editValue(valueController);
+            editor = metaColumn.getValueHandler().createEditor(valueController);
         }
         catch (Exception e) {
             UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
             return false;
         }
-
+        if (editor instanceof DBDValueEditorDialog) {
+            valueController.registerEditor((DBDValueEditorDialog)editor);
+            // show dialog in separate job to avoid block
+            new UIJob("Open separate editor") {
+                @Override
+                public IStatus runInUIThread(IProgressMonitor monitor)
+                {
+                    ((DBDValueEditorDialog)editor).showValueEditor();
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
+            //((DBDValueEditorDialog)editor).showValueEditor();
+        } else {
+            // Set editable value
+            if (editor != null) {
+                editor.refreshValue();
+            }
+        }
         if (inline) {
-            if (editSuccess) {
+            if (editor != null) {
                 spreadsheet.showCellEditor(focusCell, placeholder);
             } else {
                 // No editor was created so just drop placeholder
                 placeholder.dispose();
             }
         }
-        return editSuccess;
+        return editor != null;
     }
 
     @Override
@@ -1972,6 +1996,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             this.inlinePlaceholder = inlinePlaceholder;
         }
 
+        void setCurRow(Object[] curRow)
+        {
+            this.curRow = curRow;
+        }
+
         @Override
         public DBPDataSource getDataSource()
         {
@@ -2118,13 +2147,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             showCellEditor(true);
         }
 
-        @Override
-        public void registerEditor(DBDValueEditor editor) {
+        public void registerEditor(DBDValueEditorDialog editor) {
             openEditors.put(this, editor);
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditor editor) {
+        public void unregisterEditor(DBDValueEditorDialog editor) {
             openEditors.remove(this);
         }
 

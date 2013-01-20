@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -126,20 +127,18 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case EDITOR:
                 final Object value = controller.getValue();
                 if (value instanceof DBDCursor) {
-                    CursorViewDialog dialog = new CursorViewDialog(controller);
-                    dialog.open();
-                    return true;
+                    return new CursorViewDialog(controller);
                 }
-                return false;
+                return null;
             default:
-                return false;
+                return null;
         }
     }
 

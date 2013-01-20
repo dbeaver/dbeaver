@@ -99,8 +99,7 @@ public class NumberViewDialog extends ValueViewDialog {
 
             if (value != null) {
                 // Use simple toString() because we don't want formatted values.
-                String textValue = value.toString();
-                textEdit.setText(textValue);
+                textEdit.setText(value.toString());
             }
             int maxSize = getValueController().getAttributeMetaData().getPrecision();
             if (maxSize > 0) {
@@ -140,4 +139,10 @@ public class NumberViewDialog extends ValueViewDialog {
         }
     }
 
+    @Override
+    public void refreshValue()
+    {
+        value = getValueController().getValue();
+        textEdit.setText(value.toString());
+    }
 }

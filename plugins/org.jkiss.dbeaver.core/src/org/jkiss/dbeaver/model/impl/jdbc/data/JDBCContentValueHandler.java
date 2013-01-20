@@ -265,17 +265,16 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public boolean editValue(final DBDValueController controller)
+    public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
-                // Open inline editor
+            case PANEL:
+                // Open inline/panel editor
                 if (controller.getValue() instanceof JDBCContentChars) {
                     // String editor
-                    JDBCContentChars value = (JDBCContentChars)controller.getValue();
-
-                    Text editor = new Text(controller.getEditPlaceholder(), SWT.NONE);
+                    final Text editor = new Text(controller.getEditPlaceholder(), SWT.NONE);
                     initInlineControl(controller, editor, new ValueExtractor<Text>() {
                         @Override
                         public Object getValueFromControl(Text control)
@@ -284,7 +283,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                             return new JDBCContentChars(controller.getDataSource(), newValue);
                         }
                     });
-                    editor.setText(value.getData() == null ? "" : value.getData()); //$NON-NLS-1$
                     editor.setEditable(!controller.isReadOnly());
                     long maxLength = controller.getAttributeMetaData().getMaxLength();
                     if (maxLength <= 0) {
@@ -292,13 +290,19 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     } else {
                         maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
                     }
-                    editor.setTextLimit((int)maxLength);
+                    editor.setTextLimit((int) maxLength);
                     editor.selectAll();
-                    editor.setFocus();
-                    return true;
+                    return new DBDValueEditor() {
+                        @Override
+                        public void refreshValue()
+                        {
+                            JDBCContentChars newValue = (JDBCContentChars) controller.getValue();
+                            editor.setText(newValue.getData() == null ? "" : newValue.getData()); //$NON-NLS-1$
+                        }
+                    };
                 } else {
                     controller.showMessage(CoreMessages.model_jdbc_lob_and_binary_data_cant_be_edited_inline, true);
-                    return false;
+                    return null;
                 }
             case EDITOR:
                 // Open LOB editor
@@ -322,10 +326,10 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         parts.toArray(new IContentEditorPart[parts.size()]) );
                 } else {
                     controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
-                    return false;
+                    return null;
                 }
             default:
-                return false;
+                return null;
         }
     }
 

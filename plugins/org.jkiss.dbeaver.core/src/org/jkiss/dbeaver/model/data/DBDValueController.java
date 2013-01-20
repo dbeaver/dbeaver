@@ -102,9 +102,7 @@ public interface DBDValueController
      */
     void nextInlineEditor(boolean next);
 
-    void registerEditor(DBDValueEditor editor);
-
-    void unregisterEditor(DBDValueEditor editor);
+    void unregisterEditor(DBDValueEditorDialog editor);
 
     /**
      * Show error/warning message in grid control.

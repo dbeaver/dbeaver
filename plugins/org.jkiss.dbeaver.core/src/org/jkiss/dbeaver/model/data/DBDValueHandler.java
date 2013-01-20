@@ -161,16 +161,6 @@ public interface DBDValueHandler
     void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller);
 
     /**
-     * Create value viewer for specified controller's column.
-     * @param controller column value controller
-     * @return value viewer. Visually viewer should be created as child widget of inline placeholder of controller.
-     *  Single viewer should be able to process multiple values of the same type.
-     * @throws DBException on error
-     */
-    DBDValueViewer createValueViewer(DBDValueController controller)
-        throws DBException;
-
-    /**
      * Shows value editor.
      * Value editor could be:
      * <li>inline editor (control created withing inline placeholder)</li>
@@ -184,7 +174,7 @@ public interface DBDValueHandler
      * @return true on success
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    boolean editValue(DBDValueController controller)
+    DBDValueEditor createEditor(DBDValueController controller)
         throws DBException;
 
 }
