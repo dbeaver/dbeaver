@@ -1951,7 +1951,9 @@ public class HexEditControl extends Composite {
     {
         long result = 1L;
         if (content != null) {
-            result = (content.length() - 1L) / bytesPerLine + 1L;
+            if (bytesPerLine > 0) {
+                result = (content.length() - 1L) / bytesPerLine + 1L;
+            }
         }
 
         return result;
@@ -2018,6 +2020,9 @@ public class HexEditControl extends Composite {
         int width = getClientArea().width - linesText.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
         int displayedNumberWidth = fontCharWidth * 4;  // hexText and previewText
         bytesPerLine = (width / displayedNumberWidth) & 0xfffffff8;  // 0, 8, 16, 24, etc.
+        if (bytesPerLine <= 8) {
+            bytesPerLine = 8;
+        }
 //        if (bytesPerLine < 16)
 //            bytesPerLine = 16;
         textGridData.widthHint = hexText.computeTrim(0, 0, bytesPerLine * 3 * fontCharWidth, 100).width;

@@ -56,7 +56,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     private IFile contentFile;
     private boolean contentDetached = false;
 
-    ContentEditorInput(
+    public ContentEditorInput(
         DBDAttributeController valueController,
         IContentEditorPart[] editorParts,
         DBRProgressMonitor monitor)
@@ -143,7 +143,6 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         DBDContent content = getContent();
         DBDContentStorage storage = content.getContents(monitor);
 
-        release(monitor);
         if (storage instanceof DBDContentStorageLocal) {
             // User content's storage directly
             contentFile = ((DBDContentStorageLocal)storage).getDataFile();
@@ -152,12 +151,12 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
             // Copy content to local file
             try {
                 // Create file
-                contentFile = ContentUtils.createTempContentFile( monitor, valueController.getColumnId());
+                if (contentFile == null) {
+                    contentFile = ContentUtils.createTempContentFile( monitor, valueController.getColumnId());
+                }
 
                 // Write value to file
-                if (!content.isNull()) {
-                    copyContentToFile(content, monitor);
-                }
+                copyContentToFile(content, monitor);
             }
             catch (IOException e) {
                 // Delete temp file
@@ -270,6 +269,10 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     private void copyContentToFile(DBDContent contents, DBRProgressMonitor monitor)
         throws DBException, IOException
     {
+        if (contents.isNull()) {
+            ContentUtils.copyStreamToFile(monitor, new ByteArrayInputStream(new byte[0]), 0, contentFile);
+            return;
+        }
         DBDContentStorage storage = contents.getContents(monitor);
         if (contents.isNull() || storage == null) {
             log.warn("Could not copy null content");
