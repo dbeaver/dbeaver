@@ -97,6 +97,12 @@ public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> imple
         return false;
     }
 
+    @Override
+    public int getOrdinalPosition()
+    {
+        return 0;
+    }
+
     public boolean isKey() throws DBException
     {
         return getFlagQualifier(WMIConstants.Q_Key) || getFlagQualifier(WMIConstants.Q_CIM_Key);

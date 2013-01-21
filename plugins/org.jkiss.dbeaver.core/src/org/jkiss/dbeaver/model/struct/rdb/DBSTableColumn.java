@@ -28,7 +28,4 @@ public interface DBSTableColumn extends DBSEntityAttribute
     @Override
     DBSTable getParentObject();
 
-    int getOrdinalPosition();
-
-
 }
