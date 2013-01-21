@@ -704,7 +704,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event)
         {
             ViewerCell cell = (ViewerCell)event.getSource();
-            if (renderer.isHyperlink(getCellValue(cell.getElement(), cell.getColumnIndex()))) {
+            if (renderer.isHyperlink(getCellValue(cell.getElement(), cell.getColumnIndex())) &&
+                getItemsViewer().getControl().getCursor() == getItemsViewer().getControl().getDisplay().getSystemCursor(SWT.CURSOR_HAND)) {
                 return false;
             }
             return super.isEditorActivationEvent(event);
