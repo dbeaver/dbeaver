@@ -530,7 +530,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
             switch (delta.getKind()) {
                 case IResourceDelta.CHANGED:
                     FileInfo info = (FileInfo) getElementInfo(fileEditorInput);
-                    if (info == null || info.fCanBeSaved) {
+                    if (info == null || !canRefreshFromFile(info)) {
                         break;
                     }
 
@@ -568,7 +568,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                         };
                     } else {
                         info = (FileInfo) getElementInfo(fileEditorInput);
-                        if (info != null && !info.fCanBeSaved) {
+                        if (info != null && canRefreshFromFile(info)) {
                             runnable = new SafeChange(fileEditorInput) {
                                 @Override
                                 protected void execute(IEditorInput input) throws Exception
@@ -586,6 +586,12 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
             }
 
             return false;
+        }
+
+        private boolean canRefreshFromFile(FileInfo info)
+        {
+            //return !info.fCanBeSaved;
+            return true;
         }
 
         /**

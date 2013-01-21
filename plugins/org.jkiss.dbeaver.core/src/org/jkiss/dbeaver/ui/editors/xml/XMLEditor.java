@@ -27,8 +27,6 @@ public class XMLEditor extends BaseTextEditor {
 
     public XMLEditor()
     {
-        setDocumentProvider(new FileRefDocumentProvider());
-
 		configureInsertMode(ITextEditorExtension3.SMART_INSERT, false);
 		setSourceViewerConfiguration(new XMLConfiguration());
 		setDocumentProvider(new XMLDocumentProvider());

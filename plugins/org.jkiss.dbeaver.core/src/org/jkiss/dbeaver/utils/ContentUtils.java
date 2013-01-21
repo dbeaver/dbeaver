@@ -523,7 +523,7 @@ public class ContentUtils {
 
     public static IFile getFileFromEditorInput(IEditorInput editorInput)
     {
-        if (editorInput instanceof IPathEditorInput) {
+        if (editorInput instanceof IPathEditorInput && ((IPathEditorInput) editorInput).getPath() != null) {
             return convertPathToWorkspaceFile(((IPathEditorInput) editorInput).getPath());
         } else {
             return null;

@@ -143,6 +143,10 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         DBDContent content = getContent();
         DBDContentStorage storage = content.getContents(monitor);
 
+        if (contentDetached) {
+            release(monitor);
+            contentDetached = false;
+        }
         if (storage instanceof DBDContentStorageLocal) {
             // User content's storage directly
             contentFile = ((DBDContentStorageLocal)storage).getDataFile();
@@ -174,20 +178,25 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
 
         // Mark file as readonly
         if (valueController.isReadOnly()) {
-            ResourceAttributes attributes = contentFile.getResourceAttributes();
-            if (attributes != null) {
-                attributes.setReadOnly(true);
-                try {
-                    contentFile.setResourceAttributes(attributes);
-                }
-                catch (CoreException e) {
-                    throw new DBException(e);
-                }
+            markReadOnly(true);
+        }
+    }
+
+    private void markReadOnly(boolean readOnly) throws DBException
+    {
+        ResourceAttributes attributes = contentFile.getResourceAttributes();
+        if (attributes != null && attributes.isReadOnly() != readOnly) {
+            attributes.setReadOnly(readOnly);
+            try {
+                contentFile.setResourceAttributes(attributes);
+            }
+            catch (CoreException e) {
+                throw new DBException(e);
             }
         }
     }
 
-    void release(DBRProgressMonitor monitor)
+    public void release(DBRProgressMonitor monitor)
     {
         if (contentFile != null && !contentDetached) {
             ContentUtils.deleteTempFile(monitor, contentFile);
@@ -269,21 +278,25 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     private void copyContentToFile(DBDContent contents, DBRProgressMonitor monitor)
         throws DBException, IOException
     {
+        DBDContentStorage storage = contents.getContents(monitor);
+
+        markReadOnly(false);
+
         if (contents.isNull()) {
             ContentUtils.copyStreamToFile(monitor, new ByteArrayInputStream(new byte[0]), 0, contentFile);
-            return;
-        }
-        DBDContentStorage storage = contents.getContents(monitor);
-        if (contents.isNull() || storage == null) {
-            log.warn("Could not copy null content");
-            return;
+        } else {
+            if (storage == null) {
+                log.warn("Can't get data from null storage");
+                return;
+            }
+            if (ContentUtils.isTextContent(contents)) {
+                ContentUtils.copyReaderToFile(monitor, storage.getContentReader(), storage.getContentLength(), storage.getCharset(), contentFile);
+            } else {
+                ContentUtils.copyStreamToFile(monitor, storage.getContentStream(), storage.getContentLength(), contentFile);
+            }
         }
 
-        if (ContentUtils.isTextContent(contents)) {
-            ContentUtils.copyReaderToFile(monitor, storage.getContentReader(), storage.getContentLength(), storage.getCharset(), contentFile);
-        } else {
-            ContentUtils.copyStreamToFile(monitor, storage.getContentStream(), storage.getContentLength(), contentFile);
-        }
+        markReadOnly(valueController.isReadOnly());
     }
 
     void updateContentFromFile(IProgressMonitor monitor)
