@@ -1026,12 +1026,23 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
         DBDAttributeBinding metaColumn = metaColumns[cell.col];
-        if (isColumnReadOnly(metaColumn) && inline) {
-            // No inline editors for readonly columns
-            return false;
-        }
         final int handlerFeatures = metaColumn.getValueHandler().getFeatures();
         if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
+            return false;
+        }
+        if (inline &&
+            (handlerFeatures & DBDValueHandler.FEATURE_INLINE_EDITOR) == 0 &&
+            (handlerFeatures & DBDValueHandler.FEATURE_VIEWER) != 0)
+        {
+            // Inline editor isn't supported but panel viewer is
+            // Enable panel
+            if (!isPreviewVisible()) {
+                togglePreview();
+            }
+            return true;
+        }
+        if (isColumnReadOnly(metaColumn) && inline) {
+            // No inline editors for readonly columns
             return false;
         }
 
@@ -1091,6 +1102,15 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             } else {
                 // No editor was created so just drop placeholder
                 placeholder.dispose();
+                // Probably we can just show preview panel
+                if ((handlerFeatures & DBDValueHandler.FEATURE_VIEWER) != 0) {
+                    // Inline editor isn't supported but panel viewer is
+                    // Enable panel
+                    if (!isPreviewVisible()) {
+                        togglePreview();
+                    }
+                    return true;
+                }
             }
         }
         return editor != null;
