@@ -306,7 +306,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         }
                     };
                 } else {
-                    controller.showMessage(CoreMessages.model_jdbc_lob_and_binary_data_cant_be_edited_inline, true);
                     return null;
                 }
             }
