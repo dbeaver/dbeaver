@@ -33,7 +33,7 @@ import java.sql.ResultSet;
 public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBSEntityAttribute
 {
 
-    private DBSDataType attrType;
+    private OracleDataType attrType;
     private OracleDataTypeModifier attrTypeMod;
     private Integer length;
     private Integer precision;
@@ -108,7 +108,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     @Override
     public String getTypeName()
     {
-        return attrType.getName();
+        return attrType.getFullQualifiedName();
     }
 
     @Override

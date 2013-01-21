@@ -19,8 +19,6 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -48,14 +46,14 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     private static final int MAX_STRING_LENGTH = 0xffff;
 
     @Override
-    protected Object getColumnValue(
+    protected Object fetchColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
-        DBSTypedObject column,
-        int columnIndex)
+        DBSTypedObject type,
+        int index)
         throws SQLException
     {
-        return resultSet.getString(columnIndex);
+        return resultSet.getString(index);
     }
 
     @Override
@@ -119,17 +117,18 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        // String are immutable
-        return value;
-    }
-
-    @Override
-    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
-    {
-        return clipboard.getContents(TextTransfer.getInstance());
+        if (object == null || object instanceof String) {
+            return object;
+        } else if (object instanceof char[]) {
+            return new String((char[])object);
+        } else if (object instanceof byte[]) {
+            return new String((byte[])object);
+        } else {
+            log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to string");
+            return null;
+        }
     }
 
     @Override

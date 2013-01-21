@@ -100,7 +100,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         Object[] row = new Object[columnsCount];
         for (int i = 0; i < columnsCount; i++) {
             try {
-                row[i] = metaColumns[i].getValueHandler().getValueObject(
+                row[i] = metaColumns[i].getValueHandler().fetchValueObject(
                     context,
                     resultSet,
                     metaColumns[i].getAttribute(),

@@ -30,6 +30,12 @@ public class MySQLTypeEnum implements DBDValue {
     private MySQLTableColumn column;
     private String value;
 
+    public MySQLTypeEnum(MySQLTypeEnum source)
+    {
+        this.column = source.column;
+        this.value = source.value;
+    }
+
     public MySQLTypeEnum(MySQLTableColumn column, String value)
     {
         this.column = column;

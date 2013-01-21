@@ -404,12 +404,17 @@ public final class DBUtils {
 */
         return new DBDAttributeBinding(
                 attributeMeta,
-            getColumnValueHandler(context, columnMeta));
+            findValueHandler(context, columnMeta));
     }
 
-    public static DBDValueHandler getColumnValueHandler(DBCExecutionContext context, DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(DBCExecutionContext context, DBSTypedObject column)
     {
         return findValueHandler(context.getDataSource(), context, column.getTypeName(), column.getTypeID());
+    }
+
+    public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBSTypedObject column)
+    {
+        return findValueHandler(dataSource, dataSource.getContainer(), column.getTypeName(), column.getTypeID());
     }
 
     public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, String typeName, int valueType)

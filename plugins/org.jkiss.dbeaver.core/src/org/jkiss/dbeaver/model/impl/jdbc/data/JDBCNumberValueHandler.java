@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -79,41 +77,41 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    protected Object getColumnValue(
+    protected Object fetchColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
-        DBSTypedObject column,
-        int columnIndex)
+        DBSTypedObject type,
+        int index)
         throws DBCException, SQLException
     {
         Number value;
-        switch (column.getTypeID()) {
+        switch (type.getTypeID()) {
             case java.sql.Types.BIGINT:
-                value = resultSet.getLong(columnIndex);
+                value = resultSet.getLong(index);
                 break;
             case java.sql.Types.DOUBLE:
             case java.sql.Types.REAL:
-                value = resultSet.getDouble(columnIndex);
+                value = resultSet.getDouble(index);
                 break;
             case java.sql.Types.FLOAT:
-                value = resultSet.getFloat(columnIndex);
+                value = resultSet.getFloat(index);
                 break;
             case java.sql.Types.INTEGER:
-                value = resultSet.getInt(columnIndex);
+                value = resultSet.getInt(index);
                 break;
             case java.sql.Types.SMALLINT:
-                value = resultSet.getShort(columnIndex);
+                value = resultSet.getShort(index);
                 break;
             case java.sql.Types.TINYINT:
             case java.sql.Types.BIT:
-                value = resultSet.getByte(columnIndex);
+                value = resultSet.getByte(index);
                 break;
             default:
                 // Here may be any numeric value. BigDecimal or BigInteger for example
                 boolean gotValue = false;
                 value = null;
                 try {
-                    Object objectValue = resultSet.getObject(columnIndex);
+                    Object objectValue = resultSet.getObject(index);
                     if (objectValue == null || objectValue instanceof Number) {
                         value = (Number) objectValue;
                         gotValue = true;
@@ -122,10 +120,10 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     log.debug(e);
                 }
                 if (value == null && !gotValue) {
-                    if (column.getScale() > 0) {
-                        value = resultSet.getDouble(columnIndex);
+                    if (type.getScale() > 0) {
+                        value = resultSet.getDouble(index);
                     } else {
-                        value = resultSet.getLong(columnIndex);
+                        value = resultSet.getLong(index);
                     }
                 }
 
@@ -275,55 +273,43 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        // Number are immutable
-        return value;
-    }
-
-    @Override
-    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
-    {
-        String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
-        if (CommonUtils.isEmpty(strValue)) {
+        if (object == null) {
             return null;
-        }
-        Number value;
-        try {
-            switch (column.getTypeID()) {
-                case java.sql.Types.BIGINT:
-                    value = Long.valueOf(strValue);
-                    break;
-                case java.sql.Types.DOUBLE:
-                case java.sql.Types.REAL:
-                    value = Double.valueOf(strValue);
-                    break;
-                case java.sql.Types.FLOAT:
-                    value = Float.valueOf(strValue);
-                    break;
-                case java.sql.Types.INTEGER:
-                    value = Integer.valueOf(strValue);
-                    break;
-                case java.sql.Types.SMALLINT:
-                    value = Short.valueOf(strValue);
-                    break;
-                case java.sql.Types.TINYINT:
-                case java.sql.Types.BIT:
-                    value = Byte.valueOf(strValue);
-                    break;
-                case Types.NUMERIC:
-                    value = new BigDecimal(strValue);
-                    break;
-                default:
-                    // Here may be any numeric value. BigDecimal or BigInteger for example
-                    value = new BigDecimal(strValue);
-                    break;
+        } else if (object instanceof Number) {
+            return object;
+        } else if (object instanceof String) {
+            String strValue = (String)object;
+            try {
+                switch (type.getTypeID()) {
+                    case java.sql.Types.BIGINT:
+                        return Long.valueOf(strValue);
+                    case java.sql.Types.DOUBLE:
+                    case java.sql.Types.REAL:
+                        return Double.valueOf(strValue);
+                    case java.sql.Types.FLOAT:
+                        return Float.valueOf(strValue);
+                    case java.sql.Types.INTEGER:
+                        return Integer.valueOf(strValue);
+                    case java.sql.Types.SMALLINT:
+                        return Short.valueOf(strValue);
+                    case java.sql.Types.TINYINT:
+                    case java.sql.Types.BIT:
+                        return Byte.valueOf(strValue);
+                    case Types.NUMERIC:
+                        return new BigDecimal(strValue);
+                    default:
+                        // Here may be any numeric value. BigDecimal or BigInteger for example
+                        return new BigDecimal(strValue);
+                }
+            } catch (NumberFormatException e) {
+                return null;
             }
-        } catch (NumberFormatException e) {
+        } else {
+            log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to numeric");
             return null;
         }
-        return value;
     }
 
     @Override

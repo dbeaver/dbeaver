@@ -61,51 +61,43 @@ public interface DBDValueHandler
 
     /**
      * Extracts object from result set
+     *
      * @param context
      * @param resultSet result set
-     * @param column column
-     * @param columnIndex column index
-     * @return value or null
+     * @param type
+     *@param index @return value or null
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column, int columnIndex)
+    Object fetchValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException;
 
     /**
      * Binds specified parameter to statement
-     * @param context
+     *
+     * @param context execution context
      * @param statement statement
-     * @param columnType column type
-     * @param paramIndex parameter index (starts from 0)
-     * @param value parameter value (can be null). Value is get from getValueObject function or from
-     * object set by editor (editValue function).
-     * @throws org.jkiss.dbeaver.model.exec.DBCException on error
+     * @param type attribute type
+     * @param index parameter index
+     * @param value parameter value (can be null). Value is get from fetchValueObject function or from
+     * object set by editor (editValue function).  @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnType, int paramIndex, Object value)
+    void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject type, int index, Object value)
         throws DBCException;
 
     /**
-     * Creates new value object.
-     * For simple types returns null (as initial value). For complex type may return DBDValue.
+     * Creates new value from object.
+     * Must analyse passed object and convert it (if possible) to appropriate handler's type.
+     * For null objects returns null of DBDValue marked as null
+     *
      *
      * @param context execution context
-     * @param column column
+     * @param type attribute type
+     * @param object source object
+     * @param copy
      * @return initial object value
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
-    Object createValueObject(DBCExecutionContext context, DBSTypedObject column)
-        throws DBCException;
-
-    /**
-     * Makes value copy. For Non-mutable objects (like numbers and string) may return the same value as passed in.
-     * If copy operation is not supported for some values then may return null.
-     * @param context execution context
-     * @param column column descriptor
-     * @param value original value  @return copied value or null  @return value copy
-     * @throws org.jkiss.dbeaver.model.exec.DBCException on error
-     * @return new object copy
-     */
-    Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
+    Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy)
         throws DBCException;
 
     /**
@@ -113,12 +105,14 @@ public interface DBDValueHandler
      * or value cannot be parsed then this function should return null
      *
      *
+     *
+     * @param context
      * @param column column descriptor
      * @param clipboard clipboard
      * @return value (return null only in case of NULL value in clipboard)
      * @throws org.jkiss.dbeaver.DBException on unexpected error (IO, etc)
      */
-    Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard);
+    Object getValueFromClipboard(DBCExecutionContext context, DBSTypedObject column, Clipboard clipboard) throws DBCException;
 
     /**
      * Release any internal resources associated with this value.

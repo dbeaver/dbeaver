@@ -49,12 +49,16 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public static final MySQLEnumValueHandler INSTANCE = new MySQLEnumValueHandler();
 
     @Override
-    public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        if (column instanceof MySQLTableColumn) {
-            return new MySQLTypeEnum((MySQLTableColumn) column, null);
+        if (object == null) {
+            return null;
+        } else if (object instanceof MySQLTypeEnum) {
+            return copy ? new MySQLTypeEnum((MySQLTypeEnum) object) : object;
+        } else if (object instanceof String && type instanceof MySQLTableColumn) {
+            return new MySQLTypeEnum((MySQLTableColumn) type, (String) object);
         } else {
-            throw new DBCException("Enum type supported only for tables");
+            throw new DBCException("Unsupported ");
         }
     }
 
@@ -69,25 +73,25 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    protected Object getColumnValue(
+    protected Object fetchColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
-        DBSTypedObject column,
-        int columnIndex)
+        DBSTypedObject type,
+        int index)
         throws SQLException
     {
         DBSEntityAttribute attribute = null;
-        if (column instanceof DBSTableColumn) {
-            attribute = (DBSTableColumn) column;
-        } else if (column instanceof DBCAttributeMetaData) {
+        if (type instanceof DBSTableColumn) {
+            attribute = (DBSTableColumn) type;
+        } else if (type instanceof DBCAttributeMetaData) {
             try {
-                attribute = ((DBCAttributeMetaData) column).getAttribute(context.getProgressMonitor());
+                attribute = ((DBCAttributeMetaData) type).getAttribute(context.getProgressMonitor());
             } catch (DBException e) {
                 throw new SQLException(e);
             }
         }
         if (attribute == null) {
-            throw new SQLException("Could not find table column for column '" + columnIndex + "'");
+            throw new SQLException("Could not find table column for column '" + index + "'");
         }
         MySQLTableColumn enumColumn;
         if (attribute instanceof MySQLTableColumn) {
@@ -95,7 +99,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         } else {
             throw new SQLException("Bad column type: " + attribute.getClass().getName());
         }
-        return new MySQLTypeEnum(enumColumn, resultSet.getString(columnIndex));
+        return new MySQLTypeEnum(enumColumn, resultSet.getString(index));
     }
 
     @Override
@@ -219,15 +223,6 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public Class getValueObjectType()
     {
         return MySQLTypeEnum.class;
-    }
-
-    @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
-    {
-        // String are immutable
-        MySQLTypeEnum e = (MySQLTypeEnum) value;
-        return new MySQLTypeEnum(e.getColumn(), e.getValue());
     }
 
 /*

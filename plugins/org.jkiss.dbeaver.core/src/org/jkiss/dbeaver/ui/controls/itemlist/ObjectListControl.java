@@ -700,6 +700,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             super(viewer);
         }
 
+        @Override
+        protected boolean isEditorActivationEvent(ColumnViewerEditorActivationEvent event)
+        {
+            return super.isEditorActivationEvent(event);
+        }
     }
 
     private static class EditorActivationListener extends ColumnViewerEditorActivationListener {
