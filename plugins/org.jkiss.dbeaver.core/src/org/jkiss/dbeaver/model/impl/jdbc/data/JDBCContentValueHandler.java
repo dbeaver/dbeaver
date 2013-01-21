@@ -25,6 +25,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -319,7 +320,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
                     if (isText) {
                         parts.add(new ContentTextEditorPart());
-                        if (MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType())) {
+                        if (isXML(content)) {
                             parts.add(new ContentXMLEditorPart());
                         }
                     } else {
@@ -337,18 +338,29 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             }
             case PANEL:
             {
-                final ContentBinaryEditorPart editor = new ContentBinaryEditorPart();
+                final DBDContent content = (DBDContent) controller.getValue();
+                final IContentEditorPart editor;
+                if (ContentUtils.isTextContent(content)) {
+                    if (isXML(content)) {
+                        editor = new ContentXMLEditorPart();
+                    } else {
+                        editor = new ContentTextEditorPart();
+                    }
+                } else {
+                    editor = new ContentBinaryEditorPart();
+                }
                 final ContentEditorInput input;
                 try {
                     input = new ContentEditorInput((DBDAttributeController) controller, new IContentEditorPart[]{editor}, VoidProgressMonitor.INSTANCE);
                     editor.init(new SubEditorSite(controller.getValueSite()),
                         input);
                 } catch (PartInitException e) {
-                    e.printStackTrace();
+                    log.error("Can't initialize content editor", e);
                     return null;
                 }
                 editor.createPartControl(controller.getEditPlaceholder());
                 return new DBDValueEditorDialog() {
+                    private DBDContent prevValue = content;
                     @Override
                     public void showValueEditor()
                     {
@@ -358,16 +370,22 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     @Override
                     public void closeValueEditor()
                     {
-
+                        editor.dispose();
+                        input.release(VoidProgressMonitor.INSTANCE);
                     }
 
                     @Override
                     public void refreshValue()
                     {
+                        if (prevValue == controller.getValue()) {
+                            // No need to refresh
+                            return;
+                        }
+                        prevValue = (DBDContent) controller.getValue();
                         try {
                             input.refreshContent(VoidProgressMonitor.INSTANCE, (DBDAttributeController) controller);
                         } catch (DBException e) {
-                            e.printStackTrace();
+                            log.error("Error refreshing content value", e);
                         }
                     }
                 };
@@ -375,6 +393,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             default:
                 return null;
         }
+    }
+
+    private static boolean isXML(DBDContent content)
+    {
+        return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
     }
 
     private void loadFromFile(final DBDValueController controller)
