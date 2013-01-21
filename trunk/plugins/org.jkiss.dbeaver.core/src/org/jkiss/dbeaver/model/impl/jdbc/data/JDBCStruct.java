@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -29,9 +30,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.SQLException;
 import java.sql.Struct;
+import java.util.Collection;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * Struct holder
@@ -42,6 +47,7 @@ public class JDBCStruct implements DBDStructure {
 
     private DBSDataType type;
     private Struct contents;
+    private Map<DBSEntityAttribute, Object> values;
 
     public JDBCStruct(DBSDataType type, Struct contents)
     {
@@ -132,33 +138,61 @@ public class JDBCStruct implements DBDStructure {
     @Override
     public Object getAttributeValue(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBCException
     {
-        DBSEntity entity = getStructType();
-        if (entity == null) {
-            throw new DBCException("Non-structure record '" + getTypeName() + "' doesn't have attributes");
-        }
-        int index = -1, i = 0;
         try {
-            for (DBSEntityAttribute attr : entity.getAttributes(monitor)) {
-                if (attr == attribute) {
-                    index = i;
-                }
-                i++;
-            }
-        } catch (DBException e) {
-            throw new DBCException("Can't obtain attributes meta information", e);
-        }
-        if (index < 0) {
-            throw new DBCException("Attribute '" + attribute.getName() + "' doesn't belong to structure type '" + getTypeName() + "'");
-        }
-        try {
-            Object[] values = contents.getAttributes();
-            if (index >= values.length) {
-                throw new DBCException("Attribute index is out of range (" + index + ">=" + values.length + ")");
-            }
-            return values[i];
+            return getValues(VoidProgressMonitor.INSTANCE).get(attribute);
         } catch (SQLException e) {
-            throw new DBCException("Error getting structure attribute values", e);
+            throw new DBCException("SQL error while getting attributes", e);
         }
+    }
+
+    private Map<DBSEntityAttribute, Object> getValues(DBRProgressMonitor monitor) throws SQLException, DBCException
+    {
+        if (values == null) {
+            DBSEntity entity = getStructType();
+            if (entity == null) {
+                throw new DBCException("Non-structure record '" + getTypeName() + "' doesn't have attributes");
+            }
+
+            values = new IdentityHashMap<DBSEntityAttribute, Object>();
+            if (contents == null) {
+                return values;
+            }
+            Object[] attrValues = contents.getAttributes();
+            if (attrValues == null) {
+                return values;
+            }
+
+            try {
+                Collection<? extends DBSEntityAttribute> entityAttributes = entity.getAttributes(monitor);
+                if (entityAttributes.size() != attrValues.length) {
+                    log.warn("Number of entity attributes (" + entityAttributes.size() + ") differs from real values (" + attrValues.length + ")");
+                }
+                for (DBSEntityAttribute attr : entityAttributes) {
+                    int ordinalPosition = attr.getOrdinalPosition() - 1;
+                    if (ordinalPosition < 0 || ordinalPosition >= attrValues.length) {
+                        log.warn("Attribute '" + attr.getName() + "' ordinal position (" + ordinalPosition + ") is out of range (" + attrValues.length + ")");
+                        continue;
+                    }
+                    Object value = attrValues[ordinalPosition];
+                    if (value instanceof Struct) {
+                        Struct structValue = (Struct)value;
+                        DBSDataType dataType;
+                        try {
+                            dataType = DBUtils.resolveDataType(monitor, entity.getDataSource(), structValue.getSQLTypeName());
+                            if (dataType != null) {
+                                value = new JDBCStruct(dataType, structValue);
+                            }
+                        } catch (DBException e) {
+                            log.error("Error resolving data type '" + structValue.getSQLTypeName() + "'", e);
+                        }
+                    }
+                    values.put(attr, value);
+                }
+            } catch (DBException e) {
+                throw new DBCException("Can't obtain attributes meta information", e);
+            }
+        }
+        return values;
     }
 
     @Override
