@@ -259,7 +259,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (DBUtils.isNullValue(attribute.getValue())) {
                     continue;
                 }
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, attribute.getAttribute());
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attribute.getAttribute());
                 valueHandler.bindValueObject(context, dbStat, attribute.getAttribute(), paramNum++, attribute.getValue());
             }
 
@@ -316,7 +316,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             allAttribute.addAll(keyAttributes);
             for (int i = 0; i < allAttribute.size(); i++) {
                 DBDAttributeValue attribute = allAttribute.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, attribute.getAttribute());
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attribute.getAttribute());
                 valueHandler.bindValueObject(context, dbStat, attribute.getAttribute(), i, attribute.getValue());
             }
 
@@ -358,7 +358,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             // Set parameters
             for (int i = 0; i < keyAttributes.size(); i++) {
                 DBDAttributeValue attribute = keyAttributes.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, attribute.getAttribute());
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attribute.getAttribute());
                 valueHandler.bindValueObject(context, dbStat, attribute.getAttribute(), i, attribute.getValue());
             }
 

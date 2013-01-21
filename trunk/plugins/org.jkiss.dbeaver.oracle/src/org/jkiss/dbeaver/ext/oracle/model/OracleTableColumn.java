@@ -70,11 +70,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             this.typeName);
         this.typeMod = OracleDataTypeModifier.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
         if (this.type != null) {
-            if (type.getSchema() != null) {
-                this.typeName = type.getSchema().getName() + "." + type.getName();
-            } else {
-                this.typeName = type.getName();
-            }
+            this.typeName = type.getFullQualifiedName();
             this.valueType = type.getValueType();
         }
         setMaxLength(JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH"));

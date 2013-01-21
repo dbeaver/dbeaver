@@ -50,22 +50,15 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     public static final JDBCArrayValueHandler INSTANCE = new JDBCArrayValueHandler();
 
     @Override
-    protected Object getColumnValue(
+    protected Object fetchColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
-        DBSTypedObject column,
-        int columnIndex)
+        DBSTypedObject type,
+        int index)
         throws DBCException, SQLException
     {
-        Object value = resultSet.getObject(columnIndex);
-
-        if (value == null) {
-            return JDBCArray.makeArray((JDBCExecutionContext) context, null);
-        } else if (value instanceof Array) {
-            return JDBCArray.makeArray((JDBCExecutionContext) context, (Array)value);
-        } else {
-            throw new DBCException(CoreMessages.model_jdbc_exception_unsupported_array_type_ + value.getClass().getName());
-        }
+        Object value = resultSet.getObject(index);
+        return getValueFromObject(context, type, value, false);
     }
 
     @Override
@@ -93,10 +86,17 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        return null;
+        if (object == null) {
+            return JDBCArray.makeArray((JDBCExecutionContext) context, null);
+        } else if (object instanceof JDBCArray) {
+            return copy ? ((JDBCArray) object).cloneValue(context.getProgressMonitor()) : object;
+        } else if (object instanceof Array) {
+            return JDBCArray.makeArray((JDBCExecutionContext) context, (Array)object);
+        } else {
+            throw new DBCException(CoreMessages.model_jdbc_exception_unsupported_array_type_ + object.getClass().getName());
+        }
     }
 
     @Override

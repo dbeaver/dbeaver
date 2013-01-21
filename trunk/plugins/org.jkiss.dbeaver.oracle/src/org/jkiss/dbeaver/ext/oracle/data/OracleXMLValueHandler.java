@@ -36,14 +36,14 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
     public static final OracleXMLValueHandler INSTANCE = new OracleXMLValueHandler();
 
     @Override
-    protected DBDContent getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column, int columnIndex) throws DBCException, SQLException
+    protected DBDContent fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException
     {
         Object object;
 
         try {
-            object = resultSet.getObject(columnIndex);
+            object = resultSet.getObject(index);
         } catch (SQLException e) {
-            object = resultSet.getSQLXML(columnIndex);
+            object = resultSet.getSQLXML(index);
         }
 
         if (object == null) {

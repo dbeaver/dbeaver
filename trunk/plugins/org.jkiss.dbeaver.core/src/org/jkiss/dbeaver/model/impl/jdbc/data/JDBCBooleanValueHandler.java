@@ -46,11 +46,11 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     static final Log log = LogFactory.getLog(JDBCBooleanValueHandler.class);
 
     @Override
-    protected Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
-                                    int columnIndex)
+    protected Object fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type,
+                                      int index)
         throws DBCException, SQLException
     {
-        boolean value = resultSet.getBoolean(columnIndex);
+        boolean value = resultSet.getBoolean(index);
         return resultSet.wasNull() ? null : value;
     }
 
@@ -78,11 +78,20 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        // Boolean is immutable
-        return value;
+        if (object == null) {
+            return null;
+        } else if (object instanceof Boolean) {
+            return object;
+        } else if (object instanceof String) {
+            return Boolean.valueOf((String)object);
+        } else if (object instanceof Number) {
+            return ((Number) object).byteValue() != 0;
+        } else {
+            log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to boolean");
+            return null;
+        }
     }
 
     @Override

@@ -30,12 +30,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Collection;
@@ -99,19 +98,15 @@ public class StructObjectEditor extends TreeViewer {
     }
 
     private static class FieldInfo {
-        final DBSEntityAttribute attribute;
+        final DBSAttributeBase attribute;
         final Object value;
         DBDValueHandler valueHandler;
 
-        private FieldInfo(DBSEntityAttribute attribute, Object value)
+        private FieldInfo(DBPDataSource dataSource, DBSAttributeBase attribute, Object value)
         {
             this.attribute = attribute;
             this.value = value;
-            this.valueHandler = DBUtils.findValueHandler(
-                attribute.getDataSource(),
-                attribute.getDataSource().getContainer(),
-                attribute.getTypeName(),
-                attribute.getTypeID());
+            this.valueHandler = DBUtils.findValueHandler(dataSource, attribute);
         }
     }
 
@@ -148,22 +143,17 @@ public class StructObjectEditor extends TreeViewer {
         {
             if (parent instanceof DBDStructure) {
                 DBDStructure structure = (DBDStructure)parent;
-                VoidProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
-
-                DBSEntity entity = structure.getStructType();
-                if (entity != null) {
-                    try {
-                        Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-                        Object[] children = new Object[attributes.size()];
-                        int index = 0;
-                        for (DBSEntityAttribute attr : attributes) {
-                            Object value = structure.getAttributeValue(monitor, attr);
-                            children[index++] = new FieldInfo(attr, value);
-                        }
-                        return children;
-                    } catch (DBException e) {
-                        log.error("Error getting meta data", e);
+                try {
+                    Collection<? extends DBSAttributeBase> attributes = structure.getAttributes();
+                    Object[] children = new Object[attributes.size()];
+                    int index = 0;
+                    for (DBSAttributeBase attr : attributes) {
+                        Object value = structure.getAttributeValue(attr);
+                        children[index++] = new FieldInfo(structure.getStructType().getDataSource(), attr, value);
                     }
+                    return children;
+                } catch (DBException e) {
+                    log.error("Error getting meta data", e);
                 }
             } else if (parent instanceof FieldInfo) {
                 if (((FieldInfo) parent).value instanceof DBDStructure) {

@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -68,37 +67,19 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     public synchronized String getValueDisplayString(DBSTypedObject column, Object value)
     {
         JDBCStruct struct = (JDBCStruct)value;
-        return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : "[" + struct.getTypeName() + "]";
+        return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : struct.getStringRepresentation();
     }
 
     @Override
-    protected Object getColumnValue(
+    protected Object fetchColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
-        DBSTypedObject column,
-        int columnIndex)
+        DBSTypedObject type,
+        int index)
         throws DBCException, SQLException
     {
-        Object value = resultSet.getObject(columnIndex);
-        String typeName;
-        if (value instanceof Struct) {
-            typeName = ((Struct) value).getSQLTypeName();
-        } else {
-            typeName = column.getTypeName();
-        }
-        DBSDataType dataType = null;
-        try {
-            dataType = DBUtils.resolveDataType(context.getProgressMonitor(), context.getDataSource(), typeName);
-        } catch (DBException e) {
-            log.error("Error resolving data type '" + typeName + "'", e);
-        }
-        if (value == null) {
-            return new JDBCStruct(dataType, null);
-        } else if (value instanceof Struct) {
-            return new JDBCStruct(dataType, (Struct) value);
-        } else {
-            throw new DBCException("Unsupported struct type: " + value.getClass().getName());
-        }
+        Object value = resultSet.getObject(index);
+        return getValueFromObject(context, type, value, false);
     }
 
     @Override
@@ -120,10 +101,33 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        return null;
+        String typeName;
+        try {
+            if (object instanceof Struct) {
+                typeName = ((Struct) object).getSQLTypeName();
+            } else {
+                typeName = type.getTypeName();
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e);
+        }
+        DBSDataType dataType = null;
+        try {
+            dataType = DBUtils.resolveDataType(context.getProgressMonitor(), context.getDataSource(), typeName);
+        } catch (DBException e) {
+            log.error("Error resolving data type '" + typeName + "'", e);
+        }
+        if (object == null) {
+            return new JDBCStruct(context, dataType, null);
+        } else if (object instanceof JDBCStruct) {
+            return copy ? ((JDBCStruct) object).cloneValue(context.getProgressMonitor()) : object;
+        } else if (object instanceof Struct) {
+            return new JDBCStruct(context, dataType, (Struct) object);
+        } else {
+            throw new DBCException("Unsupported struct type: " + object.getClass().getName());
+        }
     }
 
 /*

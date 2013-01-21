@@ -2,8 +2,12 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+
+import java.util.Collection;
 
 /**
  * Structured data record.
@@ -11,12 +15,14 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
  */
 public interface DBDStructure extends DBDValue {
 
-    DBSEntity getStructType();
+    DBSDataType getStructType();
 
-    Object getAttributeValue(DBRProgressMonitor monitor, DBSEntityAttribute attribute)
+    Collection<DBSAttributeBase> getAttributes();
+
+    Object getAttributeValue(DBSAttributeBase attribute)
         throws DBCException;
 
-    void setAttributeValue(DBRProgressMonitor monitor, DBSEntityAttribute attribute, Object value)
+    void setAttributeValue(DBSAttributeBase attribute, Object value)
         throws DBCException;
 
 }

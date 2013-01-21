@@ -185,6 +185,17 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
     }
 
+    // Use by tree navigator thru reflection
+    public boolean hasMethods()
+    {
+        return methodCache != null;
+    }
+    // Use by tree navigator thru reflection
+    public boolean hasAttributes()
+    {
+        return attributeCache != null;
+    }
+
     private boolean findTypeDesc(String typeName)
     {
         if (typeName.startsWith("PL/SQL")) {

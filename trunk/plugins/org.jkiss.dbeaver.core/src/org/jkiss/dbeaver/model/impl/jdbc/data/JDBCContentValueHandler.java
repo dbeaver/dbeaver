@@ -25,7 +25,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -79,15 +78,17 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     private static final int MAX_STRING_LENGTH = 0xfffff;
 
     @Override
-    protected DBDContent getColumnValue(
-        DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
-        int columnIndex)
+    protected DBDContent fetchColumnValue(
+        DBCExecutionContext context,
+        JDBCResultSet resultSet,
+        DBSTypedObject type,
+        int index)
         throws DBCException, SQLException
     {
-        Object value = resultSet.getObject(columnIndex);
+        Object value = resultSet.getObject(index);
         if (value == null && !resultSet.wasNull()) {
             // This may happen in some bad drivers like ODBC bridge
-            switch (column.getTypeID()) {
+            switch (type.getTypeID()) {
                 case java.sql.Types.CHAR:
                 case java.sql.Types.VARCHAR:
                 case java.sql.Types.NVARCHAR:
@@ -95,47 +96,23 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 case java.sql.Types.LONGNVARCHAR:
                 case java.sql.Types.CLOB:
                 case java.sql.Types.NCLOB:
-                    value = resultSet.getString(columnIndex);
+                    value = resultSet.getString(index);
                     break;
                 case java.sql.Types.BINARY:
                 case java.sql.Types.VARBINARY:
                 case java.sql.Types.LONGVARBINARY:
                 case java.sql.Types.BLOB:
-                    value = resultSet.getBytes(columnIndex);
+                    value = resultSet.getBytes(index);
                     break;
                 case java.sql.Types.SQLXML:
-                    value = resultSet.getSQLXML(columnIndex);
+                    value = resultSet.getSQLXML(index);
                     break;
                 default:
-                    value = resultSet.getObject(columnIndex);
+                    value = resultSet.getObject(index);
                     break;
             }
         }
-        if (value == null) {
-            return createValueObject(context, column);
-        } else if (value instanceof byte[]) {
-            return new JDBCContentBytes(context.getDataSource(), (byte[]) value);
-//        } else if (value instanceof ByteBuffer) {
-//            ByteBuffer buffer = (ByteBuffer)value;
-//            byte data[] = new byte[buffer.remaining()];
-//            buffer.duplicate().get(data);
-//            return new JDBCContentBytes(data);
-        } else if (value instanceof String) {
-            return new JDBCContentChars(context.getDataSource(), (String) value);
-        } else if (value instanceof Blob) {
-            return new JDBCContentBLOB(context.getDataSource(), (Blob) value);
-        } else if (value instanceof Clob) {
-            return new JDBCContentCLOB(context.getDataSource(), (Clob) value);
-        } else if (value instanceof SQLXML) {
-            return new JDBCContentXML(context.getDataSource(), (SQLXML) value);
-//        } else if (value instanceof CharBuffer) {
-//            CharBuffer buffer = (CharBuffer)value;
-//            char data[] = new char[buffer.remaining()];
-//            buffer.duplicate().get(data);
-//            return new JDBCContentChars(new String(data));
-        } else {
-            throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + value.getClass().getName());
-        }
+        return getValueFromObject(context, type, value, false);
     }
 
     @Override
@@ -167,43 +144,45 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
+    public DBDContent getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        if (value instanceof DBDValueCloneable) {
-            return ((DBDValueCloneable)value).cloneValue(context.getProgressMonitor());
-        }
-        // Copy not supported
-        if (value instanceof DBDValue) {
-            return ((DBDValue)value).makeNull();
-        }
-        return createValueObject(context, column);
-    }
-
-    @Override
-    public DBDContent createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
-    {
-        // Create wrapper using column type
-        switch (column.getTypeID()) {
-            case java.sql.Types.CHAR:
-            case java.sql.Types.VARCHAR:
-            case java.sql.Types.NVARCHAR:
-            case java.sql.Types.LONGVARCHAR:
-            case java.sql.Types.LONGNVARCHAR:
-                return new JDBCContentChars(context.getDataSource(), null);
-            case java.sql.Types.CLOB:
-            case java.sql.Types.NCLOB:
-                return new JDBCContentCLOB(context.getDataSource(), null);
-            case java.sql.Types.BINARY:
-            case java.sql.Types.VARBINARY:
-            case java.sql.Types.LONGVARBINARY:
-                return new JDBCContentBytes(context.getDataSource(), null);
-            case java.sql.Types.BLOB:
-                return new JDBCContentBLOB(context.getDataSource(), null);
-            case java.sql.Types.SQLXML:
-                return new JDBCContentXML(context.getDataSource(), null);
-            default:
-                throw new DBCException(CoreMessages.model_jdbc_unsupported_column_type_ + column.getTypeName());
+        if (object == null) {
+            // Create wrapper using column type
+            switch (type.getTypeID()) {
+                case java.sql.Types.CHAR:
+                case java.sql.Types.VARCHAR:
+                case java.sql.Types.NVARCHAR:
+                case java.sql.Types.LONGVARCHAR:
+                case java.sql.Types.LONGNVARCHAR:
+                    return new JDBCContentChars(context.getDataSource(), null);
+                case java.sql.Types.CLOB:
+                case java.sql.Types.NCLOB:
+                    return new JDBCContentCLOB(context.getDataSource(), null);
+                case java.sql.Types.BINARY:
+                case java.sql.Types.VARBINARY:
+                case java.sql.Types.LONGVARBINARY:
+                    return new JDBCContentBytes(context.getDataSource(), null);
+                case java.sql.Types.BLOB:
+                    return new JDBCContentBLOB(context.getDataSource(), null);
+                case java.sql.Types.SQLXML:
+                    return new JDBCContentXML(context.getDataSource(), null);
+                default:
+                    throw new DBCException(CoreMessages.model_jdbc_unsupported_column_type_ + type.getTypeName());
+            }
+        } else if (object instanceof byte[]) {
+            return new JDBCContentBytes(context.getDataSource(), (byte[]) object);
+        } else if (object instanceof String) {
+            return new JDBCContentChars(context.getDataSource(), (String) object);
+        } else if (object instanceof Blob) {
+            return new JDBCContentBLOB(context.getDataSource(), (Blob) object);
+        } else if (object instanceof Clob) {
+            return new JDBCContentCLOB(context.getDataSource(), (Clob) object);
+        } else if (object instanceof SQLXML) {
+            return new JDBCContentXML(context.getDataSource(), (SQLXML) object);
+        } else if (object instanceof DBDContent && object instanceof DBDValueCloneable) {
+            return (DBDContent) ((DBDValueCloneable)object).cloneValue(context.getProgressMonitor());
+        } else {
+            throw new DBCException(CoreMessages.model_jdbc_unsupported_value_type_ + object.getClass().getName());
         }
     }
 
