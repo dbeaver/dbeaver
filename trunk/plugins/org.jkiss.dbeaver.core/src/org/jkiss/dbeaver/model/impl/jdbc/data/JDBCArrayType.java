@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
@@ -81,13 +82,9 @@ public class JDBCArrayType implements DBSTypedObject {
         return valueHandler;
     }
 
-    boolean resolveHandler(DBCExecutionContext context)
+    void resolveHandler(DBCExecutionContext context)
     {
-        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(context.getDataSource(), typeName, typeID);
-        if (typeProvider != null) {
-            valueHandler = typeProvider.getInstance().getHandler(context, typeName, typeID);
-        }
-        return valueHandler != null;
+        valueHandler = DBUtils.findValueHandler(context.getDataSource(), context, typeName, typeID);
     }
 
 }
