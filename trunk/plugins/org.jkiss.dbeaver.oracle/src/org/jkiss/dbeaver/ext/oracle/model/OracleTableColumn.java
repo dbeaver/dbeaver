@@ -97,7 +97,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     public void setType(OracleDataType type)
     {
         this.type = type;
-        this.typeName = type == null ? "" : type.getName();
+        this.typeName = type == null ? "" : type.getFullQualifiedName();
     }
 
     @Property(viewable = true, order = 30)
