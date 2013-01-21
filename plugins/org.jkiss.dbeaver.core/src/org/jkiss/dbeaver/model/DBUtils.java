@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -420,7 +421,11 @@ public final class DBUtils {
             typeHandler = typeProvider.getInstance().getHandler(preferences, typeName, valueType);
         }
         if (typeHandler == null) {
-            typeHandler = preferences.getDefaultValueHandler();
+            if (preferences == null) {
+                typeHandler = DBCDefaultValueHandler.INSTANCE;
+            } else {
+                typeHandler = preferences.getDefaultValueHandler();
+            }
         }
         return typeHandler;
     }

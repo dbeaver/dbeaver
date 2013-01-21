@@ -39,11 +39,6 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     private Integer precision;
     private Integer scale;
 
-    public OracleDataTypeAttribute(OracleDataType dataType)
-    {
-        super(dataType);
-    }
-
     public OracleDataTypeAttribute(DBRProgressMonitor monitor, OracleDataType dataType, ResultSet dbResult)
     {
         super(dataType, dbResult);
@@ -126,6 +121,12 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     public boolean isSequence()
     {
         return false;
+    }
+
+    @Override
+    public int getOrdinalPosition()
+    {
+        return number;
     }
 
     @Override

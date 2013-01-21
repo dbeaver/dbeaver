@@ -21,10 +21,13 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -34,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.editors.struct.StructObjectEditor;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
@@ -162,6 +166,17 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
+        if (controller.getEditType() == DBDValueController.EditType.PANEL) {
+            final StructObjectEditor editor = new StructObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
+            editor.setModel((DBDStructure) controller.getValue());
+            return new DBDValueEditor() {
+                @Override
+                public void refreshValue()
+                {
+                    editor.setModel((DBDStructure) controller.getValue());
+                }
+            };
+        }
         return null;
     }
 

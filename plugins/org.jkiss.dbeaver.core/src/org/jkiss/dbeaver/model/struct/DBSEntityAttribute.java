@@ -27,6 +27,8 @@ public interface DBSEntityAttribute extends DBSEntityElement, DBSAttributeBase {
 
     boolean isSequence();
 
+    int getOrdinalPosition();
+
     String getDefaultValue();
 
 }
