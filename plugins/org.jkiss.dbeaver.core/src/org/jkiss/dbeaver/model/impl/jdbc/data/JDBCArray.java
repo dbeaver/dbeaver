@@ -59,15 +59,11 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         } catch (SQLException e) {
             type = new JDBCArrayType(CoreMessages.model_jdbc_unknown, java.sql.Types.OTHER);
         }
-        if (!type.resolveHandler(context)) {
-            // Could not resolve element type handler
-            // So we just won't use array wrapper here
-            return array;
-        }
+        type.resolveHandler(context);
 
         Object[] contents = null;
         try {
-            contents = extractDataFromArray(array);
+            contents = extractDataFromArray(context, array, type);
         } catch (Exception e) {
             try {
                 contents = extractDataFromResultSet(context, array, type);
@@ -101,7 +97,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
     }
 
-    private static Object[] extractDataFromArray(Array array) throws SQLException
+    private static Object[] extractDataFromArray(JDBCExecutionContext context, Array array, JDBCArrayType type) throws SQLException, DBCException
     {
         Object arrObject = array.getArray();
         if (arrObject == null) {
@@ -110,7 +106,9 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         int arrLength = java.lang.reflect.Array.getLength(arrObject);
         Object[] contents = new Object[arrLength];
         for (int i = 0; i < arrLength; i++) {
-            contents[i] = java.lang.reflect.Array.get(arrObject, i);
+            Object item = java.lang.reflect.Array.get(arrObject, i);
+            item = type.getValueHandler().getValueFromObject(context, type, item, false);
+            contents[i] = item;
         }
         return contents;
     }
@@ -180,12 +178,15 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
         StringBuilder str = new StringBuilder();
         for (Object item : contents) {
-            String itemString = type.getValueHandler().getValueDisplayString(type, item);
             if (str.length() > 0) {
-                //str.append(ContentUtils.getDefaultLineSeparator());
                 str.append(","); //$NON-NLS-1$
             }
-            str.append(itemString);
+            if (item instanceof Number) {
+                str.append(item);
+            } else {
+                String itemString = type.getValueHandler().getValueDisplayString(type, item);
+                str.append(itemString);
+            }
         }
         return str.toString();
     }
