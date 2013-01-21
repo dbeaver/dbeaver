@@ -513,7 +513,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorDi
                         @Override
                         public void run()
                         {
-                            DBDValueHandler colHandler = DBUtils.getColumnValueHandler(context, fkColumn.getAttribute());
+                            DBDValueHandler colHandler = DBUtils.findValueHandler(context, fkColumn.getAttribute());
 
                             if (editorSelector != null && !editorSelector.isDisposed()) {
                                 editorSelector.setRedraw(false);

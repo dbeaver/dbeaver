@@ -1653,9 +1653,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return;
         }
         try {
-            Object newValue = metaColumn.getValueHandler().getValueFromClipboard(
-                metaColumn.getAttribute(),
-                getSpreadsheet().getClipboard());
+            Object newValue = getColumnValueFromClipboard(metaColumn);
             if (newValue == null) {
                 return;
             }
@@ -1668,6 +1666,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         catch (Exception e) {
             UIUtils.showErrorDialog(site.getShell(), "Cannot replace cell value", null, e);
         }
+    }
+
+    private Object getColumnValueFromClipboard(DBDAttributeBinding metaColumn) throws DBCException
+    {
+        DBCExecutionContext context = getDataSource().openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Copy from clipboard");
+        Object newValue;
+        try {
+            newValue = metaColumn.getValueHandler().getValueFromClipboard(
+                context, metaColumn.getAttribute(),
+                getSpreadsheet().getClipboard());
+        } finally {
+            context.close();
+        }
+        return newValue;
     }
 
     private boolean isRowAdded(int row)
@@ -1710,7 +1722,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                     cells[i] = null;
                                 } else {
                                     try {
-                                        cells[i] = metaColumn.getValueHandler().copyValueObject(context, metaColumn.getTableColumn(), origRow[i]);
+                                        cells[i] = metaColumn.getValueHandler().getValueFromObject(context, metaColumn.getTableColumn(), origRow[i], true);
                                     } catch (DBCException e) {
                                         log.warn(e);
                                         cells[i] = DBUtils.makeNullValue(origRow[i]);
@@ -1721,7 +1733,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             // Initialize new values
                             for (int i = 0; i < metaColumns.length; i++) {
                                 try {
-                                    cells[i] = metaColumns[i].getValueHandler().createValueObject(context, metaColumns[i].getTableColumn());
+                                    cells[i] = metaColumns[i].getValueHandler().getValueFromObject(context, metaColumns[i].getTableColumn(), null, false);
                                 } catch (DBCException e) {
                                     log.warn(e);
                                 }
@@ -2722,8 +2734,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
             for (int i = 0; i < keyAttributes.size(); i++) {
                 DBCAttributeMetaData keyAttribute = keyAttributes.get(i);
-                DBDValueHandler valueHandler = DBUtils.getColumnValueHandler(context, keyAttribute);
-                Object keyValue = valueHandler.getValueObject(context, resultSet, keyAttribute, i);
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, keyAttribute);
+                Object keyValue = valueHandler.fetchValueObject(context, resultSet, keyAttribute, i);
                 if (keyValue == null) {
                     // [MSSQL] Sometimes driver returns empty list of generated keys if
                     // table has auto-increment columns and user performs simple row update
@@ -3128,9 +3140,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault)
             {
-                return column.getValueHandler().getValueFromClipboard(
-                    column.getAttribute(),
-                    viewer.getSpreadsheet().getClipboard());
+                try {
+                    return viewer.getColumnValueFromClipboard(column);
+                } catch (DBCException e) {
+                    log.error("Error copying from clipboard", e);
+                    return null;
+                }
             }
         },
         NONE(DBIcon.FILTER_VALUE.getImageDescriptor()) {

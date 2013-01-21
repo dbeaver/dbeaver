@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
@@ -39,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Time;
@@ -79,17 +76,17 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     }
 
     @Override
-    protected Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column,
-                                    int columnIndex)
+    protected Object fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type,
+                                      int index)
         throws DBCException, SQLException
     {
-        switch (column.getTypeID()) {
+        switch (type.getTypeID()) {
             case java.sql.Types.TIME:
-                return resultSet.getTime(columnIndex);
+                return resultSet.getTime(index);
             case java.sql.Types.DATE:
-                return resultSet.getDate(columnIndex);
+                return resultSet.getDate(index);
             default:
-                return resultSet.getTimestamp(columnIndex);
+                return resultSet.getTimestamp(index);
         }
     }
 
@@ -214,49 +211,31 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        if (value instanceof Timestamp) {
-            Timestamp copy = new Timestamp(((Timestamp) value).getTime());
-            copy.setNanos(((Timestamp) value).getNanos());
-            return copy;
-        } else if (value instanceof java.sql.Time) {
-            return new java.sql.Time(((java.sql.Time) value).getTime());
-        } else if (value instanceof java.sql.Date) {
-            return new java.sql.Date(((java.sql.Date) value).getTime());
-        } else if (value instanceof java.util.Date) {
-            return new java.util.Date(((java.util.Date) value).getTime());
-        } else {
-            // Not supported
+        if (object == null) {
             return null;
-        }
-    }
-
-    @Override
-    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
-    {
-        String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
-        if (CommonUtils.isEmpty(strValue)) {
-            return null;
-        }
-        Object dateValue;
-        try {
-            switch (column.getTypeID()) {
-                case java.sql.Types.TIME:
-                    dateValue = getFormatter(TYPE_NAME_TIME).parseValue(strValue);
-                    break;
-                case java.sql.Types.DATE:
-                    dateValue = getFormatter(TYPE_NAME_DATE).parseValue(strValue);
-                    break;
-                default:
-                    dateValue = getFormatter(TYPE_NAME_TIMESTAMP).parseValue(strValue);
-                    break;
+        } else if (object instanceof Date) {
+            return copy ? ((Date)object).clone() : object;
+        } else if (object instanceof String) {
+            String strValue = (String)object;
+            try {
+                switch (type.getTypeID()) {
+                    case java.sql.Types.TIME:
+                        return getFormatter(TYPE_NAME_TIME).parseValue(strValue);
+                    case java.sql.Types.DATE:
+                        return getFormatter(TYPE_NAME_DATE).parseValue(strValue);
+                    default:
+                        return getFormatter(TYPE_NAME_TIMESTAMP).parseValue(strValue);
+                }
+            } catch (ParseException e) {
+                log.warn("Can't parse string value [" + strValue + "] to date/time value", e);
+                return null;
             }
-        } catch (ParseException e) {
+        } else {
+            log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
             return null;
         }
-        return dateValue;
     }
 
     @Override

@@ -55,19 +55,19 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     public static final JDBCObjectValueHandler INSTANCE = new JDBCObjectValueHandler();
 
     @Override
-    protected Object getColumnValue(
+    protected Object fetchColumnValue(
         DBCExecutionContext context,
         JDBCResultSet resultSet,
-        DBSTypedObject column,
-        int columnIndex)
+        DBSTypedObject type,
+        int index)
         throws DBCException, SQLException
     {
-        Object value = resultSet.getObject(columnIndex);
+        Object value = resultSet.getObject(index);
         if (value instanceof ResultSet) {
             value = new JDBCCursor(
                 (JDBCExecutionContext) context,
                 (ResultSet) value,
-                column.getTypeName());
+                type.getTypeName());
         }
         return value;
     }
@@ -97,10 +97,12 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        return null;
+        if (copy && object != null) {
+            throw new DBCException("Can't copy object value " + object);
+        }
+        return object;
     }
 
     @Override

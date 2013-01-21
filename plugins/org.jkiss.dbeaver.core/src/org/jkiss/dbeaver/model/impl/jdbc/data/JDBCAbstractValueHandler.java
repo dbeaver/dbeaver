@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 
@@ -50,11 +52,11 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     private static final String CELL_VALUE_INLINE_EDITOR = "org.jkiss.dbeaver.CellValueInlineEditor";
 
     @Override
-    public final Object getValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject column, int columnIndex)
+    public final Object fetchValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException
     {
         try {
-            return getColumnValue(context, (JDBCResultSet) resultSet, column, columnIndex + 1);
+            return fetchColumnValue(context, (JDBCResultSet) resultSet, type, index + 1);
         }
         catch (Throwable e) {
             throw new DBCException(CoreMessages.model_jdbc_exception_could_not_get_result_set_value, e);
@@ -63,9 +65,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
     @Override
     public final void bindValueObject(DBCExecutionContext context, DBCStatement statement, DBSTypedObject columnMetaData,
-                                      int paramIndex, Object value) throws DBCException {
+                                      int index, Object value) throws DBCException {
         try {
-            this.bindParameter((JDBCExecutionContext) context, (JDBCPreparedStatement) statement, columnMetaData, paramIndex + 1, value);
+            this.bindParameter((JDBCExecutionContext) context, (JDBCPreparedStatement) statement, columnMetaData, index + 1, value);
         }
         catch (SQLException e) {
             throw new DBCException(CoreMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
@@ -73,17 +75,13 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
+    public Object getValueFromClipboard(DBCExecutionContext context, DBSTypedObject column, Clipboard clipboard) throws DBCException
     {
-        // Default value for most object types is NULL
-        return null;
-    }
-
-    @Override
-    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
-    {
-        // By default handler doesn't support any clipboard format
-        return null;
+        String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
+        if (CommonUtils.isEmpty(strValue)) {
+            return null;
+        }
+        return getValueFromObject(context, column, strValue, false);
     }
 
     @Override
@@ -155,8 +153,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         });
 
         control.setFont(controller.getEditPlaceholder().getFont());
-        control.addTraverseListener(new TraverseListener()
-        {
+        control.addTraverseListener(new TraverseListener() {
             @Override
             public void keyTraversed(TraverseEvent e)
             {
@@ -186,8 +183,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             {
                 // Check new focus control in async mode
                 // (because right now focus is still on edit control)
-                control.getDisplay().asyncExec(new Runnable()
-                {
+                control.getDisplay().asyncExec(new Runnable() {
                     @Override
                     public void run()
                     {
@@ -211,7 +207,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         });
     }
 
-    protected abstract Object getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column, int columnIndex)
+    protected abstract Object fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException, SQLException;
 
     protected abstract void bindParameter(

@@ -135,7 +135,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         int maxResults)
         throws DBException
     {
-        DBDValueHandler keyValueHandler = DBUtils.getColumnValueHandler(context, keyColumn);
+        DBDValueHandler keyValueHandler = DBUtils.findValueHandler(context, keyColumn);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
         String descColumns;
@@ -189,7 +189,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
 
             if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
                 for (DBDAttributeValue precAttribute : preceedingKeys) {
-                    DBDValueHandler precValueHandler = DBUtils.getColumnValueHandler(context, precAttribute.getAttribute());
+                    DBDValueHandler precValueHandler = DBUtils.findValueHandler(context, precAttribute.getAttribute());
                     precValueHandler.bindValueObject(context, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
                 }
             }
@@ -201,7 +201,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                     List<DBCAttributeMetaData> metaColumns = dbResult.getResultSetMetaData().getAttributes();
                     List<DBDValueHandler> colHandlers = new ArrayList<DBDValueHandler>(metaColumns.size());
                     for (DBCAttributeMetaData col : metaColumns) {
-                        colHandlers.add(DBUtils.getColumnValueHandler(context, col));
+                        colHandlers.add(DBUtils.findValueHandler(context, col));
                     }
                     // Extract enumeration values and (optionally) their descriptions
                     while (dbResult.nextRow()) {
@@ -210,7 +210,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                             break;
                         }
                         // Get value and description
-                        Object keyValue = keyValueHandler.getValueObject(context, dbResult, keyColumn, 0);
+                        Object keyValue = keyValueHandler.fetchValueObject(context, dbResult, keyColumn, 0);
                         if (keyValue == null) {
                             continue;
                         }
@@ -218,7 +218,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                         if (descColumns != null) {
                             keyLabel = "";
                             for (int i = 1; i < colHandlers.size(); i++) {
-                                Object descValue = colHandlers.get(i).getValueObject(context, dbResult, metaColumns.get(i), i);
+                                Object descValue = colHandlers.get(i).fetchValueObject(context, dbResult, metaColumns.get(i), i);
                                 if (!keyLabel.isEmpty()) {
                                     keyLabel += " ";
                                 }

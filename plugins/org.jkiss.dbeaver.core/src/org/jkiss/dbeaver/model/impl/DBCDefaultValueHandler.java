@@ -48,41 +48,34 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public Object getValueObject(
+    public Object fetchValueObject(
         DBCExecutionContext context,
         DBCResultSet resultSet,
-        DBSTypedObject column,
-        int columnIndex) throws DBCException
+        DBSTypedObject type,
+        int index) throws DBCException
     {
-        return resultSet.getColumnValue(columnIndex + 1);
+        return resultSet.getColumnValue(index + 1);
     }
 
     @Override
     public void bindValueObject(
         DBCExecutionContext context,
         DBCStatement statement,
-        DBSTypedObject columnType,
-        int paramIndex,
+        DBSTypedObject type,
+        int index,
         Object value) throws DBCException
     {
         
     }
 
     @Override
-    public Object createValueObject(DBCExecutionContext context, DBSTypedObject column) throws DBCException
+    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        return null;
+        return object;
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value)
-        throws DBCException
-    {
-        return value;
-    }
-
-    @Override
-    public Object getValueFromClipboard(DBSTypedObject column, Clipboard clipboard)
+    public Object getValueFromClipboard(DBCExecutionContext context, DBSTypedObject column, Clipboard clipboard) throws DBCException
     {
         return null;
     }

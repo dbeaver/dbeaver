@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -50,11 +49,11 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    protected DBDValue getColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject column, int columnIndex) throws DBCException, SQLException
+    protected OracleObjectValue fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException
     {
         //final Object object = resultSet.getObject(columnIndex);
-        Object object = resultSet.getObject(columnIndex);
-        return new OracleObjectValue(object);
+        Object object = resultSet.getObject(index);
+        return getValueFromObject(context, type, object, false);
     }
 
     @Override
@@ -76,9 +75,15 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public Object copyValueObject(DBCExecutionContext context, DBSTypedObject column, Object value) throws DBCException
+    public OracleObjectValue getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        return null;
+        if (object == null) {
+            return new OracleObjectValue(null);
+        } else if (object instanceof OracleObjectValue) {
+            return copy ? new OracleObjectValue(((OracleObjectValue) object).getValue()) : (OracleObjectValue)object;
+        } else {
+            return new OracleObjectValue(object);
+        }
     }
 
     @Override

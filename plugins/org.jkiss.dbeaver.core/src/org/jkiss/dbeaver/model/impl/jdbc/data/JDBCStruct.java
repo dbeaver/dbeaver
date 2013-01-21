@@ -21,38 +21,73 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.SQLException;
 import java.sql.Struct;
 import java.util.Collection;
-import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * Struct holder
  */
-public class JDBCStruct implements DBDStructure {
+public class JDBCStruct implements DBDStructure, DBDValueCloneable {
 
     static final Log log = LogFactory.getLog(JDBCStruct.class);
 
     private DBSDataType type;
     private Struct contents;
-    private Map<DBSEntityAttribute, Object> values;
+    private Map<DBSAttributeBase, Object> values;
 
-    public JDBCStruct(DBSDataType type, Struct contents)
+    private JDBCStruct()
+    {
+    }
+
+    public JDBCStruct(DBCExecutionContext context, DBSDataType type, Struct contents) throws DBCException
     {
         this.type = type;
         this.contents = contents;
+
+        // Extract structure data
+        values = new LinkedHashMap<DBSAttributeBase, Object>();
+        try {
+            Object[] attrValues = contents == null ? null : contents.getAttributes();
+            if (type instanceof DBSEntity) {
+                DBSEntity entity = (DBSEntity)type;
+                Collection<? extends DBSEntityAttribute> entityAttributes = entity.getAttributes(context.getProgressMonitor());
+                int valueCount = attrValues == null ? 0 : attrValues.length;
+                if (attrValues != null && entityAttributes.size() != valueCount) {
+                    log.warn("Number of entity attributes (" + entityAttributes.size() + ") differs from real values (" + valueCount + ")");
+                }
+                for (DBSEntityAttribute attr : entityAttributes) {
+                    int ordinalPosition = attr.getOrdinalPosition() - 1;
+                    if (ordinalPosition < 0 || attrValues != null && ordinalPosition >= valueCount) {
+                        log.warn("Attribute '" + attr.getName() + "' ordinal position (" + ordinalPosition + ") is out of range (" + valueCount + ")");
+                        continue;
+                    }
+                    Object value = attrValues != null ? attrValues[ordinalPosition] : null;
+                    DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attr);
+                    value = valueHandler.getValueFromObject(context, attr, value, false);
+                    values.put(attr, value);
+                }
+            }
+        } catch (DBException e) {
+            throw new DBCException("Can't obtain attributes meta information", e);
+        } catch (SQLException e) {
+            throw new DBCException("Can't read structure data", e);
+        }
     }
 
     public Struct getValue() throws DBCException
@@ -69,12 +104,18 @@ public class JDBCStruct implements DBDStructure {
     @Override
     public DBDValue makeNull()
     {
-        return new JDBCStruct(type, null);
+        JDBCStruct nullStruct = new JDBCStruct();
+        nullStruct.type = this.type;
+        nullStruct.contents = null;
+        nullStruct.values = new LinkedHashMap<DBSAttributeBase, Object>();
+        return nullStruct;
     }
 
     @Override
     public void release()
     {
+        contents = null;
+        values = null;
     }
 
     public String getTypeName()
@@ -90,115 +131,75 @@ public class JDBCStruct implements DBDStructure {
     public String getStringRepresentation()
     {
         try {
-            return makeStructString(contents);
+            return makeStructString();
         } catch (SQLException e) {
             log.error(e);
             return contents.toString();
         }
     }
 
-    private static String makeStructString(Struct contents) throws SQLException
+    private String makeStructString() throws SQLException
     {
-        if (contents == null) {
-            return DBConstants.NULL_VALUE_LABEL;
-        }
         StringBuilder str = new StringBuilder(200);
         String typeName = contents.getSQLTypeName();
         if (typeName != null) {
             str.append(typeName);
         }
         str.append("(");
-        final Object[] attributes = contents.getAttributes();
-        for (int i = 0, attributesLength = attributes.length; i < attributesLength; i++) {
-            Object item = attributes[i];
-            if (item == null) {
-                continue;
-            }
+        int i = 0;
+        for (Map.Entry<DBSAttributeBase, Object> entry : values.entrySet()) {
+            Object item = entry.getValue();
             if (i > 0) str.append(',');
-            str.append('\'');
-            if (item instanceof Struct) {
-                // Nested structure
-                str.append(makeStructString((Struct) item));
+            if (DBUtils.isNullValue(item)) {
+                str.append("NULL");
             } else {
-                // Childish, but we can't use anything but toString
-                str.append(item.toString());
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(type.getDataSource(), entry.getKey());
+                if (item instanceof Number) {
+                    str.append(item);
+                } else {
+                    String strValue = valueHandler.getValueDisplayString(entry.getKey(), item);
+                    str.append('\'');
+                    str.append(strValue);
+                    str.append('\'');
+                }
             }
-            str.append('\'');
+            i++;
         }
         str.append(")");
         return str.toString();
     }
 
     @Override
-    public DBSEntity getStructType()
+    public DBSDataType getStructType()
     {
-        return type instanceof DBSEntity ? (DBSEntity) type : null;
+        return type;
     }
 
     @Override
-    public Object getAttributeValue(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBCException
+    public Collection<DBSAttributeBase> getAttributes()
     {
-        try {
-            return getValues(VoidProgressMonitor.INSTANCE).get(attribute);
-        } catch (SQLException e) {
-            throw new DBCException("SQL error while getting attributes", e);
-        }
-    }
-
-    private Map<DBSEntityAttribute, Object> getValues(DBRProgressMonitor monitor) throws SQLException, DBCException
-    {
-        if (values == null) {
-            DBSEntity entity = getStructType();
-            if (entity == null) {
-                throw new DBCException("Non-structure record '" + getTypeName() + "' doesn't have attributes");
-            }
-
-            values = new IdentityHashMap<DBSEntityAttribute, Object>();
-            if (contents == null) {
-                return values;
-            }
-            Object[] attrValues = contents.getAttributes();
-            if (attrValues == null) {
-                return values;
-            }
-
-            try {
-                Collection<? extends DBSEntityAttribute> entityAttributes = entity.getAttributes(monitor);
-                if (entityAttributes.size() != attrValues.length) {
-                    log.warn("Number of entity attributes (" + entityAttributes.size() + ") differs from real values (" + attrValues.length + ")");
-                }
-                for (DBSEntityAttribute attr : entityAttributes) {
-                    int ordinalPosition = attr.getOrdinalPosition() - 1;
-                    if (ordinalPosition < 0 || ordinalPosition >= attrValues.length) {
-                        log.warn("Attribute '" + attr.getName() + "' ordinal position (" + ordinalPosition + ") is out of range (" + attrValues.length + ")");
-                        continue;
-                    }
-                    Object value = attrValues[ordinalPosition];
-                    if (value instanceof Struct) {
-                        Struct structValue = (Struct)value;
-                        DBSDataType dataType;
-                        try {
-                            dataType = DBUtils.resolveDataType(monitor, entity.getDataSource(), structValue.getSQLTypeName());
-                            if (dataType != null) {
-                                value = new JDBCStruct(dataType, structValue);
-                            }
-                        } catch (DBException e) {
-                            log.error("Error resolving data type '" + structValue.getSQLTypeName() + "'", e);
-                        }
-                    }
-                    values.put(attr, value);
-                }
-            } catch (DBException e) {
-                throw new DBCException("Can't obtain attributes meta information", e);
-            }
-        }
-        return values;
+        return values.keySet();
     }
 
     @Override
-    public void setAttributeValue(DBRProgressMonitor monitor, DBSEntityAttribute attribute, Object value) throws DBCException
+    public Object getAttributeValue(DBSAttributeBase attribute) throws DBCException
+    {
+        return values.get(attribute);
+    }
+
+    @Override
+    public void setAttributeValue(DBSAttributeBase attribute, Object value) throws DBCException
     {
         throw new DBCException("Not Implemented");
     }
 
+    @Override
+    public JDBCStruct cloneValue(DBRProgressMonitor monitor) throws DBCException
+    {
+        JDBCStruct copyStruct = new JDBCStruct();
+        copyStruct.type = this.type;
+        copyStruct.contents = null;
+        copyStruct.values = new LinkedHashMap<DBSAttributeBase, Object>(this.values);
+        return copyStruct;
+    }
 }

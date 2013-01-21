@@ -32,6 +32,11 @@ public class OracleObjectValue implements DBDValue{
         this.value = value;
     }
 
+    public Object getValue()
+    {
+        return value;
+    }
+
     @Override
     public boolean isNull()
     {
