@@ -33,7 +33,9 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * OracleTableColumn
@@ -191,7 +193,10 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         @Override
         public Object[] getPossibleValues(OracleTableColumn column)
         {
-            final Collection<? extends DBSDataType> dataTypes = column.getTable().getDataSource().getDataTypes();
+            List<DBSDataType> dataTypes = new ArrayList<DBSDataType>(column.getTable().getDataSource().getDataTypes());
+            if (!dataTypes.contains(column.getType())) {
+                dataTypes.add(column.getType());
+            }
             return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
         }
     }
