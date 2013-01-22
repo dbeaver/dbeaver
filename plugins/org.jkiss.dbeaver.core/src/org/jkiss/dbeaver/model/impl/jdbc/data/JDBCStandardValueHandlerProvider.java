@@ -48,9 +48,9 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
             case STRING:
                 if (valueType == java.sql.Types.LONGVARCHAR || valueType == java.sql.Types.LONGNVARCHAR) {
                     // Eval longvarchars as LOBs
-                    return new JDBCContentValueHandler();
+                    return JDBCContentValueHandler.INSTANCE;
                 } else {
-                    return new JDBCStringValueHandler();
+                    return JDBCStringValueHandler.INSTANCE;
                 }
             case NUMERIC:
                 return new JDBCNumberValueHandler(preferences.getDataFormatterProfile());
@@ -58,11 +58,11 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
                 return new JDBCDateTimeValueHandler(preferences.getDataFormatterProfile());
             case BINARY:
             case LOB:
-                return new JDBCContentValueHandler();
+                return JDBCContentValueHandler.INSTANCE;
             case ARRAY:
-                return new JDBCArrayValueHandler();
+                return JDBCArrayValueHandler.INSTANCE;
             case STRUCT:
-                return new JDBCStructValueHandler();
+                return JDBCStructValueHandler.INSTANCE;
             default:
                 return null;
         }
