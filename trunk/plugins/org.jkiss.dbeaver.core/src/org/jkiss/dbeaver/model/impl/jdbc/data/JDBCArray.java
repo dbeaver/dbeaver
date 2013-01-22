@@ -160,6 +160,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
     @Override
     public void release()
     {
+        contents = null;
     }
 
     public String toString()

@@ -403,7 +403,7 @@ public final class DBUtils {
         }
 */
         return new DBDAttributeBinding(
-                attributeMeta,
+            attributeMeta,
             findValueHandler(context, columnMeta));
     }
 
