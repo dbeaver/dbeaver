@@ -31,6 +31,7 @@ abstract class ViewValuePanel extends Composite {
 
     private DBDValueController previewController;
     private DBDValueEditor valueViewer;
+    private ToolBar toolBar;
 
     ViewValuePanel(Composite parent)
     {
@@ -44,21 +45,21 @@ abstract class ViewValuePanel extends Composite {
         this.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Composite toolBar = UIUtils.createPlaceholder(this, 3);
-        ((GridLayout)toolBar.getLayout()).horizontalSpacing = 5;
-        toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        toolBar.setBackground(toolBar.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        Composite titleBar = UIUtils.createPlaceholder(this, 3);
+        ((GridLayout)titleBar.getLayout()).horizontalSpacing = 5;
+        titleBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        titleBar.setBackground(titleBar.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
-        columnImageLabel = new Label(toolBar, SWT.NONE);
+        columnImageLabel = new Label(titleBar, SWT.NONE);
         columnImageLabel.setImage(DBIcon.TYPE_OBJECT.getImage());
 
-        columnNameLabel = new Label(toolBar, SWT.NONE);
+        columnNameLabel = new Label(titleBar, SWT.NONE);
         columnNameLabel.setText("Col name");
         columnNameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        ToolBar hideToolbar = new ToolBar(toolBar, SWT.HORIZONTAL);
-        hideToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        ToolItem hideItem = new ToolItem(hideToolbar, SWT.PUSH);
+        toolBar = new ToolBar(titleBar, SWT.HORIZONTAL);
+        toolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        ToolItem hideItem = new ToolItem(toolBar, SWT.PUSH);
         hideItem.setText("Hide");
         hideItem.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -125,4 +126,8 @@ abstract class ViewValuePanel extends Composite {
         }
     }
 
+    public ToolBar getToolBar()
+    {
+        return toolBar;
+    }
 }
