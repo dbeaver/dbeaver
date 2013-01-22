@@ -352,7 +352,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     public void closeValueEditor()
                     {
                         editor.dispose();
-                        input.release(VoidProgressMonitor.INSTANCE);
                     }
 
                     @Override
@@ -373,6 +372,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     @Override
                     public Object extractValue(DBRProgressMonitor monitor) throws DBException
                     {
+                        editor.doSave(monitor.getNestedMonitor());
                         input.updateContentFromFile(monitor.getNestedMonitor());
                         return input.getContent();
                     }

@@ -154,7 +154,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                         @Override
                         public void run()
                         {
-                            super.run();
+                            saveValue();
                         }
                     });
                 }
