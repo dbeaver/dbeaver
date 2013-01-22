@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -73,7 +72,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         this.typeMod = OracleDataTypeModifier.resolveTypeModifier(JDBCUtils.safeGetString(dbResult, "DATA_TYPE_MOD"));
         if (this.type != null) {
             this.typeName = type.getFullQualifiedName();
-            this.valueType = type.getValueType();
+            this.valueType = type.getTypeID();
         }
         setMaxLength(JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH"));
         setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));

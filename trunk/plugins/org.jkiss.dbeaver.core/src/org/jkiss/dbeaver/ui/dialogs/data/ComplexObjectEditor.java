@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDStructure;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -41,11 +41,11 @@ import java.util.Collection;
 /**
  * Structure object editor
  */
-public class StructObjectEditor extends TreeViewer {
+public class ComplexObjectEditor extends TreeViewer {
 
-    static final Log log = LogFactory.getLog(StructObjectEditor.class);
+    static final Log log = LogFactory.getLog(ComplexObjectEditor.class);
 
-    public StructObjectEditor(Composite parent, int style)
+    public ComplexObjectEditor(Composite parent, int style)
     {
         super(parent, style | SWT.SINGLE | SWT.FULL_SELECTION);
 
@@ -85,11 +85,11 @@ public class StructObjectEditor extends TreeViewer {
         super.setContentProvider(new StructContentProvider());
     }
 
-    public void setModel(final DBDStructure structure)
+    public void setModel(final DBDComplexType value)
     {
         getTree().setRedraw(false);
         try {
-            setInput(structure);
+            setInput(value);
             expandAll();
         } finally {
             getTree().setRedraw(true);
@@ -106,6 +106,21 @@ public class StructObjectEditor extends TreeViewer {
             this.attribute = attribute;
             this.value = value;
             this.valueHandler = DBUtils.findValueHandler(dataSource, attribute);
+        }
+    }
+
+    private static class ArrayItem {
+        final DBDArray array;
+        final int index;
+        final Object value;
+        DBDValueHandler valueHandler;
+
+        private ArrayItem(DBDArray array, int index, Object value)
+        {
+            this.array = array;
+            this.index = index;
+            this.value = value;
+            this.valueHandler = DBUtils.findValueHandler(array.getElementType().getDataSource(), array.getElementType());
         }
     }
 
@@ -152,11 +167,24 @@ public class StructObjectEditor extends TreeViewer {
                     }
                     return children;
                 } catch (DBException e) {
-                    log.error("Error getting meta data", e);
+                    log.error("Error getting structure meta data", e);
+                }
+            } else if (parent instanceof DBDArray) {
+                DBDArray array = (DBDArray)parent;
+                try {
+                    Object[] contents = array.getContents();
+                    ArrayItem[] items = new ArrayItem[contents.length];
+                    for (int i = 0; i < contents.length; i++) {
+                        items[i] = new ArrayItem(array, i, contents[i]);
+                    }
+                    return items;
+                } catch (DBCException e) {
+                    log.error("Error getting array content", e);
                 }
             } else if (parent instanceof FieldInfo) {
-                if (((FieldInfo) parent).value instanceof DBDStructure) {
-                    return getChildren(((FieldInfo) parent).value);
+                Object value = ((FieldInfo) parent).value;
+                if (value instanceof DBDStructure || value instanceof DBDArray) {
+                    return getChildren(value);
                 }
             }
             return new Object[0];
@@ -188,6 +216,12 @@ public class StructObjectEditor extends TreeViewer {
                     return "";
                 }
                 return field.valueHandler.getValueDisplayString(field.attribute, field.value);
+            } else if (obj instanceof ArrayItem) {
+                ArrayItem item = (ArrayItem) obj;
+                if (isName) {
+                    return String.valueOf(item.index);
+                }
+                return item.valueHandler.getValueDisplayString(item.array.getElementType(), item.value);
             }
             return String.valueOf(columnIndex);
         }

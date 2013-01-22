@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.dialogs.data.StructObjectEditor;
+import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
@@ -172,7 +172,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         throws DBException
     {
         if (controller.getEditType() == DBDValueController.EditType.PANEL) {
-            return new ValueEditor<StructObjectEditor>(controller) {
+            return new ValueEditor<ComplexObjectEditor>(controller) {
                 @Override
                 public void refreshValue()
                 {
@@ -180,9 +180,9 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
                 }
 
                 @Override
-                protected StructObjectEditor createControl(Composite editPlaceholder)
+                protected ComplexObjectEditor createControl(Composite editPlaceholder)
                 {
-                    final StructObjectEditor editor = new StructObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
+                    final ComplexObjectEditor editor = new ComplexObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
                     editor.setModel((DBDStructure) controller.getValue());
                     return editor;
                 }

@@ -13,7 +13,7 @@ import java.util.Collection;
  * Structured data record.
  * Consists of primitive values or other records
  */
-public interface DBDStructure extends DBDValue {
+public interface DBDStructure extends DBDComplexType {
 
     DBSDataType getStructType();
 

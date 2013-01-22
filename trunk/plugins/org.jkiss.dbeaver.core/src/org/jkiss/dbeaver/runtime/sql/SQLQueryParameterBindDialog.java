@@ -80,9 +80,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 if (dataType.getDataKind() == DBSDataKind.UNKNOWN) {
                     continue;
                 }
-                final DataTypeProviderDescriptor dataTypeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(dataSource, dataType.getName(), dataType.getValueType());
+                final DataTypeProviderDescriptor dataTypeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(dataSource, dataType.getName(), dataType.getTypeID());
                 if (dataTypeProvider != null) {
-                    final DBDValueHandler handler = dataTypeProvider.getInstance().getHandler(dataSource.getContainer(), dataType.getName(), dataType.getValueType());
+                    final DBDValueHandler handler = dataTypeProvider.getInstance().getHandler(dataSource.getContainer(), dataType.getName(), dataType.getTypeID());
                     if (handler != null && (handler.getFeatures() & DBDValueHandler.FEATURE_INLINE_EDITOR) != 0) {
                         validDataTypes.add(dataType);
                     }

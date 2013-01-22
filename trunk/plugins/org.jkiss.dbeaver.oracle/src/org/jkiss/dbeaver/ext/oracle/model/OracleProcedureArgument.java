@@ -167,7 +167,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter
     @Override
     public int getTypeID()
     {
-        return type.getValueType();
+        return type.getTypeID();
     }
 
     @Override

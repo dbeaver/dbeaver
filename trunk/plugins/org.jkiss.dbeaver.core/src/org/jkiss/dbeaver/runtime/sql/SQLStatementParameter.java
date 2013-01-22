@@ -54,7 +54,7 @@ public class SQLStatementParameter implements DBSAttributeBase {
             paramType.getDataSource(),
             paramType.getDataSource().getContainer(),
             paramType.getName(),
-            paramType.getValueType());
+            paramType.getTypeID());
     }
 
     public DBDValueHandler getValueHandler()
@@ -128,7 +128,7 @@ public class SQLStatementParameter implements DBSAttributeBase {
     @Override
     public int getTypeID()
     {
-        return paramType == null ? -1 : paramType.getValueType();
+        return paramType == null ? -1 : paramType.getTypeID();
     }
 
     @Override
@@ -140,7 +140,7 @@ public class SQLStatementParameter implements DBSAttributeBase {
     @Override
     public int getScale()
     {
-        return paramType == null ? 0 : paramType.getMinScale();
+        return paramType == null ? 0 : paramType.getScale();
     }
 
     @Override

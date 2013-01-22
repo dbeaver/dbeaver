@@ -96,7 +96,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     @Override
     public int getTypeID()
     {
-        return attrType.getValueType();
+        return attrType.getTypeID();
     }
 
     @Override

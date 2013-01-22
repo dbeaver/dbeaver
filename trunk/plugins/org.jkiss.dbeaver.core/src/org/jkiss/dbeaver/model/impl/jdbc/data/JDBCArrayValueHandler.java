@@ -21,6 +21,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDArray;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.Array;
@@ -140,6 +143,29 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
+        if (controller.getEditType() == DBDValueController.EditType.PANEL) {
+            return new ValueEditor<ComplexObjectEditor>(controller) {
+                @Override
+                public void refreshValue()
+                {
+                    control.setModel((DBDArray) controller.getValue());
+                }
+
+                @Override
+                protected ComplexObjectEditor createControl(Composite editPlaceholder)
+                {
+                    final ComplexObjectEditor editor = new ComplexObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
+                    editor.setModel((DBDArray) controller.getValue());
+                    return editor;
+                }
+
+                @Override
+                public Object extractValue()
+                {
+                    return control.getInput();
+                }
+            };
+        }
         return null;
     }
 
