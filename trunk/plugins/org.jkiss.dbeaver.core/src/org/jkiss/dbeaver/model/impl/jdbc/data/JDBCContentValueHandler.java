@@ -332,15 +332,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 } else {
                     editor = new ContentBinaryEditorPart();
                 }
-                final ContentEditorInput input;
-                try {
-                    input = new ContentEditorInput((DBDAttributeController) controller, new IContentEditorPart[]{editor}, VoidProgressMonitor.INSTANCE);
-                    editor.init(new SubEditorSite(controller.getValueSite()),
-                        input);
-                } catch (PartInitException e) {
-                    log.error("Can't initialize content editor", e);
-                    return null;
-                }
+                final SubEditorSite site = new SubEditorSite(controller.getValueSite());
                 return new ValueEditorEx<Control>(controller) {
                     private DBDContent prevValue = content;
                     @Override
@@ -351,19 +343,37 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     @Override
                     public void closeValueEditor()
                     {
+                        ContentEditorInput input = (ContentEditorInput)editor.getEditorInput();
+                        if (input != null) {
+                            input.release(VoidProgressMonitor.INSTANCE);
+                        }
                         editor.dispose();
                     }
 
                     @Override
                     public void refreshValue()
                     {
-                        if (prevValue == controller.getValue()) {
+                        if (prevValue == valueController.getValue()) {
                             // No need to refresh
                             return;
                         }
-                        prevValue = (DBDContent) controller.getValue();
+                        prevValue = (DBDContent) valueController.getValue();
+                        initInput();
+                    }
+
+                    private void initInput()
+                    {
                         try {
-                            input.refreshContent(VoidProgressMonitor.INSTANCE, (DBDAttributeController) controller);
+                            ContentEditorInput input = (ContentEditorInput)editor.getEditorInput();
+                            try {
+                                if (input != null) {
+                                    input.release(VoidProgressMonitor.INSTANCE);
+                                }
+                                input = new ContentEditorInput((DBDAttributeController) valueController, new IContentEditorPart[]{editor}, VoidProgressMonitor.INSTANCE);
+                                editor.init(site, input);
+                            } catch (PartInitException e) {
+                                log.error("Can't initialize content editor", e);
+                            }
                         } catch (DBException e) {
                             log.error("Error refreshing content value", e);
                         }
@@ -373,13 +383,15 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     public Object extractValue(DBRProgressMonitor monitor) throws DBException
                     {
                         editor.doSave(monitor.getNestedMonitor());
-                        input.updateContentFromFile(monitor.getNestedMonitor());
-                        return input.getContent();
+                        ContentEditorInput editorInput = (ContentEditorInput) editor.getEditorInput();
+                        editorInput.updateContentFromFile(monitor.getNestedMonitor());
+                        return editorInput.getContent();
                     }
 
                     @Override
                     protected Control createControl(Composite editPlaceholder)
                     {
+                        initInput();
                         editor.createPartControl(controller.getEditPlaceholder());
                         return editor.getEditorControl();
                     }

@@ -181,7 +181,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                 }
             });
 
-            inlineControl.setFont(valueController.getEditPlaceholder().getFont());
 
             boolean isInline = (valueController.getEditType() == DBDValueController.EditType.INLINE);
             if (!isInline) {
@@ -189,6 +188,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             }
 
             if (isInline) {
+                inlineControl.setFont(valueController.getEditPlaceholder().getFont());
                 // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
                 // Let's focus on it in async mode
                 inlineControl.getDisplay().asyncExec(new Runnable() {
