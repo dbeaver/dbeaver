@@ -44,7 +44,7 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
             return OracleXMLValueHandler.INSTANCE;
         } else if (valueType == java.sql.Types.STRUCT) {
             return OracleObjectValueHandler.INSTANCE;
-        } else if (typeName.indexOf("TIMESTAMP") != -1) {
+        } else if (typeName.contains("TIMESTAMP")) {
             return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;
