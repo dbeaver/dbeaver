@@ -86,6 +86,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
                             SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
                         editor.setEditable(!valueController.isReadOnly());
                         editor.setTextLimit(MAX_STRING_LENGTH);
+                        editor.setEditable(!valueController.isReadOnly());
                         return editor;
                     }
                     @Override

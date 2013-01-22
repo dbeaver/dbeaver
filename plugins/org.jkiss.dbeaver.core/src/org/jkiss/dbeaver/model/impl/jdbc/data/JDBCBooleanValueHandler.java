@@ -110,6 +110,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                         final CCombo editor = new CCombo(editPlaceholder, SWT.READ_ONLY);
                         editor.add("FALSE");
                         editor.add("TRUE");
+                        editor.setEditable(!valueController.isReadOnly());
                         return editor;
                     }
                     @Override

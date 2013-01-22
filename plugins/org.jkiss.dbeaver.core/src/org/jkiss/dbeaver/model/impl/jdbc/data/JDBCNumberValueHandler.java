@@ -200,6 +200,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             final CCombo editor = new CCombo(valueController.getEditPlaceholder(), SWT.READ_ONLY);
                             editor.add("0"); //$NON-NLS-1$
                             editor.add("1"); //$NON-NLS-1$
+                            editor.setEditable(!valueController.isReadOnly());
                             return editor;
                         }
                         @Override
@@ -241,6 +242,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                                     editor.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
                                     break;
                             }
+                            editor.setEditable(!valueController.isReadOnly());
                             return editor;
                         }
                         @Override
