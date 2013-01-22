@@ -70,7 +70,7 @@ import java.util.TreeMap;
  *
  * @author Serge Rider
  */
-public abstract class ValueViewDialog extends Dialog implements DBDValueEditorDialog {
+public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx {
 
     static final Log log = LogFactory.getLog(ValueViewDialog.class);
 
@@ -302,6 +302,12 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorDi
     }
 
     protected abstract Object getEditorValue();
+
+    @Override
+    public Object extractValue(DBRProgressMonitor monitor) throws DBException
+    {
+        return getEditorValue();
+    }
 
     private DBSEntityReferrer getEnumerableConstraint()
     {

@@ -68,6 +68,11 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         super();
     }
 
+    protected HexManager getManager()
+    {
+        return manager;
+    }
+
     @Override
     public void resourceChanged(IResourceChangeEvent event)
     {
@@ -137,6 +142,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             editorStyle = SWT.READ_ONLY;
         }
         manager.createEditorPart(parent, editorStyle);
+
         FillLayout fillLayout = new FillLayout();
         parent.setLayout(fillLayout);
 

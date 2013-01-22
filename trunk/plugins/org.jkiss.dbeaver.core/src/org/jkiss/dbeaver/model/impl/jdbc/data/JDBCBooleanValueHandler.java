@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
 
@@ -112,7 +113,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                         return editor;
                     }
                     @Override
-                    public Object extractValue()
+                    public Object extractValue(DBRProgressMonitor monitor)
                     {
                         switch (control.getSelectionIndex()) {
                             case 0:
@@ -135,7 +136,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
             {
                 return new ValueEditor<List>(controller) {
                     @Override
-                    public Object extractValue()
+                    public Object extractValue(DBRProgressMonitor monitor)
                     {
                         return control.getSelectionIndex() == 1;
                     }

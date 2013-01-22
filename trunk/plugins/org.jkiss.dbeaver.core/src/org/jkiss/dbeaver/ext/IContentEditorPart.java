@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ext;
 
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 
@@ -33,6 +34,8 @@ public interface IContentEditorPart extends IEditorPart {
     void initPart(IEditorPart contentEditor, MimeType mimeType);
 
     IEditorActionBarContributor getActionBarContributor();
+
+    Control getEditorControl();
 
     String getContentTypeTitle();
 

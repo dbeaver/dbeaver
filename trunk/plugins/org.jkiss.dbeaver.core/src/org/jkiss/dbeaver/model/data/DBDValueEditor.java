@@ -19,12 +19,17 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 /**
  * DBD Value Editor.
  * Must be implemented by all visual value editors (dialogs, editors, inline controls).
  */
 public interface DBDValueEditor
 {
+    Object extractValue(DBRProgressMonitor monitor)
+        throws DBException;
 
     void refreshValue();
 
