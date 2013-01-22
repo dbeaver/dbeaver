@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -184,17 +185,30 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
+    public DBDValueEditor createEditor(DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
                 if (controller.getAttributeMetaData().getTypeID() == java.sql.Types.BIT) {
-                    final CCombo editor = new CCombo(controller.getEditPlaceholder(), SWT.READ_ONLY);
-                    initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
+                    return new ValueEditor<CCombo>(controller) {
                         @Override
-                        public Object getValueFromControl(CCombo control)
+                        protected CCombo createControl(Composite editPlaceholder)
+                        {
+                            final CCombo editor = new CCombo(valueController.getEditPlaceholder(), SWT.READ_ONLY);
+                            editor.add("0"); //$NON-NLS-1$
+                            editor.add("1"); //$NON-NLS-1$
+                            return editor;
+                        }
+                        @Override
+                        public void refreshValue()
+                        {
+                            Object value = valueController.getValue();
+                            control.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
+                        }
+                        @Override
+                        public Object extractValue()
                         {
                             switch (control.getSelectionIndex()) {
                                 case 0:
@@ -205,51 +219,46 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                                     return null;
                             }
                         }
-                    });
-                    editor.add("0"); //$NON-NLS-1$
-                    editor.add("1"); //$NON-NLS-1$
-                    return new DBDValueEditor() {
+                    };
+                } else {
+                    return new ValueEditor<Text>(controller) {
+                        @Override
+                        protected Text createControl(Composite editPlaceholder)
+                        {
+                            final Text editor = new Text(valueController.getEditPlaceholder(), SWT.BORDER);
+                            editor.setEditable(!valueController.isReadOnly());
+                            editor.setTextLimit(MAX_NUMBER_LENGTH);
+                            switch (valueController.getAttributeMetaData().getTypeID()) {
+                                case java.sql.Types.BIGINT:
+                                case java.sql.Types.INTEGER:
+                                case java.sql.Types.SMALLINT:
+                                case java.sql.Types.TINYINT:
+                                case java.sql.Types.BIT:
+                                    editor.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+                                    break;
+                                default:
+                                    editor.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
+                                    break;
+                            }
+                            return editor;
+                        }
                         @Override
                         public void refreshValue()
                         {
-                            Object value = controller.getValue();
-                            editor.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
+                            Object value = valueController.getValue();
+                            control.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
+                            if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
+                                control.selectAll();
+                            }
                         }
-                    };
-                } else {
-                    final Text editor = new Text(controller.getEditPlaceholder(), SWT.BORDER);
-                    initInlineControl(controller, editor, new ValueExtractor<Text>() {
                         @Override
-                        public Object getValueFromControl(Text control)
+                        public Object extractValue()
                         {
                             String text = control.getText();
                             if (CommonUtils.isEmpty(text)) {
                                 return null;
                             }
-                            return convertStringToNumber(text, controller.getValue(), controller.getAttributeMetaData());
-                        }
-                    });
-                    editor.setEditable(!controller.isReadOnly());
-                    editor.setTextLimit(MAX_NUMBER_LENGTH);
-                    switch (controller.getAttributeMetaData().getTypeID()) {
-                        case java.sql.Types.BIGINT:
-                        case java.sql.Types.INTEGER:
-                        case java.sql.Types.SMALLINT:
-                        case java.sql.Types.TINYINT:
-                        case java.sql.Types.BIT:
-                            editor.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
-                            break;
-                        default:
-                            editor.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
-                            break;
-                    }
-                    return new DBDValueEditor() {
-                        @Override
-                        public void refreshValue()
-                        {
-                            Object value = controller.getValue();
-                            editor.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
-                            editor.selectAll();
+                            return convertStringToNumber(text, valueController.getValue(), valueController.getAttributeMetaData());
                         }
                     };
                 }
