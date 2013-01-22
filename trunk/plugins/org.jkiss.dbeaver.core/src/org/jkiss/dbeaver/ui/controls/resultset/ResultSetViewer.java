@@ -219,11 +219,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             };
 
-            int ratio = 0;
-            boolean viewPanelVisible = false;
             final IPreferenceStore preferences = getPreferences();
-            ratio = preferences.getInt(VIEW_PANEL_RATIO);
-            viewPanelVisible = preferences.getBoolean(VIEW_PANEL_VISIBLE);
+            int ratio = preferences.getInt(VIEW_PANEL_RATIO);
+            boolean viewPanelVisible = preferences.getBoolean(VIEW_PANEL_VISIBLE);
             if (ratio <= 0) {
                 ratio = 750;
             }

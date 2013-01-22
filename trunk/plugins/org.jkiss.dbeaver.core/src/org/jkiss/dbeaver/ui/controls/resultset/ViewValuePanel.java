@@ -1,10 +1,12 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -44,11 +46,12 @@ abstract class ViewValuePanel extends Composite {
         setLayout(gl);
         this.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Color infoBackground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
         Composite titleBar = UIUtils.createPlaceholder(this, 3);
         ((GridLayout)titleBar.getLayout()).horizontalSpacing = 5;
         titleBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        titleBar.setBackground(titleBar.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        titleBar.setBackground(infoBackground);
 
         columnImageLabel = new Label(titleBar, SWT.NONE);
         columnImageLabel.setImage(DBIcon.TYPE_OBJECT.getImage());
@@ -58,22 +61,13 @@ abstract class ViewValuePanel extends Composite {
         columnNameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         toolBar = new ToolBar(titleBar, SWT.HORIZONTAL);
-        toolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        ToolItem hideItem = new ToolItem(toolBar, SWT.PUSH);
-        hideItem.setText("Hide");
-        hideItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                hidePanel();
-            }
-        });
+        toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+        fillStandardToolBar();
 
         viewPlaceholder = UIUtils.createPlaceholder(this, 1);
         viewPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         viewPlaceholder.setLayout(new FillLayout());
         viewPlaceholder.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.NOTE_BACKGROUND_COLOR));
-
     }
 
     protected abstract void hidePanel();
@@ -92,6 +86,11 @@ abstract class ViewValuePanel extends Composite {
             }
             previewController = null;
 
+            // Cleanup toolbar
+            for (ToolItem item : toolBar.getItems()) {
+                item.dispose();
+            }
+            // Rest column info
             columnImageLabel.setImage(ResultSetViewer.getAttributeImage(valueController.getAttributeMetaData()));
             columnNameLabel.setText(valueController.getAttributeMetaData().getName());
             if (valueViewer instanceof DBDValueEditorEx) {
@@ -104,6 +103,7 @@ abstract class ViewValuePanel extends Composite {
                 UIUtils.showErrorDialog(getShell(), "Value preview", "Can't create value viewer", e);
                 return;
             }
+            fillStandardToolBar();
             if (valueViewer == null) {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
                 placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -119,11 +119,23 @@ abstract class ViewValuePanel extends Composite {
                 });
             }
             previewController = valueController;
+            toolBar.getParent().layout();
             viewPlaceholder.layout();
         }
         if (valueViewer != null) {
             valueViewer.refreshValue();
         }
+    }
+
+    private void fillStandardToolBar()
+    {
+        UIUtils.createToolItem(toolBar, "Hide panel", DBIcon.REJECT.getImage(), new Action() {
+            @Override
+            public void run()
+            {
+                hidePanel();
+            }
+        });
     }
 
     public ToolBar getToolBar()
