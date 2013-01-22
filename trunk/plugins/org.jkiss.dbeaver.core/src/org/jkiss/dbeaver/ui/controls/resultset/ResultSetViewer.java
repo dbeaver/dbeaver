@@ -52,6 +52,7 @@ import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
@@ -100,6 +101,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
     private ResultSetValueController panelValueController;
+
+    private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
+    private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
 
     public enum ResultSetMode {
         GRID,
@@ -215,8 +219,32 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             };
 
-            resultsSash.setWeights(new int[]{75, 25});
-            resultsSash.setMaximizedControl(spreadsheet);
+            int ratio = 0;
+            boolean viewPanelVisible = false;
+            final IPreferenceStore preferences = getPreferences();
+            ratio = preferences.getInt(VIEW_PANEL_RATIO);
+            viewPanelVisible = preferences.getBoolean(VIEW_PANEL_VISIBLE);
+            if (ratio <= 0) {
+                ratio = 750;
+            }
+            resultsSash.setWeights(new int[]{ratio, 1000 - ratio});
+            if (!viewPanelVisible) {
+                resultsSash.setMaximizedControl(spreadsheet);
+            }
+            previewPane.addListener(SWT.Resize, new Listener() {
+                @Override
+                public void handleEvent(Event event)
+                {
+                    DBPDataSource dataSource = getDataSource();
+                    if (dataSource != null) {
+                        if (!resultsSash.isDisposed()) {
+                            int[] weights = resultsSash.getWeights();
+                            int ratio = weights[0];
+                            preferences.setValue(VIEW_PANEL_RATIO, ratio);
+                        }
+                    }
+                }
+            });
         }
 
         createStatusBar(viewerPanel);
@@ -254,6 +282,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 updateToolbar();
             }
         });
+    }
+
+    IPreferenceStore getPreferences()
+    {
+        return DBeaverCore.getGlobalPreferenceStore();
     }
 
     @Override
@@ -581,6 +614,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             resultsSash.setMaximizedControl(null);
             previewValue();
         }
+        getPreferences().setValue(VIEW_PANEL_VISIBLE, isPreviewVisible());
+
         // Refresh elements
         ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
         if (commandService != null) {
@@ -2152,6 +2187,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public Composite getEditPlaceholder()
         {
             return inlinePlaceholder;
+        }
+
+        @Override
+        public ToolBar getEditToolBar()
+        {
+            return isPreviewVisible() ? previewPane.getToolBar() : null;
         }
 
         @Override
