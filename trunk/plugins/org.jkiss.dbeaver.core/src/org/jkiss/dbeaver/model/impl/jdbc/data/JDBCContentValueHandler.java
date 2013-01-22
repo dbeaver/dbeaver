@@ -364,13 +364,16 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     private void initInput()
                     {
                         try {
-                            ContentEditorInput input = (ContentEditorInput)editor.getEditorInput();
                             try {
-                                if (input != null) {
-                                    input.release(VoidProgressMonitor.INSTANCE);
+                                ContentEditorInput oldInput = (ContentEditorInput)editor.getEditorInput();
+                                try {
+                                    ContentEditorInput input = new ContentEditorInput((DBDAttributeController) valueController, new IContentEditorPart[]{editor}, VoidProgressMonitor.INSTANCE);
+                                    editor.init(site, input);
+                                } finally {
+                                    if (oldInput != null) {
+                                        oldInput.release(VoidProgressMonitor.INSTANCE);
+                                    }
                                 }
-                                input = new ContentEditorInput((DBDAttributeController) valueController, new IContentEditorPart[]{editor}, VoidProgressMonitor.INSTANCE);
-                                editor.init(site, input);
                             } catch (PartInitException e) {
                                 log.error("Can't initialize content editor", e);
                             }
