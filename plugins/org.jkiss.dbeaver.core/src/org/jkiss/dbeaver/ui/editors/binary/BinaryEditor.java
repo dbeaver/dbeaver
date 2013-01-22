@@ -316,17 +316,22 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     public void init(IEditorSite site, final IEditorInput input)
         throws PartInitException
     {
+        boolean reset = getEditorInput() != null;
         setSite(site);
         if (!(input instanceof IPathEditorInput)) {
             throw new PartInitException("Editor Input is not a file");
         }
         setInput(input);
-        // when opening an external file the workbench (Eclipse 3.1) calls HexEditorActionBarContributor.
-        // MyStatusLineContributionItem.fill() before HexEditorActionBarContributor.setActiveEditor()
-        // but we need an editor to fill the status bar.
-        site.setSelectionProvider(this);
+        if (reset) {
+            loadBinaryContent();
+        } else {
+            // when opening an external file the workbench (Eclipse 3.1) calls HexEditorActionBarContributor.
+            // MyStatusLineContributionItem.fill() before HexEditorActionBarContributor.setActiveEditor()
+            // but we need an editor to fill the status bar.
+            site.setSelectionProvider(this);
 
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+            ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+        }
     }
 
 
