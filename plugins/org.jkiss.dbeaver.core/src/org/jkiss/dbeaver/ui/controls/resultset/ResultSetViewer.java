@@ -151,7 +151,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private Text statusLabel;
 
-    private Map<ResultSetValueController, DBDValueEditorDialog> openEditors = new HashMap<ResultSetValueController, DBDValueEditorDialog>();
+    private Map<ResultSetValueController, DBDValueEditorEx> openEditors = new HashMap<ResultSetValueController, DBDValueEditorEx>();
     // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
 
@@ -894,8 +894,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     private void closeEditors() {
-        List<DBDValueEditorDialog> editors = new ArrayList<DBDValueEditorDialog>(openEditors.values());
-        for (DBDValueEditorDialog editor : editors) {
+        List<DBDValueEditorEx> editors = new ArrayList<DBDValueEditorEx>(openEditors.values());
+        for (DBDValueEditorEx editor : editors) {
             editor.closeValueEditor();
         }
         if (!openEditors.isEmpty()) {
@@ -1113,18 +1113,18 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
             return false;
         }
-        if (editor instanceof DBDValueEditorDialog) {
-            valueController.registerEditor((DBDValueEditorDialog)editor);
+        if (editor instanceof DBDValueEditorEx) {
+            valueController.registerEditor((DBDValueEditorEx)editor);
             // show dialog in separate job to avoid block
             new UIJob("Open separate editor") {
                 @Override
                 public IStatus runInUIThread(IProgressMonitor monitor)
                 {
-                    ((DBDValueEditorDialog)editor).showValueEditor();
+                    ((DBDValueEditorEx)editor).showValueEditor();
                     return Status.OK_STATUS;
                 }
             }.schedule();
-            //((DBDValueEditorDialog)editor).showValueEditor();
+            //((DBDValueEditorEx)editor).showValueEditor();
         } else {
             // Set editable value
             if (editor != null) {
@@ -2220,12 +2220,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             showCellEditor(true);
         }
 
-        public void registerEditor(DBDValueEditorDialog editor) {
+        public void registerEditor(DBDValueEditorEx editor) {
             openEditors.put(this, editor);
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditorDialog editor) {
+        public void unregisterEditor(DBDValueEditorEx editor) {
             openEditors.remove(this);
         }
 

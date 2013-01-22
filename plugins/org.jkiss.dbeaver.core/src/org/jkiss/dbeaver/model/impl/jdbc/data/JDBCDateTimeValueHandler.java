@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
@@ -172,7 +173,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
                         return timeEditor;
                     }
                     @Override
-                    public Object extractValue()
+                    public Object extractValue(DBRProgressMonitor monitor)
                     {
                         return getDate(dateEditor, timeEditor);
                     }

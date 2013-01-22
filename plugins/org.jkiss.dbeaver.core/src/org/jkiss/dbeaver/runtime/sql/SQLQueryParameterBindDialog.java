@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.data.DBDValueEditorDialog;
+import org.jkiss.dbeaver.model.data.DBDValueEditorEx;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -393,7 +393,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditorDialog editor)
+        public void unregisterEditor(DBDValueEditorEx editor)
         {
         }
 

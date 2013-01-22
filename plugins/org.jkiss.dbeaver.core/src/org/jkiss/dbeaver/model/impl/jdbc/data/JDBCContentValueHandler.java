@@ -24,6 +24,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
@@ -282,7 +283,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                             return editor;
                         }
                         @Override
-                        public Object extractValue()
+                        public Object extractValue(DBRProgressMonitor monitor)
                         {
                             String newValue = control.getText();
                             return new JDBCContentChars(valueController.getDataSource(), newValue);
@@ -340,13 +341,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     log.error("Can't initialize content editor", e);
                     return null;
                 }
-                editor.createPartControl(controller.getEditPlaceholder());
-                return new DBDValueEditorDialog() {
+                return new ValueEditorEx<Control>(controller) {
                     private DBDContent prevValue = content;
                     @Override
                     public void showValueEditor()
                     {
-                        editor.setFocus();
                     }
 
                     @Override
@@ -369,6 +368,20 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         } catch (DBException e) {
                             log.error("Error refreshing content value", e);
                         }
+                    }
+
+                    @Override
+                    public Object extractValue(DBRProgressMonitor monitor) throws DBException
+                    {
+                        input.updateContentFromFile(monitor.getNestedMonitor());
+                        return input.getContent();
+                    }
+
+                    @Override
+                    protected Control createControl(Composite editPlaceholder)
+                    {
+                        editor.createPartControl(controller.getEditPlaceholder());
+                        return editor.getEditorControl();
                     }
                 };
             }

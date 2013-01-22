@@ -15,7 +15,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.data.DBDValueEditorDialog;
+import org.jkiss.dbeaver.model.data.DBDValueEditorEx;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -94,8 +94,8 @@ abstract class ViewValuePanel extends Composite {
 
             columnImageLabel.setImage(ResultSetViewer.getAttributeImage(valueController.getAttributeMetaData()));
             columnNameLabel.setText(valueController.getAttributeMetaData().getName());
-            if (valueViewer instanceof DBDValueEditorDialog) {
-                ((DBDValueEditorDialog)valueViewer).closeValueEditor();
+            if (valueViewer instanceof DBDValueEditorEx) {
+                ((DBDValueEditorEx)valueViewer).closeValueEditor();
             }
             // Create a new one
             try {

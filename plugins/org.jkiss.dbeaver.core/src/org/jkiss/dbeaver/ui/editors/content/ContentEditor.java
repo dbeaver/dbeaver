@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,7 +52,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageAbstractEditor implements IDataSourceProvider, DBDValueEditorDialog, IResourceChangeListener
+public class ContentEditor extends MultiPageAbstractEditor implements IDataSourceProvider, DBDValueEditorEx, IResourceChangeListener
 {
     @Override
     public ContentEditorInput getEditorInput()
@@ -205,7 +206,9 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
                     // then document remains dirty
                     ContentEditor.this.dirty = true;
 
-                    getEditorInput().updateContentFromFile(monitor);
+                    ContentEditorInput editorInput = getEditorInput();
+                    editorInput.updateContentFromFile(monitor);
+                    editorInput.getValueController().updateValue(editorInput.getContent());
 
                     // Close editor
                     closeValueEditor();
@@ -437,6 +440,13 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     {
         ContentEditorInput input = getEditorInput();
         return input == null ? null : input.getValueController();
+    }
+
+    @Override
+    public Object extractValue(DBRProgressMonitor monitor) throws DBException
+    {
+        getEditorInput().updateContentFromFile(monitor.getNestedMonitor());
+        return getEditorInput().getContent();
     }
 
     @Override

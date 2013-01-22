@@ -48,8 +48,10 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Abstract text editor.
@@ -61,6 +63,19 @@ public abstract class BaseTextEditor extends StatusTextEditor {
 
     private LineNumberRulerColumn fLineNumberRulerColumn;
     private LineNumberColumn fLineColumn;
+
+    private static Map<String, Integer> ACTION_TRANSLATE_MAP = new HashMap<String, Integer>();
+
+    public static Map<String, Integer> getActionMap()
+    {
+        if (ACTION_TRANSLATE_MAP == null) {
+            ACTION_TRANSLATE_MAP = new HashMap<String, Integer>();
+            for (IdMapEntry entry : ACTION_MAP) {
+                ACTION_TRANSLATE_MAP.put(entry.getActionId(), entry.getAction());
+            }
+        }
+        return ACTION_TRANSLATE_MAP;
+    }
 
     @Override
     public void dispose()
