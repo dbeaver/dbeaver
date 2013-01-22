@@ -269,7 +269,13 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public int getValueType()
+    public String getTypeName()
+    {
+        return getFullQualifiedName();
+    }
+
+    @Override
+    public int getTypeID()
     {
         return valueType;
     }
@@ -281,9 +287,21 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
+    public int getScale()
+    {
+        return typeDesc == null ? 0 : typeDesc.minScale;
+    }
+
+    @Override
     public int getPrecision()
     {
         return typeDesc == null ? 0 : typeDesc.precision;
+    }
+
+    @Override
+    public long getMaxLength()
+    {
+        return getPrecision();
     }
 
     @Override

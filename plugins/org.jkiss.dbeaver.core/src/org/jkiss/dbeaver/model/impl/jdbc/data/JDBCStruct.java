@@ -202,4 +202,5 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         copyStruct.values = new LinkedHashMap<DBSAttributeBase, Object>(this.values);
         return copyStruct;
     }
+
 }

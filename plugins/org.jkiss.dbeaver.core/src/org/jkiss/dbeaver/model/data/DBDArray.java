@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
@@ -27,11 +28,11 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  *
  * @author Serge Rider
  */
-public interface DBDArray extends DBDValue {
+public interface DBDArray extends DBDComplexType {
 
-    DBSTypedObject getElementType();
+    DBSDataType getElementType();
 
-    Object[] getValue()
+    Object[] getContents()
         throws DBCException;
 
 }

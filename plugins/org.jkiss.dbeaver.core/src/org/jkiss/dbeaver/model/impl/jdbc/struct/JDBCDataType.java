@@ -63,7 +63,13 @@ public class JDBCDataType implements DBSDataType
     }
 
     @Override
-    public int getValueType()
+    public String getTypeName()
+    {
+        return name;
+    }
+
+    @Override
+    public int getTypeID()
     {
         return valueType;
     }
@@ -98,6 +104,12 @@ public class JDBCDataType implements DBSDataType
         return getDataKind(name, valueType);
     }
 
+    @Override
+    public int getScale()
+    {
+        return minScale;
+    }
+
     public boolean isUnsigned()
     {
         return isUnsigned;
@@ -110,6 +122,12 @@ public class JDBCDataType implements DBSDataType
 
     @Override
     public int getPrecision()
+    {
+        return precision;
+    }
+
+    @Override
+    public long getMaxLength()
     {
         return precision;
     }

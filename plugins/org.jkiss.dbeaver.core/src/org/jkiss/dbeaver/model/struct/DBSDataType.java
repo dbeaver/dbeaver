@@ -22,14 +22,8 @@ package org.jkiss.dbeaver.model.struct;
 /**
  * DBSDataType
  */
-public interface DBSDataType extends DBSObject
+public interface DBSDataType extends DBSObject, DBSTypedObject
 {
-    int getValueType();
-
-    DBSDataKind getDataKind();
-
-    int getPrecision();
-
     int getMinScale();
 
     int getMaxScale();

@@ -22,15 +22,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.sql.Array;
 import java.sql.ResultSet;
@@ -46,35 +49,40 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
     static final Log log = LogFactory.getLog(JDBCArray.class);
 
     private Object[] contents;
-    private JDBCArrayType type;
+    private DBSDataType type;
 
     public static Object makeArray(JDBCExecutionContext context, Array array)
     {
         if (array == null) {
             return null;
         }
-        JDBCArrayType type;
-        try {
-            type = new JDBCArrayType(array.getBaseTypeName(), array.getBaseType());
-        } catch (SQLException e) {
-            type = new JDBCArrayType(CoreMessages.model_jdbc_unknown, java.sql.Types.OTHER);
+        DBSDataType type;
+        if (context.getDataSource() instanceof DBPDataTypeProvider) {
+            try {
+                type = ((DBPDataTypeProvider) context.getDataSource()).resolveDataType(context.getProgressMonitor(), array.getBaseTypeName());
+            } catch (Exception e) {
+                log.error("Error resolving data type", e);
+                return null;
+            }
+        } else {
+            return null;
         }
-        type.resolveHandler(context);
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(context, type);
 
         Object[] contents = null;
         try {
-            contents = extractDataFromArray(context, array, type);
+            contents = extractDataFromArray(context, array, type, valueHandler);
         } catch (Exception e) {
             try {
-                contents = extractDataFromResultSet(context, array, type);
+                contents = extractDataFromResultSet(context, array, type, valueHandler);
             } catch (Exception e1) {
                 log.warn("Could not extract array data from JDBC array"); //$NON-NLS-1$
             }
         }
-        return new JDBCArray(contents, type);
+        return new JDBCArray(type, contents);
     }
 
-    private static Object[] extractDataFromResultSet(JDBCExecutionContext context, Array array, JDBCArrayType type) throws SQLException, DBCException
+    private static Object[] extractDataFromResultSet(JDBCExecutionContext context, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
     {
         ResultSet dbResult = array.getResultSet();
         if (dbResult == null) {
@@ -84,7 +92,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
             DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(context, dbResult, CoreMessages.model_jdbc_array_result_set);
             List<Object> data = new ArrayList<Object>();
             while (dbResult.next()) {
-                data.add(type.getValueHandler().fetchValueObject(context, resultSet, type, 0));
+                data.add(valueHandler.fetchValueObject(context, resultSet, type, 0));
             }
             return data.toArray();
         }
@@ -97,7 +105,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
     }
 
-    private static Object[] extractDataFromArray(JDBCExecutionContext context, Array array, JDBCArrayType type) throws SQLException, DBCException
+    private static Object[] extractDataFromArray(JDBCExecutionContext context, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException
     {
         Object arrObject = array.getArray();
         if (arrObject == null) {
@@ -107,39 +115,34 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         Object[] contents = new Object[arrLength];
         for (int i = 0; i < arrLength; i++) {
             Object item = java.lang.reflect.Array.get(arrObject, i);
-            item = type.getValueHandler().getValueFromObject(context, type, item, false);
+            item = valueHandler.getValueFromObject(context, type, item, false);
             contents[i] = item;
         }
         return contents;
     }
 
-    public JDBCArray(Object[] contents, JDBCArrayType type)
+    public JDBCArray(DBSDataType type, Object[] contents)
     {
-        this.contents = contents;
         this.type = type;
-    }
-
-    private Object[] getContents() throws DBCException
-    {
-        return contents;
+        this.contents = contents;
     }
 
     @Override
-    public DBSTypedObject getElementType()
+    public DBSDataType getElementType()
     {
         return type;
     }
 
     @Override
-    public Object[] getValue() throws DBCException
+    public Object[] getContents() throws DBCException
     {
-        return getContents();
+        return contents;
     }
 
     @Override
     public DBDValueCloneable cloneValue(DBRProgressMonitor monitor)
     {
-        return new JDBCArray(contents, type);
+        return new JDBCArray(type, contents);
     }
 
     @Override
@@ -151,7 +154,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
     @Override
     public DBDValue makeNull()
     {
-        return new JDBCArray(null, type);
+        return new JDBCArray(type, null);
     }
 
     @Override
@@ -176,6 +179,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         if (contents == null) {
             return null;
         }
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(type.getDataSource(), type);
         StringBuilder str = new StringBuilder();
         for (Object item : contents) {
             if (str.length() > 0) {
@@ -184,10 +188,11 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
             if (item instanceof Number) {
                 str.append(item);
             } else {
-                String itemString = type.getValueHandler().getValueDisplayString(type, item);
+                String itemString = valueHandler.getValueDisplayString(type, item);
                 str.append(itemString);
             }
         }
         return str.toString();
     }
+
 }
