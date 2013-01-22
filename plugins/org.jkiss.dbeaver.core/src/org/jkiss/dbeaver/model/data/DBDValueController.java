@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -89,6 +90,12 @@ public interface DBDValueController
      * @return placeholder control or null
      */
     Composite getEditPlaceholder();
+
+    /**
+     * Editor toolbar. Used with PANEL editors
+     * @return toolbar or null if toolbar is not active
+     */
+    ToolBar getEditToolBar();
 
     /**
      * Closes current value editor.

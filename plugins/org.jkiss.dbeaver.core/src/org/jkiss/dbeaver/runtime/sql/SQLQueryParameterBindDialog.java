@@ -376,6 +376,12 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
+        public ToolBar getEditToolBar()
+        {
+            return null;
+        }
+
+        @Override
         public void closeInlineEditor()
         {
             disposeOldEditor();
