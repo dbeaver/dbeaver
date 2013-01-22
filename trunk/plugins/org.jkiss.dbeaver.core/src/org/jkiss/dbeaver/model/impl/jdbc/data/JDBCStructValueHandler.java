@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -171,13 +172,25 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         throws DBException
     {
         if (controller.getEditType() == DBDValueController.EditType.PANEL) {
-            final StructObjectEditor editor = new StructObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
-            editor.setModel((DBDStructure) controller.getValue());
-            return new DBDValueEditor() {
+            return new ValueEditor<StructObjectEditor>(controller) {
                 @Override
                 public void refreshValue()
                 {
+                    control.setModel((DBDStructure) controller.getValue());
+                }
+
+                @Override
+                protected StructObjectEditor createControl(Composite editPlaceholder)
+                {
+                    final StructObjectEditor editor = new StructObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
                     editor.setModel((DBDStructure) controller.getValue());
+                    return editor;
+                }
+
+                @Override
+                public Object extractValue()
+                {
+                    return control.getInput();
                 }
             };
         }

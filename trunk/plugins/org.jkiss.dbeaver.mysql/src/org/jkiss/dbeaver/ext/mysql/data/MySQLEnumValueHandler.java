@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
@@ -128,81 +129,97 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             {
-                final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
-                final Combo editor = new Combo(controller.getEditPlaceholder(), SWT.READ_ONLY);
-                initInlineControl(controller, editor, new ValueExtractor<Combo>() {
-                    @Override
-                    public Object getValueFromControl(Combo control)
-                    {
-                        int selIndex = control.getSelectionIndex();
-                        if (selIndex < 0) {
-                            return new MySQLTypeEnum(column, null);
-                        } else {
-                            return new MySQLTypeEnum(column, control.getItem(selIndex));
-                        }
-                    }
-                });
-                Collection<String> enumValues = column.getEnumValues();
-                if (enumValues != null) {
-                    for (String enumValue : enumValues) {
-                        editor.add(enumValue);
-                    }
-                }
-                if (editor.getSelectionIndex() < 0) {
-                    editor.select(0);
-                }
-                return new DBDValueEditor() {
+                return new ValueEditor<Combo>(controller) {
                     @Override
                     public void refreshValue()
                     {
                         MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
-                        editor.setText(value.isNull() ? "" : value.getValue());
+                        control.setText(value.isNull() ? "" : value.getValue());
+                    }
+                    @Override
+                    protected Object extractValue()
+                    {
+                        int selIndex = control.getSelectionIndex();
+                        if (selIndex < 0) {
+                            return new MySQLTypeEnum(getColumn(), null);
+                        } else {
+                            return new MySQLTypeEnum(getColumn(), control.getItem(selIndex));
+                        }
+                    }
+                    @Override
+                    protected Combo createControl(Composite editPlaceholder)
+                    {
+                        final Combo editor = new Combo(controller.getEditPlaceholder(), SWT.READ_ONLY);
+                        Collection<String> enumValues = getColumn().getEnumValues();
+                        if (enumValues != null) {
+                            for (String enumValue : enumValues) {
+                                editor.add(enumValue);
+                            }
+                        }
+                        if (editor.getSelectionIndex() < 0) {
+                            editor.select(0);
+                        }
+                        return editor;
+                    }
+
+                    private MySQLTableColumn getColumn()
+                    {
+                        return ((MySQLTypeEnum) controller.getValue()).getColumn();
                     }
                 };
             }
             case PANEL:
             {
-                final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
-                final List editor = new List(controller.getEditPlaceholder(), SWT.READ_ONLY);
-                initInlineControl(controller, editor, new ValueExtractor<List>() {
-                    @Override
-                    public Object getValueFromControl(List control)
-                    {
-                        int selIndex = control.getSelectionIndex();
-                        if (selIndex < 0) {
-                            return new MySQLTypeEnum(column, null);
-                        } else {
-                            return new MySQLTypeEnum(column, control.getItem(selIndex));
-                        }
-                    }
-                });
-                Collection<String> enumValues = column.getEnumValues();
-                if (enumValues != null) {
-                    for (String enumValue : enumValues) {
-                        editor.add(enumValue);
-                    }
-                }
-                if (editor.getSelectionIndex() < 0) {
-                    editor.select(0);
-                }
-                if (controller.getEditType() == DBDValueController.EditType.INLINE) {
-                    editor.setFocus();
-                }
-                return new DBDValueEditor() {
+                return new ValueEditor<List>(controller) {
                     @Override
                     public void refreshValue()
                     {
                         MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
                         if (value.isNull()) {
-                            editor.setSelection(-1);
+                            control.setSelection(-1);
                         }
-                        int itemCount = editor.getItemCount();
+                        int itemCount = control.getItemCount();
                         for (int i = 0 ; i < itemCount; i++) {
-                            if (editor.getItem(i).equals(value.getValue())) {
-                                editor.setSelection(i);
+                            if (control.getItem(i).equals(value.getValue())) {
+                                control.setSelection(i);
                                 break;
                             }
                         }
+                    }
+
+                    @Override
+                    protected Object extractValue()
+                    {
+                        int selIndex = control.getSelectionIndex();
+                        if (selIndex < 0) {
+                            return new MySQLTypeEnum(getColumn(), null);
+                        } else {
+                            return new MySQLTypeEnum(getColumn(), control.getItem(selIndex));
+                        }
+                    }
+
+                    @Override
+                    protected List createControl(Composite editPlaceholder)
+                    {
+                        final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
+                        final List editor = new List(controller.getEditPlaceholder(), SWT.READ_ONLY);
+                        Collection<String> enumValues = column.getEnumValues();
+                        if (enumValues != null) {
+                            for (String enumValue : enumValues) {
+                                editor.add(enumValue);
+                            }
+                        }
+                        if (editor.getSelectionIndex() < 0) {
+                            editor.select(0);
+                        }
+                        if (controller.getEditType() == DBDValueController.EditType.INLINE) {
+                            editor.setFocus();
+                        }
+                        return editor;
+                    }
+                    private MySQLTableColumn getColumn()
+                    {
+                        return ((MySQLTypeEnum) controller.getValue()).getColumn();
                     }
                 };
             }

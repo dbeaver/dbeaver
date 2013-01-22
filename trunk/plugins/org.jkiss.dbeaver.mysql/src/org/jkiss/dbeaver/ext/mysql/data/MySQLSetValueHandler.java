@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -45,10 +46,15 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
             case PANEL:
                 final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
 
-                final org.eclipse.swt.widgets.List editor = new org.eclipse.swt.widgets.List(controller.getEditPlaceholder(), SWT.BORDER | SWT.MULTI);
-                initInlineControl(controller, editor, new ValueExtractor<org.eclipse.swt.widgets.List>() {
+                return new ValueEditor<org.eclipse.swt.widgets.List>(controller) {
                     @Override
-                    public Object getValueFromControl(org.eclipse.swt.widgets.List control)
+                    public void refreshValue()
+                    {
+                        final MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
+                        fillSetList(control, value);
+                    }
+                    @Override
+                    protected Object extractValue()
                     {
                         String[] selection = control.getSelection();
                         StringBuilder resultString = new StringBuilder();
@@ -61,13 +67,11 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
                         }
                         return new MySQLTypeEnum(column, resultString.toString());
                     }
-                });
-                return new DBDValueEditor() {
+
                     @Override
-                    public void refreshValue()
+                    protected org.eclipse.swt.widgets.List createControl(Composite editPlaceholder)
                     {
-                        final MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
-                        fillSetList(editor, value);
+                        return new org.eclipse.swt.widgets.List(controller.getEditPlaceholder(), SWT.BORDER | SWT.MULTI);
                     }
                 };
             case EDITOR:

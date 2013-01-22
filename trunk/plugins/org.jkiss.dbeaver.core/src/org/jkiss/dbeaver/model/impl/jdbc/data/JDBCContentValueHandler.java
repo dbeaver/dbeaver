@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
@@ -258,30 +259,33 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 // Open inline/panel editor
                 if (controller.getValue() instanceof JDBCContentChars) {
                     // String editor
-                    final Text editor = new Text(controller.getEditPlaceholder(), SWT.NONE);
-                    initInlineControl(controller, editor, new ValueExtractor<Text>() {
-                        @Override
-                        public Object getValueFromControl(Text control)
-                        {
-                            String newValue = control.getText();
-                            return new JDBCContentChars(controller.getDataSource(), newValue);
-                        }
-                    });
-                    editor.setEditable(!controller.isReadOnly());
-                    long maxLength = controller.getAttributeMetaData().getMaxLength();
-                    if (maxLength <= 0) {
-                        maxLength = MAX_STRING_LENGTH;
-                    } else {
-                        maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
-                    }
-                    editor.setTextLimit((int) maxLength);
-                    editor.selectAll();
-                    return new DBDValueEditor() {
+                    return new ValueEditor<Text>(controller) {
                         @Override
                         public void refreshValue()
                         {
-                            JDBCContentChars newValue = (JDBCContentChars) controller.getValue();
-                            editor.setText(newValue.getData() == null ? "" : newValue.getData()); //$NON-NLS-1$
+                            JDBCContentChars newValue = (JDBCContentChars) valueController.getValue();
+                            control.setText(newValue.getData() == null ? "" : newValue.getData()); //$NON-NLS-1$
+                        }
+                        @Override
+                        protected Text createControl(Composite editPlaceholder)
+                        {
+                            final Text editor = new Text(editPlaceholder, SWT.NONE);
+                            editor.setEditable(!valueController.isReadOnly());
+                            long maxLength = valueController.getAttributeMetaData().getMaxLength();
+                            if (maxLength <= 0) {
+                                maxLength = MAX_STRING_LENGTH;
+                            } else {
+                                maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
+                            }
+                            editor.setTextLimit((int) maxLength);
+                            editor.selectAll();
+                            return editor;
+                        }
+                        @Override
+                        public Object extractValue()
+                        {
+                            String newValue = control.getText();
+                            return new JDBCContentChars(valueController.getDataSource(), newValue);
                         }
                     };
                 } else {

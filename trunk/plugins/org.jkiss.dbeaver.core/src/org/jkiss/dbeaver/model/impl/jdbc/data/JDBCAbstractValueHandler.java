@@ -25,13 +25,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.DBDValueAnnotation;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -120,93 +118,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             controller.getAttributeMetaData().getMaxLength());
     }
 
-    protected static interface ValueExtractor <T extends Control> {
-         Object getValueFromControl(T control);
-    }
-
-    protected <T extends Control> void initInlineControl(
-        final DBDValueController controller,
-        final T control,
-        final ValueExtractor<T> extractor)
-    {
-        UIUtils.addFocusTracker(controller.getValueSite(), CELL_VALUE_INLINE_EDITOR, control);
-        control.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                UIUtils.removeFocusTracker(controller.getValueSite(), control);
-            }
-        });
-
-        if (controller.getEditType() == DBDValueController.EditType.PANEL) {
-            control.setBackground(controller.getEditPlaceholder().getBackground());
-            return;
-        }
-        // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
-        // Let's focus on it in async mode
-        control.getDisplay().asyncExec(new Runnable() {
-            @Override
-            public void run()
-            {
-                control.setFocus();
-            }
-        });
-
-        control.setFont(controller.getEditPlaceholder().getFont());
-        control.addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e)
-            {
-                if (e.detail == SWT.TRAVERSE_RETURN) {
-                    Object newValue = extractor.getValueFromControl(control);
-                    controller.closeInlineEditor();
-                    controller.updateValue(newValue);
-                    e.doit = false;
-                    e.detail = SWT.TRAVERSE_NONE;
-                } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                    controller.closeInlineEditor();
-                    e.doit = false;
-                    e.detail = SWT.TRAVERSE_NONE;
-                } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
-                    Object newValue = extractor.getValueFromControl(control);
-                    controller.closeInlineEditor();
-                    controller.updateValue(newValue);
-                    controller.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
-                    e.doit = false;
-                    e.detail = SWT.TRAVERSE_NONE;
-                }
-            }
-        });
-        control.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusLost(FocusEvent e)
-            {
-                // Check new focus control in async mode
-                // (because right now focus is still on edit control)
-                control.getDisplay().asyncExec(new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        if (control.isDisposed()) {
-                            return;
-                        }
-                        Control newFocus = control.getDisplay().getFocusControl();
-                        if (newFocus != null) {
-                            for (Control fc = newFocus.getParent(); fc != null; fc = fc.getParent()) {
-                                if (fc == controller.getEditPlaceholder()) {
-                                    // New focus is still a child of inline placeholder - do not close it
-                                    return;
-                                }
-                            }
-                        }
-                        controller.updateValue(extractor.getValueFromControl(control));
-                        controller.closeInlineEditor();
-                    }
-                });
-            }
-        });
-    }
-
     protected abstract Object fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException, SQLException;
 
@@ -217,5 +128,102 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         int paramIndex,
         Object value)
         throws DBCException, SQLException;
+
+    protected abstract class ValueEditor<T> implements DBDValueEditor {
+        protected final DBDValueController valueController;
+        protected final T control;
+        protected ValueEditor(final DBDValueController valueController)
+        {
+            this.valueController = valueController;
+            this.control = createControl(valueController.getEditPlaceholder());
+            if (this.control instanceof Control) {
+                initInlineControl((Control)this.control);
+            }
+        }
+
+        protected abstract Object extractValue();
+
+        protected abstract T createControl(Composite editPlaceholder);
+
+        protected void initInlineControl(final Control inlineControl)
+        {
+            UIUtils.addFocusTracker(valueController.getValueSite(), CELL_VALUE_INLINE_EDITOR, inlineControl);
+            inlineControl.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e)
+                {
+                    UIUtils.removeFocusTracker(valueController.getValueSite(), inlineControl);
+                }
+            });
+
+            if (valueController.getEditType() == DBDValueController.EditType.PANEL) {
+                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());
+                return;
+            }
+            // There is a bug in windows. First time date control gain focus it renders cell editor incorrectly.
+            // Let's focus on it in async mode
+            inlineControl.getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run()
+                {
+                    inlineControl.setFocus();
+                }
+            });
+
+            inlineControl.setFont(valueController.getEditPlaceholder().getFont());
+            inlineControl.addTraverseListener(new TraverseListener() {
+                @Override
+                public void keyTraversed(TraverseEvent e)
+                {
+                    if (e.detail == SWT.TRAVERSE_RETURN) {
+                        Object newValue = extractValue();
+                        valueController.closeInlineEditor();
+                        valueController.updateValue(newValue);
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
+                    } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                        valueController.closeInlineEditor();
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
+                    } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                        Object newValue = extractValue();
+                        valueController.closeInlineEditor();
+                        valueController.updateValue(newValue);
+                        valueController.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+                        e.doit = false;
+                        e.detail = SWT.TRAVERSE_NONE;
+                    }
+                }
+            });
+            inlineControl.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e)
+                {
+                    // Check new focus control in async mode
+                    // (because right now focus is still on edit control)
+                    inlineControl.getDisplay().asyncExec(new Runnable() {
+                        @Override
+                        public void run()
+                        {
+                            if (inlineControl.isDisposed()) {
+                                return;
+                            }
+                            Control newFocus = inlineControl.getDisplay().getFocusControl();
+                            if (newFocus != null) {
+                                for (Control fc = newFocus.getParent(); fc != null; fc = fc.getParent()) {
+                                    if (fc == valueController.getEditPlaceholder()) {
+                                        // New focus is still a child of inline placeholder - do not close it
+                                        return;
+                                    }
+                                }
+                            }
+                            valueController.updateValue(extractValue());
+                            valueController.closeInlineEditor();
+                        }
+                    });
+                }
+            });
+        }
+    }
 
 }
