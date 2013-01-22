@@ -126,7 +126,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return null;
     }
 
-    private DBDContent getContent()
+    public DBDContent getContent()
         throws DBCException
     {
         Object value = valueController.getValue();
@@ -299,8 +299,8 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         markReadOnly(valueController.isReadOnly());
     }
 
-    void updateContentFromFile(IProgressMonitor monitor)
-        throws DBException, IOException
+    public void updateContentFromFile(IProgressMonitor monitor)
+        throws DBException
     {
         if (valueController.isReadOnly()) {
             throw new DBCException("Could not update read-only value");
@@ -317,7 +317,6 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
             storage = new TemporaryContentStorage(contentFile);
             contentDetached = content.updateContents(localMonitor, storage);
         }
-        valueController.updateValue(content);
     }
 
     ////////////////////////////////////////////////////////

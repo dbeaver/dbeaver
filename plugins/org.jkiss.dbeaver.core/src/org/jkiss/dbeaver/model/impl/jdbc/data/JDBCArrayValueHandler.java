@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
@@ -160,7 +161,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
                 }
 
                 @Override
-                public Object extractValue()
+                public Object extractValue(DBRProgressMonitor monitor)
                 {
                     return control.getInput();
                 }

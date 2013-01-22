@@ -60,6 +60,11 @@ public class HexManager {
     private Composite textsParent = null;
     private IMenuListener menuListener;
 
+    public HexEditControl getControl()
+    {
+        return hexEditControl;
+    }
+
     /**
      * Blocks the caller until the task is finished. Does not block the user interface thread.
      *

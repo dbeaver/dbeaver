@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.editors.content.parts;
 
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
@@ -52,6 +53,12 @@ public class ContentTextEditorPart extends BaseTextEditor implements IContentEdi
     public IEditorActionBarContributor getActionBarContributor()
     {
         return null;
+    }
+
+    @Override
+    public Control getEditorControl()
+    {
+        return getTextViewer().getTextWidget();
     }
 
     @Override

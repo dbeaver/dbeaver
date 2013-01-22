@@ -45,17 +45,20 @@ import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
@@ -1090,6 +1093,31 @@ public class UIUtils {
                 enableWithChildren((Composite) child, enable);
             } else {
                 child.setEnabled(enable);
+            }
+        }
+    }
+
+    /**
+     * Eclipse hack.
+     * Disables/enabled all key bindings in specified site's part.
+     * Works only if host editor is extender of AbstractTextEditor
+     * Uses reflection because setActionActivation is private method
+     * TODO: find better way to disable key bindings or prioritize event handling to widgets
+     * @param partSite workbench part site
+     * @param enable enable or disable
+     */
+    @Deprecated
+    public static void enableHostEditorKeyBindings(IWorkbenchPartSite partSite, boolean enable)
+    {
+        IWorkbenchPart part = partSite.getPart();
+        if (part instanceof AbstractTextEditor) {
+            AbstractTextEditor hostEditor = (AbstractTextEditor)part;
+            try {
+                Method activatorMethod = AbstractTextEditor.class.getDeclaredMethod("setActionActivation", Boolean.TYPE);
+                activatorMethod.setAccessible(true);
+                activatorMethod.invoke(hostEditor, enable);
+            } catch (Exception e) {
+                log.debug(e);
             }
         }
     }
