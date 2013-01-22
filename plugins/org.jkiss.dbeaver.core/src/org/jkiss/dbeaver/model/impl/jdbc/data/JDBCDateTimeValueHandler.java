@@ -156,13 +156,19 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
                         if (!inline && (isDate || isTimeStamp)) {
                             UIUtils.createControlLabel(dateTimeGroup, "Date");
                         }
-                        dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup,
-                            (inline ? SWT.DATE | SWT.DROP_DOWN | SWT.MEDIUM | SWT.BORDER : SWT.DATE | SWT.DROP_DOWN | SWT.LONG)) : null;
+                        if (isDate || isTimeStamp) {
+                            dateEditor = new DateTime(dateTimeGroup,
+                                (inline ? SWT.DATE | SWT.DROP_DOWN | SWT.MEDIUM | SWT.BORDER : SWT.DATE | SWT.DROP_DOWN | SWT.LONG));
+                            dateEditor.setEnabled(!valueController.isReadOnly());
+                        }
                         if (!inline && (isTime || isTimeStamp)) {
                             UIUtils.createControlLabel(dateTimeGroup, "Time");
                         }
-                        timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup,
-                            (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG) : null;
+                        if (isTime || isTimeStamp) {
+                            timeEditor = new DateTime(dateTimeGroup,
+                                (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG);
+                            timeEditor.setEnabled(!valueController.isReadOnly());
+                        }
 
                         if (dateEditor != null) {
                             if (timeEditor != null) {

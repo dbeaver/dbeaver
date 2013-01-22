@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
@@ -27,6 +28,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -39,6 +41,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -143,6 +146,18 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             this.control = createControl(valueController.getEditPlaceholder());
             if (this.control instanceof Control) {
                 initInlineControl((Control)this.control);
+            }
+            ToolBar editToolBar = valueController.getEditToolBar();
+            if (editToolBar != null) {
+                if (!valueController.isReadOnly()) {
+                    UIUtils.createToolItem(editToolBar, "Save changes", DBIcon.SAVE.getImage(), new Action("Save") {
+                        @Override
+                        public void run()
+                        {
+                            super.run();
+                        }
+                    });
+                }
             }
         }
 
