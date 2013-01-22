@@ -112,57 +112,19 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     }
 
     @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
+    public DBDValueEditor createEditor(DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                boolean inline = controller.getEditType() == DBDValueController.EditType.INLINE;
-                final Composite dateTimeGroup = inline ? controller.getEditPlaceholder() : new Composite(controller.getEditPlaceholder(), SWT.BORDER);
-                if (!inline) {
-                    dateTimeGroup.setLayout(new GridLayout(2, false));
-                }
-
-                boolean isDate = controller.getAttributeMetaData().getTypeID() == java.sql.Types.DATE;
-                boolean isTime = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIME;
-                boolean isTimeStamp = controller.getAttributeMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
-
-                if (!inline && (isDate || isTimeStamp)) {
-                    UIUtils.createControlLabel(dateTimeGroup, "Date");
-                }
-                final DateTime dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup,
-                    (inline ? SWT.DATE | SWT.DROP_DOWN | SWT.MEDIUM | SWT.BORDER : SWT.DATE | SWT.DROP_DOWN | SWT.LONG)) : null;
-                if (!inline && (isTime || isTimeStamp)) {
-                    UIUtils.createControlLabel(dateTimeGroup, "Time");
-                }
-                final DateTime timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup,
-                    (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG) : null;
-
-                if (dateEditor != null) {
-                    initInlineControl(controller, dateEditor, new ValueExtractor<DateTime>() {
-                        @Override
-                        public Object getValueFromControl(DateTime control)
-                        {
-                            return getDate(dateEditor, timeEditor);
-                        }
-                    });
-                }
-                if (timeEditor != null) {
-                    initInlineControl(controller, timeEditor, new ValueExtractor<DateTime>() {
-                        @Override
-                        public Object getValueFromControl(DateTime control)
-                        {
-                            return getDate(dateEditor, timeEditor);
-                        }
-                    });
-                }
-
-                return new DBDValueEditor() {
+                return new ValueEditor<DateTime>(controller) {
+                    DateTime dateEditor;
+                    DateTime timeEditor;
                     @Override
                     public void refreshValue()
                     {
-                        Object value = controller.getValue();
+                        Object value = valueController.getValue();
                         if (value instanceof Date) {
                             Calendar cl = Calendar.getInstance();
                             cl.setTime((Date) value);
@@ -173,6 +135,46 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
                                 timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
                             }
                         }
+                    }
+
+                    @Override
+                    protected DateTime createControl(Composite editPlaceholder)
+                    {
+                        boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
+                        final Composite dateTimeGroup = inline ?
+                            valueController.getEditPlaceholder() :
+                            new Composite(valueController.getEditPlaceholder(), SWT.BORDER);
+                        if (!inline) {
+                            dateTimeGroup.setLayout(new GridLayout(2, false));
+                        }
+
+                        boolean isDate = valueController.getAttributeMetaData().getTypeID() == java.sql.Types.DATE;
+                        boolean isTime = valueController.getAttributeMetaData().getTypeID() == java.sql.Types.TIME;
+                        boolean isTimeStamp = valueController.getAttributeMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
+
+                        if (!inline && (isDate || isTimeStamp)) {
+                            UIUtils.createControlLabel(dateTimeGroup, "Date");
+                        }
+                        dateEditor = isDate || isTimeStamp ? new DateTime(dateTimeGroup,
+                            (inline ? SWT.DATE | SWT.DROP_DOWN | SWT.MEDIUM | SWT.BORDER : SWT.DATE | SWT.DROP_DOWN | SWT.LONG)) : null;
+                        if (!inline && (isTime || isTimeStamp)) {
+                            UIUtils.createControlLabel(dateTimeGroup, "Time");
+                        }
+                        timeEditor = isTime || isTimeStamp ? new DateTime(dateTimeGroup,
+                            (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG) : null;
+
+                        if (dateEditor != null) {
+                            if (timeEditor != null) {
+                                initInlineControl(timeEditor);
+                            }
+                            return dateEditor;
+                        }
+                        return timeEditor;
+                    }
+                    @Override
+                    public Object extractValue()
+                    {
+                        return getDate(dateEditor, timeEditor);
                     }
                 };
             case EDITOR:

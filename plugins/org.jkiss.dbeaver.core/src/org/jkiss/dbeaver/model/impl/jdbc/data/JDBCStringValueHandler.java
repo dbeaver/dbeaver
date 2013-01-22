@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -69,32 +70,35 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
+    public DBDValueEditor createEditor(DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                final boolean inline = controller.getEditType() == DBDValueController.EditType.INLINE;
-                final Text editor = new Text(controller.getEditPlaceholder(),
-                    SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
-                initInlineControl(controller, editor, new ValueExtractor<Text>() {
+                return new ValueEditor<Text>(controller) {
                     @Override
-                    public Object getValueFromControl(Text control)
+                    protected Text createControl(Composite editPlaceholder)
                     {
-                        return control.getText();
+                        final boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
+                        final Text editor = new Text(valueController.getEditPlaceholder(),
+                            SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
+                        editor.setEditable(!valueController.isReadOnly());
+                        editor.setTextLimit(MAX_STRING_LENGTH);
+                        return editor;
                     }
-                });
-                editor.setEditable(!controller.isReadOnly());
-                editor.setTextLimit(MAX_STRING_LENGTH);
-                return new DBDValueEditor() {
                     @Override
                     public void refreshValue()
                     {
-                        editor.setText(CommonUtils.toString(controller.getValue()));
-                        if (inline) {
-                            editor.selectAll();
+                        control.setText(CommonUtils.toString(valueController.getValue()));
+                        if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
+                            control.selectAll();
                         }
+                    }
+                    @Override
+                    public Object extractValue()
+                    {
+                        return control.getText();
                     }
                 };
             case EDITOR:

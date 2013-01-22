@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -95,16 +96,23 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
+    public DBDValueEditor createEditor(DBDValueController controller)
         throws DBException
     {
         switch (controller.getEditType()) {
             case INLINE:
             {
-                final CCombo editor = new CCombo(controller.getEditPlaceholder(), SWT.READ_ONLY);
-                initInlineControl(controller, editor, new ValueExtractor<CCombo>() {
+                return new ValueEditor<CCombo>(controller) {
                     @Override
-                    public Object getValueFromControl(CCombo control)
+                    protected CCombo createControl(Composite editPlaceholder)
+                    {
+                        final CCombo editor = new CCombo(editPlaceholder, SWT.READ_ONLY);
+                        editor.add("FALSE");
+                        editor.add("TRUE");
+                        return editor;
+                    }
+                    @Override
+                    public Object extractValue()
                     {
                         switch (control.getSelectionIndex()) {
                             case 0:
@@ -115,36 +123,36 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                                 return null;
                         }
                     }
-                });
-                editor.add("FALSE");
-                editor.add("TRUE");
-                return new DBDValueEditor() {
                     @Override
                     public void refreshValue()
                     {
-                        Object value = controller.getValue();
-                        editor.setText(value == null ? "FALSE" : value.toString().toUpperCase());
+                        Object value = valueController.getValue();
+                        control.setText(value == null ? "FALSE" : value.toString().toUpperCase());
                     }
                 };
             }
             case PANEL:
             {
-                final List editor = new List(controller.getEditPlaceholder(), SWT.SINGLE | SWT.READ_ONLY);
-                initInlineControl(controller, editor, new ValueExtractor<List>() {
+                return new ValueEditor<List>(controller) {
                     @Override
-                    public Object getValueFromControl(List control)
+                    public Object extractValue()
                     {
                         return control.getSelectionIndex() == 1;
                     }
-                });
-                editor.add("FALSE");
-                editor.add("TRUE");
-                return new DBDValueEditor() {
                     @Override
                     public void refreshValue()
                     {
-                        Object value = controller.getValue();
-                        editor.setSelection(Boolean.TRUE.equals(value) ? 1 : 0);
+                        Object value = valueController.getValue();
+                        control.setSelection(Boolean.TRUE.equals(value) ? 1 : 0);
+                    }
+
+                    @Override
+                    protected List createControl(Composite editPlaceholder)
+                    {
+                        final List editor = new List(valueController.getEditPlaceholder(), SWT.SINGLE | SWT.READ_ONLY);
+                        editor.add("FALSE");
+                        editor.add("TRUE");
+                        return editor;
                     }
                 };
             }
