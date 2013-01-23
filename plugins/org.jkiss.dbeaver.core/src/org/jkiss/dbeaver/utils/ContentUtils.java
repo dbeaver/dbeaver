@@ -306,9 +306,7 @@ public class ContentUtils {
         DBRProgressMonitor monitor)
         throws IOException
     {
-        int segmentSize = (int)(contentLength / STREAM_COPY_BUFFER_SIZE);
-
-        monitor.beginTask("Copy binary content", segmentSize);
+        monitor.beginTask("Copy binary content", contentLength < 0 ? STREAM_COPY_BUFFER_SIZE : (int) contentLength);
         try {
             byte[] buffer = new byte[STREAM_COPY_BUFFER_SIZE];
             for (;;) {
@@ -320,7 +318,7 @@ public class ContentUtils {
                     break;
                 }
                 outputStream.write(buffer, 0, count);
-                monitor.worked(1);
+                monitor.worked(STREAM_COPY_BUFFER_SIZE);
             }
         }
         finally {
@@ -335,9 +333,7 @@ public class ContentUtils {
         DBRProgressMonitor monitor)
         throws IOException
     {
-        int segmentSize = (int)(contentLength / STREAM_COPY_BUFFER_SIZE);
-
-        monitor.beginTask("Copy character content", segmentSize);
+        monitor.beginTask("Copy character content", contentLength < 0 ? STREAM_COPY_BUFFER_SIZE : (int) contentLength);
         try {
             char[] buffer = new char[STREAM_COPY_BUFFER_SIZE];
             for (;;) {
@@ -349,7 +345,7 @@ public class ContentUtils {
                     break;
                 }
                 writer.write(buffer, 0, count);
-                monitor.worked(1);
+                monitor.worked(STREAM_COPY_BUFFER_SIZE);
             }
         }
         finally {

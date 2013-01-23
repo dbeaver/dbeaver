@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -1823,6 +1824,15 @@ public class HexEditControl extends Composite {
         redrawTextAreas(true);
         notifyLongSelectionListeners();
         notifyListeners(SWT.Modify, null);
+    }
+
+    public void setContent(byte[] data)
+    {
+        BinaryContent binaryContent = new BinaryContent();
+        ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+        binaryContent.insert(byteBuffer, 0);
+
+        setContentProvider(binaryContent);
     }
 
 
