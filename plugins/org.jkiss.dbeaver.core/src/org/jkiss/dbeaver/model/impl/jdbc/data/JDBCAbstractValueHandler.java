@@ -137,15 +137,15 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         Object value)
         throws DBCException, SQLException;
 
-    protected abstract class ValueEditor<T> implements DBDValueEditor {
+    protected abstract class ValueEditor<T extends Control> implements DBDValueEditor {
         protected final DBDValueController valueController;
         protected final T control;
         protected ValueEditor(final DBDValueController valueController)
         {
             this.valueController = valueController;
             this.control = createControl(valueController.getEditPlaceholder());
-            if (this.control instanceof Control) {
-                initInlineControl((Control)this.control);
+            if (this.control != null) {
+                initInlineControl(this.control);
             }
             ToolBar editToolBar = valueController.getEditToolBar();
             if (editToolBar != null) {
@@ -267,7 +267,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
-    protected abstract class ValueEditorEx<T> extends ValueEditor<T> implements DBDValueEditorEx {
+    protected abstract class ValueEditorEx<T extends Control> extends ValueEditor<T> implements DBDValueEditorEx {
 
         protected ValueEditorEx(final DBDValueController valueController)
         {

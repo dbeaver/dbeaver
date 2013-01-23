@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Tree;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDArray;
@@ -141,29 +142,30 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
+    public DBDValueEditor createEditor(DBDValueController controller)
         throws DBException
     {
         if (controller.getEditType() == DBDValueController.EditType.PANEL) {
-            return new ValueEditor<ComplexObjectEditor>(controller) {
+            return new ValueEditor<Tree>(controller) {
+                ComplexObjectEditor editor;
                 @Override
                 public void refreshValue()
                 {
-                    control.setModel((DBDArray) controller.getValue());
+                    editor.setModel((DBDArray) valueController.getValue());
                 }
 
                 @Override
-                protected ComplexObjectEditor createControl(Composite editPlaceholder)
+                protected Tree createControl(Composite editPlaceholder)
                 {
-                    final ComplexObjectEditor editor = new ComplexObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
-                    editor.setModel((DBDArray) controller.getValue());
-                    return editor;
+                    editor = new ComplexObjectEditor(valueController.getEditPlaceholder(), SWT.BORDER);
+                    editor.setModel((DBDArray) valueController.getValue());
+                    return editor.getTree();
                 }
 
                 @Override
                 public Object extractValue(DBRProgressMonitor monitor)
                 {
-                    return control.getInput();
+                    return editor.getInput();
                 }
             };
         }
