@@ -458,7 +458,7 @@ public class SQLQueryJob extends DataSourceJob
                 }
                 rowCount++;
 
-                if (rowCount % 100 == 0) {
+                if (rowCount > 0 && rowCount % 100 == 0) {
                     monitor.subTask(rowCount + " rows fetched");
                     monitor.worked(100);
                 }
