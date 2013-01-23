@@ -1640,6 +1640,13 @@
             <description>Selection foreground</description>
         </colorDefinition>
         <colorDefinition
+                label="ResultSet value editor background"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.resultset.color.preview.background"
+                value="255,255,225">
+            <description>Selection foreground</description>
+        </colorDefinition>
+        <colorDefinition
                 label="SQL keyword color"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.keyword.foreground"
