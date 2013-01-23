@@ -43,7 +43,6 @@ public class ImageViewer extends Composite {
     {
         super(parent, style);
 
-        setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         GridLayout layout = new GridLayout(1, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
