@@ -57,7 +57,7 @@ abstract class ViewValuePanel extends Composite {
         columnImageLabel.setImage(DBIcon.TYPE_OBJECT.getImage());
 
         columnNameLabel = new Label(titleBar, SWT.NONE);
-        columnNameLabel.setText("Col name");
+        columnNameLabel.setText("");
         columnNameLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         toolBar = new ToolBar(titleBar, SWT.HORIZONTAL);
