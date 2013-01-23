@@ -23,10 +23,11 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -43,10 +44,8 @@ import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.imageview.ImageEditor;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
@@ -349,8 +348,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                 try {
                                     DBDContent content = (DBDContent) valueController.getValue();
                                     DBDContentStorage data = content.getContents(monitor);
-                                    if (control instanceof StyledText) {
-                                        StyledText text = (StyledText) control;
+                                    if (control instanceof Text) {
+                                        Text text = (Text) control;
                                         StringWriter buffer = new StringWriter();
                                         if (data != null) {
                                             ContentUtils.copyStreams(data.getContentReader(), -1, buffer, monitor);
@@ -379,8 +378,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     {
                         DBDContent content = (DBDContent) valueController.getValue();
                         try {
-                            if (control instanceof StyledText) {
-                                StyledText styledText = (StyledText) control;
+                            if (control instanceof Text) {
+                                Text styledText = (Text) control;
                                 content.updateContents(
                                     monitor,
                                     new StringContentStorage(styledText.getText()));
@@ -408,21 +407,16 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     {
                         DBDContent content = (DBDContent) valueController.getValue();
                         if (ContentUtils.isTextContent(content)) {
-                            return new StyledText(editPlaceholder, SWT.BORDER);
+                            Text text = new Text(editPlaceholder, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+                            text.setEditable(!valueController.isReadOnly());
+                            return text;
                         } else {
-                            boolean isImage = false;
+                            ImageDetector imageDetector = new ImageDetector(content);
                             if (!content.isNull()) {
-                                try {
-                                    ImageData imageData = new ImageData(content.getContents(VoidProgressMonitor.INSTANCE).getContentStream());
-                                    new Image(editPlaceholder.getDisplay(), imageData).dispose();
-                                    isImage = true;
-                                }
-                                catch (Exception e) {
-                                    // this is not an image
-                                }
+                                DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), imageDetector);
                             }
 
-                            if (isImage) {
+                            if (imageDetector.isImage()) {
                                 return new ImageViewer(editPlaceholder, SWT.BORDER);
                             } else {
                                 return new HexEditControl(editPlaceholder, SWT.BORDER);
@@ -537,6 +531,36 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
         catch (InterruptedException e) {
             // do nothing
+        }
+    }
+
+    private static class ImageDetector implements DBRRunnableWithProgress {
+        private final DBDContent content;
+        private boolean isImage;
+
+        private ImageDetector(DBDContent content)
+        {
+            this.content = content;
+        }
+
+        public boolean isImage()
+        {
+            return isImage;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        {
+            if (!content.isNull()) {
+                try {
+                    new ImageData(
+                        content.getContents(monitor).getContentStream());
+                    isImage = true;
+                }
+                catch (Exception e) {
+                    // this is not an image
+                }
+            }
         }
     }
 
