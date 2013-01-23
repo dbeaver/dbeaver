@@ -207,11 +207,6 @@ public class TextViewDialog extends ValueViewDialog {
 
     private void setBinaryContent(String stringValue)
     {
-//        int maxSize = (int) getValueController().getAttributeMetaData().getMaxLength();
-//        if (maxSize <= 0) {
-//            maxSize = DEFAULT_MAX_SIZE;
-//        }
-        BinaryContent binaryContent = new BinaryContent();
         byte[] bytes;
         try {
             bytes = stringValue.getBytes(
@@ -220,16 +215,7 @@ public class TextViewDialog extends ValueViewDialog {
             log.error(e);
             bytes = stringValue.getBytes();
         }
-//        if (bytes.length > maxSize) {
-//            maxSize = bytes.length;
-//        }
-        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
-        binaryContent.insert(byteBuffer, 0);
-//        int tailSize = (maxSize - bytes.length);
-//        if (tailSize > 0) {
-//            binaryContent.insert(ByteBuffer.wrap(new byte[tailSize]), bytes.length);
-//        }
-        hexEditControl.setContentProvider(binaryContent);
+        hexEditControl.setContent(bytes);
     }
 
     @Override
