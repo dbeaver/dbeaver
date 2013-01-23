@@ -335,7 +335,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public DBPDataSourceProvider getDataSourceProvider()
         throws DBException
     {
-        return providerDescriptor.getInstance();
+        return providerDescriptor.getInstance(this);
     }
 
     @Override

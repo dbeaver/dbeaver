@@ -23,6 +23,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
+import org.eclipse.osgi.baseadaptor.bundlefile.BundleEntry;
+import org.eclipse.osgi.baseadaptor.loader.BaseClassLoader;
+import org.eclipse.osgi.baseadaptor.loader.ClasspathEntry;
+import org.eclipse.osgi.baseadaptor.loader.ClasspathManager;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -165,15 +169,17 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return icon;
     }
 
-    public DBPDataSourceProvider getInstance()
+    DBPDataSourceProvider getInstance(DriverDescriptor driver)
         throws DBException
     {
         if (instance == null) {
-            // Create instance
+            // locate class
             Class<?> implClass = implType.getObjectClass();
             if (implClass == null) {
                 throw new DBException("Can't find descriptor class '" + implType.implName + "'");
             }
+            initProviderBundle(implClass, driver);
+            // Create instance
             try {
                 this.instance = (DBPDataSourceProvider) implClass.newInstance();
             }
@@ -190,6 +196,14 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
         }
         return instance;
+    }
+
+    private void initProviderBundle(Class<?> implClass, DriverDescriptor driver)
+    {
+        ClassLoader classLoader = implClass.getClassLoader();
+        if (classLoader instanceof BaseClassLoader) {
+            BaseClassLoader baseClassLoader = (BaseClassLoader)classLoader;
+        }
     }
 
     public DBXTreeNode getTreeDescriptor()
