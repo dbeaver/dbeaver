@@ -684,6 +684,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (selForeColor != null) {
             this.spreadsheet.setForegroundSelected(selForeColor);
         }
+        Color previewBack = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_SET_PREVIEW_BACK);
+        if (previewBack != null) {
+            this.previewPane.getViewPlaceholder().setBackground(previewBack);
+            for (Control control : this.previewPane.getViewPlaceholder().getChildren()) {
+                control.setBackground(previewBack);
+            }
+        }
     }
 
     @Override
@@ -692,7 +699,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
             || event.getProperty().equals(ThemeConstants.FONT_SQL_RESULT_SET)
             || event.getProperty().equals(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_BACK)
-            || event.getProperty().equals(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE))
+            || event.getProperty().equals(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE)
+            || event.getProperty().equals(ThemeConstants.COLOR_SQL_RESULT_SET_PREVIEW_BACK))
         {
             applyThemeSettings();
         }

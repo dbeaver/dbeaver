@@ -67,7 +67,6 @@ abstract class ViewValuePanel extends Composite {
         viewPlaceholder = UIUtils.createPlaceholder(this, 1);
         viewPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         viewPlaceholder.setLayout(new FillLayout());
-        viewPlaceholder.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.NOTE_BACKGROUND_COLOR));
     }
 
     protected abstract void hidePanel();
