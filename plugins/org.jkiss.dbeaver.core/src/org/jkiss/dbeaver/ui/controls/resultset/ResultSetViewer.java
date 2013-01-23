@@ -1369,7 +1369,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void showRowsCount()
     {
-        setStatus(String.valueOf(curRows.size()) + CoreMessages.controls_resultset_viewer_status_rows_fetched);
+        if (curRows.isEmpty()) {
+            setStatus(CoreMessages.controls_resultset_viewer_status_no_data);
+        } else {
+            setStatus(String.valueOf(curRows.size()) + CoreMessages.controls_resultset_viewer_status_rows_fetched);
+        }
     }
 
     @Override
