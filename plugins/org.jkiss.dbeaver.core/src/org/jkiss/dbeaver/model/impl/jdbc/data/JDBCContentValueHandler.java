@@ -24,10 +24,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -44,8 +43,11 @@ import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.imageview.ImageEditor;
+import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
@@ -354,13 +356,16 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                             ContentUtils.copyStreams(data.getContentReader(), -1, buffer, monitor);
                                         }
                                         text.setText(buffer.toString());
-                                    } else {
+                                    } else if (control instanceof HexEditControl) {
                                         HexEditControl hexEditControl = (HexEditControl) control;
                                         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
                                         if (data != null) {
                                             ContentUtils.copyStreams(data.getContentStream(), -1, buffer, monitor);
                                         }
                                         hexEditControl.setContent(buffer.toByteArray());
+                                    } else if (control instanceof ImageViewer) {
+                                        ImageViewer imageViewControl = (ImageViewer)control;
+                                        imageViewControl.loadImage(data.getContentStream());
                                     }
                                 } catch (Exception e) {
                                     log.error(e);
@@ -379,7 +384,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                 content.updateContents(
                                     monitor,
                                     new StringContentStorage(styledText.getText()));
-                            } else {
+                            } else if (control instanceof HexEditControl) {
                                 HexEditControl hexEditControl = (HexEditControl)control;
                                 BinaryContent binaryContent = hexEditControl.getContent();
                                 ByteBuffer buffer = ByteBuffer.allocate((int) binaryContent.length());
@@ -401,10 +406,27 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     @Override
                     protected Control createControl(Composite editPlaceholder)
                     {
-                        if (ContentUtils.isTextContent((DBDContent) valueController.getValue())) {
+                        DBDContent content = (DBDContent) valueController.getValue();
+                        if (ContentUtils.isTextContent(content)) {
                             return new StyledText(editPlaceholder, SWT.BORDER);
                         } else {
-                            return new HexEditControl(editPlaceholder, SWT.BORDER);
+                            boolean isImage = false;
+                            if (!content.isNull()) {
+                                try {
+                                    ImageData imageData = new ImageData(content.getContents(VoidProgressMonitor.INSTANCE).getContentStream());
+                                    new Image(editPlaceholder.getDisplay(), imageData).dispose();
+                                    isImage = true;
+                                }
+                                catch (Exception e) {
+                                    // this is not an image
+                                }
+                            }
+
+                            if (isImage) {
+                                return new ImageViewer(editPlaceholder, SWT.BORDER);
+                            } else {
+                                return new HexEditControl(editPlaceholder, SWT.BORDER);
+                            }
                         }
                     }
                 };
