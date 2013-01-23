@@ -27,7 +27,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.EditorActionBarContributor;
+import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -323,14 +327,17 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             {
                 final DBDContent content = (DBDContent) controller.getValue();
                 final IContentEditorPart editor;
+                final EditorActionBarContributor actionBarContributor;
                 if (ContentUtils.isTextContent(content)) {
                     if (isXML(content)) {
                         editor = new ContentXMLEditorPart();
                     } else {
                         editor = new ContentTextEditorPart();
                     }
+                    actionBarContributor = new BasicTextEditorActionContributor();
                 } else {
                     editor = new ContentBinaryEditorPart();
+                    actionBarContributor = null;
                 }
                 final SubEditorSite site = new SubEditorSite(controller.getValueSite());
                 return new ValueEditorEx<Control>(controller) {
@@ -394,6 +401,10 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     @Override
                     protected Control createControl(Composite editPlaceholder)
                     {
+                        if (actionBarContributor != null) {
+                            actionBarContributor.init(site.getActionBars(), site.getPage());
+                            actionBarContributor.setActiveEditor(editor);
+                        }
                         initInput();
                         editor.createPartControl(controller.getEditPlaceholder());
                         return editor.getEditorControl();
