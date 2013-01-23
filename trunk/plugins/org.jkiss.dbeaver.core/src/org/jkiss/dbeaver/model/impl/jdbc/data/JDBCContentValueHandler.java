@@ -23,15 +23,11 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.part.EditorActionBarContributor;
-import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -42,16 +38,17 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
+import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
+import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
-import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
@@ -60,8 +57,12 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -325,23 +326,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             }
             case PANEL:
             {
-                final DBDContent content = (DBDContent) controller.getValue();
-                final IContentEditorPart editor;
-                final EditorActionBarContributor actionBarContributor;
-                if (ContentUtils.isTextContent(content)) {
-                    if (isXML(content)) {
-                        editor = new ContentXMLEditorPart();
-                    } else {
-                        editor = new ContentTextEditorPart();
-                    }
-                    actionBarContributor = new BasicTextEditorActionContributor();
-                } else {
-                    editor = new ContentBinaryEditorPart();
-                    actionBarContributor = null;
-                }
-                final SubEditorSite site = new SubEditorSite(controller.getValueSite());
                 return new ValueEditorEx<Control>(controller) {
-                    private DBDContent prevValue = content;
                     @Override
                     public void showValueEditor()
                     {
@@ -350,64 +335,77 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     @Override
                     public void closeValueEditor()
                     {
-                        ContentEditorInput input = (ContentEditorInput)editor.getEditorInput();
-                        if (input != null) {
-                            input.release(VoidProgressMonitor.INSTANCE);
-                        }
-                        editor.dispose();
                     }
 
                     @Override
                     public void refreshValue()
                     {
-                        if (prevValue == valueController.getValue()) {
-                            // No need to refresh
-                            return;
-                        }
-                        prevValue = (DBDContent) valueController.getValue();
-                        initInput();
-                    }
-
-                    private void initInput()
-                    {
-                        try {
-                            try {
-                                ContentEditorInput oldInput = (ContentEditorInput)editor.getEditorInput();
+                        DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
+                            @Override
+                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                            {
                                 try {
-                                    ContentEditorInput input = new ContentEditorInput((DBDAttributeController) valueController, new IContentEditorPart[]{editor}, VoidProgressMonitor.INSTANCE);
-                                    editor.init(site, input);
-                                } finally {
-                                    if (oldInput != null) {
-                                        oldInput.release(VoidProgressMonitor.INSTANCE);
+                                    DBDContent content = (DBDContent) valueController.getValue();
+                                    DBDContentStorage data = content.getContents(monitor);
+                                    if (control instanceof StyledText) {
+                                        StyledText text = (StyledText) control;
+                                        StringWriter buffer = new StringWriter();
+                                        if (data != null) {
+                                            ContentUtils.copyStreams(data.getContentReader(), -1, buffer, monitor);
+                                        }
+                                        text.setText(buffer.toString());
+                                    } else {
+                                        HexEditControl hexEditControl = (HexEditControl) control;
+                                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                                        if (data != null) {
+                                            ContentUtils.copyStreams(data.getContentStream(), -1, buffer, monitor);
+                                        }
+                                        hexEditControl.setContent(buffer.toByteArray());
                                     }
+                                } catch (Exception e) {
+                                    log.error(e);
                                 }
-                            } catch (PartInitException e) {
-                                log.error("Can't initialize content editor", e);
                             }
-                        } catch (DBException e) {
-                            log.error("Error refreshing content value", e);
-                        }
+                        });
                     }
 
                     @Override
                     public Object extractValue(DBRProgressMonitor monitor) throws DBException
                     {
-                        editor.doSave(monitor.getNestedMonitor());
-                        ContentEditorInput editorInput = (ContentEditorInput) editor.getEditorInput();
-                        editorInput.updateContentFromFile(monitor.getNestedMonitor());
-                        return editorInput.getContent();
+                        DBDContent content = (DBDContent) valueController.getValue();
+                        try {
+                            if (control instanceof StyledText) {
+                                StyledText styledText = (StyledText) control;
+                                content.updateContents(
+                                    monitor,
+                                    new StringContentStorage(styledText.getText()));
+                            } else {
+                                HexEditControl hexEditControl = (HexEditControl)control;
+                                BinaryContent binaryContent = hexEditControl.getContent();
+                                ByteBuffer buffer = ByteBuffer.allocate((int) binaryContent.length());
+                                try {
+                                    binaryContent.get(buffer, 0);
+                                } catch (IOException e) {
+                                    log.error(e);
+                                }
+                                content.updateContents(
+                                    monitor,
+                                    new BytesContentStorage(buffer.array(), ContentUtils.getDefaultFileEncoding()));
+                            }
+                        } catch (Exception e) {
+                            log.error(e);
+                        }
+                        return content;
                     }
 
                     @Override
                     protected Control createControl(Composite editPlaceholder)
                     {
-                        if (actionBarContributor != null) {
-                            actionBarContributor.init(site.getActionBars(), site.getPage());
-                            actionBarContributor.setActiveEditor(editor);
+                        if (ContentUtils.isTextContent((DBDContent) valueController.getValue())) {
+                            return new StyledText(editPlaceholder, SWT.BORDER);
+                        } else {
+                            return new HexEditControl(editPlaceholder, SWT.BORDER);
                         }
-                        initInput();
-                        editor.createPartControl(controller.getEditPlaceholder());
-                        return editor.getEditorControl();
                     }
                 };
             }
