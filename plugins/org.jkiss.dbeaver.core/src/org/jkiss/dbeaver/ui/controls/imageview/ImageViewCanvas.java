@@ -63,8 +63,7 @@ class ImageViewCanvas extends Canvas {
 	 * @param style the style of this control.
 	 */
 	public ImageViewCanvas(final Composite parent, int style) {
-		super( parent, style|SWT.BORDER|SWT.V_SCROLL|SWT.H_SCROLL
-				            | SWT.NO_BACKGROUND);
+		super( parent, style|SWT.V_SCROLL|SWT.H_SCROLL | SWT.NO_BACKGROUND);
 		addControlListener(new ControlAdapter() { /* resize listener. */
 			@Override
             public void controlResized(ControlEvent event) {

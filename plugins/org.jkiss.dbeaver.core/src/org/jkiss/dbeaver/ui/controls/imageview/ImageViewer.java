@@ -43,64 +43,25 @@ import java.io.InputStream;
  * 
  * @author Chengdong Li: cli4@uky.edu
  */
-public class ImageViewControl extends Composite {
-
-    private Color redColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
-    private Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
+public class ImageViewer extends Composite {
 
     private ImageViewCanvas canvas;
-    private SWTException lastError;
-    private Label messageLabel;
 
-    private ToolItem itemZoomIn;
-    private ToolItem itemZoomOut;
-    private ToolItem itemRotate;
-    private ToolItem itemFit;
-    private ToolItem itemOriginal;
-
-    public ImageViewControl(Composite parent, int style)
+    public ImageViewer(Composite parent, int style)
     {
         super(parent, style);
 
         setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         GridLayout layout = new GridLayout(1, false);
-        layout.verticalSpacing = 3;
-        layout.horizontalSpacing = 3;
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+        layout.verticalSpacing = 0;
+        layout.horizontalSpacing = 0;
         setLayout(layout);
 
         canvas = new ImageViewCanvas(this, SWT.NONE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         canvas.setLayoutData(gd);
-
-        {
-            // Status & toolbar
-            Composite statusGroup = new Composite(this, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            statusGroup.setLayoutData(gd);
-
-            layout = new GridLayout(2, false);
-            layout.verticalSpacing = 0;
-            layout.horizontalSpacing = 0;
-            statusGroup.setLayout(layout);
-
-            messageLabel = new Label(statusGroup, SWT.NONE);
-            messageLabel.setText(""); //$NON-NLS-1$
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            messageLabel.setLayoutData(gd);
-
-            {
-                ToolBar toolBar = new ToolBar(statusGroup, SWT.NONE);
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-                toolBar.setLayoutData(gd);
-
-                itemZoomIn = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_zoom_in, DBIcon.ZOOM_IN.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMIN));
-                itemZoomOut = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_zoom_out, DBIcon.ZOOM_OUT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ZOOMOUT));
-                itemRotate = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_rotate, DBIcon.ROTATE_LEFT.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ROTATE));
-                itemFit = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_fit_window, DBIcon.FIT_WINDOW.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_FIT));
-                itemOriginal = UIUtils.createToolItem(toolBar, CoreMessages.controls_imageview_original_size, DBIcon.ORIGINAL_SIZE.getImage(), new ImageActionDelegate(this, ImageActionDelegate.TOOLBAR_ORIGINAL));
-            }
-        }
-        updateActions();
 
         // Add DND support
         Transfer[] types = new Transfer[] {ImageTransfer.getInstance()};
@@ -136,16 +97,6 @@ public class ImageViewControl extends Composite {
         super.dispose();
     }
 
-    private void updateActions()
-    {
-        boolean hasImage = canvas.getSourceImage() != null;
-        itemZoomIn.setEnabled(hasImage);
-        itemZoomOut.setEnabled(hasImage);
-        itemRotate.setEnabled(hasImage);
-        itemFit.setEnabled(hasImage);
-        itemOriginal.setEnabled(hasImage);
-    }
-
     ImageViewCanvas getCanvas()
     {
         return canvas;
@@ -154,30 +105,12 @@ public class ImageViewControl extends Composite {
     public boolean loadImage(InputStream inputStream)
     {
         canvas.loadImage(inputStream);
-        try {
-            lastError = canvas.getError();
-            if (lastError != null) {
-                messageLabel.setText(lastError.getMessage());
-                messageLabel.setForeground(redColor);
-                return false;
-            } else {
-                ImageData imageData = canvas.getImageData();
-
-                messageLabel.setText(
-                    getImageType(imageData.type) + " " + imageData.width + "x" + imageData.height + "x" + imageData.depth + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    "  "/* + imageData.data.length + " bytes"*/); //$NON-NLS-1$
-                messageLabel.setForeground(blackColor);
-                return true;
-            }
-        }
-        finally {
-            updateActions();
-        }
+        return canvas.getError() == null;
     }
 
     public SWTException getLastError()
     {
-        return lastError;
+        return canvas.getError();
     }
 
     public static String getImageType(int type)

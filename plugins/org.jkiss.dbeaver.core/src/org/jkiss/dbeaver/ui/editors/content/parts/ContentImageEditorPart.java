@@ -34,7 +34,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.controls.imageview.ImageViewControl;
+import org.jkiss.dbeaver.ui.controls.imageview.ImageEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import javax.activation.MimeType;
@@ -49,7 +49,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
 
     static final Log log = LogFactory.getLog(ContentImageEditorPart.class);
 
-    private ImageViewControl imageViewer;
+    private ImageEditor imageViewer;
     private boolean contentValid;
 
     @Override
@@ -91,7 +91,7 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
 
     @Override
     public void createPartControl(Composite parent) {
-        imageViewer = new ImageViewControl(parent, SWT.NONE);
+        imageViewer = new ImageEditor(parent, SWT.NONE);
 
         loadImage();
     }
