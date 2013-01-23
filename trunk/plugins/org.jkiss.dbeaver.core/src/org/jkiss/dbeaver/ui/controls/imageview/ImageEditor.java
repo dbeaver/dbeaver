@@ -32,15 +32,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import java.io.InputStream;
 
 /**
- * A scrollable image canvas that extends org.eclipse.swt.graphics.Canvas.
- * <p/>
- * It requires Eclipse (version >= 2.1) on Win32/win32; Linux/gtk; MacOSX/carbon.
- * <p/>
- * This implementation using the pure SWT, no UI AWT package is used. For 
- * convenience, I put everything into one class. However, the best way to
- * implement this is to use inheritance to create multiple hierarchies.
- * 
- * @author Chengdong Li: cli4@uky.edu
+ * Image editor, based on image viewer.
  */
 public class ImageEditor extends ImageViewer {
 
