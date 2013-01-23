@@ -51,6 +51,8 @@ public class ImageEditor extends ImageViewer {
     {
         super(parent, style);
 
+        setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+
         {
             // Status & toolbar
             Composite statusGroup = new Composite(this, SWT.NONE);
