@@ -72,6 +72,12 @@ public abstract class DataSourceMenuContributor extends CompoundContributionItem
             return makeEmptyList();
         }
         ISelection selection = activePart.getSite().getSelectionProvider().getSelection();
+        if (selection  == null || !(selection instanceof IStructuredSelection) || selection.isEmpty()) {
+            // Empty selection - use active part
+            if (activePart != activePage.getActivePart()) {
+                selection = activePage.getActivePart().getSite().getSelectionProvider().getSelection();
+            }
+        }
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
             Object element = ((IStructuredSelection) selection).getFirstElement();
             selectedObject = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
