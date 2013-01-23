@@ -87,7 +87,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 DriverDescriptor driver = getSelectedDriver();
                 DBPDataSourceProvider provider;
                 try {
-                    provider = driver.getProviderDescriptor().getInstance();
+                    provider = driver.getDataSourceProvider();
                 }
                 catch (DBException ex) {
                     throw new InvocationTargetException(ex);
