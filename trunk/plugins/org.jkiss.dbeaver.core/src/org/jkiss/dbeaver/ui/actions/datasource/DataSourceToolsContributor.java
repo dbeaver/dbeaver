@@ -24,14 +24,15 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceToolDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
@@ -44,12 +45,18 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
 
 
     @Override
-    protected void fillContributionItems(List<IContributionItem> menuItems, DBPDataSource dataSource, DBSObject selectedObject)
+    protected void fillContributionItems(List<IContributionItem> menuItems)
     {
-        if (selectedObject == null) {
-            selectedObject = dataSource.getContainer();
+        IWorkbenchPart activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
+
+        DBSObject selectedObject = null;
+        ISelection selection = activePart.getSite().getSelectionProvider().getSelection();
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            Object element = ((IStructuredSelection) selection).getFirstElement();
+            selectedObject = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
         }
-        if (selectedObject.getDataSource() != null) {
+
+        if (selectedObject != null && selectedObject.getDataSource() != null) {
             DriverDescriptor driver = (DriverDescriptor) selectedObject.getDataSource().getContainer().getDriver();
             List<DataSourceToolDescriptor> tools = driver.getProviderDescriptor().getTools(selectedObject);
             fillToolsMenu(menuItems, tools, new StructuredSelection(selectedObject));
