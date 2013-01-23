@@ -23,18 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 
 import java.util.ArrayList;
@@ -47,50 +36,13 @@ public abstract class DataSourceMenuContributor extends CompoundContributionItem
     @Override
     protected IContributionItem[] getContributionItems()
     {
-        DBSDataSourceContainer container = null;
-        DBPDataSource dataSource = null;
-        DBSObject selectedObject = null;
-        IWorkbenchPart activePart = null;
-        IWorkbenchPage activePage = DBeaverUI.getActiveWorkbenchWindow().getActivePage();
-        IEditorPart activeEditor = activePage.getActiveEditor();
-        if (activeEditor != null) {
-            activePart = activeEditor;
-            container = DataSourceHandler.getDataSourceContainer(activeEditor);
-        }
-        if (container == null) {
-            activePart = activePage.getActivePart();
-            if (activePart == null) {
-                return makeEmptyList();
-            }
-            container = DataSourceHandler.getDataSourceContainer(activePart);
-        }
-
-        if (container != null) {
-            dataSource = container.getDataSource();
-        }
-        if (dataSource == null) {
-            return makeEmptyList();
-        }
-        ISelection selection = activePart.getSite().getSelectionProvider().getSelection();
-        if (selection  == null || !(selection instanceof IStructuredSelection) || selection.isEmpty()) {
-            // Empty selection - use active part
-            if (activePart != activePage.getActivePart()) {
-                selection = activePage.getActivePart().getSite().getSelectionProvider().getSelection();
-            }
-        }
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            Object element = ((IStructuredSelection) selection).getFirstElement();
-            selectedObject = RuntimeUtils.getObjectAdapter(element, DBSObject.class);
-        }
         List<IContributionItem> menuItems = new ArrayList<IContributionItem>();
-        fillContributionItems(menuItems, dataSource, selectedObject);
+        fillContributionItems(menuItems);
         return menuItems.isEmpty() ? makeEmptyList() : menuItems.toArray(new IContributionItem[menuItems.size()]);
     }
 
     protected abstract void fillContributionItems(
-        List<IContributionItem> menuItems,
-        DBPDataSource dataSource,
-        DBSObject selectedObject);
+        List<IContributionItem> menuItems);
 
     private static IContributionItem[] makeEmptyList(){
         return new IContributionItem[] { new ActionContributionItem(new EmptyListAction())};
