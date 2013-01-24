@@ -92,7 +92,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLView" label="%tree.views.node.name" icon="#folder_view" description="Views">
                             <items label="%tree.view.node.name" path="view" property="views" icon="#view">
-                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" icon="#column">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
                                 </items>
                             </items>
                         </folder>

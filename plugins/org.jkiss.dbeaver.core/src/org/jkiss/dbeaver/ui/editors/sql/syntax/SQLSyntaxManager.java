@@ -57,6 +57,18 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     public static final String CONFIG_COLOR_TEXT = "org.jkiss.dbeaver.sql.editor.color.text.foreground";
     public static final String CONFIG_COLOR_BACKGROUND = "org.jkiss.dbeaver.sql.editor.color.text.background";
 
+    public static final Set<String> THEME_PROPERTIES = new HashSet<String>();
+    static {
+        THEME_PROPERTIES.add(CONFIG_COLOR_KEYWORD);
+        THEME_PROPERTIES.add(CONFIG_COLOR_DATATYPE);
+        THEME_PROPERTIES.add(CONFIG_COLOR_STRING);
+        THEME_PROPERTIES.add(CONFIG_COLOR_NUMBER);
+        THEME_PROPERTIES.add(CONFIG_COLOR_COMMENT);
+        THEME_PROPERTIES.add(CONFIG_COLOR_DELIMITER);
+        THEME_PROPERTIES.add(CONFIG_COLOR_PARAMETER);
+        THEME_PROPERTIES.add(CONFIG_COLOR_TEXT);
+        THEME_PROPERTIES.add(CONFIG_COLOR_BACKGROUND);
+    }
     private IThemeManager themeManager;
 
     private DBPKeywordManager keywordManager;
@@ -159,19 +171,19 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         final IToken typeToken = new Token(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE), backgroundColor, SWT.BOLD));
         final IToken stringToken = new Token(
-            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_STRING)));
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_STRING), backgroundColor, SWT.NORMAL));
         final IToken quotedToken = new Token(
-            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE)));
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DATATYPE), backgroundColor, SWT.NORMAL));
         final IToken numberToken = new Token(
-            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_NUMBER)));
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_NUMBER), backgroundColor, SWT.NORMAL));
         final IToken commentToken = new SQLCommentToken(
-            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT)));
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_COMMENT), backgroundColor, SWT.NORMAL));
         final SQLDelimiterToken delimiterToken = new SQLDelimiterToken(
-            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED)));
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED), backgroundColor, SWT.NORMAL));
         final SQLParameterToken parameterToken = new SQLParameterToken(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), backgroundColor, SWT.BOLD));
         final IToken otherToken = new Token(
-            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_TEXT)));
+            new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_TEXT), backgroundColor, SWT.NORMAL));
         final SQLBlockBeginToken blockBeginToken = new SQLBlockBeginToken(
             new TextAttribute(getColor(SQLSyntaxManager.CONFIG_COLOR_KEYWORD), backgroundColor, SWT.BOLD));
         final SQLBlockEndToken blockEndToken = new SQLBlockEndToken(

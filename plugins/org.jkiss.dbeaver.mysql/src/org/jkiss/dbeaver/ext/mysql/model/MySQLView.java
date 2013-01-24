@@ -220,7 +220,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
     }
 
     @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    //@Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getAdditionalInfo(monitor).getDefinition();

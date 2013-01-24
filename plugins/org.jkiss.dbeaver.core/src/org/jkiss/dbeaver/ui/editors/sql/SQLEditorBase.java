@@ -35,13 +35,17 @@ import org.eclipse.jface.text.source.projection.ProjectionAnnotation;
 import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
+import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -80,11 +84,24 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     private IAnnotationAccess annotationAccess;
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
+    private IPropertyChangeListener themeListener;
 
     public SQLEditorBase()
     {
         super();
         syntaxManager = new SQLSyntaxManager();
+        themeListener = new IPropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent event)
+            {
+                if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
+                    SQLSyntaxManager.THEME_PROPERTIES.contains(event.getProperty()))
+                {
+                    reloadSyntaxRules();
+                }
+            }
+        };
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeListener);
 
         setDocumentProvider(new SQLDocumentProvider());
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
@@ -247,6 +264,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         if (syntaxManager != null) {
             syntaxManager.dispose();
             syntaxManager = null;
+        }
+        if (themeListener != null) {
+            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeListener);
+            themeListener = null;
         }
 
         super.dispose();
