@@ -633,7 +633,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 break;
             }
         }
-        Class<?> propClass = prop.getDeclaringClass();
+        // Use prop class from top parent
+        Class<?> propClass = prop.getParent() == null ? prop.getDeclaringClass() : prop.getParent().getDeclaringClass();
         if (objectColumn == null) {
             Item columnItem;
             ViewerColumn newColumn;
