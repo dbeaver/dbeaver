@@ -74,7 +74,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         this.propInfo = propInfo;
 
         final String propertyName = BeanUtils.getPropertyNameFromGetter(getter.getName());
-        declaringClass = parent == null ? getter.getDeclaringClass() : parent.getDeclaringClass();
+        declaringClass = getter.getDeclaringClass();
         Class<?> c = declaringClass;
         while (setter == null && c != Object.class && c != null) {
             this.setter = BeanUtils.getSetMethod(
