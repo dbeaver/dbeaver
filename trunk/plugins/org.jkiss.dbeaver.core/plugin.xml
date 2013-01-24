@@ -88,7 +88,7 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql"
-                properties="active,canExecute,canExplain,canNavigate"
+                properties="active,canExecute,canExplain,canNavigate,canValidate,canExport"
                 type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
@@ -196,6 +196,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.single" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.multi" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.export.data" name="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="%command.org.jkiss.dbeaver.core.export.data.name" description="%command.org.jkiss.dbeaver.core.export.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.compare.objects" name="%command.org.jkiss.dbeaver.core.compare.objects.name" description="%command.org.jkiss.dbeaver.core.compare.objects.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
@@ -224,6 +225,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" icon="icons/file/export.png"/>
         <image commandId="org.jkiss.dbeaver.core.export.data" icon="icons/file/export.png"/>
         <image commandId="org.jkiss.dbeaver.core.compare.objects" icon="icons/file/compare.png"/>
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
@@ -281,6 +283,11 @@
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.core.ui.navigator.control">
+            <with variable="activeFocusControlId">
+                <equals value="org.jkiss.dbeaver.ui.navigator"/>
+            </with>
+        </definition>
         <definition id="org.jkiss.dbeaver.core.ui.spreadsheet.control">
             <with variable="activeFocusControlId">
                 <equals value="org.jkiss.dbeaver.ui.spreadsheet"/>
@@ -606,14 +613,14 @@
         </handler>
 
         <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
-            <activeWhen>
+            <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
                         <test property="org.jkiss.dbeaver.core.object.canDelete"/>
                     </iterate>
                 </with>
-            </activeWhen>
+            </enabledWhen>
         </handler>
 
         <handler commandId="org.eclipse.ui.edit.rename" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename">
@@ -648,7 +655,7 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute"/>
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -666,7 +673,7 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute"/>
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -694,6 +701,15 @@
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canValidate"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExportDataHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExport"/>
                     </adapt>
                 </with>
             </enabledWhen>
@@ -1397,6 +1413,8 @@
             <separator name="execute" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
+            <separator visible="true"/>
         </menuContribution>
 
         <!-- QM menu & toolbar -->

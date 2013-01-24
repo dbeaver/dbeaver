@@ -26,6 +26,7 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.rules.IToken;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -59,12 +60,15 @@ import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.tools.data.wizard.DataExportProvider;
+import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
@@ -361,15 +365,23 @@ public class SQLEditor extends SQLEditorBase
             } else {
                 statementInfos = extractScriptQueries(0, document.getLength());
             }
-            processQuery(statementInfos);
+            processQuery(statementInfos, false);
         } else {
             // Execute statement under cursor or selected text (if selection present)
             SQLStatementInfo sqlQuery = extractActiveQuery();
             if (sqlQuery == null) {
                 setStatus(CoreMessages.editors_sql_status_empty_query_string, true);
             } else {
-                processQuery(Collections.singletonList(sqlQuery));
+                processQuery(Collections.singletonList(sqlQuery), false);
             }
+        }
+    }
+
+    public void exportDataFromQuery()
+    {
+        SQLStatementInfo sqlQuery = extractActiveQuery();
+        if (sqlQuery != null) {
+            processQuery(Collections.singletonList(sqlQuery), true);
         }
     }
 
@@ -442,7 +454,7 @@ public class SQLEditor extends SQLEditorBase
         resultsView.setStatus(status, error);
     }
 
-    private void processQuery(final List<SQLStatementInfo> queries)
+    private void processQuery(final List<SQLStatementInfo> queries, boolean export)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -588,7 +600,17 @@ public class SQLEditor extends SQLEditorBase
             if (isSingleQuery) {
                 closeJob();
                 curJob = job;
-                resultsView.refresh();
+                if (export) {
+                    ActiveWizardDialog dialog = new ActiveWizardDialog(
+                        getSite().getWorkbenchWindow(),
+                        new DataExportWizard(
+                            Collections.singletonList(
+                                new DataExportProvider(getDataContainer(), null))),
+                        new StructuredSelection(this));
+                    dialog.open();
+                } else {
+                    resultsView.refresh();
+                }
             } else {
                 job.schedule();
             }
