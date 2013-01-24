@@ -34,6 +34,7 @@ public class SQLEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_EXECUTE = "canExecute";
     public static final String PROP_CAN_EXPLAIN = "canExplain";
     public static final String PROP_CAN_NAVIGATE = "canNavigate";
+    public static final String PROP_CAN_EXPORT = "canExport";
 
     public SQLEditorPropertyTester() {
         super();
@@ -47,11 +48,20 @@ public class SQLEditorPropertyTester extends PropertyTester
         SQLEditor editor = (SQLEditor)receiver;
         boolean isConnected = editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
         if (property.equals(PROP_CAN_EXECUTE)) {
-            return isConnected;
+            if (isConnected) {
+                if ("statement".equals(expectedValue)) {
+                    return editor.hasActiveQuery();
+                } else {
+                    return true;
+                }
+            }
+            return false;
         } else if (property.equals(PROP_CAN_EXPLAIN)) {
-            return isConnected && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
+            return isConnected && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
         } else if (property.equals(PROP_CAN_NAVIGATE)) {
             return isConnected;
+        } else if (property.equals(PROP_CAN_EXPORT)) {
+            return isConnected && editor.hasActiveQuery();
         }
         return false;
     }

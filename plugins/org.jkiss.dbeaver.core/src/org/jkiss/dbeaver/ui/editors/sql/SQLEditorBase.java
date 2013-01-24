@@ -362,12 +362,29 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         }
     }
 
+    public boolean hasActiveQuery()
+    {
+        ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
+        String selText = selection.getText();
+        if (CommonUtils.isEmpty(selText)) {
+            Document document = getDocument();
+            try {
+                IRegion lineRegion = document.getLineInformationOfOffset(selection.getOffset());
+                selText = document.get(lineRegion.getOffset(), lineRegion.getLength());
+            } catch (BadLocationException e) {
+                log.warn(e);
+                return false;
+            }
+        }
+
+        return !CommonUtils.isEmpty(selText.trim());
+    }
+
     protected SQLStatementInfo extractActiveQuery()
     {
         SQLStatementInfo sqlQuery;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText().trim();
-        selText = selText.trim();
         if (selText.endsWith(getSyntaxManager().getStatementDelimiter())) {
             selText = selText.substring(0, selText.length() - getSyntaxManager().getStatementDelimiter().length());
         }
