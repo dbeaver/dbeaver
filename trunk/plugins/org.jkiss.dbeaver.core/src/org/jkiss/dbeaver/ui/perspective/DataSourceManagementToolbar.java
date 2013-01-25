@@ -787,7 +787,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
         //resultSetSize.setDigits(7);
         resultSetSize.setLayoutData(gd);
-        resultSetSize.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+        resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener());
         resultSetSize.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e)

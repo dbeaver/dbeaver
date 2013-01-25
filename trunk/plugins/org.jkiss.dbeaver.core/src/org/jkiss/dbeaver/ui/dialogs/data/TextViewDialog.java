@@ -81,12 +81,14 @@ public class TextViewDialog extends ValueViewDialog {
         boolean readOnly = getValueController().isReadOnly();
         boolean useHex = !isForeignKey;
         long maxSize = getValueController().getAttributeMetaData().getMaxLength();
-        editorContainer = new CTabFolder(dialogGroup, SWT.FLAT | SWT.TOP);
-        editorContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
+        if (useHex) {
+            editorContainer = new CTabFolder(dialogGroup, SWT.FLAT | SWT.TOP);
+            editorContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        lengthLabel = new Label(editorContainer, SWT.RIGHT);
-        lengthLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        editorContainer.setTopRight(lengthLabel, SWT.FILL);
+            lengthLabel = new Label(editorContainer, SWT.RIGHT);
+            lengthLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            editorContainer.setTopRight(lengthLabel, SWT.FILL);
+        }
 
         int selectedType = 0;
         if (getDialogSettings().get(VALUE_TYPE_SELECTOR) != null) {
@@ -97,7 +99,7 @@ public class TextViewDialog extends ValueViewDialog {
             if (readOnly) {
                 style |= SWT.READ_ONLY;
             }
-            textEdit = new Text(editorContainer, style);
+            textEdit = new Text(useHex ? editorContainer : dialogGroup, style);
 
             textEdit.setText(stringValue);
             if (maxSize > 0) {
@@ -121,10 +123,12 @@ public class TextViewDialog extends ValueViewDialog {
                 }
             });
 
-            CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
-            item.setText("Text");
-            item.setImage(DBIcon.TYPE_TEXT.getImage());
-            item.setControl(textEdit);
+            if (useHex) {
+                CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
+                item.setText("Text");
+                item.setImage(DBIcon.TYPE_TEXT.getImage());
+                item.setControl(textEdit);
+            }
         }
         Point minSize = null;
         if (useHex) {
@@ -141,16 +145,16 @@ public class TextViewDialog extends ValueViewDialog {
             item.setText("Hex");
             item.setImage(DBIcon.TYPE_BINARY.getImage());
             item.setControl(hexEditControl);
-        }
-        if (selectedType >= editorContainer.getItemCount()) {
-            selectedType = 0;
-        }
-        editorContainer.setSelection(selectedType);
-        editorContainer.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent event)
-            {
-                getDialogSettings().put(VALUE_TYPE_SELECTOR, editorContainer.getSelectionIndex());
+
+            if (selectedType >= editorContainer.getItemCount()) {
+                selectedType = 0;
+            }
+            editorContainer.setSelection(selectedType);
+            editorContainer.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent event)
+                {
+                    getDialogSettings().put(VALUE_TYPE_SELECTOR, editorContainer.getSelectionIndex());
 /*
                 switch (editorContainer.getSelectionIndex()) {
                     case 0: {
@@ -162,9 +166,10 @@ public class TextViewDialog extends ValueViewDialog {
                         break;
                 }
 */
-            }
-        });
-        updateValueLength();
+                }
+            });
+            updateValueLength();
+        }
 
         if (isForeignKey) {
             super.createEditorSelector(dialogGroup, textEdit);
@@ -221,22 +226,20 @@ public class TextViewDialog extends ValueViewDialog {
     @Override
     protected Object getEditorValue()
     {
-        switch (editorContainer.getSelectionIndex()) {
-            case 0:
-                return textEdit.getText();
-            case 1:
-                System.out.println(getBinaryContent());
-                return getBinaryContent();
-            default:
-                return null;
+        if (editorContainer == null || editorContainer.getSelectionIndex() == 0) {
+            return textEdit.getText();
+        } else {
+            return getBinaryContent();
         }
     }
 
     private void updateValueLength()
     {
-        long maxSize = getValueController().getAttributeMetaData().getMaxLength();
-        long length = textEdit.getText().length();
-        lengthLabel.setText("Length: " + length + (maxSize > 0 ? " [" + maxSize + "]" : ""));
+        if (lengthLabel != null) {
+            long maxSize = getValueController().getAttributeMetaData().getMaxLength();
+            long length = textEdit.getText().length();
+            lengthLabel.setText("Length: " + length + (maxSize > 0 ? " [" + maxSize + "]" : ""));
+        }
     }
 
     @Override

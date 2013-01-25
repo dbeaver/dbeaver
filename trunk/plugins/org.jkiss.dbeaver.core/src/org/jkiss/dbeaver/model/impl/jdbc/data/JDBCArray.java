@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
@@ -31,7 +32,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
@@ -186,12 +187,8 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
             if (str.length() > 0) {
                 str.append(","); //$NON-NLS-1$
             }
-            if (item instanceof Number) {
-                str.append(item);
-            } else {
-                String itemString = valueHandler.getValueDisplayString(type, item);
-                str.append(itemString);
-            }
+            String itemString = valueHandler.getValueDisplayString(type, item);
+            SQLUtils.appendValue(str, type, itemString);
         }
         return str.toString();
     }

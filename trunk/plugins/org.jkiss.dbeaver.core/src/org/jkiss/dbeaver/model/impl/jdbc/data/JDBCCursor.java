@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDCursor;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.api.JDBCResultSetImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 
 import java.sql.ResultSet;
 
