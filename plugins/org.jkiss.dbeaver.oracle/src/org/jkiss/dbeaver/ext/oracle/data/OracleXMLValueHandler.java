@@ -57,4 +57,13 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
         }
     }
 
+    @Override
+    public DBDContent getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    {
+        if (object == null) {
+            return new OracleContentXML(context.getDataSource(), null);
+        }
+        return super.getValueFromObject(context, type, object, copy);
+    }
+
 }
