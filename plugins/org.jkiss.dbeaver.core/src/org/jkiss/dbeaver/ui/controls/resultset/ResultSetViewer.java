@@ -1169,6 +1169,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         spreadsheet.redrawGrid();
         updateEditControls();
+        previewValue();
     }
 
     @Override
@@ -2533,6 +2534,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             refreshSpreadsheet(rowsChanged);
             fireResultSetChange();
             updateEditControls();
+            previewValue();
         }
 
         // Reflect data changes in viewer
