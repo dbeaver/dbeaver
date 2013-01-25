@@ -38,14 +38,13 @@ import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
+import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.SQLException;
-import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 import java.util.Locale;
 
@@ -271,7 +270,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     };
                 }
             case EDITOR:
-                return new NumberViewDialog(controller);
+                return new DefaultValueViewDialog(controller);
             default:
                 return null;
         }

@@ -31,13 +31,14 @@ import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * TextViewDialog
+ * Default value view dialog.
+ * Uses panel editor inside of value viewer.
  */
-public class NumberViewDialog extends ValueViewDialog {
+public class DefaultValueViewDialog extends ValueViewDialog {
 
     private DBDValueEditor panelEditor;
 
-    public NumberViewDialog(DBDValueController valueController) {
+    public DefaultValueViewDialog(DBDValueController valueController) {
         super(valueController);
     }
 
