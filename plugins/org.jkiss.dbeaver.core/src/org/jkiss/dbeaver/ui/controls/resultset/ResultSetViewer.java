@@ -2156,6 +2156,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         public void run() {
                             updateEditControls();
                             spreadsheet.redrawGrid();
+                            previewValue();
                         }
                     });
                 }
