@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBCDefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -377,13 +378,32 @@ public final class DBUtils {
         return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));
     }
 
-    public static Object makeNullValue(Object value)
+    public static Object makeNullValue(DBCExecutionContext context, DBDValueHandler valueHandler, DBSTypedObject type) throws DBCException
     {
-        if (value instanceof DBDValue) {
-            return ((DBDValue) value).makeNull();
-        } else {
-            return null;
-        }
+        return valueHandler.getValueFromObject(context, type, null, false);
+    }
+
+    public static Object makeNullValue(final DBDValueController valueController)
+    {
+        DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                DBCExecutionContext context = valueController.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Set NULL value");
+                try {
+                    result = DBUtils.makeNullValue(
+                        context,
+                        valueController.getValueHandler(),
+                        valueController.getAttributeMetaData());
+                } catch (DBCException e) {
+                    throw new InvocationTargetException(e);
+                } finally {
+                    context.close();
+                }
+            }
+        };
+        DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), runnable);
+        return runnable.getResult();
     }
 
     public static DBDAttributeBinding getColumnBinding(DBCExecutionContext context, DBCAttributeMetaData attributeMeta)

@@ -59,12 +59,6 @@ public class MySQLTypeEnum implements DBDValue {
     }
 
     @Override
-    public DBDValue makeNull()
-    {
-        return new MySQLTypeEnum(column, null);
-    }
-
-    @Override
     public void release()
     {
         // do nothing
