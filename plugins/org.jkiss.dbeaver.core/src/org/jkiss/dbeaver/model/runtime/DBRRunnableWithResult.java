@@ -17,21 +17,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.model.runtime;
 
 /**
- * DBDvalue
+ *
  */
-public interface DBDValue extends DBDObject {
+public abstract class DBRRunnableWithResult<TYPE> implements DBRRunnableWithProgress {
 
-    /**
-     * check this value is NULL
-     * @return true for NULL values
-     */
-    boolean isNull();
+    protected TYPE result;
 
-    /**
-     * Releases allocated resources. Resets to original value
-     */
-    void release();
+    public TYPE getResult()
+    {
+        return result;
+    }
+
 }

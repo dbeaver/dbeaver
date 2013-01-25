@@ -608,23 +608,25 @@ public class DataSourceDescriptor
 
                 // If there are some executions in last savepoint then ask user about commit/rollback
                 QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
-                QMMSessionInfo qmmSession = qmm.getSession(dataSource);
-                QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
-                QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
-                if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
+                if (qmm != null) {
+                    QMMSessionInfo qmmSession = qmm.getSession(dataSource);
+                    QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
+                    QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
+                    if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
 
-                    // Ask for confirmation
-                    TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
-                    UIUtils.runInUI(null, closeConfirmer);
-                    switch (closeConfirmer.result) {
-                        case IDialogConstants.YES_ID:
-                            context.getTransactionManager().commit();
-                            break;
-                        case IDialogConstants.NO_ID:
-                            context.getTransactionManager().rollback(null);
-                            break;
-                        default:
-                            return false;
+                        // Ask for confirmation
+                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
+                        UIUtils.runInUI(null, closeConfirmer);
+                        switch (closeConfirmer.result) {
+                            case IDialogConstants.YES_ID:
+                                context.getTransactionManager().commit();
+                                break;
+                            case IDialogConstants.NO_ID:
+                                context.getTransactionManager().rollback(null);
+                                break;
+                            default:
+                                return false;
+                        }
                     }
                 }
             }

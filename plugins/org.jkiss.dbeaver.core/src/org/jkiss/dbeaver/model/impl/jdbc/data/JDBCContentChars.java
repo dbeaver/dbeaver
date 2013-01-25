@@ -43,8 +43,6 @@ import java.sql.SQLException;
  */
 public class JDBCContentChars extends JDBCContentAbstract implements DBDContent, DBDValueCloneable, DBDContentStorage {
 
-    //static final Log log = LogFactory.getLog(JDBCContentChars.class);
-
     private String originalData;
     private String data;
 
@@ -170,12 +168,6 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     public boolean isNull()
     {
         return data == null;
-    }
-
-    @Override
-    public JDBCContentChars makeNull()
-    {
-        return new JDBCContentChars(dataSource, null);
     }
 
     @Override
