@@ -636,6 +636,9 @@ public class SQLEditor extends SQLEditorBase
 
     private void onDataSourceChange()
     {
+        if (sashForm == null || sashForm.isDisposed()) {
+            return;
+        }
         DatabaseEditorUtils.setPartBackground(this, sashForm);
 
         if (resultsView != null) {
