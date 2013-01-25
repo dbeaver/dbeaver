@@ -258,7 +258,7 @@ public class RuntimeUtils {
             if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
                 return value;
             } else if (valueType == Long.class) {
-                return new Long(value);
+                return Long.valueOf(value);
             } else if (valueType == Long.TYPE) {
                 return Long.parseLong(value);
             } else if (valueType == Integer.class) {
@@ -266,19 +266,19 @@ public class RuntimeUtils {
             } else if (valueType == Integer.TYPE) {
                 return Integer.parseInt(value);
             } else if (valueType == Short.class) {
-                return new Short(value);
+                return Short.valueOf(value);
             } else if (valueType == Short.TYPE) {
                 return Short.parseShort(value);
             } else if (valueType == Byte.class) {
-                return new Byte(value);
+                return Byte.valueOf(value);
             } else if (valueType == Byte.TYPE) {
                 return Byte.parseByte(value);
             } else if (valueType == Double.class) {
-                return new Double(value);
+                return Double.valueOf(value);
             } else if (valueType == Double.TYPE) {
                 return Double.parseDouble(value);
             } else if (valueType == Float.class) {
-                return new Float(value);
+                return Float.valueOf(value);
             } else if (valueType == Float.TYPE) {
                 return Float.parseFloat(value);
             } else if (valueType == BigInteger.class) {

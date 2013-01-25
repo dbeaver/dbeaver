@@ -804,7 +804,7 @@ public class SQLEditor extends SQLEditorBase
         @Override
         public int getSupportedFeatures()
         {
-            return 0;
+            return DATA_SELECT;
         }
 
         @Override

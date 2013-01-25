@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.impl.jdbc.api;
+package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.dbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.io.InputStream;

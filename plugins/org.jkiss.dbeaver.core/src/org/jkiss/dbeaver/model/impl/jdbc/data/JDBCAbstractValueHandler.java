@@ -161,6 +161,12 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             }
         }
 
+        @Override
+        public Control getControl()
+        {
+            return control;
+        }
+
         public abstract Object extractValue(DBRProgressMonitor monitor) throws DBException;
 
         protected abstract T createControl(Composite editPlaceholder);
@@ -183,9 +189,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
 
             boolean isInline = (valueController.getEditType() == DBDValueController.EditType.INLINE);
-            if (!isInline) {
-                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());
-            }
+//            if (!isInline) {
+//                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());
+//            }
 
             if (isInline) {
                 inlineControl.setFont(valueController.getEditPlaceholder().getFont());

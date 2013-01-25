@@ -59,6 +59,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.*;
@@ -73,7 +74,7 @@ public class UIUtils {
 
     public static final char PARAGRAPH_CHAR = (char)182;
 
-    public static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
+    private static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
         @Override
         public void verifyText(VerifyEvent e)
         {
@@ -88,20 +89,38 @@ public class UIUtils {
         }
     };
 
-    public static final VerifyListener NUMBER_VERIFY_LISTENER = new VerifyListener() {
-        @Override
-        public void verifyText(VerifyEvent e)
-        {
-            for (int i = 0; i < e.text.length(); i++) {
-                char ch = e.text.charAt(i);
-                if (!Character.isDigit(ch) && ch != '.' && ch != '-' && ch != 'e' && ch != 'E') {
-                    e.doit = false;
-                    return;
+    public static VerifyListener getIntegerVerifyListener()
+    {
+        return INTEGER_VERIFY_LISTENER;
+    }
+
+    public static VerifyListener getNumberVerifyListener(Locale locale)
+    {
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+        final char[] allowedChars = new char[] {
+            symbols.getDecimalSeparator(),
+            symbols.getGroupingSeparator(),
+            symbols.getMinusSign(),
+            symbols.getZeroDigit(),
+            symbols.getMonetaryDecimalSeparator(),
+            '+'
+        };
+        final String exponentSeparator = symbols.getExponentSeparator();
+        return new VerifyListener() {
+            @Override
+            public void verifyText(VerifyEvent e)
+            {
+                for (int i = 0; i < e.text.length(); i++) {
+                    char ch = e.text.charAt(i);
+                    if (!Character.isDigit(ch) && !CommonUtils.contains(allowedChars, ch) && exponentSeparator.indexOf(ch) == -1) {
+                        e.doit = false;
+                        return;
+                    }
                 }
+                e.doit = true;
             }
-            e.doit = true;
-        }
-    };
+        };
+    }
 
     public static Object makeStringForUI(Object object)
     {

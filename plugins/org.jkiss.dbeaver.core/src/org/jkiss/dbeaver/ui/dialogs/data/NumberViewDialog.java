@@ -20,24 +20,22 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCNumberValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-
-import java.sql.Types;
 
 /**
  * TextViewDialog
  */
 public class NumberViewDialog extends ValueViewDialog {
 
-    private Text textEdit;
-    private Combo bitEdit;
-    private boolean isBoolean = false;
-    private Object value;
+    private DBDValueEditor panelEditor;
 
     public NumberViewDialog(DBDValueController valueController) {
         super(valueController);
@@ -46,95 +44,37 @@ public class NumberViewDialog extends ValueViewDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        DBDValueController valueController = getValueController();
-        value = valueController.getValue();
-
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
         Label label = new Label(dialogGroup, SWT.NONE);
         label.setText(CoreMessages.dialog_data_label_value);
 
-        int style = SWT.BORDER;
-        if (getValueController().isReadOnly()) {
-            style |= SWT.READ_ONLY;
-        }
-        int valueType = getValueController().getAttributeMetaData().getTypeID();
-        if (valueType == Types.BIT || valueType == Types.BOOLEAN) {
-            // Bit (boolean)
-            style |= SWT.READ_ONLY;
-            bitEdit = new Combo(dialogGroup, style);
-            if (valueType == Types.BOOLEAN || value instanceof Boolean) {
-                isBoolean = true;
-                bitEdit.add("FALSE");
-                bitEdit.add("TRUE");
-                Boolean boolValue = ((Boolean) value);
-                bitEdit.select(Boolean.TRUE.equals(boolValue) ? 1 : 0);
-            } else {
-                bitEdit.add("0 (FALSE)");
-                bitEdit.add("1 (TRUE)");
-                int intValue = ((Number) value).intValue();
-                bitEdit.select(intValue == 0 ? 0 : 1);
-            }
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 50;
-            gd.grabExcessVerticalSpace = true;
-            bitEdit.setLayoutData(gd);
-            bitEdit.setFocus();
-            bitEdit.setEnabled(!getValueController().isReadOnly());
-        } else {
-            // Numbers
-            textEdit = new Text(dialogGroup, style);
-            switch (getValueController().getAttributeMetaData().getTypeID()) {
-            case java.sql.Types.BIGINT:
-            case java.sql.Types.INTEGER:
-            case java.sql.Types.SMALLINT:
-            case java.sql.Types.TINYINT:
-            case java.sql.Types.BIT:
-                textEdit.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
-                break;
-            default:
-                textEdit.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
-                break;
-            }
+        Composite editorPlaceholder = UIUtils.createPlaceholder(dialogGroup, 1);
+        editorPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        editorPlaceholder.setLayout(new FillLayout());
 
-            if (value != null) {
-                // Use simple toString() because we don't want formatted values.
-                textEdit.setText(value.toString());
-            }
-            int maxSize = getValueController().getAttributeMetaData().getPrecision();
-            if (maxSize > 0) {
-                textEdit.setTextLimit(maxSize + 2);
-            }
-            textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.widthHint = 300;
-            //gd.grabExcessVerticalSpace = true;
-            textEdit.setLayoutData(gd);
-            textEdit.setFocus();
-            textEdit.setEditable(!getValueController().isReadOnly());
-
-            if (super.isForeignKey()) {
-                super.createEditorSelector(dialogGroup, textEdit);
-            }
+        try {
+            panelEditor = createPanelEditor(editorPlaceholder);
+            panelEditor.refreshValue();
+        } catch (DBException e) {
+            log.error(e);
+            return dialogGroup;
         }
+        if (super.isForeignKey() && panelEditor.getControl() instanceof Text) {
+            super.createEditorSelector(dialogGroup, (Text)panelEditor.getControl());
+        }
+
         return dialogGroup;
     }
 
     @Override
     protected Object getEditorValue()
     {
-        if (textEdit != null) {
-            return JDBCNumberValueHandler.convertStringToNumber(
-                textEdit.getText(),
-                value,
-                getValueController().getAttributeMetaData());
-        } else if (bitEdit != null) {
-            if (isBoolean) {
-                return bitEdit.getSelectionIndex() == 0 ? Boolean.FALSE : Boolean.TRUE;
-            } else {
-                return (byte)bitEdit.getSelectionIndex();
-            }
-        } else {
+        try {
+            return panelEditor.extractValue(VoidProgressMonitor.INSTANCE);
+        } catch (DBException e) {
+            // NEver be here
+            log.error(e);
             return null;
         }
     }
@@ -142,7 +82,6 @@ public class NumberViewDialog extends ValueViewDialog {
     @Override
     public void refreshValue()
     {
-        value = getValueController().getValue();
-        textEdit.setText(value.toString());
+        panelEditor.refreshValue();
     }
 }

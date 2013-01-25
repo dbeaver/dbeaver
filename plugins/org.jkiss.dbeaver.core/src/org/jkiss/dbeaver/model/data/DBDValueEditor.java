@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -28,6 +29,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBDValueEditor
 {
+    Control getControl();
+
     Object extractValue(DBRProgressMonitor monitor)
         throws DBException;
 

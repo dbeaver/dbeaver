@@ -133,7 +133,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         public int getSupportedFeatures()
         {
             // Nothing but plain read
-            return 0;
+            return DATA_SELECT;
         }
 
         @Override
