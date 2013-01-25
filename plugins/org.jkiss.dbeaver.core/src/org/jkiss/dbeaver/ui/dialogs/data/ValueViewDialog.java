@@ -36,11 +36,13 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -108,6 +110,92 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
     protected boolean isForeignKey()
     {
         return getEnumerableConstraint() != null;
+    }
+
+    protected DBDValueEditor createPanelEditor(final Composite placeholder)
+        throws DBException
+    {
+        return valueController.getValueHandler().createEditor(new DBDValueController() {
+            @Override
+            public DBPDataSource getDataSource()
+            {
+                return valueController.getDataSource();
+            }
+
+            @Override
+            public DBSAttributeBase getAttributeMetaData()
+            {
+                return valueController.getAttributeMetaData();
+            }
+
+            @Override
+            public Object getValue()
+            {
+                return valueController.getValue();
+            }
+
+            @Override
+            public void updateValue(Object value)
+            {
+                valueController.updateValue(value);
+            }
+
+            @Override
+            public DBDValueHandler getValueHandler()
+            {
+                return valueController.getValueHandler();
+            }
+
+            @Override
+            public EditType getEditType()
+            {
+                return EditType.PANEL;
+            }
+
+            @Override
+            public boolean isReadOnly()
+            {
+                return valueController.isReadOnly();
+            }
+
+            @Override
+            public IWorkbenchPartSite getValueSite()
+            {
+                return valueController.getValueSite();
+            }
+
+            @Override
+            public Composite getEditPlaceholder()
+            {
+                return placeholder;
+            }
+
+            @Override
+            public ToolBar getEditToolBar()
+            {
+                return null;
+            }
+
+            @Override
+            public void closeInlineEditor()
+            {
+            }
+
+            @Override
+            public void nextInlineEditor(boolean next)
+            {
+            }
+
+            @Override
+            public void unregisterEditor(DBDValueEditorEx editor)
+            {
+            }
+
+            @Override
+            public void showMessage(String message, boolean error)
+            {
+            }
+        });
     }
 
     public DBDValueController getValueController() {
@@ -214,6 +302,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
             shell.setSize(new Point(
                 Integer.parseInt(sizeString.substring(0, divPos)),
                 Integer.parseInt(sizeString.substring(divPos + 1))));
+            shell.layout();
         }
 
         Monitor primary = shell.getMonitor();
@@ -223,7 +312,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
         int y = bounds.y + (bounds.height - rect.height) / 3;
         x += dialogCount * 20;
         y += dialogCount * 20;
-        shell.setLocation (x, y);
+        shell.setLocation(x, y);
     }
 
     private String getInfoVisiblePrefId()
@@ -302,6 +391,12 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
     }
 
     protected abstract Object getEditorValue();
+
+    @Override
+    public Control getControl()
+    {
+        return editor;
+    }
 
     @Override
     public Object extractValue(DBRProgressMonitor monitor) throws DBException
@@ -401,11 +496,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
                 if (selection != null && selection.length > 0) {
                     handleEditorChange = false;
                     Object value = selection[0].getData();
-                    if (value instanceof Number) {
-                        editor.setText(value.toString());
-                    } else {
-                        editor.setText(selection[0].getText());
-                    }
+                    editor.setText(selection[0].getText());
                     handleEditorChange = true;
                 }
             }

@@ -30,6 +30,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
@@ -440,6 +441,12 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     {
         ContentEditorInput input = getEditorInput();
         return input == null ? null : input.getValueController();
+    }
+
+    @Override
+    public Control getControl()
+    {
+        return getControl(getActivePage());
     }
 
     @Override

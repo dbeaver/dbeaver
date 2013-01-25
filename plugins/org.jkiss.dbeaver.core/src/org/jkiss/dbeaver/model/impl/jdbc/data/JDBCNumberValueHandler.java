@@ -45,7 +45,9 @@ import org.jkiss.utils.CommonUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.SQLException;
-import java.sql.Types;
+import java.text.DecimalFormatSymbols;
+import java.text.ParseException;
+import java.util.Locale;
 
 /**
  * JDBC number value handler
@@ -57,11 +59,13 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
 
+    private Locale locale;
     private DBDDataFormatter formatter;
 
     public JDBCNumberValueHandler(DBDDataFormatterProfile formatterProfile)
     {
         try {
+            locale = formatterProfile.getLocale();
             formatter = formatterProfile.createFormatter(TYPE_NAME_NUMBER);
         } catch (Exception e) {
             log.error("Could not create formatter for number value handler", e); //$NON-NLS-1$
@@ -236,20 +240,21 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                                 case java.sql.Types.SMALLINT:
                                 case java.sql.Types.TINYINT:
                                 case java.sql.Types.BIT:
-                                    editor.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+                                    editor.addVerifyListener(UIUtils.getIntegerVerifyListener());
                                     break;
                                 default:
-                                    editor.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
+                                    editor.addVerifyListener(UIUtils.getNumberVerifyListener(locale));
                                     break;
                             }
-                            editor.setEditable(!valueController.isReadOnly());
                             return editor;
                         }
                         @Override
                         public void refreshValue()
                         {
                             Object value = valueController.getValue();
-                            control.setText(value == null ? "" : value.toString()); //$NON-NLS-1$
+                            if (value != null) {
+                                control.setText(getValueDisplayString(valueController.getAttributeMetaData(), value)); //$NON-NLS-1$
+                            }
                             if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
                                 control.selectAll();
                             }
@@ -261,7 +266,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             if (CommonUtils.isEmpty(text)) {
                                 return null;
                             }
-                            return convertStringToNumber(text, valueController.getValue(), valueController.getAttributeMetaData());
+                            return convertStringToNumber(formatter, text, valueController.getValue(), valueController.getAttributeMetaData());
                         }
                     };
                 }
@@ -292,32 +297,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Number) {
             return object;
         } else if (object instanceof String) {
-            String strValue = (String)object;
-            try {
-                switch (type.getTypeID()) {
-                    case java.sql.Types.BIGINT:
-                        return Long.valueOf(strValue);
-                    case java.sql.Types.DOUBLE:
-                    case java.sql.Types.REAL:
-                        return Double.valueOf(strValue);
-                    case java.sql.Types.FLOAT:
-                        return Float.valueOf(strValue);
-                    case java.sql.Types.INTEGER:
-                        return Integer.valueOf(strValue);
-                    case java.sql.Types.SMALLINT:
-                        return Short.valueOf(strValue);
-                    case java.sql.Types.TINYINT:
-                    case java.sql.Types.BIT:
-                        return Byte.valueOf(strValue);
-                    case Types.NUMERIC:
-                        return new BigDecimal(strValue);
-                    default:
-                        // Here may be any numeric value. BigDecimal or BigInteger for example
-                        return new BigDecimal(strValue);
-                }
-            } catch (NumberFormatException e) {
-                return null;
-            }
+            return convertStringToNumber(formatter, (String)object, null, type);
         } else {
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to numeric");
             return null;
@@ -337,28 +317,35 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             controller.getAttributeMetaData().getScale());
     }
 
-    public static Number convertStringToNumber(String text, Object originalValue, DBSTypedObject type)
+    public static Number convertStringToNumber(DBDDataFormatter formatter, String text, Object originalValue, DBSTypedObject type)
     {
         if (text == null || text.length() == 0) {
             return null;
         }
         try {
-            if (originalValue instanceof Long) {
-                return Long.valueOf(text);
-            } else if (originalValue instanceof Integer) {
-                return Integer.valueOf(text);
-            } else if (originalValue instanceof Short) {
-                return Short.valueOf(text);
-            } else if (originalValue instanceof Byte) {
-                return Byte.valueOf(text);
-            } else if (originalValue instanceof Float) {
-                return Float.valueOf(text);
-            } else if (originalValue instanceof Double) {
-                return Double.valueOf(text);
-            } else if (originalValue instanceof BigInteger) {
-                return new BigInteger(text);
-            } else if (originalValue instanceof BigDecimal) {
-                return new BigDecimal(text);
+            return (Number)formatter.parseValue(text);
+        } catch (ParseException e) {
+            log.debug("Can't parse numeric value using formatter", e);
+        }
+        try {
+            if (originalValue instanceof Number) {
+                if (originalValue instanceof Long) {
+                    return Long.valueOf(text);
+                } else if (originalValue instanceof Integer) {
+                    return Integer.valueOf(text);
+                } else if (originalValue instanceof Short) {
+                    return Short.valueOf(text);
+                } else if (originalValue instanceof Byte) {
+                    return Byte.valueOf(text);
+                } else if (originalValue instanceof Float) {
+                    return Float.valueOf(text);
+                } else if (originalValue instanceof Double) {
+                    return Double.valueOf(text);
+                } else if (originalValue instanceof BigInteger) {
+                    return new BigInteger(text);
+                } else {
+                    return new BigDecimal(text);
+                }
             } else {
                 switch (type.getTypeID()) {
                     case java.sql.Types.BIGINT:
@@ -386,7 +373,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 }
             }
         } catch (NumberFormatException e) {
-            log.error("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
+            log.debug("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         }
     }

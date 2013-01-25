@@ -257,13 +257,22 @@ public class CommonUtils {
 	public static boolean contains(short[] array, short value)
 	{
 		if (isEmpty(array)) return false;
-		for (short v : array) {
-			if (v == value) return true;
-		}
+        for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
+            if (array[i] == value) return true;
+        }
 		return false;
 	}
 
-	public static boolean isEmpty(int[] array)
+    public static boolean contains(char[] array, char value)
+    {
+        if (array == null || array.length == 0) return false;
+        for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
+            if (array[i] == value) return true;
+        }
+        return false;
+    }
+
+    public static boolean isEmpty(int[] array)
 	{
 		return array == null || array.length == 0;
 	}

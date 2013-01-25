@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCDataRequest;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 import java.util.List;
@@ -42,6 +43,8 @@ public interface DBSDataContainer extends DBSObject {
     public static final int DATA_FILTER         = 16;
 
     int getSupportedFeatures();
+
+    //DBCDataRequest makeDataRequest(DBCExecutionContext context, int type);
 
     long readData(
         DBCExecutionContext context,

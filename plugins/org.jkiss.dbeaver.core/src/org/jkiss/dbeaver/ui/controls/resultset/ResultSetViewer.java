@@ -3167,9 +3167,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault)
             {
                 Object value = viewer.curRows.get(viewer.getCurrentRow())[viewer.getMetaColumnIndex(column.getAttribute())];
-                if (value instanceof Number) {
-                    return value.toString();
-                }
                 return column.getValueHandler().getValueDisplayString(column.getAttribute(), value);
             }
         },

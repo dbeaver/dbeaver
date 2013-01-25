@@ -72,7 +72,9 @@ public class NumberDataFormatter implements DBDDataFormatter {
             return null;
         }
         try {
-            return numberFormat.format(value);
+            synchronized (numberFormat) {
+                return numberFormat.format(value);
+            }
         } catch (Exception e) {
             return value.toString();
         }
@@ -81,7 +83,9 @@ public class NumberDataFormatter implements DBDDataFormatter {
     @Override
     public Object parseValue(String value) throws ParseException
     {
-        return numberFormat.parse(value);
+        synchronized (numberFormat) {
+            return numberFormat.parse(value);
+        }
     }
 
 }

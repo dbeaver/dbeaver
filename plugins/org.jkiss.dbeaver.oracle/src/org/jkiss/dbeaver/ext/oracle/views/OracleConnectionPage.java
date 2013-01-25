@@ -196,7 +196,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
         gd.widthHint = 40;
         portText.setLayoutData(gd);
-        portText.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+        portText.addVerifyListener(UIUtils.getIntegerVerifyListener());
         portText.addModifyListener(controlModifyListener);
 
         UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_database);

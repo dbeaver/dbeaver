@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 /**
  * Number cell editor
@@ -52,9 +53,9 @@ public class CustomNumberCellEditor extends TextCellEditor {
             valueType == Double.TYPE ||
             valueType == BigDecimal.class)
         {
-            text.addVerifyListener(UIUtils.NUMBER_VERIFY_LISTENER);
+            text.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         } else {
-            text.addVerifyListener(UIUtils.INTEGER_VERIFY_LISTENER);
+            text.addVerifyListener(UIUtils.getIntegerVerifyListener());
         }
         return text;
     }

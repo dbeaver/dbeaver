@@ -44,7 +44,7 @@ abstract class ViewValuePanel extends Composite {
         gl.marginHeight = 0;
         gl.marginWidth = 0;
         setLayout(gl);
-        this.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        //this.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
         Color infoBackground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 
