@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
+import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.Array;
@@ -81,7 +82,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     @Override
     public int getFeatures()
     {
-        return FEATURE_NONE;
+        return FEATURE_VIEWER | FEATURE_EDITOR;
     }
 
     @Override
@@ -145,8 +146,9 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     public DBDValueEditor createEditor(DBDValueController controller)
         throws DBException
     {
-        if (controller.getEditType() == DBDValueController.EditType.PANEL) {
-            return new ValueEditor<Tree>(controller) {
+        switch (controller.getEditType()) {
+            case PANEL:
+                return new ValueEditor<Tree>(controller) {
                 ComplexObjectEditor editor;
                 @Override
                 public void refreshValue()
@@ -168,8 +170,11 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
                     return editor.getInput();
                 }
             };
+            case EDITOR:
+                return new DefaultValueViewDialog(controller);
+            default:
+                return null;
         }
-        return null;
     }
 
 }

@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -203,7 +204,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
                     protected List createControl(Composite editPlaceholder)
                     {
                         final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
-                        final List editor = new List(controller.getEditPlaceholder(), SWT.READ_ONLY);
+                        final List editor = new List(controller.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
                         Collection<String> enumValues = column.getEnumValues();
                         if (enumValues != null) {
                             for (String enumValue : enumValues) {
@@ -225,7 +226,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
                 };
             }
             case EDITOR:
-                return new EnumViewDialog(controller);
+                return new DefaultValueViewDialog(controller);
             default:
                 return null;
         }

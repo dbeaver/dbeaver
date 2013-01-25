@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.dialogs.data.NumberViewDialog;
+import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 import java.sql.SQLException;
 
@@ -159,7 +159,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                 };
             }
             case EDITOR:
-                return new NumberViewDialog(controller);
+                return new DefaultValueViewDialog(controller);
             default:
                 return null;
         }
