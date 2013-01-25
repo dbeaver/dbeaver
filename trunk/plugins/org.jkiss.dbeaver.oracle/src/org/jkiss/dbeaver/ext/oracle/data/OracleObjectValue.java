@@ -44,12 +44,6 @@ public class OracleObjectValue implements DBDValue{
     }
 
     @Override
-    public DBDValue makeNull()
-    {
-        return new OracleObjectValue(null);
-    }
-
-    @Override
     public void release()
     {
 

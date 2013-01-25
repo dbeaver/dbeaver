@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -370,12 +371,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
 
         if (buttonId == IDialogConstants.IGNORE_ID) {
             if (!valueController.isReadOnly()) {
-                editedValue = valueController.getValue();
-                if (editedValue instanceof DBDValue) {
-                    editedValue = ((DBDValue)editedValue).makeNull();
-                } else {
-                    editedValue = null;
-                }
+                editedValue = DBUtils.makeNullValue(valueController);
             }
             super.okPressed();
         } else {

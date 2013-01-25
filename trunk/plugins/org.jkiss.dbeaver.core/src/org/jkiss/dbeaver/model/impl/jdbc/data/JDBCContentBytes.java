@@ -172,12 +172,6 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
     }
 
     @Override
-    public JDBCContentBytes makeNull()
-    {
-        return new JDBCContentBytes(dataSource, null);
-    }
-
-    @Override
     public void release()
     {
         // Return original data

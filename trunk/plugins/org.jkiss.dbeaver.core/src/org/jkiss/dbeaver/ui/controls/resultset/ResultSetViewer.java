@@ -1196,7 +1196,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         @Override
                         public void run()
                         {
-                            valueController.updateValue(DBUtils.makeNullValue(value));
+                            valueController.updateValue(
+                                DBUtils.makeNullValue(valueController));
                         }
                     });
                 }
@@ -1771,15 +1772,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                         cells[i] = metaColumn.getValueHandler().getValueFromObject(context, metaColumn.getTableColumn(), origRow[i], true);
                                     } catch (DBCException e) {
                                         log.warn(e);
-                                        cells[i] = DBUtils.makeNullValue(origRow[i]);
+                                        try {
+                                            cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getAttribute());
+                                        } catch (DBCException e1) {
+                                            log.warn(e1);
+                                        }
                                     }
                                 }
                             }
                         } else {
                             // Initialize new values
                             for (int i = 0; i < metaColumns.length; i++) {
+                                DBDAttributeBinding metaColumn = metaColumns[i];
                                 try {
-                                    cells[i] = metaColumns[i].getValueHandler().getValueFromObject(context, metaColumns[i].getTableColumn(), null, false);
+                                    cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getAttribute());
                                 } catch (DBCException e) {
                                     log.warn(e);
                                 }

@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.data.DBDStructure;
-import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -100,16 +99,6 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     public boolean isNull()
     {
         return contents == null;
-    }
-
-    @Override
-    public DBDValue makeNull()
-    {
-        JDBCStruct nullStruct = new JDBCStruct();
-        nullStruct.type = this.type;
-        nullStruct.contents = null;
-        nullStruct.values = new LinkedHashMap<DBSAttributeBase, Object>();
-        return nullStruct;
     }
 
     @Override

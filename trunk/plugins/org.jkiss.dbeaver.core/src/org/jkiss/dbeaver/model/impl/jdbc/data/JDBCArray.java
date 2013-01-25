@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.data.DBDArray;
-import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -150,12 +149,6 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
     public boolean isNull()
     {
         return contents == null;
-    }
-
-    @Override
-    public DBDValue makeNull()
-    {
-        return new JDBCArray(type, null);
     }
 
     @Override

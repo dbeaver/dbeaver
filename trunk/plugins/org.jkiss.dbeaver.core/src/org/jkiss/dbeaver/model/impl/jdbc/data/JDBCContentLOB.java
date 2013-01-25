@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -34,8 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  * @author Serge Rider
  */
 public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDContent {
-
-    static final Log log = LogFactory.getLog(JDBCContentLOB.class);
 
     private DBDContentStorage originalStorage;
     protected DBDContentStorage storage;
@@ -93,12 +89,6 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
             }
             this.storage = this.originalStorage;
         }
-    }
-
-    @Override
-    public JDBCContentLOB makeNull()
-    {
-        return createNewContent();
     }
 
     @Override
