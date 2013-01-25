@@ -55,7 +55,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return null;
+            return new MySQLTypeEnum((MySQLTableColumn) type, null);
         } else if (object instanceof MySQLTypeEnum) {
             return copy ? new MySQLTypeEnum((MySQLTypeEnum) object) : object;
         } else if (object instanceof String && type instanceof MySQLTableColumn) {

@@ -175,7 +175,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 case java.sql.Types.SQLXML:
                     return new JDBCContentXML(context.getDataSource(), null);
                 default:
-                    throw new DBCException(CoreMessages.model_jdbc_unsupported_column_type_ + type.getTypeName());
+                    log.error(CoreMessages.model_jdbc_unsupported_column_type_ + type.getTypeName());
+                    return new JDBCContentBytes(context.getDataSource(), null);
             }
         } else if (object instanceof byte[]) {
             return new JDBCContentBytes(context.getDataSource(), (byte[]) object);
