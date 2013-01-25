@@ -349,7 +349,7 @@ public class DataExportJob extends AbstractJob {
                     long totalRows = 0;
                     if (settings.isQueryRowCount() && (dataProvider.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                         monitor.beginTask(CoreMessages.dialog_export_wizard_job_task_retrieve, 1);
-                        totalRows = dataProvider.getDataContainer().readDataCount(context, dataProvider.getDataFilter());
+                        totalRows = dataProvider.getDataContainer().countData(context, dataProvider.getDataFilter());
                         monitor.done();
                     }
 

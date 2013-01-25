@@ -31,9 +31,6 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
@@ -43,7 +40,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,9 +97,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows)
         throws DBException
     {
-        if (!(context instanceof JDBCExecutionContext)) {
-            throw new IllegalArgumentException("Bad execution context");
-        }
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
         DBRProgressMonitor monitor = context.getProgressMonitor();
@@ -173,35 +166,36 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
+    public long countData(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
     {
-        if (!(context instanceof JDBCExecutionContext)) {
-            throw new IllegalArgumentException("Bad execution context");
-        }
-        JDBCExecutionContext jdbcContext = (JDBCExecutionContext)context;
         DBRProgressMonitor monitor = context.getProgressMonitor();
 
         StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM "); //$NON-NLS-1$
         query.append(getFullQualifiedName());
         appendQueryConditions(query, dataFilter);
         monitor.subTask(CoreMessages.model_jdbc_fetch_table_row_count);
-        JDBCStatement dbStat = jdbcContext.prepareStatement(
-            DBCStatementType.QUERY, query.toString(), false, false, false);
+        DBCStatement dbStat = context.prepareStatement(
+            DBCStatementType.QUERY,
+            query.toString(),
+            false, false, false);
         try {
             dbStat.setDataContainer(this);
             if (!dbStat.executeStatement()) {
                 return 0;
             }
-            JDBCResultSet dbResult = dbStat.openResultSet();
+            DBCResultSet dbResult = dbStat.openResultSet();
             if (dbResult == null) {
                 return 0;
             }
             try {
                 if (dbResult.nextRow()) {
-                    try {
-                        return dbResult.getLong(1);
-                    } catch (SQLException e) {
-                        throw new DBException(e);
+                    Object result = dbResult.getColumnValue(1);
+                    if (result == null) {
+                        return 0;
+                    } else if (result instanceof Number) {
+                        return ((Number) result).longValue();
+                    } else {
+                        return Long.parseLong(result.toString());
                     }
                 } else {
                     return 0;
