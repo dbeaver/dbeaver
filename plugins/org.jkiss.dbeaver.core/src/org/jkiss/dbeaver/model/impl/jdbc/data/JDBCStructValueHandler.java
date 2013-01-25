@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
+import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
@@ -69,7 +70,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     @Override
     public synchronized String getValueDisplayString(DBSTypedObject column, Object value)
     {
-        JDBCStruct struct = (JDBCStruct)value;
+        JDBCStruct struct = (JDBCStruct) value;
         return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : struct.getStringRepresentation();
     }
 
@@ -161,10 +162,9 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
                 propertySource.addProperty(
                     "sql_type", //$NON-NLS-1$
                     CoreMessages.model_jdbc_type_name,
-                    ((JDBCStruct)value).getTypeName());
+                    ((JDBCStruct) value).getTypeName());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.warn("Could not extract struct value information", e); //$NON-NLS-1$
         }
     }
@@ -173,31 +173,36 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
-        if (controller.getEditType() == DBDValueController.EditType.PANEL) {
-            return new ValueEditor<Tree>(controller) {
-                ComplexObjectEditor editor;
-                @Override
-                public void refreshValue()
-                {
-                    editor.setModel((DBDStructure) controller.getValue());
-                }
+        switch (controller.getEditType()) {
+            case PANEL:
+                return new ValueEditor<Tree>(controller) {
+                    ComplexObjectEditor editor;
 
-                @Override
-                protected Tree createControl(Composite editPlaceholder)
-                {
-                    editor = new ComplexObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
-                    editor.setModel((DBDStructure) controller.getValue());
-                    return editor.getTree();
-                }
+                    @Override
+                    public void refreshValue()
+                    {
+                        editor.setModel((DBDStructure) controller.getValue());
+                    }
 
-                @Override
-                public Object extractValue(DBRProgressMonitor monitor)
-                {
-                    return editor.getInput();
-                }
-            };
+                    @Override
+                    protected Tree createControl(Composite editPlaceholder)
+                    {
+                        editor = new ComplexObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
+                        editor.setModel((DBDStructure) controller.getValue());
+                        return editor.getTree();
+                    }
+
+                    @Override
+                    public Object extractValue(DBRProgressMonitor monitor)
+                    {
+                        return editor.getInput();
+                    }
+                };
+            case EDITOR:
+                return new DefaultValueViewDialog(controller);
+            default:
+                return null;
         }
-        return null;
     }
 
 }
