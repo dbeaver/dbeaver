@@ -460,7 +460,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
+    public long countData(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
     {
         throw new DBException("Not implemented");
     }

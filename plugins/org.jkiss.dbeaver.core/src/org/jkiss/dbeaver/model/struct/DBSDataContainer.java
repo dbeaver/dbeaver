@@ -54,7 +54,7 @@ public interface DBSDataContainer extends DBSObject {
         long maxRows)
         throws DBException;
 
-    long readDataCount(
+    long countData(
         DBCExecutionContext context,
         DBDDataFilter dataFilter)
         throws DBException;

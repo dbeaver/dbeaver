@@ -824,7 +824,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
+        public long countData(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
         {
             throw new DBException("Not Implemented");
         }

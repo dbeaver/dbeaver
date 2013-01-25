@@ -177,7 +177,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         }
 
         @Override
-        public long readDataCount(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
+        public long countData(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
         {
             return -1;
         }
