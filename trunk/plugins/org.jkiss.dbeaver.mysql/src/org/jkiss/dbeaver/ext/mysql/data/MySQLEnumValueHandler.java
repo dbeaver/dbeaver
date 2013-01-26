@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -66,10 +67,10 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value)
+    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         if (!(value instanceof MySQLTypeEnum)) {
-            return super.getValueDisplayString(column, value);
+            return super.getValueDisplayString(column, value, format);
         }
         String strValue = ((MySQLTypeEnum) value).getValue();
         return strValue == null ? DBConstants.NULL_VALUE_LABEL : strValue;

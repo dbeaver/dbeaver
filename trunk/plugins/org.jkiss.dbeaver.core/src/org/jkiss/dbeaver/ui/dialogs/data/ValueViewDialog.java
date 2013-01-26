@@ -52,7 +52,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -614,7 +613,11 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
                                     editorSelector.removeAll();
                                     for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
                                         TableItem discItem = new TableItem(editorSelector, SWT.NONE);
-                                        discItem.setText(0, colHandler.getValueDisplayString(fkColumn.getAttribute(), entry.getKey()));
+                                        discItem.setText(0,
+                                            colHandler.getValueDisplayString(
+                                                fkColumn.getAttribute(),
+                                                entry.getKey(),
+                                                DBDDisplayFormat.UI));
                                         discItem.setText(1, entry.getValue());
                                         discItem.setData(entry.getKey());
                                     }

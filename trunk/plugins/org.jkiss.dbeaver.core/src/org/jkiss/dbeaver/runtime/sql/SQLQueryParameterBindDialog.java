@@ -38,10 +38,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.data.DBDValueEditorEx;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -154,7 +151,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             item.setText(0, String.valueOf(param.getIndex() + 1));
             item.setText(1, param.getTitle());
             item.setText(2, CommonUtils.toString(param.getTypeName()));
-            item.setText(3, param.getValueHandler() == null ? "" : param.getValueHandler().getValueDisplayString(param, param.getValue()));
+            item.setText(3, param.getValueHandler() == null ?
+                "" :
+                param.getValueHandler().getValueDisplayString(param, param.getValue(), DBDDisplayFormat.UI));
         }
 
         paramTable.addMouseListener(new ParametersMouseListener());
@@ -270,7 +269,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     }
                     param.setParamType(paramType);
                     item.setText(2, paramType.getName());
-                    item.setText(3, param.getValueHandler() == null ? "" : param.getValueHandler().getValueDisplayString(param, param.getValue()));
+                    item.setText(3, param.getValueHandler() == null ? "" :
+                        param.getValueHandler().getValueDisplayString(param, param.getValue(), DBDDisplayFormat.UI));
                     param.resolve();
                 }
             });
@@ -315,7 +315,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         public void updateValue(Object value)
         {
             parameter.setValue(value);
-            String displayString = getValueHandler().getValueDisplayString(parameter, value);
+            String displayString = getValueHandler().getValueDisplayString(parameter, value, DBDDisplayFormat.NATIVE);
             item.setText(3, displayString);
             String paramName = parameter.getName().trim();
             boolean isNumber = true;

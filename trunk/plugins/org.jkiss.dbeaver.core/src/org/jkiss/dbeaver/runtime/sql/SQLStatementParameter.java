@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
@@ -107,7 +108,7 @@ public class SQLStatementParameter implements DBSAttributeBase {
     @Override
     public String toString()
     {
-        return getTitle() + "=" + (isResolved() ? valueHandler.getValueDisplayString(this, value) : "?");
+        return getTitle() + "=" + (isResolved() ? valueHandler.getValueDisplayString(this, value, DBDDisplayFormat.UI) : "?");
     }
 
     public String getTitle()

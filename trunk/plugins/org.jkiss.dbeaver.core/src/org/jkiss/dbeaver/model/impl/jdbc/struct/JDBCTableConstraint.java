@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
@@ -214,7 +215,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                         if (keyValue == null) {
                             continue;
                         }
-                        String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue);
+                        String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue, DBDDisplayFormat.NATIVE);
                         if (descColumns != null) {
                             keyLabel = "";
                             for (int i = 1; i < colHandlers.size(); i++) {
@@ -222,7 +223,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                                 if (!keyLabel.isEmpty()) {
                                     keyLabel += " ";
                                 }
-                                keyLabel += colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue);
+                                keyLabel += colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE);
                             }
                         }
                         values.add(new DBDLabelValuePair(keyLabel, keyValue));

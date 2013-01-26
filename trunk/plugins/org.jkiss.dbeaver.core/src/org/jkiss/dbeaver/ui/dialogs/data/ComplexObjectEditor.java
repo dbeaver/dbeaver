@@ -215,13 +215,13 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (field.value instanceof DBDStructure) {
                     return "";
                 }
-                return field.valueHandler.getValueDisplayString(field.attribute, field.value);
+                return field.valueHandler.getValueDisplayString(field.attribute, field.value, DBDDisplayFormat.UI);
             } else if (obj instanceof ArrayItem) {
                 ArrayItem item = (ArrayItem) obj;
                 if (isName) {
                     return String.valueOf(item.index);
                 }
-                return item.valueHandler.getValueDisplayString(item.array.getElementType(), item.value);
+                return item.valueHandler.getValueDisplayString(item.array.getElementType(), item.value, DBDDisplayFormat.UI);
             }
             return String.valueOf(columnIndex);
         }

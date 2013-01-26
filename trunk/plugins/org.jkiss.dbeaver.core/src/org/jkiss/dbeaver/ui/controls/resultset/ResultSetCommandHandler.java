@@ -22,6 +22,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
 
@@ -84,10 +86,14 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
             resultSet.applyChanges(null);
         } else if (actionId.equals(CMD_REJECT_CHANGES)) {
             resultSet.rejectChanges();
+        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
+            resultSet.copySelectionToClipboard(false, DBDDisplayFormat.EDIT);
+        } else if (actionId.equals(ICommandIds.CMD_COPY_SPECIAL)) {
+            resultSet.copySelectionToClipboard(true, DBDDisplayFormat.UI);
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE)) {
             resultSet.pasteCellValue();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT)) {
-            resultSet.getSpreadsheet().copySelectionToClipboard(false);
+            resultSet.copySelectionToClipboard(false, DBDDisplayFormat.EDIT);
         }
 
 

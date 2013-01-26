@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDArray;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -106,7 +107,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value)
+    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         if (value instanceof JDBCArray) {
             String displayString = ((JDBCArray) value).makeArrayString();
@@ -114,7 +115,7 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
                 return displayString;
             }
         }
-        return super.getValueDisplayString(column, value);
+        return super.getValueDisplayString(column, value, format);
     }
 
     @Override

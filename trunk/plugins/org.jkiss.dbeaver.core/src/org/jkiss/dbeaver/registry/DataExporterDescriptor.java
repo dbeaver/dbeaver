@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.tools.data.IDataExporter;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
@@ -44,6 +45,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
     private String fileExtension;
     private Image icon;
     private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
+    private DBDDisplayFormat exportFormat;
 
     public DataExporterDescriptor(IConfigurationElement config)
     {
@@ -54,6 +56,12 @@ public class DataExporterDescriptor extends AbstractDescriptor
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.fileExtension = config.getAttribute(RegistryConstants.ATTR_EXTENSION);
+        String formatName = config.getAttribute(RegistryConstants.ATTR_FORMAT);
+        if (CommonUtils.isEmpty(formatName)) {
+            exportFormat = DBDDisplayFormat.UI;
+        } else {
+            exportFormat = DBDDisplayFormat.valueOf(formatName.toUpperCase());
+        }
         String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
         if (!CommonUtils.isEmpty(iconPath)) {
             this.icon = iconToImage(iconPath);
@@ -124,5 +132,10 @@ public class DataExporterDescriptor extends AbstractDescriptor
             throw new InstantiationException("Cannot find exporter class " + exporterType.implName);
         }
         return clazz.newInstance();
+    }
+
+    public DBDDisplayFormat getExportFormat()
+    {
+        return exportFormat;
     }
 }

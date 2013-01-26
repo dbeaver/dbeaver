@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -144,7 +145,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                 str.append("NULL");
             } else {
                 DBDValueHandler valueHandler = DBUtils.findValueHandler(type.getDataSource(), entry.getKey());
-                String strValue = valueHandler.getValueDisplayString(entry.getKey(), item);
+                String strValue = valueHandler.getValueDisplayString(entry.getKey(), item, DBDDisplayFormat.UI);
                 SQLUtils.appendValue(str, entry.getKey(), strValue);
             }
             i++;
