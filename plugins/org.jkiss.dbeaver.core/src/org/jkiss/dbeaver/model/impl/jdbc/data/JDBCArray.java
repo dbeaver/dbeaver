@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.data.DBDArray;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -180,7 +181,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
             if (str.length() > 0) {
                 str.append(","); //$NON-NLS-1$
             }
-            String itemString = valueHandler.getValueDisplayString(type, item);
+            String itemString = valueHandler.getValueDisplayString(type, item, DBDDisplayFormat.UI);
             SQLUtils.appendValue(str, type, itemString);
         }
         return str.toString();

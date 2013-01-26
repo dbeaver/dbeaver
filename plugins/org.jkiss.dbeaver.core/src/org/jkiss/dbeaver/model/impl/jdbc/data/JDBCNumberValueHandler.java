@@ -25,10 +25,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -76,9 +73,15 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
      * NumberFormat is not thread safe thus this method is synchronized.
      */
     @Override
-    public synchronized String getValueDisplayString(DBSTypedObject column, Object value)
+    public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
-        return value == null ? DBConstants.NULL_VALUE_LABEL : formatter.formatValue(value);
+        if (value == null) {
+            return DBConstants.NULL_VALUE_LABEL;
+        }
+        if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
+            return value.toString();
+        }
+        return formatter.formatValue(value);
     }
 
     @Override
@@ -252,7 +255,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         {
                             Object value = valueController.getValue();
                             if (value != null) {
-                                control.setText(getValueDisplayString(valueController.getAttributeMetaData(), value)); //$NON-NLS-1$
+                                control.setText(getValueDisplayString(valueController.getAttributeMetaData(), value, DBDDisplayFormat.UI));
                             }
                             if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
                                 control.selectAll();
@@ -322,11 +325,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             return null;
         }
         try {
-            return (Number)formatter.parseValue(text);
-        } catch (ParseException e) {
-            log.debug("Can't parse numeric value using formatter", e);
-        }
-        try {
             if (originalValue instanceof Number) {
                 if (originalValue instanceof Long) {
                     return Long.valueOf(text);
@@ -373,7 +371,12 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             }
         } catch (NumberFormatException e) {
             log.debug("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
-            return null;
+            try {
+                return (Number)formatter.parseValue(text);
+            } catch (ParseException e1) {
+                log.debug("Can't parse numeric value using formatter", e);
+                return null;
+            }
         }
     }
 

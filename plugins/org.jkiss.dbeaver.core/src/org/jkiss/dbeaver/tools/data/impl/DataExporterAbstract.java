@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.tools.data.impl;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueHandler2;
 import org.jkiss.dbeaver.tools.data.IDataExporter;
 import org.jkiss.dbeaver.tools.data.IDataExporterSite;
 
@@ -54,11 +53,7 @@ public abstract class DataExporterAbstract implements IDataExporter {
         Object value)
     {
         final DBDValueHandler valueHandler = column.getValueHandler();
-        if (valueHandler instanceof DBDValueHandler2) {
-            return ((DBDValueHandler2)valueHandler).getValueDisplayString(column.getAttribute(), getSite().getExportFormat(), value);
-        } else {
-            return valueHandler.getValueDisplayString(column.getAttribute(), value);
-        }
+        return valueHandler.getValueDisplayString(column.getAttribute(), value, getSite().getExportFormat());
     }
 
 

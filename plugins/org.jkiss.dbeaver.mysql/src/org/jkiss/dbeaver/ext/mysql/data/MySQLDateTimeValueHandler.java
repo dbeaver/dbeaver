@@ -18,8 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql.data;
 
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -37,9 +37,9 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
     }
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, String format, Object value)
+    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
-        if (value instanceof Date && DBConstants.FORMAT_SQL.equals(format)) {
+        if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
             Calendar cal = Calendar.getInstance();
             cal.setTime((Date) value);
             final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY) + 1);
@@ -59,7 +59,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     "','%Y-%m-%d %H:%i:%s')";
             }
         } else {
-            return getValueDisplayString(column, value);
+            return getValueDisplayString(column, value, format);
         }
     }
 }

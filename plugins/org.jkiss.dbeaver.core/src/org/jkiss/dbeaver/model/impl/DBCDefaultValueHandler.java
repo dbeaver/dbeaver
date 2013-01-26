@@ -88,13 +88,8 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value) {
+    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format) {
         return DBUtils.getDefaultValueDisplayString(value);
-    }
-
-    @Override
-    public DBDValueAnnotation[] getValueAnnotations(DBCAttributeMetaData attribute) throws DBCException {
-        return null;
     }
 
     @Override

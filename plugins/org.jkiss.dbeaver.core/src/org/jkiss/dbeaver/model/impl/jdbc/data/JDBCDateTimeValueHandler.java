@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -49,7 +48,7 @@ import java.util.Date;
 /**
  * JDBC string value handler
  */
-public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implements DBDValueHandler2 {
+public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
     public static final String TYPE_NAME_DATE = "date"; //$NON-NLS-1$
     public static final String TYPE_NAME_TIME = "time"; //$NON-NLS-1$
@@ -192,18 +191,39 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
     }
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value)
+    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         if (value == null) {
-            return super.getValueDisplayString(column, value);
+            return super.getValueDisplayString(column, value, format);
         }
-        switch (column.getTypeID()) {
+        if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
+            Calendar cal = Calendar.getInstance();
+            cal.setTime((Date) value);
+            final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY) + 1);
+            final String minutes = getTwoDigitValue(cal.get(Calendar.MINUTE));
+            final String seconds = getTwoDigitValue(cal.get(Calendar.SECOND));
+            final String year = String.valueOf(cal.get(Calendar.YEAR));
+            final String month = getTwoDigitValue(cal.get(Calendar.MONTH) + 1);
+            final String dayOfMonth = getTwoDigitValue(cal.get(Calendar.DAY_OF_MONTH));
+            switch (column.getTypeID()) {
+                case java.sql.Types.TIME:
+                    return "TO_DATE('" + hourOfDay + ":" + minutes + ":" + seconds + "','HH24:MI:SS')";
+                case java.sql.Types.DATE:
+                    return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth + "','YYYY-MM-DD')";
+                default:
+                    return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth +
+                        " " + hourOfDay + ":" + minutes + ":" + seconds +
+                        "','YYYY-MM-DD HH24:MI:SS')";
+            }
+        } else {
+            switch (column.getTypeID()) {
             case java.sql.Types.TIME:
                 return getFormatter(TYPE_NAME_TIME).formatValue(value);
             case java.sql.Types.DATE:
                 return getFormatter(TYPE_NAME_DATE).formatValue(value);
             default:
                 return getFormatter(TYPE_NAME_TIMESTAMP).formatValue(value);
+            }
         }
     }
 
@@ -281,33 +301,6 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler implement
             return new java.sql.Time(cl.getTimeInMillis());
         } else {
             return new Timestamp(cl.getTimeInMillis());
-        }
-    }
-
-    @Override
-    public String getValueDisplayString(DBSTypedObject column, String format, Object value)
-    {
-        if (value instanceof Date && DBConstants.FORMAT_SQL.equals(format)) {
-            Calendar cal = Calendar.getInstance();
-            cal.setTime((Date) value);
-            final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY) + 1);
-            final String minutes = getTwoDigitValue(cal.get(Calendar.MINUTE));
-            final String seconds = getTwoDigitValue(cal.get(Calendar.SECOND));
-            final String year = String.valueOf(cal.get(Calendar.YEAR));
-            final String month = getTwoDigitValue(cal.get(Calendar.MONTH) + 1);
-            final String dayOfMonth = getTwoDigitValue(cal.get(Calendar.DAY_OF_MONTH));
-            switch (column.getTypeID()) {
-                case java.sql.Types.TIME:
-                    return "TO_DATE('" + hourOfDay + ":" + minutes + ":" + seconds + "','HH24:MI:SS')";
-                case java.sql.Types.DATE:
-                    return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth + "','YYYY-MM-DD')";
-                default:
-                    return "TO_DATE('" + year + "-" + month + "-" + dayOfMonth +
-                        " " + hourOfDay + ":" + minutes + ":" + seconds +
-                        "','YYYY-MM-DD HH24:MI:SS')";
-            }
-        } else {
-            return getValueDisplayString(column, value);
         }
     }
 

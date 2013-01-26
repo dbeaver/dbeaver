@@ -123,20 +123,13 @@ public interface DBDValueHandler
 
     /**
      * Converts value to human readable format
+     *
      * @param column column
      * @param value value
+     * @param format
      * @return formatted string
      */
-    String getValueDisplayString(DBSTypedObject column, Object value);
-
-    /**
-     * Returns any additional annotations of value
-     * @param attribute column info
-     * @return annotations array or null
-     * @throws DBCException on error
-     */
-    DBDValueAnnotation[] getValueAnnotations(DBCAttributeMetaData attribute)
-        throws DBCException;
+    String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format);
 
     /**
      * Fills context menu for certain value

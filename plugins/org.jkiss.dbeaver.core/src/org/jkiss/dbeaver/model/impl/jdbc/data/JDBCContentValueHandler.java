@@ -196,17 +196,17 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value)
+    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         if (value instanceof DBDContent) {
             String result = value.toString();
             if (result == null) {
-                return super.getValueDisplayString(column, null);
+                return super.getValueDisplayString(column, null, format);
             } else {
                 return result;
             }
         }
-        return super.getValueDisplayString(column, value);
+        return super.getValueDisplayString(column, value, format);
     }
 
     @Override
