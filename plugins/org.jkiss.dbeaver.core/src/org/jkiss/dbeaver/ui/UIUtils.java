@@ -1137,6 +1137,7 @@ public class UIUtils {
             } catch (Exception e) {
                 log.debug(e);
             }
+
         }
     }
 
