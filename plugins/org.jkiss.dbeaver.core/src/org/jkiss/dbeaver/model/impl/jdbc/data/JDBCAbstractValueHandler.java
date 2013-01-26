@@ -133,6 +133,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     protected abstract class ValueEditor<T extends Control> implements DBDValueEditor {
         protected final DBDValueController valueController;
         protected final T control;
+        private boolean activated;
         protected ValueEditor(final DBDValueController valueController)
         {
             this.valueController = valueController;
@@ -166,22 +167,39 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
         protected void initInlineControl(final Control inlineControl)
         {
+            boolean isInline = (valueController.getEditType() == DBDValueController.EditType.INLINE);
+
+            // Panel controls
             inlineControl.addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e)
                 {
-                    UIUtils.enableHostEditorKeyBindings(valueController.getValueSite(), false);
+                    if (!activated) {
+                        UIUtils.enableHostEditorKeyBindings(valueController.getValueSite(), false);
+                        activated = true;
+                    }
                 }
-
                 @Override
                 public void focusLost(FocusEvent e)
                 {
-                    UIUtils.enableHostEditorKeyBindings(valueController.getValueSite(), true);
+                    if (activated) {
+                        UIUtils.enableHostEditorKeyBindings(valueController.getValueSite(), true);
+                        activated = false;
+                    }
+                }
+            });
+            inlineControl.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e)
+                {
+                    if (activated) {
+                        UIUtils.enableHostEditorKeyBindings(valueController.getValueSite(), true);
+                        activated = false;
+                    }
                 }
             });
 
 
-            boolean isInline = (valueController.getEditType() == DBDValueController.EditType.INLINE);
 //            if (!isInline) {
 //                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());
 //            }

@@ -1682,7 +1682,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         new DataUpdater().rejectChanges();
     }
 
-    public void copySelectionToClipboard(boolean copyHeader, DBDDisplayFormat format)
+    public void copySelectionToClipboard(boolean copyHeader, boolean cut, DBDDisplayFormat format)
     {
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         List<Integer> colsSelected = new ArrayList<Integer>();
@@ -1738,13 +1738,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 prevCol = pos.col;
             }
             GridPos cellPos = translateGridPos(pos);
-            Object value = curRows.get(cellPos.row)[cellPos.col];
+            Object[] curRow = curRows.get(cellPos.row);
+            Object value = curRow[cellPos.col];
             String cellText = metaColumns[cellPos.col].getValueHandler().getValueDisplayString(
                 metaColumns[cellPos.col].getAttribute(),
                 value,
                 format);
             if (cellText != null) {
                 tdt.append(cellText);
+            }
+            if (cut) {
+                DBDValueController valueController = new ResultSetValueController(
+                    curRow, cellPos.col, DBDValueController.EditType.NONE, null);
+                if (!valueController.isReadOnly()) {
+                    valueController.updateValue(DBUtils.makeNullValue(valueController));
+                }
             }
         }
         if (tdt.length() > 0) {

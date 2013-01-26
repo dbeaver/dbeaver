@@ -87,13 +87,13 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         } else if (actionId.equals(CMD_REJECT_CHANGES)) {
             resultSet.rejectChanges();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
-            resultSet.copySelectionToClipboard(false, DBDDisplayFormat.EDIT);
+            resultSet.copySelectionToClipboard(false, false, DBDDisplayFormat.EDIT);
         } else if (actionId.equals(ICommandIds.CMD_COPY_SPECIAL)) {
-            resultSet.copySelectionToClipboard(true, DBDDisplayFormat.UI);
+            resultSet.copySelectionToClipboard(true, false, DBDDisplayFormat.UI);
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE)) {
             resultSet.pasteCellValue();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT)) {
-            resultSet.copySelectionToClipboard(false, DBDDisplayFormat.EDIT);
+            resultSet.copySelectionToClipboard(false, true, DBDDisplayFormat.EDIT);
         }
 
 
