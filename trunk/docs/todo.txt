@@ -21,4 +21,6 @@ Variable number of columns in RS (cassandra)
 
 
 ADVANCED COPY DIALOG
+generate sql
+exclipse secure store
 USE JDBC DRIVER API IN PLUGIN (HACK OSGI?)

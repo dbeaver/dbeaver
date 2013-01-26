@@ -1682,8 +1682,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         new DataUpdater().rejectChanges();
     }
 
-    public void copySelectionToClipboard(boolean copyHeader, boolean cut, DBDDisplayFormat format)
+    public void copySelectionToClipboard(
+        boolean copyHeader,
+        boolean copyRowNumbers,
+        boolean cut,
+        String delimiter,
+        DBDDisplayFormat format)
     {
+        if (delimiter == null) {
+            delimiter = "\t";
+        }
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         List<Integer> colsSelected = new ArrayList<Integer>();
         int firstCol = Integer.MAX_VALUE, lastCol = Integer.MIN_VALUE;
@@ -1703,17 +1711,25 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 colsSelected.add(pos.col);
             }
         }
+        int rowNumber = 1;
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
+            if (copyRowNumbers) {
+                tdt.append("-");
+            }
             for (int colIndex : colsSelected) {
                 GridColumn column = spreadsheet.getColumn(colIndex);
                 if (tdt.length() > 0) {
-                    tdt.append('\t');
+                    tdt.append(delimiter);
                 }
                 tdt.append(column.getText());
             }
             tdt.append(lineSeparator);
         }
+        if (copyRowNumbers) {
+            tdt.append(rowNumber++).append(delimiter);
+        }
+
         int prevRow = firstRow;
         int prevCol = firstCol;
         for (GridPos pos : selection) {
@@ -1721,18 +1737,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (prevCol < lastCol) {
                     for (int i = prevCol; i < lastCol; i++) {
                         if (colsSelected.contains(i)) {
-                            tdt.append('\t');
+                            tdt.append(delimiter);
                         }
                     }
                 }
                 tdt.append(lineSeparator);
+                if (copyRowNumbers) {
+                    tdt.append(rowNumber++).append(delimiter);
+                }
                 prevRow = pos.row;
                 prevCol = firstCol;
             }
             if (pos.col > prevCol) {
                 for (int i = prevCol; i < pos.col; i++) {
                     if (colsSelected.contains(i)) {
-                        tdt.append('\t');
+                        tdt.append(delimiter);
                     }
                 }
                 prevCol = pos.col;
