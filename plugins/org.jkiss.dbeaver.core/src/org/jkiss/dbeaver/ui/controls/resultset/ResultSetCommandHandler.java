@@ -23,7 +23,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.SpreadsheetCommandHandler;
 
@@ -48,15 +47,10 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        Spreadsheet spreadsheet = getActiveSpreadsheet(event);
-        if (spreadsheet == null) {
+        ResultSetViewer resultSet = getResultSet(event);
+        if (resultSet == null) {
             return null;
         }
-        if (!(spreadsheet.getController() instanceof ResultSetViewer)) {
-            return null;
-        }
-        ResultSetViewer resultSet = (ResultSetViewer) spreadsheet.getController();
-        //ResultSetViewer.ResultSetMode resultSetMode = resultSet.getMode();
         String actionId = event.getCommand().getId();
         if (actionId.equals(IWorkbenchCommandConstants.FILE_REFRESH)) {
             resultSet.refresh();
@@ -87,17 +81,27 @@ public class ResultSetCommandHandler extends SpreadsheetCommandHandler {
         } else if (actionId.equals(CMD_REJECT_CHANGES)) {
             resultSet.rejectChanges();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
-            resultSet.copySelectionToClipboard(false, false, DBDDisplayFormat.EDIT);
-        } else if (actionId.equals(ICommandIds.CMD_COPY_SPECIAL)) {
-            resultSet.copySelectionToClipboard(true, false, DBDDisplayFormat.UI);
+            resultSet.copySelectionToClipboard(false, false, false, null, DBDDisplayFormat.EDIT);
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE)) {
             resultSet.pasteCellValue();
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT)) {
-            resultSet.copySelectionToClipboard(false, true, DBDDisplayFormat.EDIT);
+            resultSet.copySelectionToClipboard(false, false, true, null, DBDDisplayFormat.EDIT);
         }
 
 
         return null;
+    }
+
+    protected ResultSetViewer getResultSet(ExecutionEvent event)
+    {
+        Spreadsheet spreadsheet = getActiveSpreadsheet(event);
+        if (spreadsheet == null) {
+            return null;
+        }
+        if (!(spreadsheet.getController() instanceof ResultSetViewer)) {
+            return null;
+        }
+        return (ResultSetViewer) spreadsheet.getController();
     }
 
 }
