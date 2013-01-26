@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -39,12 +40,12 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     public static final OracleObjectValueHandler INSTANCE = new OracleObjectValueHandler();
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value)
+    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         if (value != null) {
             return "[OBJECT]";
         } else {
-            return super.getValueDisplayString(column, value);
+            return super.getValueDisplayString(column, value, format);
         }
     }
 

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -68,7 +69,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
      * NumberFormat is not thread safe thus this method is synchronized.
      */
     @Override
-    public synchronized String getValueDisplayString(DBSTypedObject column, Object value)
+    public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         JDBCStruct struct = (JDBCStruct) value;
         return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : struct.getStringRepresentation();

@@ -155,4 +155,5 @@ public class RegistryConstants {
     public static final String TAG_ATTRIBUTE = "attribute"; //$NON-NLS-1$
 
     public static final String MAPPED_URL = "*";
+    public static final String ATTR_FORMAT = "format";
 }

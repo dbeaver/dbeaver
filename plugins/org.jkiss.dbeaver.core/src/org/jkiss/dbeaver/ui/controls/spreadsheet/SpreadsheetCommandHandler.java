@@ -27,7 +27,6 @@ import org.eclipse.ui.ISources;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
  * Standard command handler
@@ -54,13 +53,6 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
         String actionId = event.getCommand().getId();
         if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL)) {
             spreadsheet.selectAll();
-            return null;
-        }
-        if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
-            spreadsheet.copySelectionToClipboard(false);
-            return null;
-        } else if (actionId.equals(ICommandIds.CMD_COPY_SPECIAL)) {
-            spreadsheet.copySelectionToClipboard(true);
             return null;
         }
         Event keyEvent = new Event();

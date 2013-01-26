@@ -99,15 +99,8 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     }
 
     @Override
-    public String getValueDisplayString(DBSTypedObject column, Object value) {
+    public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format) {
         return value == null ? DBConstants.NULL_VALUE_LABEL : value.toString();
-    }
-
-    @Override
-    public DBDValueAnnotation[] getValueAnnotations(DBCAttributeMetaData column)
-        throws DBCException
-    {
-        return null;
     }
 
     @Override

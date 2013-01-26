@@ -37,6 +37,8 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
@@ -86,6 +88,7 @@ import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -1278,7 +1281,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     continue;
                 }
                 filtersMenu.add(new Separator());
-                if (type.getValue(this, column, true) == null) {
+                if (type.getValue(this, column, true, DBDDisplayFormat.NATIVE) == null) {
                     continue;
                 }
                 if (dataKind == DBSDataKind.BOOLEAN) {
@@ -1304,15 +1307,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
         filtersMenu.add(new ShowFiltersAction());
-    }
-
-    private String translateFilterPattern(String pattern, FilterByColumnType type, DBDAttributeBinding column)
-    {
-        String value = CommonUtils.truncateString(
-            CommonUtils.toString(
-                type.getValue(this, column, true)),
-            30);
-        return pattern.replace("?", value);
     }
 
     boolean supportsDataFilter()
@@ -1686,6 +1680,79 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public void rejectChanges()
     {
         new DataUpdater().rejectChanges();
+    }
+
+    public void copySelectionToClipboard(boolean copyHeader, DBDDisplayFormat format)
+    {
+        String lineSeparator = ContentUtils.getDefaultLineSeparator();
+        List<Integer> colsSelected = new ArrayList<Integer>();
+        int firstCol = Integer.MAX_VALUE, lastCol = Integer.MIN_VALUE;
+        int firstRow = Integer.MAX_VALUE;
+        Collection<GridPos> selection = spreadsheet.getSelection();
+        for (GridPos pos : selection) {
+            if (firstCol > pos.col) {
+                firstCol = pos.col;
+            }
+            if (lastCol < pos.col) {
+                lastCol = pos.col;
+            }
+            if (firstRow > pos.row) {
+                firstRow = pos.row;
+            }
+            if (!colsSelected.contains(pos.col)) {
+                colsSelected.add(pos.col);
+            }
+        }
+        StringBuilder tdt = new StringBuilder();
+        if (copyHeader) {
+            for (int colIndex : colsSelected) {
+                GridColumn column = spreadsheet.getColumn(colIndex);
+                if (tdt.length() > 0) {
+                    tdt.append('\t');
+                }
+                tdt.append(column.getText());
+            }
+            tdt.append(lineSeparator);
+        }
+        int prevRow = firstRow;
+        int prevCol = firstCol;
+        for (GridPos pos : selection) {
+            if (pos.row > prevRow) {
+                if (prevCol < lastCol) {
+                    for (int i = prevCol; i < lastCol; i++) {
+                        if (colsSelected.contains(i)) {
+                            tdt.append('\t');
+                        }
+                    }
+                }
+                tdt.append(lineSeparator);
+                prevRow = pos.row;
+                prevCol = firstCol;
+            }
+            if (pos.col > prevCol) {
+                for (int i = prevCol; i < pos.col; i++) {
+                    if (colsSelected.contains(i)) {
+                        tdt.append('\t');
+                    }
+                }
+                prevCol = pos.col;
+            }
+            GridPos cellPos = translateGridPos(pos);
+            Object value = curRows.get(cellPos.row)[cellPos.col];
+            String cellText = metaColumns[cellPos.col].getValueHandler().getValueDisplayString(
+                metaColumns[cellPos.col].getAttribute(),
+                value,
+                format);
+            if (cellText != null) {
+                tdt.append(cellText);
+            }
+        }
+        if (tdt.length() > 0) {
+            TextTransfer textTransfer = TextTransfer.getInstance();
+            getSpreadsheet().getClipboard().setContents(
+                new Object[]{tdt.toString()},
+                new Transfer[]{textTransfer});
+        }
     }
 
     public void pasteCellValue()
@@ -2954,7 +3021,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
 
             if (formatString) {
-                return valueHandler.getValueDisplayString(metaColumns[cell.col].getAttribute(), value);
+                return valueHandler.getValueDisplayString(metaColumns[cell.col].getAttribute(), value, DBDDisplayFormat.UI);
             } else {
                 return value;
             }
@@ -3173,15 +3240,15 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private enum FilterByColumnType {
         VALUE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault)
+            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
             {
                 Object value = viewer.curRows.get(viewer.getCurrentRow())[viewer.getMetaColumnIndex(column.getAttribute())];
-                return column.getValueHandler().getValueDisplayString(column.getAttribute(), value);
+                return column.getValueHandler().getValueDisplayString(column.getAttribute(), value, format);
             }
         },
         INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault)
+            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
             {
                 if (useDefault) {
                     return "..";
@@ -3195,10 +3262,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         },
         CLIPBOARD(DBIcon.FILTER_CLIPBOARD.getImageDescriptor()) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault)
+            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
             {
                 try {
-                    return viewer.getColumnValueFromClipboard(column);
+                    return column.getValueHandler().getValueDisplayString(
+                        column.getAttribute(),
+                        viewer.getColumnValueFromClipboard(column),
+                        format);
                 } catch (DBCException e) {
                     log.error("Error copying from clipboard", e);
                     return null;
@@ -3207,7 +3277,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         },
         NONE(DBIcon.FILTER_VALUE.getImageDescriptor()) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault)
+            String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
             {
                 return "";
             }
@@ -3219,7 +3289,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             this.icon = icon;
         }
-        abstract Object getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault);
+        abstract String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format);
+    }
+
+    private String translateFilterPattern(String pattern, FilterByColumnType type, DBDAttributeBinding column)
+    {
+        String value = CommonUtils.truncateString(
+            CommonUtils.toString(
+                type.getValue(this, column, true, DBDDisplayFormat.UI)),
+            30);
+        return pattern.replace("?", value);
     }
 
     private class FilterByColumnAction extends Action {
@@ -3237,11 +3316,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public void run()
         {
-            Object value = type.getValue(ResultSetViewer.this, column, false);
+            String value = type.getValue(ResultSetViewer.this, column, false, DBDDisplayFormat.NATIVE);
             if (value == null) {
                 return;
             }
-            String stringValue = pattern.replace("?", value.toString());
+            String stringValue = pattern.replace("?", value);
             DBDDataFilter filter = getDataFilter();
             DBQCondition filterColumn = filter.getFilterColumn(column.getColumnName());
             if (filterColumn == null) {

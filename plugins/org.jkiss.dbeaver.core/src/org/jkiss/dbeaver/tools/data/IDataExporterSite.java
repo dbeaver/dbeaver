@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.data;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +36,7 @@ public interface IDataExporterSite {
 
     DBPNamedObject getSource();
 
-    String getExportFormat();
+    DBDDisplayFormat getExportFormat();
 
     Map<Object, Object> getProperties();
 
