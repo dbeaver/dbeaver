@@ -3,7 +3,6 @@ Major:
 Search refactoring (scripts search)
 Localizations
 JDBC driver versions update
-Help system improvement (use external help)
 Execution history
 DB2 & PostgreSQL & MS SQL plugins
 DDL tab for Generic plugin
@@ -19,6 +18,7 @@ Plugin:
 Customize resource roots
 Disable Quick Access toolbar
 Variable number of columns in RS (cassandra)
-Use Babel for 4.2.x
-DROP USER in Oracle
-Perspective icon
+
+
+ADVANCED COPY DIALOG
+USE JDBC DRIVER API IN PLUGIN (HACK OSGI?)
