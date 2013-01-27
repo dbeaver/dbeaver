@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
@@ -199,14 +199,14 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             case INLINE:
             case PANEL:
                 if (controller.getAttributeMetaData().getTypeID() == java.sql.Types.BIT) {
-                    return new ValueEditor<CCombo>(controller) {
+                    return new ValueEditor<Combo>(controller) {
                         @Override
-                        protected CCombo createControl(Composite editPlaceholder)
+                        protected Combo createControl(Composite editPlaceholder)
                         {
-                            final CCombo editor = new CCombo(valueController.getEditPlaceholder(), SWT.READ_ONLY);
+                            final Combo editor = new Combo(valueController.getEditPlaceholder(), SWT.READ_ONLY);
                             editor.add("0"); //$NON-NLS-1$
                             editor.add("1"); //$NON-NLS-1$
-                            editor.setEditable(!valueController.isReadOnly());
+                            editor.setEnabled(!valueController.isReadOnly());
                             return editor;
                         }
                         @Override
