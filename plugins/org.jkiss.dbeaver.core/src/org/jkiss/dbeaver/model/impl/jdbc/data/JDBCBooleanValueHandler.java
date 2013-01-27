@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.DBException;
@@ -103,14 +103,14 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             {
-                return new ValueEditor<CCombo>(controller) {
+                return new ValueEditor<Combo>(controller) {
                     @Override
-                    protected CCombo createControl(Composite editPlaceholder)
+                    protected Combo createControl(Composite editPlaceholder)
                     {
-                        final CCombo editor = new CCombo(editPlaceholder, SWT.READ_ONLY);
+                        final Combo editor = new Combo(editPlaceholder, SWT.READ_ONLY);
                         editor.add("FALSE");
                         editor.add("TRUE");
-                        editor.setEditable(!valueController.isReadOnly());
+                        editor.setEnabled(!valueController.isReadOnly());
                         return editor;
                     }
                     @Override
