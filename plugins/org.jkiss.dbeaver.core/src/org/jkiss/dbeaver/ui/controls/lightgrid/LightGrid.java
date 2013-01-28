@@ -4310,12 +4310,22 @@ public abstract class LightGrid extends Canvas {
      *
      * @return an array representing the cell selection
      */
-    public Collection<GridPos> getCellSelection()
+    public Collection<GridPos> getSelection()
     {
-        checkWidget();
+        if (isDisposed()) {
+            return Collections.emptyList();
+        }
         return Collections.unmodifiableCollection(selectedCells);
     }
 
+    /**
+     * Returns selected rows indexes
+     * @return
+     */
+    public Collection<Integer> getRowSelection()
+    {
+        return Collections.unmodifiableCollection(selectedRows.keySet());
+    }
 
     private void getCells(GridColumn col, List<GridPos> cells)
     {

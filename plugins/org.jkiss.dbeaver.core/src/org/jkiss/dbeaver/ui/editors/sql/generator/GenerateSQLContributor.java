@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSelection;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -74,6 +75,33 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         List<IContributionItem> menu = new ArrayList<IContributionItem>();
         if (structuredSelection instanceof ResultSetSelection) {
             // Results
+            ResultSetSelection rss = (ResultSetSelection) structuredSelection;
+            ResultSetViewer rsv = rss.getResultSetViewer();
+            DBSTable table = (DBSTable)rsv.getDataContainer();
+            menu.add(makeAction("SELECT by Unique Key", new TableAnalysisRunner(table) {
+                @Override
+                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+                {
+                    Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                    sql.append("SELECT ");
+                    boolean hasAttr = false;
+                    for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
+                        if (hasAttr) sql.append(", ");
+                        sql.append(DBUtils.getObjectFullName(attr));
+                        hasAttr = true;
+                    }
+                    sql.append("\nFROM ").append(DBUtils.getObjectFullName(table));
+                    sql.append("\nWHERE ");
+                    hasAttr = false;
+                    for (DBSEntityAttribute attr : keyAttributes) {
+                        if (hasAttr) sql.append(" AND ");
+                        sql.append(DBUtils.getObjectFullName(attr)).append("=").append("''");
+                        hasAttr = true;
+                    }
+                    sql.append(";\n");
+                }
+            }));
+
         } else {
             final DBSTable table =
                 (DBSTable) ((DBNDatabaseNode)RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class)).getObject();
@@ -84,7 +112,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 {
                     sql.append("SELECT ");
                     boolean hasAttr = false;
-                    for (DBSEntityAttribute attr : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
                         if (hasAttr) sql.append(", ");
                         sql.append(DBUtils.getObjectFullName(attr));
                         hasAttr = true;

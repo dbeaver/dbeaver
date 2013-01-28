@@ -329,6 +329,24 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             {
                 return ResultSetViewer.this;
             }
+
+            @Override
+            public Collection<Object[]> getSelectedRows()
+            {
+                if (mode == ResultSetMode.RECORD) {
+                    if (curRowNum < 0 || curRowNum >= curRows.size()) {
+                        return Collections.emptyList();
+                    }
+                    return Collections.singletonList(curRows.get(curRowNum));
+                } else {
+                    Collection<Integer> rowSelection = spreadsheet.getRowSelection();
+                    List<Object[]> data = new ArrayList<Object[]>(rowSelection.size());
+                    for (Integer row : rowSelection) {
+                        data.add(curRows.get(row));
+                    }
+                    return data;
+                }
+            }
         };
     }
 
