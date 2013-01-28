@@ -46,6 +46,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISaveablePart2;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -107,6 +108,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
+    private final ResultSetSelection selection;
 
     public enum ResultSetMode {
         GRID,
@@ -283,6 +285,51 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 updateToolbar();
             }
         });
+
+        this.selection = new ResultSetSelection() {
+            @Override
+            public Object getFirstElement()
+            {
+                Collection<GridPos> ssSelection = spreadsheet.getSelection();
+                return ssSelection.isEmpty() ? null : ssSelection.iterator().next();
+            }
+
+            @Override
+            public Iterator iterator()
+            {
+                return spreadsheet.getSelection().iterator();
+            }
+
+            @Override
+            public int size()
+            {
+                return spreadsheet.getSelection().size();
+            }
+
+            @Override
+            public Object[] toArray()
+            {
+                return spreadsheet.getSelection().toArray();
+            }
+
+            @Override
+            public List toList()
+            {
+                return new ArrayList<GridPos>(spreadsheet.getSelection());
+            }
+
+            @Override
+            public boolean isEmpty()
+            {
+                return spreadsheet.getSelection().isEmpty();
+            }
+
+            @Override
+            public ResultSetViewer getResultSetViewer()
+            {
+                return ResultSetViewer.this;
+            }
+        };
     }
 
     IPreferenceStore getPreferences()
@@ -1259,6 +1306,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             });
         }
+        manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
     }
 
     private void fillFiltersMenu(IMenuManager filtersMenu)
@@ -1395,9 +1443,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     @Override
-    public IStructuredSelection getSelection()
+    public ResultSetSelection getSelection()
     {
-        return new StructuredSelection(spreadsheet.getSelection().toArray());
+        return selection;
     }
 
     @Override

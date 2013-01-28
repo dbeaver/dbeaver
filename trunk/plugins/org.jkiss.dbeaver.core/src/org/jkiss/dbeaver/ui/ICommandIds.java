@@ -47,4 +47,7 @@ public interface ICommandIds
 
     public static final String CMD_CONTENT_FORMAT = "org.jkiss.dbeaver.ui.editors.text.content.format"; //$NON-NLS-1$
     public static final String CMD_NAVIGATE_OBJECT = "org.jkiss.dbeaver.ui.editors.sql.navigate.object"; //$NON-NLS-1$;
+
+    public static final String GROUP_TOOLS = "tools";
+
 }
