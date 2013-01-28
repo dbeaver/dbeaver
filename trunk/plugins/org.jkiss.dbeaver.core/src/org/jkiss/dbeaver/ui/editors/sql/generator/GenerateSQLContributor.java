@@ -16,18 +16,27 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.editors.sql.handlers;
+package org.jkiss.dbeaver.ui.editors.sql.generator;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -50,6 +59,8 @@ import java.util.Iterator;
 import java.util.List;
 
 public class GenerateSQLContributor extends CompoundContributionItem {
+
+    static protected final Log log = LogFactory.getLog(GenerateSQLContributor.class);
 
     @Override
     protected IContributionItem[] getContributionItems()
@@ -79,6 +90,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         hasAttr = true;
                     }
                     sql.append("\nFROM ").append(DBUtils.getObjectFullName(table));
+                    sql.append(";\n");
                 }
             }));
             menu.add(makeAction("INSERT ", new TableAnalysisRunner(table) {
@@ -92,14 +104,14 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         sql.append(DBUtils.getObjectFullName(attr));
                         hasAttr = true;
                     }
-                    sql.append("\nVALUES(");
+                    sql.append(")\nVALUES(");
                     hasAttr = false;
                     for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
                         if (hasAttr) sql.append(", ");
                         appendDefaultValue(sql, attr);
                         hasAttr = true;
                     }
-                    sql.append(")");
+                    sql.append(");\n");
                 }
 
             }));
@@ -127,6 +139,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             hasAttr = true;
                         }
                     }
+                    sql.append(";\n");
                 }
             }));
             menu.add(makeAction("DELETE ", new TableAnalysisRunner(table) {
@@ -146,6 +159,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         appendDefaultValue(sql, attr);
                         hasAttr = true;
                     }
+                    sql.append(";\n");
                 }
             }));
         }
@@ -221,12 +235,27 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 public void run()
                 {
                     DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), runnable);
-                    UIUtils.showMessageBox(DBeaverUI.getActiveWorkbenchShell(), "SQL", runnable.getResult(), SWT.ICON_INFORMATION);
+                    String sql = runnable.getResult();
+                    IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                    if (activeEditor instanceof AbstractTextEditor) {
+                        AbstractTextEditor textEditor = (AbstractTextEditor)activeEditor;
+                        ITextSelection selection = (ITextSelection) textEditor.getSelectionProvider().getSelection();
+                        IDocumentProvider provider=textEditor.getDocumentProvider();
+                        IDocument doc = provider.getDocument(activeEditor.getEditorInput());
+                        try {
+                            doc.replace(selection.getOffset(), selection.getLength(), sql);
+                        } catch (BadLocationException e) {
+                            log.warn(e);
+                        }
+                        activeEditor.setFocus();
+                    } else {
+                        UIUtils.setClipboardContents(DBeaverUI.getActiveWorkbenchShell().getDisplay(), TextTransfer.getInstance(), sql);
+                    }
                 }
         });
     }
 
-    public static IStructuredSelection getSelectionFromPart(IWorkbenchPart part)
+    static IStructuredSelection getSelectionFromPart(IWorkbenchPart part)
     {
         if (part == null) {
             return null;

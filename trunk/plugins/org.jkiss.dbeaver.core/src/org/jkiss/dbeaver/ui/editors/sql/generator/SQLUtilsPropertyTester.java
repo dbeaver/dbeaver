@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.editors.sql;
+package org.jkiss.dbeaver.ui.editors.sql.generator;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSelection;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.GenerateSQLContributor;
+import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
 
 /**
  * SQLUtilsPropertyTester
