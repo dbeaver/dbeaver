@@ -224,16 +224,11 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.redraw();
     }
 
-    public Collection<GridPos> getSelection()
-    {
-        if (isDisposed()) {
-            return Collections.emptyList();
-        }
-        return super.getCellSelection();
-    }
-
     public int getCurrentRow()
     {
+        if (super.isDisposed()) {
+            return -1;
+        }
         return super.getFocusItem();
     }
 

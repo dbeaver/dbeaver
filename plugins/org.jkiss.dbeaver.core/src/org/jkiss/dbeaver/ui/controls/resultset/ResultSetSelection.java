@@ -21,11 +21,15 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 
+import java.util.Collection;
+
 /**
  * Result set selection
  */
 public interface ResultSetSelection extends IStructuredSelection {
 
     ResultSetViewer getResultSetViewer();
+
+    Collection<Object[]> getSelectedRows();
 
 }
