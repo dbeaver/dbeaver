@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -225,6 +226,9 @@ public class Spreadsheet extends LightGrid implements Listener {
 
     public Collection<GridPos> getSelection()
     {
+        if (isDisposed()) {
+            return Collections.emptyList();
+        }
         return super.getCellSelection();
     }
 

@@ -209,6 +209,8 @@ public class NavigatorUtils {
                     // Add refresh button
                     manager.add(ActionUtils.makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_REFRESH));
                 }
+
+                manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
             }
         });
         if (menuListener != null) {
