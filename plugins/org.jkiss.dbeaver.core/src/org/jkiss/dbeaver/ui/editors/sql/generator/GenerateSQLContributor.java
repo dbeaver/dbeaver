@@ -30,7 +30,6 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
@@ -40,15 +39,20 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.utils.CommonUtils;
@@ -75,32 +79,47 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         List<IContributionItem> menu = new ArrayList<IContributionItem>();
         if (structuredSelection instanceof ResultSetSelection) {
             // Results
-            ResultSetSelection rss = (ResultSetSelection) structuredSelection;
-            ResultSetViewer rsv = rss.getResultSetViewer();
-            DBSTable table = (DBSTable)rsv.getDataContainer();
-            menu.add(makeAction("SELECT by Unique Key", new TableAnalysisRunner(table) {
-                @Override
-                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                {
-                    Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                    sql.append("SELECT ");
-                    boolean hasAttr = false;
-                    for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
-                        if (hasAttr) sql.append(", ");
-                        sql.append(DBUtils.getObjectFullName(attr));
-                        hasAttr = true;
-                    }
-                    sql.append("\nFROM ").append(DBUtils.getObjectFullName(table));
-                    sql.append("\nWHERE ");
-                    hasAttr = false;
-                    for (DBSEntityAttribute attr : keyAttributes) {
-                        if (hasAttr) sql.append(" AND ");
-                        sql.append(DBUtils.getObjectFullName(attr)).append("=").append("''");
-                        hasAttr = true;
-                    }
-                    sql.append(";\n");
+            final ResultSetSelection rss = (ResultSetSelection) structuredSelection;
+            final ResultSetViewer rsv = rss.getResultSetViewer();
+            DBSEntity entity = rsv.getDataContainer() instanceof DBSEntity ? (DBSEntity) rsv.getDataContainer() : null;
+            if (entity == null) {
+                entity = rsv.getSingleSource();
+            }
+            if (entity != null) {
+                Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
+                if (!CommonUtils.isEmpty(selectedRows)) {
+                    final ResultSetRow firstRow = selectedRows.iterator().next();
+                    menu.add(makeAction("SELECT by Unique Key", new TableAnalysisRunner(entity) {
+                        @Override
+                        public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+                        {
+                            Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                            sql.append("SELECT ");
+                            boolean hasAttr = false;
+                            for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
+                                if (hasAttr) sql.append(", ");
+                                sql.append(DBUtils.getObjectFullName(attr));
+                                hasAttr = true;
+                            }
+                            sql.append("\nFROM ").append(DBUtils.getObjectFullName(table));
+                            sql.append("\nWHERE ");
+                            hasAttr = false;
+                            for (DBSEntityAttribute attr : keyAttributes) {
+                                if (hasAttr) sql.append(" AND ");
+                                DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
+                                sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                                if (binding == null) {
+                                    appendDefaultValue(sql, attr);
+                                } else {
+                                    appendAttributeValue(sql, binding, firstRow);
+                                }
+                                hasAttr = true;
+                            }
+                            sql.append(";\n");
+                        }
+                    }));
                 }
-            }));
+            }
 
         } else {
             final DBSTable table =
@@ -195,9 +214,9 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     }
 
     private abstract static class TableAnalysisRunner extends DBRRunnableWithResult<String> {
-        final DBSTable table;
+        final DBSEntity table;
 
-        protected TableAnalysisRunner(DBSTable table)
+        protected TableAnalysisRunner(DBSEntity table)
         {
             this.table = table;
         }
@@ -251,6 +270,23 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 case NUMERIC: sql.append("0"); break;
                 case STRING: sql.append("''"); break;
                 default: sql.append("?"); break;
+            }
+        }
+
+        protected void appendAttributeValue(StringBuilder sql, DBDAttributeBinding binding, ResultSetRow row)
+        {
+            Object value = row.getValue(binding.getAttribute());
+            if (DBUtils.isNullValue(value)) {
+                sql.append("NULL");
+            } else {
+                boolean isString = binding.getAttribute().getDataKind() == DBSDataKind.STRING;
+                String displayString = binding.getValueHandler().getValueDisplayString(
+                    binding.getAttribute(),
+                    value,
+                    DBDDisplayFormat.NATIVE);
+                if (isString) sql.append('\'');
+                sql.append(displayString);
+                if (isString) sql.append('\'');
             }
         }
     }
