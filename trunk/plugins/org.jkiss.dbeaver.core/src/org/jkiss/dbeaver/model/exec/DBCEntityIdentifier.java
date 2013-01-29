@@ -31,7 +31,7 @@ import java.util.Collection;
 public interface DBCEntityIdentifier {
 
     /**
-     * entity referrer (constraint or index)
+     * Entity referrer (constraint or index)
      * @return referrer
      */
     DBSEntityReferrer getReferrer();

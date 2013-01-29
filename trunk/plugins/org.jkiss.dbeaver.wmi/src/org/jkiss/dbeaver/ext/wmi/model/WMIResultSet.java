@@ -274,7 +274,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         }
 
         @Override
-        public String getTableName()
+        public String getEntityName()
         {
             return classObject == null ? null : classObject.getName();
         }

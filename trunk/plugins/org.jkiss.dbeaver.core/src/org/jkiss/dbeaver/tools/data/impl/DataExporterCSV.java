@@ -103,7 +103,7 @@ public class DataExporterCSV extends DataExporterAbstract {
     {
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             DBDAttributeBinding column = columns.get(i);
-            writeCellValue(column.getAttribute().getName(), true);
+            writeCellValue(column.getMetaAttribute().getName(), true);
             if (i < columnsSize - 1) {
                 writeDelimiter();
             }

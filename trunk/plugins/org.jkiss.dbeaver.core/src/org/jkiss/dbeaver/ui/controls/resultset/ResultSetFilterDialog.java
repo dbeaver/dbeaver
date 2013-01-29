@@ -217,11 +217,11 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         public Image getColumnImage(Object element, int columnIndex)
         {
             DBDAttributeBinding column = (DBDAttributeBinding) element;
-            if (columnIndex == 0 && column.getAttribute() instanceof IObjectImageProvider) {
-                return ((IObjectImageProvider)column.getAttribute()).getObjectImage();
+            if (columnIndex == 0 && column.getMetaAttribute() instanceof IObjectImageProvider) {
+                return ((IObjectImageProvider)column.getMetaAttribute()).getObjectImage();
             }
             if (columnIndex == 1) {
-                DBQOrderColumn orderColumn = dataFilter.getOrderColumn(column.getColumnName());
+                DBQOrderColumn orderColumn = dataFilter.getOrderColumn(column.getAttributeName());
                 if (orderColumn != null) {
                     return orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
                 }
@@ -234,9 +234,9 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         {
             DBDAttributeBinding column = (DBDAttributeBinding) element;
             switch (columnIndex) {
-                case 0: return column.getColumnName();
+                case 0: return column.getAttributeName();
                 case 1: {
-                    int orderColumnIndex = dataFilter.getOrderColumnIndex(column.getColumnName());
+                    int orderColumnIndex = dataFilter.getOrderColumnIndex(column.getAttributeName());
                     if (orderColumnIndex >= 0) {
                         return String.valueOf(orderColumnIndex + 1);
                     } else {
@@ -244,7 +244,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                     }
                 }
                 case 2: {
-                    DBQCondition filterColumn = dataFilter.getFilterColumn(column.getColumnName());
+                    DBQCondition filterColumn = dataFilter.getFilterColumn(column.getAttributeName());
                     if (filterColumn != null) {
                         return filterColumn.getCondition();
                     } else {
@@ -293,9 +293,9 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         private void toggleColumnOrder(TableItem item)
         {
             DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
-            DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getColumnName());
+            DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getAttributeName());
             if (columnOrder == null) {
-                dataFilter.addOrderColumn(new DBQOrderColumn(column.getColumnName(), false));
+                dataFilter.addOrderColumn(new DBQOrderColumn(column.getAttributeName(), false));
             } else if (!columnOrder.isDescending()) {
                 columnOrder.setDescending(true);
             } else {
@@ -315,7 +315,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                     Text text = (Text) tableEditor.getEditor();
                     String criteria = text.getText().trim();
                     DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
-                    DBQCondition filterColumn = dataFilter.getFilterColumn(column.getColumnName());
+                    DBQCondition filterColumn = dataFilter.getFilterColumn(column.getAttributeName());
                     if (CommonUtils.isEmpty(criteria)) {
                         if (filterColumn != null) {
                             dataFilter.removeFilterColumn(filterColumn);
@@ -324,7 +324,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
                         if (filterColumn != null) {
                             filterColumn.setCondition(criteria);
                         } else {
-                            dataFilter.addFilterColumn(new DBQCondition(column.getColumnName(), criteria));
+                            dataFilter.addFilterColumn(new DBQCondition(column.getAttributeName(), criteria));
                         }
                     }
                     tableEditor.getItem().setText(2, criteria);
