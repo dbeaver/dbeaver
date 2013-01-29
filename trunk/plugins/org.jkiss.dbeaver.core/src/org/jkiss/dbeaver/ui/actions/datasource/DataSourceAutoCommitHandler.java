@@ -75,7 +75,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                         // Update data source settings
                         IPreferenceStore preferenceStore = dataSourceContainer.getPreferenceStore();
                         preferenceStore.setValue(PrefConstants.DEFAULT_AUTO_COMMIT, newAutoCommit);
-                        dataSourceContainer.getRegistry().flushConfig();
+                        //dataSourceContainer.getRegistry().flushConfig();
                     } catch (DBCException e) {
                         throw new InvocationTargetException(e);
                     } finally {
