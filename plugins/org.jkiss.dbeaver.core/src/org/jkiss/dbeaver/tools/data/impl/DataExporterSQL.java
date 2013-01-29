@@ -120,7 +120,7 @@ public class DataExporterSQL extends DataExporterAbstract {
                 if (i > 0) {
                     sqlBuffer.append(',');
                 }
-                sqlBuffer.append(column.getAttribute().getName());
+                sqlBuffer.append(column.getMetaAttribute().getName());
             }
             sqlBuffer.append(") VALUES (");
             if (rowsInStatement > 1) {

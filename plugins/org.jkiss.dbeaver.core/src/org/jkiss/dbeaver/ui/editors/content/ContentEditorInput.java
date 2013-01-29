@@ -98,7 +98,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     @Override
     public String getName()
     {
-        String tableName = valueController.getAttributeMetaData().getTableName();
+        String tableName = valueController.getAttributeMetaData().getEntityName();
         String inputName = CommonUtils.isEmpty(tableName) ?
             valueController.getAttributeMetaData().getName() :
             tableName + "." + valueController.getAttributeMetaData().getName();

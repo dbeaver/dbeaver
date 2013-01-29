@@ -254,7 +254,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     }
 
     @Override
-    public String getTableName()
+    public String getEntityName()
     {
         return tableMetaData != null ? tableMetaData.getEntityName() : tableName;
     }

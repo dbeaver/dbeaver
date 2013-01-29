@@ -81,7 +81,7 @@ public class DataExporterHTML extends DataExporterAbstract {
         out.write("<body><table>");
         out.write("<tr>");
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
-            writeTextCell(columns.get(i).getAttribute().getName(), true);
+            writeTextCell(columns.get(i).getMetaAttribute().getName(), true);
         }
         out.write("</tr>");
     }

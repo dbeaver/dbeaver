@@ -46,7 +46,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
@@ -589,7 +588,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (!spreadsheet.isDisposed() && metaColumns != null && mode == ResultSetMode.GRID) {
             for (int i = 0, metaColumnsLength = metaColumns.length; i < metaColumnsLength; i++) {
                 DBDAttributeBinding column = metaColumns[i];
-                DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getColumnName());
+                DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getAttributeName());
                 GridColumn gridColumn = spreadsheet.getColumn(i);
                 if (columnOrder == null) {
                     gridColumn.setSort(SWT.DEFAULT);
@@ -654,7 +653,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         GC gc = new GC(spreadsheet);
         gc.setFont(spreadsheet.getFont());
         for (DBDAttributeBinding column : metaColumns) {
-            Point ext = gc.stringExtent(column.getColumnName());
+            Point ext = gc.stringExtent(column.getAttributeName());
             if (ext.x > defaultWidth) {
                 defaultWidth = ext.x;
             }
@@ -825,10 +824,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     boolean isColumnReadOnly(DBDAttributeBinding column)
     {
-        if (isReadOnly() || column.getValueLocator() == null || !(column.getValueLocator().getEntity() instanceof DBSDataContainer)) {
+        if (isReadOnly() || column.getRowIdentifier() == null || !(column.getRowIdentifier().getEntity() instanceof DBSDataContainer)) {
             return true;
         }
-        DBSDataContainer dataContainer = (DBSDataContainer) column.getValueLocator().getEntity();
+        DBSDataContainer dataContainer = (DBSDataContainer) column.getRowIdentifier().getEntity();
         return (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_UPDATE) == 0;
     }
 
@@ -893,7 +892,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             update = true;
         } else {
             for (int i = 0; i < this.metaColumns.length; i++) {
-                if (!this.metaColumns[i].getAttribute().equals(columns[i].getAttribute())) {
+                if (!this.metaColumns[i].getMetaAttribute().equals(columns[i].getMetaAttribute())) {
                     update = true;
                     break;
                 }
@@ -935,8 +934,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     break;
                 }
                 if (sourceTable == null) {
-                    sourceTable = column.getValueLocator().getEntity();
-                } else if (sourceTable != column.getValueLocator().getEntity()) {
+                    sourceTable = column.getRowIdentifier().getEntity();
+                } else if (sourceTable != column.getRowIdentifier().getEntity()) {
                     singleSourceCells = false;
                     break;
                 }
@@ -1333,11 +1332,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         int columnIndex = translateGridPos(currentPosition).col;
         if (supportsDataFilter() && columnIndex >= 0) {
             DBDAttributeBinding column = metaColumns[columnIndex];
-            if (column.getTableColumn() == null) {
+            if (column.getEntityAttribute() == null) {
                 return;
             }
-            DBSDataKind dataKind = column.getAttribute().getDataKind();
-            if (!column.getAttribute().isRequired()) {
+            DBSDataKind dataKind = column.getMetaAttribute().getDataKind();
+            if (!column.getMetaAttribute().isRequired()) {
                 filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.NONE, column));
                 filtersMenu.add(new FilterByColumnAction("IS NOT NULL", FilterByColumnType.NONE, column));
             }
@@ -1368,7 +1367,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
             filtersMenu.add(new Separator());
-            if (getDataFilter().getFilterColumn(column.getColumnName()) != null) {
+            if (getDataFilter().getFilterColumn(column.getAttributeName()) != null) {
                 filtersMenu.add(new FilterResetColumnAction(column));
             }
         }
@@ -1389,19 +1388,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             dataFilter.clearOrderColumns();
         }
         DBDAttributeBinding metaColumn = metaColumns[column.getIndex()];
-        DBQOrderColumn columnOrder = dataFilter.getOrderColumn(metaColumn.getColumnName());
+        DBQOrderColumn columnOrder = dataFilter.getOrderColumn(metaColumn.getAttributeName());
         //int newSort;
         if (columnOrder == null) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
                 if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
                     PrefConstants.CONFIRM_ORDER_RESULTSET,
-                    metaColumn.getColumnName()))
+                    metaColumn.getAttributeName()))
                 {
                     return;
                 }
             }
-            columnOrder = new DBQOrderColumn(metaColumn.getColumnName(), altPressed);
+            columnOrder = new DBQOrderColumn(metaColumn.getAttributeName(), altPressed);
             dataFilter.addOrderColumn(columnOrder);
             //newSort = SWT.DOWN;
 
@@ -1826,7 +1825,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             Object[] curRow = curRows.get(cellPos.row);
             Object value = curRow[cellPos.col];
             String cellText = metaColumns[cellPos.col].getValueHandler().getValueDisplayString(
-                metaColumns[cellPos.col].getAttribute(),
+                metaColumns[cellPos.col].getMetaAttribute(),
                 value,
                 format);
             if (cellText != null) {
@@ -1881,7 +1880,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         Object newValue;
         try {
             newValue = metaColumn.getValueHandler().getValueFromClipboard(
-                context, metaColumn.getAttribute(),
+                context, metaColumn.getMetaAttribute(),
                 getSpreadsheet().getClipboard());
         } finally {
             context.close();
@@ -1924,16 +1923,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             Object[] origRow = curRows.get(currentRowNumber);
                             for (int i = 0; i < metaColumns.length; i++) {
                                 DBDAttributeBinding metaColumn = metaColumns[i];
-                                if (metaColumn.getTableColumn().isSequence()) {
+                                if (metaColumn.getEntityAttribute().isSequence()) {
                                     // set autoincrement columns to null
                                     cells[i] = null;
                                 } else {
                                     try {
-                                        cells[i] = metaColumn.getValueHandler().getValueFromObject(context, metaColumn.getTableColumn(), origRow[i], true);
+                                        cells[i] = metaColumn.getValueHandler().getValueFromObject(context, metaColumn.getEntityAttribute(), origRow[i], true);
                                     } catch (DBCException e) {
                                         log.warn(e);
                                         try {
-                                            cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getAttribute());
+                                            cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getMetaAttribute());
                                         } catch (DBCException e1) {
                                             log.warn(e1);
                                         }
@@ -1945,7 +1944,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             for (int i = 0; i < metaColumns.length; i++) {
                                 DBDAttributeBinding metaColumn = metaColumns[i];
                                 try {
-                                    cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getAttribute());
+                                    cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getMetaAttribute());
                                 } catch (DBCException e) {
                                     log.warn(e);
                                 }
@@ -2116,7 +2115,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private int getMetaColumnIndex(DBCAttributeMetaData attribute)
     {
         for (int i = 0; i < metaColumns.length; i++) {
-            if (attribute == metaColumns[i].getAttribute()) {
+            if (attribute == metaColumns[i].getMetaAttribute()) {
                 return i;
             }
         }
@@ -2126,7 +2125,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private int getMetaColumnIndex(DBSEntityAttribute column)
     {
         for (int i = 0; i < metaColumns.length; i++) {
-            if (column == metaColumns[i].getTableColumn()) {
+            if (column == metaColumns[i].getEntityAttribute()) {
                 return i;
             }
         }
@@ -2137,8 +2136,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         for (int i = 0; i < metaColumns.length; i++) {
             DBDAttributeBinding column = metaColumns[i];
-            if ((table == null || column.getValueLocator().getEntity() == table) &&
-                column.getColumnName().equals(columnName))
+            if ((table == null || column.getRowIdentifier().getEntity() == table) &&
+                column.getAttributeName().equals(columnName))
             {
                 return i;
             }
@@ -2154,7 +2153,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (!singleSourceCells || CommonUtils.isEmpty(metaColumns)) {
             return null;
         }
-        DBCEntityIdentifier identifier = metaColumns[0].getValueLocator().getEntityIdentifier();
+        DBCEntityIdentifier identifier = metaColumns[0].getRowIdentifier().getEntityIdentifier();
         if (identifier.getReferrer() instanceof DBVEntityConstraint) {
             return identifier;
         } else {
@@ -2176,7 +2175,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         // It is safe to use void monitor cos' it is virtual constraint
                         if (editEntityIdentifier(VoidProgressMonitor.INSTANCE)) {
                             try {
-                                identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, metaColumns[0].getAttribute().getEntity());
+                                identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, metaColumns[0].getMetaAttribute().getEntity());
                             } catch (DBException e) {
                                 log.error(e);
                             }
@@ -2212,10 +2211,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
-        DBCEntityIdentifier identifier = metaColumns[0].getValueLocator().getEntityIdentifier();
+        DBCEntityIdentifier identifier = metaColumns[0].getRowIdentifier().getEntityIdentifier();
         DBVEntityConstraint virtualKey = (DBVEntityConstraint) identifier.getReferrer();
         virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
-        identifier.reloadAttributes(monitor, metaColumns[0].getAttribute().getEntity());
+        identifier.reloadAttributes(monitor, metaColumns[0].getMetaAttribute().getEntity());
         virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
 
         getDataSource().getContainer().persistConfiguration();
@@ -2259,7 +2258,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public DBCAttributeMetaData getAttributeMetaData()
         {
-            return columns[columnIndex].getAttribute();
+            return columns[columnIndex].getMetaAttribute();
         }
 
         @Override
@@ -2267,7 +2266,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             String dsName = getDataSource().getContainer().getName();
             String catalogName = getAttributeMetaData().getCatalogName();
             String schemaName = getAttributeMetaData().getSchemaName();
-            String tableName = getAttributeMetaData().getTableName();
+            String tableName = getAttributeMetaData().getEntityName();
             String columnName = getAttributeMetaData().getName();
             StringBuilder columnId = new StringBuilder(CommonUtils.escapeIdentifier(dsName));
             if (!CommonUtils.isEmpty(catalogName)) {
@@ -2332,9 +2331,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public DBDValueLocator getValueLocator()
+        public DBDRowIdentifier getValueLocator()
         {
-            return columns[columnIndex].getValueLocator();
+            return columns[columnIndex].getRowIdentifier();
         }
 
         @Override
@@ -2417,7 +2416,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public Collection<DBCAttributeMetaData> getAttributesMetaData() {
             List<DBCAttributeMetaData> attributes = new ArrayList<DBCAttributeMetaData>();
             for (DBDAttributeBinding column : this.columns) {
-                attributes.add(column.getAttribute());
+                attributes.add(column.getMetaAttribute());
             }
             return attributes;
         }
@@ -2426,8 +2425,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public DBCAttributeMetaData getAttributeMetaData(DBCEntityMetaData entity, String columnName)
         {
             for (DBDAttributeBinding column : columns) {
-                if (column.getAttribute().getEntity() == entity && column.getColumnName().equals(columnName)) {
-                    return column.getAttribute();
+                if (column.getMetaAttribute().getEntity() == entity && column.getAttributeName().equals(columnName)) {
+                    return column.getMetaAttribute();
                 }
             }
             return null;
@@ -2438,7 +2437,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             for (int i = 0; i < columns.length; i++) {
                 DBDAttributeBinding metaColumn = columns[i];
-                if (metaColumn.getAttribute() == attribute) {
+                if (metaColumn.getMetaAttribute() == attribute) {
                     return curRow[i];
                 }
             }
@@ -2525,7 +2524,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         boolean hasUpdateColumn(DBDAttributeBinding column)
         {
             for (DBDAttributeValue col : updateAttributes) {
-                if (col.getAttribute() == column.getTableColumn()) {
+                if (col.getAttribute() == column.getEntityAttribute()) {
                     return true;
                 }
             }
@@ -2575,10 +2574,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
 
                 DBDAttributeBinding metaColumn = metaColumns[cell.col];
-                DBSEntity metaTable = metaColumn.getValueLocator().getEntity();
+                DBSEntity metaTable = metaColumn.getRowIdentifier().getEntity();
                 TableRowInfo tableRowInfo = tableMap.get(metaTable);
                 if (tableRowInfo == null) {
-                    tableRowInfo = new TableRowInfo(metaTable, metaColumn.getValueLocator().getEntityIdentifier());
+                    tableRowInfo = new TableRowInfo(metaTable, metaColumn.getRowIdentifier().getEntityIdentifier());
                     tableMap.put(metaTable, tableRowInfo);
                 }
                 tableRowInfo.tableCells.add(cell);
@@ -2593,9 +2592,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             // Make delete statements
             for (RowInfo rowNum : removedRows) {
-                DBSEntity table = metaColumns[0].getValueLocator().getEntity();
+                DBSEntity table = metaColumns[0].getRowIdentifier().getEntity();
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
-                Collection<? extends DBSEntityAttribute> keyColumns = metaColumns[0].getValueLocator().getEntityIdentifier().getAttributes();
+                Collection<? extends DBSEntityAttribute> keyColumns = metaColumns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
                 for (DBSEntityAttribute column : keyColumns) {
                     int colIndex = getMetaColumnIndex(column);
                     if (colIndex < 0) {
@@ -2616,11 +2615,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // Make insert statements
             for (RowInfo rowNum : addedRows) {
                 Object[] cellValues = curRows.get(rowNum.row);
-                DBSEntity table = metaColumns[0].getValueLocator().getEntity();
+                DBSEntity table = metaColumns[0].getRowIdentifier().getEntity();
                 DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
                 for (int i = 0; i < metaColumns.length; i++) {
                     DBDAttributeBinding column = metaColumns[i];
-                    statement.keyAttributes.add(new DBDAttributeValue(column.getTableColumn(), cellValues[i]));
+                    statement.keyAttributes.add(new DBDAttributeValue(column.getEntityAttribute(), cellValues[i]));
                 }
                 insertStatements.add(statement);
             }
@@ -2645,7 +2644,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                         GridPos cell = rowInfo.tableCells.get(i);
                         DBDAttributeBinding metaColumn = metaColumns[cell.col];
-                        statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getTableColumn(), curRows.get(rowNum)[cell.col]));
+                        statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), curRows.get(rowNum)[cell.col]));
                     }
                     // Key columns
                     Collection<? extends DBCAttributeMetaData> idColumns = rowInfo.id.getResultSetColumns();
@@ -2663,7 +2662,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 keyValue = editedValues.get(cell);
                             }
                         }
-                        statement.keyAttributes.add(new DBDAttributeValue(metaColumn.getTableColumn(), keyValue));
+                        statement.keyAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), keyValue));
                     }
                     updateStatements.add(statement);
                 }
@@ -2977,7 +2976,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     // Try to find and update auto-increment column
                     for (int k = 0; k < metaColumns.length; k++) {
                         DBDAttributeBinding column = metaColumns[k];
-                        if (column.getTableColumn().isSequence()) {
+                        if (column.getEntityAttribute().isSequence()) {
                             // Got it
                             statement.updatedCells.put(k, keyValue);
                             //curRows.get(statement.row.row)[k] = keyValue;
@@ -3114,7 +3113,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
 
             if (formatString) {
-                return valueHandler.getValueDisplayString(metaColumns[cell.col].getAttribute(), value, DBDDisplayFormat.UI);
+                return valueHandler.getValueDisplayString(metaColumns[cell.col].getMetaAttribute(), value, DBDDisplayFormat.UI);
             } else {
                 return value;
             }
@@ -3137,7 +3136,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 attr = metaColumns[cell.col];
             }
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
-                return getAttributeImage(attr.getAttribute());
+                return getAttributeImage(attr.getMetaAttribute());
             } else {
                 return null;
             }
@@ -3183,7 +3182,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (mode == ResultSetMode.GRID) {
                 int colNumber = ((Number)element).intValue();
-                return getAttributeImage(metaColumns[colNumber].getAttribute());
+                return getAttributeImage(metaColumns[colNumber].getMetaAttribute());
             }
             return null;
         }
@@ -3201,16 +3200,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             } else {
                 DBDAttributeBinding metaColumn = metaColumns[colNumber];
-                DBCAttributeMetaData attribute = metaColumn.getAttribute();
+                DBCAttributeMetaData attribute = metaColumn.getMetaAttribute();
                 if (CommonUtils.isEmpty(attribute.getLabel())) {
-                    return metaColumn.getColumnName();
+                    return metaColumn.getAttributeName();
                 } else {
                     return attribute.getLabel();
                 }
 /*
-                return CommonUtils.isEmpty(metaColumn.getMetaData().getTableName()) ?
+                return CommonUtils.isEmpty(metaColumn.getMetaData().getEntityName()) ?
                     metaColumn.getMetaData().getName() :
-                    metaColumn.getMetaData().getTableName() + "." + metaColumn.getMetaData().getName();
+                    metaColumn.getMetaData().getEntityName() + "." + metaColumn.getMetaData().getName();
 */
             }
         }
@@ -3220,7 +3219,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             int colNumber = ((Number)element).intValue();
             if (mode == ResultSetMode.GRID) {
-                if (dataFilter.getFilterColumn(metaColumns[colNumber].getColumnName()) != null) {
+                if (dataFilter.getFilterColumn(metaColumns[colNumber].getAttributeName()) != null) {
                     return boldFont;
                 }
             }
@@ -3234,7 +3233,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (mode == ResultSetMode.RECORD) {
                 int rowNumber = ((Number) element).intValue();
-                return getAttributeImage(metaColumns[rowNumber].getAttribute());
+                return getAttributeImage(metaColumns[rowNumber].getMetaAttribute());
             }
             return null;
         }
@@ -3244,7 +3243,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             int rowNumber = ((Number) element).intValue();
             if (mode == ResultSetMode.RECORD) {
-                return metaColumns[rowNumber].getColumnName();
+                return metaColumns[rowNumber].getAttributeName();
             } else {
                 return String.valueOf(rowNumber + 1);
             }
@@ -3335,8 +3334,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             @Override
             String getValue(ResultSetViewer viewer, DBDAttributeBinding column, boolean useDefault, DBDDisplayFormat format)
             {
-                Object value = viewer.curRows.get(viewer.getCurrentRow())[viewer.getMetaColumnIndex(column.getAttribute())];
-                return column.getValueHandler().getValueDisplayString(column.getAttribute(), value, format);
+                Object value = viewer.curRows.get(viewer.getCurrentRow())[viewer.getMetaColumnIndex(column.getMetaAttribute())];
+                return column.getValueHandler().getValueDisplayString(column.getMetaAttribute(), value, format);
             }
         },
         INPUT(DBIcon.FILTER_INPUT.getImageDescriptor()) {
@@ -3359,7 +3358,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             {
                 try {
                     return column.getValueHandler().getValueDisplayString(
-                        column.getAttribute(),
+                        column.getMetaAttribute(),
                         viewer.getColumnValueFromClipboard(column),
                         format);
                 } catch (DBCException e) {
@@ -3400,7 +3399,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private final DBDAttributeBinding column;
         public FilterByColumnAction(String pattern, FilterByColumnType type, DBDAttributeBinding column)
         {
-            super(DBUtils.getQuotedIdentifier(column.getTableColumn()) + " " + translateFilterPattern(pattern, type, column), type.icon);
+            super(DBUtils.getQuotedIdentifier(column.getEntityAttribute()) + " " + translateFilterPattern(pattern, type, column), type.icon);
             this.pattern = pattern;
             this.type = type;
             this.column = column;
@@ -3415,9 +3414,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             String stringValue = pattern.replace("?", value);
             DBDDataFilter filter = getDataFilter();
-            DBQCondition filterColumn = filter.getFilterColumn(column.getColumnName());
+            DBQCondition filterColumn = filter.getFilterColumn(column.getAttributeName());
             if (filterColumn == null) {
-                filterColumn = new DBQCondition(column.getColumnName(), stringValue);
+                filterColumn = new DBQCondition(column.getAttributeName(), stringValue);
                 filter.addFilterColumn(filterColumn);
             } else {
                 filterColumn.setCondition(stringValue);
@@ -3438,7 +3437,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public void run()
         {
             DBDDataFilter filter = getDataFilter();
-            DBQCondition filterColumn = filter.getFilterColumn(column.getColumnName());
+            DBQCondition filterColumn = filter.getFilterColumn(column.getAttributeName());
             if (filterColumn != null) {
                 filter.removeFilterColumn(filterColumn);
             }

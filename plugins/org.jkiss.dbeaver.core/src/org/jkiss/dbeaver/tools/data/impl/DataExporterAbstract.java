@@ -53,7 +53,7 @@ public abstract class DataExporterAbstract implements IDataExporter {
         Object value)
     {
         final DBDValueHandler valueHandler = column.getValueHandler();
-        return valueHandler.getValueDisplayString(column.getAttribute(), value, getSite().getExportFormat());
+        return valueHandler.getValueDisplayString(column.getMetaAttribute(), value, getSite().getExportFormat());
     }
 
 

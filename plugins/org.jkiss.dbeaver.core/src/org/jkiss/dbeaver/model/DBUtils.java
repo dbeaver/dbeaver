@@ -459,10 +459,10 @@ public final class DBUtils {
         DBRProgressMonitor monitor,
         DBDAttributeBinding[] bindings)
     {
-        Map<DBSEntity, DBDValueLocator> locatorMap = new HashMap<DBSEntity, DBDValueLocator>();
+        Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<DBSEntity, DBDRowIdentifier>();
         try {
             for (DBDAttributeBinding column : bindings) {
-                DBCAttributeMetaData meta = column.getAttribute();
+                DBCAttributeMetaData meta = column.getMetaAttribute();
                 if (meta.getEntity() == null || !meta.getEntity().isIdentified(monitor)) {
                     continue;
                 }
@@ -473,18 +473,18 @@ public final class DBUtils {
                 // We got table name and column name
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
-                DBDValueLocator valueLocator = locatorMap.get(meta.getEntity().getEntity(monitor));
-                if (valueLocator == null) {
+                DBDRowIdentifier rowIdentifier = locatorMap.get(meta.getEntity().getEntity(monitor));
+                if (rowIdentifier == null) {
                     DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(monitor);
                     if (entityIdentifier == null) {
                         continue;
                     }
-                    valueLocator = new DBDValueLocator(
+                    rowIdentifier = new DBDRowIdentifier(
                         meta.getEntity().getEntity(monitor),
                         entityIdentifier);
-                    locatorMap.put(meta.getEntity().getEntity(monitor), valueLocator);
+                    locatorMap.put(meta.getEntity().getEntity(monitor), rowIdentifier);
                 }
-                column.initValueLocator(tableColumn, valueLocator);
+                column.initValueLocator(tableColumn, rowIdentifier);
             }
         }
         catch (DBException e) {

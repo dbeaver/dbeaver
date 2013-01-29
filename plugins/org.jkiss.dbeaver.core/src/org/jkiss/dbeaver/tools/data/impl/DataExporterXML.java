@@ -74,14 +74,14 @@ public class DataExporterXML extends DataExporterAbstract {
         out.write("  <!ELEMENT DATA_RECORD (");
         int columnsSize = columns.size();
         for (int i = 0; i < columnsSize; i++) {
-            out.write(escapeXmlElementName(columns.get(i).getAttribute().getName()) + "?");
+            out.write(escapeXmlElementName(columns.get(i).getMetaAttribute().getName()) + "?");
             if (i < columnsSize - 1) {
                 out.write(",");
             }
         }
         out.write(")+>\n");
         for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getAttribute().getName()) + " (#PCDATA)>\n");
+            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getMetaAttribute().getName()) + " (#PCDATA)>\n");
         }
         out.write("]>\n");
         out.write("<" + tableName + ">\n");
@@ -93,7 +93,7 @@ public class DataExporterXML extends DataExporterAbstract {
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
-            String columnName = escapeXmlElementName(column.getAttribute().getName());
+            String columnName = escapeXmlElementName(column.getMetaAttribute().getName());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
                 writeTextCell(null);
