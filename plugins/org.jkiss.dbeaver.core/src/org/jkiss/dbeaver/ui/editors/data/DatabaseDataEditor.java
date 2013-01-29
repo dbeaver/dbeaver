@@ -53,6 +53,9 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
             resultSetView.addListener(this);
             parent.layout();
             resultSetView.getControl().setFocus();
+
+            // Set selection provider from resultset
+            getSite().setSelectionProvider(resultSetView);
         }
 
         if (!loaded) {
@@ -61,9 +64,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
                 loaded = true;
             }
         }
-        // Set selection provider from resultset
-        getSite().setSelectionProvider(resultSetView);
-        resultSetView.setSelection(resultSetView.getSelection());
+        //resultSetView.setSelection(resultSetView.getSelection());
     }
 
     @Override

@@ -67,9 +67,9 @@
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.eclipse.gef.EditPart" class="org.jkiss.dbeaver.ext.erd.model.ERDObjectAdapter">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
-            <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
             <adapter type="org.eclipse.ui.views.properties.IPropertySource"/>
         </factory>
         <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter">

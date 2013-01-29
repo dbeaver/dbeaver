@@ -58,7 +58,7 @@ public class SQLUtilsPropertyTester extends PropertyTester
                 return true;
             } else {
                 // Table
-                if (structuredSelection.size() != 1) {
+                if (structuredSelection.isEmpty()) {
                     return false;
                 }
                 DBNNode node = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class);

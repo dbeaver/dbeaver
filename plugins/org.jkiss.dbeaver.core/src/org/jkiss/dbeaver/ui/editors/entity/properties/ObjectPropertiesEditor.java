@@ -200,6 +200,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
         });
     }
 
+    @Override
+    public void activatePart()
+    {
+        //getSite().setSelectionProvider();
+    }
+
     private void loadObjectProperties()
     {
         properties.selectionChanged(
