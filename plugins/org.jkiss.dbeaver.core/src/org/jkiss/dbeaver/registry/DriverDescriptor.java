@@ -123,7 +123,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private Object driverInstance;
     private DriverClassLoader classLoader;
 
-    private transient List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
+    private final List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
 
     private transient boolean isFailed = false;
 
@@ -300,19 +300,25 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             iconError.dispose();
             iconError = null;
         }
-        if (!usedBy.isEmpty()) {
-            log.error("Driver '" + getName() + "' still used by " + usedBy.size() + " data sources");
+        synchronized (usedBy) {
+            if (!usedBy.isEmpty()) {
+                log.error("Driver '" + getName() + "' still used by " + usedBy.size() + " data sources");
+            }
         }
     }
 
     void addUser(DataSourceDescriptor dataSourceDescriptor)
     {
-        usedBy.add(dataSourceDescriptor);
+        synchronized (usedBy) {
+            usedBy.add(dataSourceDescriptor);
+        }
     }
 
     void removeUser(DataSourceDescriptor dataSourceDescriptor)
     {
-        usedBy.remove(dataSourceDescriptor);
+        synchronized (usedBy) {
+            usedBy.remove(dataSourceDescriptor);
+        }
     }
 
     @Override

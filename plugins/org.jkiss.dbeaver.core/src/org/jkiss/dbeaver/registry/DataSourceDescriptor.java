@@ -187,7 +187,9 @@ public class DataSourceDescriptor
 
     public void dispose()
     {
-        users.clear();
+        synchronized (users) {
+            users.clear();
+        }
         if (driver != null) {
             driver.removeUser(this);
             driver = null;
