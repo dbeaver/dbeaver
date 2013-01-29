@@ -50,7 +50,6 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.object";
     public static final String PROP_CAN_OPEN = "canOpen";
     public static final String PROP_CAN_CREATE = "canCreate";
-    public static final String PROP_CAN_COPY = "canCopy";
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_CAN_RENAME = "canRename";
@@ -74,10 +73,6 @@ public class ObjectPropertyTester extends PropertyTester
 
         if (property.equals(PROP_CAN_OPEN)) {
             return node.isPersisted();
-        } else if (property.equals(PROP_CAN_COPY)) {
-            IAdapterManager adapterManager = Platform.getAdapterManager();
-            return adapterManager.getAdapter(receiver, DBPNamedObject.class) != null &&
-                adapterManager.getAdapter(receiver, DBNContainer.class) == null;
         } else if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
             Class objectType = null;
             if (!(node instanceof DBNContainer)) {
