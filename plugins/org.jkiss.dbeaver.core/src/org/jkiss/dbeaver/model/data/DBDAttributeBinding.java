@@ -19,51 +19,67 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 /**
- * Column value binding info
+ * Attribute value binding info
  */
 public class DBDAttributeBinding {
-    private final DBCAttributeMetaData attribute;
+    private final DBCAttributeMetaData metaAttribute;
     private final DBDValueHandler valueHandler;
-    private DBSEntityAttribute tableColumn;
-    private DBDValueLocator valueLocator;
+    private DBSEntityAttribute entityAttribute;
+    private DBDRowIdentifier rowIdentifier;
 
-    public DBDAttributeBinding(DBCAttributeMetaData attribute, DBDValueHandler valueHandler) {
-        this.attribute = attribute;
+    public DBDAttributeBinding(DBCAttributeMetaData metaAttribute, DBDValueHandler valueHandler) {
+        this.metaAttribute = metaAttribute;
         this.valueHandler = valueHandler;
     }
 
-    public String getColumnName()
+    /**
+     * Attribute name
+     */
+    public String getAttributeName()
     {
-        return attribute.getName();
+        return metaAttribute.getName();
     }
 
-    public int getColumnIndex()
-    {
-        return attribute.getIndex();
+    /**
+     * Meta attribute (obtained from result set)
+     */
+    public DBCAttributeMetaData getMetaAttribute() {
+        return metaAttribute;
     }
 
-    public DBCAttributeMetaData getAttribute() {
-        return attribute;
-    }
-
+    /**
+     * Attribute value handler
+     */
     public DBDValueHandler getValueHandler() {
         return valueHandler;
     }
 
-    public DBSEntityAttribute getTableColumn()
+    /**
+     * Entity attribute (may be null)
+     */
+    public DBSEntityAttribute getEntityAttribute()
     {
-        return tableColumn;
+        return entityAttribute;
     }
 
-    public DBDValueLocator getValueLocator() {
-        return valueLocator;
+    /**
+     * Row identifier (may be null)
+     */
+    public DBDRowIdentifier getRowIdentifier() {
+        return rowIdentifier;
     }
 
-    public void initValueLocator(DBSEntityAttribute tableColumn, DBDValueLocator valueLocator) {
-        this.tableColumn = tableColumn;
-        this.valueLocator = valueLocator;
+    public DBSAttributeBase getAttribute()
+    {
+        return entityAttribute == null ? metaAttribute : entityAttribute;
+    }
+
+    public void initValueLocator(DBSEntityAttribute entityAttribute, DBDRowIdentifier rowIdentifier) {
+        this.entityAttribute = entityAttribute;
+        this.rowIdentifier = rowIdentifier;
     }
 }

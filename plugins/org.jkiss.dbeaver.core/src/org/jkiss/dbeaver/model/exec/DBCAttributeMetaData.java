@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import java.util.List;
 
 /**
- * DBCColumnMetaData
+ * Result set attribute meta data
  */
 public interface DBCAttributeMetaData extends DBSAttributeBase
 {
@@ -35,7 +35,7 @@ public interface DBCAttributeMetaData extends DBSAttributeBase
 
     String getLabel();
 
-    String getTableName();
+    String getEntityName();
 
     String getCatalogName();
 

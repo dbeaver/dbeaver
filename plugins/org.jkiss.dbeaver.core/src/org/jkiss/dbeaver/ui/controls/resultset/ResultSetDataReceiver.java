@@ -103,20 +103,20 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 row[i] = metaColumns[i].getValueHandler().fetchValueObject(
                     context,
                     resultSet,
-                    metaColumns[i].getAttribute(),
+                    metaColumns[i].getMetaAttribute(),
                     i);
             }
             catch (DBCException e) {
                 // Do not reports the same error multiple times
                 // There are a lot of error could occur during result set fetch
                 // We report certain error only once
-                List<DBCException> errorList = errors.get(metaColumns[i].getAttribute());
+                List<DBCException> errorList = errors.get(metaColumns[i].getMetaAttribute());
                 if (errorList == null) {
                     errorList = new ArrayList<DBCException>();
-                    errors.put(metaColumns[i].getAttribute(), errorList);
+                    errors.put(metaColumns[i].getMetaAttribute(), errorList);
                 }
                 if (!errorList.contains(e)) {
-                    log.warn("Could not read column '" + metaColumns[i].getAttribute().getName() + "' value", e);
+                    log.warn("Could not read column '" + metaColumns[i].getMetaAttribute().getName() + "' value", e);
                     errorList.add(e);
                 }
             }

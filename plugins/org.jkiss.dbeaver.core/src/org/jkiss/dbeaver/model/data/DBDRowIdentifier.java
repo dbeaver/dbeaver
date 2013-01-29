@@ -29,15 +29,15 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collection;
 
 /**
- * Value locator.
+ * Row identifier.
  * Unique identifier of row in certain table.
  */
-public class DBDValueLocator implements DBPObject {
+public class DBDRowIdentifier implements DBPObject {
 
     private DBSEntity entity;
     private DBCEntityIdentifier entityIdentifier;
 
-    public DBDValueLocator(DBSEntity entity, DBCEntityIdentifier entityIdentifier)
+    public DBDRowIdentifier(DBSEntity entity, DBCEntityIdentifier entityIdentifier)
     {
         this.entity = entity;
         this.entityIdentifier = entityIdentifier;

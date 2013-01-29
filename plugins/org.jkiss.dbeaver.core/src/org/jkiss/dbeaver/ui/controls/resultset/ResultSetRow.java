@@ -16,35 +16,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+package org.jkiss.dbeaver.ui.controls.resultset;
+
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**
- * DBD Value Controller
+ * Result set row
  */
-public interface DBDAttributeController extends DBDValueController
-{
+public interface ResultSetRow {
 
-    /**
-     * Row controller
-     * @return row controller
-     */
-    DBDRowController getRow();
+    int getValueCount();
 
-    /**
-     * Attribute meta data
-     * @return meta data
-     */
-    @Override
-    DBCAttributeMetaData getAttributeMetaData();
+    Object[] getValues();
 
-    /**
-     * Column unique ID string
-     * @return string
-     */
-    String getColumnId();
+    Object getValue(DBSAttributeBase attribute);
 
-    DBDRowIdentifier getValueLocator();
+    Object getValue(String name);
+
+    Object getValue(int index);
 
 }
