@@ -64,7 +64,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 namespace="org.jkiss.dbeaver.core.object"
-                properties="canOpen,canCopy,canCreate,canPaste,canDelete,canRename,canFilter,hasTools"
+                properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter,hasTools"
                 type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
@@ -328,7 +328,7 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canCopy"/>
+                        <adapt type="org.jkiss.dbeaver.model.DBPNamedObject"/>
                     </iterate>
                 </with>
             </activeWhen>
