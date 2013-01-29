@@ -135,9 +135,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private IThemeManager themeManager;
     private ToolBarManager toolBarManager;
 
-    // columns
+    // Columns
     private DBDAttributeBinding[] metaColumns = new DBDAttributeBinding[0];
     private DBDDataFilter dataFilter = new DBDDataFilter();
+    private boolean singleSourceCells;
 
     // Data
     private List<Object[]> origRows = new ArrayList<Object[]>();
@@ -145,7 +146,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     // Current row number (for record mode)
     private int curRowNum = -1;
     private int curColNum = -1;
-    private boolean singleSourceCells;
     private boolean hasData = false;
 
     // Edited rows and cells
@@ -330,23 +330,53 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
 
             @Override
-            public Collection<Object[]> getSelectedRows()
+            public Collection<ResultSetRow> getSelectedRows()
             {
+                List<ResultSetRow> rows = new ArrayList<ResultSetRow>();
                 if (mode == ResultSetMode.RECORD) {
                     if (curRowNum < 0 || curRowNum >= curRows.size()) {
                         return Collections.emptyList();
                     }
-                    return Collections.singletonList(curRows.get(curRowNum));
+                    rows.add(new ResultSetRowImpl(curRows.get(curRowNum)));
                 } else {
                     Collection<Integer> rowSelection = spreadsheet.getRowSelection();
-                    List<Object[]> data = new ArrayList<Object[]>(rowSelection.size());
                     for (Integer row : rowSelection) {
-                        data.add(curRows.get(row));
+                        rows.add(new ResultSetRowImpl(curRows.get(row)));
                     }
-                    return data;
                 }
+                return rows;
             }
         };
+    }
+
+    private class ResultSetRowImpl implements ResultSetRow {
+
+        private final Object[] values;
+
+        private ResultSetRowImpl(Object[] values)
+        {
+            this.values = values;
+        }
+
+        @Override
+        public int getValueCount()
+        {
+            return values.length;
+        }
+
+        @Override
+        public Object[] getValues()
+        {
+            return values;
+        }
+
+        @Override
+        public Object getValue(DBSAttributeBase attribute)
+        {
+            int index = getMetaColumnIndex(attribute);
+            return index < 0 ? null : values[index];
+        }
+
     }
 
     IPreferenceStore getPreferences()
@@ -534,11 +564,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public DBSDataContainer getDataContainer()
     {
         return resultSetProvider.getDataContainer();
-    }
-
-    public DBDAttributeBinding[] getMetaColumns()
-    {
-        return metaColumns;
     }
 
     ////////////////////////////////////////////////////////////
@@ -1092,6 +1117,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     public boolean isCellModified(GridPos pos) {
         return !editedValues.isEmpty() && editedValues.containsKey(pos);
+    }
+
+    /**
+     * Returns single source of this result set. Usually it is a table.
+     * If result set is a result of joins or contains synthetic columns then
+     * single source is null. If driver doesn't support meta information
+     * for queries then is will null.
+     * @return
+     */
+    public DBSEntity getSingleSource()
+    {
+        if (!singleSourceCells) {
+            return null;
+        }
+        return metaColumns[0].getRowIdentifier().getEntity();
     }
 
     @Override
@@ -2112,6 +2152,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
+    public DBDAttributeBinding[] getMetaColumns()
+    {
+        return metaColumns;
+    }
+
+    public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)
+    {
+        for (DBDAttributeBinding binding : metaColumns) {
+            if (binding.getMetaAttribute() == attribute || binding.getEntityAttribute() == attribute) {
+                return binding;
+            }
+        }
+        return null;
+    }
+
     private int getMetaColumnIndex(DBCAttributeMetaData attribute)
     {
         for (int i = 0; i < metaColumns.length; i++) {
@@ -2130,6 +2185,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
         return -1;
+    }
+
+    private int getMetaColumnIndex(DBSAttributeBase attribute)
+    {
+        return attribute instanceof DBCAttributeMetaData ?
+            getMetaColumnIndex((DBCAttributeMetaData) attribute) :
+            getMetaColumnIndex((DBSEntityAttribute) attribute);
     }
 
     private int getMetaColumnIndex(DBSEntity table, String columnName)
@@ -2547,8 +2609,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         /**
          * Applies changes.
          * @throws DBException
-         * @param monitor
-         * @param listener
+         * @param monitor progress monitor
+         * @param listener value listener
          */
         void applyChanges(DBRProgressMonitor monitor, DBDValueListener listener)
             throws DBException
