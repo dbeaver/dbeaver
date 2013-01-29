@@ -30,6 +30,6 @@ public interface ResultSetSelection extends IStructuredSelection {
 
     ResultSetViewer getResultSetViewer();
 
-    Collection<Object[]> getSelectedRows();
+    Collection<ResultSetRow> getSelectedRows();
 
 }

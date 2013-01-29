@@ -32,8 +32,4 @@ public interface ResultSetRow {
 
     Object getValue(DBSAttributeBase attribute);
 
-    Object getValue(String name);
-
-    Object getValue(int index);
-
 }
