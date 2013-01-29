@@ -87,7 +87,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
 
         closeConnections();
-
+        if (getProject().isOpen()) {
+            flushConfig();
+        }
         // Dispose and clear all descriptors
         synchronized (dataSources) {
             for (DataSourceDescriptor dataSourceDescriptor : this.dataSources) {
@@ -169,25 +171,26 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     @Override
     public List<DataSourceDescriptor> getDataSources()
     {
+        List<DataSourceDescriptor> dsCopy;
         synchronized (dataSources) {
-            List<DataSourceDescriptor> dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
-            Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
-                @Override
-                public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2)
-                {
-                    return o1.getName().compareToIgnoreCase(o2.getName());
-                }
-            });
-            return dsCopy;
+            dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
         }
+        Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
+            @Override
+            public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2)
+            {
+                return o1.getName().compareToIgnoreCase(o2.getName());
+            }
+        });
+        return dsCopy;
     }
 
     public void addDataSource(DataSourceDescriptor dataSource)
     {
         synchronized (dataSources) {
             this.dataSources.add(dataSource);
-            this.saveDataSources();
         }
+        this.saveDataSources();
         this.fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, dataSource);
     }
 
@@ -195,8 +198,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     {
         synchronized (dataSources) {
             this.dataSources.remove(dataSource);
-            this.saveDataSources();
         }
+        this.saveDataSources();
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
@@ -318,53 +321,53 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private void loadDataSources(InputStream is, PasswordEncrypter encrypter)
         throws DBException, IOException
     {
-        synchronized (dataSources) {
-            SAXReader parser = new SAXReader(is);
-            try {
-                parser.parse(new DataSourcesParser(encrypter));
-            }
-            catch (XMLException ex) {
-                throw new DBException("Datasource config parse error", ex);
-            }
+        SAXReader parser = new SAXReader(is);
+        try {
+            parser.parse(new DataSourcesParser(encrypter));
+        }
+        catch (XMLException ex) {
+            throw new DBException("Datasource config parse error", ex);
         }
     }
 
     void saveDataSources()
     {
+        List<DataSourceDescriptor> localDataSources;
         synchronized (dataSources) {
-            IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
-            PasswordEncrypter encrypter = new SimpleStringEncrypter();
-            IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
-            try {
-                if (dataSources.isEmpty()) {
-                    configFile.delete(true, false, progressMonitor);
-                } else {
-                    // Save in temp memory to be safe (any error during direct write will corrupt configuration)
-                    ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
-                    try {
-                        XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
-                        xml.setButify(true);
-                        xml.startElement("data-sources");
-                        for (DataSourceDescriptor dataSource : dataSources) {
-                            saveDataSource(xml, dataSource, encrypter);
-                        }
-                        xml.endElement();
-                        xml.flush();
+            localDataSources = new ArrayList<DataSourceDescriptor>(dataSources);
+        }
+        IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
+        PasswordEncrypter encrypter = new SimpleStringEncrypter();
+        IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
+        try {
+            if (localDataSources.isEmpty()) {
+                configFile.delete(true, false, progressMonitor);
+            } else {
+                // Save in temp memory to be safe (any error during direct write will corrupt configuration)
+                ByteArrayOutputStream tempStream = new ByteArrayOutputStream(10000);
+                try {
+                    XMLBuilder xml = new XMLBuilder(tempStream, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+                    xml.setButify(true);
+                    xml.startElement("data-sources");
+                    for (DataSourceDescriptor dataSource : localDataSources) {
+                        saveDataSource(xml, dataSource, encrypter);
                     }
-                    catch (IOException ex) {
-                        log.warn("IO error while saving datasources", ex);
-                    }
-                    InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
-                    if (!configFile.exists()) {
-                        configFile.create(ifs, true, progressMonitor);
-                        configFile.setHidden(true);
-                    } else {
-                        configFile.setContents(ifs, true, false, progressMonitor);
-                    }
+                    xml.endElement();
+                    xml.flush();
                 }
-            } catch (CoreException ex) {
-                log.error("Error saving datasources configuration", ex);
+                catch (IOException ex) {
+                    log.warn("IO error while saving datasources", ex);
+                }
+                InputStream ifs = new ByteArrayInputStream(tempStream.toByteArray());
+                if (!configFile.exists()) {
+                    configFile.create(ifs, true, progressMonitor);
+                    configFile.setHidden(true);
+                } else {
+                    configFile.setContents(ifs, true, false, progressMonitor);
+                }
             }
+        } catch (CoreException ex) {
+            log.error("Error saving datasources configuration", ex);
         }
     }
 
@@ -760,7 +763,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         boolean disconnected;
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            for (DataSourceDescriptor dataSource : dataSources) {
+            List<DataSourceDescriptor> dsSnapshot;
+            synchronized (dataSources) {
+                dsSnapshot = dataSources;
+            }
+            for (DataSourceDescriptor dataSource : dsSnapshot) {
                 if (dataSource.isConnected()) {
                     try {
                         // Disconnect

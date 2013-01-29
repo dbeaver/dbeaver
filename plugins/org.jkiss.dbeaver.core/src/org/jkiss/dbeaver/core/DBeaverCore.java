@@ -284,22 +284,6 @@ public class DBeaverCore implements DBPApplication {
                     log.warn("Can't cleanup temp project", e);
                 }
             }
-            if (isStandalone()) {
-                for (IProject project : workspace.getRoot().getProjects()) {
-                    try {
-                        if (project.isOpen()) {
-                            project.close(monitor);
-                        }
-                    } catch (CoreException ex) {
-                        log.error("Can't close default project", ex); //$NON-NLS-1$
-                    }
-                }
-                try {
-                    workspace.save(true, monitor);
-                } catch (CoreException ex) {
-                    log.error("Can't save workspace", ex); //$NON-NLS-1$
-                }
-            }
         }
 
         if (this.qmLogWriter != null) {
@@ -346,9 +330,15 @@ public class DBeaverCore implements DBPApplication {
             this.editorsAdapter = null;
         }
 
+        if (isStandalone()) {
+            try {
+                workspace.save(true, monitor);
+            } catch (CoreException ex) {
+                log.error("Can't save workspace", ex); //$NON-NLS-1$
+            }
+        }
+
         DBeaverUI.disposeUI();
-        //progressProvider.shutdown();
-        //progressProvider = null;
 
         DBeaverCore.instance = null;
         DBeaverCore.disposed = true;
