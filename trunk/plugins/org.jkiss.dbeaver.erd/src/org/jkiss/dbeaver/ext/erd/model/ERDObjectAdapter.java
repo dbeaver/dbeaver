@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.gef.EditPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -54,6 +55,6 @@ public class ERDObjectAdapter implements IAdapterFactory {
 
     @Override
     public Class[] getAdapterList() {
-        return new Class[] { ERDObject.class, DBPNamedObject.class, DBSObject.class, DBNNode.class };
+        return new Class[] { ERDObject.class, DBPNamedObject.class, DBPQualifiedObject.class, DBSObject.class, DBNNode.class };
     }
 }
