@@ -127,7 +127,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     ////////////////////////////////////////////////////
-    // Datasources
+    // Data sources
 
     @Override
     public DataSourceDescriptor getDataSource(String id)
@@ -173,7 +173,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     {
         List<DataSourceDescriptor> dsCopy;
         synchronized (dataSources) {
-            dsCopy = new ArrayList<DataSourceDescriptor>(dataSources);
+            dsCopy = CommonUtils.copyList(dataSources);
         }
         Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
             @Override
@@ -273,21 +273,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         synchronized (dataSourceListeners) {
             listeners = new ArrayList<DBPEventListener>(dataSourceListeners);
         }
-        //Display display = this.core.getWorkbench().getDisplay();
         for (DBPEventListener listener : listeners) {
             listener.handleDataSourceEvent(event);
         }
-/*
-            display.asyncExec(
-                new Runnable() {
-                    public void run() {
-                        for (DBPEventListener listener : listeners) {
-                            listener.handleDataSourceEvent(event);
-                        }
-                    }
-                }
-            );
-*/
     }
 
     private void loadDataSources(File fromFile, PasswordEncrypter encrypter)
@@ -334,7 +322,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     {
         List<DataSourceDescriptor> localDataSources;
         synchronized (dataSources) {
-            localDataSources = new ArrayList<DataSourceDescriptor>(dataSources);
+            localDataSources = CommonUtils.copyList(dataSources);
         }
         IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
         PasswordEncrypter encrypter = new SimpleStringEncrypter();
@@ -765,7 +753,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             List<DataSourceDescriptor> dsSnapshot;
             synchronized (dataSources) {
-                dsSnapshot = dataSources;
+                dsSnapshot = CommonUtils.copyList(dataSources);
             }
             for (DataSourceDescriptor dataSource : dsSnapshot) {
                 if (dataSource.isConnected()) {
