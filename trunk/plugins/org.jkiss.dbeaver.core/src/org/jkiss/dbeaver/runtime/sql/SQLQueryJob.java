@@ -59,6 +59,7 @@ public class SQLQueryJob extends DataSourceJob
     private SQLEditorBase editor;
     private List<SQLStatementInfo> queries;
     private DBDDataReceiver dataReceiver;
+    private boolean connectionInvalidated = false;
 
     private SQLScriptCommitType commitType;
     private SQLScriptErrorHandling errorHandling;
@@ -293,6 +294,12 @@ public class SQLQueryJob extends DataSourceJob
         try {
             // Prepare statement
             closeStatement();
+
+            // Check and invalidate connection
+            if (!connectionInvalidated && getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE)) {
+                getDataSource().invalidateConnection(context.getProgressMonitor());
+                connectionInvalidated = true;
+            }
 
             boolean hasParameters = false;
             // Bind parameters
