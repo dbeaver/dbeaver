@@ -510,14 +510,7 @@ public class SQLEditor extends SQLEditorBase
                     curJobRunning++;
                     final long curTime = System.currentTimeMillis();
                     if (lastUIUpdateTime <= 0 || (curTime - lastUIUpdateTime >= SCRIPT_UI_UPDATE_PERIOD)) {
-                        UIUtils.runInUI(null, new Runnable() {
-                            @Override
-                            public void run()
-                            {
-                                selectAndReveal(query.getOffset(), query.getLength());
-                                setStatus(query.getQuery(), false);
-                            }
-                        });
+                        selectStatementInEditor(query);
                         lastUIUpdateTime = System.currentTimeMillis();
                     }
                 }
@@ -530,6 +523,9 @@ public class SQLEditor extends SQLEditorBase
                     if (isDisposed()) {
                         return;
                     }
+                    if (result.hasError()) {
+                        selectStatementInEditor(result.getStatement());
+                    }
                     if (isSingleQuery) {
                         UIUtils.runInUI(null, new Runnable() {
                             @Override
@@ -539,6 +535,18 @@ public class SQLEditor extends SQLEditorBase
                             }
                         });
                     }
+                }
+
+                private void selectStatementInEditor(final SQLStatementInfo query)
+                {
+                    UIUtils.runInUI(null, new Runnable() {
+                        @Override
+                        public void run()
+                        {
+                            selectAndReveal(query.getOffset(), query.getLength());
+                            setStatus(query.getQuery(), false);
+                        }
+                    });
                 }
 
                 private void processQueryResult(SQLQueryResult result)
