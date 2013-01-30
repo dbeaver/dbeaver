@@ -87,9 +87,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
 
         closeConnections();
-        if (getProject().isOpen()) {
-            flushConfig();
-        }
+        // Do not save config on shutdown.
+        // Some data source might be broken due to misconfiguration
+        // and we don't want to loose their config just after restart
+//        if (getProject().isOpen()) {
+//            flushConfig();
+//        }
         // Dispose and clear all descriptors
         synchronized (dataSources) {
             for (DataSourceDescriptor dataSourceDescriptor : this.dataSources) {
