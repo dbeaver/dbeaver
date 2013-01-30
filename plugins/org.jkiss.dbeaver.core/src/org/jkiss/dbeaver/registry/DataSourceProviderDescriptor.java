@@ -23,10 +23,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
+import org.eclipse.osgi.baseadaptor.BaseData;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleEntry;
 import org.eclipse.osgi.baseadaptor.loader.BaseClassLoader;
 import org.eclipse.osgi.baseadaptor.loader.ClasspathEntry;
 import org.eclipse.osgi.baseadaptor.loader.ClasspathManager;
+import org.eclipse.osgi.framework.adaptor.BundleData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -173,12 +175,12 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         throws DBException
     {
         if (instance == null) {
+            initProviderBundle(driver);
             // locate class
             Class<?> implClass = implType.getObjectClass();
             if (implClass == null) {
                 throw new DBException("Can't find descriptor class '" + implType.implName + "'");
             }
-            initProviderBundle(implClass, driver);
             // Create instance
             try {
                 this.instance = (DBPDataSourceProvider) implClass.newInstance();
@@ -198,12 +200,20 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    private void initProviderBundle(Class<?> implClass, DriverDescriptor driver)
+    private void initProviderBundle(DriverDescriptor driver)
     {
-        ClassLoader classLoader = implClass.getClassLoader();
+/*
+        ClassLoader classLoader = implType.getObjectClass().getClassLoader();
         if (classLoader instanceof BaseClassLoader) {
             BaseClassLoader baseClassLoader = (BaseClassLoader)classLoader;
+            ClasspathManager classpathManager = baseClassLoader.getClasspathManager();
+            BundleData bundleData = classpathManager.getBaseData();
+            String externalJar = "D:\\java\\db-derby-10.9.1.0-bin\\lib\\derby.jar";
+            classpathManager.attachFragment(bundleData, baseClassLoader.getDomain(), new String[] {externalJar});
+            classpathManager.initialize();
+            System.out.println("YAHOO");
         }
+*/
     }
 
     public DBXTreeNode getTreeDescriptor()
