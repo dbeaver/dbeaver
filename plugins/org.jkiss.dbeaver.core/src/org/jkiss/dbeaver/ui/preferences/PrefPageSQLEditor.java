@@ -46,6 +46,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor"; //$NON-NLS-1$
 
+    private Button invalidateBeforeExecuteCheck;
     private Spinner executeTimeoutText;
 
     private Combo commitTypeCombo;
@@ -69,6 +70,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
+            store.contains(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE) ||
             store.contains(PrefConstants.STATEMENT_TIMEOUT) ||
             store.contains(PrefConstants.SCRIPT_COMMIT_TYPE) ||
             store.contains(PrefConstants.SCRIPT_ERROR_HANDLING) ||
@@ -93,8 +95,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL, 0);
             {
-                UIUtils.createControlLabel(commonGroup, CoreMessages.pref_page_sql_editor_label_sql_timeout);
+                invalidateBeforeExecuteCheck = UIUtils.createLabelCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_invalidate_before_execute, false);
 
+                UIUtils.createControlLabel(commonGroup, CoreMessages.pref_page_sql_editor_label_sql_timeout);
                 executeTimeoutText = new Spinner(commonGroup, SWT.BORDER);
                 executeTimeoutText.setSelection(0);
                 executeTimeoutText.setDigits(0);
@@ -193,6 +196,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
+            invalidateBeforeExecuteCheck.setSelection(store.getBoolean(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
             executeTimeoutText.setSelection(store.getInt(PrefConstants.STATEMENT_TIMEOUT));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(PrefConstants.SCRIPT_COMMIT_TYPE)).ordinal());
@@ -221,6 +225,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
+            store.setValue(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
             store.setValue(PrefConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
 
             store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
@@ -249,6 +254,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
+        store.setToDefault(PrefConstants.STATEMENT_INVALIDATE_BEFORE_EXECUTE);
         store.setToDefault(PrefConstants.STATEMENT_TIMEOUT);
 
         store.setToDefault(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION);
