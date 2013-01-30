@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -43,6 +44,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
     //private boolean valid;
     private long rowCount;
+    private Long realRowCount;
     private Object tablespace;
     private boolean partitioned;
     private PartitionInfo partitionInfo;
@@ -72,11 +74,36 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         return rowCount;
     }
 
-//    @Property(name = "Valid", viewable = true, order = 21, description = "If a previous DROP TABLE operation failed, indicates whether the table is unusable")
-//    public boolean isValid()
-//    {
-//        return valid;
-//    }
+    @Property(viewable = false, expensive = true, order = 21)
+    public synchronized Long getRealRowCount(DBRProgressMonitor monitor)
+    {
+        if (realRowCount != null) {
+            return realRowCount;
+        }
+        if (!isPersisted()) {
+            // Do not count rows for views
+            return null;
+        }
+
+        if (realRowCount == null) {
+            // Query row count
+            DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
+            try {
+                realRowCount = countData(context, null);
+            }
+            catch (DBException e) {
+                log.debug("Can't fetch row count", e);
+            }
+            finally {
+                context.close();
+            }
+        }
+        if (realRowCount == null) {
+            realRowCount = -1L;
+        }
+
+        return realRowCount;
+    }
 
     @Override
     public Object getLazyReference(Object propertyId)
@@ -160,6 +187,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         if (partitionCache != null) {
             partitionCache.clearCache();
         }
+        realRowCount = null;
         return true;
     }
 

@@ -24,10 +24,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -79,7 +79,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             this.isView = (type.contains("VIEW"));
             this.isSystem =
                 (type.contains("SYSTEM")) || // general rule
-                tableName.contains("RDB$");    // [Firebird]
+                tableName.contains("RDB$");    // [JDBC: Firebird]
         }
     }
 
@@ -230,32 +230,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             return null;
         }
 
-//        if (indexes != null) {
-//            rowCount = getRowCountFromIndexes(monitor);
-//        }
-
         if (rowCount == null) {
             // Query row count
-            JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
+            DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
             try {
-                JDBCPreparedStatement dbStat = context.prepareStatement(
-                    "SELECT COUNT(*) FROM " + getFullQualifiedName());
-                try {
-    //                dbStat.setQueryTimeout(3);
-                    JDBCResultSet resultSet = dbStat.executeQuery();
-                    try {
-                        resultSet.next();
-                        rowCount = resultSet.getLong(1);
-                    }
-                    finally {
-                        resultSet.close();
-                    }
-                }
-                finally {
-                    dbStat.close();
-                }
+                rowCount = countData(context, null);
             }
-            catch (SQLException e) {
+            catch (DBException e) {
                 //throw new DBCException(e);
                 // do not throw this error - row count is optional info and some providers may fail
                 log.debug("Can't fetch row count: " + e.getMessage());
