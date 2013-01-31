@@ -434,6 +434,11 @@ public class DBeaverCore implements DBPApplication {
     {
         IPreferenceStore store = getGlobalPreferenceStore();
 
+        {
+            File driversHome = DriverDescriptor.getCustomDriversHome();
+            System.setProperty(DBeaverConstants.PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
+        }
+
         // Agent
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_ENABLED, true);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_NOTIFY, true);
