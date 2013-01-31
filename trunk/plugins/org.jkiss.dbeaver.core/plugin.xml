@@ -1431,7 +1431,7 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
-            <separator visible="true"/>
+            <separator name="other" visible="true"/>
         </menuContribution>
 
         <!-- QM menu & toolbar -->
