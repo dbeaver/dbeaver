@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
+import java.util.Random;
 
 /**
  * This workbench advisor creates the window advisor, and specifies
@@ -108,6 +109,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     private void startVersionChecker()
     {
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.UI_AUTO_UPDATE_CHECK)) {
+            if (new Random().nextInt(4) != 0) {
+                // check for update with 25% chance
+                // to avoid too high load on server in release days
+                return;
+            }
             long lastVersionCheckTime = DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.UI_UPDATE_CHECK_TIME);
             if (lastVersionCheckTime > 0) {
                 Calendar cal = Calendar.getInstance();
