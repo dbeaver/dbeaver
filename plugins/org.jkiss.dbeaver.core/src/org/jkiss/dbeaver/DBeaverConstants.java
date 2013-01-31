@@ -32,4 +32,6 @@ public class DBeaverConstants
     public static final String PRODUCT_PROP_WEBSITE = "website"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
     public static final String DEFAULT_DRIVERS_SOURCE = "http://dbeaver.jkiss.org/files/jdbc/";
+
+    public static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";
 }
