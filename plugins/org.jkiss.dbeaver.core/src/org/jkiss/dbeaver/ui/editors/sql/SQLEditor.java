@@ -579,7 +579,7 @@ public class SQLEditor extends SQLEditorBase
 
                     if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                         DBeaverUI.notifyAgent(
-                            "Query completed" + ContentUtils.getDefaultLineSeparator() +
+                            "Query completed [" + getEditorInput().getPath().lastSegment() + "]" + ContentUtils.getDefaultLineSeparator() +
                                 CommonUtils.truncateString(result.getStatement().getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
                     }
                 }
