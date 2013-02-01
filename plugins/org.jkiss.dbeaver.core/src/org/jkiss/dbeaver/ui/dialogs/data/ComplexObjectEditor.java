@@ -29,13 +29,20 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 
 /**
@@ -44,6 +51,8 @@ import java.util.Collection;
 public class ComplexObjectEditor extends TreeViewer {
 
     static final Log log = LogFactory.getLog(ComplexObjectEditor.class);
+
+    private DBPDataSource dataSource;
 
     public ComplexObjectEditor(Composite parent, int style)
     {
@@ -62,6 +71,9 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (!packing) {
                     packing = true;
                     UIUtils.packColumns(treeControl, true, new float[]{0.2f, 0.8f});
+                    if (treeControl.getColumn(0).getWidth() < 100) {
+                        treeControl.getColumn(0).setWidth(100);
+                    }
                     treeControl.removeControlListener(this);
                 }
             }
@@ -85,12 +97,13 @@ public class ComplexObjectEditor extends TreeViewer {
         super.setContentProvider(new StructContentProvider());
     }
 
-    public void setModel(final DBDComplexType value)
+    public void setModel(DBPDataSource dataSource, final DBDComplexType value)
     {
         getTree().setRedraw(false);
         try {
+            this.dataSource = dataSource;
             setInput(value);
-            expandAll();
+            expandToLevel(2);
         } finally {
             getTree().setRedraw(true);
         }
@@ -120,7 +133,7 @@ public class ComplexObjectEditor extends TreeViewer {
             this.array = array;
             this.index = index;
             this.value = value;
-            this.valueHandler = DBUtils.findValueHandler(array.getElementType().getDataSource(), array.getElementType());
+            this.valueHandler = DBUtils.findValueHandler(array.getObjectDataType().getDataSource(), array.getObjectDataType());
         }
     }
 
@@ -163,7 +176,7 @@ public class ComplexObjectEditor extends TreeViewer {
                     int index = 0;
                     for (DBSAttributeBase attr : attributes) {
                         Object value = structure.getAttributeValue(attr);
-                        children[index++] = new FieldInfo(structure.getStructType().getDataSource(), attr, value);
+                        children[index++] = new FieldInfo(structure.getObjectDataType().getDataSource(), attr, value);
                     }
                     return children;
                 } catch (DBException e) {
@@ -181,9 +194,38 @@ public class ComplexObjectEditor extends TreeViewer {
                 } catch (DBCException e) {
                     log.error("Error getting array content", e);
                 }
+            } else if (parent instanceof DBDReference) {
+                final DBDReference reference = (DBDReference)parent;
+                DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Read reference value");
+                        try {
+                            result = reference.getReferencedObject(context);
+                        } catch (DBCException e) {
+                            throw new InvocationTargetException(e);
+                        } finally {
+                            context.close();
+                        }
+                    }
+                };
+                try {
+                    DBeaverUI.runInProgressService(runnable);
+                } catch (InvocationTargetException e) {
+                    UIUtils.showErrorDialog(getControl().getShell(), "Value read", "Error read reference", e.getTargetException());
+                } catch (InterruptedException e) {
+                    // ok
+                }
+                return getChildren(runnable.getResult());
             } else if (parent instanceof FieldInfo) {
                 Object value = ((FieldInfo) parent).value;
-                if (value instanceof DBDStructure || value instanceof DBDArray) {
+                if (value instanceof DBDComplexType) {
+                    return getChildren(value);
+                }
+            } else if (parent instanceof ArrayItem) {
+                Object value = ((ArrayItem) parent).value;
+                if (value instanceof DBDComplexType) {
                     return getChildren(value);
                 }
             }
@@ -193,7 +235,12 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public boolean hasChildren(Object parent)
         {
-            return getChildren(parent).length > 0;
+            return
+                parent instanceof DBDStructure ||
+                parent instanceof DBDArray ||
+                parent instanceof DBDReference ||
+                (parent instanceof FieldInfo && hasChildren(((FieldInfo) parent).value)) ||
+                (parent instanceof ArrayItem && hasChildren(((ArrayItem) parent).value));
         }
     }
 
@@ -212,18 +259,32 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (isName) {
                     return field.attribute.getName();
                 }
-                if (field.value instanceof DBDStructure) {
-                    return "";
-                }
-                return field.valueHandler.getValueDisplayString(field.attribute, field.value, DBDDisplayFormat.UI);
+                return getValueText(field.valueHandler, field.attribute, field.value);
             } else if (obj instanceof ArrayItem) {
                 ArrayItem item = (ArrayItem) obj;
                 if (isName) {
                     return String.valueOf(item.index);
                 }
-                return item.valueHandler.getValueDisplayString(item.array.getElementType(), item.value, DBDDisplayFormat.UI);
+                return getValueText(item.valueHandler, item.array.getObjectDataType(), item.value);
             }
             return String.valueOf(columnIndex);
+        }
+
+        private String getValueText(DBDValueHandler valueHandler, DBSTypedObject type, Object value)
+        {
+            if (value instanceof DBDArray) {
+                try {
+                    Object[] contents = ((DBDArray) value).getContents();
+                    return "[" + ((DBDArray) value).getObjectDataType().getName() + " - " + String.valueOf(contents == null ? 0 : contents.length) + "]";
+                } catch (DBCException e) {
+                    log.error(e);
+                    return "N/A";
+                }
+            }
+            if (value instanceof DBDComplexType) {
+                return "[" + ((DBDComplexType) value).getObjectDataType().getName() + "]";
+            }
+            return valueHandler.getValueDisplayString(type, value, DBDDisplayFormat.UI);
         }
 
         @Override

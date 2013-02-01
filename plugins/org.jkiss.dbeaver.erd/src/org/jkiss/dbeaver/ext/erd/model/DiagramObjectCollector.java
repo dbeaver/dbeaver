@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -114,6 +115,10 @@ public class DiagramObjectCollector {
     {
         Collection<DBSEntity> tables = collectTables(monitor, roots);
         for (DBSEntity table : tables) {
+            if (table instanceof DBPHiddenObject && ((DBPHiddenObject) table).isHidden()) {
+                // Skip hidden tables
+                continue;
+            }
             addDiagramEntity(monitor, table);
         }
 

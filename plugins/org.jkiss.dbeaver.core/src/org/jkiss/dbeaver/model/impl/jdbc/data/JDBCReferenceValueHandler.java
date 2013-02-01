@@ -44,20 +44,20 @@ import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
+import java.sql.Ref;
 import java.sql.SQLException;
-import java.sql.Struct;
 
 /**
- * JDBC Struct value handler.
+ * JDBC reference value handler.
  * Handle STRUCT types.
  *
  * @author Serge Rider
  */
-public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
+public class JDBCReferenceValueHandler extends JDBCAbstractValueHandler {
 
-    static final Log log = LogFactory.getLog(JDBCStructValueHandler.class);
+    static final Log log = LogFactory.getLog(JDBCReferenceValueHandler.class);
 
-    public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
+    public static final JDBCReferenceValueHandler INSTANCE = new JDBCReferenceValueHandler();
 
     @Override
     public int getFeatures()
@@ -71,8 +71,8 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     @Override
     public synchronized String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
-        JDBCStruct struct = (JDBCStruct) value;
-        return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : struct.getStringRepresentation();
+        JDBCReference reference = (JDBCReference) value;
+        return reference == null || reference.isNull() ? DBConstants.NULL_VALUE_LABEL : reference.toString();
     }
 
     @Override
@@ -83,7 +83,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         int index)
         throws DBCException, SQLException
     {
-        Object value = resultSet.getObject(index);
+        Ref value = resultSet.getRef(index);
         return getValueFromObject(context, type, value, false);
     }
 
@@ -96,22 +96,23 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
         Object value)
         throws DBCException, SQLException
     {
-        throw new DBCException("Unsupported value type: " + value);
+        JDBCReference reference = (JDBCReference) value;
+        statement.setRef(paramIndex, reference.getValue());
     }
 
     @Override
     public Class getValueObjectType()
     {
-        return Struct.class;
+        return Ref.class;
     }
 
     @Override
-    public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
+    public JDBCReference getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         String typeName;
         try {
-            if (object instanceof Struct) {
-                typeName = ((Struct) object).getSQLTypeName();
+            if (object instanceof Ref) {
+                typeName = ((Ref) object).getBaseTypeName();
             } else {
                 typeName = type.getTypeName();
             }
@@ -125,48 +126,13 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
             log.error("Error resolving data type '" + typeName + "'", e);
         }
         if (object == null) {
-            return new JDBCStruct(context, dataType, null);
-        } else if (object instanceof JDBCStruct) {
-            return copy ? ((JDBCStruct) object).cloneValue(context.getProgressMonitor()) : object;
-        } else if (object instanceof Struct) {
-            return new JDBCStruct(context, dataType, (Struct) object);
+            return new JDBCReference(dataType, null);
+        } else if (object instanceof JDBCReference) {
+            return (JDBCReference)object;
+        } else if (object instanceof Ref) {
+            return new JDBCReference(dataType, (Ref) object);
         } else {
             throw new DBCException("Unsupported struct type: " + object.getClass().getName());
-        }
-    }
-
-/*
-    public String getValueDisplayString(DBSTypedObject column, Object value)
-    {
-        if (value instanceof JDBCStruct) {
-            String displayString = value.toString();
-            if (displayString != null) {
-                return displayString;
-            }
-        }
-        return super.getValueDisplayString(column, value);
-    }
-*/
-
-    @Override
-    public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
-        throws DBCException
-    {
-    }
-
-    @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
-    {
-        try {
-            Object value = controller.getValue();
-            if (value instanceof JDBCStruct) {
-                propertySource.addProperty(
-                    "sql_type", //$NON-NLS-1$
-                    CoreMessages.model_jdbc_type_name,
-                    ((JDBCStruct) value).getTypeName());
-            }
-        } catch (Exception e) {
-            log.warn("Could not extract struct value information", e); //$NON-NLS-1$
         }
     }
 
@@ -174,36 +140,7 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     public DBDValueEditor createEditor(final DBDValueController controller)
         throws DBException
     {
-        switch (controller.getEditType()) {
-            case PANEL:
-                return new ValueEditor<Tree>(controller) {
-                    ComplexObjectEditor editor;
-
-                    @Override
-                    public void refreshValue()
-                    {
-                        editor.setModel(controller.getDataSource(), (DBDStructure) controller.getValue());
-                    }
-
-                    @Override
-                    protected Tree createControl(Composite editPlaceholder)
-                    {
-                        editor = new ComplexObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
-                        editor.setModel(controller.getDataSource(), (DBDStructure) controller.getValue());
-                        return editor.getTree();
-                    }
-
-                    @Override
-                    public Object extractValue(DBRProgressMonitor monitor)
-                    {
-                        return editor.getInput();
-                    }
-                };
-            case EDITOR:
-                return new DefaultValueViewDialog(controller);
-            default:
-                return null;
-        }
+       return null;
     }
 
 }

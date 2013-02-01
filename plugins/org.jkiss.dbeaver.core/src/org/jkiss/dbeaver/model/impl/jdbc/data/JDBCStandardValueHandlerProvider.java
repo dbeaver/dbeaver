@@ -63,6 +63,8 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
                 return JDBCArrayValueHandler.INSTANCE;
             case STRUCT:
                 return JDBCStructValueHandler.INSTANCE;
+            case REFERENCE:
+                return JDBCReferenceValueHandler.INSTANCE;
             default:
                 return null;
         }

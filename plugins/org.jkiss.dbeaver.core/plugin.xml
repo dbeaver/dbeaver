@@ -1791,6 +1791,7 @@
 
             <type standard="STRUCT"/>
             <type standard="ARRAY"/>
+            <type standard="REF"/>
 
             <type standard="BLOB"/>
             <type standard="CLOB"/>

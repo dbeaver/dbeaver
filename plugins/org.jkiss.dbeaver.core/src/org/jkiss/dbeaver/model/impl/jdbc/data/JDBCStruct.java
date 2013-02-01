@@ -155,7 +155,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     }
 
     @Override
-    public DBSDataType getStructType()
+    public DBSDataType getObjectDataType()
     {
         return type;
     }

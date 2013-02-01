@@ -25,6 +25,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 
@@ -44,6 +47,26 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
             object = resultSet.getObject(index);
         } catch (SQLException e) {
             object = resultSet.getSQLXML(index);
+/*
+            try {
+                object = resultSet.getSQLXML(index);
+            } catch (SQLException e1) {
+                try {
+                    ResultSet originalRS = resultSet.getOriginal();
+                    Class<?> rsClass = originalRS.getClass().getClassLoader().loadClass("oracle.jdbc.OracleResultSet");
+                    Method method = rsClass.getMethod("getOPAQUE", Integer.TYPE);
+                    object = method.invoke(originalRS, index);
+                    if (object != null) {
+                        Class<?> xmlType = object.getClass().getClassLoader().loadClass("oracle.xdb.XMLType");
+                        Method xmlConstructor = xmlType.getMethod("createXML", object.getClass());
+                        object = xmlConstructor.invoke(null, object);
+                    }
+                }
+                catch (Throwable e2) {
+                    object = null;
+                }
+            }
+*/
         }
 
         if (object == null) {

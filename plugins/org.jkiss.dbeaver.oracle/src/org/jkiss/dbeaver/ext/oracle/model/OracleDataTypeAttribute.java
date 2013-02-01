@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 import java.sql.ResultSet;
+import java.sql.Types;
 
 /**
  * Oracle data type attribute
@@ -96,6 +97,10 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     @Override
     public int getTypeID()
     {
+        if (attrTypeMod == OracleDataTypeModifier.REF) {
+            // Explicitly say that we are reference
+            return Types.REF;
+        }
         return attrType.getTypeID();
     }
 
