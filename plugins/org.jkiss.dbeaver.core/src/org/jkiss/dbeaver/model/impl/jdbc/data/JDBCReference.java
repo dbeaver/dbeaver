@@ -1,0 +1,98 @@
+/*
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jkiss.dbeaver.model.impl.jdbc.data;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDReference;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+
+import java.sql.Ref;
+import java.sql.SQLException;
+
+/**
+ * Reference holder
+ */
+public class JDBCReference implements DBDReference {
+
+    static final Log log = LogFactory.getLog(JDBCReference.class);
+
+    private DBSDataType type;
+    private Ref value;
+
+    private JDBCReference()
+    {
+    }
+
+    public JDBCReference(DBSDataType type, Ref value) throws DBCException
+    {
+        this.type = type;
+        this.value = value;
+    }
+
+    public Ref getValue() throws DBCException
+    {
+        return value;
+    }
+
+    @Override
+    public boolean isNull()
+    {
+        return value == null;
+    }
+
+    @Override
+    public void release()
+    {
+        type = null;
+        value = null;
+    }
+
+    @Override
+    public DBSDataType getObjectDataType()
+    {
+        return type;
+    }
+
+    @Override
+    public Object getReferencedObject(DBCExecutionContext context) throws DBCException
+    {
+        try {
+            Object refValue = value.getObject();
+            DBDValueHandler valueHandler = DBUtils.findValueHandler(context, type);
+            return valueHandler.getValueFromObject(context, type, refValue, false);
+        } catch (SQLException e) {
+            throw new DBCException("Can't obtain object reference");
+        }
+    }
+
+    @Override
+    public String toString()
+    {
+        try {
+            return "REF on " + value.getBaseTypeName();
+        } catch (SQLException e) {
+            return value == null ? super.toString() : value.toString();
+        }
+    }
+}

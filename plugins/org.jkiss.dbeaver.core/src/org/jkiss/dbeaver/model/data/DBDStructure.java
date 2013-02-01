@@ -15,8 +15,6 @@ import java.util.Collection;
  */
 public interface DBDStructure extends DBDComplexType {
 
-    DBSDataType getStructType();
-
     Collection<DBSAttributeBase> getAttributes();
 
     Object getAttributeValue(DBSAttributeBase attribute)

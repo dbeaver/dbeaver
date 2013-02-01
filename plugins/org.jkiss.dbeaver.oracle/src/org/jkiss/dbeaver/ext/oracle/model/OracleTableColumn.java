@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +74,9 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         if (this.type != null) {
             this.typeName = type.getFullQualifiedName();
             this.valueType = type.getTypeID();
+        }
+        if (typeMod == OracleDataTypeModifier.REF) {
+            this.valueType = Types.REF;
         }
         setMaxLength(JDBCUtils.safeGetLong(dbResult, "DATA_LENGTH"));
         setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
