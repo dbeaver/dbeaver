@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
+import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
@@ -38,10 +35,10 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
 
     private boolean grant;
     private MySQLCatalog schema;
-    private MySQLTable table;
+    private MySQLTableBase table;
     private MySQLPrivilege privilege;
 
-    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, MySQLCatalog schema, MySQLTable table, MySQLPrivilege privilege)
+    public MySQLCommandGrantPrivilege(MySQLUser user, boolean grant, MySQLCatalog schema, MySQLTableBase table, MySQLPrivilege privilege)
     {
         super(user, grant ? MySQLMessages.edit_command_grant_privilege_action_grant_privilege : MySQLMessages.edit_command_grant_privilege_name_revoke_privilege);
         this.grant = grant;

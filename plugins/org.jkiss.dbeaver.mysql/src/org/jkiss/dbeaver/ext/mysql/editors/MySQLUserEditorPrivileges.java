@@ -57,7 +57,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private boolean isLoaded = false;
     private MySQLCatalog selectedCatalog;
-    private MySQLTable selectedTable;
+    private MySQLTableBase selectedTable;
     private PrivilegeTableControl tablePrivilegesTable;
     private PrivilegeTableControl otherPrivilegesTable;
     private volatile List<MySQLGrant> grants;
@@ -127,7 +127,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                     if (selIndex <= 0) {
                         selectedTable = null;
                     } else {
-                        selectedTable = (MySQLTable) tablesTable.getItem(selIndex).getData();
+                        selectedTable = (MySQLTableBase) tablesTable.getItem(selIndex).getData();
                     }
                     showGrants();
                 }
@@ -172,7 +172,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
                 final boolean isGrant = event.detail == 1;
                 final MySQLCatalog curCatalog = selectedCatalog;
-                final MySQLTable curTable = selectedTable;
+                final MySQLTableBase curTable = selectedTable;
                 updateLocalData(privilege, isGrant, curCatalog, curTable);
 
                 // Add command
@@ -205,7 +205,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         });
     }
 
-    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, MySQLCatalog curCatalog, MySQLTable curTable)
+    private void updateLocalData(MySQLPrivilege privilege, boolean isGrant, MySQLCatalog curCatalog, MySQLTableBase curTable)
     {
         // Modify local grants (and clear grants cache in user objects)
         getDatabaseObject().clearGrantsCache();
@@ -246,16 +246,16 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void showCatalogTables()
     {
         LoadingUtils.createService(
-            new DatabaseLoadService<Collection<MySQLTable>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getDataSource()) {
+            new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getDataSource()) {
                 @Override
-                public Collection<MySQLTable> evaluate()
+                public Collection<MySQLTableBase> evaluate()
                     throws InvocationTargetException, InterruptedException
                 {
                     if (selectedCatalog == null) {
                         return Collections.emptyList();
                     }
                     try {
-                        return selectedCatalog.getTables(getProgressMonitor());
+                        return selectedCatalog.getTableCache().getObjects(getProgressMonitor(), selectedCatalog);
                     }
                     catch (DBException e) {
                         log.error(e);
@@ -348,7 +348,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void highlightTables()
     {
         for (TableItem item : tablesTable.getItems()) {
-            MySQLTable table = (MySQLTable) item.getData();
+            MySQLTableBase table = (MySQLTableBase) item.getData();
             item.setFont(null);
             if (grants != null) {
                 for (MySQLGrant grant : grants) {
@@ -372,10 +372,10 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             super(parent);
         }
 
-        public ProgressVisualizer<Collection<MySQLTable>> createTablesLoadVisualizer() {
-            return new ProgressVisualizer<Collection<MySQLTable>>() {
+        public ProgressVisualizer<Collection<MySQLTableBase>> createTablesLoadVisualizer() {
+            return new ProgressVisualizer<Collection<MySQLTableBase>>() {
                 @Override
-                public void completeLoading(Collection<MySQLTable> tables) {
+                public void completeLoading(Collection<MySQLTableBase> tables) {
                     super.completeLoading(tables);
                     if (tablesTable.isDisposed()) {
                         return;
@@ -386,7 +386,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         item.setText("% (All)"); //$NON-NLS-1$
                         item.setImage(DBIcon.TREE_TABLE.getImage());
                     }
-                    for (MySQLTable table : tables) {
+                    for (MySQLTableBase table : tables) {
                         TableItem item = new TableItem(tablesTable, SWT.NONE);
                         item.setText(table.getName());
                         item.setImage(table.isView() ? DBIcon.TREE_VIEW.getImage() : DBIcon.TREE_TABLE.getImage());

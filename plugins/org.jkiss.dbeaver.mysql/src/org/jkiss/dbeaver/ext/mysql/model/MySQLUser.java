@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUser;
@@ -43,7 +44,7 @@ import java.util.regex.Matcher;
 /**
  * MySQLUser
  */
-public class MySQLUser implements DBAUser, DBPSaveableObject
+public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObject
 {
     static final Log log = LogFactory.getLog(MySQLUser.class);
 
@@ -295,4 +296,10 @@ public class MySQLUser implements DBAUser, DBPSaveableObject
         this.maxUserConnections = maxUserConnections;
     }
 
+    @Override
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    {
+        grants = null;
+        return true;
+    }
 }

@@ -110,7 +110,7 @@ public class MySQLGrant {
         return (catalog == null && isAllCatalogs()) || (catalog != null && catalog.getName().equalsIgnoreCase(catalogName));
     }
 
-    public boolean matches(MySQLTable table)
+    public boolean matches(MySQLTableBase table)
     {
         return (table == null && isAllTables()) || (table != null && table.getName().equalsIgnoreCase(tableName));
     }
