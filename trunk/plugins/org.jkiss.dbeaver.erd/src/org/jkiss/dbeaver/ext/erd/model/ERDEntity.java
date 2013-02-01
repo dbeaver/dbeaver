@@ -23,6 +23,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -257,6 +258,10 @@ public class ERDEntity extends ERDObject<DBSEntity>
                             // usual thing in some systems like WMI/CIM model
                             continue;
                         }
+                        if (attribute instanceof DBPHiddenObject && ((DBPHiddenObject) attribute).isHidden()) {
+                            // Skip hidden attributes
+                            continue;
+                        }
                         switch (attributeVisibility) {
                             case PRIMARY:
                                 if (!idColumns.contains(attribute)) {
@@ -264,7 +269,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
                                 }
                                 break;
                             case KEYS:
-                                if (!keyColumns.contains(attribute)) {
+                                if (keyColumns == null || !keyColumns.contains(attribute)) {
                                     continue;
                                 }
                                 break;

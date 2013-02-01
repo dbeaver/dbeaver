@@ -72,13 +72,17 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
 
         Object[] contents = null;
         try {
-            contents = extractDataFromArray(context, array, type, valueHandler);
-        } catch (Exception e) {
             try {
-                contents = extractDataFromResultSet(context, array, type, valueHandler);
-            } catch (Exception e1) {
-                log.warn("Could not extract array data from JDBC array"); //$NON-NLS-1$
+                contents = extractDataFromArray(context, array, type, valueHandler);
+            } catch (SQLException e) {
+                try {
+                    contents = extractDataFromResultSet(context, array, type, valueHandler);
+                } catch (SQLException e1) {
+                    throw new DBCException("Error reading from array result set", e1); //$NON-NLS-1$
+                }
             }
+        } catch (DBCException e) {
+            log.warn("Can't extract array data from JDBC array", e); //$NON-NLS-1$
         }
         return new JDBCArray(type, contents);
     }
@@ -91,11 +95,16 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
         }
         try {
             DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(context, dbResult, CoreMessages.model_jdbc_array_result_set);
-            List<Object> data = new ArrayList<Object>();
-            while (dbResult.next()) {
-                data.add(valueHandler.fetchValueObject(context, resultSet, type, 0));
+            try {
+                List<Object> data = new ArrayList<Object>();
+                while (dbResult.next()) {
+                    // Fetch second column - it contains value
+                    data.add(valueHandler.fetchValueObject(context, resultSet, type, 1));
+                }
+                return data.toArray();
+            } finally {
+                resultSet.close();
             }
-            return data.toArray();
         }
         finally {
             try {
@@ -129,7 +138,7 @@ public class JDBCArray implements DBDArray, DBDValueCloneable {
     }
 
     @Override
-    public DBSDataType getElementType()
+    public DBSDataType getObjectDataType()
     {
         return type;
     }

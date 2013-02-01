@@ -154,14 +154,13 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
                 @Override
                 public void refreshValue()
                 {
-                    editor.setModel((DBDArray) valueController.getValue());
+                    editor.setModel(valueController.getDataSource(), (DBDArray) valueController.getValue());
                 }
 
                 @Override
                 protected Tree createControl(Composite editPlaceholder)
                 {
                     editor = new ComplexObjectEditor(valueController.getEditPlaceholder(), SWT.BORDER);
-                    editor.setModel((DBDArray) valueController.getValue());
                     return editor.getTree();
                 }
 

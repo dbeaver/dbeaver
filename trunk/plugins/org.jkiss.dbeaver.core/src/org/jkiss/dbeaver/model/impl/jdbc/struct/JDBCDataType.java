@@ -220,6 +220,9 @@ public class JDBCDataType implements DBSDataType
             case Types.ROWID:
                 // threat ROWID as string
                 return DBSDataKind.STRING;
+            case Types.REF:
+                return DBSDataKind.REFERENCE;
+
         }
         return DBSDataKind.UNKNOWN;
     }

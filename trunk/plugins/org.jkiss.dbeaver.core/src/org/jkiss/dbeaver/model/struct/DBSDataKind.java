@@ -33,5 +33,6 @@ public enum DBSDataKind
     STRUCT,
     ARRAY,
     OBJECT,
+    REFERENCE,
     UNKNOWN,
 }

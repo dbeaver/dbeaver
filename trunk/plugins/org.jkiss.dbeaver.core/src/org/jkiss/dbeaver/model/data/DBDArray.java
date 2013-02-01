@@ -30,8 +30,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public interface DBDArray extends DBDComplexType {
 
-    DBSDataType getElementType();
-
     Object[] getContents()
         throws DBCException;
 
