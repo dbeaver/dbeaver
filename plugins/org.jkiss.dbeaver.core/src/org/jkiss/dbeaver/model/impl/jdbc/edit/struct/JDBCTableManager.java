@@ -97,7 +97,10 @@ public abstract class JDBCTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new IDatabasePersistAction[] {
-            new AbstractDatabasePersistAction(CoreMessages.model_jdbc_drop_table, "DROP TABLE " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+            new AbstractDatabasePersistAction(
+                CoreMessages.model_jdbc_drop_table,
+                "DROP " + (command.getObject().isView() ? "VIEW" : "TABLE") +
+                " " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
         };
     }
 
