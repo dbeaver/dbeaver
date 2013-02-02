@@ -84,7 +84,6 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
                         final boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
                         final Text editor = new Text(valueController.getEditPlaceholder(),
                             SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
-                        editor.setEditable(!valueController.isReadOnly());
                         editor.setTextLimit(MAX_STRING_LENGTH);
                         editor.setEditable(!valueController.isReadOnly());
                         return editor;
