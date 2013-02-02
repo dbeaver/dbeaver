@@ -21,6 +21,9 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.CursorViewDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
@@ -84,7 +88,7 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     @Override
     public int getFeatures()
     {
-        return FEATURE_VIEWER;
+        return FEATURE_VIEWER | FEATURE_EDITOR;
     }
 
     @Override
@@ -130,6 +134,25 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         throws DBException
     {
         switch (controller.getEditType()) {
+            case PANEL:
+                return new ValueEditor<Text>(controller) {
+                    @Override
+                    protected Text createControl(Composite editPlaceholder)
+                    {
+                        return new Text(valueController.getEditPlaceholder(),
+                            SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
+                    }
+                    @Override
+                    public void refreshValue()
+                    {
+                        control.setText(CommonUtils.toString(valueController.getValue()));
+                    }
+                    @Override
+                    public Object extractValue(DBRProgressMonitor monitor)
+                    {
+                        return null;
+                    }
+                };
             case EDITOR:
                 final Object value = controller.getValue();
                 if (value instanceof DBDCursor) {
