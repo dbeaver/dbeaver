@@ -273,11 +273,12 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         {
                             JDBCContentChars newValue = (JDBCContentChars) valueController.getValue();
                             control.setText(newValue.getData() == null ? "" : newValue.getData()); //$NON-NLS-1$
+                            control.selectAll();
                         }
                         @Override
                         protected Text createControl(Composite editPlaceholder)
                         {
-                            final Text editor = new Text(editPlaceholder, SWT.NONE);
+                            final Text editor = new Text(editPlaceholder, SWT.BORDER);
                             editor.setEditable(!valueController.isReadOnly());
                             long maxLength = valueController.getAttributeMetaData().getMaxLength();
                             if (maxLength <= 0) {
@@ -286,7 +287,6 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                 maxLength = Math.min(maxLength, MAX_STRING_LENGTH);
                             }
                             editor.setTextLimit((int) maxLength);
-                            editor.selectAll();
                             return editor;
                         }
                         @Override
