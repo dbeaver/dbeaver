@@ -59,7 +59,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     "','%Y-%m-%d %H:%i:%s')";
             }
         } else {
-            return getValueDisplayString(column, value, format);
+            return super.getValueDisplayString(column, value, format);
         }
     }
 }
