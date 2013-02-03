@@ -1,0 +1,13 @@
+JDBC Drivers Pack
+
+This archive contains JDBC drivers for a set of databases.
+DBeaver has configurations for all these drivers.
+Of you don't have internet access when using DBeaver then you may just extract this archive
+in the same directory where DBeaver was installed.
+
+Default DBeaver installation folder in Windows is standard "Program Files" folder,
+so typically it will be "C:\Program Files\DBeaver\" for Windows XP 32-bit.
+Extract this archive in this folder so drivers will be located in
+"C:\Program Files\DBeaver\drivers\" folder.
+
+After that DBeaver will automatically locate driver's files when you create new connection.
