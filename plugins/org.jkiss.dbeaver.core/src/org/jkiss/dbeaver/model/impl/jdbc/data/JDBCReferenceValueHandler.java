@@ -53,17 +53,11 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCReferenceValueHandler extends JDBCAbstractValueHandler {
+public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCReferenceValueHandler.class);
 
     public static final JDBCReferenceValueHandler INSTANCE = new JDBCReferenceValueHandler();
-
-    @Override
-    public int getFeatures()
-    {
-        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_SHOW_ICON;
-    }
 
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
@@ -73,18 +67,6 @@ public class JDBCReferenceValueHandler extends JDBCAbstractValueHandler {
     {
         JDBCReference reference = (JDBCReference) value;
         return reference == null || reference.isNull() ? DBConstants.NULL_VALUE_LABEL : reference.toString();
-    }
-
-    @Override
-    protected Object fetchColumnValue(
-        DBCExecutionContext context,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
-        int index)
-        throws DBCException, SQLException
-    {
-        Ref value = resultSet.getRef(index);
-        return getValueFromObject(context, type, value, false);
     }
 
     @Override
@@ -134,13 +116,6 @@ public class JDBCReferenceValueHandler extends JDBCAbstractValueHandler {
         } else {
             throw new DBCException("Unsupported struct type: " + object.getClass().getName());
         }
-    }
-
-    @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
-        throws DBException
-    {
-       return null;
     }
 
 }

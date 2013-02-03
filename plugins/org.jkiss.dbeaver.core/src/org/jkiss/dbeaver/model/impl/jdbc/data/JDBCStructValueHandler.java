@@ -20,29 +20,14 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Tree;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDStructure;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -53,17 +38,11 @@ import java.sql.Struct;
  *
  * @author Serge Rider
  */
-public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
+public class JDBCStructValueHandler extends JDBCComplexValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCStructValueHandler.class);
 
     public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
-
-    @Override
-    public int getFeatures()
-    {
-        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_SHOW_ICON;
-    }
 
     /**
      * NumberFormat is not thread safe thus this method is synchronized.
@@ -73,30 +52,6 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
     {
         JDBCStruct struct = (JDBCStruct) value;
         return struct == null || struct.isNull() ? DBConstants.NULL_VALUE_LABEL : struct.getStringRepresentation();
-    }
-
-    @Override
-    protected Object fetchColumnValue(
-        DBCExecutionContext context,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
-        int index)
-        throws DBCException, SQLException
-    {
-        Object value = resultSet.getObject(index);
-        return getValueFromObject(context, type, value, false);
-    }
-
-    @Override
-    protected void bindParameter(
-        JDBCExecutionContext context,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
-        int paramIndex,
-        Object value)
-        throws DBCException, SQLException
-    {
-        throw new DBCException("Unsupported value type: " + value);
     }
 
     @Override
@@ -132,77 +87,6 @@ public class JDBCStructValueHandler extends JDBCAbstractValueHandler {
             return new JDBCStruct(context, dataType, (Struct) object);
         } else {
             throw new DBCException("Unsupported struct type: " + object.getClass().getName());
-        }
-    }
-
-/*
-    public String getValueDisplayString(DBSTypedObject column, Object value)
-    {
-        if (value instanceof JDBCStruct) {
-            String displayString = value.toString();
-            if (displayString != null) {
-                return displayString;
-            }
-        }
-        return super.getValueDisplayString(column, value);
-    }
-*/
-
-    @Override
-    public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
-        throws DBCException
-    {
-    }
-
-    @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
-    {
-        try {
-            Object value = controller.getValue();
-            if (value instanceof JDBCStruct) {
-                propertySource.addProperty(
-                    "sql_type", //$NON-NLS-1$
-                    CoreMessages.model_jdbc_type_name,
-                    ((JDBCStruct) value).getTypeName());
-            }
-        } catch (Exception e) {
-            log.warn("Could not extract struct value information", e); //$NON-NLS-1$
-        }
-    }
-
-    @Override
-    public DBDValueEditor createEditor(final DBDValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case PANEL:
-                return new ValueEditor<Tree>(controller) {
-                    ComplexObjectEditor editor;
-
-                    @Override
-                    public void refreshValue()
-                    {
-                        editor.setModel(controller.getDataSource(), (DBDStructure) controller.getValue());
-                    }
-
-                    @Override
-                    protected Tree createControl(Composite editPlaceholder)
-                    {
-                        editor = new ComplexObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
-                        editor.setModel(controller.getDataSource(), (DBDStructure) controller.getValue());
-                        return editor.getTree();
-                    }
-
-                    @Override
-                    public Object extractValue(DBRProgressMonitor monitor)
-                    {
-                        return editor.getInput();
-                    }
-                };
-            case EDITOR:
-                return new DefaultValueViewDialog(controller);
-            default:
-                return null;
         }
     }
 
