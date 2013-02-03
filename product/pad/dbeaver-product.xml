@@ -52,7 +52,26 @@
             <date>03.02.2013</date>
 
             <release-notes>
-                -
+                - Grid data editor refactored. Embedded editor/viewer added
+                - Support of complex SQL types (arrays, structures, references - tested on Oracle)
+                - Value editors/viewers improved. Images preview in panel
+                - Direct data export from SQL query
+                - Advanced data copy dialog (support of locale specific number/date formats)
+                - SQL query generator (for tables and result sets)
+                - Connection invalidation before query execution (configurable)
+                - Keyboard shortcuts are working in inline data editors
+                - ResultSet export fixed
+                - Hung on transactions level/autocommit change fixed
+                - Hyperlinks fixed in metadata browser
+                - Lazy properties loading fixed in metadata editor
+                - Native tools menu fixed (MySQL and Oracle)
+                - Eclipse plugin UI fixed
+                - MySQL Views metadata editor fixed
+                - Privileges editor fixed (MySQL)
+                - Actual row count property added (Oracle)
+                - Drop view statement fixed (Generic)
+                - Tray icon notifier improved (show script name)
+                - A few minor UI fixes
             </release-notes>
         </version>
 
