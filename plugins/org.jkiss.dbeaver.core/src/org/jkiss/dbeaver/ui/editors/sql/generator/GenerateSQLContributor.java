@@ -371,9 +371,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             log.warn(e);
                         }
                         activeEditor.setFocus();
-                    } else {
-                        UIUtils.setClipboardContents(DBeaverUI.getActiveWorkbenchShell().getDisplay(), TextTransfer.getInstance(), sql);
                     }
+                    UIUtils.setClipboardContents(DBeaverUI.getActiveWorkbenchShell().getDisplay(), TextTransfer.getInstance(), sql);
                 }
         });
     }
