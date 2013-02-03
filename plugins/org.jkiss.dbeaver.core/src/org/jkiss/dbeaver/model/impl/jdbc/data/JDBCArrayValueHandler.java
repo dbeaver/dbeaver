@@ -20,29 +20,14 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Tree;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.data.DBDArray;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueController;
-import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.Array;
-import java.sql.SQLException;
 
 /**
  * JDBC Array value handler.
@@ -50,46 +35,16 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
+public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCArrayValueHandler.class);
 
     public static final JDBCArrayValueHandler INSTANCE = new JDBCArrayValueHandler();
 
     @Override
-    protected Object fetchColumnValue(
-        DBCExecutionContext context,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
-        int index)
-        throws DBCException, SQLException
-    {
-        Object value = resultSet.getObject(index);
-        return getValueFromObject(context, type, value, false);
-    }
-
-    @Override
-    protected void bindParameter(
-        JDBCExecutionContext context,
-        JDBCPreparedStatement statement,
-        DBSTypedObject paramType,
-        int paramIndex,
-        Object value)
-        throws DBCException, SQLException
-    {
-        throw new DBCException(CoreMessages.model_jdbc_exception_unsupported_value_type_ + value);
-    }
-
-    @Override
-    public int getFeatures()
-    {
-        return FEATURE_VIEWER | FEATURE_EDITOR;
-    }
-
-    @Override
     public Class getValueObjectType()
     {
-        return DBDArray.class;
+        return Array.class;
     }
 
     @Override
@@ -118,63 +73,5 @@ public class JDBCArrayValueHandler extends JDBCAbstractValueHandler {
         return super.getValueDisplayString(column, value, format);
     }
 
-    @Override
-    public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
-        throws DBCException
-    {
-    }
-
-    @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
-    {
-        try {
-            Object value = controller.getValue();
-            if (value instanceof DBDArray) {
-/*
-                propertySource.addProperty(
-                    "array_length",
-                    "Length",
-                    ((DBDArray)value).getLength());
-*/
-            }
-        }
-        catch (Exception e) {
-            log.warn("Could not extract array value information", e);
-        }
-    }
-
-    @Override
-    public DBDValueEditor createEditor(DBDValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case PANEL:
-                return new ValueEditor<Tree>(controller) {
-                ComplexObjectEditor editor;
-                @Override
-                public void refreshValue()
-                {
-                    editor.setModel(valueController.getDataSource(), (DBDArray) valueController.getValue());
-                }
-
-                @Override
-                protected Tree createControl(Composite editPlaceholder)
-                {
-                    editor = new ComplexObjectEditor(valueController.getEditPlaceholder(), SWT.BORDER);
-                    return editor.getTree();
-                }
-
-                @Override
-                public Object extractValue(DBRProgressMonitor monitor)
-                {
-                    return editor.getInput();
-                }
-            };
-            case EDITOR:
-                return new DefaultValueViewDialog(controller);
-            default:
-                return null;
-        }
-    }
 
 }
