@@ -39,10 +39,7 @@ public class JDBCReference implements DBDReference {
 
     private DBSDataType type;
     private Ref value;
-
-    private JDBCReference()
-    {
-    }
+    private Object refObject;
 
     public JDBCReference(DBSDataType type, Ref value) throws DBCException
     {
@@ -77,13 +74,16 @@ public class JDBCReference implements DBDReference {
     @Override
     public Object getReferencedObject(DBCExecutionContext context) throws DBCException
     {
-        try {
-            Object refValue = value.getObject();
-            DBDValueHandler valueHandler = DBUtils.findValueHandler(context, type);
-            return valueHandler.getValueFromObject(context, type, refValue, false);
-        } catch (SQLException e) {
-            throw new DBCException("Can't obtain object reference");
+        if (refObject == null) {
+            try {
+                Object refValue = value.getObject();
+                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, type);
+                refObject = valueHandler.getValueFromObject(context, type, refValue, false);
+            } catch (SQLException e) {
+                throw new DBCException("Can't obtain object reference");
+            }
         }
+        return refObject;
     }
 
     @Override
