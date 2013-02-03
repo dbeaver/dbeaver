@@ -138,8 +138,9 @@
     </target>
 
     <target name="driver-pack">
-        <zip destfile="${distDirectory}/driver-pack-${productVersion}.zip" basedir="../contrib/drivers" excludes="*.svn">
-
+        <zip destfile="${distDirectory}/driver-pack-${productVersion}.zip">
+		<zipfileset dir="../contrib/drivers" excludes="*.svn" prefix="drivers"/>
+		<zipfileset dir="docs" includes="drivers.txt" fullpath="readme.txt"/>
         </zip>
     </target>
 
