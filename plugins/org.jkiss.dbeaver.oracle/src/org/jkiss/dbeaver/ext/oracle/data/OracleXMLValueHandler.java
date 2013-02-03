@@ -46,11 +46,10 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
         try {
             object = resultSet.getObject(index);
         } catch (SQLException e) {
-            object = resultSet.getSQLXML(index);
-/*
             try {
                 object = resultSet.getSQLXML(index);
             } catch (SQLException e1) {
+/*
                 try {
                     ResultSet originalRS = resultSet.getOriginal();
                     Class<?> rsClass = originalRS.getClass().getClassLoader().loadClass("oracle.jdbc.OracleResultSet");
@@ -65,8 +64,9 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
                 catch (Throwable e2) {
                     object = null;
                 }
-            }
 */
+                object = null;
+            }
         }
 
         if (object == null) {
