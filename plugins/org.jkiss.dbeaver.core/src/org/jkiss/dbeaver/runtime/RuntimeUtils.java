@@ -447,6 +447,15 @@ public class RuntimeUtils {
         return null;
     }
 
+    public static void pause(int ms)
+    {
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            log.warn("Sleep interrupted", e);
+        }
+    }
+
     public static void launchProgram(String path)
     {
         Program.launch(path);

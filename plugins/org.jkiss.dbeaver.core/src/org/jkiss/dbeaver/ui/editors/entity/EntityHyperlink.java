@@ -85,7 +85,7 @@ public class EntityHyperlink implements IHyperlink
         if (reference != null) {
             ObjectFinder finder = new ObjectFinder();
             try {
-                DBeaverUI.runInProgressDialog(finder);
+                DBeaverUI.runInProgressService(finder);
             } catch (InterruptedException e) {
                 return;
             } catch (InvocationTargetException e) {
