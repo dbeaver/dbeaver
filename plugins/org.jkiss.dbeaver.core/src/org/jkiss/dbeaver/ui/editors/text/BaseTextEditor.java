@@ -412,7 +412,7 @@ public abstract class BaseTextEditor extends StatusTextEditor {
         }
 
         try {
-            DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {

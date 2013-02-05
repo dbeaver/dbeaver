@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.sql.Ref;
 import java.sql.SQLException;
@@ -76,9 +77,17 @@ public class JDBCReference implements DBDReference {
     {
         if (refObject == null) {
             try {
-                Object refValue = value.getObject();
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, type);
-                refObject = valueHandler.getValueFromObject(context, type, refValue, false);
+                context.getProgressMonitor().beginTask("Retrieve references object", 3);
+                try {
+                    context.getProgressMonitor().worked(1);
+                    Object refValue = value.getObject();
+                    context.getProgressMonitor().worked(1);
+                    DBDValueHandler valueHandler = DBUtils.findValueHandler(context, type);
+                    refObject = valueHandler.getValueFromObject(context, type, refValue, false);
+                    context.getProgressMonitor().worked(1);
+                } finally {
+                    context.getProgressMonitor().done();
+                }
             } catch (SQLException e) {
                 throw new DBCException("Can't obtain object reference");
             }

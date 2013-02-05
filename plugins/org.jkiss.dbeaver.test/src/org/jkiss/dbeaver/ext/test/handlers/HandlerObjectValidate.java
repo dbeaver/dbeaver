@@ -52,7 +52,7 @@ public class HandlerObjectValidate extends AbstractHandler {
     private void validateNode(Shell shell, DBNNode element)
     {
         try {
-            DBeaverUI.runInProgressDialog(new NodeValidator(element));
+            DBeaverUI.runInProgressService(new NodeValidator(element));
         } catch (InterruptedException e) {
             // skip
         } catch (InvocationTargetException e) {
