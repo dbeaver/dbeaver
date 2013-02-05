@@ -210,6 +210,8 @@ public class ComplexObjectEditor extends TreeViewer {
                         }
                     }
                 };
+                DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), runnable);
+/*
                 try {
                     DBeaverUI.runInProgressService(runnable);
                 } catch (InvocationTargetException e) {
@@ -217,6 +219,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 } catch (InterruptedException e) {
                     // ok
                 }
+*/
                 return getChildren(runnable.getResult());
             } else if (parent instanceof FieldInfo) {
                 Object value = ((FieldInfo) parent).value;

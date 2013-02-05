@@ -3,7 +3,6 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.source.ISharedTextColors;
@@ -124,29 +123,28 @@ public class DBeaverUI {
             return Display.getDefault();
     }
 
-    public static void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InterruptedException, InvocationTargetException
+/*
+    public static void runWithProgress(IWorkbenchPartSite site, final DBRRunnableWithProgress runnable)
+        throws InvocationTargetException, InterruptedException
     {
-        try {
-            IRunnableContext runnableContext;
-            IWorkbench workbench = PlatformUI.getWorkbench();
-            IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
-            if (workbenchWindow != null) {
-                runnableContext = new ProgressMonitorDialog(workbench.getActiveWorkbenchWindow().getShell());
-            } else {
-                runnableContext = workbench.getProgressService();
-            }
-            runnableContext.run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    runnable.run(RuntimeUtils.makeMonitor(monitor));
-                }
-            });
-        } catch (InterruptedException e) {
-            // do nothing
+        IActionBars actionBars = null;
+        if (site instanceof IViewSite) {
+            actionBars = ((IViewSite) site).getActionBars();
+        } else if (site instanceof IEditorSite) {
+            actionBars = ((IEditorSite) site).getActionBars();
+        }
+        IStatusLineManager statusLineManager = null;
+        if (actionBars != null) {
+            statusLineManager = actionBars.getStatusLineManager();
+        }
+        if (statusLineManager == null) {
+            runInProgressService(runnable);
+        } else {
+            IProgressMonitor progressMonitor = statusLineManager.getProgressMonitor();
+            runnable.run(new DefaultProgressMonitor(progressMonitor));
         }
     }
+*/
 
     public static void runInProgressService(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
