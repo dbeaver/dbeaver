@@ -134,4 +134,17 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     {
         firePropertyChange(IEditorPart.PROP_DIRTY);
     }
+
+    @Override
+    public Object getAdapter(Class required)
+    {
+        if (resultSetView != null) {
+            Object adapter = resultSetView.getAdapter(required);
+            if (adapter != null) {
+                return adapter;
+            }
+        }
+        return super.getAdapter(required);
+    }
+
 }

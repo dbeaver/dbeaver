@@ -52,6 +52,10 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
+import org.eclipse.ui.views.properties.IPropertySource;
+import org.eclipse.ui.views.properties.IPropertySourceProvider;
+import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -88,6 +92,7 @@ import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -107,7 +112,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
-    private final ResultSetSelection selection;
 
     public enum ResultSetMode {
         GRID,
@@ -171,9 +175,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private final List<ResultSetListener> listeners = new ArrayList<ResultSetListener>();
 
+    private static volatile boolean adapterRegistered;
+
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
         super();
+
+/*
+        if (!adapterRegistered) {
+            ResultSetAdapterFactory nodesAdapter = new ResultSetAdapterFactory();
+            IAdapterManager mgr = Platform.getAdapterManager();
+            mgr.registerAdapters(nodesAdapter, ResultSetProvider.class);
+            mgr.registerAdapters(nodesAdapter, IPageChangeProvider.class);
+            adapterRegistered = true;
+        }
+*/
 
         this.site = site;
         this.mode = ResultSetMode.GRID;
@@ -285,68 +301,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         });
 
-        this.selection = new ResultSetSelection() {
+        this.spreadsheet.addSelectionListener(new SelectionAdapter() {
             @Override
-            public Object getFirstElement()
+            public void widgetSelected(SelectionEvent e)
             {
-                Collection<GridPos> ssSelection = spreadsheet.getSelection();
-                return ssSelection.isEmpty() ? null : ssSelection.iterator().next();
+                fireSelectionChanged(new SelectionChangedEvent(ResultSetViewer.this, new ResultSetSelectionImpl()));
             }
-
-            @Override
-            public Iterator iterator()
-            {
-                return spreadsheet.getSelection().iterator();
-            }
-
-            @Override
-            public int size()
-            {
-                return spreadsheet.getSelection().size();
-            }
-
-            @Override
-            public Object[] toArray()
-            {
-                return spreadsheet.getSelection().toArray();
-            }
-
-            @Override
-            public List toList()
-            {
-                return new ArrayList<GridPos>(spreadsheet.getSelection());
-            }
-
-            @Override
-            public boolean isEmpty()
-            {
-                return spreadsheet.getSelection().isEmpty();
-            }
-
-            @Override
-            public ResultSetViewer getResultSetViewer()
-            {
-                return ResultSetViewer.this;
-            }
-
-            @Override
-            public Collection<ResultSetRow> getSelectedRows()
-            {
-                List<ResultSetRow> rows = new ArrayList<ResultSetRow>();
-                if (mode == ResultSetMode.RECORD) {
-                    if (curRowNum < 0 || curRowNum >= curRows.size()) {
-                        return Collections.emptyList();
-                    }
-                    rows.add(new ResultSetRowImpl(curRows.get(curRowNum)));
-                } else {
-                    Collection<Integer> rowSelection = spreadsheet.getRowSelection();
-                    for (Integer row : rowSelection) {
-                        rows.add(new ResultSetRowImpl(curRows.get(row)));
-                    }
-                }
-                return rows;
-            }
-        };
+        });
     }
 
     private class ResultSetRowImpl implements ResultSetRow {
@@ -393,6 +354,31 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public Object getAdapter(Class adapter)
     {
+        if (adapter == IPropertySheetPage.class) {
+            PropertySheetPage page = new PropertySheetPage();
+            page.setPropertySourceProvider(new IPropertySourceProvider() {
+                @Override
+                public IPropertySource getPropertySource(Object object)
+                {
+                    if (object instanceof GridPos) {
+                        final GridPos cell = translateGridPos((GridPos)object);
+                        boolean noCellSelected = (cell.row < 0 || curRows.size() <= cell.row || cell.col < 0 || cell.col >= metaColumns.length);
+                        if (!noCellSelected) {
+                            PropertyCollector props = new PropertyCollector(object, object, false);
+                            final ResultSetValueController valueController = new ResultSetValueController(
+                                curRows.get(cell.row),
+                                cell.col,
+                                DBDValueController.EditType.NONE,
+                                null);
+                            valueController.getValueHandler().fillProperties(props, valueController);
+                            return props;
+                        }
+                    }
+                    return null;
+                }
+            });
+            return page;
+        }
         return null;
     }
 
@@ -842,7 +828,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (mode == ResultSetMode.GRID) {
             column = pos.col;
         } else {
-            column = curRowNum;
+            column = pos.row;
         }
         return column < 0 || column >= metaColumns.length || isColumnReadOnly(metaColumns[column]);
     }
@@ -1502,7 +1488,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public ResultSetSelection getSelection()
     {
-        return selection;
+        return new ResultSetSelectionImpl();
     }
 
     @Override
@@ -1893,6 +1879,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (cell == null) {
             return;
         }
+        cell = translateGridPos(cell);
         DBDAttributeBinding metaColumn = metaColumns[cell.col];
         if (isColumnReadOnly(metaColumn)) {
             // No inline editors for readonly columns
@@ -3563,4 +3550,66 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
+    private class ResultSetSelectionImpl implements ResultSetSelection {
+        @Override
+        public Object getFirstElement()
+        {
+            Collection<GridPos> ssSelection = spreadsheet.getSelection();
+            return ssSelection.isEmpty() ? null : ssSelection.iterator().next();
+        }
+
+        @Override
+        public Iterator iterator()
+        {
+            return spreadsheet.getSelection().iterator();
+        }
+
+        @Override
+        public int size()
+        {
+            return spreadsheet.getSelection().size();
+        }
+
+        @Override
+        public Object[] toArray()
+        {
+            return spreadsheet.getSelection().toArray();
+        }
+
+        @Override
+        public List toList()
+        {
+            return new ArrayList<GridPos>(spreadsheet.getSelection());
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return spreadsheet.getSelection().isEmpty();
+        }
+
+        @Override
+        public ResultSetViewer getResultSetViewer()
+        {
+            return ResultSetViewer.this;
+        }
+
+        @Override
+        public Collection<ResultSetRow> getSelectedRows()
+        {
+            List<ResultSetRow> rows = new ArrayList<ResultSetRow>();
+            if (mode == ResultSetMode.RECORD) {
+                if (curRowNum < 0 || curRowNum >= curRows.size()) {
+                    return Collections.emptyList();
+                }
+                rows.add(new ResultSetRowImpl(curRows.get(curRowNum)));
+            } else {
+                Collection<Integer> rowSelection = spreadsheet.getRowSelection();
+                for (Integer row : rowSelection) {
+                    rows.add(new ResultSetRowImpl(curRows.get(row)));
+                }
+            }
+            return rows;
+        }
+    }
 }
