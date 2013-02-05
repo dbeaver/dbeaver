@@ -31,7 +31,6 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
@@ -298,11 +297,6 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     private void exportResourceTree(DBRProgressMonitor monitor, ProjectExportData exportData, String parentPath, IResource resource) throws CoreException, IOException
     {
-        DBPResourceHandler resourceHandler = exportData.projectRegistry.getResourceHandler(resource);
-        if (resourceHandler == null) {
-            // Do not export garbage
-            return;
-        }
         monitor.subTask(parentPath + resource.getName());
 
         exportData.meta.startElement(ExportConstants.TAG_RESOURCE);
@@ -342,7 +336,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
     {
         if (resource instanceof IFile) {
             final IContentDescription contentDescription = ((IFile) resource).getContentDescription();
-            if (contentDescription != null) {
+            if (contentDescription != null && contentDescription.getCharset() != null) {
                 xml.addAttribute(ExportConstants.ATTR_CHARSET, contentDescription.getCharset());
                 //xml.addAttribute(ExportConstants.ATTR_CHARSET, contentDescription.getContentType());
             }
