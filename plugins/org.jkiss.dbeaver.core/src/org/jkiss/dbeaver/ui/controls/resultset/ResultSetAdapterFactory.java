@@ -20,13 +20,14 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.jface.dialogs.IPageChangeProvider;
+import org.eclipse.ui.views.properties.IPropertySource;
 
 /**
  * ResultSetAdapterFactory
  */
 public class ResultSetAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { ResultSetViewer.class };
+    private static final Class<?>[] ADAPTER_LIST = { IPropertySource.class, ResultSetViewer.class };
 
     @Override
     public Object getAdapter(Object adaptableObject, Class adapterType)
@@ -40,6 +41,8 @@ public class ResultSetAdapterFactory implements IAdapterFactory
             if (adaptableObject instanceof IPageChangeProvider) {
                 return getAdapter(((IPageChangeProvider) adaptableObject).getSelectedPage(), ResultSetViewer.class);
             }
+        } else if (adapterType == IPropertySource.class) {
+            System.out.println("HEY");
         }
         return null;
     }

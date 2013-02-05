@@ -145,7 +145,8 @@ public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyVal
     @Override
     public boolean isCompatibleWith(IPropertyDescriptor anotherProperty)
     {
-        return category.equals(anotherProperty.getCategory()) && id.equals(anotherProperty.getId());
+        return CommonUtils.equalObjects(category, anotherProperty.getCategory()) &&
+            CommonUtils.equalObjects(id, anotherProperty.getId());
     }
 
     @Override
