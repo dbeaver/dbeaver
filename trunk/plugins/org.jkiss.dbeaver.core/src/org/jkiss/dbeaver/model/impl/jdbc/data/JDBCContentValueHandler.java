@@ -232,16 +232,19 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
+        super.fillProperties(propertySource, controller);
         try {
             Object value = controller.getValue();
             if (value instanceof DBDContent) {
                 propertySource.addProperty(
+                    PROP_CATEGORY_STANDARD,
                     "content_type", //$NON-NLS-1$
                     CoreMessages.model_jdbc_content_type,
                     ((DBDContent)value).getContentType());
                 final long contentLength = ((DBDContent) value).getContentLength();
                 if (contentLength >= 0) {
                     propertySource.addProperty(
+                        PROP_CATEGORY_STANDARD,
                         "content_length", //$NON-NLS-1$
                         CoreMessages.model_jdbc_content_length,
                         contentLength);
@@ -252,7 +255,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             log.warn("Could not extract LOB value information", e); //$NON-NLS-1$
         }
         propertySource.addProperty(
-            "max_length", //$NON-NLS-1$
+            null, "max_length", //$NON-NLS-1$
             CoreMessages.model_jdbc_max_length,
             controller.getAttributeMetaData().getMaxLength());
     }

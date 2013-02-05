@@ -31,14 +31,22 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
 
     public static final String PROP_PATTERN = "pattern";
 
+    private String pattern;
     private DateFormat dateFormat;
 
     @Override
     public void init(Locale locale, Map<Object, Object> properties)
     {
+        pattern = CommonUtils.toString(properties.get(PROP_PATTERN));
         dateFormat = new ExtendedDateFormat(
-            CommonUtils.toString(properties.get(PROP_PATTERN)),
+            pattern,
             locale);
+    }
+
+    @Override
+    public String getPattern()
+    {
+        return pattern;
     }
 
     @Override

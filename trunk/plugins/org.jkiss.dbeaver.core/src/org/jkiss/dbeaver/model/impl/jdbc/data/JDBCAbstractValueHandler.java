@@ -57,6 +57,8 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
     private static final String CELL_VALUE_INLINE_EDITOR = "org.jkiss.dbeaver.CellValueInlineEditor";
 
+    public static final String PROP_CATEGORY_STANDARD = "Standard";
+
     @Override
     public final Object fetchValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject type, int index)
         throws DBCException
@@ -114,6 +116,12 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
         propertySource.addProperty(
+            PROP_CATEGORY_STANDARD,
+            "column_type", //$NON-NLS-1$
+            "Data Type",
+            controller.getAttributeMetaData().getTypeName());
+        propertySource.addProperty(
+            PROP_CATEGORY_STANDARD,
             "column_size", //$NON-NLS-1$
             CoreMessages.model_jdbc_column_size,
             controller.getAttributeMetaData().getMaxLength());

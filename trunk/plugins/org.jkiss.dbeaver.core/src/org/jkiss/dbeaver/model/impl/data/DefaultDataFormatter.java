@@ -39,6 +39,12 @@ public class DefaultDataFormatter implements DBDDataFormatter {
     }
 
     @Override
+    public String getPattern()
+    {
+        return null;
+    }
+
+    @Override
     public String formatValue(Object value)
     {
         return value == null ? null : value.toString();
