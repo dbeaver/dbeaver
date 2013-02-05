@@ -203,7 +203,7 @@
             version="${productVersion}"
             todir="${distDirectory}"
             section="devel"
-            depends="sun-java6-jre | openjdk-6-jre"
+            depends="java6-runtime"
             homepage="http://dbeaver.jkiss.org"
             suggests="dbeaver"
             architecture="${arch.deb}">
