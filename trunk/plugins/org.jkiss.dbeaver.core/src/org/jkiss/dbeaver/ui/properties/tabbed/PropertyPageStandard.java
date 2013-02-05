@@ -78,7 +78,9 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
         // Make page refresh if our main object was updated
         if (!CommonUtils.isEmpty(curSelection) && !getControl().isDisposed()) {
             for (PropertySourceCache cache : curSelection) {
-                if (cache.object == object) {
+                if ((cache.propertySource != null && cache.propertySource.getEditableValue() == object) ||
+                    cache.object == object)
+                {
                     refresh();
                     return;
                 }

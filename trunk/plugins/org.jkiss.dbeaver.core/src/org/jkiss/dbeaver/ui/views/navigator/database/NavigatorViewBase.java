@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageStandard;
 import org.jkiss.utils.CommonUtils;
 
 public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider
@@ -164,7 +165,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     public Object getAdapter(Class adapter)
     {
         if (adapter == IPropertySheetPage.class) {
-            //return new PropertyPageTabbed();
+            return new PropertyPageStandard();
         }
         return super.getAdapter(adapter);
     }

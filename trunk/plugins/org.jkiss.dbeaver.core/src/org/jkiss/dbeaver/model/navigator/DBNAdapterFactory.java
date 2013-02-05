@@ -44,7 +44,20 @@ import org.jkiss.dbeaver.ui.properties.PropertyCollector;
  */
 public class DBNAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBPNamedObject.class, DBPQualifiedObject.class, DBPObject.class, DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class, IPropertySource.class, IProject.class, IFolder.class, IFile.class, IResource.class, IWorkbenchAdapter.class };
+    private static final Class<?>[] ADAPTER_LIST = {
+        DBPNamedObject.class,
+        DBPQualifiedObject.class,
+        DBPObject.class,
+        DBSObject.class,
+        DBSDataContainer.class,
+        DBSDataSourceContainer.class,
+        IPropertySource.class,
+        IProject.class,
+        IFolder.class,
+        IFile.class,
+        IResource.class,
+        IWorkbenchAdapter.class
+    };
 
     @Override
     public Object getAdapter(Object adaptableObject, Class adapterType)
