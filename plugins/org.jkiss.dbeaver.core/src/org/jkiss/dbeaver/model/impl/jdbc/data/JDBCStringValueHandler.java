@@ -136,13 +136,4 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
-    {
-        propertySource.addProperty(
-            "max_length", //$NON-NLS-1$
-            CoreMessages.model_jdbc_max_length,
-            controller.getAttributeMetaData().getMaxLength());
-    }
-
 }

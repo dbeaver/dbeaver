@@ -66,6 +66,12 @@ public class NumberDataFormatter implements DBDDataFormatter {
     }
 
     @Override
+    public String getPattern()
+    {
+        return null;
+    }
+
+    @Override
     public String formatValue(Object value)
     {
         if (value == null) {
