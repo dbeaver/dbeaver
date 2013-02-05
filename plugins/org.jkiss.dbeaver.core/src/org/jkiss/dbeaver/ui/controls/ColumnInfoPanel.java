@@ -52,12 +52,12 @@ public class ColumnInfoPanel extends Composite {
     protected void createPanel(DBDAttributeController valueController)
     {
         PropertyCollector infoItem = new PropertyCollector(valueController.getAttributeMetaData(), false);
-        infoItem.addProperty("Table_Name", CoreMessages.controls_column_info_panel_property_table_name, valueController.getAttributeMetaData().getEntityName()); //$NON-NLS-1$
-        infoItem.addProperty("Column_Name", CoreMessages.controls_column_info_panel_property_column_name, valueController.getAttributeMetaData().getName() ); //$NON-NLS-1$
-        infoItem.addProperty("Column_Type", CoreMessages.controls_column_info_panel_property_column_type, valueController.getAttributeMetaData().getTypeName() ); //$NON-NLS-1$
+        infoItem.addProperty(null, "Table_Name", CoreMessages.controls_column_info_panel_property_table_name, valueController.getAttributeMetaData().getEntityName()); //$NON-NLS-1$
+        infoItem.addProperty(null, "Column_Name", CoreMessages.controls_column_info_panel_property_column_name, valueController.getAttributeMetaData().getName() ); //$NON-NLS-1$
+        infoItem.addProperty(null, "Column_Type", CoreMessages.controls_column_info_panel_property_column_type, valueController.getAttributeMetaData().getTypeName() ); //$NON-NLS-1$
         valueController.getValueHandler().fillProperties(infoItem, valueController);
         if (valueController.getValueLocator() != null) {
-            infoItem.addProperty("Key", CoreMessages.controls_column_info_panel_property_key, new CellKeyInfo(valueController) ); //$NON-NLS-1$
+            infoItem.addProperty(null, "Key", CoreMessages.controls_column_info_panel_property_key, new CellKeyInfo(valueController) ); //$NON-NLS-1$
         }
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);

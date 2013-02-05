@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DateTimeViewDialog;
+import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.SQLException;
 import java.sql.Time;
@@ -216,14 +217,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                         "','YYYY-MM-DD HH24:MI:SS')";
             }
         } else {
-            switch (column.getTypeID()) {
-            case java.sql.Types.TIME:
-                return getFormatter(TYPE_NAME_TIME).formatValue(value);
-            case java.sql.Types.DATE:
-                return getFormatter(TYPE_NAME_DATE).formatValue(value);
-            default:
-                return getFormatter(TYPE_NAME_TIMESTAMP).formatValue(value);
-            }
+            return getFormatter(column).formatValue(value);
         }
     }
 
@@ -249,14 +243,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof String) {
             String strValue = (String)object;
             try {
-                switch (type.getTypeID()) {
-                    case java.sql.Types.TIME:
-                        return getFormatter(TYPE_NAME_TIME).parseValue(strValue);
-                    case java.sql.Types.DATE:
-                        return getFormatter(TYPE_NAME_DATE).parseValue(strValue);
-                    default:
-                        return getFormatter(TYPE_NAME_TIMESTAMP).parseValue(strValue);
-                }
+                return getFormatter(type).parseValue(strValue);
             } catch (ParseException e) {
                 log.warn("Can't parse string value [" + strValue + "] to date/time value", e);
                 return null;
@@ -278,6 +265,17 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                 controller.updateValue(new Date());
             }
         });
+    }
+
+    @Override
+    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
+    {
+        super.fillProperties(propertySource, controller);
+        propertySource.addProperty(
+            PROP_CATEGORY_STANDARD,
+            "format", //$NON-NLS-1$
+            "Pattern",
+            getFormatter(controller.getAttributeMetaData()).getPattern());
     }
 
     public static Date getDate(DateTime dateEditor, DateTime timeEditor)
@@ -349,6 +347,18 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             return "0" + value;
         } else {
             return String.valueOf(value);
+        }
+    }
+
+    protected DBDDataFormatter getFormatter(DBSTypedObject column)
+    {
+        switch (column.getTypeID()) {
+            case java.sql.Types.TIME:
+                return getFormatter(TYPE_NAME_TIME);
+            case java.sql.Types.DATE:
+                return getFormatter(TYPE_NAME_DATE);
+            default:
+                return getFormatter(TYPE_NAME_TIMESTAMP);
         }
     }
 

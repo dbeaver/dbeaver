@@ -84,10 +84,12 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
     @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
+        super.fillProperties(propertySource, controller);
         try {
             Object value = controller.getValue();
             if (value instanceof DBDComplexType) {
                 propertySource.addProperty(
+                    PROP_CATEGORY_STANDARD,
                     "object_type", //$NON-NLS-1$
                     CoreMessages.model_jdbc_type_name,
                     ((DBDComplexType) value).getObjectDataType().getName());

@@ -30,6 +30,8 @@ public interface DBDDataFormatter {
 
     void init(Locale locale, Map<Object, Object> properties);
 
+    String getPattern();
+
     String formatValue(Object value);
 
     Object parseValue(String value) throws ParseException;

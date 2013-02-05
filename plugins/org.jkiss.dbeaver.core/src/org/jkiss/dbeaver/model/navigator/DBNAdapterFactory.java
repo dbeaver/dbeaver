@@ -121,8 +121,8 @@ public class DBNAdapterFactory implements IAdapterFactory
                 if (props.isEmpty() && adaptableObject instanceof DBSObject) {
                     // Add default properties
                     DBSObject meta = (DBSObject)adaptableObject;
-                    props.addProperty("name", CoreMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
-                    props.addProperty("desc", CoreMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
+                    props.addProperty(null, "name", CoreMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
+                    props.addProperty(null, "desc", CoreMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
                 }
                 return props;
             }

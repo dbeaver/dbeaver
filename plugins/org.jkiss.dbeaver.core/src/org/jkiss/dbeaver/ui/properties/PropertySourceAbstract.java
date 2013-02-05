@@ -78,9 +78,9 @@ public abstract class PropertySourceAbstract implements IPropertySourceMulti
         return this;
     }
 
-    public PropertySourceAbstract addProperty(Object id, String name, Object value)
+    public PropertySourceAbstract addProperty(String category, Object id, String name, Object value)
     {
-        props.add(new PropertyDescriptorEx(null, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
+        props.add(new PropertyDescriptorEx(category, id, name, null, value == null ? null : value.getClass(), false, null, null, false));
         propValues.put(id, value);
 
         return this;
