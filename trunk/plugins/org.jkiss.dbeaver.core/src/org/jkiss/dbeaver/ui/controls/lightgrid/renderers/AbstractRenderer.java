@@ -39,8 +39,8 @@ public abstract class AbstractRenderer implements IGridRenderer
     /** Display used to create GC to perform painting. */
     private final Display display;
 
-    private int column = -1;
-    private int row = -1;
+    protected int column = -1;
+    protected int row = -1;
 
     /** Hover state. */
     private boolean hover;
@@ -55,7 +55,7 @@ public abstract class AbstractRenderer implements IGridRenderer
     private boolean selected;
 
     /** The bounds the renderer paints on. */
-    private Rectangle bounds = new Rectangle(0, 0, 0, 0);
+    protected Rectangle bounds = new Rectangle(0, 0, 0, 0);
 
     protected AbstractRenderer(LightGrid grid) {
         this.grid = grid;

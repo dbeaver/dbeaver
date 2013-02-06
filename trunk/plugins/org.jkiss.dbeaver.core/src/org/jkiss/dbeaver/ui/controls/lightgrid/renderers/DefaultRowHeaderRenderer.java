@@ -58,22 +58,22 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
             gc.setBackground(grid.getCellHeaderSelectionBackground());
         }
 
-        gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width, getBounds().height + 1);
+        gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
 
         {
             gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
 
             gc.drawLine(
-                getBounds().x + getBounds().width - 1,
-                getBounds().y,
-                getBounds().x + getBounds().width - 1,
-                getBounds().y + getBounds().height - 1);
+                bounds.x + bounds.width - 1,
+                bounds.y,
+                bounds.x + bounds.width - 1,
+                bounds.y + bounds.height - 1);
             gc.drawLine(
-                getBounds().x,
-                getBounds().y + getBounds().height - 1,
-                getBounds().x + getBounds().width - 1,
-                getBounds().y + getBounds().height - 1);
+                bounds.x,
+                bounds.y + bounds.height - 1,
+                bounds.x + bounds.width - 1,
+                bounds.y + bounds.height - 1);
         }
 
         int x = leftMargin;
@@ -81,11 +81,11 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
         Image image = getHeaderImage();
 
         if (image != null) {
-            gc.drawImage(image, x, getBounds().y + (getBounds().height - image.getBounds().height) / 2);
+            gc.drawImage(image, x, bounds.y + (bounds.height - image.getBounds().height) / 2);
             x += image.getBounds().width + 5;
         }
 
-        int width = getBounds().width - x;
+        int width = bounds.width - x;
 
         width -= rightMargin;
 
@@ -97,11 +97,11 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
         gc.setForeground(foreground);
 
 
-        int y = getBounds().y;
+        int y = bounds.y;
         int selectionOffset = 0;
 
-        y += (getBounds().height - gc.stringExtent(text).y) / 2;
-        gc.drawString(org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, text, width), getBounds().x + x + selectionOffset, y + selectionOffset, true);
+        y += (bounds.height - gc.stringExtent(text).y) / 2;
+        gc.drawString(org.jkiss.dbeaver.ui.TextUtils.getShortString(gc, text, width), bounds.x + x + selectionOffset, y + selectionOffset, true);
     }
 
     private Image getHeaderImage() {
