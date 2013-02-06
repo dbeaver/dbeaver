@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
@@ -132,9 +131,8 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
 
         if (ownerTable != null) {
-            // Get column using void monitor because all columns MUST be already read
             try {
-                this.tableColumn = ownerTable.getAttribute(VoidProgressMonitor.INSTANCE, name);
+                this.tableColumn = ownerTable.getAttribute(resultSetMeta.getResultSet().getContext().getProgressMonitor(), name);
             }
             catch (DBException e) {
                 log.warn(e);
