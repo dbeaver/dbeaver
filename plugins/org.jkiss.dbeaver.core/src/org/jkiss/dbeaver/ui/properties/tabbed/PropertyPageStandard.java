@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.views.properties.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.ILazyPropertyLoadListener;
 import org.jkiss.utils.CommonUtils;
 
@@ -105,7 +106,12 @@ public class PropertyPageStandard extends PropertySheetPage implements ILazyProp
                 }
             }
         }
-        super.selectionChanged(part, selection);
+        getControl().setRedraw(false);
+        try {
+            super.selectionChanged(part, selection);
+        } finally {
+            getControl().setRedraw(true);
+        }
     }
 
     @Override
