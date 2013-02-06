@@ -24,7 +24,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
@@ -2293,8 +2292,9 @@ public abstract class LightGrid extends Canvas {
      */
     private void onPaint(PaintEvent e)
     {
-        e.gc.setBackground(getBackground());
-        this.drawBackground(e.gc, 0, 0, getSize().x, getSize().y);
+        final GC gc = e.gc;
+        gc.setBackground(getBackground());
+        this.drawBackground(gc, 0, 0, getSize().x, getSize().y);
 
         if (scrollValuesObsolete) {
             updateScrollbars();
@@ -2305,7 +2305,7 @@ public abstract class LightGrid extends Canvas {
         int y = 0;
 
         if (columnHeadersVisible) {
-            paintHeader(e.gc);
+            paintHeader(gc);
             y += headerHeight;
         }
 
@@ -2322,12 +2322,15 @@ public abstract class LightGrid extends Canvas {
         int firstVisibleIndex = getTopIndex();
 
         int row = firstVisibleIndex;
+        final int hScrollSelectionInPixels = getHScrollSelectionInPixels();
+        final GridPos testPos = new GridPos(-1, -1);
+        final Rectangle clipping = new Rectangle(-1, -1, -1, -1);
 
         for (int i = 0; i < visibleRows + (firstVisibleIndex - firstVisibleIndex); i++) {
 
             x = 0;
 
-            x -= getHScrollSelectionInPixels();
+            x -= hScrollSelectionInPixels;
 
             // get the item to draw
             if (row >= 0 && row < getItemCount()) {
@@ -2340,57 +2343,67 @@ public abstract class LightGrid extends Canvas {
                 }
 
                 // draw regular cells for each column
-                for (GridColumn column : columns) {
+                boolean isGridInFocus = this.isFocusControl();
+                for (int k = 0, columnsSize = columns.size(); k < columnsSize; k++) {
+                    GridColumn column = columns.get(k);
 
                     int width = column.getWidth();
 
                     if (x + width >= 0 && x < getClientArea().width) {
 
-                        column.getCellRenderer().setBounds(x, y, width, getItemHeight());
+                        final GridCellRenderer cellRenderer = column.getCellRenderer();
+                        cellRenderer.setBounds(x, y, width, getItemHeight());
                         int cellInHeaderDelta = headerHeight - y;
                         if (cellInHeaderDelta > 0) {
-                            e.gc.setClipping(new Rectangle(x - 1, y + cellInHeaderDelta, width + 1,
-                                                           getItemHeight() + 2 - cellInHeaderDelta));
+                            clipping.x = x - 1;
+                            clipping.y = y + cellInHeaderDelta;
+                            clipping.width = width + 1;
+                            clipping.height = getItemHeight() + 2 - cellInHeaderDelta;
                         } else {
-                            e.gc.setClipping(new Rectangle(x - 1, y - 1, width + 1, getItemHeight() + 2));
+                            clipping.x = x - 1;
+                            clipping.y = y - 1;
+                            clipping.width = width + 1;
+                            clipping.height = getItemHeight() + 2;
                         }
+                        gc.setClipping(clipping);
 
                         //column.getCellRenderer().setSelected(selectedItems.contains(item));
-                        column.getCellRenderer().setFocus(this.isFocusControl());
-                        column.getCellRenderer().setRowFocus(focusItem == row);
-                        column.getCellRenderer().setCellFocus(
+                        cellRenderer.setFocus(isGridInFocus);
+                        cellRenderer.setRowFocus(focusItem == row);
+                        cellRenderer.setCellFocus(
                             focusItem == row && focusColumn == column);
 
-                        column.getCellRenderer().setRowHover(hoveringItem == row);
-                        column.getCellRenderer().setColumnHover(hoveringColumn == column);
+                        cellRenderer.setRowHover(hoveringItem == row);
+                        cellRenderer.setColumnHover(hoveringColumn == column);
 
-                        if (selectedCells.contains(new GridPos(column.getIndex(), row))) {
-                            column.getCellRenderer().setCellSelected(true);
+                        testPos.col = column.getIndex();
+                        testPos.row = row;
+                        if (selectedCells.contains(testPos)) {
+                            cellRenderer.setCellSelected(true);
                             //cellInRowSelected = true;
                         } else {
-                            column.getCellRenderer().setCellSelected(false);
+                            cellRenderer.setCellSelected(false);
                         }
 
                         if (hoveringItem == row && hoveringColumn == column) {
-                            column.getCellRenderer().setHoverDetail(hoveringDetail);
+                            cellRenderer.setHoverDetail(hoveringDetail);
                         } else {
-                            column.getCellRenderer().setHoverDetail("");
+                            cellRenderer.setHoverDetail("");
                         }
-                        column.getCellRenderer().setRow(row);
-                        column.getCellRenderer().paint(e.gc);
+                        cellRenderer.setRow(row);
+                        cellRenderer.paint(gc);
 
-                        e.gc.setClipping((Rectangle) null);
+                        gc.setClipping((Rectangle) null);
                     }
 
                     x += column.getWidth();
                 }
 
                 if (x < getClientArea().width) {
-                    //emptyCellRenderer.setSelected(selectedItems.contains(item));
-                    emptyCellRenderer.setFocus(this.isFocusControl());
+                    emptyCellRenderer.setFocus(isGridInFocus);
                     emptyCellRenderer.setBounds(x, y, getClientArea().width - x + 1, getItemHeight());
                     emptyCellRenderer.setColumn(getColumnCount());
-                    emptyCellRenderer.paint(e.gc);
+                    emptyCellRenderer.paint(gc);
                 }
 
                 x = 0;
@@ -2401,7 +2414,7 @@ public abstract class LightGrid extends Canvas {
                     if (y >= headerHeight) {
                         rowHeaderRenderer.setBounds(0, y, rowHeaderWidth, getItemHeight() + 1);
                         rowHeaderRenderer.setRow(row);
-                        rowHeaderRenderer.paint(e.gc);
+                        rowHeaderRenderer.paint(gc);
                     }
                     x += rowHeaderWidth;
                 }
@@ -2421,7 +2434,7 @@ public abstract class LightGrid extends Canvas {
                 for (GridColumn column : columns) {
                     emptyCellRenderer.setBounds(x, y, column.getWidth(), getItemHeight());
                     emptyCellRenderer.setColumn(column.getIndex());
-                    emptyCellRenderer.paint(e.gc);
+                    emptyCellRenderer.paint(gc);
 
                     x += column.getWidth();
                 }
@@ -2429,7 +2442,7 @@ public abstract class LightGrid extends Canvas {
                 if (x < getClientArea().width) {
                     emptyCellRenderer.setBounds(x, y, getClientArea().width - x + 1, getItemHeight());
                     emptyCellRenderer.setColumn(getColumnCount());
-                    emptyCellRenderer.paint(e.gc);
+                    emptyCellRenderer.paint(gc);
                 }
 
 
@@ -2437,7 +2450,7 @@ public abstract class LightGrid extends Canvas {
 
                 if (rowHeaderVisible) {
                     emptyRowHeaderRenderer.setBounds(x, y, rowHeaderWidth, getItemHeight() + 1);
-                    emptyRowHeaderRenderer.paint(e.gc);
+                    emptyRowHeaderRenderer.paint(gc);
 
                     x += rowHeaderWidth;
                 }
@@ -2449,7 +2462,7 @@ public abstract class LightGrid extends Canvas {
         }
 
         if (columnFootersVisible) {
-            paintFooter(e.gc);
+            paintFooter(gc);
         }
     }
 
@@ -2472,22 +2485,24 @@ public abstract class LightGrid extends Canvas {
             x += rowHeaderWidth;
         }
 
-        for (GridColumn column : columns) {
+        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+            GridColumn column = columns.get(i);
             if (x > getClientArea().width)
                 break;
 
             int height = headerHeight;
             y = 0;
 
-            column.getHeaderRenderer().setHover(hoveringColumnHeader == column);
+            final GridColumnRenderer headerRenderer = column.getHeaderRenderer();
+            headerRenderer.setHover(hoveringColumnHeader == column);
 
-            column.getHeaderRenderer().setColumn(column.getIndex());
-            column.getHeaderRenderer().setHoverDetail(hoveringDetail);
-            column.getHeaderRenderer().setBounds(x, y, column.getWidth(), height);
-            column.getHeaderRenderer().setSelected(selectedColumns.contains(column));
+            headerRenderer.setColumn(column.getIndex());
+            headerRenderer.setHoverDetail(hoveringDetail);
+            headerRenderer.setBounds(x, y, column.getWidth(), height);
+            headerRenderer.setSelected(selectedColumns.contains(column));
 
             if (x + column.getWidth() >= 0) {
-                column.getHeaderRenderer().paint(gc);
+                headerRenderer.paint(gc);
             }
 
             x += column.getWidth();
@@ -4672,6 +4687,7 @@ public abstract class LightGrid extends Canvas {
             if (text.length() > MAX_TOOLTIP_LENGTH) {
                 text = text.substring(0, MAX_TOOLTIP_LENGTH) + " ...";
             }
+
             return text;
         }
         return null;

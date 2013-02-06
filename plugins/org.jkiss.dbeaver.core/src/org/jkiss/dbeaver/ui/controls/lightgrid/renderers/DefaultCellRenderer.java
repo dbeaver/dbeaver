@@ -41,9 +41,20 @@ public class DefaultCellRenderer extends GridCellRenderer {
     private static final int insideMargin = 3;
     //private int treeIndent = 20;
 
+    private Color colorSelected;
+    private Color colorSelectedText;
+    private Color colorBackgroundDisabled;
+    private Color colorLineForeground;
+    private Color colorLineFocused;
+
     public DefaultCellRenderer(LightGrid grid)
     {
         super(grid);
+        colorSelected = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        colorSelectedText = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+        colorBackgroundDisabled = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        colorLineForeground = grid.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
+        colorLineFocused = grid.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
     }
 
     /**
@@ -61,11 +72,11 @@ public class DefaultCellRenderer extends GridCellRenderer {
         }
 
         if (drawAsSelected) {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+            gc.setBackground(colorSelected);
+            gc.setForeground(colorSelectedText);
         } else {
             if (grid.isEnabled()) {
-                Color back = grid.getCellBackground(getColumn(), getRow());
+                Color back = grid.getCellBackground(column, row);
 
                 if (back != null) {
                     gc.setBackground(back);
@@ -73,89 +84,85 @@ public class DefaultCellRenderer extends GridCellRenderer {
                     drawBackground = false;
                 }
             } else {
-                gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+                gc.setBackground(colorBackgroundDisabled);
             }
-            gc.setForeground(grid.getCellForeground(getColumn(), getRow()));
+            gc.setForeground(grid.getCellForeground(column, row));
         }
 
         if (drawBackground)
-            gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width,
-                getBounds().height);
+            gc.fillRectangle(bounds.x, bounds.y, bounds.width,
+                bounds.height);
 
 
         int x = leftMargin;
 
-        Image image = grid.getCellImage(getColumn(), getRow());
+        Image image = grid.getCellImage(column, row);
         if (image != null) {
-            int y = getBounds().y;
+            int y = bounds.y;
 
-            y += (getBounds().height - image.getBounds().height) / 2;
+            y += (bounds.height - image.getBounds().height) / 2;
 
-            gc.drawImage(image, getBounds().x + x, y);
+            gc.drawImage(image, bounds.x + x, y);
 
             x += image.getBounds().width + insideMargin;
         }
 
-        int width = getBounds().width - x - rightMargin;
+        int width = bounds.width - x - rightMargin;
 
         if (drawAsSelected) {
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+            gc.setForeground(colorSelectedText);
         } else {
-            gc.setForeground(grid.getCellForeground(getColumn(), getRow()));
+            gc.setForeground(grid.getCellForeground(column, row));
         }
 
         // Get cell text
-        String text = grid.getCellText(getColumn(), getRow());
-        // Replace linefeeds with space
-        text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ');
-        // Get shortern version of string
-        text = TextUtils.getShortString(gc, text, width);
+        String text = grid.getCellText(column, row);
+        if (text != null && !text.isEmpty()) {
+            // Get shortern version of string
+            text = TextUtils.getShortString(gc, text, width);
+            // Replace linefeeds with space
+            text = text.replace('\n', UIUtils.PARAGRAPH_CHAR).replace('\r', ' ');
 
-        if (getAlignment() == SWT.RIGHT) {
-            int len = gc.stringExtent(text).x;
-            if (len < width) {
-                x += width - len;
+            if (getAlignment() == SWT.RIGHT) {
+                int len = gc.stringExtent(text).x;
+                if (len < width) {
+                    x += width - len;
+                }
+            } else if (getAlignment() == SWT.CENTER) {
+                int len = gc.stringExtent(text).x;
+                if (len < width) {
+                    x += (width - len) / 2;
+                }
             }
-        } else if (getAlignment() == SWT.CENTER) {
-            int len = gc.stringExtent(text).x;
-            if (len < width) {
-                x += (width - len) / 2;
-            }
+
+            gc.setFont(grid.getFont());
+            gc.drawString(
+                text,
+                bounds.x + x,
+                bounds.y + textTopMargin + topMargin,
+                true);
         }
-
-        gc.setFont(grid.getFont());
-        gc.drawString(
-            text,
-            getBounds().x + x,
-            getBounds().y + textTopMargin + topMargin,
-            true);
 
         if (grid.getLinesVisible()) {
             if (isCellSelected()) {
                 //XXX: should be user definable?
-                gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                gc.setForeground(colorLineForeground);
             } else {
                 gc.setForeground(grid.getLineColor());
             }
-            gc.drawLine(getBounds().x, getBounds().y + getBounds().height, getBounds().x + getBounds().width - 1,
-                getBounds().y + getBounds().height);
-            gc.drawLine(getBounds().x + getBounds().width - 1, getBounds().y,
-                getBounds().x + getBounds().width - 1, getBounds().y + getBounds().height);
+            gc.drawLine(bounds.x, bounds.y + bounds.height, bounds.x + bounds.width - 1,
+                bounds.y + bounds.height);
+            gc.drawLine(bounds.x + bounds.width - 1, bounds.y,
+                bounds.x + bounds.width - 1, bounds.y + bounds.height);
         }
 
         if (isCellFocus()) {
-            Rectangle focusRect = new Rectangle(getBounds().x, getBounds().y, getBounds().width - 1, getBounds().height);
 
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
-            gc.drawRectangle(focusRect);
+            gc.setForeground(colorLineFocused);
+            gc.drawRectangle(bounds.x, bounds.y, bounds.width - 1, bounds.height);
 
             if (isFocus()) {
-                focusRect.x++;
-                focusRect.width -= 2;
-                focusRect.y++;
-                focusRect.height -= 2;
-
-                gc.drawRectangle(focusRect);
+                gc.drawRectangle(bounds.x + 1, bounds.y + 1, bounds.width - 3, bounds.height - 2);
             }
         }
     }
@@ -177,21 +184,21 @@ public class DefaultCellRenderer extends GridCellRenderer {
     {
         int x = leftMargin;
 
-        Image image = grid.getCellImage(row, getColumn());
+        Image image = grid.getCellImage(row, column);
         if (image != null) {
             x += image.getBounds().width + insideMargin;
         }
 
         Rectangle bounds = new Rectangle(x, topMargin + textTopMargin, 0, 0);
 
-        Point size = grid.sizingGC.stringExtent(grid.getCellText(getColumn(), row));
+        Point size = grid.sizingGC.stringExtent(grid.getCellText(column, row));
 
         bounds.height = size.y;
 
         if (preferred) {
             bounds.width = size.x - 1;
         } else {
-            bounds.width = getBounds().width - x - rightMargin;
+            bounds.width = bounds.width - x - rightMargin;
         }
 
         return bounds;
