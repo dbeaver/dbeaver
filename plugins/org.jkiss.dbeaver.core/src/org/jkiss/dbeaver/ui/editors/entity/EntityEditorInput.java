@@ -18,11 +18,21 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSFolder;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * EntityEditorInput
@@ -42,13 +52,21 @@ public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
     @Override
     public String getToolTipText()
     {
-        DBNNode node = getTreeNode();
-        //setPageText(index, );
         StringBuilder toolTip = new StringBuilder();
-        toolTip.append(node.getNodeType()).append(" ").append(node.getNodeName());
-        if (!CommonUtils.isEmpty(node.getNodeDescription())) {
-            toolTip.append("\n").append(node.getNodeDescription());
+
+        for (DBNNode node = getTreeNode(); node != null; node = node.getParentNode()) {
+            if (node instanceof DBSFolder) {
+                continue;
+            }
+            toolTip.append(node.getNodeType());
+            toolTip.append(": ");
+            toolTip.append(node.getNodeName());
+            toolTip.append("\n");
+            if (node instanceof DBNDataSource) {
+                break;
+            }
         }
+
         return toolTip.toString();
     }
 
