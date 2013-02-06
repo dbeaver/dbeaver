@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -50,6 +51,8 @@ import java.util.List;
 public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImageProvider
 {
     static final Log log = LogFactory.getLog(JDBCColumnMetaData.class);
+
+    public static final String PROP_CATEGORY_COLUMN = "Column";
 
     private JDBCResultSetMetaData resultSetMeta;
     private int index;
@@ -211,52 +214,60 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         return resultSetMeta;
     }
 
+    @Property(category = PROP_CATEGORY_COLUMN, order = 1)
     @Override
     public int getIndex()
     {
         return index;
     }
 
-    @Override
-    public boolean isRequired()
-    {
-        return notNull;
-    }
-
-    @Override
-    public long getMaxLength()
-    {
-        return displaySize;
-    }
-
-    @Override
-    public String getLabel()
-    {
-        return label;
-    }
-
+    @Property(category = PROP_CATEGORY_COLUMN, order = 2)
     @Override
     public String getName()
     {
         return name;
     }
 
+    //@Property(category = PROP_CATEGORY_COLUMN, order = 3)
+    @Override
+    public String getLabel()
+    {
+        return label;
+    }
+
+    @Property(category = PROP_CATEGORY_COLUMN, order = 4)
+    @Override
+    public String getEntityName()
+    {
+        return tableMetaData != null ? tableMetaData.getEntityName() : tableName;
+    }
+
+    @Property(category = PROP_CATEGORY_COLUMN, order = 30)
+    @Override
+    public boolean isRequired()
+    {
+        return notNull;
+    }
+
+    //@Property(category = PROP_CATEGORY_COLUMN, order = 20)
+    @Override
+    public long getMaxLength()
+    {
+        return displaySize;
+    }
+
+    @Property(category = PROP_CATEGORY_COLUMN, order = 21)
     @Override
     public int getPrecision()
     {
         return precision;
     }
 
+    @Property(category = PROP_CATEGORY_COLUMN, order = 22)
     @Override
     public int getScale()
     {
         return scale;
-    }
-
-    @Override
-    public String getEntityName()
-    {
-        return tableMetaData != null ? tableMetaData.getEntityName() : tableName;
     }
 
     @Override
@@ -283,6 +294,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         return JDBCDataType.getDataKind(typeName, typeID);
     }
 
+    @Property(category = PROP_CATEGORY_COLUMN, order = 4)
     @Override
     public String getTypeName()
     {

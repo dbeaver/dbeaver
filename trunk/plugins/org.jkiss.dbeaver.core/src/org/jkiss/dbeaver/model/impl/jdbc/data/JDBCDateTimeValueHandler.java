@@ -272,7 +272,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     {
         super.fillProperties(propertySource, controller);
         propertySource.addProperty(
-            PROP_CATEGORY_STANDARD,
+            "Date/Time",
             "format", //$NON-NLS-1$
             "Pattern",
             getFormatter(controller.getAttributeMetaData()).getPattern());

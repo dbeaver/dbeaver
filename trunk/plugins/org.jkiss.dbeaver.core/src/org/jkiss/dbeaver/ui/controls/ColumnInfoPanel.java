@@ -52,9 +52,7 @@ public class ColumnInfoPanel extends Composite {
     protected void createPanel(DBDAttributeController valueController)
     {
         PropertyCollector infoItem = new PropertyCollector(valueController.getAttributeMetaData(), false);
-        infoItem.addProperty(null, "Table_Name", CoreMessages.controls_column_info_panel_property_table_name, valueController.getAttributeMetaData().getEntityName()); //$NON-NLS-1$
-        infoItem.addProperty(null, "Column_Name", CoreMessages.controls_column_info_panel_property_column_name, valueController.getAttributeMetaData().getName() ); //$NON-NLS-1$
-        infoItem.addProperty(null, "Column_Type", CoreMessages.controls_column_info_panel_property_column_type, valueController.getAttributeMetaData().getTypeName() ); //$NON-NLS-1$
+        infoItem.collectProperties();
         valueController.getValueHandler().fillProperties(infoItem, valueController);
         if (valueController.getValueLocator() != null) {
             infoItem.addProperty(null, "Key", CoreMessages.controls_column_info_panel_property_key, new CellKeyInfo(valueController) ); //$NON-NLS-1$

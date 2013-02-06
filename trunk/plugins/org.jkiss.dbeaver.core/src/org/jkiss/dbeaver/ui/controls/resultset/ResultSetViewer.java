@@ -93,6 +93,7 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.tabbed.PropertyPageStandard;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -355,7 +356,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public Object getAdapter(Class adapter)
     {
         if (adapter == IPropertySheetPage.class) {
-            PropertySheetPage page = new PropertySheetPage();
+            PropertyPageStandard page = new PropertyPageStandard();
             page.setPropertySourceProvider(new IPropertySourceProvider() {
                 @Override
                 public IPropertySource getPropertySource(Object object)
@@ -364,12 +365,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         final GridPos cell = translateGridPos((GridPos)object);
                         boolean noCellSelected = (cell.row < 0 || curRows.size() <= cell.row || cell.col < 0 || cell.col >= metaColumns.length);
                         if (!noCellSelected) {
-                            PropertyCollector props = new PropertyCollector(object, object, false);
                             final ResultSetValueController valueController = new ResultSetValueController(
                                 curRows.get(cell.row),
                                 cell.col,
                                 DBDValueController.EditType.NONE,
                                 null);
+                            PropertyCollector props = new PropertyCollector(valueController.getAttributeMetaData(), false);
+                            props.collectProperties();
                             valueController.getValueHandler().fillProperties(props, valueController);
                             return props;
                         }

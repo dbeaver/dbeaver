@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.CursorViewDialog;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -116,17 +114,6 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
             return CommonUtils.toHexString(((RowId) value).getBytes());
         }
         return DBUtils.getDefaultValueDisplayString(value);
-    }
-
-    @Override
-    public void fillContextMenu(IMenuManager menuManager, final DBDValueController controller)
-        throws DBCException
-    {
-    }
-
-    @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
-    {
     }
 
     @Override

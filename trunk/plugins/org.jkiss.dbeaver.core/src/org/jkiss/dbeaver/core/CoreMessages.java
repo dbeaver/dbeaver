@@ -171,13 +171,7 @@ public class CoreMessages extends NLS {
 
 	public static String controls_client_homes_panel_label_product_version;
 
-	public static String controls_column_info_panel_property_column_name;
-
-	public static String controls_column_info_panel_property_column_type;
-
 	public static String controls_column_info_panel_property_key;
-
-	public static String controls_column_info_panel_property_table_name;
 
 	public static String controls_driver_tree_column_connections;
 

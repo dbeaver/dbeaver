@@ -306,22 +306,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
-    @Override
-    public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
-    {
-        super.fillProperties(propertySource, controller);
-        propertySource.addProperty(
-            PROP_CATEGORY_STANDARD,
-            "precision", //$NON-NLS-1$
-            CoreMessages.model_jdbc_precision,
-            controller.getAttributeMetaData().getPrecision());
-        propertySource.addProperty(
-            PROP_CATEGORY_STANDARD,
-            "scale", //$NON-NLS-1$
-            CoreMessages.model_jdbc_scale,
-            controller.getAttributeMetaData().getScale());
-    }
-
     public static Number convertStringToNumber(DBDDataFormatter formatter, String text, Object originalValue, DBSTypedObject type)
     {
         if (text == null || text.length() == 0) {
