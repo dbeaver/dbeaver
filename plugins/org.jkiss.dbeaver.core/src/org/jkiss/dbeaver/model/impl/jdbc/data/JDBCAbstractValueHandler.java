@@ -34,7 +34,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -55,9 +58,6 @@ import java.sql.SQLException;
 public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCAbstractValueHandler.class);
-    private static final String CELL_VALUE_INLINE_EDITOR = "org.jkiss.dbeaver.CellValueInlineEditor";
-
-    public static final String PROP_CATEGORY_STANDARD = "Standard";
 
     @Override
     public final Object fetchValueObject(DBCExecutionContext context, DBCResultSet resultSet, DBSTypedObject type, int index)
@@ -115,16 +115,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
     @Override
     public void fillProperties(PropertySourceAbstract propertySource, DBDValueController controller)
     {
-        propertySource.addProperty(
-            PROP_CATEGORY_STANDARD,
-            "column_type", //$NON-NLS-1$
-            "Data Type",
-            controller.getAttributeMetaData().getTypeName());
-        propertySource.addProperty(
-            PROP_CATEGORY_STANDARD,
-            "column_size", //$NON-NLS-1$
-            CoreMessages.model_jdbc_column_size,
-            controller.getAttributeMetaData().getMaxLength());
     }
 
     protected abstract Object fetchColumnValue(DBCExecutionContext context, JDBCResultSet resultSet, DBSTypedObject type, int index)

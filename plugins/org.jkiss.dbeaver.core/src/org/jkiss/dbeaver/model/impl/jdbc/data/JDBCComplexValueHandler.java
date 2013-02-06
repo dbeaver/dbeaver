@@ -51,6 +51,8 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
 
     static final Log log = LogFactory.getLog(JDBCComplexValueHandler.class);
 
+    public static final String PROP_CATEGORY_COMPLEX = "Complex";
+
     @Override
     public int getFeatures()
     {
@@ -89,7 +91,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
             Object value = controller.getValue();
             if (value instanceof DBDComplexType) {
                 propertySource.addProperty(
-                    PROP_CATEGORY_STANDARD,
+                    PROP_CATEGORY_COMPLEX,
                     "object_type", //$NON-NLS-1$
                     CoreMessages.model_jdbc_type_name,
                     ((DBDComplexType) value).getObjectDataType().getName());
