@@ -121,6 +121,9 @@ public class PropertyDescriptorEx implements IPropertyDescriptorEx, IPropertyVal
     @Override
     public CellEditor createPropertyEditor(Composite parent)
     {
+        if (!editable) {
+            return null;
+        }
         return ObjectPropertyDescriptor.createCellEditor(parent, null, this);
     }
 

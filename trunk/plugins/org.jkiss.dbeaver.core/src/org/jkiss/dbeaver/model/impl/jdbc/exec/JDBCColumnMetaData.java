@@ -247,7 +247,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         return notNull;
     }
 
-    //@Property(category = PROP_CATEGORY_COLUMN, order = 20)
+    @Property(category = PROP_CATEGORY_COLUMN, order = 20)
     @Override
     public long getMaxLength()
     {
