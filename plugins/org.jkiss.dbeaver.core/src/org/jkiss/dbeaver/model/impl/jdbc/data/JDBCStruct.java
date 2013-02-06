@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.lang.ref.SoftReference;
 import java.sql.SQLException;
 import java.sql.Struct;
 import java.util.Collection;
@@ -51,6 +52,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     private DBSDataType type;
     private Struct contents;
     private Map<DBSAttributeBase, Object> values;
+    private SoftReference<String> stringRepresentation;
 
     private JDBCStruct()
     {
@@ -121,12 +123,17 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
 
     public String getStringRepresentation()
     {
-        try {
-            return makeStructString();
-        } catch (SQLException e) {
-            log.error(e);
-            return contents.toString();
+        String str = stringRepresentation != null ? stringRepresentation.get() : null;
+        if (str == null) {
+            try {
+                str = makeStructString();
+                stringRepresentation = new SoftReference<String>(str);
+            } catch (SQLException e) {
+                log.error(e);
+                return contents.toString();
+            }
         }
+        return str;
     }
 
     private String makeStructString() throws SQLException
@@ -140,7 +147,8 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         int i = 0;
         for (Map.Entry<DBSAttributeBase, Object> entry : values.entrySet()) {
             Object item = entry.getValue();
-            if (i > 0) str.append(',');
+            if (i > 0) str.append(",");
+            //str.append(entry.getKey().getName()).append(':');
             if (DBUtils.isNullValue(item)) {
                 str.append("NULL");
             } else {
