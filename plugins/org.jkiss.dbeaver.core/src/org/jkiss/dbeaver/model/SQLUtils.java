@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
@@ -224,5 +225,20 @@ public final class SQLUtils {
             sql.append(" AND ");
         }
         return false;
+    }
+
+    public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql)
+    {
+        sql = sql.trim();
+        String statementDelimiter = syntaxManager.getStatementDelimiter();
+        if (sql.endsWith(statementDelimiter)) {
+            // Remove trailing delimiter only if it is not block end
+            String trimmed = sql.substring(0, sql.length() - statementDelimiter.length());
+            String test = trimmed.toUpperCase().trim();
+            if (!test.endsWith(SQLConstants.BLOCK_END)) {
+                sql = trimmed;
+            }
+        }
+        return sql;
     }
 }

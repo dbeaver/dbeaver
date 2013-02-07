@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 public interface DBSProcedureParameter extends DBSTypedObject, DBSObject
 {
 
-    DBSProcedure getParentObject();
-
+    /**
+     * Parameter type (IN/OUT/etc).
+     * @return parameter type. Never returns null.
+     */
     DBSProcedureParameterType getParameterType();
 
 }
