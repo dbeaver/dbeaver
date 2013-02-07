@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 /**
  * Instances of this class represent a column in a grid widget.
  * For grid internal use.
+ *
+ * @author serge@jkiss.org
  */
 public class GridColumn extends Item {
 

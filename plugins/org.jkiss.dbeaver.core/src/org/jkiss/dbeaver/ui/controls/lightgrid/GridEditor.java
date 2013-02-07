@@ -42,6 +42,8 @@ import org.eclipse.swt.widgets.Listener;
  * launch a dialog for modifying the contents of the associated cell.
  * <p>
  * @see org.eclipse.swt.custom.TableEditor
+ *
+ * @author serge@jkiss.org
  */
 public class GridEditor extends ControlEditor
 {
