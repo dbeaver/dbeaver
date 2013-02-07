@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 /**
  * A renderer for the last empty column header.
  *
+ * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
  */

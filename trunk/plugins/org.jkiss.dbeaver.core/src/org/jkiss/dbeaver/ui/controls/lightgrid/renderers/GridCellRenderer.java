@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  * The super class for all grid cell renderers.  Contains the properties specific
  * to a grid cell.
  *
+ * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
  */
 public abstract class GridCellRenderer extends AbstractGridWidget

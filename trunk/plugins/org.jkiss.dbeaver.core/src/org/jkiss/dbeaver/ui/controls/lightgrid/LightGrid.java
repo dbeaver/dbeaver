@@ -44,6 +44,7 @@ import java.util.List;
  * <dd>Selection, DefaultSelection</dd>
  * </dl>
  *
+ * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
  */
 public abstract class LightGrid extends Canvas {

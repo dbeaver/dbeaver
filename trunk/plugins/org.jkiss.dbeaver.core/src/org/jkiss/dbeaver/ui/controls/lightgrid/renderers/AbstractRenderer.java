@@ -30,7 +30,8 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  * VERSION.  USERS SHOULD EXPECT API CHANGES IN FUTURE VERSIONS.
  * </p> 
  * Base implementation of IRenderer. Provides management of a few values.
- * 
+ *
+ * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
  */
 public abstract class AbstractRenderer implements IGridRenderer
