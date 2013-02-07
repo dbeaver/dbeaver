@@ -97,7 +97,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     }
 
     @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
+    //@Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
