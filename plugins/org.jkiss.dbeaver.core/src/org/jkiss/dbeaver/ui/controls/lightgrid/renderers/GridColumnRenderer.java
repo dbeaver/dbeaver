@@ -28,7 +28,8 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
- * 
+ *
+ * @author serge@jkiss.org
  */
 public abstract class GridColumnRenderer extends AbstractGridWidget
 {

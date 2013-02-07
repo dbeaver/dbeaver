@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 /**
  * The renderer for a cell in Grid.
  *
+ * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
  */

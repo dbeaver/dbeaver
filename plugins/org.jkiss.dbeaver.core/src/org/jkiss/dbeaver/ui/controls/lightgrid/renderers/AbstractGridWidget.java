@@ -21,6 +21,7 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
 /**
+ * @author serge@jkiss.org
  */
 public abstract class AbstractGridWidget extends AbstractRenderer implements IGridWidget
 {

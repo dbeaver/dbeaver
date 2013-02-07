@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 /**
  * The row header renderer.
  *
+ * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
  */

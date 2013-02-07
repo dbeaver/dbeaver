@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 /**
  * The renderer for the empty top left area when both column and row headers are visible.
  *
+ * @author serge@jkiss.org
  * @author chris.gross@us.ibm.com
  * @since 2.0.0
  */
