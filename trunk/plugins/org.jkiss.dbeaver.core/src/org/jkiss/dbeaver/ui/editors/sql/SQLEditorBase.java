@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPCommentsManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -385,9 +386,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         SQLStatementInfo sqlQuery;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText().trim();
-        if (selText.endsWith(getSyntaxManager().getStatementDelimiter())) {
-            selText = selText.substring(0, selText.length() - getSyntaxManager().getStatementDelimiter().length());
-        }
+        selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
             sqlQuery = new SQLStatementInfo(selText);
             sqlQuery.setOffset(selection.getOffset());
