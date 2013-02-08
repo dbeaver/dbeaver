@@ -204,7 +204,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         return copyStruct;
     }
 
-    private class StructAttribute extends AbstractAttribute {
+    private static class StructAttribute extends AbstractAttribute {
         DBSDataKind dataKind;
         public StructAttribute(int index, Object value)
         {
