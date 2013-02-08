@@ -26,11 +26,13 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Struct;
+import java.sql.Types;
 
 /**
  * JDBC Struct value handler.
@@ -78,6 +80,14 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
             dataType = DBUtils.resolveDataType(context.getProgressMonitor(), context.getDataSource(), typeName);
         } catch (DBException e) {
             log.error("Error resolving data type '" + typeName + "'", e);
+        }
+        if (dataType == null) {
+            dataType = new JDBCDataType(
+                context.getDataSource().getContainer(),
+                Types.STRUCT,
+                typeName,
+                "Synthetic struct type for '" + typeName + "'",
+                false, false, 0, 0, 0);
         }
         if (object == null) {
             return new JDBCStruct(context, dataType, null);
