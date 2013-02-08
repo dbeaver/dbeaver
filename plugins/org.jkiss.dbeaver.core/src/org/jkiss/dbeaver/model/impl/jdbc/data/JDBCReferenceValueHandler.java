@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 
 import java.sql.Ref;
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * JDBC reference value handler.
@@ -106,6 +108,14 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
             dataType = DBUtils.resolveDataType(context.getProgressMonitor(), context.getDataSource(), typeName);
         } catch (DBException e) {
             log.error("Error resolving data type '" + typeName + "'", e);
+        }
+        if (dataType == null) {
+            dataType = new JDBCDataType(
+                context.getDataSource().getContainer(),
+                Types.REF,
+                typeName,
+                "Synthetic struct type for reference '" + typeName + "'",
+                false, false, 0, 0, 0);
         }
         if (object == null) {
             return new JDBCReference(dataType, null);

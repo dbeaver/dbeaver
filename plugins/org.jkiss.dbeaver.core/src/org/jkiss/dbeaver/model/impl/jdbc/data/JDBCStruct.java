@@ -29,16 +29,16 @@ import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 
 import java.lang.ref.SoftReference;
 import java.sql.SQLException;
 import java.sql.Struct;
+import java.sql.Types;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -83,6 +83,14 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                     Object value = attrValues != null ? attrValues[ordinalPosition] : null;
                     DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attr);
                     value = valueHandler.getValueFromObject(context, attr, value, false);
+                    values.put(attr, value);
+                }
+            } else if (attrValues != null) {
+                log.warn("Data type '" + contents.getSQLTypeName() + "' isn't resolved as structured type. Use synthetic attributes.");
+                for (int i = 0, attrValuesLength = attrValues.length; i < attrValuesLength; i++) {
+                    Object value = attrValues[i];
+                    DBSAttributeBase attr = new StructAttribute(i, value);
+                    value = DBUtils.findValueHandler(context, attr).getValueFromObject(context, attr, value, false);
                     values.put(attr, value);
                 }
             }
@@ -196,4 +204,38 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         return copyStruct;
     }
 
+    private class StructAttribute extends AbstractAttribute {
+        DBSDataKind dataKind;
+        public StructAttribute(int index, Object value)
+        {
+            if (value instanceof CharSequence) {
+                dataKind = DBSDataKind.STRING;
+                setValueType(Types.VARCHAR);
+            } else if (value instanceof Number) {
+                dataKind = DBSDataKind.NUMERIC;
+                setValueType(Types.NUMERIC);
+            } else if (value instanceof Boolean) {
+                dataKind = DBSDataKind.BOOLEAN;
+                setValueType(Types.BOOLEAN);
+            } else if (value instanceof Date) {
+                dataKind = DBSDataKind.DATETIME;
+                setValueType(Types.TIMESTAMP);
+            } else if (value instanceof byte[]) {
+                dataKind = DBSDataKind.BINARY;
+                setValueType(Types.BINARY);
+            } else {
+                dataKind = DBSDataKind.OBJECT;
+                setValueType(Types.OTHER);
+            }
+            setName("Attr" + index);
+            setOrdinalPosition(index);
+            setTypeName(dataKind.name());
+        }
+
+        @Override
+        public DBSDataKind getDataKind()
+        {
+            return dataKind;
+        }
+    }
 }
