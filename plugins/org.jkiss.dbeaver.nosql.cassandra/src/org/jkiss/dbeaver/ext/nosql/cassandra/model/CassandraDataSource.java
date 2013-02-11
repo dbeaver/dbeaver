@@ -99,7 +99,7 @@ public class CassandraDataSource extends JDBCDataSource
                 this.keyspaces = tmpSchemas;
             }
             // Get selected entity (catalog or schema)
-            selectedKeyspace = context.getCatalog();
+            selectedKeyspace = context.getSchema();
 
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex);
@@ -255,7 +255,7 @@ public class CassandraDataSource extends JDBCDataSource
         if (entity instanceof CassandraKeyspace) {
             JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
             try {
-                context.setCatalog(entity.getName());
+                context.setSchema(entity.getName());
                 selectedKeyspace = entity.getName();
             } catch (SQLException e) {
                 throw new DBException(e);

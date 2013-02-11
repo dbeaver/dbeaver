@@ -27,9 +27,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -61,13 +62,16 @@ public class EditConstraintDialog extends AttributesSelectorDialog {
     public EditConstraintDialog(
         Shell shell,
         String title,
-        DBSEntityReferrer constraint,
-        DBRProgressMonitor monitor)
+        DBSEntityReferrer constraint)
     {
         super(shell, title, constraint.getParentObject());
         this.constraint = constraint;
         this.constraintTypes = new DBSEntityConstraintType[] {constraint.getConstraintType()};
-        this.attributes = constraint.getAttributeReferences(monitor);
+        try {
+            this.attributes = constraint.getAttributeReferences(VoidProgressMonitor.INSTANCE);
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(shell, "Can't get attributes", "Error obtaining entity attributes", e);
+        }
     }
 
     @Override

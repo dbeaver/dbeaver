@@ -373,7 +373,7 @@ public class DiagramLoader
         }
     }
 
-    public static void save(DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
+    public static void save(DBRProgressMonitor monitor, DiagramPart diagramPart, final EntityDiagram diagram, boolean verbose, OutputStream out)
         throws IOException
     {
         // Prepare DS objects map
@@ -496,7 +496,11 @@ public class DiagramLoader
                         for (DBSEntityAttributeRef column : ((ERDLogicalForeignKey) association).getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getAttribute().getName());
-                            xml.addAttribute(ATTR_REF_NAME, DBUtils.getReferenceAttribute(VoidProgressMonitor.INSTANCE, association, column.getAttribute()).getName());
+                            try {
+                                xml.addAttribute(ATTR_REF_NAME, DBUtils.getReferenceAttribute(monitor, association, column.getAttribute()).getName());
+                            } catch (DBException e) {
+                                log.warn("Error getting reference attribute", e);
+                            }
                             xml.endElement();
                         }
                     }

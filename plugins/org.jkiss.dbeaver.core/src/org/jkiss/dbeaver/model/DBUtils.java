@@ -576,7 +576,14 @@ public final class DBUtils {
 
     public static List<DBSEntityAttribute> getEntityAttributes(DBRProgressMonitor monitor, DBSEntityReferrer referrer)
     {
-        Collection<? extends DBSEntityAttributeRef> constraintColumns = referrer == null ? null : referrer.getAttributeReferences(monitor);
+        Collection<? extends DBSEntityAttributeRef> constraintColumns = null;
+        if (referrer != null) {
+            try {
+                constraintColumns = referrer.getAttributeReferences(monitor);
+            } catch (DBException e) {
+                log.warn("Error reading reference attributes", e);
+            }
+        }
         if (constraintColumns == null) {
             return Collections.emptyList();
         }
@@ -617,7 +624,7 @@ public final class DBUtils {
      * Return reference column of referrer association (FK).
      * Assumes that columns in both constraints are in the same order.
      */
-    public static DBSEntityAttribute getReferenceAttribute(DBRProgressMonitor monitor, DBSEntityAssociation association, DBSEntityAttribute tableColumn)
+    public static DBSEntityAttribute getReferenceAttribute(DBRProgressMonitor monitor, DBSEntityAssociation association, DBSEntityAttribute tableColumn) throws DBException
     {
         final DBSEntityConstraint refConstr = association.getReferencedConstraint();
         if (association instanceof DBSEntityReferrer && refConstr instanceof DBSEntityReferrer) {

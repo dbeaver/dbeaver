@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -81,20 +82,29 @@ public abstract class JDBCForeignKeyManager<OBJECT_TYPE extends JDBCTableConstra
             .append("CONSTRAINT ").append(constraintName) //$NON-NLS-1$
             .append(" ").append(foreignKey.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
-        // Get columns using void monitor
-        final Collection<? extends DBSEntityAttributeRef> columns = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
-        boolean firstColumn = true;
-        for (DBSEntityAttributeRef constraintColumn : columns) {
-            if (!firstColumn) decl.append(","); //$NON-NLS-1$
-            firstColumn = false;
-            decl.append(constraintColumn.getAttribute().getName());
+        boolean firstColumn = false;
+        try {
+            // Get columns using void monitor
+            final Collection<? extends DBSEntityAttributeRef> columns = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
+            firstColumn = true;
+            for (DBSEntityAttributeRef constraintColumn : columns) {
+                if (!firstColumn) decl.append(","); //$NON-NLS-1$
+                firstColumn = false;
+                decl.append(constraintColumn.getAttribute().getName());
+            }
+        } catch (DBException e) {
+            log.error("Can't obtain reference attributes", e);
         }
         decl.append(") REFERENCES ").append(foreignKey.getReferencedConstraint().getParentObject().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         firstColumn = true;
-        for (DBSEntityAttributeRef constraintColumn : foreignKey.getReferencedConstraint().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
-            if (!firstColumn) decl.append(","); //$NON-NLS-1$
-            firstColumn = false;
-            decl.append(constraintColumn.getAttribute().getName());
+        try {
+            for (DBSEntityAttributeRef constraintColumn : foreignKey.getReferencedConstraint().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
+                if (!firstColumn) decl.append(","); //$NON-NLS-1$
+                firstColumn = false;
+                decl.append(constraintColumn.getAttribute().getName());
+            }
+        } catch (DBException e) {
+            log.error("Can't obtain ref constraint reference attributes", e);
         }
         decl.append(")"); //$NON-NLS-1$
         if (foreignKey.getDeleteRule() != null && !CommonUtils.isEmpty(foreignKey.getDeleteRule().getClause())) {
