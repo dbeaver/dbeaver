@@ -29,11 +29,13 @@ import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.lang.ref.SoftReference;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Struct;
 import java.sql.Types;
@@ -59,6 +61,11 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     }
 
     public JDBCStruct(DBCExecutionContext context, DBSDataType type, Struct contents) throws DBCException
+    {
+        this(context, type, contents, null);
+    }
+
+    public JDBCStruct(DBCExecutionContext context, DBSDataType type, Struct contents, ResultSetMetaData metaData) throws DBCException
     {
         this.type = type;
         this.contents = contents;
@@ -86,12 +93,27 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                     values.put(attr, value);
                 }
             } else if (attrValues != null) {
-                log.warn("Data type '" + contents.getSQLTypeName() + "' isn't resolved as structured type. Use synthetic attributes.");
-                for (int i = 0, attrValuesLength = attrValues.length; i < attrValuesLength; i++) {
-                    Object value = attrValues[i];
-                    DBSAttributeBase attr = new StructAttribute(i, value);
-                    value = DBUtils.findValueHandler(context, attr).getValueFromObject(context, attr, value, false);
-                    values.put(attr, value);
+                if (metaData != null) {
+                    // Use meta data to read struct information
+                    int attrCount = metaData.getColumnCount();
+                    if (attrCount != attrValues.length) {
+                        log.warn("Meta column count (" + attrCount + ") differs from value count (" + attrValues.length + ")");
+                        attrCount = Math.min(attrCount, attrValues.length);
+                    }
+                    for (int i = 0; i < attrCount; i++) {
+                        Object value = attrValues[i];
+                        DBSAttributeBase attr = new StructAttribute(metaData, i + 1);
+                        value = DBUtils.findValueHandler(context, attr).getValueFromObject(context, attr, value, false);
+                        values.put(attr, value);
+                    }
+                } else {
+                    log.warn("Data type '" + contents.getSQLTypeName() + "' isn't resolved as structured type. Use synthetic attributes.");
+                    for (int i = 0, attrValuesLength = attrValues.length; i < attrValuesLength; i++) {
+                        Object value = attrValues[i];
+                        DBSAttributeBase attr = new StructAttribute(i, value);
+                        value = DBUtils.findValueHandler(context, attr).getValueFromObject(context, attr, value, false);
+                        values.put(attr, value);
+                    }
                 }
             }
         } catch (DBException e) {
@@ -230,6 +252,20 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
             setName("Attr" + index);
             setOrdinalPosition(index);
             setTypeName(dataKind.name());
+        }
+
+        public StructAttribute(ResultSetMetaData metaData, int index) throws SQLException
+        {
+            super(
+                metaData.getColumnName(index),
+                metaData.getColumnTypeName(index),
+                metaData.getColumnType(index),
+                index,
+                metaData.getColumnDisplaySize(index),
+                metaData.getScale(index),
+                metaData.getPrecision(index),
+                false);
+            dataKind = JDBCDataType.getDataKind(getTypeName(), getTypeID());
         }
 
         @Override
