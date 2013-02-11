@@ -26,30 +26,38 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 /**
  * CassandraColumnFamily
  */
-public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> implements DBSTableColumn, JDBCColumnKeyType
+public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> implements DBSTableColumn
 {
-    private int radix;
-    private String remarks;
-    private int sourceType;
-    private long charLength;
+    public static enum KeyType implements JDBCColumnKeyType {
+        PRIMARY,
+        SECONDARY;
 
-    public CassandraColumn(CassandraColumnFamily table)
-    {
-        super(table, false);
+        @Override
+        public boolean isInUniqueKey()
+        {
+            return this == PRIMARY;
+        }
+
+        @Override
+        public boolean isInReferenceKey()
+        {
+            return false;
+        }
     }
+
+    private String remarks;
+    private KeyType keyType;
 
     public CassandraColumn(
         CassandraColumnFamily table,
+        KeyType keyType,
         String columnName,
         String typeName,
         int valueType,
-        int sourceType,
         int ordinalPosition,
         long columnSize,
-        long charLength,
         int scale,
         int precision,
-        int radix,
         boolean notNull,
         String remarks)
     {
@@ -64,10 +72,8 @@ public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> impl
             precision,
             notNull,
             null);
-        this.sourceType = sourceType;
-        this.charLength = charLength;
+        this.keyType = keyType;
         this.remarks = remarks;
-        this.radix = radix;
     }
 
     @Override
@@ -76,51 +82,16 @@ public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> impl
         return getTable().getDataSource();
     }
 
-    public int getSourceType()
-    {
-        return sourceType;
-    }
-
-    public long getCharLength()
-    {
-        return charLength;
-    }
-
     @Override
-    @Property(viewable = true, order = 51)
     public boolean isSequence()
     {
         return false;
     }
 
     @Override
-    public JDBCColumnKeyType getKeyType()
+    public KeyType getKeyType()
     {
-        return this;
-    }
-
-    @Property(viewable = false, order = 62)
-    public int getRadix()
-    {
-        return radix;
-    }
-
-    public void setRadix(int radix)
-    {
-        this.radix = radix;
-    }
-
-    @Override
-    @Property(viewable = true, order = 80)
-    public boolean isInUniqueKey()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isInReferenceKey()
-    {
-        return false;
+        return keyType;
     }
 
     @Override
@@ -128,6 +99,13 @@ public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> impl
     public String getDescription()
     {
         return remarks;
+    }
+
+    // Override to hide property
+    @Override
+    public String getDefaultValue()
+    {
+        return super.getDefaultValue();
     }
 
     @Override

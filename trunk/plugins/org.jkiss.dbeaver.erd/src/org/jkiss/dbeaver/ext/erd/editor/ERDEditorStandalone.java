@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -92,7 +93,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements IDataSourceCon
     {
         try {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            DiagramLoader.save(getDiagramPart(), getDiagram(), false, buffer);
+            DiagramLoader.save(new DefaultProgressMonitor(monitor), getDiagramPart(), getDiagram(), false, buffer);
 
             final IFile file = getEditorFile();
             file.setContents(new ByteArrayInputStream(buffer.toByteArray()), true, true, monitor);

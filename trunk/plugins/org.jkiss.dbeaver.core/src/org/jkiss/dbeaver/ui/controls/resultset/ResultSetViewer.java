@@ -2223,7 +2223,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     public void run()
                     {
                         // It is safe to use void monitor cos' it is virtual constraint
-                        if (editEntityIdentifier(VoidProgressMonitor.INSTANCE)) {
+                        if (editEntityIdentifier()) {
                             try {
                                 identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, metaColumns[0].getMetaAttribute().getEntity());
                             } catch (DBException e) {
@@ -2238,15 +2238,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return true;
     }
 
-    boolean editEntityIdentifier(DBRProgressMonitor monitor)
+    boolean editEntityIdentifier()
     {
         DBVEntityConstraint constraint = (DBVEntityConstraint)getVirtualEntityIdentifier().getReferrer();
 
         EditConstraintDialog dialog = new EditConstraintDialog(
             getControl().getShell(),
             "Define virtual unique identifier",
-            constraint,
-            monitor);
+            constraint);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return false;
         }
@@ -3520,7 +3519,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 {
                     try {
                         if (define) {
-                            editEntityIdentifier(monitor);
+                            editEntityIdentifier();
                         } else {
                             clearEntityIdentifier(monitor);
                         }

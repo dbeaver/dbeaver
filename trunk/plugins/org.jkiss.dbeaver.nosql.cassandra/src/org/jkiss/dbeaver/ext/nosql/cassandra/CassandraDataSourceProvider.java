@@ -44,7 +44,9 @@ public class CassandraDataSourceProvider extends JDBCDataSourceProvider {
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
-        return "";
+        return "jdbc:jkiss:cassandra://" + connectionInfo.getHostName() +
+            ":" + connectionInfo.getHostPort() +
+            "/" + connectionInfo.getDatabaseName();
     }
 
     @Override

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -79,10 +80,14 @@ public abstract class JDBCConstraintManager<OBJECT_TYPE extends JDBCTableConstra
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         boolean firstColumn = true;
-        for (DBSEntityAttributeRef constraintColumn : command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
-            if (!firstColumn) decl.append(","); //$NON-NLS-1$
-            firstColumn = false;
-            decl.append(constraintColumn.getAttribute().getName());
+        try {
+            for (DBSEntityAttributeRef constraintColumn : command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE)) {
+                if (!firstColumn) decl.append(","); //$NON-NLS-1$
+                firstColumn = false;
+                decl.append(constraintColumn.getAttribute().getName());
+            }
+        } catch (DBException e) {
+            log.warn("Can't obtain attribute references", e);
         }
         decl.append(")"); //$NON-NLS-1$
         return decl;

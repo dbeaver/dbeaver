@@ -153,6 +153,7 @@ public class CassandraKeyspace implements DBSSchema
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME);
+            String keyAlias = JDBCUtils.safeGetStringTrimmed(dbResult, CassandraConstants.COLUMN_KEY_ALIAS);
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
 
             boolean isSystemTable = owner.getName().equals("system");
@@ -162,6 +163,7 @@ public class CassandraKeyspace implements DBSSchema
             return new CassandraColumnFamily(
                 owner,
                 tableName,
+                keyAlias,
                 remarks,
                 true);
         }
@@ -178,28 +180,29 @@ public class CassandraKeyspace implements DBSSchema
         }
 
         @Override
-        protected CassandraColumn fetchChild(JDBCExecutionContext context, CassandraKeyspace owner, CassandraColumnFamily table, ResultSet dbResult)
+        protected CassandraColumn fetchChild(JDBCExecutionContext context, CassandraKeyspace owner, CassandraColumnFamily columnFamily, ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
             int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-            int sourceType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SOURCE_DATA_TYPE);
             String typeName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TYPE_NAME);
             long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.COLUMN_SIZE);
             boolean isNotNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls;
             int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
-            int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
-            int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NUM_PREC_RADIX);
             String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-            long charLength = JDBCUtils.safeGetLong(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
             int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
 
+            CassandraColumn.KeyType keyType = null;
+            if (columnName.equals(columnFamily.getKeyAlias())) {
+                keyType = CassandraColumn.KeyType.PRIMARY;
+            }
             return new CassandraColumn(
-                table,
+                columnFamily,
+                keyType,
                 columnName,
-                typeName, valueType, sourceType, ordinalPos,
+                typeName, valueType, ordinalPos,
                 columnSize,
-                charLength, scale, precision, radix, isNotNull,
+                scale, 0, isNotNull,
                 remarks
             );
         }

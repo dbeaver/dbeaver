@@ -21,19 +21,25 @@ package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * CassandraColumnFamily
@@ -44,14 +50,17 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
 
     private String description;
     private Long rowCount;
+    private String keyAlias;
 
     public CassandraColumnFamily(
         CassandraKeyspace container,
         String tableName,
+        String keyAlias,
         String remarks,
         boolean persisted)
     {
         super(container, tableName, persisted);
+        this.keyAlias = keyAlias;
         this.description = remarks;
     }
 
@@ -65,6 +74,13 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
     public DBSObject getParentObject()
     {
         return getContainer();
+    }
+
+    @Override
+    @Property(viewable = true, order = 1)
+    public String getName()
+    {
+        return super.getName();
     }
 
     @Override
@@ -114,9 +130,45 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
     }
 
     @Override
-    public synchronized Collection<DBSTableConstraint> getConstraints(DBRProgressMonitor monitor)
+    public synchronized Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
+        return Collections.singletonList(new JDBCTableConstraint<CassandraColumnFamily>(CassandraColumnFamily.this, CassandraConstants.PRIMARY_KEY, null, DBSEntityConstraintType.PRIMARY_KEY, true) {
+            @Override
+            public String getFullQualifiedName()
+            {
+                return CassandraConstants.PRIMARY_KEY;
+            }
+            @Override
+            public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
+            {
+                final CassandraColumn keyColumn = getKeyColumn(monitor);
+                if (keyColumn == null) {
+                    return null;
+                }
+                return Collections.singleton(new DBSEntityAttributeRef() {
+                    @Override
+                    public DBSEntityAttribute getAttribute()
+                    {
+                        return keyColumn;
+                    }
+                });
+            }
+            @Override
+            public DBPDataSource getDataSource()
+            {
+                return CassandraColumnFamily.this.getDataSource();
+            }
+        });
+    }
+
+    private CassandraColumn getKeyColumn(DBRProgressMonitor monitor) throws DBException
+    {
+        for (CassandraColumn column : getAttributes(monitor)) {
+            if (column.getName().equals(keyAlias)) {
+                return column;
+            }
+        }
         return null;
     }
 
@@ -173,4 +225,8 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
         return rowCount;
     }
 
+    public String getKeyAlias()
+    {
+        return keyAlias;
+    }
 }
