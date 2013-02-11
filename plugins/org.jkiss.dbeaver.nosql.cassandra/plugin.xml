@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<plugin>
+
+    <extension
+        point="org.eclipse.help.contexts">
+        <contexts
+            file="contexts.xml">
+        </contexts>
+    </extension>
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.nosql.cassandra.CassandraDataSourceProvider"
+            description="Apache Cassandra connector"
+            id="nosql.cassandra"
+            label="Cassandra"
+            icon="icons/database.png">
+            <tree path="cassandra" label="Generic data source">
+                <items label="Keyspace" path="keyspace" property="keyspaces" icon="#schema" optional="true">
+                    <items label="%tree.table.node.name" path="columnFamily" property="columnFamilies" icon="#table">
+                        <folder type="org.jkiss.dbeaver.ext.nosql.cassandra.model.CassandraColumn" label="%tree.columns.node.name" icon="#columns" description="Columns">
+                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.nosql.cassandra.model.CassandraIndex" label="%tree.indexes.node.name" icon="#indexes" description="CF indexes">
+                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                </items>
+                            </items>
+                        </folder>
+                    </items>
+                </items>
+            </tree>
+
+            <drivers managable="true">
+
+                <driver
+                    id="apache_cassandra"
+                    label="Cassandra"
+                    class="org.jkiss.jdbc.cassandra.CassandraDriver"
+                    sampleURL="jdbc:jkiss:cassandra://{host}[:{port}]/{database}"
+                    defaultPort="9160"
+                    webURL="http://cassandra.jkiss.org/"
+                    description="Driver for Apache Cassandra">
+                    <property name="structResultSet" value="true"/>
+                    <file type="license" path="drivers/cassandra/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/cassandra/cassandra-jkiss-jdbc-1.1.0.jar" url="*"/>
+                    <file type="jar" path="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar" url="*"/>
+                    <file type="jar" path="drivers/cassandra/libthrift-0.7.0.jar" url="*"/>
+                    <file type="jar" path="drivers/cassandra/slf4j-api-1.6.1.jar" url="*"/>
+                </driver>
+            </drivers>
+
+            <views>
+                <view
+                    id="org.jkiss.dbeaver.ext.nosql.cassandra.dataSourceWizardView"
+                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                    label="%dialog.connection.header"
+                    class="org.jkiss.dbeaver.ext.nosql.cassandra.views.CassandraConnectionPage"
+                    icon="icons/database.png">
+                </view>
+                <view
+                      class="org.jkiss.dbeaver.ext.nosql.cassandra.views.CassandraConnectionPage"
+                      icon="icons/database.png"
+                      id="org.jkiss.dbeaver.ext.nosql.cassandra.dataSourceEditorView"
+                      label="%dialog.connection.header"
+                      targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+                </view>
+            </views>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+    </extension>
+
+</plugin>
