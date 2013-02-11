@@ -34,7 +34,7 @@
             id="nosql.cassandra"
             label="Cassandra"
             icon="icons/database.png">
-            <tree path="cassandra" label="Generic data source">
+            <tree path="cassandra" label="Cassandra data source">
                 <items label="Keyspace" path="keyspace" property="keyspaces" icon="#schema" optional="true">
                     <items label="%tree.table.node.name" path="columnFamily" property="columnFamilies" icon="#table">
                         <folder type="org.jkiss.dbeaver.ext.nosql.cassandra.model.CassandraColumn" label="%tree.columns.node.name" icon="#columns" description="Columns">
@@ -51,7 +51,7 @@
                 </items>
             </tree>
 
-            <drivers managable="true">
+            <drivers managable="false">
 
                 <driver
                     id="apache_cassandra"
@@ -62,6 +62,7 @@
                     webURL="http://cassandra.jkiss.org/"
                     description="Driver for Apache Cassandra">
                     <property name="structResultSet" value="true"/>
+                    <replace provider="generic" driver="cassandra_jkiss"/>
                     <file type="license" path="drivers/cassandra/LICENSE.txt" url="*"/>
                     <file type="jar" path="drivers/cassandra/cassandra-jkiss-jdbc-1.1.0.jar" url="*"/>
                     <file type="jar" path="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar" url="*"/>
