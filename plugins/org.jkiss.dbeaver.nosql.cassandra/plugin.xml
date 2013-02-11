@@ -33,21 +33,23 @@
             description="Apache Cassandra connector"
             id="nosql.cassandra"
             label="Cassandra"
-            icon="icons/database.png">
+            icon="icons/cassandra_icon.png">
             <tree path="cassandra" label="Cassandra data source">
-                <items label="Keyspace" path="keyspace" property="keyspaces" icon="#schema" optional="true">
-                    <items label="%tree.table.node.name" path="columnFamily" property="columnFamilies" icon="#table">
-                        <folder type="org.jkiss.dbeaver.ext.nosql.cassandra.model.CassandraColumn" label="%tree.columns.node.name" icon="#columns" description="Columns">
-                            <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
-                            </items>
-                        </folder>
-                        <folder type="org.jkiss.dbeaver.ext.nosql.cassandra.model.CassandraIndex" label="%tree.indexes.node.name" icon="#indexes" description="CF indexes">
-                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
-                                <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                <items label="%tree.ks.node.name" path="keyspace" property="keyspaces" icon="#database" optional="true">
+                    <!--<folder label="%tree.cfs.node.name" icon="#databases" description="Column families">-->
+                        <items label="%tree.cf.node.name" path="columnFamily" property="columnFamilies" icon="#table">
+                            <folder type="org.jkiss.dbeaver.ext.nosql.cassandra.model.CassandraColumn" label="%tree.columns.node.name" icon="#columns" description="Columns">
+                                <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                 </items>
-                            </items>
-                        </folder>
-                    </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.nosql.cassandra.model.CassandraIndex" label="%tree.indexes.node.name" icon="#indexes" description="CF indexes">
+                                <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                    <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                    </items>
+                                </items>
+                            </folder>
+                        </items>
+                    <!--</folder>-->
                 </items>
             </tree>
 
@@ -60,7 +62,8 @@
                     sampleURL="jdbc:jkiss:cassandra://{host}[:{port}]/{database}"
                     defaultPort="9160"
                     webURL="http://cassandra.jkiss.org/"
-                    description="Driver for Apache Cassandra">
+                    description="Driver for Apache Cassandra"
+                    icon="icons/cassandra_icon.png">
                     <property name="structResultSet" value="true"/>
                     <replace provider="generic" driver="cassandra_jkiss"/>
                     <file type="license" path="drivers/cassandra/LICENSE.txt" url="*"/>

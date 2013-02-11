@@ -5,7 +5,6 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -52,7 +51,7 @@ class ConfirmVirtualKeyUsageDialog extends MessageDialogWithToggle {
                 super.buttonPressed(buttonId);
                 break;
             default:
-                if (viewer.editEntityIdentifier(VoidProgressMonitor.INSTANCE)) {
+                if (viewer.editEntityIdentifier()) {
                     // Update message?
                 }
                 break;

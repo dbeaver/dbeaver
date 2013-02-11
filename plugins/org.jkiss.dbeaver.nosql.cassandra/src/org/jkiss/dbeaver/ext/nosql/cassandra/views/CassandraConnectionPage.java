@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.nosql.cassandra.views;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -27,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.ext.nosql.cassandra.Activator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
 import org.jkiss.utils.CommonUtils;
@@ -36,6 +38,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class CassandraConnectionPage extends ConnectionPageAdvanced
 {
+    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/cassandra_logo.png");
+
     // Host/port
     private Text hostText;
     private Text portText;
@@ -52,8 +56,7 @@ public class CassandraConnectionPage extends ConnectionPageAdvanced
     @Override
     public void createControl(Composite composite)
     {
-        //Composite group = new Composite(composite, SWT.NONE);
-        //group.setLayout(new GridLayout(1, true));
+        setImageDescriptor(logoImage);
 
         createGeneralTab(composite);
         setControl(settingsGroup);
@@ -159,7 +162,9 @@ public class CassandraConnectionPage extends ConnectionPageAdvanced
     @Override
     public boolean isComplete()
     {
-        return !hostText.getText().isEmpty() && !keyspaceText.getText().isEmpty();
+        return !hostText.getText().isEmpty() &&
+            !portText.getText().isEmpty() &&
+            !keyspaceText.getText().isEmpty();
     }
 
     @Override

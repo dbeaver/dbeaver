@@ -143,7 +143,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                         newDiagram.setLayoutManualDesired(true);
 
                         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                        DiagramLoader.save(null, newDiagram, false, buffer);
+                        DiagramLoader.save(monitor, null, newDiagram, false, buffer);
                         InputStream data = new ByteArrayInputStream(buffer.toByteArray());
 
                         file.create(data, true, monitor.getNestedMonitor());
