@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -60,10 +60,10 @@ public class DateTimeViewDialog extends ValueViewDialog {
             style |= SWT.READ_ONLY;
         }
 
-        DBSAttributeBase attribute = getValueController().getAttributeMetaData();
-        boolean isDate = attribute.getTypeID() == java.sql.Types.DATE;
-        boolean isTime = attribute.getTypeID() == java.sql.Types.TIME;
-        boolean isTimeStamp = attribute.getTypeID() == java.sql.Types.TIMESTAMP;
+        DBSTypedObject valueType = getValueController().getValueType();
+        boolean isDate = valueType.getTypeID() == java.sql.Types.DATE;
+        boolean isTime = valueType.getTypeID() == java.sql.Types.TIME;
+        boolean isTimeStamp = valueType.getTypeID() == java.sql.Types.TIMESTAMP;
 
         dateEditor = isDate || isTimeStamp ? new DateTime(dialogGroup, SWT.CALENDAR | style) : null;
         timeEditor = isTime || isTimeStamp ? new DateTime(dialogGroup, SWT.TIME | SWT.LONG | style) : null;

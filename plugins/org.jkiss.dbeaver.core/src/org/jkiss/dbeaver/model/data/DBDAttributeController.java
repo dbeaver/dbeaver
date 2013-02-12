@@ -36,8 +36,7 @@ public interface DBDAttributeController extends DBDValueController
      * Attribute meta data
      * @return meta data
      */
-    @Override
-    DBCAttributeMetaData getAttributeMetaData();
+    DBCAttributeMetaData getAttribute();
 
     /**
      * Column unique ID string

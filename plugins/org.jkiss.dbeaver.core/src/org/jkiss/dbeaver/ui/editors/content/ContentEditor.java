@@ -61,7 +61,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         return (ContentEditorInput)super.getEditorInput();
     }
 
-    public static ContentEditor openEditor(DBDAttributeController valueController, IContentEditorPart[] editorParts)
+    public static ContentEditor openEditor(DBDValueController valueController, IContentEditorPart[] editorParts)
     {
         ContentEditorInput editorInput;
         // Save data to file
@@ -109,11 +109,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     }
 
     private static class LOBInitializer implements IRunnableWithProgress {
-        DBDAttributeController valueController;
+        DBDValueController valueController;
         IContentEditorPart[] editorParts;
         ContentEditorInput editorInput;
 
-        private LOBInitializer(DBDAttributeController valueController, IContentEditorPart[] editorParts, ContentEditorInput editorInput)
+        private LOBInitializer(DBDValueController valueController, IContentEditorPart[] editorParts, ContentEditorInput editorInput)
         {
             this.valueController = valueController;
             this.editorParts = editorParts;
@@ -460,7 +460,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     public void refreshValue()
     {
         DBDValueController valueController = getEditorInput().getValueController();
-        LOBInitializer initializer = new LOBInitializer((DBDAttributeController)valueController, getEditorInput().getEditors(), getEditorInput());
+        LOBInitializer initializer = new LOBInitializer(valueController, getEditorInput().getEditors(), getEditorInput());
         try {
             valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
         } catch (InvocationTargetException e) {
