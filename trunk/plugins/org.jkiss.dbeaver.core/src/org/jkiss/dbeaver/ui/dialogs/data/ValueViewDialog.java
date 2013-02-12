@@ -123,9 +123,15 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
             }
 
             @Override
-            public DBSAttributeBase getAttributeMetaData()
+            public String getValueName()
             {
-                return valueController.getAttributeMetaData();
+                return valueController.getValueName();
+            }
+
+            @Override
+            public DBSTypedObject getValueType()
+            {
+                return valueController.getValueType();
             }
 
             @Override
@@ -318,14 +324,14 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
     private String getInfoVisiblePrefId()
     {
         return getClass().getSimpleName() + "-" +
-            CommonUtils.escapeIdentifier(getValueController().getAttributeMetaData().getTypeName()) +
+            CommonUtils.escapeIdentifier(getValueController().getValueType().getTypeName()) +
             "-columnInfoVisible";
     }
 
     private String getDialogSizePrefId()
     {
         return getClass().getSimpleName() + "-" +
-            CommonUtils.escapeIdentifier(getValueController().getAttributeMetaData().getTypeName()) +
+            CommonUtils.escapeIdentifier(getValueController().getValueType().getTypeName()) +
             "-dialogSize";
     }
 
@@ -381,8 +387,10 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        DBSAttributeBase meta = valueController.getAttributeMetaData();
-        shell.setText(meta.getName());
+        if (valueController instanceof DBDAttributeController) {
+            DBSAttributeBase meta = ((DBDAttributeController)valueController).getAttribute();
+            shell.setText(meta.getName());
+        }
     }
 
     protected abstract Object getEditorValue();
@@ -402,7 +410,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
     private DBSEntityReferrer getEnumerableConstraint()
     {
         if (valueController instanceof DBDAttributeController) {
-            DBSEntityReferrer constraint = DBUtils.getUniqueForeignConstraint(((DBDAttributeController)valueController).getAttributeMetaData());
+            DBSEntityReferrer constraint = DBUtils.getUniqueForeignConstraint(((DBDAttributeController)valueController).getAttribute());
             if (constraint instanceof DBSEntityAssociation &&
                 ((DBSEntityAssociation)constraint).getReferencedConstraint() instanceof DBSConstraintEnumerable &&
                 ((DBSConstraintEnumerable)((DBSEntityAssociation)constraint).getReferencedConstraint()).supportsEnumeration())
@@ -529,7 +537,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
         private SelectorLoaderJob()
         {
             super(
-                CoreMessages.dialog_value_view_job_selector_name + valueController.getAttributeMetaData().getName() + " possible values",
+                CoreMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values",
                 DBIcon.SQL_EXECUTE.getImageDescriptor(),
                 valueController.getDataSource());
             setUser(false);
@@ -546,7 +554,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
             final Map<Object, String> keyValues = new TreeMap<Object, String>();
             try {
                 DBDAttributeController attributeController = (DBDAttributeController)valueController;
-                final DBSEntityAttribute tableColumn = attributeController.getAttributeMetaData().getAttribute(monitor);
+                final DBSEntityAttribute tableColumn = attributeController.getAttribute().getAttribute(monitor);
                 final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintColumn(monitor, refConstraint, tableColumn);
                 if (fkColumn == null) {
                     return Status.OK_STATUS;
@@ -574,7 +582,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
                                 break;
                             }
                             DBCAttributeMetaData precMeta = attributeController.getRow().getAttributeMetaData(
-                                    attributeController.getAttributeMetaData().getEntity(), precColumn.getAttribute().getName());
+                                    attributeController.getAttribute().getEntity(), precColumn.getAttribute().getName());
                             if (precMeta != null) {
                                 Object precValue = attributeController.getRow().getAttributeValue(precMeta);
                                 precedingKeys.add(new DBDAttributeValue(precColumn.getAttribute(), precValue));

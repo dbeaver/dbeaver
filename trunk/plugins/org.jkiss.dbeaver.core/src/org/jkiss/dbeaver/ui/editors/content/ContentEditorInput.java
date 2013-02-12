@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -51,13 +52,13 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
 {
     static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
-    private DBDAttributeController valueController;
+    private DBDValueController valueController;
     private IContentEditorPart[] editorParts;
     private IFile contentFile;
     private boolean contentDetached = false;
 
     public ContentEditorInput(
-        DBDAttributeController valueController,
+        DBDValueController valueController,
         IContentEditorPart[] editorParts,
         DBRProgressMonitor monitor)
         throws DBException
@@ -72,7 +73,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         return valueController;
     }
 
-    public void refreshContent(DBRProgressMonitor monitor, DBDAttributeController valueController) throws DBException
+    public void refreshContent(DBRProgressMonitor monitor, DBDValueController valueController) throws DBException
     {
         this.valueController = valueController;
         this.prepareContent(monitor);
@@ -98,10 +99,16 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     @Override
     public String getName()
     {
-        String tableName = valueController.getAttributeMetaData().getEntityName();
-        String inputName = CommonUtils.isEmpty(tableName) ?
-            valueController.getAttributeMetaData().getName() :
-            tableName + "." + valueController.getAttributeMetaData().getName();
+        String inputName;
+        if (valueController instanceof DBDAttributeController) {
+            DBCAttributeMetaData attribute = ((DBDAttributeController) valueController).getAttribute();
+            String tableName = attribute.getEntityName();
+            inputName = CommonUtils.isEmpty(tableName) ?
+                attribute.getName() :
+                tableName + "." + attribute.getName();
+        } else {
+            inputName = valueController.getValueName();
+        }
         if (isReadOnly()) {
             inputName += " [Read Only]";
         }
@@ -156,7 +163,14 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
             try {
                 // Create file
                 if (contentFile == null) {
-                    contentFile = ContentUtils.createTempContentFile( monitor, valueController.getColumnId());
+                    String valueId;
+                    if (valueController instanceof DBDAttributeController) {
+                        valueId = ((DBDAttributeController) valueController).getColumnId();
+                    } else {
+                        valueId = valueController.getValueName();
+                    }
+
+                    contentFile = ContentUtils.createTempContentFile(monitor, valueId);
                 }
 
                 // Write value to file

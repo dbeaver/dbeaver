@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
-import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -198,7 +196,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                if (controller.getAttributeMetaData().getTypeID() == java.sql.Types.BIT) {
+                if (controller.getValueType().getTypeID() == java.sql.Types.BIT) {
                     return new ValueEditor<Combo>(controller) {
                         @Override
                         protected Combo createControl(Composite editPlaceholder)
@@ -236,7 +234,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             final Text editor = new Text(valueController.getEditPlaceholder(), SWT.BORDER);
                             editor.setEditable(!valueController.isReadOnly());
                             editor.setTextLimit(MAX_NUMBER_LENGTH);
-                            switch (valueController.getAttributeMetaData().getTypeID()) {
+                            switch (valueController.getValueType().getTypeID()) {
                                 case java.sql.Types.BIGINT:
                                 case java.sql.Types.INTEGER:
                                 case java.sql.Types.SMALLINT:
@@ -255,7 +253,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         {
                             Object value = valueController.getValue();
                             if (value != null) {
-                                control.setText(getValueDisplayString(valueController.getAttributeMetaData(), value, DBDDisplayFormat.UI));
+                                control.setText(getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.UI));
                             }
                             if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
                                 control.selectAll();
@@ -268,7 +266,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             if (CommonUtils.isEmpty(text)) {
                                 return null;
                             }
-                            return convertStringToNumber(formatter, text, valueController.getValue(), valueController.getAttributeMetaData());
+                            return convertStringToNumber(formatter, text, valueController.getValue(), valueController.getValueType());
                         }
                     };
                 }

@@ -12,6 +12,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.model.data.DBDValueEditorEx;
@@ -74,7 +75,7 @@ abstract class ViewValuePanel extends Composite {
 
     public void viewValue(final DBDValueController valueController)
     {
-        if (previewController == null || valueController.getAttributeMetaData() != previewController.getAttributeMetaData()) {
+        if (previewController == null || valueController.getValueType() != previewController.getValueType()) {
             // Cleanup previous viewer
             for (Control child : viewPlaceholder.getChildren()) {
                 child.dispose();
@@ -86,8 +87,10 @@ abstract class ViewValuePanel extends Composite {
                 item.dispose();
             }
             // Rest column info
-            columnImageLabel.setImage(ResultSetViewer.getAttributeImage(valueController.getAttributeMetaData()));
-            columnNameLabel.setText(valueController.getAttributeMetaData().getName());
+            columnImageLabel.setImage(ResultSetViewer.getTypeImage(valueController.getValueType()));
+            if (valueController instanceof DBDAttributeController) {
+                columnNameLabel.setText(((DBDAttributeController)valueController).getAttribute().getName());
+            }
             if (valueViewer instanceof DBDValueEditorEx) {
                 ((DBDValueEditorEx)valueViewer).closeValueEditor();
             }
@@ -107,7 +110,7 @@ abstract class ViewValuePanel extends Composite {
                     public void paintControl(PaintEvent e)
                     {
                         Rectangle bounds = placeholder.getBounds();
-                        String message = "No editor for [" + valueController.getAttributeMetaData().getTypeName() + "]";
+                        String message = "No editor for [" + valueController.getValueType().getTypeName() + "]";
                         Point ext = e.gc.textExtent(message);
                         e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
                     }

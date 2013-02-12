@@ -80,7 +80,7 @@ public class TextViewDialog extends ValueViewDialog {
 
         boolean readOnly = getValueController().isReadOnly();
         boolean useHex = !isForeignKey;
-        long maxSize = getValueController().getAttributeMetaData().getMaxLength();
+        long maxSize = getValueController().getValueType().getMaxLength();
         if (useHex) {
             editorContainer = new CTabFolder(dialogGroup, SWT.FLAT | SWT.TOP);
             editorContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -236,7 +236,7 @@ public class TextViewDialog extends ValueViewDialog {
     private void updateValueLength()
     {
         if (lengthLabel != null) {
-            long maxSize = getValueController().getAttributeMetaData().getMaxLength();
+            long maxSize = getValueController().getValueType().getMaxLength();
             long length = textEdit.getText().length();
             lengthLabel.setText("Length: " + length + (maxSize > 0 ? " [" + maxSize + "]" : ""));
         }

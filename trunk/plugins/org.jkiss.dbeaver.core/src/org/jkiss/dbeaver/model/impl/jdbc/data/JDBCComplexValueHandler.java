@@ -119,7 +119,7 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
                     @Override
                     protected Tree createControl(Composite editPlaceholder)
                     {
-                        editor = new ComplexObjectEditor(controller.getEditPlaceholder(), SWT.BORDER);
+                        editor = new ComplexObjectEditor(controller.getValueSite(), controller.getEditPlaceholder(), SWT.BORDER);
                         editor.setModel(controller.getDataSource(), (DBDComplexType) controller.getValue());
                         return editor.getTree();
                     }
