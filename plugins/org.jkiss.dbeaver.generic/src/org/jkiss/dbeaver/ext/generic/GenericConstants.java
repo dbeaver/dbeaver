@@ -29,6 +29,7 @@ public class GenericConstants {
     public static final String PARAM_ACTIVE_ENTITY_TYPE = "active-entity-type";
     public static final String PARAM_SUPPORTS_REFERENCES = "supports-references";
     public static final String PARAM_SUPPORTS_INDEXES = "supports-indexes";
+    public static final String PARAM_OMIT_TYPE_CACHE = "omit-type-cache";
 
     public static final String ENTITY_TYPE_CATALOG = "catalog";
     public static final String ENTITY_TYPE_SCHEMA = "schema";
