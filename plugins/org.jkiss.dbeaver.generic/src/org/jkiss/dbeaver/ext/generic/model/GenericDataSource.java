@@ -237,10 +237,17 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         super.initialize(monitor);
-        try {
-            dataTypeCache.getObjects(monitor, this);
-        } catch (DBException e) {
-            log.warn("Can't fetch database data types", e);
+        Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
+        if (omitTypeCache == null || !CommonUtils.toBoolean(omitTypeCache)) {
+            // Cache data types
+            try {
+                dataTypeCache.getObjects(monitor, this);
+            } catch (DBException e) {
+                log.warn("Can't fetch database data types", e);
+            }
+        } else {
+            // Use basic data types
+            dataTypeCache.fillStandardTypes(this);
         }
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Read generic metadata");
         try {

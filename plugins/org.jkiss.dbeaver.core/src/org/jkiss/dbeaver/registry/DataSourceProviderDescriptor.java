@@ -231,6 +231,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return driverProperties;
     }
 
+    public IPropertyDescriptor getDriverProperty(String name)
+    {
+        for (IPropertyDescriptor prop : driverProperties) {
+            if (prop.getId().equals(name)) {
+                return prop;
+            }
+        }
+        return null;
+    }
+
     public List<DriverDescriptor> getDrivers()
     {
         return drivers;

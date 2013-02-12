@@ -342,6 +342,11 @@ public class CommonUtils {
         }
     }
 
+    public static boolean toBoolean(Object object)
+    {
+        return object != null && getBoolean(object.toString());
+    }
+
     public static int toInt(Object object)
     {
         if (object == null) {
