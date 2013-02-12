@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataType> {
     private final DBSObject owner;
@@ -62,4 +64,37 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.MINIMUM_SCALE),
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.MAXIMUM_SCALE));
     }
+
+    public void fillStandardTypes(DBSObject owner)
+    {
+        cacheObject(new JDBCDataType(
+            owner, Types.INTEGER, "INTEGER", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.NUMERIC, "NUMBER", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.BIGINT, "BIGINT", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.BIT, "BIT", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.VARCHAR, "VARCHAR", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.VARBINARY, "VARBINARY", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.DECIMAL, "DECIMAL", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.SMALLINT, "SMALLINT", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.DATE, "DATE", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.TIME, "TIME", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.TIMESTAMP, "TIMESTAMP", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.BLOB, "BLOB", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.CLOB, "CLOB", null, false, true, 0, 0, 0));
+        cacheObject(new JDBCDataType(
+            owner, Types.OTHER, "OBJECT", null, false, true, 0, 0, 0));
+    }
+
 }

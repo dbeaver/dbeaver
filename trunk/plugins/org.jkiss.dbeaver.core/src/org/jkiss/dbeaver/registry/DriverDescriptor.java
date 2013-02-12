@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
+import org.jkiss.dbeaver.ui.properties.IPropertyDescriptorEx;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -209,8 +210,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     paramValue = param.getValue();
                 }
                 if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                    defaultParameters.put(paramName, paramValue);
-                    customParameters.put(paramName, paramValue);
+                    setDriverParameter(paramName, paramValue, true);
                 }
             }
         }
@@ -737,9 +737,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return customParameters.get(name);
     }
 
-    public void setDriverParameter(String name, String value)
+    public void setDriverParameter(String name, String value, boolean setDefault)
     {
-        customParameters.put(name, value);
+        Object valueObject = value;
+        IPropertyDescriptor prop = getProviderDescriptor().getDriverProperty(name);
+        if (prop instanceof IPropertyDescriptorEx) {
+            valueObject = RuntimeUtils.convertString(value, ((IPropertyDescriptorEx)prop).getDataType());
+        }
+        customParameters.put(name, valueObject);
+        if (setDefault) {
+            defaultParameters.put(name, valueObject);
+        }
     }
 
     public void setDriverParameters(Map<Object, Object> parameters)
@@ -1343,7 +1351,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
                 final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
                 if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                    curDriver.setDriverParameter(paramName, paramValue);
+                    curDriver.setDriverParameter(paramName, paramValue, false);
                 }
             } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
                 if (curDriver == null) {

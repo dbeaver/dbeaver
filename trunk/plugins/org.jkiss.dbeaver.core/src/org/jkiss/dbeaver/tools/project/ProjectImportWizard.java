@@ -263,7 +263,8 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         for (Element libElement : XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_PARAMETER)) {
             driver.setDriverParameter(
                 libElement.getAttribute(RegistryConstants.ATTR_NAME),
-                libElement.getAttribute(RegistryConstants.ATTR_VALUE));
+                libElement.getAttribute(RegistryConstants.ATTR_VALUE),
+                false);
         }
         for (Element libElement : XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_PROPERTY)) {
             driver.setConnectionProperty(

@@ -257,6 +257,8 @@ public class RuntimeUtils {
             }
             if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
                 return value;
+            } else if (valueType == Boolean.class || valueType == Boolean.TYPE) {
+                return Boolean.valueOf(value);
             } else if (valueType == Long.class) {
                 return Long.valueOf(value);
             } else if (valueType == Long.TYPE) {
