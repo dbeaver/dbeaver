@@ -175,7 +175,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private final List<ResultSetListener> listeners = new ArrayList<ResultSetListener>();
 
-    private static volatile boolean adapterRegistered;
+    //private static volatile boolean adapterRegistered;
 
     public ResultSetViewer(Composite parent, IWorkbenchPartSite site, ResultSetProvider resultSetProvider)
     {
@@ -369,7 +369,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 cell.col,
                                 DBDValueController.EditType.NONE,
                                 null);
-                            PropertyCollector props = new PropertyCollector(valueController.getAttributeMetaData(), false);
+                            PropertyCollector props = new PropertyCollector(valueController.getAttribute(), false);
                             props.collectProperties();
                             valueController.getValueHandler().fillProperties(props, valueController);
                             return props;
@@ -984,7 +984,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             editor.closeValueEditor();
         }
         if (!openEditors.isEmpty()) {
-            log.warn("Some value editors are still registered at resultset: " + openEditors.size());
+            log.warn("Some value editors are still registered at result set: " + openEditors.size());
         }
         openEditors.clear();
     }
@@ -2131,7 +2131,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    public static Image getAttributeImage(DBSAttributeBase column)
+    public static Image getTypeImage(DBSTypedObject column)
     {
         if (column instanceof IObjectImageProvider) {
             return ((IObjectImageProvider)column).getObjectImage();
@@ -2300,12 +2300,24 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
+        public String getValueName()
+        {
+            return getAttribute().getName();
+        }
+
+        @Override
+        public DBSTypedObject getValueType()
+        {
+            return getAttribute();
+        }
+
+        @Override
         public DBDRowController getRow() {
             return this;
         }
 
         @Override
-        public DBCAttributeMetaData getAttributeMetaData()
+        public DBCAttributeMetaData getAttribute()
         {
             return columns[columnIndex].getMetaAttribute();
         }
@@ -2313,10 +2325,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public String getColumnId() {
             String dsName = getDataSource().getContainer().getName();
-            String catalogName = getAttributeMetaData().getCatalogName();
-            String schemaName = getAttributeMetaData().getSchemaName();
-            String tableName = getAttributeMetaData().getEntityName();
-            String columnName = getAttributeMetaData().getName();
+            String catalogName = getAttribute().getCatalogName();
+            String schemaName = getAttribute().getSchemaName();
+            String tableName = getAttribute().getEntityName();
+            String columnName = getAttribute().getName();
             StringBuilder columnId = new StringBuilder(CommonUtils.escapeIdentifier(dsName));
             if (!CommonUtils.isEmpty(catalogName)) {
                 columnId.append('.').append(CommonUtils.escapeIdentifier(catalogName));
@@ -3185,7 +3197,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 attr = metaColumns[cell.col];
             }
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
-                return getAttributeImage(attr.getMetaAttribute());
+                return getTypeImage(attr.getMetaAttribute());
             } else {
                 return null;
             }
@@ -3231,7 +3243,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (mode == ResultSetMode.GRID) {
                 int colNumber = ((Number)element).intValue();
-                return getAttributeImage(metaColumns[colNumber].getMetaAttribute());
+                return getTypeImage(metaColumns[colNumber].getMetaAttribute());
             }
             return null;
         }
@@ -3282,7 +3294,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (mode == ResultSetMode.RECORD) {
                 int rowNumber = ((Number) element).intValue();
-                return getAttributeImage(metaColumns[rowNumber].getMetaAttribute());
+                return getTypeImage(metaColumns[rowNumber].getMetaAttribute());
             }
             return null;
         }

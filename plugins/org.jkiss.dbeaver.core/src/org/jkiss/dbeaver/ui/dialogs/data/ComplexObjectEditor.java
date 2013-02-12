@@ -23,10 +23,11 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.custom.TreeEditor;
+import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -52,12 +53,16 @@ public class ComplexObjectEditor extends TreeViewer {
 
     static final Log log = LogFactory.getLog(ComplexObjectEditor.class);
 
+    private IWorkbenchPartSite partSite;
     private DBPDataSource dataSource;
+    private final TreeEditor treeEditor;
+    private DBDValueEditor curCellEditor;
 
-    public ComplexObjectEditor(Composite parent, int style)
+    public ComplexObjectEditor(IWorkbenchPartSite partSite, Composite parent, int style)
     {
         super(parent, style | SWT.SINGLE | SWT.FULL_SELECTION);
 
+        this.partSite = partSite;
         final Tree treeControl = super.getTree();
         treeControl.setHeaderVisible(true);
         treeControl.setLinesVisible(true);
@@ -94,6 +99,53 @@ public class ComplexObjectEditor extends TreeViewer {
         column.getColumn().setText(CoreMessages.ui_properties_value);
         column.setLabelProvider(new PropsLabelProvider(false));
 
+        treeEditor = new TreeEditor(treeControl);
+        treeEditor.horizontalAlignment = SWT.RIGHT;
+        treeEditor.verticalAlignment = SWT.CENTER;
+        treeEditor.grabHorizontal = true;
+        treeEditor.minimumWidth = 50;
+
+        treeControl.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseDoubleClick(MouseEvent e)
+            {
+                TreeItem item = treeControl.getItem(new Point(e.x, e.y));
+                if (item != null && UIUtils.getColumnAtPos(item, e.x, e.y) == 1) {
+                    showEditor(item, true);
+                }
+            }
+
+            @Override
+            public void mouseUp(MouseEvent e)
+            {
+/*
+                TreeItem item = treeControl.getItem(new Point(e.x, e.y));
+                if (item != null) {
+                    if (UIUtils.getColumnAtPos(item, e.x, e.y) == 1) {
+                        showEditor(item, false);
+                    }
+                }
+*/
+            }
+        });
+
+        treeControl.addTraverseListener(new TraverseListener() {
+            @Override
+            public void keyTraversed(TraverseEvent e)
+            {
+                if (e.detail == SWT.TRAVERSE_RETURN) {
+                    final TreeItem[] selection = treeControl.getSelection();
+                    if (selection.length == 0) {
+                        return;
+                    }
+                    showEditor(selection[0], false);
+                    e.doit = false;
+                    e.detail = SWT.TRAVERSE_NONE;
+                }
+            }
+        });
+
         super.setContentProvider(new StructContentProvider());
     }
 
@@ -107,6 +159,66 @@ public class ComplexObjectEditor extends TreeViewer {
         } finally {
             getTree().setRedraw(true);
         }
+    }
+
+    private void showEditor(final TreeItem item, boolean advanced) {
+        // Clean up any previous editor control
+        disposeOldEditor();
+        if (item == null) {
+            return;
+        }
+
+        DBDValueHandler valueHandler = null;
+        DBSTypedObject type = null;
+        String name = "Unknown";
+        Object value = null;
+        Object obj = item.getData();
+        if (obj instanceof FieldInfo) {
+            FieldInfo field = (FieldInfo) obj;
+            valueHandler = field.valueHandler;
+            type = field.attribute;
+            name = field.attribute.getName();
+            value = field.value;
+        } else if (obj instanceof ArrayItem) {
+            ArrayItem arrayItem = (ArrayItem) obj;
+            valueHandler = arrayItem.valueHandler;
+            type = arrayItem.array.getObjectDataType();
+            name = type.getTypeName() + "["  + arrayItem.index + "]";
+            value = arrayItem.value;
+        } else {
+            //
+        }
+        if (valueHandler == null) {
+            return;
+        }
+        DBDValueController valueController = new ComplexValueController(
+            valueHandler,
+            type,
+            name,
+            value,
+            advanced ? DBDValueController.EditType.EDITOR : DBDValueController.EditType.INLINE);
+        try {
+            curCellEditor = valueHandler.createEditor(valueController);
+            if (curCellEditor != null) {
+                if (curCellEditor instanceof DBDValueEditorEx) {
+                    ((DBDValueEditorEx) curCellEditor).showValueEditor();
+                } else if (curCellEditor.getControl() != null) {
+                    treeEditor.setEditor(curCellEditor.getControl(), item, 1);
+                }
+                if (!advanced) {
+                    curCellEditor.refreshValue();
+                }
+            }
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getControl().getShell(), "Cell editor", "Can't open cell editor", e);
+        }
+    }
+
+    private void disposeOldEditor()
+    {
+        curCellEditor = null;
+        Control oldEditor = treeEditor.getEditor();
+        if (oldEditor != null) oldEditor.dispose();
     }
 
     private static class FieldInfo {
@@ -134,6 +246,112 @@ public class ComplexObjectEditor extends TreeViewer {
             this.index = index;
             this.value = value;
             this.valueHandler = DBUtils.findValueHandler(array.getObjectDataType().getDataSource(), array.getObjectDataType());
+        }
+    }
+
+    private class ComplexValueController implements DBDValueController {
+        private final DBDValueHandler valueHandler;
+        private final DBSTypedObject type;
+        private final String name;
+        private final Object value;
+        private final EditType editType;
+        public ComplexValueController(DBDValueHandler valueHandler, DBSTypedObject type, String name, Object value, EditType editType)
+        {
+            this.valueHandler = valueHandler;
+            this.type = type;
+            this.name = name;
+            this.value = value;
+            this.editType = editType;
+        }
+
+        @Override
+        public DBPDataSource getDataSource()
+        {
+            return dataSource;
+        }
+
+        @Override
+        public String getValueName()
+        {
+            return name;
+        }
+
+        @Override
+        public DBSTypedObject getValueType()
+        {
+            return type;
+        }
+
+        @Override
+        public Object getValue()
+        {
+            return value;
+        }
+
+        @Override
+        public void updateValue(Object value)
+        {
+            // Do nothing
+        }
+
+        @Override
+        public DBDValueHandler getValueHandler()
+        {
+            return valueHandler;
+        }
+
+        @Override
+        public EditType getEditType()
+        {
+            return editType;
+        }
+
+        @Override
+        public boolean isReadOnly()
+        {
+            return true;
+        }
+
+        @Override
+        public IWorkbenchPartSite getValueSite()
+        {
+            return partSite;
+        }
+
+        @Override
+        public Composite getEditPlaceholder()
+        {
+            return getTree();
+        }
+
+        @Override
+        public ToolBar getEditToolBar()
+        {
+            return null;
+        }
+
+        @Override
+        public void closeInlineEditor()
+        {
+            disposeOldEditor();
+        }
+
+        @Override
+        public void nextInlineEditor(boolean next)
+        {
+
+        }
+
+        @Override
+        public void unregisterEditor(DBDValueEditorEx editor)
+        {
+
+        }
+
+        @Override
+        public void showMessage(String message, boolean error)
+        {
+
         }
     }
 

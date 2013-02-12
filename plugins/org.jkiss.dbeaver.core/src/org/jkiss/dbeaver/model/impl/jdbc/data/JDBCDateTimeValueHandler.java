@@ -149,9 +149,9 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                             dateTimeGroup.setLayout(new GridLayout(2, false));
                         }
 
-                        boolean isDate = valueController.getAttributeMetaData().getTypeID() == java.sql.Types.DATE;
-                        boolean isTime = valueController.getAttributeMetaData().getTypeID() == java.sql.Types.TIME;
-                        boolean isTimeStamp = valueController.getAttributeMetaData().getTypeID() == java.sql.Types.TIMESTAMP;
+                        boolean isDate = valueController.getValueType().getTypeID() == java.sql.Types.DATE;
+                        boolean isTime = valueController.getValueType().getTypeID() == java.sql.Types.TIME;
+                        boolean isTimeStamp = valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP;
 
                         if (!inline && (isDate || isTimeStamp)) {
                             UIUtils.createControlLabel(dateTimeGroup, "Date");
@@ -275,7 +275,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             "Date/Time",
             "format", //$NON-NLS-1$
             "Pattern",
-            getFormatter(controller.getAttributeMetaData()).getPattern());
+            getFormatter(controller.getValueType()).getPattern());
     }
 
     public static Date getDate(DateTime dateEditor, DateTime timeEditor)

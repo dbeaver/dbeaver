@@ -394,7 +394,7 @@ public final class DBUtils {
                     result = DBUtils.makeNullValue(
                         context,
                         valueController.getValueHandler(),
-                        valueController.getAttributeMetaData());
+                        valueController.getValueType());
                 } catch (DBCException e) {
                     throw new InvocationTargetException(e);
                 } finally {

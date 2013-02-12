@@ -280,7 +280,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         {
                             final Text editor = new Text(editPlaceholder, SWT.BORDER);
                             editor.setEditable(!valueController.isReadOnly());
-                            long maxLength = valueController.getAttributeMetaData().getMaxLength();
+                            long maxLength = valueController.getValueType().getMaxLength();
                             if (maxLength <= 0) {
                                 maxLength = MAX_STRING_LENGTH;
                             } else {
@@ -304,7 +304,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             {
                 // Open LOB editor
                 Object value = controller.getValue();
-                if (value instanceof DBDContent && controller instanceof DBDAttributeController) {
+                if (value instanceof DBDContent) {
                     DBDContent content = (DBDContent)value;
                     boolean isText = ContentUtils.isTextContent(content);
                     List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
@@ -319,7 +319,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         parts.add(new ContentImageEditorPart());
                     }
                     return ContentEditor.openEditor(
-                        (DBDAttributeController)controller,
+                        controller,
                         parts.toArray(new IContentEditorPart[parts.size()]) );
                 } else {
                     controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);

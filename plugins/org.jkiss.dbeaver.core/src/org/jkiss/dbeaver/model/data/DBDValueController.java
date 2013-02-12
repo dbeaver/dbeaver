@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * DBD Value Controller
@@ -47,10 +48,16 @@ public interface DBDValueController
     DBPDataSource getDataSource();
 
     /**
-     * Column meta data
+     * Value name (name of attribute or other metadata object)
+     * @return value name
+     */
+    String getValueName();
+
+    /**
+     * Value type
      * @return meta data
      */
-    DBSAttributeBase getAttributeMetaData();
+    DBSTypedObject getValueType();
 
     /**
      * Column value
