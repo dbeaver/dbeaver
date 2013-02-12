@@ -399,7 +399,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditorEx editor)
+        public void unregisterEditor(DBDValueEditorStandalone editor)
         {
         }
 

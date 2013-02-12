@@ -51,6 +51,7 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
     private String description;
     private Long rowCount;
     private String keyAlias;
+    private JDBCTableConstraint<CassandraColumnFamily> primaryKey;
 
     public CassandraColumnFamily(
         CassandraKeyspace container,
@@ -133,33 +134,36 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
     public synchronized Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor)
         throws DBException
     {
-        return Collections.singletonList(new JDBCTableConstraint<CassandraColumnFamily>(CassandraColumnFamily.this, CassandraConstants.PRIMARY_KEY, null, DBSEntityConstraintType.PRIMARY_KEY, true) {
-            @Override
-            public String getFullQualifiedName()
-            {
-                return CassandraConstants.PRIMARY_KEY;
-            }
-            @Override
-            public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
-            {
-                final CassandraColumn keyColumn = getKeyColumn(monitor);
-                if (keyColumn == null) {
-                    return null;
+        if (primaryKey == null) {
+            primaryKey = new JDBCTableConstraint<CassandraColumnFamily>(CassandraColumnFamily.this, CassandraConstants.PRIMARY_KEY, null, DBSEntityConstraintType.PRIMARY_KEY, true) {
+                @Override
+                public String getFullQualifiedName()
+                {
+                    return CassandraConstants.PRIMARY_KEY;
                 }
-                return Collections.singleton(new DBSEntityAttributeRef() {
-                    @Override
-                    public DBSEntityAttribute getAttribute()
-                    {
-                        return keyColumn;
+                @Override
+                public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
+                {
+                    final CassandraColumn keyColumn = getKeyColumn(monitor);
+                    if (keyColumn == null) {
+                        return null;
                     }
-                });
-            }
-            @Override
-            public DBPDataSource getDataSource()
-            {
-                return CassandraColumnFamily.this.getDataSource();
-            }
-        });
+                    return Collections.singleton(new DBSEntityAttributeRef() {
+                        @Override
+                        public DBSEntityAttribute getAttribute()
+                        {
+                            return keyColumn;
+                        }
+                    });
+                }
+                @Override
+                public DBPDataSource getDataSource()
+                {
+                    return CassandraColumnFamily.this.getDataSource();
+                }
+            };
+        }
+        return Collections.singletonList(primaryKey);
     }
 
     private CassandraColumn getKeyColumn(DBRProgressMonitor monitor) throws DBException

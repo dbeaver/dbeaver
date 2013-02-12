@@ -72,7 +72,7 @@ import java.util.TreeMap;
  *
  * @author Serge Rider
  */
-public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx {
+public abstract class ValueViewDialog extends Dialog implements DBDValueEditorStandalone {
 
     static final Log log = LogFactory.getLog(ValueViewDialog.class);
 
@@ -193,7 +193,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorEx
             }
 
             @Override
-            public void unregisterEditor(DBDValueEditorEx editor)
+            public void unregisterEditor(DBDValueEditorStandalone editor)
             {
             }
 
