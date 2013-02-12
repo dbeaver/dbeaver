@@ -21,9 +21,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -41,7 +40,7 @@ import java.sql.SQLException;
  *
  * @author Serge Rider
  */
-public class JDBCContentChars extends JDBCContentAbstract implements DBDContent, DBDValueCloneable, DBDContentStorage {
+public class JDBCContentChars extends JDBCContentAbstract implements DBDContentStorage, DBDContentCached {
 
     private String originalData;
     private String data;
@@ -49,10 +48,6 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     public JDBCContentChars(DBPDataSource dataSource, String data) {
         super(dataSource);
         this.data = this.originalData = data;
-    }
-
-    public String getData() {
-        return data;
     }
 
     @Override
@@ -193,6 +188,12 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContent,
     public JDBCContentChars cloneValue(DBRProgressMonitor monitor)
     {
         return new JDBCContentChars(dataSource, data);
+    }
+
+    @Override
+    public Object getCachedValue()
+    {
+        return data;
     }
 
 }

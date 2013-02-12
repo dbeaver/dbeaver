@@ -265,14 +265,25 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             case INLINE:
             {
                 // Open inline/panel editor
-                if (controller.getValue() instanceof JDBCContentChars) {
+                if (controller.getValue() instanceof DBDContentCached) {
+                    final boolean isText = ContentUtils.isTextContent(((DBDContent)controller.getValue()));
+                    final String encoding = ContentUtils.getDefaultBinaryFileEncoding(controller.getDataSource());
                     // String editor
                     return new ValueEditor<Text>(controller) {
                         @Override
                         public void refreshValue()
                         {
-                            JDBCContentChars newValue = (JDBCContentChars) valueController.getValue();
-                            control.setText(newValue.getData() == null ? "" : newValue.getData()); //$NON-NLS-1$
+                            DBDContentCached newValue = (DBDContentCached) valueController.getValue();
+                            Object cachedValue = newValue.getCachedValue();
+                            String stringValue;
+                            if (cachedValue == null) {
+                                stringValue = "";  //$NON-NLS-1$
+                            } else if (cachedValue instanceof byte[]) {
+                                stringValue = ContentUtils.convertToString((byte[])cachedValue, controller.getDataSource());
+                            } else {
+                                stringValue = cachedValue.toString();
+                            }
+                            control.setText(stringValue);
                             control.selectAll();
                         }
                         @Override
@@ -293,7 +304,13 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                         public Object extractValue(DBRProgressMonitor monitor)
                         {
                             String newValue = control.getText();
-                            return new JDBCContentChars(valueController.getDataSource(), newValue);
+                            if (isText) {
+                                return new JDBCContentChars(valueController.getDataSource(), newValue);
+                            } else {
+                                return new JDBCContentBytes(
+                                    valueController.getDataSource(),
+                                    ContentUtils.convertToBytes(newValue, controller.getDataSource()));
+                            }
                         }
                     };
                 } else {

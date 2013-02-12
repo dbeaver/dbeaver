@@ -23,9 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -37,13 +36,14 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 
 import java.io.*;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * JDBCContentBytes
  *
  * @author Serge Rider
  */
-public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent, DBDValueCloneable, DBDContentStorage  {
+public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentStorage, DBDContentCached {
 
     static final Log log = LogFactory.getLog(JDBCContentBytes.class);
 
@@ -216,4 +216,21 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContent,
         return new JDBCContentBytes(dataSource, data);
     }
 
+    @Override
+    public Object getCachedValue()
+    {
+        return data;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj) return true;
+        if (obj instanceof JDBCContentBytes) {
+            byte[] data2 = ((JDBCContentBytes) obj).data;
+            if (data == null) return data2 == null;
+            if (data2 != null) return Arrays.equals(data, data2);
+        }
+        return false;
+    }
 }
