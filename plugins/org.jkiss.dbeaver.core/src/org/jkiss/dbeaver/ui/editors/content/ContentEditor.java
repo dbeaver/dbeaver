@@ -53,7 +53,7 @@ import java.util.List;
 /**
  * LOBEditor
  */
-public class ContentEditor extends MultiPageAbstractEditor implements IDataSourceProvider, DBDValueEditorEx, IResourceChangeListener
+public class ContentEditor extends MultiPageAbstractEditor implements IDataSourceProvider, DBDValueEditorStandalone, IResourceChangeListener
 {
     @Override
     public ContentEditorInput getEditorInput()

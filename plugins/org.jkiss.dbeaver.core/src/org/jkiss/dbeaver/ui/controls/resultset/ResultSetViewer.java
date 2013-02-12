@@ -159,7 +159,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private Text statusLabel;
 
-    private Map<ResultSetValueController, DBDValueEditorEx> openEditors = new HashMap<ResultSetValueController, DBDValueEditorEx>();
+    private Map<ResultSetValueController, DBDValueEditorStandalone> openEditors = new HashMap<ResultSetValueController, DBDValueEditorStandalone>();
     // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
 
@@ -979,8 +979,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     }
 
     private void closeEditors() {
-        List<DBDValueEditorEx> editors = new ArrayList<DBDValueEditorEx>(openEditors.values());
-        for (DBDValueEditorEx editor : editors) {
+        List<DBDValueEditorStandalone> editors = new ArrayList<DBDValueEditorStandalone>(openEditors.values());
+        for (DBDValueEditorStandalone editor : editors) {
             editor.closeValueEditor();
         }
         if (!openEditors.isEmpty()) {
@@ -1213,18 +1213,18 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             UIUtils.showErrorDialog(site.getShell(), "Cannot edit value", null, e);
             return false;
         }
-        if (editor instanceof DBDValueEditorEx) {
-            valueController.registerEditor((DBDValueEditorEx)editor);
+        if (editor instanceof DBDValueEditorStandalone) {
+            valueController.registerEditor((DBDValueEditorStandalone)editor);
             // show dialog in separate job to avoid block
             new UIJob("Open separate editor") {
                 @Override
                 public IStatus runInUIThread(IProgressMonitor monitor)
                 {
-                    ((DBDValueEditorEx)editor).showValueEditor();
+                    ((DBDValueEditorStandalone)editor).showValueEditor();
                     return Status.OK_STATUS;
                 }
             }.schedule();
-            //((DBDValueEditorEx)editor).showValueEditor();
+            //((DBDValueEditorStandalone)editor).showValueEditor();
         } else {
             // Set editable value
             if (editor != null) {
@@ -1458,7 +1458,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void showRowsCount()
     {
         if (curRows.isEmpty()) {
-            setStatus(CoreMessages.controls_resultset_viewer_status_no_data);
+            if (CommonUtils.isEmpty(metaColumns)) {
+
+            } else {
+                setStatus(CoreMessages.controls_resultset_viewer_status_no_data);
+            }
         } else {
             setStatus(String.valueOf(curRows.size()) + CoreMessages.controls_resultset_viewer_status_rows_fetched);
         }
@@ -2458,12 +2462,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             showCellEditor(true);
         }
 
-        public void registerEditor(DBDValueEditorEx editor) {
+        public void registerEditor(DBDValueEditorStandalone editor) {
             openEditors.put(this, editor);
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditorEx editor) {
+        public void unregisterEditor(DBDValueEditorStandalone editor) {
             openEditors.remove(this);
         }
 

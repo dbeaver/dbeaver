@@ -40,7 +40,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
-import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;

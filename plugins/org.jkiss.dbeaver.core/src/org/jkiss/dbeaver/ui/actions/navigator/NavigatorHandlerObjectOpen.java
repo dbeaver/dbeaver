@@ -128,7 +128,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 if (ref.getEditorInput() instanceof EntityEditorInput && ((EntityEditorInput)ref.getEditorInput()).getTreeNode() == selectedNode) {
                     final IEditorPart editor = ref.getEditor(false);
                     if (editor instanceof IFolderedPart) {
-                        ((IFolderedPart)editor).switchFolder(defaultFolderId);
+                        // Activate default folder
+                        //((IFolderedPart)editor).switchFolder(defaultFolderId);
                     }
                     workbenchWindow.getActivePage().activate(editor);
                     return editor;

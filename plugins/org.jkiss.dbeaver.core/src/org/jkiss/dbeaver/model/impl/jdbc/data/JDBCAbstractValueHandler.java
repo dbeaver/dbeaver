@@ -282,7 +282,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
         }
     }
 
-    protected abstract class ValueEditorEx<T extends Control> extends ValueEditor<T> implements DBDValueEditorEx {
+    protected abstract class ValueEditorEx<T extends Control> extends ValueEditor<T> implements DBDValueEditorStandalone {
 
         protected ValueEditorEx(final DBDValueController valueController)
         {

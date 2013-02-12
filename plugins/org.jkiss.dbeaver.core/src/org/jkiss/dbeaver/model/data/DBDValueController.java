@@ -22,7 +22,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
@@ -116,7 +115,7 @@ public interface DBDValueController
      */
     void nextInlineEditor(boolean next);
 
-    void unregisterEditor(DBDValueEditorEx editor);
+    void unregisterEditor(DBDValueEditorStandalone editor);
 
     /**
      * Show error/warning message in grid control.
