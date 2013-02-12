@@ -550,4 +550,21 @@ public class ContentUtils {
         return wFile == null ? null : wFile.getFullPath();
     }
 
+    public static String convertToString(byte[] bytes, DBPDataSource dataSource)
+    {
+        try {
+            return new String(bytes, getDefaultBinaryFileEncoding(dataSource));
+        } catch (UnsupportedEncodingException e) {
+            return new String(bytes);
+        }
+    }
+
+    public static byte[] convertToBytes(String strValue, DBPDataSource dataSource)
+    {
+        try {
+            return strValue.getBytes(getDefaultBinaryFileEncoding(dataSource));
+        } catch (UnsupportedEncodingException e) {
+            return strValue.getBytes();
+        }
+    }
 }
