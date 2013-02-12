@@ -200,8 +200,8 @@ public class ComplexObjectEditor extends TreeViewer {
         try {
             curCellEditor = valueHandler.createEditor(valueController);
             if (curCellEditor != null) {
-                if (curCellEditor instanceof DBDValueEditorEx) {
-                    ((DBDValueEditorEx) curCellEditor).showValueEditor();
+                if (curCellEditor instanceof DBDValueEditorStandalone) {
+                    ((DBDValueEditorStandalone) curCellEditor).showValueEditor();
                 } else if (curCellEditor.getControl() != null) {
                     treeEditor.setEditor(curCellEditor.getControl(), item, 1);
                 }
@@ -343,7 +343,7 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public void unregisterEditor(DBDValueEditorEx editor)
+        public void unregisterEditor(DBDValueEditorStandalone editor)
         {
 
         }

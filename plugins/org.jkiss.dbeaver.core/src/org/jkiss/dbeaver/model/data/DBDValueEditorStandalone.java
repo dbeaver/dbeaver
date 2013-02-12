@@ -20,10 +20,10 @@
 package org.jkiss.dbeaver.model.data;
 
 /**
- * Extended Value Editor.
+ * Standalone Value Editor.
  * Visualizes cell editor in separate non-modal dialog or editor
  */
-public interface DBDValueEditorEx extends DBDValueEditor
+public interface DBDValueEditorStandalone extends DBDValueEditor
 {
     /**
      * Brings editor to the top of screen
