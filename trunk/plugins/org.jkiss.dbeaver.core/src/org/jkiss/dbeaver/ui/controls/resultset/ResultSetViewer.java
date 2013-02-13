@@ -707,6 +707,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         final GridPos cell = translateGridPos(getCurrentPosition());
         if (!cell.isValid() || cell.col >= metaColumns.length || cell.row >= curRows.size()) {
+            previewPane.clearValue();
             return;
         }
         if (panelValueController == null || panelValueController.columnIndex != cell.col) {
