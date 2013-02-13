@@ -142,7 +142,7 @@ public class CassandraDataSource extends JDBCDataSource
                     }
                     context.getProgressMonitor().subTask("Keyspace " + ksName);
 
-                    CassandraKeyspace keyspace = new CassandraKeyspace(this, ksName);
+                    CassandraKeyspace keyspace = new CassandraKeyspace(this, ksName, dbResult);
                     tmpKeyspaces.add(keyspace);
                 }
             } finally {

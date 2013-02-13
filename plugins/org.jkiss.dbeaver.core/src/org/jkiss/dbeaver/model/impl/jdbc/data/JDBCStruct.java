@@ -52,6 +52,8 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
 
     static final Log log = LogFactory.getLog(JDBCStruct.class);
 
+    public static final int MAX_ITEMS_IN_STRING = 100;
+
     private DBSDataType type;
     private Struct contents;
     private Map<DBSAttributeBase, Object> values;
@@ -188,6 +190,9 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                 SQLUtils.appendValue(str, entry.getKey(), strValue);
             }
             i++;
+            if (i >= MAX_ITEMS_IN_STRING) {
+                break;
+            }
         }
         str.append(")");
         return str.toString();

@@ -21,8 +21,10 @@ package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -41,13 +43,20 @@ import java.util.Collection;
 public class CassandraKeyspace implements DBSSchema
 {
     private CassandraDataSource dataSource;
-    private String schemaName;
+    private String keyspaceName;
+    private String strategyClass;
+    private Object strategyOptions;
+    private int replicationFactor;
+
     private TableCache tableCache = new TableCache();
 
-    public CassandraKeyspace(CassandraDataSource dataSource, String schemaName)
+    public CassandraKeyspace(CassandraDataSource dataSource, String keyspaceName, JDBCResultSet dbResult)
     {
         this.dataSource = dataSource;
-        this.schemaName = schemaName;
+        this.keyspaceName = keyspaceName;
+        this.strategyClass = JDBCUtils.safeGetStringTrimmed(dbResult, "STRATEGY_CLASS");
+        this.strategyOptions = JDBCUtils.safeGetObject(dbResult, "STRATEGY_OPTIONS");
+        this.replicationFactor = JDBCUtils.safeGetInt(dbResult, "REPLICATION_FACTOR");
     }
 
     public TableCache getTableCache()
@@ -65,14 +74,31 @@ public class CassandraKeyspace implements DBSSchema
     @Property(viewable = true, order = 1)
     public String getName()
     {
-        return schemaName;
+        return keyspaceName;
     }
 
     @Override
-    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return null;
+    }
+
+    @Property(viewable = false, order = 10)
+    public String getStrategyClass()
+    {
+        return strategyClass;
+    }
+
+    @Property(viewable = false, order = 11)
+    public Object getStrategyOptions()
+    {
+        return strategyOptions;
+    }
+
+    @Property(viewable = false, order = 12)
+    public int getReplicationFactor()
+    {
+        return replicationFactor;
     }
 
     @Override
