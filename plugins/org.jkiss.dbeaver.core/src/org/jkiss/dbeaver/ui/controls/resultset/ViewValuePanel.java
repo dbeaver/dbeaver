@@ -74,16 +74,8 @@ abstract class ViewValuePanel extends Composite {
     public void viewValue(final DBDValueController valueController)
     {
         if (previewController == null || valueController.getValueType() != previewController.getValueType()) {
-            // Cleanup previous viewer
-            for (Control child : viewPlaceholder.getChildren()) {
-                child.dispose();
-            }
-            previewController = null;
+            cleanupPanel();
 
-            // Cleanup toolbar
-            for (ToolItem item : toolBar.getItems()) {
-                item.dispose();
-            }
             // Rest column info
             columnImageLabel.setImage(ResultSetViewer.getTypeImage(valueController.getValueType()));
             columnNameLabel.setText(valueController.getValueName());
@@ -115,6 +107,27 @@ abstract class ViewValuePanel extends Composite {
         }
         if (valueViewer != null) {
             valueViewer.refreshValue();
+        }
+    }
+
+    public void clearValue()
+    {
+        cleanupPanel();
+        toolBar.getParent().layout();
+        viewPlaceholder.layout();
+    }
+
+    private void cleanupPanel()
+    {
+        // Cleanup previous viewer
+        for (Control child : viewPlaceholder.getChildren()) {
+            child.dispose();
+        }
+        previewController = null;
+
+        // Cleanup toolbar
+        for (ToolItem item : toolBar.getItems()) {
+            item.dispose();
         }
     }
 
