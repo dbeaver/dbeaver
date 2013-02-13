@@ -23,22 +23,17 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * CassandraKeyspace
@@ -48,7 +43,6 @@ public class CassandraKeyspace implements DBSSchema
     private CassandraDataSource dataSource;
     private String schemaName;
     private TableCache tableCache = new TableCache();
-    private IndexCache indexCache = new IndexCache(tableCache);
 
     public CassandraKeyspace(CassandraDataSource dataSource, String schemaName)
     {
@@ -59,11 +53,6 @@ public class CassandraKeyspace implements DBSSchema
     public TableCache getTableCache()
     {
         return tableCache;
-    }
-
-    public IndexCache getIndexCache()
-    {
-        return indexCache;
     }
 
     @Override
@@ -152,20 +141,13 @@ public class CassandraKeyspace implements DBSSchema
         protected CassandraColumnFamily fetchObject(JDBCExecutionContext context, CassandraKeyspace owner, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME);
-            String keyAlias = JDBCUtils.safeGetStringTrimmed(dbResult, CassandraConstants.COLUMN_KEY_ALIAS);
-            String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-
             boolean isSystemTable = owner.getName().equals("system");
             if (isSystemTable && !owner.getDataSource().getContainer().isShowSystemObjects()) {
                 return null;
             }
             return new CassandraColumnFamily(
                 owner,
-                tableName,
-                keyAlias,
-                remarks,
-                true);
+                dbResult);
         }
 
         @Override
@@ -183,97 +165,10 @@ public class CassandraKeyspace implements DBSSchema
         protected CassandraColumn fetchChild(JDBCExecutionContext context, CassandraKeyspace owner, CassandraColumnFamily columnFamily, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
-            int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-            String typeName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TYPE_NAME);
-            long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.COLUMN_SIZE);
-            boolean isNotNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls;
-            int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
-            String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-            int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-
-            CassandraColumn.KeyType keyType = null;
-            if (columnName.equals(columnFamily.getKeyAlias())) {
-                keyType = CassandraColumn.KeyType.PRIMARY;
-            }
             return new CassandraColumn(
                 columnFamily,
-                keyType,
-                columnName,
-                typeName, valueType, ordinalPos,
-                columnSize,
-                scale, 0, isNotNull,
-                remarks
-            );
+                dbResult);
         }
     }
 
-    class IndexCache extends JDBCCompositeCache<CassandraKeyspace, CassandraColumnFamily, CassandraIndex, CassandraIndexColumn> {
-
-        IndexCache(TableCache tableCache)
-        {
-            super(tableCache, CassandraColumnFamily.class, JDBCConstants.TABLE_NAME, JDBCConstants.INDEX_NAME);
-        }
-
-        @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, CassandraKeyspace owner, CassandraColumnFamily forParent)
-            throws SQLException
-        {
-            return context.getMetaData().getIndexInfo(
-                null,
-                owner.getName(),
-                forParent.getName(),
-                false,
-                true).getSource();
-        }
-
-        @Override
-        protected CassandraIndex fetchObject(JDBCExecutionContext context, CassandraKeyspace owner, CassandraColumnFamily parent, String indexName, ResultSet dbResult)
-            throws SQLException, DBException
-        {
-            boolean isNonUnique = JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.NON_UNIQUE);
-            String indexQualifier = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_QUALIFIER);
-            long cardinality = JDBCUtils.safeGetLong(dbResult, JDBCConstants.INDEX_CARDINALITY);
-
-            DBSIndexType indexType = DBSIndexType.CLUSTERED;
-
-            return new CassandraIndex(
-                parent,
-                isNonUnique,
-                indexQualifier,
-                cardinality,
-                indexName,
-                indexType,
-                true);
-        }
-
-        @Override
-        protected CassandraIndexColumn fetchObjectRow(
-            JDBCExecutionContext context,
-            CassandraColumnFamily parent, CassandraIndex object, ResultSet dbResult)
-            throws SQLException, DBException
-        {
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
-            String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.ASC_OR_DESC);
-
-            CassandraColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
-            if (tableColumn == null) {
-                log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
-                return null;
-            }
-
-            return new CassandraIndexColumn(
-                object,
-                tableColumn,
-                ordinalPosition,
-                !"D".equalsIgnoreCase(ascOrDesc));
-        }
-
-        @Override
-        protected void cacheChildren(CassandraIndex index, List<CassandraIndexColumn> rows)
-        {
-            index.setColumns(rows);
-        }
-    }
 }

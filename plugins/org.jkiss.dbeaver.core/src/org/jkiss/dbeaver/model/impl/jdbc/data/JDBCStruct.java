@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
 import java.sql.ResultSetMetaData;
@@ -131,7 +132,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     @Override
     public boolean isNull()
     {
-        return contents == null;
+        return contents == null || CommonUtils.isEmpty(values);
     }
 
     @Override

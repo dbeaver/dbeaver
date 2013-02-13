@@ -28,25 +28,11 @@ public class CassandraIndexColumn extends AbstractTableIndexColumn
 {
     private CassandraIndex index;
     private CassandraColumn tableColumn;
-    private int ordinalPosition;
-    private boolean ascending;
 
-    public CassandraIndexColumn(CassandraIndex index, CassandraColumn tableColumn,
-                                int ordinalPosition,
-                                boolean ascending)
+    public CassandraIndexColumn(CassandraIndex index, CassandraColumn column)
     {
         this.index = index;
-        this.tableColumn = tableColumn;
-        this.ordinalPosition = ordinalPosition;
-        this.ascending = ascending;
-    }
-
-    CassandraIndexColumn(CassandraIndex toIndex, CassandraIndexColumn source)
-    {
-        this.index = toIndex;
-        this.tableColumn = source.tableColumn;
-        this.ordinalPosition = source.ordinalPosition;
-        this.ascending = source.ascending;
+        this.tableColumn = column;
     }
 
     @Override
@@ -55,11 +41,10 @@ public class CassandraIndexColumn extends AbstractTableIndexColumn
         return index;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
     @Override
     public String getName()
     {
-        return tableColumn.getName();
+        return getTableColumn().getName();
     }
 
     @Override
@@ -70,23 +55,21 @@ public class CassandraIndexColumn extends AbstractTableIndexColumn
     }
 
     @Override
-    @Property(viewable = false, order = 2)
     public int getOrdinalPosition()
     {
-        return ordinalPosition;
+        return 1;
     }
 
     @Override
-    @Property(viewable = true, order = 3)
     public boolean isAscending()
     {
-        return ascending;
+        return true;
     }
 
     @Override
     public String getDescription()
     {
-        return tableColumn.getDescription();
+        return null;
     }
 
     @Override

@@ -24,51 +24,21 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 /**
  * CassandraIndex
  */
 public class CassandraIndex extends JDBCTableIndex<CassandraColumnFamily>
 {
-    private boolean nonUnique;
-    private String qualifier;
-    private long cardinality;
-    private List<CassandraIndexColumn> columns;
+    private CassandraIndexColumn column;
 
     public CassandraIndex(
-        CassandraColumnFamily table,
-        boolean nonUnique,
-        String qualifier,
-        long cardinality,
-        String indexName,
-        DBSIndexType indexType,
-        boolean persisted)
+        CassandraColumn column)
     {
-        super(table, indexName, indexType, persisted);
-        this.nonUnique = nonUnique;
-        this.qualifier = qualifier;
-        this.cardinality = cardinality;
-    }
-
-    /**
-     * Copy constructor
-     * @param source source index
-     */
-    CassandraIndex(CassandraIndex source)
-    {
-        super(source);
-        this.nonUnique = source.nonUnique;
-        this.qualifier = source.qualifier;
-        this.cardinality = source.cardinality;
-        if (source.columns != null) {
-            this.columns = new ArrayList<CassandraIndexColumn>(source.columns.size());
-            for (CassandraIndexColumn sourceColumn : source.columns) {
-                this.columns.add(new CassandraIndexColumn(this, sourceColumn));
-            }
-        }
+        super(column.getTable(), column.getIndexName(), new DBSIndexType(column.getIndexType(), column.getIndexType()), true);
+        this.column = new CassandraIndexColumn(this, column);
     }
 
     @Override
@@ -78,7 +48,6 @@ public class CassandraIndex extends JDBCTableIndex<CassandraColumnFamily>
     }
 
     @Override
-    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return null;
@@ -88,43 +57,19 @@ public class CassandraIndex extends JDBCTableIndex<CassandraColumnFamily>
     @Property(viewable = true, order = 4)
     public boolean isUnique()
     {
-        return !nonUnique;
+        return false;
     }
 
-    @Property(viewable = true, order = 5)
-    public String getQualifier()
+    @Property(viewable = false, order = 5)
+    public Object getIndexOptions()
     {
-        return qualifier;
-    }
-
-    @Property(viewable = true, order = 5)
-    public long getCardinality()
-    {
-        return cardinality;
+        return column.getTableColumn().getIndexOptions();
     }
 
     @Override
     public Collection<CassandraIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
-        return columns;
-    }
-
-    public CassandraIndexColumn getColumn(String columnName)
-    {
-        return DBUtils.findObject(columns, columnName);
-    }
-
-    void setColumns(List<CassandraIndexColumn> columns)
-    {
-        this.columns = columns;
-    }
-
-    public void addColumn(CassandraIndexColumn column)
-    {
-        if (columns == null) {
-            columns = new ArrayList<CassandraIndexColumn>();
-        }
-        columns.add(column);
+        return Collections.singleton(column);
     }
 
     @Override
