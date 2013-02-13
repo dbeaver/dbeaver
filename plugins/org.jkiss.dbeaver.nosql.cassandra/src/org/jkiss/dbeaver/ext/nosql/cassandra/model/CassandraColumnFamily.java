@@ -18,15 +18,13 @@
  */
 package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -38,31 +36,65 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * CassandraColumnFamily
  */
 public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, CassandraKeyspace> implements DBPRefreshableObject, DBPSystemObject
 {
-    static final Log log = LogFactory.getLog(CassandraColumnFamily.class);
-
-    private String description;
-    private Long rowCount;
-    private String keyAlias;
+    private List<CassandraIndex> indexes;
     private JDBCTableConstraint<CassandraColumnFamily> primaryKey;
+    private String description;
+    private String keyAlias;
+    private String columnFamilyType;
+    private int columnFamilyId;
+    private String caching;
+    private String keyValidationClass;
+    private String defaultValidationClass;
+    private String compactionStrategy;
+    private Object compactionStrategyOptions;
+    private int maxCompactionThreshold;
+    private int minCompactionThreshold;
+    private String comparatorType;
+    private String subcomparatorType;
+    private Object compressionOptions;
+    private int gcGraceSeconds;
+    private double bloomFilterFpChance;
+    private double dclocalReadRepairChance;
+    private double readRepairChance;
 
     public CassandraColumnFamily(
         CassandraKeyspace container,
-        String tableName,
-        String keyAlias,
-        String remarks,
-        boolean persisted)
+        ResultSet dbResult)
     {
-        super(container, tableName, persisted);
-        this.keyAlias = keyAlias;
-        this.description = remarks;
+        super(
+            container,
+            JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME),
+            true);
+        columnFamilyType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
+        description = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+
+        columnFamilyId = JDBCUtils.safeGetInt(dbResult, "CF_ID");
+        caching = JDBCUtils.safeGetStringTrimmed(dbResult, "CF_CACHING");
+        keyAlias = JDBCUtils.safeGetStringTrimmed(dbResult, "CF_KEY_ALIAS");
+        keyValidationClass = JDBCUtils.safeGetStringTrimmed(dbResult, "CF_KEY_VALIDATION_CLASS");
+        defaultValidationClass = JDBCUtils.safeGetStringTrimmed(dbResult, "CF_DEFAULT_VALIDATION_CLASS");
+        compactionStrategy = JDBCUtils.safeGetStringTrimmed(dbResult, "CF_COMPACTION_STRATEGY");
+        compactionStrategyOptions = JDBCUtils.safeGetObject(dbResult, "CF_COMPACTION_STRATEGY_OPTIONS");
+        maxCompactionThreshold = JDBCUtils.safeGetInt(dbResult, "CF_MAX_COMPACTION_THRESHOLD");
+        minCompactionThreshold = JDBCUtils.safeGetInt(dbResult, "CF_MIN_COMPACTION_THRESHOLD");
+        comparatorType = JDBCUtils.safeGetStringTrimmed(dbResult, "CF_COMPARATOR_TYPE");
+        subcomparatorType = JDBCUtils.safeGetStringTrimmed(dbResult, "CF_SUBCOMPARATOR_TYPE");
+        compressionOptions = JDBCUtils.safeGetObject(dbResult, "CF_COMPRESSION_OPTIONS");
+        gcGraceSeconds = JDBCUtils.safeGetInt(dbResult, "CF_GC_GRACE_SECONDS");
+        bloomFilterFpChance = JDBCUtils.safeGetDouble(dbResult, "CF_BLOOM_FILTER_FP_CHANCE");
+        dclocalReadRepairChance = JDBCUtils.safeGetDouble(dbResult, "CF_DCLOCAL_READ_REPAIR_CHANCE");
+        readRepairChance = JDBCUtils.safeGetDouble(dbResult, "CF_READ_REPAIR_CHANCE");
     }
 
     @Override
@@ -126,8 +158,16 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
     public synchronized Collection<CassandraIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
+        if (indexes == null) {
+            indexes = new ArrayList<CassandraIndex>();
+            for (CassandraColumn column : getAttributes(monitor)) {
+                if (column.getKeyType() == CassandraColumn.KeyType.SECONDARY) {
+                    indexes.add(new CassandraIndex(column));
+                }
+            }
+        }
         // Read indexes using cache
-        return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+        return indexes;
     }
 
     @Override
@@ -199,38 +239,108 @@ public class CassandraColumnFamily extends JDBCTable<CassandraDataSource, Cassan
     public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         this.getContainer().getTableCache().clearChildrenCache(this);
-        this.getContainer().getIndexCache().clearObjectCache(this);
-        rowCount = null;
+        indexes = null;
         return true;
-    }
-
-    // Comment row count calculation - it works too long and takes a lot of resources without serious reason
-    @Property(viewable = true, expensive = true, order = 5)
-    public synchronized Long getRowCount(DBRProgressMonitor monitor)
-    {
-        if (rowCount != null) {
-            return rowCount;
-        }
-        // Query row count
-        DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");
-        try {
-            rowCount = countData(context, null);
-        }
-        catch (DBException e) {
-            log.debug("Can't fetch row count: " + e.getMessage());
-        }
-        finally {
-            context.close();
-        }
-        if (rowCount == null) {
-            rowCount = -1L;
-        }
-
-        return rowCount;
     }
 
     public String getKeyAlias()
     {
         return keyAlias;
+    }
+
+    @Property(viewable = true, order = 30)
+    public String getColumnFamilyType()
+    {
+        return columnFamilyType;
+    }
+
+    @Property(viewable = false, order = 31)
+    public int getColumnFamilyId()
+    {
+        return columnFamilyId;
+    }
+
+    @Property(viewable = false, order = 32)
+    public String getCaching()
+    {
+        return caching;
+    }
+
+    @Property(viewable = false, order = 33)
+    public String getKeyValidationClass()
+    {
+        return keyValidationClass;
+    }
+
+    @Property(viewable = false, order = 34)
+    public String getDefaultValidationClass()
+    {
+        return defaultValidationClass;
+    }
+
+    @Property(viewable = false, order = 35)
+    public String getCompactionStrategy()
+    {
+        return compactionStrategy;
+    }
+
+    @Property(viewable = false, order = 36)
+    public Object getCompactionStrategyOptions()
+    {
+        return compactionStrategyOptions;
+    }
+
+    @Property(viewable = false, order = 37)
+    public int getMaxCompactionThreshold()
+    {
+        return maxCompactionThreshold;
+    }
+
+    @Property(viewable = false, order = 38)
+    public int getMinCompactionThreshold()
+    {
+        return minCompactionThreshold;
+    }
+
+    @Property(viewable = false, order = 39)
+    public String getComparatorType()
+    {
+        return comparatorType;
+    }
+
+    @Property(viewable = false, order = 40)
+    public String getSubcomparatorType()
+    {
+        return subcomparatorType;
+    }
+
+    @Property(viewable = false, order = 41)
+    public Object getCompressionOptions()
+    {
+        return compressionOptions;
+    }
+
+    @Property(viewable = false, order = 42)
+    public int getGcGraceSeconds()
+    {
+        return gcGraceSeconds;
+    }
+
+    @Property(viewable = false, order = 43)
+    public double getBloomFilterFpChance()
+    {
+        return bloomFilterFpChance;
+    }
+
+    @Property(viewable = false, order = 44)
+    public double getDclocalReadRepairChance()
+    {
+        return dclocalReadRepairChance;
+    }
+
+    @Property(viewable = false, order = 45)
+    public double getReadRepairChance()
+    {
+        return readRepairChance;
     }
 }
