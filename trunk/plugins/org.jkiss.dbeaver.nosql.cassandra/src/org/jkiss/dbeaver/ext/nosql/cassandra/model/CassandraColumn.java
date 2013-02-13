@@ -18,16 +18,27 @@
  */
 package org.jkiss.dbeaver.ext.nosql.cassandra.model;
 
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.utils.CommonUtils;
+
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 
 /**
  * CassandraColumnFamily
  */
 public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> implements DBSTableColumn
 {
+
+    private final String indexName;
+    private final String indexType;
+    private final Object indexOptions;
+
     public static enum KeyType implements JDBCColumnKeyType {
         PRIMARY,
         SECONDARY;
@@ -45,35 +56,33 @@ public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> impl
         }
     }
 
-    private String remarks;
     private KeyType keyType;
 
     public CassandraColumn(
         CassandraColumnFamily table,
-        KeyType keyType,
-        String columnName,
-        String typeName,
-        int valueType,
-        int ordinalPosition,
-        long columnSize,
-        int scale,
-        int precision,
-        boolean notNull,
-        String remarks)
+        ResultSet dbResult)
     {
         super(table,
             true,
-            columnName,
-            typeName,
-            valueType,
-            ordinalPosition,
-            columnSize,
-            scale,
-            precision,
-            notNull,
+            JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME),
+            JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TYPE_NAME),
+            JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE),
+            JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION),
+            JDBCUtils.safeGetLong(dbResult, JDBCConstants.COLUMN_SIZE),
+            JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS),
+            0,
+            JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls,
             null);
-        this.keyType = keyType;
-        this.remarks = remarks;
+
+        if (getName().equals(table.getKeyAlias())) {
+            keyType = CassandraColumn.KeyType.PRIMARY;
+        }
+        indexName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.INDEX_NAME);
+        indexType = JDBCUtils.safeGetStringTrimmed(dbResult, "INDEX_TYPE");
+        indexOptions = JDBCUtils.safeGetStringTrimmed(dbResult, "INDEX_OPTIONS");
+        if (!CommonUtils.isEmpty(indexName)) {
+            this.keyType = KeyType.SECONDARY;
+        }
     }
 
     @Override
@@ -89,16 +98,54 @@ public class CassandraColumn extends JDBCTableColumn<CassandraColumnFamily> impl
     }
 
     @Override
+    @Property(viewable = true, order = 50)
     public KeyType getKeyType()
     {
         return keyType;
     }
 
+    public String getIndexName()
+    {
+        return indexName;
+    }
+
+    @Property(viewable = false, order = 100)
+    public String getIndexType()
+    {
+        return indexType;
+    }
+
+    @Property(viewable = false, order = 101)
+    public Object getIndexOptions()
+    {
+        return indexOptions;
+    }
+
     @Override
-    @Property(viewable = true, order = 100)
     public String getDescription()
     {
-        return remarks;
+        return null;
+    }
+
+    // Override to hide property
+    @Override
+    public long getMaxLength()
+    {
+        return super.getMaxLength();
+    }
+
+    // Override to hide property
+    @Override
+    public int getScale()
+    {
+        return super.getScale();
+    }
+
+    // Override to hide property
+    @Override
+    public int getPrecision()
+    {
+        return super.getPrecision();
     }
 
     // Override to hide property
