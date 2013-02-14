@@ -55,7 +55,7 @@ public class CustomNumberCellEditor extends TextCellEditor {
         {
             text.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         } else {
-            text.addVerifyListener(UIUtils.getIntegerVerifyListener());
+            text.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         }
         return text;
     }

@@ -69,9 +69,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -787,7 +785,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
         //resultSetSize.setDigits(7);
         resultSetSize.setLayoutData(gd);
-        resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener());
+        resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         resultSetSize.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e)
