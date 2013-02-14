@@ -240,7 +240,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                                 case java.sql.Types.SMALLINT:
                                 case java.sql.Types.TINYINT:
                                 case java.sql.Types.BIT:
-                                    editor.addVerifyListener(UIUtils.getIntegerVerifyListener());
+                                    editor.addVerifyListener(UIUtils.getIntegerVerifyListener(locale));
                                     break;
                                 default:
                                     editor.addVerifyListener(UIUtils.getNumberVerifyListener(locale));
