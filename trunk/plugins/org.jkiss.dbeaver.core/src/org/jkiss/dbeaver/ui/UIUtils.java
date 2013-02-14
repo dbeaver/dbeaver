@@ -73,29 +73,27 @@ public class UIUtils {
     static final Log log = LogFactory.getLog(UIUtils.class);
 
     public static final char PARAGRAPH_CHAR = (char)182;
-    private static DecimalFormatSymbols DEFAULT_SYMBOLS = DecimalFormatSymbols.getInstance();
 
-    private static final VerifyListener INTEGER_VERIFY_LISTENER = new VerifyListener() {
-        @Override
-        public void verifyText(VerifyEvent e)
-        {
-            for (int i = 0; i < e.text.length(); i++) {
-                char ch = e.text.charAt(i);
-                if (!Character.isDigit(ch) &&
-                    ch != DEFAULT_SYMBOLS.getMinusSign() &&
-                    ch != DEFAULT_SYMBOLS.getGroupingSeparator())
-                {
-                    e.doit = false;
-                    return;
-                }
-            }
-            e.doit = true;
-        }
-    };
-
-    public static VerifyListener getIntegerVerifyListener()
+    public static VerifyListener getIntegerVerifyListener(Locale locale)
     {
-        return INTEGER_VERIFY_LISTENER;
+        final DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+        return new VerifyListener() {
+            @Override
+            public void verifyText(VerifyEvent e)
+            {
+                for (int i = 0; i < e.text.length(); i++) {
+                    char ch = e.text.charAt(i);
+                    if (!Character.isDigit(ch) &&
+                        ch != symbols.getMinusSign() &&
+                        ch != symbols.getGroupingSeparator())
+                    {
+                        e.doit = false;
+                        return;
+                    }
+                }
+                e.doit = true;
+            }
+        };
     }
 
     public static VerifyListener getNumberVerifyListener(Locale locale)

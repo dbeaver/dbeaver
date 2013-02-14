@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
+
 /**
  * MySQLConnectionPage
  */
@@ -134,7 +136,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
         gd.widthHint = 40;
         portText.setLayoutData(gd);
-        portText.addVerifyListener(UIUtils.getIntegerVerifyListener());
+        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(textListener);
 
         Label dbLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_database);

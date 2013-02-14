@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -196,7 +197,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
         gd.widthHint = 40;
         portText.setLayoutData(gd);
-        portText.addVerifyListener(UIUtils.getIntegerVerifyListener());
+        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(controlModifyListener);
 
         UIUtils.createControlLabel(targetContainer, OracleMessages.dialog_connection_database);
