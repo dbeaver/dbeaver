@@ -79,197 +79,250 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         List<IContributionItem> menu = new ArrayList<IContributionItem>();
         if (structuredSelection instanceof ResultSetSelection) {
             // Results
-            final ResultSetSelection rss = (ResultSetSelection) structuredSelection;
-            final ResultSetViewer rsv = rss.getResultSetViewer();
-            DBSEntity entity = rsv.getDataContainer() instanceof DBSEntity ? (DBSEntity) rsv.getDataContainer() : null;
-            if (entity == null) {
-                entity = rsv.getSingleSource();
-            }
-            if (entity != null) {
-                final Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
-                if (!CommonUtils.isEmpty(selectedRows)) {
-                    menu.add(makeAction("SELECT by Unique Key", new TableAnalysisRunner(entity) {
-                        @Override
-                        public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                        {
-                            for (ResultSetRow firstRow : selectedRows) {
-
-                                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                                sql.append("SELECT ");
-                                boolean hasAttr = false;
-                                for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
-                                    if (hasAttr) sql.append(", ");
-                                    sql.append(DBUtils.getObjectFullName(attr));
-                                    hasAttr = true;
-                                }
-                                sql.append("\nFROM ").append(DBUtils.getObjectFullName(table));
-                                sql.append("\nWHERE ");
-                                hasAttr = false;
-                                for (DBSEntityAttribute attr : keyAttributes) {
-                                    if (hasAttr) sql.append(" AND ");
-                                    DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
-                                    sql.append(DBUtils.getObjectFullName(attr)).append("=");
-                                    if (binding == null) {
-                                        appendDefaultValue(sql, attr);
-                                    } else {
-                                        appendAttributeValue(sql, binding, firstRow);
-                                    }
-                                    hasAttr = true;
-                                }
-                                sql.append(";\n");
-                            }
-                        }
-                    }));
-                    menu.add(makeAction("INSERT", new TableAnalysisRunner(entity) {
-                        @Override
-                        public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                        {
-                            for (ResultSetRow firstRow : selectedRows) {
-
-                                Collection<? extends DBSEntityAttribute> allAttributes = getAllAttributes(monitor);
-                                sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(table));
-                                sql.append("\n(");
-                                boolean hasAttr = false;
-                                for (DBSEntityAttribute attr : allAttributes) {
-                                    if (hasAttr) sql.append(", ");
-                                    sql.append(DBUtils.getObjectFullName(attr));
-                                    hasAttr = true;
-                                }
-                                sql.append(")\nVALUES(");
-                                hasAttr = false;
-                                for (DBSEntityAttribute attr : allAttributes) {
-                                    if (hasAttr) sql.append(", ");
-                                    DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
-                                    if (binding == null) {
-                                        appendDefaultValue(sql, attr);
-                                    } else {
-                                        appendAttributeValue(sql, binding, firstRow);
-                                    }
-                                    hasAttr = true;
-                                }
-                                sql.append(");\n");
-                            }
-                        }
-                    }));
-
-                    menu.add(makeAction("DELETE by Unique Key", new TableAnalysisRunner(entity) {
-                        @Override
-                        public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                        {
-                            for (ResultSetRow firstRow : selectedRows) {
-
-                                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                                sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(table));
-                                sql.append("\nWHERE ");
-                                boolean hasAttr = false;
-                                for (DBSEntityAttribute attr : keyAttributes) {
-                                    if (hasAttr) sql.append(" AND ");
-                                    DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
-                                    sql.append(DBUtils.getObjectFullName(attr)).append("=");
-                                    if (binding == null) {
-                                        appendDefaultValue(sql, attr);
-                                    } else {
-                                        appendAttributeValue(sql, binding, firstRow);
-                                    }
-                                    hasAttr = true;
-                                }
-                                sql.append(";\n");
-                            }
-                        }
-                    }));
-                }
-            }
+            makeResultSetContributions(menu, (ResultSetSelection) structuredSelection);
 
         } else {
             final DBSTable table =
                 (DBSTable) ((DBNDatabaseNode)RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class)).getObject();
-                // Table
-            menu.add(makeAction("SELECT ", new TableAnalysisRunner(table) {
-                @Override
-                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                {
-                    sql.append("SELECT ");
-                    boolean hasAttr = false;
-                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                        if (hasAttr) sql.append(", ");
-                        sql.append(DBUtils.getObjectFullName(attr));
-                        hasAttr = true;
-                    }
-                    sql.append("\nFROM ").append(DBUtils.getObjectFullName(table));
-                    sql.append(";\n");
-                }
-            }));
-            menu.add(makeAction("INSERT ", new TableAnalysisRunner(table) {
-                @Override
-                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                {
-                    sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(table)).append("\n(");
-                    boolean hasAttr = false;
-                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                        if (hasAttr) sql.append(", ");
-                        sql.append(DBUtils.getObjectFullName(attr));
-                        hasAttr = true;
-                    }
-                    sql.append(")\nVALUES(");
-                    hasAttr = false;
-                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                        if (hasAttr) sql.append(", ");
-                        appendDefaultValue(sql, attr);
-                        hasAttr = true;
-                    }
-                    sql.append(");\n");
-                }
+            makeTableContributions(menu, table);
+        }
+        return menu.toArray(new IContributionItem[menu.size()]);
+    }
 
-            }));
-            menu.add(makeAction("UPDATE ", new TableAnalysisRunner(table) {
-                @Override
-                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                {
-                    Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                    sql.append("UPDATE ").append(DBUtils.getObjectFullName(table))
-                        .append("\nSET ");
-                    boolean hasAttr = false;
-                    for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
-                        if (hasAttr) sql.append(", ");
-                        sql.append(DBUtils.getObjectFullName(attr)).append("=");
-                        appendDefaultValue(sql, attr);
-                        hasAttr = true;
-                    }
-                    if (!CommonUtils.isEmpty(keyAttributes)) {
-                        sql.append("\nWHERE ");
-                        hasAttr = false;
-                        for (DBSEntityAttribute attr : keyAttributes) {
-                            if (hasAttr) sql.append(" AND ");
-                            sql.append(DBUtils.getObjectFullName(attr)).append("=");
-                            appendDefaultValue(sql, attr);
-                            hasAttr = true;
-                        }
-                    }
-                    sql.append(";\n");
+    private void makeTableContributions(List<IContributionItem> menu, final DBSTable table)
+    {
+        // Table
+        menu.add(makeAction("SELECT ", new TableAnalysisRunner(table) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+            {
+                sql.append("SELECT ");
+                boolean hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append(DBUtils.getObjectFullName(attr));
+                    hasAttr = true;
                 }
-            }));
-            menu.add(makeAction("DELETE ", new TableAnalysisRunner(table) {
-                @Override
-                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                {
-                    sql.append("DELETE FROM  ").append(DBUtils.getObjectFullName(table))
-                        .append("\nWHERE ");
-                    Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                    if (CommonUtils.isEmpty(keyAttributes)) {
-                        keyAttributes = getAllAttributes(monitor);
-                    }
-                    boolean hasAttr = false;
+                sql.append("\nFROM ").append(DBUtils.getObjectFullName(table));
+                sql.append(";\n");
+            }
+        }));
+        menu.add(makeAction("INSERT ", new TableAnalysisRunner(table) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+            {
+                sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(table)).append("\n(");
+                boolean hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append(DBUtils.getObjectFullName(attr));
+                    hasAttr = true;
+                }
+                sql.append(")\nVALUES(");
+                hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                    if (hasAttr) sql.append(", ");
+                    appendDefaultValue(sql, attr);
+                    hasAttr = true;
+                }
+                sql.append(");\n");
+            }
+
+        }));
+        menu.add(makeAction("UPDATE ", new TableAnalysisRunner(table) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+            {
+                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                sql.append("UPDATE ").append(DBUtils.getObjectFullName(table))
+                    .append("\nSET ");
+                boolean hasAttr = false;
+                for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                    appendDefaultValue(sql, attr);
+                    hasAttr = true;
+                }
+                if (!CommonUtils.isEmpty(keyAttributes)) {
+                    sql.append("\nWHERE ");
+                    hasAttr = false;
                     for (DBSEntityAttribute attr : keyAttributes) {
                         if (hasAttr) sql.append(" AND ");
                         sql.append(DBUtils.getObjectFullName(attr)).append("=");
                         appendDefaultValue(sql, attr);
                         hasAttr = true;
                     }
-                    sql.append(";\n");
                 }
-            }));
+                sql.append(";\n");
+            }
+        }));
+        menu.add(makeAction("DELETE ", new TableAnalysisRunner(table) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+            {
+                sql.append("DELETE FROM  ").append(DBUtils.getObjectFullName(table))
+                    .append("\nWHERE ");
+                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                if (CommonUtils.isEmpty(keyAttributes)) {
+                    keyAttributes = getAllAttributes(monitor);
+                }
+                boolean hasAttr = false;
+                for (DBSEntityAttribute attr : keyAttributes) {
+                    if (hasAttr) sql.append(" AND ");
+                    sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                    appendDefaultValue(sql, attr);
+                    hasAttr = true;
+                }
+                sql.append(";\n");
+            }
+        }));
+        menu.add(makeAction("MERGE", new TableAnalysisRunner(table) {
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+            {
+                boolean hasAttr = false;
+
+                sql.append("MERGE INTO ").append(DBUtils.getObjectFullName(table)).append(" AS tgt\n");
+                sql.append("USING SOURCE_TABLE AS src\n");
+                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                if (!CommonUtils.isEmpty(keyAttributes)) {
+                    sql.append("ON (");
+                    for (DBSEntityAttribute attr : keyAttributes) {
+                        if (hasAttr) sql.append(" AND ");
+                        sql.append("tgt.").append(DBUtils.getQuotedIdentifier(attr))
+                            .append("=src.").append(DBUtils.getQuotedIdentifier(attr));
+                        hasAttr = true;
+                    }
+                    sql.append(")\n");
+                }
+                sql.append("WHEN MATCHED\nTHEN UPDATE SET\n");
+                hasAttr = false;
+                for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append("tgt.").append(DBUtils.getQuotedIdentifier(attr))
+                        .append("=src.").append(DBUtils.getQuotedIdentifier(attr));
+                    hasAttr = true;
+                }
+                sql.append("\nWHEN NOT MATCHED\nTHEN INSERT (");
+                hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append(DBUtils.getQuotedIdentifier(attr));
+                    hasAttr = true;
+                }
+                sql.append(")\nVALUES (");
+                hasAttr = false;
+                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                    if (hasAttr) sql.append(", ");
+                    sql.append("src.").append(DBUtils.getQuotedIdentifier(attr));
+                    hasAttr = true;
+                }
+                sql.append(");\n");
+            }
+        }));
+    }
+
+    private void makeResultSetContributions(List<IContributionItem> menu, ResultSetSelection rss)
+    {
+        final ResultSetViewer rsv = rss.getResultSetViewer();
+        DBSEntity entity = rsv.getDataContainer() instanceof DBSEntity ? (DBSEntity) rsv.getDataContainer() : null;
+        if (entity == null) {
+            entity = rsv.getSingleSource();
         }
-        return menu.toArray(new IContributionItem[menu.size()]);
+        if (entity != null) {
+            final Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
+            if (!CommonUtils.isEmpty(selectedRows)) {
+                menu.add(makeAction("SELECT by Unique Key", new TableAnalysisRunner(entity) {
+                    @Override
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+                    {
+                        for (ResultSetRow firstRow : selectedRows) {
+
+                            Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                            sql.append("SELECT ");
+                            boolean hasAttr = false;
+                            for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
+                                if (hasAttr) sql.append(", ");
+                                sql.append(DBUtils.getObjectFullName(attr));
+                                hasAttr = true;
+                            }
+                            sql.append("\nFROM ").append(DBUtils.getObjectFullName(table));
+                            sql.append("\nWHERE ");
+                            hasAttr = false;
+                            for (DBSEntityAttribute attr : keyAttributes) {
+                                if (hasAttr) sql.append(" AND ");
+                                DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
+                                sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                                if (binding == null) {
+                                    appendDefaultValue(sql, attr);
+                                } else {
+                                    appendAttributeValue(sql, binding, firstRow);
+                                }
+                                hasAttr = true;
+                            }
+                            sql.append(";\n");
+                        }
+                    }
+                }));
+                menu.add(makeAction("INSERT", new TableAnalysisRunner(entity) {
+                    @Override
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+                    {
+                        for (ResultSetRow firstRow : selectedRows) {
+
+                            Collection<? extends DBSEntityAttribute> allAttributes = getAllAttributes(monitor);
+                            sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(table));
+                            sql.append("\n(");
+                            boolean hasAttr = false;
+                            for (DBSEntityAttribute attr : allAttributes) {
+                                if (hasAttr) sql.append(", ");
+                                sql.append(DBUtils.getObjectFullName(attr));
+                                hasAttr = true;
+                            }
+                            sql.append(")\nVALUES(");
+                            hasAttr = false;
+                            for (DBSEntityAttribute attr : allAttributes) {
+                                if (hasAttr) sql.append(", ");
+                                DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
+                                if (binding == null) {
+                                    appendDefaultValue(sql, attr);
+                                } else {
+                                    appendAttributeValue(sql, binding, firstRow);
+                                }
+                                hasAttr = true;
+                            }
+                            sql.append(");\n");
+                        }
+                    }
+                }));
+
+                menu.add(makeAction("DELETE by Unique Key", new TableAnalysisRunner(entity) {
+                    @Override
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
+                    {
+                        for (ResultSetRow firstRow : selectedRows) {
+
+                            Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                            sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(table));
+                            sql.append("\nWHERE ");
+                            boolean hasAttr = false;
+                            for (DBSEntityAttribute attr : keyAttributes) {
+                                if (hasAttr) sql.append(" AND ");
+                                DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
+                                sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                                if (binding == null) {
+                                    appendDefaultValue(sql, attr);
+                                } else {
+                                    appendAttributeValue(sql, binding, firstRow);
+                                }
+                                hasAttr = true;
+                            }
+                            sql.append(";\n");
+                        }
+                    }
+                }));
+            }
+        }
     }
 
     private abstract static class TableAnalysisRunner extends DBRRunnableWithResult<String> {
@@ -327,7 +380,9 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             switch (attr.getDataKind()) {
                 case BOOLEAN: sql.append("false"); break;
                 case NUMERIC: sql.append("0"); break;
-                case STRING: sql.append("''"); break;
+                case STRING:
+                case DATETIME:
+                    sql.append("''"); break;
                 default: sql.append("?"); break;
             }
         }
