@@ -152,6 +152,13 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         return null;
     }
 
+    @Override
+    public DBDValueMeta getRowMeta() throws DBCException
+    {
+        // No meta information in standard JDBC
+        return null;
+    }
+
     private void checkNotEmpty()
     {
         if (original == null) {
