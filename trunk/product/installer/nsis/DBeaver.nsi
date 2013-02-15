@@ -224,6 +224,14 @@ SectionGroup /e "Plugins"
 
 	SectionEnd
 
+	Section "NoSQL" SecNoSQL
+
+	  SetOutPath "$INSTDIR\plugins"
+
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.nosql*.jar"
+
+	SectionEnd
+
 	Section "ER Diagrams" SecERD
 
 	  SetOutPath "$INSTDIR\plugins"
@@ -253,6 +261,7 @@ SectionEnd
   LangString DESC_SecMySQL ${LANG_ENGLISH} "Supports additional features for MySQL 5.x databases. Includes MySQL JDBC driver"
   LangString DESC_SecOracle ${LANG_ENGLISH} "Supports additional features for Oracle 8.x-11.x databases."
   LangString DESC_SecWMI ${LANG_ENGLISH} "Supports additional features for Windows Management Instrumentation (WMI)."
+  LangString DESC_SecNoSQL ${LANG_ENGLISH} "NoSQL databases support (Cassandra)."
   LangString DESC_SecERD ${LANG_ENGLISH} "Provides support of ERD diagrams for schemas and individual tables."
   LangString DESC_SecDrivers ${LANG_ENGLISH} "Includes JDBC drivers for Oracle, DB2, PostgreSQL, SQL Server and Sybase."
 
@@ -263,6 +272,7 @@ SectionEnd
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecMySQL} $(DESC_SecMySQL)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecOracle} $(DESC_SecOracle)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecWMI} $(DESC_SecWMI)
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecNoSQL} $(DESC_SecNoSQL)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecERD} $(DESC_SecERD)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecDrivers} $(DESC_SecDrivers)
   !insertmacro MUI_FUNCTION_DESCRIPTION_END
