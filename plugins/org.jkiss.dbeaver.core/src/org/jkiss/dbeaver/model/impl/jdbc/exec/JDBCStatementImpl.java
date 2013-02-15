@@ -232,7 +232,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         if (resultSet == null) {
             return null;
         }
-        JDBCResultSetImpl dbResult = createResultSet(resultSet);
+        JDBCResultSetImpl dbResult = createResultSetImpl(resultSet);
         // Scroll original result set if needed
         if (rsOffset > 0) {
             JDBCUtils.scrollResultSet(resultSet, rsOffset);
@@ -243,7 +243,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         return dbResult;
     }
 
-    protected JDBCResultSetImpl createResultSet(ResultSet resultSet)
+    protected JDBCResultSetImpl createResultSetImpl(ResultSet resultSet)
     {
         return new JDBCResultSetImpl(this, resultSet);
     }

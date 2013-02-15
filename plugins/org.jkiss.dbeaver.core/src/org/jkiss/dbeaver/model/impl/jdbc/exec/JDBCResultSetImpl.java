@@ -184,7 +184,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public JDBCResultSetMetaData getResultSetMetaData()
         throws DBCException
     {
-        return new JDBCResultSetMetaData(this);
+        return createMetaDataImpl();
     }
 
     @Override
@@ -1601,6 +1601,11 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         throws SQLException
     {
         return original.isWrapperFor(iface);
+    }
+
+    protected JDBCResultSetMetaData createMetaDataImpl() throws DBCException
+    {
+        return new JDBCResultSetMetaData(this);
     }
 
 }
