@@ -37,6 +37,8 @@ public interface DBCResultSet extends DBPObject
 
     DBDValueMeta getColumnValueMeta(int index) throws DBCException;
 
+    DBDValueMeta getRowMeta() throws DBCException;
+
     boolean nextRow() throws DBCException;
 
     boolean moveTo(int position) throws DBCException;

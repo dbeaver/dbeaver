@@ -116,6 +116,12 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     @Override
     public DBDValueMeta getColumnValueMeta(int index) throws DBCException
     {
+        return null;
+    }
+
+    @Override
+    public DBDValueMeta getRowMeta() throws DBCException
+    {
         try {
             Collection<WMIQualifier> qualifiers = row.getQualifiers();
             if (CommonUtils.isEmpty(qualifiers)) {

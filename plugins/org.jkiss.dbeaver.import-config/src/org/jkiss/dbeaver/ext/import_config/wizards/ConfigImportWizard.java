@@ -132,7 +132,8 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             connectionInfo.setDriver(matchedDrivers.get(0));
         } else {
             // Let user to choose correct driver
-            final DriverDescriptor driver = SelectObjectDialog.selectObject(getShell(), "Choose driver for connection '" + connectionInfo.getAlias() + "'", matchedDrivers);
+            final DriverDescriptor driver = SelectObjectDialog.selectObject(
+                getShell(), "Choose driver for connection '" + connectionInfo.getAlias() + "'", matchedDrivers);
             if (driver == null) {
                 return false;
             }
