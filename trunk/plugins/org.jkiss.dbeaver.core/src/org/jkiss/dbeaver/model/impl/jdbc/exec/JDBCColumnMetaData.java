@@ -53,7 +53,6 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
 
     public static final String PROP_CATEGORY_COLUMN = "Column";
 
-    private JDBCResultSetMetaData resultSetMeta;
     private int index;
     private boolean notNull;
     private long displaySize;
@@ -74,9 +73,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
         throws SQLException
     {
-        this.resultSetMeta = resultSetMeta;
-
-        DBPObject rsSource = this.resultSetMeta.getResultSet().getSource();
+        DBPObject rsSource = resultSetMeta.getResultSet().getSource();
         DBSObject dataContainer = rsSource instanceof DBCStatement ? ((DBCStatement)rsSource).getDataContainer() : null;
         DBSTable ownerTable = null;
         if (dataContainer instanceof DBSTable) {
@@ -84,26 +81,25 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
         this.index = index;
 
-        ResultSetMetaData metaData = resultSetMeta.getJdbcMetaData();
-        this.label = metaData.getColumnLabel(index);
-        this.name = metaData.getColumnName(index);
+        this.label = resultSetMeta.getColumnLabel(index);
+        this.name = resultSetMeta.getColumnName(index);
         boolean hasData = false;
 
         String fetchedTableName = null;
         try {
-            fetchedTableName = metaData.getTableName(index);
+            fetchedTableName = resultSetMeta.getTableName(index);
         } catch (SQLException e) {
             log.debug(e);
         }
         String fetchedCatalogName = null;
         try {
-            fetchedCatalogName = metaData.getCatalogName(index);
+            fetchedCatalogName = resultSetMeta.getCatalogName(index);
         } catch (SQLException e) {
             log.debug(e);
         }
         String fetchedSchemaName = null;
         try {
-            fetchedSchemaName = metaData.getSchemaName(index);
+            fetchedSchemaName = resultSetMeta.getSchemaName(index);
         } catch (SQLException e) {
             log.debug(e);
         }
@@ -167,28 +163,28 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         }
 
         if (!hasData) {
-            this.notNull = metaData.isNullable(index) == ResultSetMetaData.columnNoNulls;
+            this.notNull = resultSetMeta.isNullable(index) == ResultSetMetaData.columnNoNulls;
             try {
-                this.displaySize = metaData.getColumnDisplaySize(index);
+                this.displaySize = resultSetMeta.getColumnDisplaySize(index);
             } catch (SQLException e) {
                 this.displaySize = 0;
             }
             this.catalogName = fetchedCatalogName;
             this.schemaName = fetchedSchemaName;
             this.tableName = fetchedTableName;
-            this.typeID = metaData.getColumnType(index);
-            this.typeName = metaData.getColumnTypeName(index);
-            this.readOnly = metaData.isReadOnly(index);
-            this.writable = metaData.isWritable(index);
+            this.typeID = resultSetMeta.getColumnType(index);
+            this.typeName = resultSetMeta.getColumnTypeName(index);
+            this.readOnly = resultSetMeta.isReadOnly(index);
+            this.writable = resultSetMeta.isWritable(index);
 
             try {
-                this.precision = metaData.getPrecision(index);
+                this.precision = resultSetMeta.getPrecision(index);
             } catch (Exception e) {
                 // NumberFormatException occurred in Oracle on BLOB columns
                 this.precision = 0;
             }
             try {
-                this.scale = metaData.getScale(index);
+                this.scale = resultSetMeta.getScale(index);
             } catch (Exception e) {
                 this.scale = 0;
             }
@@ -205,11 +201,6 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
                 log.warn(e);
             }
         }
-    }
-
-    JDBCResultSetMetaData getResultSetMeta()
-    {
-        return resultSetMeta;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 1)
