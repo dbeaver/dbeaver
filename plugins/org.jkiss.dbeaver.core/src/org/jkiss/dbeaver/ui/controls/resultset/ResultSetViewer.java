@@ -943,7 +943,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             DBSEntity sourceTable = null;
             for (DBDAttributeBinding column : metaColumns) {
                 if (isColumnReadOnly(column)) {
-                    singleSourceCells = false;
                     break;
                 }
                 if (sourceTable == null) {
@@ -1747,7 +1746,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public void applyChanges(DBRProgressMonitor monitor, DBDValueListener listener)
     {
         if (!singleSourceCells) {
-            log.error("Can't save data for resultset from multiple sources");
+            UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Can't save data for result set from multiple sources");
             return;
         }
         try {
