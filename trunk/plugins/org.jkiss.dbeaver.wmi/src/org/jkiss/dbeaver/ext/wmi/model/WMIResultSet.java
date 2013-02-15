@@ -21,16 +21,15 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-import org.jkiss.wmi.service.WMIConstants;
-import org.jkiss.wmi.service.WMIException;
-import org.jkiss.wmi.service.WMIObject;
-import org.jkiss.wmi.service.WMIObjectAttribute;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.wmi.service.*;
 
 import java.util.*;
 
@@ -111,6 +110,20 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             return row.getValue(name);
         } catch (WMIException e) {
             throw new DBCException(e);
+        }
+    }
+
+    @Override
+    public DBDValueMeta getColumnValueMeta(int index) throws DBCException
+    {
+        try {
+            Collection<WMIQualifier> qualifiers = row.getQualifiers();
+            if (CommonUtils.isEmpty(qualifiers)) {
+                return null;
+            }
+            return new WMIValueMeta(qualifiers);
+        } catch (WMIException e) {
+            throw new DBCException("Can't read value qualifiers");
         }
     }
 
