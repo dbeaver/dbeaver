@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -74,7 +73,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         QMUtils.getDefaultHandler().handleResultSetOpen(this);
     }
 
-    JDBCResultSetImpl(JDBCStatementImpl statement, ResultSet original)
+    protected JDBCResultSetImpl(JDBCStatementImpl statement, ResultSet original)
     {
         this.context = statement.getContext();
         this.statement = statement;
@@ -182,10 +181,25 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
-    public DBCResultSetMetaData getResultSetMetaData()
+    public JDBCResultSetMetaData getResultSetMetaData()
         throws DBCException
     {
         return new JDBCResultSetMetaData(this);
+    }
+
+    @Override
+    public ResultSetMetaData getMetaData()
+        throws SQLException
+    {
+        try {
+            return getResultSetMetaData();
+        } catch (DBCException e) {
+            if (e.getCause() instanceof SQLException) {
+                throw (SQLException)e.getCause();
+            } else {
+                throw new SQLException(e);
+            }
+        }
     }
 
     public void setMaxRows(long maxRows) {
@@ -542,13 +556,6 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             return null;
         }
         return original.getCursorName();
-    }
-
-    @Override
-    public ResultSetMetaData getMetaData()
-        throws SQLException
-    {
-        return new JDBCResultSetMetaData(this, original == null ? null : original.getMetaData());
     }
 
     @Override
