@@ -135,10 +135,12 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
                 // Just simplest statement for scripts
                 // Sometimes prepared statements perform additional checks of queries
                 // (e.g. in Oracle it parses IN/OUT parameters)
-                JDBCStatementImpl statement = createStatement(
+                JDBCStatement statement = createStatement(
                     scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                     updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
-                statement.setQueryString(sqlQuery);
+                if (statement instanceof JDBCStatementImpl) {
+                    ((JDBCStatementImpl)statement).setQueryString(sqlQuery);
+                }
                 return statement;
             } else if (returnGeneratedKeys) {
                 // Return keys
@@ -179,9 +181,9 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         throws SQLFeatureNotSupportedException
     {
         if (statement instanceof CallableStatement) {
-            return new JDBCCallableStatementImpl(this, (CallableStatement)statement, null);
+            return createCallableStatementImpl((CallableStatement)statement, null);
         } else if (statement instanceof PreparedStatement) {
-            return new JDBCPreparedStatementImpl(this, (PreparedStatement)statement, null);
+            return createPreparedStatementImpl((PreparedStatement)statement, null);
         } else {
             throw new SQLFeatureNotSupportedException();
         }
@@ -198,14 +200,14 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public JDBCPreparedStatement prepareStatement(String sql)
         throws SQLException
     {
-        return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql), sql);
+        return createPreparedStatementImpl(getConnection().prepareStatement(sql), sql);
     }
 
     @Override
     public JDBCCallableStatement prepareCall(String sql)
         throws SQLException
     {
-        return new JDBCCallableStatementImpl(this, getConnection().prepareCall(sql), sql);
+        return createCallableStatementImpl(getConnection().prepareCall(sql), sql);
     }
 
     @Override
@@ -348,11 +350,10 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     }
 
     @Override
-    public JDBCStatementImpl createStatement(int resultSetType, int resultSetConcurrency)
+    public JDBCStatement createStatement(int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return new JDBCStatementImpl<Statement>(
-            this,
+        return createStatementImpl(
             getConnection().createStatement(resultSetType, resultSetConcurrency));
     }
 
@@ -360,8 +361,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return new JDBCPreparedStatementImpl(
-            this,
+        return createPreparedStatementImpl(
             getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency),
             sql);
     }
@@ -370,7 +370,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public JDBCCallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
         throws SQLException
     {
-        return new JDBCCallableStatementImpl(this, getConnection().prepareCall(sql, resultSetType, resultSetConcurrency), sql);
+        return createCallableStatementImpl(getConnection().prepareCall(sql, resultSetType, resultSetConcurrency), sql);
     }
 
     @Override
@@ -460,8 +460,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public JDBCPreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
-        return new JDBCPreparedStatementImpl(
-            this,
+        return createPreparedStatementImpl(
             getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
             sql);
     }
@@ -470,8 +469,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public JDBCCallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability)
         throws SQLException
     {
-        return new JDBCCallableStatementImpl(
-            this,
+        return createCallableStatementImpl(
             getConnection().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
             sql);
     }
@@ -480,21 +478,21 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public JDBCPreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
         throws SQLException
     {
-        return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, autoGeneratedKeys), sql);
+        return createPreparedStatementImpl(getConnection().prepareStatement(sql, autoGeneratedKeys), sql);
     }
 
     @Override
     public JDBCPreparedStatement prepareStatement(String sql, int[] columnIndexes)
         throws SQLException
     {
-        return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, columnIndexes), sql);
+        return createPreparedStatementImpl(getConnection().prepareStatement(sql, columnIndexes), sql);
     }
 
     @Override
     public JDBCPreparedStatement prepareStatement(String sql, String[] columnNames)
         throws SQLException
     {
-        return new JDBCPreparedStatementImpl(this, getConnection().prepareStatement(sql, columnNames), sql);
+        return createPreparedStatementImpl(getConnection().prepareStatement(sql, columnNames), sql);
     }
 
     @Override
@@ -645,6 +643,24 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         catch (SQLException e) {
             throw new DBCException(CoreMessages.model_jdbc_exception_could_not_close_connection, e);
         }
+    }
+
+    protected JDBCStatement createStatementImpl(Statement original)
+        throws SQLFeatureNotSupportedException
+    {
+        return new JDBCStatementImpl<Statement>(this, original);
+    }
+
+    protected JDBCPreparedStatement createPreparedStatementImpl(PreparedStatement original, String sql)
+        throws SQLFeatureNotSupportedException
+    {
+        return new JDBCPreparedStatementImpl(this, original, sql);
+    }
+
+    protected JDBCCallableStatement createCallableStatementImpl(CallableStatement original, String sql)
+        throws SQLFeatureNotSupportedException
+    {
+        return new JDBCCallableStatementImpl(this, original, sql);
     }
 
     private class TransactionManager extends AbstractTransactionManager {

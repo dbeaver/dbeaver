@@ -70,7 +70,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private JDBCTableMetaData tableMetaData;
     private DBSEntityAttribute tableColumn;
 
-    JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
+    protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
         throws SQLException
     {
         DBPObject rsSource = resultSetMeta.getResultSet().getSource();

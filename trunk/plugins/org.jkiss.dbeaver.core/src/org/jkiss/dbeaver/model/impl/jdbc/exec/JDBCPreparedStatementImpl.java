@@ -83,7 +83,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     {
         this.beforeExecute();
         try {
-            return createResultSet(getOriginal().executeQuery());
+            return createResultSetImpl(getOriginal().executeQuery());
         } catch (Throwable e) {
             throw super.handleExecuteError(e);
         } finally {

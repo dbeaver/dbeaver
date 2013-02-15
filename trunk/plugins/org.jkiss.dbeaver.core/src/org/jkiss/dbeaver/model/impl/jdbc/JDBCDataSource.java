@@ -203,12 +203,17 @@ public abstract class JDBCDataSource
         if (connection == null) {
             throw new IllegalStateException(CoreMessages.editors_sql_status_not_connected_to_database);
         }
-        return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, false);
+        return createConnection(monitor, purpose, taskTitle, false);
     }
 
     @Override
     public DBCExecutionContext openIsolatedContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle) {
-        return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, true);
+        return createConnection(monitor, purpose, taskTitle, true);
+    }
+
+    protected JDBCConnectionImpl createConnection(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
+    {
+        return new JDBCConnectionImpl(this, monitor, purpose, taskTitle, isolated);
     }
 
     @Override
