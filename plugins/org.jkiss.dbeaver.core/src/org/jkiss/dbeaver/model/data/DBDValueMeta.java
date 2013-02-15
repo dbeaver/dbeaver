@@ -17,31 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.exec;
-
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.data.DBDValueMeta;
+package org.jkiss.dbeaver.model.data;
 
 /**
- * DBCResultSet
+ * DBD value meta information.
+ * It may be additionally provided by result set as a pair to value itself
  */
-public interface DBCResultSet extends DBPObject
-{
-    DBCExecutionContext getContext();
+public interface DBDValueMeta {
 
-    DBCStatement getSource();
-
-    Object getColumnValue(int index) throws DBCException;
-
-    Object getColumnValue(String name) throws DBCException;
-
-    DBDValueMeta getColumnValueMeta(int index) throws DBCException;
-
-    boolean nextRow() throws DBCException;
-
-    boolean moveTo(int position) throws DBCException;
-
-    DBCResultSetMetaData getResultSetMetaData() throws DBCException;
-
-    void close();
 }
