@@ -967,6 +967,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         setStatus(statusMessage, false);
         hasData = true;
+        previewValue();
         updateEditControls();
     }
 
