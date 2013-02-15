@@ -232,7 +232,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         if (resultSet == null) {
             return null;
         }
-        JDBCResultSetImpl dbResult = new JDBCResultSetImpl(this, resultSet);
+        JDBCResultSetImpl dbResult = createResultSet(resultSet);
         // Scroll original result set if needed
         if (rsOffset > 0) {
             JDBCUtils.scrollResultSet(resultSet, rsOffset);
@@ -241,6 +241,11 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             dbResult.setMaxRows(rsMaxRows);
         }
         return dbResult;
+    }
+
+    protected JDBCResultSetImpl createResultSet(ResultSet resultSet)
+    {
+        return new JDBCResultSetImpl(this, resultSet);
     }
 
     ////////////////////////////////////////////////////////////////////
