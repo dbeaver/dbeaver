@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -142,6 +143,13 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         catch (SQLException e) {
             throw new DBCException(e);
         }
+    }
+
+    @Override
+    public DBDValueMeta getColumnValueMeta(int index) throws DBCException
+    {
+        // No meta information in standard JDBC
+        return null;
     }
 
     private void checkNotEmpty()
