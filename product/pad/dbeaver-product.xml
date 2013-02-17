@@ -47,6 +47,25 @@
 
     <versions>
         <version>
+            <number>2.0.7</number>
+            <type>stable</type>
+            <date>17.02.2013</date>
+
+            <release-notes>
+                - Apache Cassandra extension plugin
+                - ResultSet cell properties
+                - Inline integer value editor fixed
+                - Inline binary editor added
+                - MySQL stored procedures editor fixed
+                - Oracle XML editor fixed
+                - PostgreSQL big schema loading fixed (performance increased)
+                - SQL generation improved (MERGE operator)
+                - Date viewer performance increased
+                - A few UI bugfixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.0.6</number>
             <type>stable</type>
             <date>03.02.2013</date>

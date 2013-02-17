@@ -44,9 +44,9 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>2.0.6</Program_Version>
+    <Program_Version>2.0.7</Program_Version>
     <Program_Release_Month>02</Program_Release_Month>
-    <Program_Release_Day>03</Program_Release_Day>
+    <Program_Release_Day>17</Program_Release_Day>
     <Program_Release_Year>2013</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -55,7 +55,16 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        -
+        - Apache Cassandra extension plugin
+        - ResultSet cell properties
+        - Inline integer value editor fixed
+        - Inline binary editor added
+        - MySQL stored procedures editor fixed
+        - Oracle XML editor fixed
+        - PostgreSQL big schema loading fixed (performance increased)
+        - SQL generation improved (MERGE operator)
+        - Date viewer performance increased
+        - A few UI bugfixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -86,8 +95,8 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.6-x86-setup.exe</Primary_Download_URL>
-      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.6-x86_64-setup.exe</Secondary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.7-x86-setup.exe</Primary_Download_URL>
+      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.0.7-x86_64-setup.exe</Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
     </Download_URLs>
@@ -112,12 +121,12 @@
   </Permissions>
   <Program_Descriptions>
     <English>
-      <Keywords>sql,database manager,database client,java,mysql,postgresql,mssql,db2,oracle,wmi,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc,sqlite,ingres,linter,teradata,wmi browser</Keywords>
+      <Keywords>sql,database manager,database client,java,mysql,postgresql,mssql,db2,oracle,wmi,sybase,jbase,derby,informix,sap,maxdb,odbc,jdbc,sqlite,ingres,linter,teradata,vertica,cassandra</Keywords>
       <Char_Desc_45>Universal Database Manager and SQL Client</Char_Desc_45>
       <Char_Desc_80>Free Universal Database Manager and SQL Client</Char_Desc_80>
-      <Char_Desc_250>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite and any database which has JDBC driver.</Char_Desc_250>
-      <Char_Desc_450>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite and any database which has JDBC driver.</Char_Desc_450>
-      <Char_Desc_2000>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite and any database which has JDBC driver.</Char_Desc_2000>
+      <Char_Desc_250>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite, Vertica, Cassandra and any database which has JDBC driver.</Char_Desc_250>
+      <Char_Desc_450>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite, Vertica, Cassandra and any database which has JDBC driver.</Char_Desc_450>
+      <Char_Desc_2000>Free Universal Database Manager and SQL Client. Java-based application, supports MySQL, PostgreSQL, Oracle, DB2, MSSQL, Sybase, SQLite, Vertica, Cassandra and any database which has JDBC driver.</Char_Desc_2000>
     </English>
   </Program_Descriptions>
 </XML_DIZ_INFO>
