@@ -151,7 +151,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
                         boolean isDate = valueController.getValueType().getTypeID() == java.sql.Types.DATE;
                         boolean isTime = valueController.getValueType().getTypeID() == java.sql.Types.TIME;
-                        boolean isTimeStamp = valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP;
+                        boolean isTimeStamp = valueController.getValueType().getTypeID() == java.sql.Types.TIMESTAMP || (!isDate && !isTime);
 
                         if (!inline && (isDate || isTimeStamp)) {
                             UIUtils.createControlLabel(dateTimeGroup, "Date");

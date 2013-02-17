@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
@@ -217,7 +218,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                     }
                 });
             } catch (InvocationTargetException e) {
-                throw new CoreException(RuntimeUtils.makeExceptionStatus(e.getTargetException()));
+                UIUtils.showErrorDialog(getSite().getShell(), "Source text read error", "Can't get SQL text", e.getTargetException());
             } catch (InterruptedException e) {
                 // just skip it
             }
