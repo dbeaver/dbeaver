@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 import java.util.Collection;
@@ -30,6 +31,14 @@ import java.util.Collection;
  */
 public interface DBPDataTypeProvider
 {
+    /**
+     * Determines data kind by type name and/or ID
+     * @param typeName type name
+     * @param typeID type ID
+     * @return data kind or null if type can't be resolved
+     */
+    DBSDataKind resolveDataKind(String typeName, int typeID);
+
     /**
      * Retrieves list of supported datatypes
      * @return list of types

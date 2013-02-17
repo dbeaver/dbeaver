@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -69,6 +69,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private boolean writable;
     private JDBCTableMetaData tableMetaData;
     private DBSEntityAttribute tableColumn;
+    private final DBSDataKind dataKind;
 
     protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
         throws SQLException
@@ -201,6 +202,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
                 log.warn(e);
             }
         }
+        dataKind = JDBCUtils.resolveDataKind(resultSetMeta.getResultSet().getSource().getContext().getDataSource(), typeName, typeID);
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 1)
@@ -280,7 +282,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     @Override
     public DBSDataKind getDataKind()
     {
-        return JDBCDataType.getDataKind(typeName, typeID);
+        return dataKind;
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 4)
