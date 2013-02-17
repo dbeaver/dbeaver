@@ -75,11 +75,21 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
         for (GenericTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
             command.aggregateCommand(tcm.makeCreateCommand(column));
         }
-        for (GenericPrimaryKey primaryKey : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-            command.aggregateCommand(pkm.makeCreateCommand(primaryKey));
+        try {
+            for (GenericPrimaryKey primaryKey : CommonUtils.safeCollection(table.getConstraints(monitor))) {
+                command.aggregateCommand(pkm.makeCreateCommand(primaryKey));
+            }
+        } catch (DBException e) {
+            // Ignore primary keys
+            log.debug(e);
         }
-        for (GenericTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-            command.aggregateCommand(im.makeCreateCommand(index));
+        try {
+            for (GenericTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
+                command.aggregateCommand(im.makeCreateCommand(index));
+            }
+        } catch (DBException e) {
+            // Ignore indexes
+            log.debug(e);
         }
         return command.getPersistActions();
     }

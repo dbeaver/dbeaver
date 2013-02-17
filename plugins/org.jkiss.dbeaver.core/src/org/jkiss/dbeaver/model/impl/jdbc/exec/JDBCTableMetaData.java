@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -41,6 +43,8 @@ import java.util.List;
  * JDBC Table MetaData
  */
 public class JDBCTableMetaData implements DBCEntityMetaData {
+
+    static final Log log = LogFactory.getLog(JDBCTableMetaData.class);
 
     private JDBCResultSetMetaData resultSetMetaData;
     private String catalogName;
@@ -146,15 +150,21 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                     }
                 }
                 if (identifiers.isEmpty()) {
-                    // Check indexes only if no unique constraints found
-                    Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
-                    if (!CommonUtils.isEmpty(indexes)) {
-                        for (DBSTableIndex index : indexes) {
-                            if (index.isUnique()) {
-                                identifiers.add(
-                                    new JDBCTableIdentifier(monitor, index, this));
+                    try {
+                        // Check indexes only if no unique constraints found
+                        Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
+                        if (!CommonUtils.isEmpty(indexes)) {
+                            for (DBSTableIndex index : indexes) {
+                                if (index.isUnique()) {
+                                    identifiers.add(
+                                        new JDBCTableIdentifier(monitor, index, this));
+                                }
                             }
                         }
+                    } catch (DBException e) {
+                        // Indexes are not supported or not available
+                        // Just skip them
+                        log.debug(e);
                     }
                 }
             }
