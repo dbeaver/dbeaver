@@ -21,6 +21,8 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
@@ -469,6 +471,17 @@ public class JDBCUtils {
             } else {
                 throw new SQLException(targetException);
             }
+        }
+    }
+
+    public static DBSDataKind resolveDataKind(DBPDataSource dataSource, String typeName, int typeID)
+    {
+        if (dataSource == null) {
+            return JDBCDataSource.getDataKind(typeName, typeID);
+        } else if (dataSource instanceof DBPDataTypeProvider) {
+            return ((DBPDataTypeProvider) dataSource).resolveDataKind(typeName, typeID);
+        } else {
+            return DBSDataKind.UNKNOWN;
         }
     }
 

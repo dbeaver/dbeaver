@@ -19,11 +19,10 @@
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.sql.Types;
 
 /**
  * JDBCDataType
@@ -101,7 +100,7 @@ public class JDBCDataType implements DBSDataType
     @Override
     public DBSDataKind getDataKind()
     {
-        return getDataKind(name, valueType);
+        return JDBCUtils.resolveDataKind(getDataSource(), name, valueType);
     }
 
     @Override
@@ -153,78 +152,6 @@ public class JDBCDataType implements DBSDataType
     public boolean isPersisted()
     {
         return true;
-    }
-
-    public static int getValueTypeByTypeName(String typeName, int valueType)
-    {
-        // [JDBC: SQLite driver uses VARCHAR value type for all LOBs]
-        if (valueType == Types.OTHER || valueType == Types.VARCHAR) {
-            if ("BLOB".equalsIgnoreCase(typeName)) {
-                return Types.BLOB;
-            } else if ("CLOB".equalsIgnoreCase(typeName)) {
-                return Types.CLOB;
-            } else if ("NCLOB".equalsIgnoreCase(typeName)) {
-                return Types.NCLOB;
-            }
-        }
-        return valueType;
-    }
-
-    public static DBSDataKind getDataKind(String typeName, int valueType)
-    {
-        switch (getValueTypeByTypeName(typeName, valueType)) {
-            case Types.BOOLEAN:
-                return DBSDataKind.BOOLEAN;
-            case Types.CHAR:
-            case Types.VARCHAR:
-            case Types.NVARCHAR:
-            case Types.LONGVARCHAR:
-            case Types.LONGNVARCHAR:
-                return DBSDataKind.STRING;
-            case Types.BIGINT:
-            case Types.DECIMAL:
-            case Types.DOUBLE:
-            case Types.FLOAT:
-            case Types.INTEGER:
-            case Types.NUMERIC:
-            case Types.REAL:
-            case Types.SMALLINT:
-                return DBSDataKind.NUMERIC;
-            case Types.BIT:
-                return DBSDataKind.BOOLEAN;
-            case Types.TINYINT:
-                if (typeName.toLowerCase().contains("bool")) {
-                    // Declared as numeric but actually it's a boolean
-                    return DBSDataKind.BOOLEAN;
-                } else {
-                    return DBSDataKind.NUMERIC;
-                }
-            case Types.DATE:
-            case Types.TIME:
-            case Types.TIMESTAMP:
-                return DBSDataKind.DATETIME;
-            case Types.BINARY:
-            case Types.VARBINARY:
-            case Types.LONGVARBINARY:
-                return DBSDataKind.BINARY;
-            case Types.BLOB:
-            case Types.CLOB:
-            case Types.NCLOB:
-                return DBSDataKind.LOB;
-            case Types.SQLXML:
-                return DBSDataKind.LOB;
-            case Types.STRUCT:
-                return DBSDataKind.STRUCT;
-            case Types.ARRAY:
-                return DBSDataKind.ARRAY;
-            case Types.ROWID:
-                // threat ROWID as string
-                return DBSDataKind.STRING;
-            case Types.REF:
-                return DBSDataKind.REFERENCE;
-
-        }
-        return DBSDataKind.UNKNOWN;
     }
 
 }
