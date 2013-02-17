@@ -378,6 +378,19 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
+    public DBSDataKind resolveDataKind(String typeName, int valueType)
+    {
+        if (valueType == -101) {
+            // TIMESTAMP WITH TIMEZONE
+            return DBSDataKind.DATETIME;
+        }
+        if (typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML)) {
+            return DBSDataKind.LOB;
+        }
+        return super.resolveDataKind(typeName, valueType);
+    }
+
+    @Override
     public Collection<? extends DBSDataType> getDataTypes()
     {
         return dataTypeCache.getCachedObjects();

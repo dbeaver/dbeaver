@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -283,7 +282,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     @Override
     public DBSDataKind getDataKind()
     {
-        return JDBCDataType.getDataKind(getName(), valueType);
+        return JDBCUtils.resolveDataKind(getDataSource(), getName(), valueType);
     }
 
     @Override

@@ -38,7 +38,7 @@ public class DBCDefaultValueHandler implements DBDValueHandler {
     @Override
     public int getFeatures()
     {
-        return FEATURE_VIEWER;
+        return FEATURE_EDITOR;
     }
 
     @Override

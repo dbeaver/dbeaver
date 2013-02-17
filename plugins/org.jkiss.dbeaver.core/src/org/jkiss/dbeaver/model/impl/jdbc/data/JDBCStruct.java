@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -29,7 +30,7 @@ import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -105,7 +106,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                     }
                     for (int i = 0; i < attrCount; i++) {
                         Object value = attrValues[i];
-                        DBSAttributeBase attr = new StructAttribute(metaData, i + 1);
+                        DBSAttributeBase attr = new StructAttribute(type.getDataSource(), metaData, i + 1);
                         value = DBUtils.findValueHandler(context, attr).getValueFromObject(context, attr, value, false);
                         values.put(attr, value);
                     }
@@ -260,7 +261,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
             setTypeName(dataKind.name());
         }
 
-        public StructAttribute(ResultSetMetaData metaData, int index) throws SQLException
+        public StructAttribute(DBPDataSource dataSource, ResultSetMetaData metaData, int index) throws SQLException
         {
             super(
                 metaData.getColumnName(index),
@@ -271,7 +272,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
                 metaData.getScale(index),
                 metaData.getPrecision(index),
                 false);
-            dataKind = JDBCDataType.getDataKind(getTypeName(), getTypeID());
+            dataKind = JDBCUtils.resolveDataKind(dataSource, getTypeName(), getTypeID());
         }
 
         @Override
