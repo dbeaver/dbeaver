@@ -36,6 +36,8 @@ import java.util.List;
 public class OracleTable extends OracleTablePhysical
 {
     private OracleDataType tableType;
+    private String iotType;
+    private String iotName;
     private boolean temporary;
     private boolean secondary;
     private boolean nested;
@@ -64,6 +66,8 @@ public class OracleTable extends OracleTablePhysical
                 typeOwner,
                 JDBCUtils.safeGetString(dbResult, "TABLE_TYPE"));
         }
+        this.iotType = JDBCUtils.safeGetString(dbResult, "IOT_TYPE");
+        this.iotName = JDBCUtils.safeGetString(dbResult, "IOT_NAME");
         this.temporary = JDBCUtils.safeGetBoolean(dbResult, "TEMPORARY", "Y");
         this.secondary = JDBCUtils.safeGetBoolean(dbResult, "SECONDARY", "Y");
         this.nested = JDBCUtils.safeGetBoolean(dbResult, "NESTED", "Y");
@@ -94,18 +98,30 @@ public class OracleTable extends OracleTablePhysical
     }
 
     @Property(viewable = false, order = 6)
+    public String getIotType()
+    {
+        return iotType;
+    }
+
+    @Property(viewable = false, order = 7)
+    public String getIotName()
+    {
+        return iotName;
+    }
+
+    @Property(viewable = false, order = 10)
     public boolean isTemporary()
     {
         return temporary;
     }
 
-    @Property(viewable = false, order = 6)
+    @Property(viewable = false, order = 11)
     public boolean isSecondary()
     {
         return secondary;
     }
 
-    @Property(viewable = false, order = 7)
+    @Property(viewable = false, order = 12)
     public boolean isNested()
     {
         return nested;
