@@ -67,6 +67,8 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
                 (JDBCExecutionContext) context,
                 (ResultSet) value,
                 type.getTypeName());
+        } else if (value instanceof RowId) {
+            value = new JDBCRowId((RowId) value);
         }
         return value;
     }
@@ -99,6 +101,9 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     public Object getValueFromObject(DBCExecutionContext context, DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (copy && object != null) {
+            if (object instanceof DBDValueCloneable) {
+                return ((DBDValueCloneable) object).cloneValue(context.getProgressMonitor());
+            }
             throw new DBCException("Can't copy object value " + object);
         }
         return object;
@@ -109,9 +114,6 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     {
         if (value instanceof DBDValue) {
             return value.toString();
-        }
-        if (value instanceof RowId) {
-            return CommonUtils.toHexString(((RowId) value).getBytes());
         }
         return DBUtils.getDefaultValueDisplayString(value);
     }

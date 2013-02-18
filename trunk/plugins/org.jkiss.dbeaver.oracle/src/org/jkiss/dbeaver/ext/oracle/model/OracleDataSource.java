@@ -384,7 +384,9 @@ public class OracleDataSource extends JDBCDataSource
             // TIMESTAMP WITH TIMEZONE
             return DBSDataKind.DATETIME;
         }
-        if (typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML)) {
+        if (typeName != null &&
+            (typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML)))
+        {
             return DBSDataKind.LOB;
         }
         return super.resolveDataKind(typeName, valueType);

@@ -49,6 +49,8 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
                 if (valueType == java.sql.Types.LONGVARCHAR || valueType == java.sql.Types.LONGNVARCHAR) {
                     // Eval longvarchars as LOBs
                     return JDBCContentValueHandler.INSTANCE;
+                } else if (valueType == java.sql.Types.ROWID) {
+                    return JDBCObjectValueHandler.INSTANCE;
                 } else {
                     return JDBCStringValueHandler.INSTANCE;
                 }
