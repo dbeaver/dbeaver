@@ -47,10 +47,11 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     public static final DBSEntityConstraintType CONSTRAINT_WITH_CHECK_OPTION = new DBSEntityConstraintType("V", "With Check Option", null, false, false);
     public static final DBSEntityConstraintType CONSTRAINT_WITH_READ_ONLY = new DBSEntityConstraintType("O", "With Read Only", null, false, false);
 
-    public static class AdditionalInfo extends TableAdditionalInfo {
+    public class AdditionalInfo extends TableAdditionalInfo {
         private String text;
         private String typeText;
         private String oidText;
+        private String typeOwner;
         private String typeName;
         private OracleView superView;
 
@@ -58,12 +59,21 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         public String getText() { return text; }
         public void setText(String text) { this.text = text; }
 
+        @Property(viewable = false, order = 10)
+        public Object getType(DBRProgressMonitor monitor) throws DBException
+        {
+            if (typeOwner == null) {
+                return null;
+            }
+            OracleSchema owner = getDataSource().getSchema(monitor, typeOwner);
+            return owner == null ? null : owner.getDataType(monitor, typeName);
+        }
+        @Property(viewable = false, order = 11)
         public String getTypeText() { return typeText; }
         public void setTypeText(String typeText) { this.typeText = typeText; }
+        @Property(viewable = false, order = 12)
         public String getOidText() { return oidText; }
         public void setOidText(String oidText) { this.oidText = oidText; }
-        public String getTypeName() { return typeName; }
-        public void setTypeName(String typeName) { this.typeName = typeName; }
         @Property(viewable = false, editable = true, order = 5)
         public OracleView getSuperView() { return superView; }
         public void setSuperView(OracleView superView) { this.superView = superView; }
@@ -181,9 +191,10 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
                 try {
                     if (dbResult.next()) {
                         additionalInfo.setText(JDBCUtils.safeGetString(dbResult, "TEXT"));
-                        additionalInfo.setTypeText(JDBCUtils.safeGetString(dbResult, "TYPE_TEXT"));
-                        additionalInfo.setOidText(JDBCUtils.safeGetString(dbResult, "OID_TEXT"));
-                        additionalInfo.setTypeName(JDBCUtils.safeGetString(dbResult, "VIEW_TYPE"));
+                        additionalInfo.setTypeText(JDBCUtils.safeGetStringTrimmed(dbResult, "TYPE_TEXT"));
+                        additionalInfo.setOidText(JDBCUtils.safeGetStringTrimmed(dbResult, "OID_TEXT"));
+                        additionalInfo.typeOwner = JDBCUtils.safeGetStringTrimmed(dbResult, "VIEW_TYPE_OWNER");
+                        additionalInfo.typeName = JDBCUtils.safeGetStringTrimmed(dbResult, "VIEW_TYPE");
 
                         String superViewName = JDBCUtils.safeGetString(dbResult, "SUPERVIEW_NAME");
                         if (!CommonUtils.isEmpty(superViewName)) {
