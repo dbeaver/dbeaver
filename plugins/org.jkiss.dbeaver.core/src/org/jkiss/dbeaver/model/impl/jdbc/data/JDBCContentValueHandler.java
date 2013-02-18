@@ -386,6 +386,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                     }
                                 } catch (Exception e) {
                                     log.error(e);
+                                    valueController.showMessage(e.getMessage(), true);
                                 }
                             }
                         });

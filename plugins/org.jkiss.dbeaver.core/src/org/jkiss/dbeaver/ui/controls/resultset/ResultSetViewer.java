@@ -310,36 +310,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         });
     }
 
-    private class ResultSetRowImpl implements ResultSetRow {
-
-        private final Object[] values;
-
-        private ResultSetRowImpl(Object[] values)
-        {
-            this.values = values;
-        }
-
-        @Override
-        public int getValueCount()
-        {
-            return values.length;
-        }
-
-        @Override
-        public Object[] getValues()
-        {
-            return values;
-        }
-
-        @Override
-        public Object getValue(DBSAttributeBase attribute)
-        {
-            int index = getMetaColumnIndex(attribute);
-            return index < 0 ? null : values[index];
-        }
-
-    }
-
     IPreferenceStore getPreferences()
     {
         return DBeaverCore.getGlobalPreferenceStore();
@@ -412,7 +382,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
             updateToolbar();
-            previewValue();
+            if (col >= 0 && row >= 0) {
+                previewValue();
+            }
         }
     }
 
@@ -594,6 +566,24 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         viewerPanel.layout();
     }
 
+    private void updateStatusMessage()
+    {
+        if (curRows.isEmpty()) {
+            if (CommonUtils.isEmpty(metaColumns)) {
+                setStatus("Empty");
+            } else {
+                setStatus(CoreMessages.controls_resultset_viewer_status_no_data);
+            }
+        } else {
+            if (mode == ResultSetMode.RECORD) {
+                this.resetRecordHeaderWidth();
+                setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRowNum + 1) + "/" + curRows.size());
+            } else {
+                setStatus(String.valueOf(curRows.size()) + CoreMessages.controls_resultset_viewer_status_rows_fetched);
+            }
+        }
+    }
+
     // Update all columns ordering
     private void resetColumnOrdering()
     {
@@ -633,8 +623,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void changeMode(ResultSetMode resultSetMode)
     {
         int oldRowNum = this.curRowNum, oldColNum = this.curColNum;
-        if (oldRowNum < 0 && curRows.size() > 0) {
-            oldRowNum  = 0;
+        if (!curRows.isEmpty()) {
+            // Fix row number if needed
+            if (oldRowNum < 0) {
+                oldRowNum = this.curRowNum = 0;
+            } else if (oldRowNum >= curRows.size()) {
+                oldRowNum = this.curRowNum = curRows.size() - 1;
+            }
         }
         this.mode = resultSetMode;
         if (this.mode == ResultSetMode.GRID) {
@@ -656,6 +651,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
         spreadsheet.layout(true, true);
+        previewValue();
     }
 
     private void resetRecordHeaderWidth()
@@ -958,15 +954,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             this.refreshSpreadsheet(true);
         }
 
-        String statusMessage;
-        if (rows.size() > 0) {
-            statusMessage = rows.size() + CoreMessages.controls_resultset_viewer_status_rows;
-        } else {
-            statusMessage = CoreMessages.controls_resultset_viewer_status_no_data;
-        }
-        setStatus(statusMessage, false);
         hasData = true;
-        previewValue();
         updateEditControls();
     }
 
@@ -976,7 +964,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         curRows.addAll(rows);
         refreshSpreadsheet(true);
 
-        setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, curRows.size(), rows.size()), false);
+        setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, curRows.size(), rows.size()));
     }
 
     private void closeEditors() {
@@ -998,17 +986,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         spreadsheet.clearGrid();
         if (mode == ResultSetMode.RECORD) {
             this.resetRecordHeaderWidth();
-            this.showCurrentRows();
-        } else {
-            this.showRowsCount();
         }
 
         spreadsheet.reinitState();
 
         spreadsheet.setRedraw(true);
 
-        this.updateGridCursor(-1, -1);
         this.updateFiltersText();
+        this.updateStatusMessage();
     }
 
     @Override
@@ -1060,6 +1045,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return true;
     }
 
+    @Override
     public boolean hasData()
     {
         return hasData;
@@ -1451,24 +1437,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         });
     }
 
-    private void showCurrentRows()
-    {
-        setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRowNum + 1));
-    }
-
-    private void showRowsCount()
-    {
-        if (curRows.isEmpty()) {
-            if (CommonUtils.isEmpty(metaColumns)) {
-
-            } else {
-                setStatus(CoreMessages.controls_resultset_viewer_status_no_data);
-            }
-        } else {
-            setStatus(String.valueOf(curRows.size()) + CoreMessages.controls_resultset_viewer_status_rows_fetched);
-        }
-    }
-
     @Override
     public Control getControl()
     {
@@ -1517,7 +1485,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    applyChanges(null, new DBDValueListener() {
+                    applyChanges(null, new DataUpdateListener() {
                         @Override
                         public void onUpdate(boolean success) {
                             if (success) {
@@ -1680,13 +1648,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             if (oldPos != null) {
                                 // Seems to be refresh
                                 // Restore original position
-                                ResultSetViewer.this.curRowNum = oldPos.row;
-                                ResultSetViewer.this.curColNum = oldPos.col;
+                                ResultSetViewer.this.curRowNum = Math.min(oldPos.row, ResultSetViewer.this.curRows.size() - 1);
+                                ResultSetViewer.this.curColNum = Math.min(oldPos.col, metaColumns.length - 1);
                                 if (mode == ResultSetMode.GRID) {
                                     spreadsheet.setCursor(new GridPos(curColNum, curRowNum), false);
                                 } else {
                                     spreadsheet.setCursor(new GridPos(0, curColNum), false);
                                 }
+                                spreadsheet.setSelection(-1, -1);
+                                updateStatusMessage();
+                                previewValue();
                             }
                             if (finalizer != null) {
                                 finalizer.run();
@@ -1743,7 +1714,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener
      */
-    public void applyChanges(DBRProgressMonitor monitor, DBDValueListener listener)
+    public void applyChanges(DBRProgressMonitor monitor, DataUpdateListener listener)
     {
         if (!singleSourceCells) {
             UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Can't save data for result set from multiple sources");
@@ -2274,6 +2245,49 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         getDataSource().getContainer().persistConfiguration();
     }
 
+    private void fireResultSetChange() {
+        synchronized (listeners) {
+            if (!listeners.isEmpty()) {
+                for (ResultSetListener listener : listeners) {
+                    listener.handleResultSetChange();
+                }
+            }
+        }
+    }
+
+    /////////////////////////////
+    // Row
+
+    private class ResultSetRowImpl implements ResultSetRow {
+
+        private final Object[] values;
+
+        private ResultSetRowImpl(Object[] values)
+        {
+            this.values = values;
+        }
+
+        @Override
+        public int getValueCount()
+        {
+            return values.length;
+        }
+
+        @Override
+        public Object[] getValues()
+        {
+            return values;
+        }
+
+        @Override
+        public Object getValue(DBSAttributeBase attribute)
+        {
+            int index = getMetaColumnIndex(attribute);
+            return index < 0 ? null : values[index];
+        }
+
+    }
+
     /////////////////////////////
     // Value controller
 
@@ -2522,14 +2536,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private void fireResultSetChange() {
-        synchronized (listeners) {
-            if (!listeners.isEmpty()) {
-                for (ResultSetListener listener : listeners) {
-                    listener.handleResultSetChange();
-                }
-            }
-        }
+    /**
+     * Data update listener
+     */
+    private static interface DataUpdateListener {
+
+        void onUpdate(boolean success);
+
     }
 
     private static class RowInfo implements Comparable<RowInfo> {
@@ -2616,7 +2629,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
          * @param monitor progress monitor
          * @param listener value listener
          */
-        void applyChanges(DBRProgressMonitor monitor, DBDValueListener listener)
+        void applyChanges(DBRProgressMonitor monitor, DataUpdateListener listener)
             throws DBException
         {
             prepareDeleteStatements();
@@ -2735,7 +2748,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
-        private void execute(DBRProgressMonitor monitor, final DBDValueListener listener)
+        private void execute(DBRProgressMonitor monitor, final DataUpdateListener listener)
             throws DBException
         {
             DataUpdaterJob job = new DataUpdaterJob(listener);
@@ -2842,12 +2855,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
 */
         private class DataUpdaterJob extends DataSourceJob {
-            private final DBDValueListener listener;
+            private final DataUpdateListener listener;
             private boolean autocommit;
             private int updateCount = 0, insertCount = 0, deleteCount = 0;
             private DBCSavepoint savepoint;
 
-            protected DataUpdaterJob(DBDValueListener listener)
+            protected DataUpdaterJob(DataUpdateListener listener)
             {
                 super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), ResultSetViewer.this.getDataSource());
                 this.listener = listener;
@@ -2873,9 +2886,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 updateEditControls();
                                 if (error == null) {
                                     setStatus(
-                                            NLS.bind(CoreMessages.controls_resultset_viewer_status_inserted_,
-                                                    new Object[] {DataUpdaterJob.this.insertCount, DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}),
-                                            false);
+                                        NLS.bind(
+                                            CoreMessages.controls_resultset_viewer_status_inserted_,
+                                            new Object[] {DataUpdaterJob.this.insertCount, DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}));
                                 } else {
                                     UIUtils.showErrorDialog(ResultSetViewer.this.site.getShell(), "Data error", "Error synchronizing data with database", error);
                                     setStatus(error.getMessage(), true);
@@ -3629,4 +3642,5 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return rows;
         }
     }
+
 }
