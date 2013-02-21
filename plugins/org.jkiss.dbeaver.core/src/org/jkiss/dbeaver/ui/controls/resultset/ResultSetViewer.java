@@ -721,17 +721,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     ////////////////////////////////////////////////////////////
     // Misc
 
-    public void dispose()
+    private void dispose()
     {
         closeEditors();
         clearData();
         clearMetaData();
 
-        if (!spreadsheet.isDisposed()) {
-            spreadsheet.dispose();
-        }
-
-        statusLabel.dispose();
         themeManager.removePropertyChangeListener(ResultSetViewer.this);
 
         UIUtils.dispose(this.boldFont);

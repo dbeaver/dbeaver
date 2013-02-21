@@ -84,11 +84,6 @@ public class ImageEditor extends ImageViewer {
         updateActions();
     }
 
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
-
     private void updateActions()
     {
         boolean hasImage = getCanvas().getSourceImage() != null;

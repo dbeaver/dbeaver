@@ -79,15 +79,6 @@ public class ImageViewer extends Composite {
 
     }
 
-    @Override
-    public void dispose() {
-        if (canvas != null) {
-            canvas.dispose();
-            canvas = null;
-        }
-        super.dispose();
-    }
-
     ImageViewCanvas getCanvas()
     {
         return canvas;

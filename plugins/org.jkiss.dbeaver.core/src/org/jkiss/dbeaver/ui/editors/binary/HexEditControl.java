@@ -469,11 +469,6 @@ public class HexEditControl extends Composite {
         this.previousLine = -1;
     }
 
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
-
     public BinaryTextFinder getFinder()
     {
         return finder;

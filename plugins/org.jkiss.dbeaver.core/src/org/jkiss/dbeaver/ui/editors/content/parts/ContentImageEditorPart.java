@@ -71,10 +71,6 @@ public class ContentImageEditorPart extends EditorPart implements IContentEditor
     @Override
     public void dispose()
     {
-        if (imageViewer != null) {
-            imageViewer.dispose();
-            imageViewer = null;
-        }
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         super.dispose();
     }
