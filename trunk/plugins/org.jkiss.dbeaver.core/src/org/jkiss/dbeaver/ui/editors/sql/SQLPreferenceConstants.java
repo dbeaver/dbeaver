@@ -40,6 +40,17 @@ public class SQLPreferenceConstants
     public static final String SQLEDITOR_CLOSE_COMMENTS                = "SQLEditor.closeComments";
     public static final String SQLEDITOR_CLOSE_BEGIN_END               = "SQLEditor.closeBeginEndStatement";
 
+    // Matching brackets
+    public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
+    public final static String MATCHING_BRACKETS_COLOR                  = "SQLEditor.matchingBracketsColor";
+
+    public final static String CURRENT_LINE                             = "SQLEditor.currentLine";
+    public final static String CURRENT_LINE_COLOR                       = "SQLEditor.currentLineColor";
+
+    public final static String PRINT_MARGIN                             = "SQLEditor.printMargin";
+    public final static String PRINT_MARGIN_COLOR                       = "SQLEditor.printMarginColor";
+    public final static String PRINT_MARGIN_COLUMN                      = "SQLEditor.printMarginColumn";
+
     public static final int PROPOSAL_CASE_DEFAULT                      = 0;
     public static final int PROPOSAL_CASE_UPPER                        = 1;
     public static final int PROPOSAL_CASE_LOWER                        = 2;
