@@ -113,7 +113,7 @@
         </java>
     </target>
 
-    <target name="pde-runtime">
+    <target name="pde-runtime" depends="driver-features">
         <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
             <arg value="-application" />
             <arg value="org.eclipse.ant.core.antRunner" />
@@ -135,6 +135,10 @@
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
         <antcall target="pde-runtime"/>
         <antcall target="pde-standalone"/>
+    </target>
+
+    <target name="driver-features">
+        <ant dir="../tools/driver-manager" antfile="build.xml" target="generate-features" />
     </target>
 
     <target name="driver-pack">
