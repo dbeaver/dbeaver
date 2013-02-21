@@ -43,6 +43,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.texteditor.TextOperationAction;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
@@ -71,8 +72,7 @@ import java.util.*;
 /**
  * SQL Executor
  */
-public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider
-{
+public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourceProvider {
     static protected final Log log = LogFactory.getLog(SQLEditorBase.class);
 
     private SQLSyntaxManager syntaxManager;
@@ -86,6 +86,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
+    private SourceViewerDecorationSupport decorationSupport;
 
     public SQLEditorBase()
     {
@@ -96,8 +97,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             public void propertyChange(PropertyChangeEvent event)
             {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
-                    SQLSyntaxManager.THEME_PROPERTIES.contains(event.getProperty()))
-                {
+                    SQLSyntaxManager.THEME_PROPERTIES.contains(event.getProperty())) {
                     reloadSyntaxRules();
                 }
             }
@@ -110,7 +110,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             syntaxManager,
             getCompletionProcessor(),
             new SQLHyperlinkDetector(this, syntaxManager)));
-        setKeyBindingScopes(new String[] { "org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql" });  //$NON-NLS-1$
+        setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
     }
 
     protected IContentAssistProcessor getCompletionProcessor()
@@ -166,10 +166,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
             }
         }
+
+        if (decorationSupport != null) {
+            decorationSupport.install(getPreferenceStore());
+        }
     }
 
     @Override
-    public void updatePartControl(IEditorInput input) {
+    public void updatePartControl(IEditorInput input)
+    {
         super.updatePartControl(input);
     }
 
@@ -202,19 +207,34 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
     @Override
     protected ISourceViewer createSourceViewer(Composite parent,
-        IVerticalRuler ruler, int styles)
+                                               IVerticalRuler ruler, int styles)
     {
         OverviewRuler overviewRuler = new OverviewRuler(
             getAnnotationAccess(),
             VERTICAL_RULER_WIDTH,
             getSharedColors());
 
-        return new SQLEditorSourceViewer(
+        char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
+        ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars,
+            SQLPartitionScanner.SQL_PARTITIONING,
+            true);
+
+        SQLEditorSourceViewer sourceViewer = new SQLEditorSourceViewer(
             parent,
             ruler,
             overviewRuler,
             true,
             styles);
+
+        // Configure decorations
+        decorationSupport = new SourceViewerDecorationSupport(sourceViewer, overviewRuler, getAnnotationAccess(), getSharedColors());
+        decorationSupport.setCursorLinePainterPreferenceKeys(SQLPreferenceConstants.CURRENT_LINE, SQLPreferenceConstants.CURRENT_LINE_COLOR);
+        decorationSupport.setMarginPainterPreferenceKeys(SQLPreferenceConstants.PRINT_MARGIN, SQLPreferenceConstants.PRINT_MARGIN_COLOR, SQLPreferenceConstants.PRINT_MARGIN_COLUMN);
+        decorationSupport.setSymbolicFontName(getFontPropertyPreferenceKey());
+        decorationSupport.setCharacterPairMatcher(matcher);
+        decorationSupport.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
+
+        return sourceViewer;
     }
 
     private IAnnotationAccess getAnnotationAccess()
@@ -262,6 +282,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     @Override
     public void dispose()
     {
+        if (decorationSupport != null) {
+            decorationSupport.dispose();
+            decorationSupport = null;
+        }
         if (syntaxManager != null) {
             syntaxManager.dispose();
             syntaxManager = null;
@@ -340,11 +364,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         if (document != null) {
             IDocumentPartitioner partitioner = new FastPartitioner(
                 new SQLPartitionScanner(syntaxManager),
-                SQLPartitionScanner.SQL_PARTITION_TYPES );
-            partitioner.connect( document );
-            document.setDocumentPartitioner( SQLPartitionScanner.SQL_PARTITIONING, partitioner );
+                SQLPartitionScanner.SQL_PARTITION_TYPES);
+            partitioner.connect(document);
+            document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
 
-            ProjectionViewer projectionViewer = (ProjectionViewer)getSourceViewer();
+            ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
             if (projectionViewer != null && document.getLength() > 0) {
                 // Refresh viewer
                 //projectionViewer.getTextWidget().redraw();
@@ -451,8 +475,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
 
             // Move currentPos at line begin
             currentPos = lineOffset;
-        }
-        catch (BadLocationException e) {
+        } catch (BadLocationException e) {
             log.warn(e);
         }
 
@@ -460,14 +483,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         SQLSyntaxManager syntaxManager = getSyntaxManager();
         syntaxManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
-        for (;;) {
+        for (; ; ) {
             IToken token = syntaxManager.nextToken();
             int tokenOffset = syntaxManager.getTokenOffset();
             final int tokenLength = syntaxManager.getTokenLength();
             if (token.isEOF() ||
-                (token instanceof SQLDelimiterToken && tokenOffset >= currentPos)||
-                tokenOffset > endPos)
-            {
+                (token instanceof SQLDelimiterToken && tokenOffset >= currentPos) ||
+                tokenOffset > endPos) {
                 // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
@@ -526,7 +548,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
         Map<Annotation, Position> newAnnotations = new HashMap<Annotation, Position>();
 
         // Delete all annotations if specified range
-        for (Map.Entry<Annotation,Position> entry : curAnnotations.entrySet()) {
+        for (Map.Entry<Annotation, Position> entry : curAnnotations.entrySet()) {
             int entryOffset = entry.getValue().getOffset();
             if (entryOffset >= offset && entryOffset < offset + length) {
                 deletedAnnotations.add(entry.getKey());
@@ -556,8 +578,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
     {
         return
             getSourceViewer() == null ||
-            getSourceViewer().getTextWidget() == null ||
-            getSourceViewer().getTextWidget().isDisposed();
+                getSourceViewer().getTextWidget() == null ||
+                getSourceViewer().getTextWidget().isDisposed();
     }
 
     @Override
