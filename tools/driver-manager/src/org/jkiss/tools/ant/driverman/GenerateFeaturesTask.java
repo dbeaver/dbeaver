@@ -23,6 +23,10 @@ import org.apache.tools.ant.Task;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -71,6 +75,14 @@ public class GenerateFeaturesTask extends Task
 
         for (DriverInfo driver : drivers) {
             generateDriverFeature(driver);
+        }
+
+        File updateSiteDir = new File(targetPath, "updateSite");
+        if (updateSiteDir.exists()) {
+            File siteXML = new File(updateSiteDir, "site.xml");
+            if (siteXML.exists()) {
+                patchUpdateSite(siteXML);
+            }
         }
     }
 
@@ -211,6 +223,34 @@ public class GenerateFeaturesTask extends Task
         }
     }
 
+    private void patchUpdateSite(File siteFile) throws IOException
+    {
+        System.out.println("Patch update site...");
+        String siteContent = readFileToString(siteFile);
+        StringBuilder extraFeatures = new StringBuilder();
+        for (DriverInfo driver : drivers) {
+            if (siteContent.contains(driver.getFeatureID())) {
+                // Already patched
+                continue;
+            }
+            extraFeatures.append("\n   <feature id=\"").append(driver.getFeatureID()).
+                append("\" version=\"").append(driver.getVersion())
+                .append("\" url=\"features/").append(driver.getFeatureID()).append("_").append(driver.getVersion()).append(".jar\"")
+                .append(">\n")
+                .append("      <category name=\"org.jkiss.dbeaver.drivers\"/>\n")
+                .append("   </feature>\n");
+
+            System.out.println("\t-Feature " + driver.getFeatureID() + " added");
+        }
+        int divPos = siteContent.indexOf("</site>");
+        if (divPos != -1) {
+            siteContent = siteContent.substring(0, divPos) + extraFeatures + siteContent.substring(divPos);
+        }
+        FileWriter out = new FileWriter(siteFile);
+        out.write(siteContent);
+        out.close();
+    }
+
     private void searchDrivers(File path)
     {
         File info = new File(path, "driver.info");
@@ -282,7 +322,7 @@ public class GenerateFeaturesTask extends Task
     public static void main(String[] args)
     {
         GenerateFeaturesTask task = new GenerateFeaturesTask();
-        task.setTargetDirectory("build");
+        task.setTargetDirectory("D:\\devel\\dbeaver\\product\\build\\");
         task.setDriversDirectory("../../contrib/drivers");
         task.execute();
     }

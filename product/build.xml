@@ -29,6 +29,7 @@
     <tstamp>
         <format property="current-date" pattern="dd MMM yyyy" locale="en"/>
     </tstamp>
+    <property name="UpdateSiteStagingLocation" value="${buildDirectory}/updateSite"/>
 
     <target name="clean">
         <delete dir="${distDirectory}" />
@@ -51,6 +52,8 @@
         <mkdir dir="${buildDirectory}" />
         <mkdir dir="${buildDirectory}/plugins" />
         <mkdir dir="${buildDirectory}/features" />
+
+        <echo message="Copy plugins"/>
         <copy todir="${buildDirectory}/plugins">
             <fileset dir="../plugins">
                 <include name="**" />
@@ -62,13 +65,21 @@
                 <exclude name="**/.svn" />
                 <exclude name="**/*.class" />
             </fileset>
+            <!--fileset dir="../eclipse">
+                <include name="**.jar" />
+            </fileset-->
         </copy>
+        <echo message="Copy features"/>
         <copy todir="${buildDirectory}/features">
             <fileset dir="../features">
                 <include name="**" />
                 <exclude name="**/.svn" />
                 <exclude name="**/*.class" />
             </fileset>
+        </copy>
+        <echo message="Copy update site"/>
+        <copy todir="${buildDirectory}/updateSite">
+            <fileset dir="updateSite"/>
         </copy>
 
         <mkdir dir="${distDirectory}" />
@@ -124,6 +135,10 @@
             <arg value="-Dcomponent=org.jkiss.dbeaver.runtime"/>
             <arg value="-DbuildFeature=true"/>
             <arg value="-Dconfigs=*,*,*" />
+<!--
+            <arg value="-Dp2.gathering=true"/>
+            <arg value="-Dgenerate.p2.metadata=true"/>
+-->
             <classpath>
                 <pathelement location="${launcherLibLocation}" />
             </classpath>
@@ -134,11 +149,14 @@
         <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
         <antcall target="pde-runtime"/>
-        <antcall target="pde-standalone"/>
+        <!--antcall target="pde-standalone"/-->
     </target>
 
     <target name="driver-features">
-        <ant dir="../tools/driver-manager" antfile="build.xml" target="generate-features" />
+        <ant dir="../tools/driver-manager" antfile="build.xml" target="generate-features">
+            <property name="driversSource" value="../contrib/drivers"/>
+            <property name="buildDirectory" value="${buildDirectory}"/>
+        </ant>
     </target>
 
     <target name="driver-pack">
