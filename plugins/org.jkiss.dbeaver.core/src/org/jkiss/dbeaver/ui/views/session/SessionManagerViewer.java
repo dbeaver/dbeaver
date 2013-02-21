@@ -53,7 +53,7 @@ public class SessionManagerViewer
 
     public void dispose()
     {
-        sessionTable.dispose();
+        sessionTable.disposeControl();
         UIUtils.dispose(boldFont);
     }
 

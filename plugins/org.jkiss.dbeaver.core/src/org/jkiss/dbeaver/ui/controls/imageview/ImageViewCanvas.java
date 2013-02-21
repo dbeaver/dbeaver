@@ -76,20 +76,19 @@ class ImageViewCanvas extends Canvas {
 				paint(event.gc);
 			}
 		});
+        addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e)
+            {
+                if (sourceImage != null && !sourceImage.isDisposed()) {
+                    sourceImage.dispose();
+                }
+                if (screenImage != null && !screenImage.isDisposed()) {
+                    screenImage.dispose();
+                }
+            }
+        });
 		initScrollBars();
-	}
-
-    /**
-	 * Dispose the garbage here
-	 */
-	@Override
-    public void dispose() {
-		if (sourceImage != null && !sourceImage.isDisposed()) {
-			sourceImage.dispose();
-		}
-		if (screenImage != null && !screenImage.isDisposed()) {
-			screenImage.dispose();
-		}
 	}
 
 	/* Paint function */

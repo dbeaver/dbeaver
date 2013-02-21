@@ -92,13 +92,6 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         planPanel.setWeights(new int[] {30, 70});
         planPanel.setMaximizedControl(planTree);
 
-        planTree.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                dispose();
-            }
-        });
         planTree.getControl().addPaintListener(new PaintListener() {
             @Override
             public void paintControl(PaintEvent e)
@@ -144,14 +137,6 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private DBPDataSource getDataSource()
     {
         return dataSourceProvider.getDataSource();
-    }
-
-    public void dispose()
-    {
-        if (!planTree.isDisposed()) {
-            planTree.dispose();
-        }
-        //statusLabel.dispose();
     }
 
     public Control getControl()

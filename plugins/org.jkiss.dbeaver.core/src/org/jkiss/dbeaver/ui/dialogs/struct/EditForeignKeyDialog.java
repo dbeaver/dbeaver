@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.struct;
 
-import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
@@ -116,13 +115,12 @@ public class EditForeignKeyDialog extends Dialog {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
         this.title = title;
-        if (curEditor instanceof MultiPageAbstractEditor) {
-            curEditor = ((MultiPageAbstractEditor) curEditor).getActiveEditor();
-        }
-        this.progressProvider = curEditor instanceof IProgressControlProvider ? (IProgressControlProvider) curEditor : null;
+//        if (curEditor instanceof MultiPageAbstractEditor) {
+//            curEditor = ((MultiPageAbstractEditor) curEditor).getActiveEditor();
+//        }
+        this.progressProvider = null;//curEditor instanceof IProgressControlProvider ? (IProgressControlProvider) curEditor : null;
         this.ownTable = table;
         this.ownerTableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(ownTable);
-        Assert.isNotNull(this.ownerTableNode);
         this.supportedModifyRules = supportedModifyRules;
     }
 
@@ -140,13 +138,12 @@ public class EditForeignKeyDialog extends Dialog {
             UIUtils.createLabelText(tableGroup, CoreMessages.dialog_struct_edit_fk_label_table, ownTable.getFullQualifiedName(), SWT.READ_ONLY | SWT.BORDER);
         }
 
-        ItemListControl tableList;
         {
-            DBNNode rootNode = ownerTableNode.getParentNode();
+            DBNNode rootNode = ownerTableNode == null ? DBeaverCore.getInstance().getNavigatorModel().getRoot() : ownerTableNode.getParentNode();
 
             //Composite columnsGroup = UIUtils.createControlGroup(panel, "Reference Table", 1, GridData.FILL_BOTH, 0);
             UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_fk_label_ref_table);
-            tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
+            ItemListControl tableList = new ItemListControl(panel, SWT.SINGLE | SWT.SHEET | SWT.BORDER, null, rootNode, null);
             if (progressProvider != null) {
                 tableList.substituteProgressPanel(progressProvider.getProgressControl());
             } else {
@@ -235,7 +232,7 @@ public class EditForeignKeyDialog extends Dialog {
                 }
             });
         }
-        panel.setTabList(new Control[] { tableList, pkGroup, columnsTable, cascadeGroup });
+        //panel.setTabList(new Control[] { tableList, pkGroup, columnsTable, cascadeGroup });
 
         return dialogGroup;
     }
@@ -394,8 +391,10 @@ public class EditForeignKeyDialog extends Dialog {
     @Override
     protected void configureShell(Shell shell) {
         super.configureShell(shell);
-        shell.setText(NLS.bind(CoreMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
-        shell.setImage(ownerTableNode.getNodeIcon());
+        if (ownerTableNode != null) {
+            shell.setText(NLS.bind(CoreMessages.dialog_struct_edit_fk_title, title, ownerTableNode.getNodeName()));
+            shell.setImage(ownerTableNode.getNodeIcon());
+        }
     }
 
     public List<FKColumnInfo> getColumns()

@@ -241,7 +241,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     @Override
-    public void dispose()
+    public void disposeControl()
     {
         //PropertiesContributor.getInstance().removeLazyListener(this);
         synchronized (this) {
@@ -252,7 +252,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
         }
         renderer.dispose();
-        super.dispose();
+        super.disposeControl();
     }
 
     public synchronized boolean isLoading()

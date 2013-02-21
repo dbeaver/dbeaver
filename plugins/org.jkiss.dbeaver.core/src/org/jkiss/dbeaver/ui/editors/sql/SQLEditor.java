@@ -723,14 +723,8 @@ public class SQLEditor extends SQLEditorBase
             }
         }
 
-        if (planView != null) {
-            planView.dispose();
-            planView = null;
-        }
-        if (resultsView != null) {
-            resultsView.dispose();
-            resultsView = null;
-        }
+        planView = null;
+        resultsView = null;
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
         super.dispose();

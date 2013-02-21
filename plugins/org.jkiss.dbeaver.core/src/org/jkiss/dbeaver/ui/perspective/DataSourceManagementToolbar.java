@@ -169,10 +169,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             registry.removeDataSourceListener(this);
         }
 
-        UIUtils.dispose(resultSetSize);
-        UIUtils.dispose(connectionCombo);
-        UIUtils.dispose(databaseCombo);
-
         setActivePart(null);
 
         this.workbenchWindow.removePageListener(this);
