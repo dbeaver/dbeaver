@@ -102,7 +102,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             @Override
             public void widgetDisposed(DisposeEvent e)
             {
-                dispose();
+                disposeControl();
             }
         });
         searchNotFoundColor = new Color(getDisplay(), 255, 128, 128);
@@ -388,8 +388,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         searchControlsComposite.getParent().layout();
     }
 
-    @Override
-    public void dispose()
+    public void disposeControl()
     {
         if (searchToolbarManager != null) {
             searchToolbarManager.dispose();
@@ -404,8 +403,6 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             customToolbarManager = null;
         }
         UIUtils.dispose(searchNotFoundColor);
-
-        super.dispose();
     }
 
     protected boolean cancelProgress()

@@ -202,9 +202,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             diagramLoadingJob.cancel();
             diagramLoadingJob = null;
         }
-        if (progressControl != null && !progressControl.isDisposed()) {
-            progressControl.dispose();
-        }
         // remove selection listener
         //getSite().getWorkbenchWindow().getSelectionService().removeSelectionListener(this);
         // dispose the ActionRegistry (will dispose all actions)

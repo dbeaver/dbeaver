@@ -195,7 +195,6 @@ public class HexManager {
 
     void dispose()
     {
-        hexEditControl.dispose();
         if (content != null) {
             content.dispose();
         }

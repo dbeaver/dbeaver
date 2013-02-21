@@ -91,7 +91,7 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    public void dispose()
+    public void disposeControl()
     {
 //        if (objectEditorHandler != null) {
 //            objectEditorHandler.dispose();
@@ -100,7 +100,7 @@ public class ItemListControl extends NodeListControl
         UIUtils.dispose(searchHighlightColor);
         UIUtils.dispose(disabledCellColor);
         UIUtils.dispose(boldFont);
-        super.dispose();
+        super.disposeControl();
     }
 
     @Override

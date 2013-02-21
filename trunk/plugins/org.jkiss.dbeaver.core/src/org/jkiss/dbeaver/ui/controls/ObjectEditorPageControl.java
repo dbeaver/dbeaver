@@ -59,7 +59,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     }
 
     @Override
-    public void dispose()
+    public void disposeControl()
     {
 /*
         if (objectEditToolbarManager != null) {
@@ -71,7 +71,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
             getMainEditorPart().removePropertyListener(propertyListener);
             propertyListener = null;
         }
-        super.dispose();
+        super.disposeControl();
     }
 
     public IDatabaseEditor getEditorPart()

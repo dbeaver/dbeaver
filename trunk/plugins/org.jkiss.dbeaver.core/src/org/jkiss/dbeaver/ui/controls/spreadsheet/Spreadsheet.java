@@ -163,10 +163,14 @@ public class Spreadsheet extends LightGrid implements Listener {
 
         {
             UIUtils.addFocusTracker(site, SPREADSHEET_CONTROL_ID, this);
+
             super.addDisposeListener(new DisposeListener() {
                 @Override
                 public void widgetDisposed(DisposeEvent e) {
                     UIUtils.removeFocusTracker(site, Spreadsheet.this);
+                    if (clipboard != null && !clipboard.isDisposed()) {
+                        clipboard.dispose();
+                    }
                 }
             });
         }
@@ -342,17 +346,6 @@ public class Spreadsheet extends LightGrid implements Listener {
         });
     }
 */
-
-
-    @Override
-    public void dispose()
-    {
-        this.clearGrid();
-        if (clipboard != null && !clipboard.isDisposed()) {
-            clipboard.dispose();
-        }
-        super.dispose();
-    }
 
     @Override
     public void handleEvent(Event event)
