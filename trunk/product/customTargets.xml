@@ -157,18 +157,13 @@
     </target>
 
     <target name="postBuild">
-        <property name="UpdateSiteStagingLocation" value="${buildDirectory}/updateSite"/>
-        <property name="sitePackagePrefix" value="org.jkiss.dbeaver.update"/>
         <antcall target="generateUpdateSite"/>
     </target>
 
     <target name="generateUpdateSite" if="buildFeature">
         <echo message="Build update site"/>
         <!-- Create the directory structure -->
-        <mkdir dir="${UpdateSiteStagingLocation}"/>
-        <copy todir="${UpdateSiteStagingLocation}">
-            <fileset dir="${buildDirectory}/../updateSite"/>
-        </copy>
+        <property name="sitePackagePrefix" value="org.jkiss.dbeaver.update"/>
 
         <!-- Build the jar files -->
         <antcall target="allElements">
@@ -178,11 +173,15 @@
     </target>
 
     <target name="updateSiteExport">
-        <echo message="Update site export for ${id}" />
+        <property name="UpdateSiteStagingLocation" value="${buildDirectory}/updateSite"/>
+
+        <echo message="Update site export for ${id} into ${UpdateSiteStagingLocation}"/>
+
         <ant antfile="build.xml" dir="${buildDirectory}/features/${id}/" target="build.update.jar">
             <property name="feature.destination" value="${UpdateSiteStagingLocation}/features"/>
             <property name="plugin.destination" value="${UpdateSiteStagingLocation}/plugins"/>
         </ant>
+        <echo message="Site export finished"/>
     </target>
 
 </project>
