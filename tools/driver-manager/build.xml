@@ -6,18 +6,21 @@
 
 <project name="DriverManager" default="build">
 
+    <property name="buildDirectory" value="build"/>
+
     <path id="classpath">
-        <pathelement location="build"/>
+        <pathelement location="${buildDirectory}/classes"/>
     </path>
 
     <target name="build">
-        <mkdir dir="build"/>
+        <mkdir dir="${buildDirectory}"/>
+        <mkdir dir="${buildDirectory}/classes"/>
 
-        <javac srcdir="../../modules/org.jkiss.utils/src" destdir="build" includeantruntime="true">
+        <javac srcdir="../../modules/org.jkiss.utils/src" destdir="${buildDirectory}/classes" includeantruntime="true" debug="true">
             <classpath refid="classpath"/>
             <include name="org/jkiss/utils/**/*.*"/>
         </javac>
-        <javac srcdir="src" destdir="build" includeantruntime="true">
+        <javac srcdir="src" destdir="${buildDirectory}/classes" includeantruntime="true">
             <classpath refid="classpath"/>
         </javac>
     </target>
@@ -27,18 +30,15 @@
     </target>
 
     <target name="declare" depends="build">
-        <taskdef name="generate-version" classname="org.jkiss.tools.ant.productman.GenerateVersionTask">
+        <taskdef name="generate-features" classname="org.jkiss.tools.ant.driverman.GenerateFeaturesTask">
             <classpath refid="classpath"/>
         </taskdef>
     </target>
 
-    <target name="generate-version" depends="declare">
-        <generate-version 
-        productDescriptor="pad/dbeaver-product.xml" 
-        targetDirectory="${buildDirectory}" 
-        versionNumber="${productVersion}"
-        configs="${configs} &amp; ${configs.icu}" 
-        locales="${locales}"/>
+    <target name="generate-features" depends="declare">
+        <generate-features
+        driversdirectory="../../contrib/drivers"
+        targetDirectory="${buildDirectory}"/>
     </target>
 
 </project>

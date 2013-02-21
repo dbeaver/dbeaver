@@ -8,4 +8,9 @@
          Universal Database Manager
       </description>
    </category-def>
+   <category-def name="org.jkiss.dbeaver.drivers" label="Database drivers">
+      <description>
+         3rd party JDBC drivers for DBeaver
+      </description>
+   </category-def>
 </site>
