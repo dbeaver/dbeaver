@@ -142,15 +142,17 @@ public class MigrateConnectionWizard extends Wizard
                     getContainer().showPage(getNextPage());
                 }
             });
-            for (DataSourceDescriptor ds : registry.getDataSources()) {
-                TableItem item = new TableItem(connectionsViewer, SWT.NONE);
-                item.setText(ds.getName());
-                item.setData(ds);
-                item.setImage(ds.getDriver().getIcon());
-                if (selectedConnections.contains(ds)) {
-                    item.setChecked(true);
+            if (registry != null) {
+                for (DataSourceDescriptor ds : registry.getDataSources()) {
+                    TableItem item = new TableItem(connectionsViewer, SWT.NONE);
+                    item.setText(ds.getName());
+                    item.setData(ds);
+                    item.setImage(ds.getDriver().getIcon());
+                    if (selectedConnections.contains(ds)) {
+                        item.setChecked(true);
+                    }
                 }
-            }
+			}
             setControl(connectionsViewer);
         }
 
