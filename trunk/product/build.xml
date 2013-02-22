@@ -29,7 +29,7 @@
     <tstamp>
         <format property="current-date" pattern="dd MMM yyyy" locale="en"/>
     </tstamp>
-    <property name="UpdateSiteStagingLocation" value="${buildDirectory}/updateSite"/>
+    <property name="updateSiteLocation" value="${buildDirectory}/updateSite"/>
 
     <target name="clean">
         <delete dir="${distDirectory}" />
@@ -65,9 +65,9 @@
                 <exclude name="**/.svn" />
                 <exclude name="**/*.class" />
             </fileset>
-            <!--fileset dir="../eclipse">
+            <fileset dir="../eclipse">
                 <include name="**.jar" />
-            </fileset-->
+            </fileset>
         </copy>
         <echo message="Copy features"/>
         <copy todir="${buildDirectory}/features">
@@ -78,7 +78,7 @@
             </fileset>
         </copy>
         <echo message="Copy update site"/>
-        <copy todir="${buildDirectory}/updateSite">
+        <copy todir="${updateSiteLocation}">
             <fileset dir="updateSite"/>
         </copy>
 
@@ -124,7 +124,7 @@
         </java>
     </target>
 
-    <target name="pde-runtime" depends="driver-features">
+    <target name="pde-runtime">
         <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
             <arg value="-application" />
             <arg value="org.eclipse.ant.core.antRunner" />
@@ -135,10 +135,36 @@
             <arg value="-Dcomponent=org.jkiss.dbeaver.runtime"/>
             <arg value="-DbuildFeature=true"/>
             <arg value="-Dconfigs=*,*,*" />
-<!--
-            <arg value="-Dp2.gathering=true"/>
-            <arg value="-Dgenerate.p2.metadata=true"/>
--->
+            <classpath>
+                <pathelement location="${launcherLibLocation}" />
+            </classpath>
+        </java>
+    </target>
+
+    <target name="update-site">
+        <echo message="Generate JDBC drivers' plugin and features"/>
+        <ant dir="../tools/driver-manager" antfile="build.xml" target="generate-features">
+            <property name="driversSource" value="../contrib/drivers"/>
+            <property name="buildDirectory" value="${buildDirectory}"/>
+        </ant>
+        <!-- Generate P2 repository artifacts -->
+        <property name="p2.repo.path" value="${buildDirectory}/p2.repo"/>
+        <echo message="Generate update site and P2 repository"/>
+        <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+            <arg value="-application" />
+            <arg value="org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
+            <arg value="-source" />
+            <arg value="${buildDirectory}" />
+            <arg value="-metadataRepository" />
+            <arg value="file://${updateSiteLocation}" />
+            <arg value="-metadataRepositoryName"/>
+            <arg value="DBeaver Update Site"/>
+            <arg value="-artifactRepository" />
+            <arg value="file://${updateSiteLocation}" />
+            <arg value="-artifactRepositoryName"/>
+            <arg value="DBeaver Artifacts"/>
+            <arg value="-compress" />
+            <arg value="-publishArtifacts" />
             <classpath>
                 <pathelement location="${launcherLibLocation}" />
             </classpath>
@@ -149,14 +175,8 @@
         <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
         <antcall target="pde-runtime"/>
-        <!--antcall target="pde-standalone"/-->
-    </target>
-
-    <target name="driver-features">
-        <ant dir="../tools/driver-manager" antfile="build.xml" target="generate-features">
-            <property name="driversSource" value="../contrib/drivers"/>
-            <property name="buildDirectory" value="${buildDirectory}"/>
-        </ant>
+        <antcall target="update-site"/>
+        <antcall target="pde-standalone"/>
     </target>
 
     <target name="driver-pack">
