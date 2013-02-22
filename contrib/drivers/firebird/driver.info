@@ -1,0 +1,5 @@
+name=Firebird (Interbase) driver
+vendor=Firebird
+version=2.1.6
+license=LICENSE.txt
+file1=jaybird-full-2.1.6.jar

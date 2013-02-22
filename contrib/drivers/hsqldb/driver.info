@@ -1,0 +1,5 @@
+name=HSQLDB driver
+vendor=HSQL Development Group
+version=2.1.0
+license=LICENSE.txt
+file1=hsqldb.jar

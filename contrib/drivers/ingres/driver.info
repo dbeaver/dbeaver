@@ -1,0 +1,6 @@
+name=Ingres driver
+vendor=Ingres
+version=
+license=LICENSE.txt
+file1=ifxjdbc.jar
+file2=ifxlang.jar

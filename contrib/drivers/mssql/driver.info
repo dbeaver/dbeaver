@@ -1,0 +1,11 @@
+name=MS SQL Server driver
+vendor=Microsoft
+version=4.0.2206
+license=LICENSE.txt
+file1=sqljdbc4.jar
+file2=auth/IA64/sqljdbc_auth.dll
+file3=auth/x64/sqljdbc_auth.dll
+file4=auth/x86sqljdbc_auth.dll
+file5=xa/IA64/sqljdbc_xa.dll
+file6=xa/x64/sqljdbc_xa.dll
+file7=xa/x86/sqljdbc_xa.dll

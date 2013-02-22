@@ -1,0 +1,6 @@
+id=sqlite.xerial
+name=SQLite Xerial driver
+vendor=Xerial
+version=3.7.2
+license=LICENSE.txt
+file1=sqlite-jdbc-3.7.2.jar

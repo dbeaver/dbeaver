@@ -1,0 +1,5 @@
+name=MaxDB driver
+vendor=SAP
+version=7.6.06
+license=LICENSE.txt
+file1=sapdbc.jar
