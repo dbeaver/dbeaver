@@ -1,0 +1,6 @@
+name=DB2 driver
+vendor=IBM
+version=
+license=LICENSE.txt
+file1=db2jcc.jar
+file2=db2jcc_license_cu.jar

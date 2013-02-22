@@ -51,7 +51,7 @@ public class GenerateFeaturesTask extends Task
     {
         File rootPath = new File(driversDirectory);
         System.out.println("Search drivers in " + rootPath.getAbsolutePath() + "...");
-        searchDrivers(rootPath);
+        searchDrivers(0, rootPath);
         System.out.println(drivers.size() + " driver(s) found");
 
         if (!drivers.isEmpty()) {
@@ -96,7 +96,11 @@ public class GenerateFeaturesTask extends Task
 
         // Plugin
         {
-            String filePrefix = "drivers/" + driver.getId() + "/";
+            String filePrefix = "drivers/";
+            if (!CommonUtils.isEmpty(driver.getCategory())) {
+                filePrefix += driver.getCategory() + "/";
+            }
+            filePrefix += driver.getId() + "/";
             for (String driverFile : driver.getFiles()) {
                 File sourceFile = new File(driver.getPath(), driverFile);
                 if (!sourceFile.exists()) {
@@ -105,8 +109,8 @@ public class GenerateFeaturesTask extends Task
                 }
                 System.out.println("\t\tCopy " + driverFile + " [" + sourceFile.length() + "]");
                 File targetDir = new File(pluginPath, filePrefix);
-                makeDirectory(targetDir);
                 File targetFile = new File(targetDir, driverFile);
+                makeDirectory(targetFile.getParentFile());
                 copyFiles(sourceFile, targetFile);
             }
 
@@ -129,9 +133,9 @@ public class GenerateFeaturesTask extends Task
                 pluginXML.setButify(true);
                 pluginXML.startElement("plugin");
                 pluginXML.startElement("extension");
-                pluginXML.addAttribute("point", "org.jkiss.dbeaver.files");
+                pluginXML.addAttribute("point", "org.jkiss.dbeaver.resources");
                 for (String file : driver.getFiles()) {
-                    pluginXML.startElement("file");
+                    pluginXML.startElement("resource");
                     pluginXML.addAttribute("name", filePrefix + file);
                     pluginXML.endElement();
                 }
@@ -251,7 +255,7 @@ public class GenerateFeaturesTask extends Task
         out.close();
     }
 
-    private void searchDrivers(File path)
+    private void searchDrivers(int level, File path)
     {
         File info = new File(path, "driver.info");
         if (info.exists()) {
@@ -261,6 +265,16 @@ public class GenerateFeaturesTask extends Task
                 props.load(propReader);
                 propReader.close();
                 DriverInfo driver = new DriverInfo(path, props);
+                if (level > 1) {
+                    StringBuilder category = new StringBuilder();
+                    File parent = path.getParentFile();
+                    for (int i = level; i > 1; i--) {
+                        category.insert(0, parent.getName());
+                        category.insert(0, '/');
+                        parent = parent.getParentFile();
+                    }
+                    driver.setCategory(category.toString());
+                }
                 drivers.add(driver);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -268,7 +282,7 @@ public class GenerateFeaturesTask extends Task
         }
         for (File child : CommonUtils.safeArray(path.listFiles())) {
             if (child.isDirectory()) {
-                searchDrivers(child);
+                searchDrivers(level + 1, child);
             }
         }
     }
