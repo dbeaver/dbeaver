@@ -149,7 +149,7 @@
         </ant>
         <!-- Generate P2 repository artifacts -->
         <property name="p2.repo.path" value="${buildDirectory}/p2.repo"/>
-        <echo message="Generate update site and P2 repository"/>
+        <echo message="Publish features and bundles"/>
         <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
             <arg value="-application" />
             <arg value="org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
@@ -169,6 +169,40 @@
                 <pathelement location="${launcherLibLocation}" />
             </classpath>
         </java>
+
+        <echo message="Publish update site"/>
+        <delete file="${updateSiteLocation}/artifacts.jar" />
+        <delete file="${updateSiteLocation}/content.jar" />
+        <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+            <arg value="-application" />
+            <arg value="org.eclipse.equinox.p2.publisher.UpdateSitePublisher" />
+            <arg value="-source" />
+            <arg value="${updateSiteLocation}" />
+            <arg value="-metadataRepository" />
+            <arg value="file://${updateSiteLocation}" />
+            <arg value="-artifactRepository" />
+            <arg value="file://${updateSiteLocation}" />
+            <arg value="-compress" />
+            <arg value="-publishArtifacts" />
+            <classpath>
+                <pathelement location="${launcherLibLocation}" />
+            </classpath>
+        </java>
+
+        <!--
+                <echo message="Publish category"/>
+                <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
+                    <arg value="-application" />
+                    <arg value="org.eclipse.equinox.p2.publisher.CategoryPublisher" />
+                    <arg value="-metadataRepository" />
+                    <arg value="file://${updateSiteLocation}" />
+                    <arg value="-categoryDefinition" />
+                    <arg value="-compress" />
+                    <classpath>
+                        <pathelement location="${launcherLibLocation}" />
+                    </classpath>
+                </java>
+        -->
     </target>
 
     <target name="pde-build" depends="init">
@@ -176,7 +210,7 @@
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
         <antcall target="pde-runtime"/>
         <antcall target="update-site"/>
-        <antcall target="pde-standalone"/>
+        <!--<antcall target="pde-standalone"/>-->
     </target>
 
     <target name="driver-pack">
