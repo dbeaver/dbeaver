@@ -1062,7 +1062,13 @@ public class UIUtils {
         if (partSite == null) {
             IWorkbenchPart activePart = (IWorkbenchPart) serviceLocator.getService(IWorkbenchPart.class);
             if (activePart == null) {
-                activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
+                IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+                if (workbenchWindow != null) {
+                    IWorkbenchPage activePage = workbenchWindow.getActivePage();
+                    if (activePage != null) {
+                        activePart = activePage.getActivePart();
+                    }
+                }
             }
             if (activePart != null) {
                 partSite = activePart.getSite();
