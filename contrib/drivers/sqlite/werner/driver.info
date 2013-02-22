@@ -1,0 +1,7 @@
+id=sqlite.werner
+name=SQLite Werner driver
+vendor=Werner
+version=9.1.901
+license=LICENSE.txt
+file1=sqlite.jar
+file2=sqlite_jni.dll

@@ -13,21 +13,24 @@ import java.util.Properties;
 class DriverInfo {
     private File path;
     private String id;
+    private String pluginId;
     private String name;
     private String version;
     private String vendor;
     private String description;
     private String license;
+    private String category;
     private List<String> files = new ArrayList<String>();
 
     DriverInfo(File path, Properties properties)
     {
         this.path = path;
         this.id = path.getName().toLowerCase();
+        this.pluginId = properties.getProperty("id", id);
         this.name = properties.getProperty("name", id);
         this.version = properties.getProperty("version", "1.0.0");
         this.vendor = properties.getProperty("vendor", "Unknown");
-        this.description = properties.getProperty("description", "");
+        this.description = properties.getProperty("description", this.name + " database driver");
         this.license = properties.getProperty("license");
         if (!CommonUtils.isEmpty(license)) {
             this.files.add(license);
@@ -43,12 +46,12 @@ class DriverInfo {
 
     public String getPluginID()
     {
-        return "org.jkiss.dbeaver.driver." + id;
+        return "org.jkiss.dbeaver.driver." + pluginId;
     }
 
     public String getFeatureID()
     {
-        return "org.jkiss.dbeaver.driver." + id + ".feature";
+        return "org.jkiss.dbeaver.driver." + pluginId + ".feature";
     }
 
     public File getPath()
@@ -89,5 +92,17 @@ class DriverInfo {
     public String getDescription()
     {
         return description;
+    }
+
+    public String getCategory()
+    {
+        return category;
+    }
+
+    public void setCategory(String category)
+    {
+        while (category.startsWith("/")) category = category.substring(1);
+        while (category.endsWith("/")) category = category.substring(0, category.length() - 1);
+        this.category = category;
     }
 }

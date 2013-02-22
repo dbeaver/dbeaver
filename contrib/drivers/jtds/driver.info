@@ -1,0 +1,7 @@
+name=jTDS driver (MS SQL Server and Sybase)
+vendor=jTDS
+version=1.2.5
+license=LICENSE.txt
+file1=jtds-1.2.5.jar
+file2=SSO/x64/ntlmauth.dll
+file3=SSO/x86/ntlmauth.dll

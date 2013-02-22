@@ -1,0 +1,5 @@
+name=H2 driver
+vendor=H2
+version=1.2.147
+license=LICENSE.txt
+file1=h2-1.2.147.jar
