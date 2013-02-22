@@ -157,15 +157,14 @@
     </target>
 
     <target name="postBuild">
-        <antcall target="generateUpdateSite"/>
+        <!--<antcall target="generateUpdateSite"/>-->
     </target>
 
+<!--
     <target name="generateUpdateSite" if="buildFeature">
         <echo message="Build update site"/>
-        <!-- Create the directory structure -->
         <property name="sitePackagePrefix" value="org.jkiss.dbeaver.update"/>
 
-        <!-- Build the jar files -->
         <antcall target="allElements">
             <param name="genericTargets" value="${builder}/customTargets.xml"/>
             <param name="target" value="updateSiteExport"/>
@@ -183,5 +182,6 @@
         </ant>
         <echo message="Site export finished"/>
     </target>
+-->
 
 </project>
