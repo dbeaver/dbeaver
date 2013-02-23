@@ -32,7 +32,7 @@
 
 ; Definitions for Java 6.0
   !define JRE_VERSION "6.0"
-  !define JRE_URL "http://javadl.sun.com/webapps/download/AutoDL?BundleId=52247"
+  !define JRE_URL "http://javadl.sun.com/webapps/download/AutoDL?BundleId=74822"
  
 ; use javaw.exe to avoid dosbox.
 ; use java.exe to keep stdout/stderr
@@ -144,14 +144,6 @@ FunctionEnd
 ;Installer Sections
 
 Section "-DBeaver Core" SecCore
-
-  ${If} ${RunningX64}
-    DetailPrint "Installer running on 64-bit host"
-    ; disable registry redirection (enable access to 64-bit portion of registry)
-    SetRegView 64
-    ; change install dir
-    StrCpy $INSTDIR "$PROGRAMFILES64\DBeaver"
-  ${EndIf}
 
   ; Install JRE on demand
   SetShellVarContext all
@@ -332,6 +324,14 @@ SectionEnd
 !define LOCALE_IDEFAULTCODEPAGE '0xB' ;System default oem code page
 
 Function .onInit
+
+  ${If} ${RunningX64}
+    DetailPrint "Installer running on 64-bit host"
+    ; disable registry redirection (enable access to 64-bit portion of registry)
+    SetRegView 64
+    ; change install dir
+    StrCpy $INSTDIR "$PROGRAMFILES64\DBeaver"
+  ${EndIf}
 
     !insertmacro MUI_LANGDLL_DISPLAY
 
