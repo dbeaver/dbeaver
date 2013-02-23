@@ -123,12 +123,12 @@ public final class DBUtils {
         return quoteString + str + quoteString;
     }
 
-    public static String getFullQualifiedName(DBPDataSource dataSource, DBSObject ... path)
+    public static String getFullQualifiedName(DBPDataSource dataSource, DBPNamedObject ... path)
     {
         final DBPDataSourceInfo info = dataSource.getInfo();
         StringBuilder name = new StringBuilder(20);
-        DBSObject parent = null;
-        for (DBSObject namePart : path) {
+        DBPNamedObject parent = null;
+        for (DBPNamedObject namePart : path) {
             if (namePart == null) {
                 continue;
             }

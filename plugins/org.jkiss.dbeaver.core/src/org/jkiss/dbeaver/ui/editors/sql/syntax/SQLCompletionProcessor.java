@@ -179,12 +179,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, null);
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
-                    DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-                    if (objectSelector != null) {
-                        DBSObject selectedObject = objectSelector.getSelectedObject();
-                        if (selectedObject != null) {
-                            makeProposalsFromChildren(monitor, selectedObject, null, proposals);
-                        }
+                    DBSObject selectedObject = getSelectedObject(dataSource);
+                    if (selectedObject != null) {
+                        makeProposalsFromChildren(monitor, selectedObject, null, proposals);
                     }
                     rootObject = (DBSObjectContainer) dataSource;
                 }
@@ -214,12 +211,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         DBSObjectContainer selectedContainer = null;
         {
-            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-            if (objectSelector != null) {
-                DBSObject selectedObject = objectSelector.getSelectedObject();
-                if (selectedObject != null) {
-                    selectedContainer = DBUtils.getAdapter(DBSObjectContainer.class, selectedObject);
-                }
+            DBSObject selectedObject = getSelectedObject(dataSource);
+            if (selectedObject != null) {
+                selectedContainer = DBUtils.getAdapter(DBSObjectContainer.class, selectedObject);
             }
         }
 
@@ -483,12 +477,37 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             info.append("<br>");
         }
 
+        boolean isSingleObject = true;
+        String replaceString = null;
+        {
+            // If we replace short name with referenced object
+            // and current active schema (catalog) is not this object's container then
+            // replace with full qualified name
+            if (object instanceof DBSObjectReference) {
+                if (wordDetector.getFullWord().indexOf(editor.getSyntaxManager().getStructSeparator()) == -1) {
+                    DBSObjectReference structObject = (DBSObjectReference) object;
+                    if (structObject.getContainer() != null) {
+                        DBSObject selectedObject = getSelectedObject(editor.getDataSource());
+                        if (selectedObject != structObject.getContainer()) {
+                            replaceString = DBUtils.getFullQualifiedName(
+                                editor.getDataSource(),
+                                structObject.getContainer(),
+                                object);
+                            isSingleObject = false;
+                        }
+                    }
+                }
+            }
+            if (replaceString == null) {
+                replaceString = DBUtils.getQuotedIdentifier(editor.getDataSource(), object.getName());
+            }
+        }
         return createCompletionProposal(
-            DBUtils.getQuotedIdentifier(editor.getDataSource(), object.getName()),
+            replaceString,
             objectFullName,
             info.toString(),
             objectIcon,
-            true);
+            isSingleObject);
     }
 
     /*
@@ -584,6 +603,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public IContextInformationValidator getContextInformationValidator()
     {
         return validator;
+    }
+
+    private static DBSObject getSelectedObject(DBPDataSource dataSource)
+    {
+        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+        if (objectSelector != null) {
+            return objectSelector.getSelectedObject();
+        }
+        return null;
     }
 
     /**
