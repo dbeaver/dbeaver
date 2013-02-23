@@ -3,6 +3,8 @@
 ;Written by Serge Rieder
 ;Based on StartMenu.nsi by Joost Verburg
 
+!include "x64.nsh"
+
 ;--------------------------------
 ;Include Modern UI
 
@@ -38,7 +40,7 @@
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\DBeaver"
-  
+
   ;Get installation folder from registry if available
   InstallDirRegKey HKCU "Software\DBeaver" ""
 
@@ -142,6 +144,14 @@ FunctionEnd
 ;Installer Sections
 
 Section "-DBeaver Core" SecCore
+
+  ${If} ${RunningX64}
+    DetailPrint "Installer running on 64-bit host"
+    ; disable registry redirection (enable access to 64-bit portion of registry)
+    SetRegView 64
+    ; change install dir
+    StrCpy $INSTDIR "$PROGRAMFILES64\DBeaver"
+  ${EndIf}
 
   ; Install JRE on demand
   SetShellVarContext all
