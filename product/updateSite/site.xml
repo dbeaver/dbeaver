@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/org.jkiss.dbeaver.runtime_2.0.7.jar" id="org.jkiss.dbeaver.runtime" version="2.0.7">
+   <feature url="features/org.jkiss.dbeaver.runtime_@productVersion@.jar" id="org.jkiss.dbeaver.runtime" version="@productVersion@">
       <category name="org.jkiss.dbeaver"/>
    </feature>
    <category-def name="org.jkiss.dbeaver" label="DBeaver">

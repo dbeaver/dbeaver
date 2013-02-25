@@ -79,7 +79,7 @@
             </fileset>
         </copy>
         <echo message="Copy update site"/>
-        <copy todir="${updateSiteLocation}">
+        <copy todir="${updateSiteLocation}" filtering="true">
             <fileset dir="updateSite"/>
         </copy>
 
