@@ -30,6 +30,7 @@
         <format property="current-date" pattern="dd MMM yyyy" locale="en"/>
     </tstamp>
     <property name="updateSiteLocation" value="${buildDirectory}/updateSite"/>
+    <property name="updateSiteDist" value="${distDirectory}/update-site-${productVersion}"/>
 
     <target name="clean">
         <delete dir="${distDirectory}" />
@@ -82,6 +83,13 @@
             <fileset dir="updateSite"/>
         </copy>
 
+        <echo message="Copy product"/>
+        <copy todir="${buildDirectory}" filtering="true">
+            <fileset dir=".">
+                <include name="*.product" />
+            </fileset>
+        </copy>
+
         <mkdir dir="${distDirectory}" />
         <antcall target="readme"/>
     </target>
@@ -104,6 +112,10 @@
         </copy>
     </target>
 
+    <!-- ===================================================================== -->
+    <!-- Platform build -->
+    <!-- ===================================================================== -->
+
     <!--
         This target actually executes the PDE Build process by launching the 
         Eclipse antRunner application.
@@ -116,12 +128,18 @@
             <arg value="-buildfile" />
             <arg value="${buildFile}" />
             <arg value="-Dtimestamp=${timestamp}" />
-            <arg value="-DproductId=DBeaver" />
+            <arg value="-DproductId=${buildDirectory}/DBeaver" />
             <arg value="-Dconfigs=${configs}" />
             <classpath>
                 <pathelement location="${launcherLibLocation}" />
             </classpath>
         </java>
+
+        <move todir="${distDirectory}">
+            <fileset dir="${buildDirectory}/${buildId}">
+                <include name="*.zip" />
+            </fileset>
+        </move>
     </target>
 
     <target name="pde-runtime">
@@ -131,7 +149,7 @@
             <arg value="-buildfile" />
             <arg value="${buildFile}" />
             <arg value="-Dtimestamp=${timestamp}" />
-            <arg value="-DproductId=DBeaverRuntime" />
+            <arg value="-DproductId=${buildDirectory}/DBeaverRuntime" />
             <arg value="-Dcomponent=org.jkiss.dbeaver.runtime"/>
             <arg value="-DbuildFeature=true"/>
             <arg value="-Dconfigs=*,*,*" />
@@ -189,29 +207,31 @@
             </classpath>
         </java>
 
-        <!--
-                <echo message="Publish category"/>
-                <java classname="org.eclipse.equinox.launcher.Main" fork="true" failonerror="true">
-                    <arg value="-application" />
-                    <arg value="org.eclipse.equinox.p2.publisher.CategoryPublisher" />
-                    <arg value="-metadataRepository" />
-                    <arg value="file://${updateSiteLocation}" />
-                    <arg value="-categoryDefinition" />
-                    <arg value="-compress" />
-                    <classpath>
-                        <pathelement location="${launcherLibLocation}" />
-                    </classpath>
-                </java>
-        -->
+        <echo message="Copy update site to dist"/>
+        <move todir="${updateSiteDist}">
+            <fileset dir="${updateSiteLocation}">
+                <include name="**" />
+                <exclude name="**/.*" />
+                <exclude name="features/org.eclipse.pde.build.*" />
+                <exclude name="features/org.jkiss.dbeaver.rcp*" />
+                <exclude name="features/org.jkiss.dbeaver.standalone*" />
+                <exclude name="plugins/com.ibm.icu*" />
+                <exclude name="plugins/org.jkiss.dbeaver.core.application*" />
+            </fileset>
+        </move>
     </target>
 
     <target name="pde-build" depends="init">
         <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
+        <antcall target="pde-standalone"/>
         <antcall target="pde-runtime"/>
         <antcall target="update-site"/>
-        <antcall target="pde-standalone"/>
     </target>
+
+    <!-- ===================================================================== -->
+    <!-- Makes driver pack archive -->
+    <!-- ===================================================================== -->
 
     <target name="driver-pack">
         <zip destfile="${distDirectory}/driver-pack-${productVersion}.zip">
@@ -220,12 +240,13 @@
         </zip>
     </target>
 
-    <!--This target defines the run-order of the targets-->
-    <target name="build" depends="pde-build" />
+    <!-- ===================================================================== -->
+    <!-- Windows installer -->
+    <!-- ===================================================================== -->
 
     <target name="nsis">
         <unzip 
-            src="${buildDirectory}/${buildId}/${buildId}-win32.win32.${arch}.zip"
+            src="${distDirectory}/${buildId}-win32.win32.${arch}.zip"
             dest="${buildDirectory}/installer/raw/win32.${arch}"
             overwrite="true"
             />
@@ -257,11 +278,15 @@
         <!--delete dir="${buildDirectory}/installer" /-->
     </target>
 
+    <!-- ===================================================================== -->
+    <!-- Debian installer -->
+    <!-- ===================================================================== -->
+
     <target name="deb">
         <property name="debDirectory" value="${buildDirectory}/installer/deb/linux.${arch}"/>
         <property name="packageName" value="${archivePrefix}"/>
         <unzip
-            src="${buildDirectory}/${buildId}/${buildId}-linux.gtk.${arch}.zip"
+            src="${distDirectory}/${buildId}-linux.gtk.${arch}.zip"
             dest="${debDirectory}"
             overwrite="true"
             />
@@ -310,9 +335,17 @@
 
     </target>
 
+    <!-- ===================================================================== -->
+    <!-- MacOS installer -->
+    <!-- ===================================================================== -->
+
     <target name="dist-macos">
 
     </target>
+
+    <!-- ===================================================================== -->
+    <!-- RPM -->
+    <!-- ===================================================================== -->
 
     <target name="dist-rpm" depends="init">
         <path id="ant-rpm.classpath">
@@ -353,7 +386,7 @@
             destination="dist">
             <zipfileset 
                 prefix='/usr/share/dbeaver' 
-                file="build/${buildId}/${buildId}-linux.gtk.x86.zip"/>
+                file="${distDirectory}/${buildId}-linux.gtk.x86.zip"/>
                 <!--link path="/usr/share/java/test.jar" target="/usr/share/java/test-1.2.3.jar"/-->
             <depends name="sun-jre" version="1.6"/>
         </rpm>
@@ -371,10 +404,6 @@
             topDir="${rpmDirectory}"
             cleanBuildDir="true"
             failOnError="true"/-->
-
-    </target>
-
-    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,driver-pack">
 
     </target>
 
@@ -407,11 +436,8 @@
     <target name="publish-release" depends="init">
         <mkdir dir="${releaseFilesDirectory}" />
         <copy todir="${releaseFilesDirectory}">
-            <fileset dir="${buildDirectory}/${buildId}">
-                <include name="*.zip" />
-            </fileset>
             <fileset dir="${distDirectory}">
-                <include name="**" />
+                <include name="*" />
             </fileset>
         </copy>
     </target>
@@ -419,11 +445,8 @@
     <target name="publish-ea" depends="init">
         <mkdir dir="${releaseFilesDirectory}/ea" />
         <copy todir="${releaseFilesDirectory}/ea">
-            <fileset dir="${buildDirectory}/${buildId}">
-                <include name="*.zip" />
-            </fileset>
             <fileset dir="${distDirectory}">
-                <include name="**" />
+                <include name="*" />
             </fileset>
         </copy>
     </target>
@@ -437,16 +460,10 @@
     <!-- Copy update site -->
 
     <target name="publish-update">
-        <zip destfile="${distDirectory}/dbeaver-${productVersion}-update.zip">
-            <fileset dir="${buildDirectory}/updateSite">
-                <include name="**"/>
-            </fileset>
-        </zip>
-        <property name="update-dist" value="${updateFilesDirectory}/${productVersion}"/>
-        <mkdir dir="${update-dist}"/>
-        <copy todir="${update-dist}" file="${distDirectory}/dbeaver-${productVersion}-update.zip"/>
-        <copy todir="${update-dist}">
-            <fileset dir="${buildDirectory}/updateSite">
+        <property name="update-target-dir" value="${updateFilesDirectory}/${productVersion}"/>
+        <mkdir dir="${update-target-dir}"/>
+        <copy todir="${update-target-dir}">
+            <fileset dir="${updateSiteDist}">
                 <include name="**"/>
             </fileset>
         </copy>
@@ -473,6 +490,19 @@
 				<include name="tools/**"/>
 			</fileset>
         </zip>
+    </target>
+
+    <!-- ===================================================================== -->
+    <!-- Default build -->
+    <!-- ===================================================================== -->
+
+    <!--This target defines the run-order of the targets-->
+    <target name="build" depends="pde-build" >
+
+    </target>
+
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,driver-pack">
+
     </target>
 
 </project>
