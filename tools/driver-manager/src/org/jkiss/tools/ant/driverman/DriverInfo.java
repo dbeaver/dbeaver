@@ -46,12 +46,12 @@ class DriverInfo {
 
     public String getPluginID()
     {
-        return "org.jkiss.dbeaver.driver." + pluginId;
+        return "org.jkiss.dbeaver.resources." + pluginId;
     }
 
     public String getFeatureID()
     {
-        return "org.jkiss.dbeaver.driver." + pluginId + ".feature";
+        return "org.jkiss.dbeaver.resources." + pluginId;
     }
 
     public File getPath()

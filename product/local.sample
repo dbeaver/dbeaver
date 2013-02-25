@@ -18,6 +18,8 @@ pdeBuildPluginVersion=3.8.1.v20120725-202643
 # release dist
 releaseFilesDirectory=d:/temp
 babelLocation=D:/Devel/java/Babel
+updateFilesDirectory=c:/temp/update
+driversDirectory=c:/temp/drivers
 locales=ru,fr
 
 #configs = *, *, *
