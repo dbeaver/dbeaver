@@ -67,7 +67,6 @@ import java.util.*;
 /**
  * UI Utils
  */
-@SuppressWarnings("restriction")
 public class UIUtils {
 
     static final Log log = LogFactory.getLog(UIUtils.class);
@@ -1079,7 +1078,7 @@ public class UIUtils {
 
     public static boolean isContextActive(String contextId)
     {
-        Collection contextIds = ((IContextService) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(IContextService.class)).getActiveContextIds();
+        Collection<?> contextIds = ((IContextService) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getService(IContextService.class)).getActiveContextIds();
         for (Object id : contextIds) {
             if (contextId.equals(id)) {
                 return true;

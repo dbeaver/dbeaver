@@ -49,7 +49,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     ResourceHandlerDescriptor(IConfigurationElement config)
     {
-        super(config.getContributor());
+        super(config);
 
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         for (IConfigurationElement contentTypeBinding : CommonUtils.safeArray(config.getChildren("contentTypeBinding"))) {

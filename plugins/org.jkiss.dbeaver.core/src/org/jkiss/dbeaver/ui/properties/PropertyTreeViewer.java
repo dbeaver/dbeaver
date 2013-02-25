@@ -232,11 +232,11 @@ public class PropertyTreeViewer extends TreeViewer {
                     } else if (BeanUtils.isCollectionType(propType)) {
                         Object propertyValue = propertySource.getPropertyValue(prop.getId());
                         if (propertyValue != null) {
-                            Collection collection;
+                            Collection<?> collection;
                             if (BeanUtils.isArrayType(propType)) {
                                 collection = Arrays.asList((Object[])propertyValue);
                             } else {
-                                collection = (Collection)propertyValue;
+                                collection = (Collection<?>)propertyValue;
                             }
                             PropertySourceCollection psc = new PropertySourceCollection(collection);
                             for (IPropertyDescriptor pd : psc.getPropertyDescriptors()) {

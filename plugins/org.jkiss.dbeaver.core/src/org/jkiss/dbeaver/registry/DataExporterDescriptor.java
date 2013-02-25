@@ -49,7 +49,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
 
     public DataExporterDescriptor(IConfigurationElement config)
     {
-        super(config.getContributor());
+        super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.exporterType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));

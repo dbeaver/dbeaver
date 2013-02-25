@@ -47,7 +47,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     public DataTypeProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
-        super(config.getContributor());
+        super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);
