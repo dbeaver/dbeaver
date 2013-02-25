@@ -34,7 +34,7 @@ public class EntityManagerDescriptor extends AbstractDescriptor
 
     EntityManagerDescriptor(IConfigurationElement config)
     {
-        super(config.getContributor());
+        super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_CLASS);
         this.managerType = new ObjectType(id);

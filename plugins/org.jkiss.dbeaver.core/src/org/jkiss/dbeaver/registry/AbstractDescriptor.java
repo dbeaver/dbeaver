@@ -24,13 +24,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverIcons;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -128,26 +126,26 @@ public abstract class AbstractDescriptor {
     }
 
 
-    private IContributor contributor;
+    private String pluginId;
 
-    public AbstractDescriptor(IContributor contributor)
+    protected AbstractDescriptor(IConfigurationElement contributorConfig)
     {
-        this.contributor = contributor;
+        this.pluginId = contributorConfig.getContributor().getName();
     }
 
-    public IContributor getContributor()
+    protected AbstractDescriptor(String pluginId)
     {
-        return contributor;
+        this.pluginId = pluginId;
     }
 
-    public String getContributorName()
+    public String getPluginId()
     {
-        return contributor.getName();
+        return pluginId;
     }
 
     public Bundle getContributorBundle()
     {
-        return Platform.getBundle(getContributorName());
+        return Platform.getBundle(pluginId);
     }
 
     protected Image iconToImage(String icon)

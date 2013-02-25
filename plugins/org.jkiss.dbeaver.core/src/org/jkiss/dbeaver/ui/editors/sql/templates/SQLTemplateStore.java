@@ -83,7 +83,7 @@ public class SQLTemplateStore extends TemplateStore {
         // Read templates for DS providers
         for (DataSourceProviderDescriptor provider : DBeaverCore.getInstance().getDataSourceProviderRegistry().getDataSourceProviders()) {
             readIncludedTemplates(
-                provider.getContributorName(),
+                provider.getPluginId(),
                 templates,
                 "templates/" + provider.getId() + "-templates.xml",
                 "$nl$/templates/" + provider.getId() + "-templates.properties");

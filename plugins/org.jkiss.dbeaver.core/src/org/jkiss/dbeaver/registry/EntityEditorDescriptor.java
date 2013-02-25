@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IContributor;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorInput;
@@ -71,12 +70,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
 
     EntityEditorDescriptor()
     {
-        super(new IContributor() {
-            @Override
-            public String getName() {
-                return DBeaverConstants.PLUGIN_ID;
-            }
-        }, null);
+        super(DBeaverConstants.PLUGIN_ID, null);
         this.id = DEFAULT_OBJECT_EDITOR_ID;
         this.className = ObjectPropertiesEditor.class.getName();
         this.contributorClassName = null;
@@ -91,7 +85,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
 
     public EntityEditorDescriptor(IConfigurationElement config)
     {
-        super(config.getContributor(), config);
+        super(config.getContributor().getName(), config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.className = config.getAttribute(RegistryConstants.ATTR_CLASS);

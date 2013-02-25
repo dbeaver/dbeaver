@@ -21,11 +21,7 @@ package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.internal.resources.ProjectDescription;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkbenchPart;
@@ -243,7 +239,7 @@ public class DBeaverCore implements DBPApplication {
                                     log.error("Can't create directory '" + dbeaverTempFolder.getAbsolutePath() + "'");
                                 }
                             }
-                            ProjectDescription description = new ProjectDescription();
+                            IProjectDescription description = workspace.newProjectDescription(TEMP_PROJECT_NAME);
                             description.setLocation(new Path(dbeaverTempFolder.getAbsolutePath()));
                             description.setName(TEMP_PROJECT_NAME);
                             description.setComment("Project for DBeaver temporary content");

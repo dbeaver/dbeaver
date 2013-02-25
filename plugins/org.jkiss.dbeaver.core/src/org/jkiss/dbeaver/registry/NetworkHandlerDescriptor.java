@@ -44,7 +44,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor
     public NetworkHandlerDescriptor(
         IConfigurationElement config)
     {
-        super(config.getContributor(), config);
+        super(config.getContributor().getName(), config);
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);

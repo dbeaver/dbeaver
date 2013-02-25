@@ -38,7 +38,7 @@ public class DataSourceToolDescriptor extends AbstractContextDescriptor
     public DataSourceToolDescriptor(
         DataSourceProviderDescriptor provider, IConfigurationElement config)
     {
-        super(provider.getContributor(), config);
+        super(provider.getPluginId(), config);
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
