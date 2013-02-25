@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ext.IProgressControlProvider;
 import org.jkiss.dbeaver.ext.ui.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.ProxyPageSite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -59,7 +60,7 @@ import java.util.Map;
 /**
  * ObjectPropertiesEditor
  */
-public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor
+public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObject>
     implements IRefreshablePart, IProgressControlProvider, IFolderedPart, ISearchContextProvider, IRefreshableContainer
 {
     //static final Log log = LogFactory.getLog(ObjectPropertiesEditor.class);

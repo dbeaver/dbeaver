@@ -79,7 +79,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
         final ObjectCreateCommand createCommand = makeCreateCommand(newObject);
         commandContext.getUserParams().put(newObject, createCommand);
-        commandContext.addCommand(createCommand, new CreateObjectReflector(), true);
+        commandContext.addCommand(createCommand, new CreateObjectReflector<OBJECT_TYPE>(), true);
 
         return newObject;
     }

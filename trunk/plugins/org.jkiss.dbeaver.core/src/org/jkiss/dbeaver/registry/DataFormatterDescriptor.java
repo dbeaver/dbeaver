@@ -43,7 +43,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
 
     public DataFormatterDescriptor(IConfigurationElement config)
     {
-        super(config.getContributor());
+        super(config);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.formatterType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));

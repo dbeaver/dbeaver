@@ -73,10 +73,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
 
-    public static final char URL_GROUP_START = '{';
-    public static final char URL_GROUP_END = '}';
-    public static final char URL_OPTIONAL_START = '[';
-    public static final char URL_OPTIONAL_END = ']';
+    public static final char URL_GROUP_START = '{'; //$NON-NLS-1$
+    public static final char URL_GROUP_END = '}'; //$NON-NLS-1$
+    public static final char URL_OPTIONAL_START = '['; //$NON-NLS-1$
+    public static final char URL_OPTIONAL_END = ']'; //$NON-NLS-1$
     public static final String PROP_HOST = "host"; //$NON-NLS-1$
     public static final String PROP_PORT = "port"; //$NON-NLS-1$
     public static final String PROP_DATABASE = "database"; //$NON-NLS-1$
@@ -130,7 +130,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
     {
-        super(providerDescriptor.getContributor());
+        super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
         this.id = id;
         this.custom = true;
@@ -140,7 +140,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, IConfigurationElement config)
     {
-        super(providerDescriptor.getContributor());
+        super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
         this.id = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_ID));
         this.category = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_CATEGORY));

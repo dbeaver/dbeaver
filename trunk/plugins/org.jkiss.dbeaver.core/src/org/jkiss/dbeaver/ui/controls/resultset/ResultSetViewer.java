@@ -2174,8 +2174,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (!singleSourceCells || CommonUtils.isEmpty(metaColumns)) {
             return null;
         }
-        DBCEntityIdentifier identifier = metaColumns[0].getRowIdentifier().getEntityIdentifier();
-        if (identifier.getReferrer() instanceof DBVEntityConstraint) {
+        DBDRowIdentifier rowIdentifier = metaColumns[0].getRowIdentifier();
+        DBCEntityIdentifier identifier = rowIdentifier == null ? null : rowIdentifier.getEntityIdentifier();
+        if (identifier != null && identifier.getReferrer() instanceof DBVEntityConstraint) {
             return identifier;
         } else {
             return null;

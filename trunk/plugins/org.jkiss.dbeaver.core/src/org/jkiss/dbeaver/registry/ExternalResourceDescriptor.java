@@ -40,7 +40,7 @@ public class ExternalResourceDescriptor extends AbstractDescriptor
 
     public ExternalResourceDescriptor(IConfigurationElement config)
     {
-        super(config.getContributor());
+        super(config);
 
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
     }
