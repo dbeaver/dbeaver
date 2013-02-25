@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.jface.resource.StringConverter;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -37,6 +38,7 @@ import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 public class DataSourceProviderRegistry
@@ -47,6 +49,7 @@ public class DataSourceProviderRegistry
     private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<DBPRegistryListener>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<String, DBPConnectionType>();
+    private final Map<String, ExternalResourceDescriptor> resourceContributions = new HashMap<String, ExternalResourceDescriptor>();
 
     public DataSourceProviderRegistry()
     {
@@ -116,6 +119,16 @@ public class DataSourceProviderRegistry
                 loadConnectionTypes(ctConfig);
             }
         }
+
+        // Load external resources information
+        {
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(ExternalResourceDescriptor.EXTENSION_ID);
+            for (IConfigurationElement ext : extElements) {
+                ExternalResourceDescriptor resource = new ExternalResourceDescriptor(ext);
+                resourceContributions.put(resource.getName(), resource);
+            }
+        }
+
     }
 
     public void dispose()
@@ -130,8 +143,8 @@ public class DataSourceProviderRegistry
             providerDescriptor.dispose();
         }
         this.dataSourceProviders.clear();
-
         this.dataTypeProviders.clear();
+        this.resourceContributions.clear();
     }
 
     public DataSourceProviderDescriptor getDataSourceProvider(String id)
@@ -301,6 +314,17 @@ public class DataSourceProviderRegistry
         catch (Exception ex) {
             log.warn("Error saving drivers", ex);
         }
+    }
+
+    /**
+     * Searches for resource within external resources provided by plugins
+     * @param resourcePath path
+     * @return URL or null if specified resource not found
+     */
+    public URL findResourceURL(String resourcePath)
+    {
+        ExternalResourceDescriptor descriptor = resourceContributions.get(resourcePath);
+        return descriptor == null ? null : descriptor.getURL();
     }
 
     public void addDataSourceRegistryListener(DBPRegistryListener listener)
