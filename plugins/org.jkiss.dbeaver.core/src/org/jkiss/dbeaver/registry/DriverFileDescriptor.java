@@ -143,7 +143,7 @@ public class DriverFileDescriptor implements DBPDriverFile
             // [compatibility with 1.x]
             file = new File(DBeaverCore.getInstance().getWorkspace().getRoot().getLocation().toFile(), path);
             if (!file.exists()) {
-                // USe custom drivers path
+                // Use custom drivers path
                 file = new File(DriverDescriptor.getCustomDriversHome(), path);
             }
         }
@@ -165,9 +165,13 @@ public class DriverFileDescriptor implements DBPDriverFile
             return platformFile;
         }
 
-        // Try to get from plugin's bundle
+        // Try to get from plugin's bundle/from external resources
         {
             URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(path);
+            if (url == null) {
+                // Find in external resources
+                url = driver.getProviderDescriptor().getRegistry().findResourceURL(path);
+            }
             if (url != null) {
                 try {
                     url = FileLocator.toFileURL(url);

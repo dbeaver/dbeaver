@@ -34,7 +34,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTypeProvider"; //$NON-NLS-1$
 
-    static final Log log = LogFactory.getLog(DataSourceProviderRegistry.class);
+    static final Log log = LogFactory.getLog(DataTypeProviderDescriptor.class);
 
     private static final String ALL_TYPES_PATTERN = "*";
 
