@@ -75,5 +75,20 @@
         </page>
 
     </extension>
+    <extension
+          point="org.eclipse.ui.perspectiveExtensions">
+       <perspectiveExtension
+             targetID="org.jkiss.dbeaver.core.perspective">
+          <newWizardShortcut
+                id="org.jkiss.dbeaver.core.wizard.new.connection">
+          </newWizardShortcut>
+          <newWizardShortcut
+                id="org.jkiss.dbeaver.core.wizard.new.project">
+          </newWizardShortcut>
+          <newWizardShortcut
+                id="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard">
+          </newWizardShortcut>
+       </perspectiveExtension>
+    </extension>
 
 </plugin>
