@@ -61,7 +61,7 @@
         </page>
 -->
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations"/>
-        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageEmpty" name="Editors"/>
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageEmpty" name="%pref.page.name.db.editors"/>
 
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
