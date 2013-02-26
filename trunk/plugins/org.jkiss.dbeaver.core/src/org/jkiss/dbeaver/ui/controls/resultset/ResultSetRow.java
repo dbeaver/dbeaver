@@ -24,12 +24,31 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 /**
  * Result set row
  */
-public interface ResultSetRow {
+public class ResultSetRow {
 
-    int getValueCount();
+    private ResultSetViewer viewer;
+    private final Object[] values;
 
-    Object[] getValues();
+    ResultSetRow(ResultSetViewer viewer, Object[] values)
+    {
+        this.viewer = viewer;
+        this.values = values;
+    }
 
-    Object getValue(DBSAttributeBase attribute);
+    public int getValueCount()
+    {
+        return values.length;
+    }
+
+    public Object[] getValues()
+    {
+        return values;
+    }
+
+    public Object getValue(DBSAttributeBase attribute)
+    {
+        int index = viewer.getMetaColumnIndex(attribute);
+        return index < 0 ? null : values[index];
+    }
 
 }

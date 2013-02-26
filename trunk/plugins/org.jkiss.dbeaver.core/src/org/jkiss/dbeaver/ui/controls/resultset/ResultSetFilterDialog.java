@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
-public class ResultSetFilterDialog extends HelpEnabledDialog {
+class ResultSetFilterDialog extends HelpEnabledDialog {
 
     private final ResultSetViewer resultSetViewer;
 
@@ -143,7 +143,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
         }
 
         // Fill columns
-        columnsViewer.setInput(resultSetViewer.getMetaColumns());
+        columnsViewer.setInput(resultSetViewer.getVisibleColumns());
 
         // Pack UI
         UIUtils.packColumns(columnsViewer.getTable());
@@ -186,7 +186,7 @@ public class ResultSetFilterDialog extends HelpEnabledDialog {
             dataFilter.setOrder(null);
             dataFilter.setWhere(null);
 
-            columnsViewer.setInput(resultSetViewer.getMetaColumns());
+            columnsViewer.setInput(resultSetViewer.getVisibleColumns());
             orderText.setText(""); //$NON-NLS-1$
             whereText.setText(""); //$NON-NLS-1$
         } else {
