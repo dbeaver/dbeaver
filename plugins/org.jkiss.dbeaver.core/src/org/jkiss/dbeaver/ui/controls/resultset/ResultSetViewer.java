@@ -725,7 +725,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         closeEditors();
         clearData();
-        clearMetaData();
 
         themeManager.removePropertyChangeListener(ResultSetViewer.this);
 
@@ -995,8 +994,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void initResultSet()
     {
-        closeEditors();
-
         spreadsheet.setRedraw(false);
         spreadsheet.clearGrid();
         if (mode == ResultSetMode.RECORD) {
@@ -1697,12 +1694,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private void clearMetaData()
-    {
-        this.columns = this.visibleColumns = new DBDAttributeBinding[0];
-        this.dataFilter = new DBDDataFilter();
-    }
-
     private void clearData()
     {
         // Refresh all rows
@@ -1712,16 +1703,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.curRowNum = -1;
         this.curColNum = -1;
 
-        clearEditedData();
-
-        hasData = false;
-    }
-
-    private void clearEditedData()
-    {
         this.editedValues.clear();
         this.addedRows.clear();
         this.removedRows.clear();
+
+        hasData = false;
     }
 
     boolean hasChanges()
@@ -2099,11 +2085,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         for (Object[] row : curRows) {
             releaseRow(row);
         }
-        releaseEditedValues();
-    }
-
-    private void releaseEditedValues()
-    {
+        // Release edited values
         for (Object oldValue : editedValues.values()) {
             releaseValue(oldValue);
         }
