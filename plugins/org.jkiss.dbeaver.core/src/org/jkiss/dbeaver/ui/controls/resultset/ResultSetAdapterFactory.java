@@ -42,7 +42,6 @@ public class ResultSetAdapterFactory implements IAdapterFactory
                 return getAdapter(((IPageChangeProvider) adaptableObject).getSelectedPage(), ResultSetViewer.class);
             }
         } else if (adapterType == IPropertySource.class) {
-            System.out.println("HEY");
         }
         return null;
     }

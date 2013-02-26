@@ -36,6 +36,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -70,19 +71,18 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.tools.data.wizard.DataExportProvider;
 import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -125,22 +125,23 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         LAST
     }
 
-    private IWorkbenchPartSite site;
-    private ResultSetMode mode;
-    private Composite viewerPanel;
-    private Text filtersText;
+    private final IWorkbenchPartSite site;
+    private final Composite viewerPanel;
+    private final Text filtersText;
+    private Text statusLabel;
 
     private final SashForm resultsSash;
     private final Spreadsheet spreadsheet;
     private final ViewValuePanel previewPane;
 
-    private ResultSetProvider resultSetProvider;
-    private ResultSetDataReceiver dataReceiver;
-    private IThemeManager themeManager;
+    private final ResultSetProvider resultSetProvider;
+    private final ResultSetDataReceiver dataReceiver;
+    private final IThemeManager themeManager;
     private ToolBarManager toolBarManager;
 
     // Columns
-    private DBDAttributeBinding[] metaColumns = new DBDAttributeBinding[0];
+    private DBDAttributeBinding[] columns = new DBDAttributeBinding[0];
+    private DBDAttributeBinding[] visibleColumns = new DBDAttributeBinding[0];
     private DBDDataFilter dataFilter = new DBDDataFilter();
     private boolean singleSourceCells;
 
@@ -151,25 +152,24 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private int curRowNum = -1;
     private int curColNum = -1;
     private boolean hasData = false;
-
-    // Edited rows and cells
-    private Set<RowInfo> addedRows = new TreeSet<RowInfo>();
-    private Set<RowInfo> removedRows = new TreeSet<RowInfo>();
-    private Map<GridPos, Object> editedValues = new HashMap<GridPos, Object>();
-
-    private Text statusLabel;
-
-    private Map<ResultSetValueController, DBDValueEditorStandalone> openEditors = new HashMap<ResultSetValueController, DBDValueEditorStandalone>();
     // Flag saying that edited values update is in progress
     private boolean updateInProgress = false;
+    private ResultSetMode mode;
+
+    // Edited rows and cells
+    private final Set<RowInfo> addedRows = new TreeSet<RowInfo>();
+    private final Set<RowInfo> removedRows = new TreeSet<RowInfo>();
+    private final Map<GridPos, Object> editedValues = new HashMap<GridPos, Object>();
+
+    private final Map<ResultSetValueController, DBDValueEditorStandalone> openEditors = new HashMap<ResultSetValueController, DBDValueEditorStandalone>();
 
     // UI modifiers
-    private Color colorRed;
-    private Color backgroundAdded;
-    private Color backgroundDeleted;
-    private Color backgroundModified;
-    private Color foregroundNull;
-    private Font boldFont;
+    private final Color colorRed;
+    private final Color backgroundAdded;
+    private final Color backgroundDeleted;
+    private final Color backgroundModified;
+    private final Color foregroundNull;
+    private final Font boldFont;
 
     private ResultSetDataPumpJob dataPumpJob;
 
@@ -197,7 +197,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
-        ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
+        final ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
         this.backgroundAdded = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
         this.backgroundDeleted = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
         this.backgroundModified = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
@@ -284,7 +284,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 updateGridCursor(event.x, event.y);
             }
         });
-        this.spreadsheet.setTopLeftRenderer(new ResultSetTopLeftRenderer(this));
+        this.spreadsheet.setTopLeftRenderer(new TopLeftRenderer(this));
         applyThemeSettings();
 
         spreadsheet.addFocusListener(new FocusListener() {
@@ -332,7 +332,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 {
                     if (object instanceof GridPos) {
                         final GridPos cell = translateGridPos((GridPos)object);
-                        boolean noCellSelected = (cell.row < 0 || curRows.size() <= cell.row || cell.col < 0 || cell.col >= metaColumns.length);
+                        boolean noCellSelected = (cell.row < 0 || curRows.size() <= cell.row || cell.col < 0 || cell.col >= visibleColumns.length);
                         if (!noCellSelected) {
                             final ResultSetValueController valueController = new ResultSetValueController(
                                 curRows.get(cell.row),
@@ -396,7 +396,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         spreadsheet.setCursor(new GridPos(0, oldColNum), false);
     }
 
-    private void updateEditControls()
+    void updateEditControls()
     {
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
         ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CHANGED);
@@ -418,7 +418,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private void refreshSpreadsheet(boolean rowsChanged)
+    void refreshSpreadsheet(boolean rowsChanged)
     {
         if (spreadsheet.isDisposed()) {
             return;
@@ -569,7 +569,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void updateStatusMessage()
     {
         if (curRows.isEmpty()) {
-            if (CommonUtils.isEmpty(metaColumns)) {
+            if (CommonUtils.isEmpty(visibleColumns)) {
                 setStatus("Empty");
             } else {
                 setStatus(CoreMessages.controls_resultset_viewer_status_no_data);
@@ -587,9 +587,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     // Update all columns ordering
     private void resetColumnOrdering()
     {
-        if (!spreadsheet.isDisposed() && metaColumns != null && mode == ResultSetMode.GRID) {
-            for (int i = 0, metaColumnsLength = metaColumns.length; i < metaColumnsLength; i++) {
-                DBDAttributeBinding column = metaColumns[i];
+        if (!spreadsheet.isDisposed() && visibleColumns != null && mode == ResultSetMode.GRID) {
+            for (int i = 0, metaColumnsLength = visibleColumns.length; i < metaColumnsLength; i++) {
+                DBDAttributeBinding column = visibleColumns[i];
                 DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getAttributeName());
                 GridColumn gridColumn = spreadsheet.getColumn(i);
                 if (columnOrder == null) {
@@ -660,7 +660,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         int defaultWidth = 0;
         GC gc = new GC(spreadsheet);
         gc.setFont(spreadsheet.getFont());
-        for (DBDAttributeBinding column : metaColumns) {
+        for (DBDAttributeBinding column : visibleColumns) {
             Point ext = gc.stringExtent(column.getAttributeName());
             if (ext.x > defaultWidth) {
                 defaultWidth = ext.x;
@@ -702,7 +702,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return;
         }
         final GridPos cell = translateGridPos(getCurrentPosition());
-        if (!cell.isValid() || cell.col >= metaColumns.length || cell.row >= curRows.size()) {
+        if (!cell.isValid() || cell.col >= visibleColumns.length || cell.row >= curRows.size()) {
             previewPane.clearValue();
             return;
         }
@@ -823,7 +823,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         } else {
             column = pos.row;
         }
-        return column < 0 || column >= metaColumns.length || isColumnReadOnly(metaColumns[column]);
+        return column < 0 || column >= visibleColumns.length || isColumnReadOnly(visibleColumns[column]);
     }
 
     boolean isColumnReadOnly(DBDAttributeBinding column)
@@ -850,9 +850,29 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return curRows.size();
     }
 
+    Object[] getRowData(int index)
+    {
+        return curRows.get(index);
+    }
+
     int getRowIndex(Object[] row)
     {
         return curRows.indexOf(row);
+    }
+
+    Set<RowInfo> getAddedRows()
+    {
+        return addedRows;
+    }
+
+    Set<RowInfo> getRemovedRows()
+    {
+        return removedRows;
+    }
+
+    Map<GridPos, Object> getEditedValues()
+    {
+        return editedValues;
     }
 
     public void setStatus(String status)
@@ -892,11 +912,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public boolean setMetaData(DBDAttributeBinding[] columns)
     {
         boolean update = false;
-        if (this.metaColumns == null || this.metaColumns.length != columns.length) {
+        if (this.visibleColumns == null || this.visibleColumns.length != columns.length) {
             update = true;
         } else {
-            for (int i = 0; i < this.metaColumns.length; i++) {
-                if (!this.metaColumns[i].getMetaAttribute().equals(columns[i].getMetaAttribute())) {
+            for (int i = 0; i < this.visibleColumns.length; i++) {
+                if (!this.visibleColumns[i].getMetaAttribute().equals(columns[i].getMetaAttribute())) {
                     update = true;
                     break;
                 }
@@ -911,7 +931,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             });
             this.clearData();
-            this.metaColumns = columns;
+            this.columns = this.visibleColumns = columns;
             this.panelValueController = null;
             this.dataFilter = new DBDDataFilter();
         }
@@ -932,7 +952,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // Check single source flag
             this.singleSourceCells = true;
             DBSEntity sourceTable = null;
-            for (DBDAttributeBinding column : metaColumns) {
+            for (DBDAttributeBinding column : visibleColumns) {
                 if (isColumnReadOnly(column)) {
                     break;
                 }
@@ -1075,6 +1095,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
+    void setUpdateInProgress(boolean updateInProgress)
+    {
+        this.updateInProgress = updateInProgress;
+    }
+
     GridPos translateGridPos(GridPos pos)
     {
         if (mode == ResultSetMode.GRID) {
@@ -1093,14 +1118,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
      * If result set is a result of joins or contains synthetic columns then
      * single source is null. If driver doesn't support meta information
      * for queries then is will null.
-     * @return
+     * @return single source entity
      */
     public DBSEntity getSingleSource()
     {
         if (!singleSourceCells) {
             return null;
         }
-        return metaColumns[0].getRowIdentifier().getEntity();
+        return visibleColumns[0].getRowIdentifier().getEntity();
     }
 
     @Override
@@ -1110,7 +1135,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             !isReadOnly() &&
             singleSourceCells &&
 
-            !CommonUtils.isEmpty(metaColumns);
+            !CommonUtils.isEmpty(visibleColumns);
     }
 
     @Override
@@ -1128,7 +1153,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         GridPos cell = translateGridPos(focusCell);
-        if (cell.row < 0 || cell.row >= curRows.size() || cell.col < 0 || cell.col >= metaColumns.length) {
+        if (cell.row < 0 || cell.row >= curRows.size() || cell.col < 0 || cell.col >= visibleColumns.length) {
             // Out of bounds
             log.debug("Editor position is out of bounds (" + cell.col + ":" + cell.row + ")");
             return false;
@@ -1142,7 +1167,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
         }
-        DBDAttributeBinding metaColumn = metaColumns[cell.col];
+        DBDAttributeBinding metaColumn = visibleColumns[cell.col];
         final int handlerFeatures = metaColumn.getValueHandler().getFeatures();
         if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
             return false;
@@ -1253,7 +1278,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         // Custom oldValue items
         final GridPos cell = translateGridPos(curCell);
-        boolean noCellSelected = (cell.row < 0 || curRows.size() <= cell.row || cell.col < 0 || cell.col >= metaColumns.length);
+        boolean noCellSelected = (cell.row < 0 || curRows.size() <= cell.row || cell.col < 0 || cell.col >= visibleColumns.length);
         if (!noCellSelected) {
             final ResultSetValueController valueController = new ResultSetValueController(
                 curRows.get(cell.row),
@@ -1294,14 +1319,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // Menus from value handler
             try {
                 manager.add(new Separator());
-                metaColumns[cell.col].getValueHandler().fillContextMenu(manager, valueController);
+                visibleColumns[cell.col].getValueHandler().fillContextMenu(manager, valueController);
             }
             catch (Exception e) {
                 log.error(e);
             }
         }
 
-        if (!CommonUtils.isEmpty(metaColumns)) {
+        if (!CommonUtils.isEmpty(visibleColumns)) {
             // Export and other utility methods
             manager.add(new Separator());
             MenuManager filtersMenu = new MenuManager(
@@ -1340,7 +1365,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         GridPos currentPosition = getCurrentPosition();
         int columnIndex = translateGridPos(currentPosition).col;
         if (supportsDataFilter() && columnIndex >= 0) {
-            DBDAttributeBinding column = metaColumns[columnIndex];
+            DBDAttributeBinding column = visibleColumns[columnIndex];
             if (column.getEntityAttribute() == null) {
                 return;
             }
@@ -1396,7 +1421,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (ctrlPressed) {
             dataFilter.clearOrderColumns();
         }
-        DBDAttributeBinding metaColumn = metaColumns[column.getIndex()];
+        DBDAttributeBinding metaColumn = visibleColumns[column.getIndex()];
         DBQOrderColumn columnOrder = dataFilter.getOrderColumn(metaColumn.getAttributeName());
         //int newSort;
         if (columnOrder == null) {
@@ -1436,6 +1461,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public Control getControl()
     {
         return this.viewerPanel;
+    }
+
+    public IWorkbenchPartSite getSite()
+    {
+        return site;
     }
 
     public Spreadsheet getGridControl()
@@ -1480,7 +1510,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return;
                 case ISaveablePart2.YES:
                     // Apply changes
-                    applyChanges(null, new DataUpdateListener() {
+                    applyChanges(null, new ResultSetPersister.DataUpdateListener() {
                         @Override
                         public void onUpdate(boolean success) {
                             if (success) {
@@ -1644,7 +1674,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 // Seems to be refresh
                                 // Restore original position
                                 ResultSetViewer.this.curRowNum = Math.min(oldPos.row, ResultSetViewer.this.curRows.size() - 1);
-                                ResultSetViewer.this.curColNum = Math.min(oldPos.col, metaColumns.length - 1);
+                                ResultSetViewer.this.curColNum = Math.min(oldPos.col, visibleColumns.length - 1);
                                 if (mode == ResultSetMode.GRID) {
                                     spreadsheet.setCursor(new GridPos(curColNum, curRowNum), false);
                                 } else {
@@ -1669,7 +1699,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void clearMetaData()
     {
-        this.metaColumns = new DBDAttributeBinding[0];
+        this.columns = this.visibleColumns = new DBDAttributeBinding[0];
         this.dataFilter = new DBDDataFilter();
     }
 
@@ -1689,9 +1719,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private void clearEditedData()
     {
-        this.editedValues = new HashMap<GridPos, Object>();
-        this.addedRows = new TreeSet<RowInfo>();
-        this.removedRows = new TreeSet<RowInfo>();
+        this.editedValues.clear();
+        this.addedRows.clear();
+        this.removedRows.clear();
     }
 
     boolean hasChanges()
@@ -1707,9 +1737,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     /**
      * Saves changes to database
      * @param monitor monitor. If null then save will be executed in async job
-     * @param listener finish listener
+     * @param listener finish listener (may be null)
      */
-    public void applyChanges(DBRProgressMonitor monitor, DataUpdateListener listener)
+    public void applyChanges(DBRProgressMonitor monitor, ResultSetPersister.DataUpdateListener listener)
     {
         if (!singleSourceCells) {
             UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Can't save data for result set from multiple sources");
@@ -1734,7 +1764,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return;
                 }
             }
-            new DataUpdater().applyChanges(monitor, listener);
+            new ResultSetPersister(this).applyChanges(monitor, listener);
         } catch (DBException e) {
             UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Error saving changes in database", e);
         }
@@ -1742,7 +1772,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     public void rejectChanges()
     {
-        new DataUpdater().rejectChanges();
+        new ResultSetPersister(this).rejectChanges();
     }
 
     public void copySelectionToClipboard(
@@ -1822,8 +1852,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             GridPos cellPos = translateGridPos(pos);
             Object[] curRow = curRows.get(cellPos.row);
             Object value = curRow[cellPos.col];
-            String cellText = metaColumns[cellPos.col].getValueHandler().getValueDisplayString(
-                metaColumns[cellPos.col].getMetaAttribute(),
+            String cellText = visibleColumns[cellPos.col].getValueHandler().getValueDisplayString(
+                visibleColumns[cellPos.col].getMetaAttribute(),
                 value,
                 format);
             if (cellText != null) {
@@ -1852,7 +1882,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return;
         }
         cell = translateGridPos(cell);
-        DBDAttributeBinding metaColumn = metaColumns[cell.col];
+        DBDAttributeBinding metaColumn = visibleColumns[cell.col];
         if (isColumnReadOnly(metaColumn)) {
             // No inline editors for readonly columns
             return;
@@ -1907,7 +1937,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         shiftRows(rowNum, 1);
 
         // Add new row
-        final Object[] cells = new Object[metaColumns.length];
+        final Object[] cells = new Object[visibleColumns.length];
         final int currentRowNumber = rowNum;
         try {
             DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
@@ -1920,8 +1950,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     try {
                         if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < curRows.size()) {
                             Object[] origRow = curRows.get(currentRowNumber);
-                            for (int i = 0; i < metaColumns.length; i++) {
-                                DBDAttributeBinding metaColumn = metaColumns[i];
+                            for (int i = 0; i < visibleColumns.length; i++) {
+                                DBDAttributeBinding metaColumn = visibleColumns[i];
                                 if (metaColumn.getEntityAttribute().isSequence()) {
                                     // set autoincrement columns to null
                                     cells[i] = null;
@@ -1940,8 +1970,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             }
                         } else {
                             // Initialize new values
-                            for (int i = 0; i < metaColumns.length; i++) {
-                                DBDAttributeBinding metaColumn = metaColumns[i];
+                            for (int i = 0; i < visibleColumns.length; i++) {
+                                DBDAttributeBinding metaColumn = visibleColumns[i];
                                 try {
                                     cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getMetaAttribute());
                                 } catch (DBCException e) {
@@ -2039,14 +2069,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         fireResultSetChange();
     }
 
-    private void cleanupRow(int rowNum)
+    void cleanupRow(int rowNum)
     {
         this.releaseRow(this.curRows.get(rowNum));
         this.curRows.remove(rowNum);
         this.shiftRows(rowNum, -1);
     }
 
-    private boolean cleanupRows(Set<RowInfo> rows)
+    boolean cleanupRows(Set<RowInfo> rows)
     {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
@@ -2088,21 +2118,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private void releaseValue(Object value)
+    void releaseValue(Object value)
     {
         if (value instanceof DBDValue) {
             ((DBDValue)value).release();
         }
     }
 
-    private void resetValue(Object value)
+    void resetValue(Object value)
     {
         if (value instanceof DBDContent) {
             ((DBDContent)value).resetContents();
         }
     }
 
-    public static Image getTypeImage(DBSTypedObject column)
+    static Image getTypeImage(DBSTypedObject column)
     {
         if (column instanceof IObjectImageProvider) {
             return ((IObjectImageProvider)column).getObjectImage();
@@ -2111,14 +2141,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    public DBDAttributeBinding[] getMetaColumns()
+    public DBDAttributeBinding[] getVisibleColumns()
     {
-        return metaColumns;
+        return visibleColumns;
     }
 
     public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)
     {
-        for (DBDAttributeBinding binding : metaColumns) {
+        for (DBDAttributeBinding binding : visibleColumns) {
             if (binding.getMetaAttribute() == attribute || binding.getEntityAttribute() == attribute) {
                 return binding;
             }
@@ -2126,37 +2156,37 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return null;
     }
 
-    private int getMetaColumnIndex(DBCAttributeMetaData attribute)
+    int getMetaColumnIndex(DBCAttributeMetaData attribute)
     {
-        for (int i = 0; i < metaColumns.length; i++) {
-            if (attribute == metaColumns[i].getMetaAttribute()) {
+        for (int i = 0; i < visibleColumns.length; i++) {
+            if (attribute == visibleColumns[i].getMetaAttribute()) {
                 return i;
             }
         }
         return -1;
     }
 
-    private int getMetaColumnIndex(DBSEntityAttribute column)
+    int getMetaColumnIndex(DBSEntityAttribute column)
     {
-        for (int i = 0; i < metaColumns.length; i++) {
-            if (column == metaColumns[i].getEntityAttribute()) {
+        for (int i = 0; i < visibleColumns.length; i++) {
+            if (column == visibleColumns[i].getEntityAttribute()) {
                 return i;
             }
         }
         return -1;
     }
 
-    private int getMetaColumnIndex(DBSAttributeBase attribute)
+    int getMetaColumnIndex(DBSAttributeBase attribute)
     {
         return attribute instanceof DBCAttributeMetaData ?
             getMetaColumnIndex((DBCAttributeMetaData) attribute) :
             getMetaColumnIndex((DBSEntityAttribute) attribute);
     }
 
-    private int getMetaColumnIndex(DBSEntity table, String columnName)
+    int getMetaColumnIndex(DBSEntity table, String columnName)
     {
-        for (int i = 0; i < metaColumns.length; i++) {
-            DBDAttributeBinding column = metaColumns[i];
+        for (int i = 0; i < visibleColumns.length; i++) {
+            DBDAttributeBinding column = visibleColumns[i];
             if ((table == null || column.getRowIdentifier().getEntity() == table) &&
                 column.getAttributeName().equals(columnName))
             {
@@ -2171,10 +2201,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     DBCEntityIdentifier getVirtualEntityIdentifier()
     {
-        if (!singleSourceCells || CommonUtils.isEmpty(metaColumns)) {
+        if (!singleSourceCells || CommonUtils.isEmpty(visibleColumns)) {
             return null;
         }
-        DBDRowIdentifier rowIdentifier = metaColumns[0].getRowIdentifier();
+        DBDRowIdentifier rowIdentifier = visibleColumns[0].getRowIdentifier();
         DBCEntityIdentifier identifier = rowIdentifier == null ? null : rowIdentifier.getEntityIdentifier();
         if (identifier != null && identifier.getReferrer() instanceof DBVEntityConstraint) {
             return identifier;
@@ -2197,7 +2227,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         // It is safe to use void monitor cos' it is virtual constraint
                         if (editEntityIdentifier()) {
                             try {
-                                identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, metaColumns[0].getMetaAttribute().getEntity());
+                                identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, visibleColumns[0].getMetaAttribute().getEntity());
                             } catch (DBException e) {
                                 log.error(e);
                             }
@@ -2232,16 +2262,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     void clearEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
-        DBCEntityIdentifier identifier = metaColumns[0].getRowIdentifier().getEntityIdentifier();
+        DBCEntityIdentifier identifier = visibleColumns[0].getRowIdentifier().getEntityIdentifier();
         DBVEntityConstraint virtualKey = (DBVEntityConstraint) identifier.getReferrer();
         virtualKey.setAttributes(Collections.<DBSEntityAttribute>emptyList());
-        identifier.reloadAttributes(monitor, metaColumns[0].getMetaAttribute().getEntity());
+        identifier.reloadAttributes(monitor, visibleColumns[0].getMetaAttribute().getEntity());
         virtualKey.getParentObject().setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, null);
 
         getDataSource().getContainer().persistConfiguration();
     }
 
-    private void fireResultSetChange() {
+    void fireResultSetChange() {
         synchronized (listeners) {
             if (!listeners.isEmpty()) {
                 for (ResultSetListener listener : listeners) {
@@ -2249,39 +2279,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
         }
-    }
-
-    /////////////////////////////
-    // Row
-
-    private class ResultSetRowImpl implements ResultSetRow {
-
-        private final Object[] values;
-
-        private ResultSetRowImpl(Object[] values)
-        {
-            this.values = values;
-        }
-
-        @Override
-        public int getValueCount()
-        {
-            return values.length;
-        }
-
-        @Override
-        public Object[] getValues()
-        {
-            return values;
-        }
-
-        @Override
-        public Object getValue(DBSAttributeBase attribute)
-        {
-            int index = getMetaColumnIndex(attribute);
-            return index < 0 ? null : values[index];
-        }
-
     }
 
     /////////////////////////////
@@ -2296,7 +2293,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private Composite inlinePlaceholder;
 
         private ResultSetValueController(Object[] curRow, int columnIndex, EditType editType, Composite inlinePlaceholder) {
-            this.columns = ResultSetViewer.this.metaColumns;
+            this.columns = ResultSetViewer.this.visibleColumns;
             this.curRow = curRow;
             this.columnIndex = columnIndex;
             this.editType = editType;
@@ -2532,44 +2529,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    /**
-     * Data update listener
-     */
-    private static interface DataUpdateListener {
-
-        void onUpdate(boolean success);
-
-    }
-
-    private static class RowInfo implements Comparable<RowInfo> {
-        int row;
-
-        RowInfo(int row)
-        {
-            this.row = row;
-        }
-        @Override
-        public int hashCode()
-        {
-            return row;
-        }
-        @Override
-        public boolean equals(Object obj)
-        {
-            return obj instanceof RowInfo && ((RowInfo)obj).row == row;
-        }
-        @Override
-        public String toString()
-        {
-            return String.valueOf(row);
-        }
-        @Override
-        public int compareTo(RowInfo o)
-        {
-            return row - o.row;
-        }
-    }
-
     static class TableRowInfo {
         DBSEntity table;
         DBCEntityIdentifier id;
@@ -2581,507 +2540,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    static class DataStatementInfo {
-        DBSManipulationType type;
-        RowInfo row;
-        DBSEntity table;
-        List<DBDAttributeValue> keyAttributes = new ArrayList<DBDAttributeValue>();
-        List<DBDAttributeValue> updateAttributes = new ArrayList<DBDAttributeValue>();
-        boolean executed = false;
-        Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
-
-        DataStatementInfo(DBSManipulationType type, RowInfo row, DBSEntity table)
-        {
-            this.type = type;
-            this.row = row;
-            this.table = table;
-        }
-        boolean hasUpdateColumn(DBDAttributeBinding column)
-        {
-            for (DBDAttributeValue col : updateAttributes) {
-                if (col.getAttribute() == column.getEntityAttribute()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
-
-    private class DataUpdater {
-
-        private final Map<Integer, Map<DBSEntity, TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSEntity, TableRowInfo>>();
-
-        private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
-        private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
-        private final List<DataStatementInfo> updateStatements = new ArrayList<DataStatementInfo>();
-
-        private DataUpdater()
-        {
-        }
-
-        /**
-         * Applies changes.
-         * @throws DBException
-         * @param monitor progress monitor
-         * @param listener value listener
-         */
-        void applyChanges(DBRProgressMonitor monitor, DataUpdateListener listener)
-            throws DBException
-        {
-            prepareDeleteStatements();
-            prepareInsertStatements();
-            prepareUpdateStatements();
-            execute(monitor, listener);
-        }
-
-        private void prepareUpdateRows()
-            throws DBException
-        {
-            if (editedValues == null) {
-                return;
-            }
-            // Prepare rows
-            for (GridPos cell : editedValues.keySet()) {
-                Map<DBSEntity, TableRowInfo> tableMap = updatedRows.get(cell.row);
-                if (tableMap == null) {
-                    tableMap = new HashMap<DBSEntity, TableRowInfo>();
-                    updatedRows.put(cell.row, tableMap);
-                }
-
-                DBDAttributeBinding metaColumn = metaColumns[cell.col];
-                DBSEntity metaTable = metaColumn.getRowIdentifier().getEntity();
-                TableRowInfo tableRowInfo = tableMap.get(metaTable);
-                if (tableRowInfo == null) {
-                    tableRowInfo = new TableRowInfo(metaTable, metaColumn.getRowIdentifier().getEntityIdentifier());
-                    tableMap.put(metaTable, tableRowInfo);
-                }
-                tableRowInfo.tableCells.add(cell);
-            }
-        }
-
-        private void prepareDeleteStatements()
-            throws DBException
-        {
-            if (removedRows == null) {
-                return;
-            }
-            // Make delete statements
-            for (RowInfo rowNum : removedRows) {
-                DBSEntity table = metaColumns[0].getRowIdentifier().getEntity();
-                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
-                Collection<? extends DBSEntityAttribute> keyColumns = metaColumns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
-                for (DBSEntityAttribute column : keyColumns) {
-                    int colIndex = getMetaColumnIndex(column);
-                    if (colIndex < 0) {
-                        throw new DBCException("Can't find meta column for ID column " + column.getName());
-                    }
-                    statement.keyAttributes.add(new DBDAttributeValue(column, curRows.get(rowNum.row)[colIndex]));
-                }
-                deleteStatements.add(statement);
-            }
-        }
-
-        private void prepareInsertStatements()
-            throws DBException
-        {
-            if (addedRows == null) {
-                return;
-            }
-            // Make insert statements
-            for (RowInfo rowNum : addedRows) {
-                Object[] cellValues = curRows.get(rowNum.row);
-                DBSEntity table = metaColumns[0].getRowIdentifier().getEntity();
-                DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
-                for (int i = 0; i < metaColumns.length; i++) {
-                    DBDAttributeBinding column = metaColumns[i];
-                    statement.keyAttributes.add(new DBDAttributeValue(column.getEntityAttribute(), cellValues[i]));
-                }
-                insertStatements.add(statement);
-            }
-        }
-
-        private void prepareUpdateStatements()
-            throws DBException
-        {
-            prepareUpdateRows();
-
-            if (updatedRows == null) {
-                return;
-            }
-
-            // Make statements
-            for (Integer rowNum : updatedRows.keySet()) {
-                Map<DBSEntity, TableRowInfo> tableMap = updatedRows.get(rowNum);
-                for (DBSEntity table : tableMap.keySet()) {
-                    TableRowInfo rowInfo = tableMap.get(table);
-                    DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.UPDATE, new RowInfo(rowNum), table);
-                    // Updated columns
-                    for (int i = 0; i < rowInfo.tableCells.size(); i++) {
-                        GridPos cell = rowInfo.tableCells.get(i);
-                        DBDAttributeBinding metaColumn = metaColumns[cell.col];
-                        statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), curRows.get(rowNum)[cell.col]));
-                    }
-                    // Key columns
-                    Collection<? extends DBCAttributeMetaData> idColumns = rowInfo.id.getResultSetColumns();
-                    for (DBCAttributeMetaData idAttribute : idColumns) {
-                        // Find meta column and add statement parameter
-                        int columnIndex = getMetaColumnIndex(idAttribute);
-                        if (columnIndex < 0) {
-                            throw new DBCException("Can't find meta column for ID column " + idAttribute.getName());
-                        }
-                        DBDAttributeBinding metaColumn = metaColumns[columnIndex];
-                        Object keyValue = curRows.get(rowNum)[columnIndex];
-                        // Try to find old key oldValue
-                        for (GridPos cell : editedValues.keySet()) {
-                            if (cell.equals(columnIndex, rowNum)) {
-                                keyValue = editedValues.get(cell);
-                            }
-                        }
-                        statement.keyAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), keyValue));
-                    }
-                    updateStatements.add(statement);
-                }
-            }
-        }
-
-        private void execute(DBRProgressMonitor monitor, final DataUpdateListener listener)
-            throws DBException
-        {
-            DataUpdaterJob job = new DataUpdaterJob(listener);
-            if (monitor == null) {
-                job.schedule();
-            } else {
-                job.run(monitor);
-            }
-        }
-
-        public void rejectChanges()
-        {
-            if (editedValues != null) {
-                for (GridPos cell : editedValues.keySet()) {
-                    Object[] row = ResultSetViewer.this.curRows.get(cell.row);
-                    resetValue(row[cell.col]);
-                    row[cell.col] = editedValues.get(cell);
-                }
-                editedValues.clear();
-            }
-            boolean rowsChanged = cleanupRows(addedRows);
-            // Remove deleted rows
-            if (removedRows != null) {
-                removedRows.clear();
-            }
-
-            refreshSpreadsheet(rowsChanged);
-            fireResultSetChange();
-            updateEditControls();
-            previewValue();
-        }
-
-        // Reflect data changes in viewer
-        // Changes affects only rows which statements executed successfully
-        private boolean reflectChanges()
-        {
-            boolean rowsChanged = false;
-            if (editedValues != null) {
-                for (Iterator<Map.Entry<GridPos, Object>> iter = editedValues.entrySet().iterator(); iter.hasNext(); ) {
-                    Map.Entry<GridPos, Object> entry = iter.next();
-                    for (DataStatementInfo stat : updateStatements) {
-                        if (stat.executed && stat.row.row == entry.getKey().row && stat.hasUpdateColumn(metaColumns[entry.getKey().col])) {
-                            reflectKeysUpdate(stat);
-                            iter.remove();
-                            break;
-                        }
-                    }
-                }
-                //editedValues.clear();
-            }
-            if (addedRows != null) {
-                for (Iterator<RowInfo> iter = addedRows.iterator(); iter.hasNext(); ) {
-                    RowInfo row = iter.next();
-                    for (DataStatementInfo stat : insertStatements) {
-                        if (stat.executed && stat.row.equals(row)) {
-                            reflectKeysUpdate(stat);
-                            iter.remove();
-                            break;
-                        }
-                    }
-                }
-            }
-            if (removedRows != null) {
-                for (Iterator<RowInfo> iter = removedRows.iterator(); iter.hasNext(); ) {
-                    RowInfo row = iter.next();
-                    for (DataStatementInfo stat : deleteStatements) {
-                        if (stat.executed && stat.row.equals(row)) {
-                            cleanupRow(row.row);
-                            iter.remove();
-                            rowsChanged = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            return rowsChanged;
-        }
-
-        private void reflectKeysUpdate(DataStatementInfo stat)
-        {
-            // Update keys
-            if (!stat.updatedCells.isEmpty()) {
-                for (Map.Entry<Integer, Object> entry : stat.updatedCells.entrySet()) {
-                    Object[] row = ResultSetViewer.this.curRows.get(stat.row.row);
-                    releaseValue(row[entry.getKey()]);
-                    row[entry.getKey()] = entry.getValue();
-                }
-            }
-        }
-
-/*
-        private void releaseStatements()
-        {
-            for (DataStatementInfo stat : updateStatements) releaseStatement(stat);
-            for (DataStatementInfo stat : insertStatements) releaseStatement(stat);
-            for (DataStatementInfo stat : deleteStatements) releaseStatement(stat);
-        }
-
-        private void releaseStatement(DataStatementInfo stat)
-        {
-            for (DBDColumnValue value : stat.keyColumns) releaseValue(value.getValue());
-            for (DBDColumnValue value : stat.updateColumns) releaseValue(value.getValue());
-        }
-
-*/
-        private class DataUpdaterJob extends DataSourceJob {
-            private final DataUpdateListener listener;
-            private boolean autocommit;
-            private int updateCount = 0, insertCount = 0, deleteCount = 0;
-            private DBCSavepoint savepoint;
-
-            protected DataUpdaterJob(DataUpdateListener listener)
-            {
-                super(CoreMessages.controls_resultset_viewer_job_update, DBIcon.SQL_EXECUTE.getImageDescriptor(), ResultSetViewer.this.getDataSource());
-                this.listener = listener;
-            }
-
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor)
-            {
-                ResultSetViewer.this.updateInProgress = true;
-                try {
-                    final Throwable error = executeStatements(monitor);
-
-                    UIUtils.runInUI(ResultSetViewer.this.site.getShell(), new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean rowsChanged = false;
-                            if (DataUpdaterJob.this.autocommit || error == null) {
-                                rowsChanged = reflectChanges();
-                            }
-                            if (!getControl().isDisposed()) {
-                                //releaseStatements();
-                                refreshSpreadsheet(rowsChanged);
-                                updateEditControls();
-                                if (error == null) {
-                                    setStatus(
-                                        NLS.bind(
-                                            CoreMessages.controls_resultset_viewer_status_inserted_,
-                                            new Object[] {DataUpdaterJob.this.insertCount, DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}));
-                                } else {
-                                    UIUtils.showErrorDialog(ResultSetViewer.this.site.getShell(), "Data error", "Error synchronizing data with database", error);
-                                    setStatus(error.getMessage(), true);
-                                }
-                            }
-                            fireResultSetChange();
-                        }
-                    });
-                    if (this.listener != null) {
-                        this.listener.onUpdate(error == null);
-                    }
-
-                }
-                finally {
-                    ResultSetViewer.this.updateInProgress = false;
-                }
-                return Status.OK_STATUS;
-            }
-
-            private Throwable executeStatements(DBRProgressMonitor monitor)
-            {
-                DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_execute_statement_context_name);
-                try {
-                    try {
-                        this.autocommit = context.getTransactionManager().isAutoCommit();
-                    }
-                    catch (DBCException e) {
-                        log.warn("Could not determine autocommit state", e);
-                        this.autocommit = true;
-                    }
-                    if (!this.autocommit && context.getTransactionManager().supportsSavepoints()) {
-                        try {
-                            this.savepoint = context.getTransactionManager().setSavepoint(null);
-                        }
-                        catch (Throwable e) {
-                            // May be savepoints not supported
-                            log.debug("Could not set savepoint", e);
-                        }
-                    }
-                    try {
-                        monitor.beginTask(CoreMessages.controls_resultset_viewer_monitor_aply_changes, DataUpdater.this.deleteStatements.size() + DataUpdater.this.insertStatements.size() + DataUpdater.this.updateStatements.size());
-
-                        for (DataStatementInfo statement : DataUpdater.this.deleteStatements) {
-                            if (monitor.isCanceled()) break;
-                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
-                            try {
-                                deleteCount += dataContainer.deleteData(context, statement.keyAttributes);
-                                processStatementChanges(statement);
-                            }
-                            catch (DBException e) {
-                                processStatementError(statement, context);
-                                return e;
-                            }
-                            monitor.worked(1);
-                        }
-                        for (DataStatementInfo statement : DataUpdater.this.insertStatements) {
-                            if (monitor.isCanceled()) break;
-                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
-                            try {
-                                insertCount += dataContainer.insertData(context, statement.keyAttributes, new KeyDataReceiver(statement));
-                                processStatementChanges(statement);
-                            }
-                            catch (DBException e) {
-                                processStatementError(statement, context);
-                                return e;
-                            }
-                            monitor.worked(1);
-                        }
-                        for (DataStatementInfo statement : DataUpdater.this.updateStatements) {
-                            if (monitor.isCanceled()) break;
-                            DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
-                            try {
-                                this.updateCount += dataContainer.updateData(context, statement.keyAttributes, statement.updateAttributes, new KeyDataReceiver(statement));
-                                processStatementChanges(statement);
-                            }
-                            catch (DBException e) {
-                                processStatementError(statement, context);
-                                return e;
-                            }
-                            monitor.worked(1);
-                        }
-
-                        return null;
-                    }
-                    finally {
-                        if (this.savepoint != null) {
-                            try {
-                                context.getTransactionManager().releaseSavepoint(this.savepoint);
-                            }
-                            catch (Throwable e) {
-                                // May be savepoints not supported
-                                log.debug("Could not release savepoint", e);
-                            }
-                        }
-                    }
-                }
-                finally {
-                    monitor.done();
-                    context.close();
-                }
-            }
-
-            private void processStatementChanges(DataStatementInfo statement)
-            {
-                statement.executed = true;
-            }
-
-            private void processStatementError(DataStatementInfo statement, DBCExecutionContext context)
-            {
-                statement.executed = false;
-                try {
-                    context.getTransactionManager().rollback(savepoint);
-                }
-                catch (Throwable e) {
-                    log.debug("Error during transaction rollback", e);
-                }
-            }
-
-        }
-    }
-
-    private class KeyDataReceiver implements DBDDataReceiver {
-        DataStatementInfo statement;
-        public KeyDataReceiver(DataStatementInfo statement)
-        {
-            this.statement = statement;
-        }
-
-        @Override
-        public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet)
-            throws DBCException
-        {
-
-        }
-
-        @Override
-        public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet)
-            throws DBCException
-        {
-            DBCResultSetMetaData rsMeta = resultSet.getResultSetMetaData();
-            List<DBCAttributeMetaData> keyAttributes = rsMeta.getAttributes();
-            for (int i = 0; i < keyAttributes.size(); i++) {
-                DBCAttributeMetaData keyAttribute = keyAttributes.get(i);
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, keyAttribute);
-                Object keyValue = valueHandler.fetchValueObject(context, resultSet, keyAttribute, i);
-                if (keyValue == null) {
-                    // [MSSQL] Sometimes driver returns empty list of generated keys if
-                    // table has auto-increment columns and user performs simple row update
-                    // Just ignore such empty keys. We can't do anything with them anyway
-                    continue;
-                }
-                boolean updated = false;
-                if (!CommonUtils.isEmpty(keyAttribute.getName())) {
-                    int colIndex = getMetaColumnIndex(statement.table, keyAttribute.getName());
-                    if (colIndex >= 0) {
-                        // Got it. Just update column oldValue
-                        statement.updatedCells.put(colIndex, keyValue);
-                        //curRows.get(statement.row.row)[colIndex] = keyValue;
-                        updated = true;
-                    }
-                }
-                if (!updated) {
-                    // Key not found
-                    // Try to find and update auto-increment column
-                    for (int k = 0; k < metaColumns.length; k++) {
-                        DBDAttributeBinding column = metaColumns[k];
-                        if (column.getEntityAttribute().isSequence()) {
-                            // Got it
-                            statement.updatedCells.put(k, keyValue);
-                            //curRows.get(statement.row.row)[k] = keyValue;
-                            updated = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!updated) {
-                    // Auto-generated key not found
-                    // Just skip it..
-                    log.debug("Could not find target column for autogenerated key '" + keyAttribute.getName() + "'");
-                }
-            }
-        }
-
-        @Override
-        public void fetchEnd(DBCExecutionContext context)
-            throws DBCException
-        {
-
-        }
-
-        @Override
-        public void close()
-        {
-        }
-    }
-
     private class ContentProvider implements IGridContentProvider {
 
         @Override
@@ -3090,10 +2548,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (mode == ResultSetMode.RECORD) {
                 return new GridPos(
                     1,
-                    metaColumns.length);
+                    visibleColumns.length);
             } else {
                 return new GridPos(
-                    metaColumns.length,
+                    visibleColumns.length,
                     curRows.size());
             }
         }
@@ -3122,7 +2580,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         break;
                     }
                 }
-                column.setSortRenderer(new ResultSetSortRenderer(column));
+                column.setSortRenderer(new SortRenderer(column));
             }
         }
 
@@ -3168,19 +2626,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return null;
                 }
                 value = values[cell.row];
-                valueHandler = metaColumns[cell.row].getValueHandler();
+                valueHandler = visibleColumns[cell.row].getValueHandler();
             } else {
                 rowNum = cell.row;
                 if (cell.row >= curRows.size()) {
                     log.warn("Bad grid row number: " + cell.row);
                     return null;
                 }
-                if (cell.col >= metaColumns.length) {
+                if (cell.col >= visibleColumns.length) {
                     log.warn("Bad grid column number: " + cell.col);
                     return null;
                 }
                 value = curRows.get(cell.row)[cell.col];
-                valueHandler = metaColumns[cell.col].getValueHandler();
+                valueHandler = visibleColumns[cell.col].getValueHandler();
             }
 
             if (rowNum == curRows.size() - 1 && (mode == ResultSetMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
@@ -3188,7 +2646,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
 
             if (formatString) {
-                return valueHandler.getValueDisplayString(metaColumns[cell.col].getMetaAttribute(), value, DBDDisplayFormat.UI);
+                return valueHandler.getValueDisplayString(visibleColumns[cell.col].getMetaAttribute(), value, DBDDisplayFormat.UI);
             } else {
                 return value;
             }
@@ -3200,15 +2658,15 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             GridPos cell = (GridPos)element;
             DBDAttributeBinding attr;
             if (mode == ResultSetMode.RECORD) {
-                if (cell.row >= metaColumns.length) {
+                if (cell.row >= visibleColumns.length) {
                     return null;
                 }
-                attr = metaColumns[cell.row];
+                attr = visibleColumns[cell.row];
             } else {
-                if (cell.col >= metaColumns.length) {
+                if (cell.col >= visibleColumns.length) {
                     return null;
                 }
-                attr = metaColumns[cell.col];
+                attr = visibleColumns[cell.col];
             }
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
                 return getTypeImage(attr.getMetaAttribute());
@@ -3257,7 +2715,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (mode == ResultSetMode.GRID) {
                 int colNumber = ((Number)element).intValue();
-                return getTypeImage(metaColumns[colNumber].getMetaAttribute());
+                return getTypeImage(visibleColumns[colNumber].getMetaAttribute());
             }
             return null;
         }
@@ -3274,7 +2732,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return null;
                 }
             } else {
-                DBDAttributeBinding metaColumn = metaColumns[colNumber];
+                DBDAttributeBinding metaColumn = visibleColumns[colNumber];
                 DBCAttributeMetaData attribute = metaColumn.getMetaAttribute();
                 if (CommonUtils.isEmpty(attribute.getLabel())) {
                     return metaColumn.getAttributeName();
@@ -3294,7 +2752,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             int colNumber = ((Number)element).intValue();
             if (mode == ResultSetMode.GRID) {
-                if (dataFilter.getFilterColumn(metaColumns[colNumber].getAttributeName()) != null) {
+                if (dataFilter.getFilterColumn(visibleColumns[colNumber].getAttributeName()) != null) {
                     return boldFont;
                 }
             }
@@ -3308,7 +2766,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (mode == ResultSetMode.RECORD) {
                 int rowNumber = ((Number) element).intValue();
-                return getTypeImage(metaColumns[rowNumber].getMetaAttribute());
+                return getTypeImage(visibleColumns[rowNumber].getMetaAttribute());
             }
             return null;
         }
@@ -3318,7 +2776,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             int rowNumber = ((Number) element).intValue();
             if (mode == ResultSetMode.RECORD) {
-                return metaColumns[rowNumber].getAttributeName();
+                return visibleColumns[rowNumber].getAttributeName();
             } else {
                 return String.valueOf(rowNumber + 1);
             }
@@ -3628,15 +3086,109 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (curRowNum < 0 || curRowNum >= curRows.size()) {
                     return Collections.emptyList();
                 }
-                rows.add(new ResultSetRowImpl(curRows.get(curRowNum)));
+                rows.add(new ResultSetRow(ResultSetViewer.this, curRows.get(curRowNum)));
             } else {
                 Collection<Integer> rowSelection = spreadsheet.getRowSelection();
                 for (Integer row : rowSelection) {
-                    rows.add(new ResultSetRowImpl(curRows.get(row)));
+                    rows.add(new ResultSetRow(ResultSetViewer.this, curRows.get(row)));
                 }
             }
             return rows;
         }
     }
 
+    /**
+     * The column header sort arrow renderer.
+     */
+    static class SortRenderer extends AbstractRenderer {
+        private Image asterisk;
+        private Image arrowUp;
+        private Image arrowDown;
+        private GridColumn column;
+        private Cursor hoverCursor;
+
+        SortRenderer(GridColumn column)
+        {
+            super(column.getParent());
+            this.column = column;
+            this.asterisk = DBIcon.SORT_UNKNOWN.getImage();
+            this.arrowUp = DBIcon.SORT_DECREASE.getImage();
+            this.arrowDown = DBIcon.SORT_INCREASE.getImage();
+            this.hoverCursor = getDisplay().getSystemCursor(SWT.CURSOR_HAND);
+            Rectangle imgBounds = arrowUp.getBounds();
+            setSize(imgBounds.width, imgBounds.height);
+        }
+
+        @Override
+        public void paint(GC gc)
+        {
+            Rectangle bounds = getBounds();
+            switch (column.getSort()) {
+                case SWT.DEFAULT:
+                    gc.drawImage(asterisk, bounds.x, bounds.y);
+                    break;
+                case SWT.UP:
+                    gc.drawImage(arrowUp, bounds.x, bounds.y);
+                    break;
+                case SWT.DOWN:
+                    gc.drawImage(arrowDown, bounds.x, bounds.y);
+                    break;
+            }
+    /*
+            if (isSelected()) {
+                gc.drawLine(bounds.x, bounds.y, bounds.x + 6, bounds.y);
+                gc.drawLine(bounds.x + 1, bounds.y + 1, bounds.x + 5, bounds.y + 1);
+                gc.drawLine(bounds.x + 2, bounds.y + 2, bounds.x + 4, bounds.y + 2);
+                gc.drawPoint(bounds.x + 3, bounds.y + 3);
+            } else {
+                gc.drawPoint(bounds.x + 3, bounds.y);
+                gc.drawLine(bounds.x + 2, bounds.y + 1, bounds.x + 4, bounds.y + 1);
+                gc.drawLine(bounds.x + 1, bounds.y + 2, bounds.x + 5, bounds.y + 2);
+                gc.drawLine(bounds.x, bounds.y + 3, bounds.x + 6, bounds.y + 3);
+            }
+    */
+        }
+
+        @Override
+        public Cursor getHoverCursor() {
+            return hoverCursor;
+        }
+    }
+
+    static class TopLeftRenderer extends AbstractRenderer {
+        private Button cfgButton;
+
+        public TopLeftRenderer(final ResultSetViewer resultSetViewer) {
+            super(resultSetViewer.getSpreadsheet());
+
+            cfgButton = new Button(grid, SWT.FLAT | SWT.NO_FOCUS);
+            cfgButton.setImage(DBIcon.FILTER.getImage());
+            cfgButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    new ResultSetFilterDialog(resultSetViewer).open();
+                }
+            });
+            ControlEditor controlEditor = new ControlEditor(grid);
+            controlEditor.setEditor(cfgButton);
+            //cfgButton.setText("...");
+        }
+
+        @Override
+        public void setBounds(Rectangle bounds) {
+
+            Rectangle cfgBounds = new Rectangle(bounds.x + 1, bounds.y + 1, bounds.width - 2, bounds.height - 2);
+            cfgButton.setBounds(bounds);
+
+            super.setBounds(bounds);
+        }
+
+        @Override
+        public void paint(GC gc) {
+            //cfgButton.redraw();
+            //gc.drawImage(DBIcon.FILTER.getImage(), 0, 0);
+        }
+
+    }
 }
