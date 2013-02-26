@@ -21,13 +21,6 @@
 
 <plugin>
 
-    <extension
-        point="org.eclipse.ui.views">
-        <category
-            name="DBeaver"
-            id="org.jkiss.dbeaver.ext.oracle">
-        </category>
-    </extension>
     <extension point="org.eclipse.help.contexts">
         <contexts file="contexts.xml">
         </contexts>
