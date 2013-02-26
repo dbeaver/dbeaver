@@ -29,13 +29,6 @@
                 priority="normal"/>
     </extension>
 
-    <extension
-        point="org.eclipse.help.contexts">
-        <contexts
-            file="contexts.xml">
-        </contexts>
-    </extension>
-
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <editor
             id="org.jkiss.dbeaver.ext.erd.editor.ERDEditorEmbedded"
