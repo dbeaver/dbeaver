@@ -21,10 +21,6 @@
 
 <plugin>
 
-    <extension point="org.eclipse.help.contexts">
-        <contexts file="contexts.xml">
-        </contexts>
-    </extension>
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.ext.oracle" name="Oracle" description="Oracle Commands"/>
         <command id="org.jkiss.dbeaver.ext.oracle.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.oracle"/>
