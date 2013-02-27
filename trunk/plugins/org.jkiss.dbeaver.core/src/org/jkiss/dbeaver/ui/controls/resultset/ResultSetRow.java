@@ -47,7 +47,7 @@ public class ResultSetRow {
 
     public Object getValue(DBSAttributeBase attribute)
     {
-        int index = viewer.getMetaColumnIndex(attribute);
+        int index = viewer.getModel().getMetaColumnIndex(attribute);
         return index < 0 ? null : values[index];
     }
 
