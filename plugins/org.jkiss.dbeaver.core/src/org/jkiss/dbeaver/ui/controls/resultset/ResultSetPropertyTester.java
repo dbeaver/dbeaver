@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
@@ -33,8 +31,6 @@ import java.util.Map;
  */
 public class ResultSetPropertyTester extends PropertyTester
 {
-    static final Log log = LogFactory.getLog(ResultSetPropertyTester.class);
-
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resultset";
     public static final String PROP_HAS_DATA = "hasData";
     public static final String PROP_CAN_COPY = "canCopy";
@@ -66,7 +62,7 @@ public class ResultSetPropertyTester extends PropertyTester
     private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
     {
         if (PROP_HAS_DATA.equals(property)) {
-            return rsv.getRowsCount() > 0;
+            return rsv.getModel().getRowCount() > 0;
         } else if (PROP_CAN_COPY.equals(property)) {
             final GridPos currentPosition = rsv.getCurrentPosition();
             return rsv.isValidCell(currentPosition);
@@ -78,7 +74,7 @@ public class ResultSetPropertyTester extends PropertyTester
             if ("back".equals(expectedValue)) {
                 return currentRow > 0;
             } else if ("forward".equals(expectedValue)) {
-                return currentRow < rsv.getRowsCount() - 1;
+                return currentRow < rsv.getModel().getRowCount() - 1;
             }
         } else if (PROP_EDITABLE.equals(property)) {
             if (!rsv.hasData()) {
@@ -91,12 +87,12 @@ public class ResultSetPropertyTester extends PropertyTester
                 return rsv.isInsertable();
             } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
                 int currentRow = rsv.getCurrentRow();
-                return currentRow >= 0 && currentRow < rsv.getRowsCount() && rsv.isInsertable();
+                return currentRow >= 0 && currentRow < rsv.getModel().getRowCount() && rsv.isInsertable();
             } else {
                 return false;
             }
         } else if (PROP_CHANGED.equals(property)) {
-            return rsv.hasChanges();
+            return rsv.isDirty();
         } else if (PROP_CAN_TOGGLE.equals(property)) {
             return true;
         }

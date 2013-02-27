@@ -31,7 +31,8 @@ class ResultSetPersister {
 
     private final Map<Integer, Map<DBSEntity, ResultSetViewer.TableRowInfo>> updatedRows = new TreeMap<Integer, Map<DBSEntity, ResultSetViewer.TableRowInfo>>();
 
-    private ResultSetViewer viewer;
+    private final ResultSetViewer viewer;
+    private final ResultSetModel model;
 
     private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
@@ -41,7 +42,8 @@ class ResultSetPersister {
     ResultSetPersister(ResultSetViewer viewer)
     {
         this.viewer = viewer;
-        this.visibleColumns = viewer.getVisibleColumns();
+        this.model = viewer.getModel();
+        this.visibleColumns = model.getVisibleColumns();
     }
 
     /**
@@ -63,7 +65,7 @@ class ResultSetPersister {
         throws DBException
     {
         // Prepare rows
-        for (GridPos cell : viewer.getEditedValues().keySet()) {
+        for (GridPos cell : model.getEditedValues().keySet()) {
             Map<DBSEntity, ResultSetViewer.TableRowInfo> tableMap = updatedRows.get(cell.row);
             if (tableMap == null) {
                 tableMap = new HashMap<DBSEntity, ResultSetViewer.TableRowInfo>();
@@ -85,16 +87,16 @@ class ResultSetPersister {
         throws DBException
     {
         // Make delete statements
-        for (RowInfo rowNum : viewer.getRemovedRows()) {
+        for (RowInfo rowNum : model.getRemovedRows()) {
             DBSEntity table = visibleColumns[0].getRowIdentifier().getEntity();
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
             Collection<? extends DBSEntityAttribute> keyColumns = visibleColumns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
             for (DBSEntityAttribute column : keyColumns) {
-                int colIndex = viewer.getMetaColumnIndex(column);
+                int colIndex = model.getMetaColumnIndex(column);
                 if (colIndex < 0) {
                     throw new DBCException("Can't find meta column for ID column " + column.getName());
                 }
-                statement.keyAttributes.add(new DBDAttributeValue(column, viewer.getRowData(rowNum.row)[colIndex]));
+                statement.keyAttributes.add(new DBDAttributeValue(column, model.getRowData(rowNum.row)[colIndex]));
             }
             deleteStatements.add(statement);
         }
@@ -104,8 +106,8 @@ class ResultSetPersister {
         throws DBException
     {
         // Make insert statements
-        for (RowInfo rowNum : viewer.getAddedRows()) {
-            Object[] cellValues = viewer.getRowData(rowNum.row);
+        for (RowInfo rowNum : model.getAddedRows()) {
+            Object[] cellValues = model.getRowData(rowNum.row);
             DBSEntity table = visibleColumns[0].getRowIdentifier().getEntity();
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
             for (int i = 0; i < visibleColumns.length; i++) {
@@ -135,20 +137,20 @@ class ResultSetPersister {
                 for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                     GridPos cell = rowInfo.tableCells.get(i);
                     DBDAttributeBinding metaColumn = visibleColumns[cell.col];
-                    statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), viewer.getRowData(rowNum)[cell.col]));
+                    statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), model.getRowData(rowNum)[cell.col]));
                 }
                 // Key columns
                 Collection<? extends DBCAttributeMetaData> idColumns = rowInfo.id.getResultSetColumns();
                 for (DBCAttributeMetaData idAttribute : idColumns) {
                     // Find meta column and add statement parameter
-                    int columnIndex = viewer.getMetaColumnIndex(idAttribute);
+                    int columnIndex = model.getMetaColumnIndex(idAttribute);
                     if (columnIndex < 0) {
                         throw new DBCException("Can't find meta column for ID column " + idAttribute.getName());
                     }
                     DBDAttributeBinding metaColumn = visibleColumns[columnIndex];
-                    Object keyValue = viewer.getRowData(rowNum)[columnIndex];
+                    Object keyValue = model.getCellValue(rowNum, columnIndex);
                     // Try to find old key oldValue
-                    for (Map.Entry<GridPos, Object> cell : viewer.getEditedValues().entrySet()) {
+                    for (Map.Entry<GridPos, Object> cell : model.getEditedValues().entrySet()) {
                         if (cell.getKey().equals(columnIndex, rowNum)) {
                             keyValue = cell.getValue();
                         }
@@ -173,16 +175,16 @@ class ResultSetPersister {
 
     public void rejectChanges()
     {
-        for (Map.Entry<GridPos, Object> cell : viewer.getEditedValues().entrySet()) {
-            Object[] row = viewer.getRowData(cell.getKey().row);
-            viewer.resetValue(row[cell.getKey().col]);
+        for (Map.Entry<GridPos, Object> cell : model.getEditedValues().entrySet()) {
+            Object[] row = model.getRowData(cell.getKey().row);
+            ResultSetModel.releaseValue(row[cell.getKey().col]);
             row[cell.getKey().col] = cell.getValue();
         }
-        viewer.getEditedValues().clear();
+        model.getEditedValues().clear();
 
-        boolean rowsChanged = viewer.cleanupRows(viewer.getAddedRows());
+        boolean rowsChanged = model.cleanupRows(model.getAddedRows());
         // Remove deleted rows
-        viewer.getRemovedRows().clear();
+        model.getRemovedRows().clear();
 
         viewer.refreshSpreadsheet(rowsChanged);
         viewer.fireResultSetChange();
@@ -195,7 +197,7 @@ class ResultSetPersister {
     private boolean reflectChanges()
     {
         boolean rowsChanged = false;
-        for (Iterator<Map.Entry<GridPos, Object>> iter = viewer.getEditedValues().entrySet().iterator(); iter.hasNext(); ) {
+        for (Iterator<Map.Entry<GridPos, Object>> iter = model.getEditedValues().entrySet().iterator(); iter.hasNext(); ) {
             Map.Entry<GridPos, Object> entry = iter.next();
             for (DataStatementInfo stat : updateStatements) {
                 if (stat.executed && stat.row.row == entry.getKey().row && stat.hasUpdateColumn(visibleColumns[entry.getKey().col])) {
@@ -205,7 +207,7 @@ class ResultSetPersister {
                 }
             }
         }
-        for (Iterator<RowInfo> iter = viewer.getAddedRows().iterator(); iter.hasNext(); ) {
+        for (Iterator<RowInfo> iter = model.getAddedRows().iterator(); iter.hasNext(); ) {
             RowInfo row = iter.next();
             for (DataStatementInfo stat : insertStatements) {
                 if (stat.executed && stat.row.equals(row)) {
@@ -215,11 +217,11 @@ class ResultSetPersister {
                 }
             }
         }
-        for (Iterator<RowInfo> iter = viewer.getRemovedRows().iterator(); iter.hasNext(); ) {
+        for (Iterator<RowInfo> iter = model.getRemovedRows().iterator(); iter.hasNext(); ) {
             RowInfo row = iter.next();
             for (DataStatementInfo stat : deleteStatements) {
                 if (stat.executed && stat.row.equals(row)) {
-                    viewer.cleanupRow(row.row);
+                    model.cleanupRow(row.row);
                     iter.remove();
                     rowsChanged = true;
                     break;
@@ -234,8 +236,8 @@ class ResultSetPersister {
         // Update keys
         if (!stat.updatedCells.isEmpty()) {
             for (Map.Entry<Integer, Object> entry : stat.updatedCells.entrySet()) {
-                Object[] row = viewer.getRowData(stat.row.row);
-                viewer.releaseValue(row[entry.getKey()]);
+                Object[] row = model.getRowData(stat.row.row);
+                ResultSetModel.releaseValue(row[entry.getKey()]);
                 row[entry.getKey()] = entry.getValue();
             }
         }
@@ -271,7 +273,7 @@ class ResultSetPersister {
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            viewer.setUpdateInProgress(true);
+            model.setUpdateInProgress(true);
             try {
                 final Throwable error = executeStatements(monitor);
 
@@ -306,7 +308,7 @@ class ResultSetPersister {
 
             }
             finally {
-                viewer.setUpdateInProgress(false);
+                model.setUpdateInProgress(false);
             }
             return Status.OK_STATUS;
         }
@@ -448,7 +450,7 @@ class ResultSetPersister {
                 }
                 boolean updated = false;
                 if (!CommonUtils.isEmpty(keyAttribute.getName())) {
-                    int colIndex = viewer.getMetaColumnIndex(statement.table, keyAttribute.getName());
+                    int colIndex = model.getMetaColumnIndex(statement.table, keyAttribute.getName());
                     if (colIndex >= 0) {
                         // Got it. Just update column oldValue
                         statement.updatedCells.put(colIndex, keyValue);
