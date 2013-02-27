@@ -37,13 +37,13 @@ class ResultSetPersister {
     private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
     private final List<DataStatementInfo> updateStatements = new ArrayList<DataStatementInfo>();
-    private final DBDAttributeBinding[] visibleColumns;
+    private final DBDAttributeBinding[] columns;
 
     ResultSetPersister(ResultSetViewer viewer)
     {
         this.viewer = viewer;
         this.model = viewer.getModel();
-        this.visibleColumns = model.getVisibleColumns();
+        this.columns = model.getColumns();
     }
 
     /**
@@ -72,7 +72,7 @@ class ResultSetPersister {
                 updatedRows.put(cell.row, tableMap);
             }
 
-            DBDAttributeBinding metaColumn = visibleColumns[cell.col];
+            DBDAttributeBinding metaColumn = columns[cell.col];
             DBSEntity metaTable = metaColumn.getRowIdentifier().getEntity();
             ResultSetViewer.TableRowInfo tableRowInfo = tableMap.get(metaTable);
             if (tableRowInfo == null) {
@@ -88,9 +88,9 @@ class ResultSetPersister {
     {
         // Make delete statements
         for (RowInfo rowNum : model.getRemovedRows()) {
-            DBSEntity table = visibleColumns[0].getRowIdentifier().getEntity();
+            DBSEntity table = columns[0].getRowIdentifier().getEntity();
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
-            Collection<? extends DBSEntityAttribute> keyColumns = visibleColumns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
+            Collection<? extends DBSEntityAttribute> keyColumns = columns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
             for (DBSEntityAttribute column : keyColumns) {
                 int colIndex = model.getMetaColumnIndex(column);
                 if (colIndex < 0) {
@@ -108,10 +108,10 @@ class ResultSetPersister {
         // Make insert statements
         for (RowInfo rowNum : model.getAddedRows()) {
             Object[] cellValues = model.getRowData(rowNum.row);
-            DBSEntity table = visibleColumns[0].getRowIdentifier().getEntity();
+            DBSEntity table = columns[0].getRowIdentifier().getEntity();
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, rowNum, table);
-            for (int i = 0; i < visibleColumns.length; i++) {
-                DBDAttributeBinding column = visibleColumns[i];
+            for (int i = 0; i < columns.length; i++) {
+                DBDAttributeBinding column = columns[i];
                 statement.keyAttributes.add(new DBDAttributeValue(column.getEntityAttribute(), cellValues[i]));
             }
             insertStatements.add(statement);
@@ -136,7 +136,7 @@ class ResultSetPersister {
                 // Updated columns
                 for (int i = 0; i < rowInfo.tableCells.size(); i++) {
                     GridPos cell = rowInfo.tableCells.get(i);
-                    DBDAttributeBinding metaColumn = visibleColumns[cell.col];
+                    DBDAttributeBinding metaColumn = columns[cell.col];
                     statement.updateAttributes.add(new DBDAttributeValue(metaColumn.getEntityAttribute(), model.getRowData(rowNum)[cell.col]));
                 }
                 // Key columns
@@ -147,7 +147,7 @@ class ResultSetPersister {
                     if (columnIndex < 0) {
                         throw new DBCException("Can't find meta column for ID column " + idAttribute.getName());
                     }
-                    DBDAttributeBinding metaColumn = visibleColumns[columnIndex];
+                    DBDAttributeBinding metaColumn = columns[columnIndex];
                     Object keyValue = model.getCellValue(rowNum, columnIndex);
                     // Try to find old key oldValue
                     for (Map.Entry<GridPos, Object> cell : model.getEditedValues().entrySet()) {
@@ -200,7 +200,7 @@ class ResultSetPersister {
         for (Iterator<Map.Entry<GridPos, Object>> iter = model.getEditedValues().entrySet().iterator(); iter.hasNext(); ) {
             Map.Entry<GridPos, Object> entry = iter.next();
             for (DataStatementInfo stat : updateStatements) {
-                if (stat.executed && stat.row.row == entry.getKey().row && stat.hasUpdateColumn(visibleColumns[entry.getKey().col])) {
+                if (stat.executed && stat.row.row == entry.getKey().row && stat.hasUpdateColumn(columns[entry.getKey().col])) {
                     reflectKeysUpdate(stat);
                     iter.remove();
                     break;
@@ -461,8 +461,8 @@ class ResultSetPersister {
                 if (!updated) {
                     // Key not found
                     // Try to find and update auto-increment column
-                    for (int k = 0; k < visibleColumns.length; k++) {
-                        DBDAttributeBinding column = visibleColumns[k];
+                    for (int k = 0; k < columns.length; k++) {
+                        DBDAttributeBinding column = columns[k];
                         if (column.getEntityAttribute().isSequence()) {
                             // Got it
                             statement.updatedCells.put(k, keyValue);
