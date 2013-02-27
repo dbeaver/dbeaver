@@ -227,7 +227,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         final ResultSetViewer rsv = rss.getResultSetViewer();
         DBSEntity entity = rsv.getDataContainer() instanceof DBSEntity ? (DBSEntity) rsv.getDataContainer() : null;
         if (entity == null) {
-            entity = rsv.getSingleSource();
+            entity = rsv.getModel().getSingleSource();
         }
         if (entity != null) {
             final Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
@@ -251,7 +251,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             hasAttr = false;
                             for (DBSEntityAttribute attr : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
-                                DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
+                                DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
                                 sql.append(DBUtils.getObjectFullName(attr)).append("=");
                                 if (binding == null) {
                                     appendDefaultValue(sql, attr);
@@ -283,7 +283,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             hasAttr = false;
                             for (DBSEntityAttribute attr : allAttributes) {
                                 if (hasAttr) sql.append(", ");
-                                DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
+                                DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
                                 if (binding == null) {
                                     appendDefaultValue(sql, attr);
                                 } else {
@@ -308,7 +308,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             boolean hasAttr = false;
                             for (DBSEntityAttribute attr : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
-                                DBDAttributeBinding binding = rsv.getAttributeBinding(attr);
+                                DBDAttributeBinding binding = rsv.getModel().getAttributeBinding(attr);
                                 sql.append(DBUtils.getObjectFullName(attr)).append("=");
                                 if (binding == null) {
                                     appendDefaultValue(sql, attr);

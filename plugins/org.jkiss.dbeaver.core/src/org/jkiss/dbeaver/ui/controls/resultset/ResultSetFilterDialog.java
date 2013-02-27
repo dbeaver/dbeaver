@@ -61,7 +61,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     {
         super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
         this.resultSetViewer = resultSetViewer;
-        this.dataFilter = new DBDDataFilter(resultSetViewer.getDataFilter());
+        this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
     }
 
     @Override
@@ -143,7 +143,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         }
 
         // Fill columns
-        columnsViewer.setInput(resultSetViewer.getVisibleColumns());
+        columnsViewer.setInput(resultSetViewer.getModel().getVisibleColumns());
 
         // Pack UI
         UIUtils.packColumns(columnsViewer.getTable());
@@ -186,7 +186,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             dataFilter.setOrder(null);
             dataFilter.setWhere(null);
 
-            columnsViewer.setInput(resultSetViewer.getVisibleColumns());
+            columnsViewer.setInput(resultSetViewer.getModel().getVisibleColumns());
             orderText.setText(""); //$NON-NLS-1$
             whereText.setText(""); //$NON-NLS-1$
         } else {
