@@ -29,7 +29,6 @@ public class ResultSetModel {
     // Data
     private List<Object[]> origRows = new ArrayList<Object[]>();
     private List<Object[]> curRows = new ArrayList<Object[]>();
-    private int[] orderIndexes = new int[0];
 
     // Current row number (for record mode)
     private boolean hasData = false;
@@ -76,7 +75,12 @@ public class ResultSetModel {
         }
     }
 
-    public int getVisualColumnCount()
+    public DBDAttributeBinding[] getColumns()
+    {
+        return columns;
+    }
+
+    public int getVisibleColumnCount()
     {
         return visibleColumns.length;
     }
@@ -93,7 +97,7 @@ public class ResultSetModel {
 
     public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)
     {
-        for (DBDAttributeBinding binding : visibleColumns) {
+        for (DBDAttributeBinding binding : columns) {
             if (binding.getMetaAttribute() == attribute || binding.getEntityAttribute() == attribute) {
                 return binding;
             }
@@ -151,11 +155,24 @@ public class ResultSetModel {
         return curRows.get(index);
     }
 
+    /**
+     * Gets cell value
+     * @param row row index
+     * @param column column index. Note: not visual column but real column index
+     * @return value or null
+     */
     public Object getCellValue(int row, int column)
     {
         return curRows.get(row)[column];
     }
 
+    /**
+     * Updates cell value. Saves previous value.
+     * @param row row index
+     * @param column column index. Note: not visual column but real column index
+     * @param value new value
+     * @return true on success
+     */
     public boolean updateCellValue(int row, int column, Object value)
     {
         if (row < 0) {
