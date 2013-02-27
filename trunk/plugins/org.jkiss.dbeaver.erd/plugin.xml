@@ -263,5 +263,10 @@
         </wizard>
     </extension>
 
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <newWizardShortcut id="org.jkiss.dbeaver.ext.erd.navigator.DiagramCreateWizard"/>
+        </perspectiveExtension>
+    </extension>
 
 </plugin>
