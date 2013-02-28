@@ -217,7 +217,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         readRequiredMeta(context.getProgressMonitor());
 
         // Make query
-        StringBuilder query = new StringBuilder();
+        StringBuilder query = new StringBuilder(200);
         query.append("INSERT INTO ").append(getFullQualifiedName()).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;

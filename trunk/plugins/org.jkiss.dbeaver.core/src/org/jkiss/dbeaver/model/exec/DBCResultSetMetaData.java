@@ -26,7 +26,5 @@ import java.util.List;
  */
 public interface DBCResultSetMetaData
 {
-    DBCResultSet getResultSet();
-
     List<DBCAttributeMetaData> getAttributes();
 }

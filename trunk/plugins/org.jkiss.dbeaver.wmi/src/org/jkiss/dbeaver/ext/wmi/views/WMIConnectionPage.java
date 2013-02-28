@@ -38,6 +38,9 @@ import org.jkiss.utils.CommonUtils;
  */
 public class WMIConnectionPage extends ConnectionPageAdvanced
 {
+    public static final String DEFAULT_HOST = "localhost";
+    public static final String DEFAULT_NAMESPACE = "root/cimv2";
+
     private Text domainText;
     private Text hostText;
     private Combo namespaceCombo;
@@ -189,10 +192,10 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
         if (connectionInfo != null) {
             if (connectionInfo.getHostName() == null) {
-                connectionInfo.setHostName("localhost");
+                connectionInfo.setHostName(DEFAULT_HOST);
             }
             if (connectionInfo.getDatabaseName() == null) {
-                connectionInfo.setDatabaseName("root");
+                connectionInfo.setDatabaseName(DEFAULT_NAMESPACE);
             }
             if (hostText != null) {
                 hostText.setText(CommonUtils.getString(connectionInfo.getHostName()));
