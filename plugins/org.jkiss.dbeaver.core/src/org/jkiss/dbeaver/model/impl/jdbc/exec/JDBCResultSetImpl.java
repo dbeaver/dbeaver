@@ -60,7 +60,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         this.context = context;
         this.original = original;
         if (this.original == null) {
-            log.warn("Empty resultset passed. Possibly broken database metadata");
+            log.debug("Null result set passed. Possibly broken database metadata");
         }
         // Make fake statement
         this.statement = new JDBCFakeStatementImpl(context, this, description);
