@@ -20,13 +20,9 @@
 package org.jkiss.dbeaver.model.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCDataRequest;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-
-import java.util.List;
 
 /**
  * Data container.
@@ -37,15 +33,24 @@ public interface DBSDataContainer extends DBSObject {
 
     public static final int DATA_SELECT         = 0;
     public static final int DATA_COUNT          = 1;
-    public static final int DATA_INSERT         = 2;
-    public static final int DATA_UPDATE         = 4;
-    public static final int DATA_DELETE         = 8;
-    public static final int DATA_FILTER         = 16;
+    public static final int DATA_FILTER         = 2;
 
+    /**
+     * Features supported by implementation
+     * @return features flags
+     */
     int getSupportedFeatures();
 
-    //DBCDataRequest makeDataRequest(DBCExecutionContext context, int type);
-
+    /**
+     * Reads data from container and pushes it into receiver
+     * @param context execution context
+     * @param dataReceiver data receiver. Works as a data pipe
+     * @param dataFilter data filter. May be null
+     * @param firstRow first row number (<= 0 means do not use it)
+     * @param maxRows total rows to fetch (<= 0 means fetch everything)
+     * @return number of fetched rows
+     * @throws DBException on any error
+     */
     long readData(
         DBCExecutionContext context,
         DBDDataReceiver dataReceiver,
@@ -54,27 +59,16 @@ public interface DBSDataContainer extends DBSObject {
         long maxRows)
         throws DBException;
 
+    /**
+     * Counts data rows in container.
+     * @param context execution context
+     * @param dataFilter data filter (may be null)
+     * @return number of rows in container. May return negative values if count feature is not available
+     * @throws DBException on any error
+     */
     long countData(
         DBCExecutionContext context,
         DBDDataFilter dataFilter)
-        throws DBException;
-
-    long insertData(
-        DBCExecutionContext context,
-        List<DBDAttributeValue> attributes,
-        DBDDataReceiver keysReceiver)
-        throws DBException;
-
-    long updateData(
-        DBCExecutionContext context,
-        List<DBDAttributeValue> keyAttributes,
-        List<DBDAttributeValue> updateAttributes,
-        DBDDataReceiver keysReceiver)
-        throws DBException;
-
-    long deleteData(
-        DBCExecutionContext context,
-        List<DBDAttributeValue> keyAttributes)
         throws DBException;
 
 }
