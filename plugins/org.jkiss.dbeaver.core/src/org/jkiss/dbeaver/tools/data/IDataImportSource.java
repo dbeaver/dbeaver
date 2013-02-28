@@ -20,22 +20,30 @@
 package org.jkiss.dbeaver.tools.data;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.io.IOException;
 
 /**
- * IDataImporter
+ * IDataImportSource
  */
-public interface IDataImporter {
+public interface IDataImportSource {
 
     void init(IDataImporterSite site)
-        throws DBException;
-
-    Object[] fetchHeader(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
-    Object[] fetchRow(DBRProgressMonitor monitor)
+    DBSEntity describeSourceEntity(DBRProgressMonitor monitor)
+        throws DBException, IOException;
+
+    void startDataRead(DBRProgressMonitor monitor)
+        throws DBException, IOException;
+
+    Object[] readRowData(DBRProgressMonitor monitor)
+        throws DBException, IOException;
+
+    void stopDataRead(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
     void dispose();

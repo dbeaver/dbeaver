@@ -19,15 +19,14 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
 /**
  * Column value
  */
 public class DBDAttributeValue {
 
-    private DBSEntityAttribute attribute;
-    private Object value;
+    private final DBSEntityAttribute attribute;
+    private final Object value;
 
     public DBDAttributeValue(DBSEntityAttribute attribute, Object value) {
         this.attribute = attribute;
@@ -38,15 +37,8 @@ public class DBDAttributeValue {
         return attribute;
     }
 
-    public void setAttribute(DBSTableColumn attribute) {
-        this.attribute = attribute;
-    }
-
     public Object getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
-        this.value = value;
-    }
 }
