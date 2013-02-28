@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.export;
+package org.jkiss.dbeaver.tools.data.wizard;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
+import org.jkiss.dbeaver.tools.data.DataTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -131,10 +132,10 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
     }
 
     private void loadExporters() {
-        List<DataExportProvider> dataProviders = getWizard().getSettings().getDataProviders();
+        List<DataTransferProducer> dataProducers = getWizard().getSettings().getDataProducers();
         List<Class> rsSources = new ArrayList<Class>();
-        for (DataExportProvider provider : dataProviders) {
-            rsSources.add(provider.getDataContainer().getClass());
+        for (DataTransferProducer producer : dataProducers) {
+            rsSources.add(producer.getDataContainer().getClass());
         }
 
         DataExportersRegistry registry = DBeaverCore.getInstance().getDataExportersRegistry();

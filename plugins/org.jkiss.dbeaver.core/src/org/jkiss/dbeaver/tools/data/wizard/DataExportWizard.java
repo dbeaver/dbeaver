@@ -16,13 +16,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.export;
+package org.jkiss.dbeaver.tools.data.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.tools.data.DataTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
@@ -33,7 +34,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
 
     private DataExportSettings settings;
 
-    public DataExportWizard(List<DataExportProvider> dataContainers) {
+    public DataExportWizard(List<DataTransferProducer> dataContainers) {
         this.settings = new DataExportSettings(dataContainers);
         IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
         setDialogSettings(section);
@@ -75,7 +76,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
 
     private void executeJobs() {
         // Schedule jobs for data providers
-        int totalJobs = settings.getDataProviders().size();
+        int totalJobs = settings.getDataProducers().size();
         if (totalJobs > settings.getMaxJobCount()) {
             totalJobs = settings.getMaxJobCount();
         }

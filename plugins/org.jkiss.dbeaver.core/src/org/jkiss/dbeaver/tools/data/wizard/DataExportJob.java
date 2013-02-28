@@ -17,7 +17,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.export;
+package org.jkiss.dbeaver.tools.data.wizard;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.tools.data.DataTransferProducer;
 import org.jkiss.dbeaver.tools.data.IDataExporter;
 import org.jkiss.dbeaver.tools.data.IDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -74,19 +75,19 @@ public class DataExportJob extends AbstractJob {
     {
 
         for (; ;) {
-            DataExportProvider dataProvider = settings.acquireDataProvider();
-            if (dataProvider == null) {
+            DataTransferProducer dataProducer = settings.acquireDataProvider();
+            if (dataProducer == null) {
                 break;
             }
-            extractData(monitor, dataProvider);
+            extractData(monitor, dataProducer);
         }
 
         return Status.OK_STATUS;
     }
 
-    private void extractData(DBRProgressMonitor monitor, DataExportProvider dataProvider)
+    private void extractData(DBRProgressMonitor monitor, DataTransferProducer dataProducer)
     {
-        final DBSDataContainer dataContainer = dataProvider.getDataContainer();
+        final DBSDataContainer dataContainer = dataProducer.getDataContainer();
         setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name, dataContainer.getName()));
 
         String contextTask = CoreMessages.dialog_export_wizard_job_task_export;
@@ -97,7 +98,7 @@ public class DataExportJob extends AbstractJob {
             if (settings.getFormatterProfile() != null) {
                 context.setDataFormatterProfile(settings.getFormatterProfile());
             }
-            ExporterSite site = new ExporterSite(dataProvider);
+            ExporterSite site = new ExporterSite(dataProducer);
             site.makeExport(context);
 
         } catch (Exception e) {
@@ -111,7 +112,7 @@ public class DataExportJob extends AbstractJob {
 
         private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 
-        private DataExportProvider dataProvider;
+        private DataTransferProducer dataProducer;
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
@@ -121,15 +122,15 @@ public class DataExportJob extends AbstractJob {
         private long lobCount;
         private File outputFile;
 
-        private ExporterSite(DataExportProvider dataProvider)
+        private ExporterSite(DataTransferProducer dataProducer)
         {
-            this.dataProvider = dataProvider;
+            this.dataProducer = dataProducer;
         }
 
         @Override
         public DBPNamedObject getSource()
         {
-            return dataProvider.getDataContainer();
+            return dataProducer.getDataContainer();
         }
 
         @Override
@@ -344,9 +345,9 @@ public class DataExportJob extends AbstractJob {
                     }
 
                     long totalRows = 0;
-                    if (settings.isQueryRowCount() && (dataProvider.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                    if (settings.isQueryRowCount() && (dataProducer.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                         monitor.beginTask(CoreMessages.dialog_export_wizard_job_task_retrieve, 1);
-                        totalRows = dataProvider.getDataContainer().countData(context, dataProvider.getDataFilter());
+                        totalRows = dataProducer.getDataContainer().countData(context, dataProducer.getDataFilter());
                         monitor.done();
                     }
 
@@ -358,14 +359,14 @@ public class DataExportJob extends AbstractJob {
                     // Perform export
                     if (settings.getExtractType() == DataExportSettings.ExtractType.SINGLE_QUERY) {
                         // Just do it in single query
-                        this.dataProvider.getDataContainer().readData(context, this, dataProvider.getDataFilter(), -1, -1);
+                        this.dataProducer.getDataContainer().readData(context, this, dataProducer.getDataFilter(), -1, -1);
                     } else {
                         // Read all data by segments
                         long offset = 0;
                         int segmentSize = settings.getSegmentSize();
                         for (;;) {
-                            long rowCount = this.dataProvider.getDataContainer().readData(
-                                context, this, dataProvider.getDataFilter(), offset, segmentSize);
+                            long rowCount = this.dataProducer.getDataContainer().readData(
+                                context, this, dataProducer.getDataFilter(), offset, segmentSize);
                             if (rowCount < segmentSize) {
                                 // Done
                                 break;

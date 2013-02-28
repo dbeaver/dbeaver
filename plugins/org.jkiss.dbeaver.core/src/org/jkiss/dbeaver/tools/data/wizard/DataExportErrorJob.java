@@ -16,38 +16,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+package org.jkiss.dbeaver.tools.data.wizard;
 
-package org.jkiss.dbeaver.tools.data.export;
-
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * Data export source
+ * DataExportErrorJob
  */
-public class DataExportProvider {
+public class DataExportErrorJob extends AbstractUIJob {
 
-    private DBSDataContainer dataContainer;
-    private DBDDataFilter dataFilter;
+    private Throwable error;
 
-    public DataExportProvider(DBSDataContainer dataContainer)
+    public DataExportErrorJob(Throwable error)
     {
-        this.dataContainer = dataContainer;
+        super("Data Export Error");
+        this.error = error;
     }
 
-    public DataExportProvider(DBSDataContainer dataContainer, DBDDataFilter dataFilter)
+    @Override
+    public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
-        this.dataContainer = dataContainer;
-        this.dataFilter = dataFilter;
+        UIUtils.showErrorDialog(
+            getDisplay().getActiveShell(),
+            "Data export error",
+            error.getMessage(), error);
+        return Status.OK_STATUS;
     }
 
-    public DBSDataContainer getDataContainer()
-    {
-        return dataContainer;
-    }
-
-    public DBDDataFilter getDataFilter()
-    {
-        return dataFilter;
-    }
 }
