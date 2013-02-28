@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -67,8 +67,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
         return new JDBCColumnMetaData(this, index);
     }
 
-    @Override
-    public DBCResultSet getResultSet()
+    public JDBCResultSet getResultSet()
     {
         return resultSet;
     }
