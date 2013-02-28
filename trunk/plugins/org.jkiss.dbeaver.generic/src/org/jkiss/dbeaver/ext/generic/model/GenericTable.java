@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -229,7 +230,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             // Do not count rows for views
             return null;
         }
-
+        if (Boolean.FALSE.equals(getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SELECT_COUNT))) {
+            // Select count not supported
+            return null;
+        }
         if (rowCount == null) {
             // Query row count
             DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Read row count");

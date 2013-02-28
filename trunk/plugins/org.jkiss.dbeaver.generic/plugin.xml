@@ -93,6 +93,7 @@
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-indexes" label="Driver supports indexes" description="Driver supports table indexes" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -458,6 +459,22 @@
                     <file type="jar" path="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar" url="*"/>
                     <file type="jar" path="drivers/cassandra/libthrift-0.7.0.jar" url="*"/>
                     <file type="jar" path="drivers/cassandra/slf4j-api-1.6.1.jar" url="*"/>
+                </driver>
+                <driver
+                    id="csvjdbc"
+                    label="CSV/DBF"
+                    category="Flat files (CSV)"
+                    class="org.relique.jdbc.csv.CsvDriver"
+                    sampleURL="jdbc:relique:csv:{folder}"
+                    webURL="http://csvjdbc.sourceforge.net/"
+                    description="CsvJdbc driver for CSV and DBF files">
+                    <parameter name="supports-select-count" value="false"/>
+                    <property name="separator" value=","/>
+                    <property name="quotechar" value="&quot;"/>
+                    <property name="fileExtension" value="csv"/>
+                    <property name="suppressHeaders" value="false"/>
+                    <file type="license" path="drivers/csvjdbc/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0.12.jar" url="*"/>
                 </driver>
             </drivers>
 
