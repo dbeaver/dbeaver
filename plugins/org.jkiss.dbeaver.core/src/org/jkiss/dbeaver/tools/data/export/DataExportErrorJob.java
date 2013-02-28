@@ -16,36 +16,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+package org.jkiss.dbeaver.tools.data.export;
 
-package org.jkiss.dbeaver.tools.data;
-
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-
-import java.io.IOException;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * IDataImportSource
+ * DataExportErrorJob
  */
-public interface IDataImportSource {
+public class DataExportErrorJob extends AbstractUIJob {
 
-    void init(IDataImporterSite site)
-        throws DBException, IOException;
+    private Throwable error;
 
-    DBSEntity describeSourceEntity(DBRProgressMonitor monitor)
-        throws DBException, IOException;
+    public DataExportErrorJob(Throwable error)
+    {
+        super("Data Export Error");
+        this.error = error;
+    }
 
-    void startDataRead(DBRProgressMonitor monitor)
-        throws DBException, IOException;
-
-    Object[] readRowData(DBRProgressMonitor monitor)
-        throws DBException, IOException;
-
-    void stopDataRead(DBRProgressMonitor monitor)
-        throws DBException, IOException;
-
-    void dispose();
+    @Override
+    public IStatus runInUIThread(DBRProgressMonitor monitor)
+    {
+        UIUtils.showErrorDialog(
+            getDisplay().getActiveShell(),
+            "Data export error",
+            error.getMessage(), error);
+        return Status.OK_STATUS;
+    }
 
 }
