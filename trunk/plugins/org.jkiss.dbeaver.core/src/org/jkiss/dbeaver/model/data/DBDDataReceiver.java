@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 
 /**
  * Data receiver.
- * Used to receive some resultset data.
- * Resultset can be a result of some query execution, cursor returned from stored procedure, generated keys result set, etc.
+ * Used to receive some result set data.
+ * Result set can be a result of some query execution, cursor returned from stored procedure, generated keys result set, etc.
  */
 public interface DBDDataReceiver {
 

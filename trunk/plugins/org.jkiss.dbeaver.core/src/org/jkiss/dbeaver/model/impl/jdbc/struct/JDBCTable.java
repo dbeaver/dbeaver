@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,7 +49,7 @@ import java.util.List;
  */
 public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObjectContainer>
     extends AbstractTable<DATASOURCE, CONTAINER>
-    implements DBSDataContainer, DBPSaveableObject
+    implements DBSDataManipulator, DBPSaveableObject
 {
     static final Log log = LogFactory.getLog(JDBCTable.class);
 

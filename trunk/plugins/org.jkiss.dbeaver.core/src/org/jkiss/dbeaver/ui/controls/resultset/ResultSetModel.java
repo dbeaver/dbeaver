@@ -7,10 +7,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.utils.CommonUtils;
 
@@ -298,13 +295,12 @@ public class ResultSetModel {
 
     boolean isColumnReadOnly(DBDAttributeBinding column)
     {
-        if (column.getRowIdentifier() == null || !(column.getRowIdentifier().getEntity() instanceof DBSDataContainer)) {
+        if (column.getRowIdentifier() == null || !(column.getRowIdentifier().getEntity() instanceof DBSDataManipulator)) {
             return true;
         }
-        DBSDataContainer dataContainer = (DBSDataContainer) column.getRowIdentifier().getEntity();
-        return (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_UPDATE) == 0;
+        DBSDataManipulator dataContainer = (DBSDataManipulator) column.getRowIdentifier().getEntity();
+        return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
     }
-
 
     Set<RowInfo> getAddedRows()
     {

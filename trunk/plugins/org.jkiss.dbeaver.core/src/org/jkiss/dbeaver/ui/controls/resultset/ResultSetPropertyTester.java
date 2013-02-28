@@ -23,9 +23,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * DatabaseEditorPropertyTester
  */
@@ -34,7 +31,6 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.resultset";
     public static final String PROP_HAS_DATA = "hasData";
     public static final String PROP_CAN_COPY = "canCopy";
-    //public static final String PROP_CAN_COPY_SPECIAL = "canCopySpecial";
     public static final String PROP_CAN_PASTE = "canPaste";
     public static final String PROP_CAN_CUT = "canCut";
     public static final String PROP_CAN_MOVE = "canMove";
@@ -49,16 +45,9 @@ public class ResultSetPropertyTester extends PropertyTester
             return false;
         }
         ResultSetViewer rsv = (ResultSetViewer)spreadsheet.getController();
-        if (rsv != null) {
-            return checkResultSetProperty(rsv, property, expectedValue);
-//            boolean res = checkResultSetProperty(rsv, property, expectedValue);
-//            System.out.println(property + " [" + expectedValue + "]=" + res);
-//            return res;
-        } else {
-            return false;
-        }
+        return rsv != null && checkResultSetProperty(rsv, property, expectedValue);
     }
-    private static Map<Object,Boolean> stateSave = new HashMap<Object, Boolean>();
+
     private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
     {
         if (PROP_HAS_DATA.equals(property)) {

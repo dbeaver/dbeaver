@@ -12,7 +12,7 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
@@ -338,8 +338,8 @@ class ResultSetPersister {
 
                     for (DataStatementInfo statement : ResultSetPersister.this.deleteStatements) {
                         if (monitor.isCanceled()) break;
-                        DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                         try {
+                            DBSDataManipulator dataContainer = getDataManipulator(statement.table);
                             deleteCount += dataContainer.deleteData(context, statement.keyAttributes);
                             processStatementChanges(statement);
                         }
@@ -351,8 +351,8 @@ class ResultSetPersister {
                     }
                     for (DataStatementInfo statement : ResultSetPersister.this.insertStatements) {
                         if (monitor.isCanceled()) break;
-                        DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                         try {
+                            DBSDataManipulator dataContainer = getDataManipulator(statement.table);
                             insertCount += dataContainer.insertData(context, statement.keyAttributes, new KeyDataReceiver(statement));
                             processStatementChanges(statement);
                         }
@@ -364,8 +364,8 @@ class ResultSetPersister {
                     }
                     for (DataStatementInfo statement : ResultSetPersister.this.updateStatements) {
                         if (monitor.isCanceled()) break;
-                        DBSDataContainer dataContainer = (DBSDataContainer)statement.table;
                         try {
+                            DBSDataManipulator dataContainer = getDataManipulator(statement.table);
                             this.updateCount += dataContainer.updateData(context, statement.keyAttributes, statement.updateAttributes, new KeyDataReceiver(statement));
                             processStatementChanges(statement);
                         }
@@ -412,6 +412,15 @@ class ResultSetPersister {
             }
         }
 
+    }
+
+    private DBSDataManipulator getDataManipulator(DBSEntity entity) throws DBCException
+    {
+        if (entity instanceof DBSDataManipulator) {
+            return (DBSDataManipulator)entity;
+        } else {
+            throw new DBCException("Entity " + entity.getName() + " doesn't support data manipulation");
+        }
     }
 
     /**
