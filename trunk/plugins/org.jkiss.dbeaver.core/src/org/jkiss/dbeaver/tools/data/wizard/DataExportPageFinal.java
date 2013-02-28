@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.export;
+package org.jkiss.dbeaver.tools.data.wizard;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.tools.data.DataTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -79,11 +80,11 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
     public void activatePage()
     {
         resultTable.removeAll();
-        List<DataExportProvider> dataProviders = getWizard().getSettings().getDataProviders();
-        for (DataExportProvider provider : dataProviders) {
+        List<DataTransferProducer> dataProducers = getWizard().getSettings().getDataProducers();
+        for (DataTransferProducer producer : dataProducers) {
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, provider.getDataContainer().getName());
-            File outputFile = getWizard().getSettings().makeOutputFile(provider.getDataContainer());
+            item.setText(0, producer.getDataContainer().getName());
+            File outputFile = getWizard().getSettings().makeOutputFile(producer.getDataContainer());
             item.setText(1, outputFile.getAbsolutePath());
             if (outputFile.exists()) {
                 item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));

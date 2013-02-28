@@ -27,8 +27,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.data.export.DataExportProvider;
-import org.jkiss.dbeaver.tools.data.export.DataExportWizard;
+import org.jkiss.dbeaver.tools.data.DataTransferProducer;
+import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 import java.util.ArrayList;
@@ -45,21 +45,21 @@ public class DataExportHandler extends AbstractHandler {
             return null;
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
-        final List<DataExportProvider> dataProviders = new ArrayList<DataExportProvider>();
+        final List<DataTransferProducer> dataProducers = new ArrayList<DataTransferProducer>();
         for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
             Object object = iter.next();
 
             final DBSDataContainer adapted = RuntimeUtils.getObjectAdapter(object, DBSDataContainer.class);
             if (adapted != null) {
-                dataProviders.add(new DataExportProvider(adapted));
+                dataProducers.add(new DataTransferProducer(adapted));
             }
         }
 
         // Refresh objects
-        if (!dataProviders.isEmpty()) {
+        if (!dataProducers.isEmpty()) {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
                 workbenchWindow,
-                new DataExportWizard(dataProviders));
+                new DataExportWizard(dataProducers));
             dialog.open();
         }
 

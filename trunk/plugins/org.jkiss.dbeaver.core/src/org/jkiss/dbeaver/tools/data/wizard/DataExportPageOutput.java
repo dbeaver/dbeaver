@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.export;
+package org.jkiss.dbeaver.tools.data.wizard;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -147,7 +147,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     }
                 }
             });
-            if (getWizard().getSettings().getDataProviders().size() < 2) {
+            if (getWizard().getSettings().getDataProducers().size() < 2) {
                 threadsNumLabel.setEnabled(false);
                 threadsNumText.setEnabled(false);
             }
