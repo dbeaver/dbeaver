@@ -17,7 +17,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.export;
+package org.jkiss.dbeaver.tools.data.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.tools.data.DataTransferProducer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,7 +66,7 @@ public class DataExportSettings {
 
     private static final int DEFAULT_THREADS_NUM = 1;
 
-    private List<DataExportProvider> dataProviders;
+    private List<DataTransferProducer> dataProducers;
     private DataExporterDescriptor dataExporter;
 
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
@@ -92,20 +93,20 @@ public class DataExportSettings {
     private transient boolean folderOpened = false;
     private transient int curProviderNum = 0;
 
-    public DataExportSettings(List<DataExportProvider> dataProviders)
+    public DataExportSettings(List<DataTransferProducer> dataProducers)
     {
-        this.dataProviders = dataProviders;
+        this.dataProducers = dataProducers;
     }
 
-    public List<DataExportProvider> getDataProviders()
+    public List<DataTransferProducer> getDataProducers()
     {
-        return dataProviders;
+        return dataProducers;
     }
 
-    public synchronized DataExportProvider acquireDataProvider()
+    public synchronized DataTransferProducer acquireDataProvider()
     {
-        if (curProviderNum >= dataProviders.size()) {
-            if (!folderOpened) {
+        if (curProviderNum >= dataProducers.size()) {
+            if (!folderOpened && openFolderOnFinish) {
                 // Last one
                 folderOpened = true;
                 DBeaverUI.getDisplay().asyncExec(new Runnable() {
@@ -117,7 +118,7 @@ public class DataExportSettings {
             }
             return null;
         }
-        DataExportProvider result = dataProviders.get(curProviderNum);
+        DataTransferProducer result = dataProducers.get(curProviderNum);
 
         curProviderNum++;
         return result;
