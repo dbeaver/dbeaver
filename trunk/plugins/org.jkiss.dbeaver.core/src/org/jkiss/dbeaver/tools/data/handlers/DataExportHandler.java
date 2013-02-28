@@ -27,8 +27,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.data.wizard.DataExportProvider;
-import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
+import org.jkiss.dbeaver.tools.data.export.DataExportProvider;
+import org.jkiss.dbeaver.tools.data.export.DataExportWizard;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 import java.util.ArrayList;
