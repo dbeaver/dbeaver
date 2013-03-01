@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.wizard;
+package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
@@ -29,15 +29,15 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
-class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
+class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard> {
 
     private static final int EXTRACT_LOB_SKIP = 0;
     private static final int EXTRACT_LOB_FILES = 1;
@@ -54,7 +54,7 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
     private Combo formatProfilesCombo;
     private PropertySourceCustom propertySource;
 
-    DataExportPageSettings() {
+    DataTransferPageStreamSettings() {
         super(CoreMessages.dialog_export_wizard_settings_name);
         setTitle(CoreMessages.dialog_export_wizard_settings_title);
         setDescription(CoreMessages.dialog_export_wizard_settings_description);
@@ -137,11 +137,11 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 lobExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        DataExportSettings exportSettings = getWizard().getSettings();
+                        DataTransferSettings transferSettings = getWizard().getSettings();
                         switch (lobExtractType.getSelectionIndex()) {
-                            case EXTRACT_LOB_SKIP: exportSettings.setLobExtractType(DataExportSettings.LobExtractType.SKIP); break;
-                            case EXTRACT_LOB_FILES: exportSettings.setLobExtractType(DataExportSettings.LobExtractType.FILES); break;
-                            case EXTRACT_LOB_INLINE: exportSettings.setLobExtractType(DataExportSettings.LobExtractType.INLINE); break;
+                            case EXTRACT_LOB_SKIP: transferSettings.setLobExtractType(DataTransferSettings.LobExtractType.SKIP); break;
+                            case EXTRACT_LOB_FILES: transferSettings.setLobExtractType(DataTransferSettings.LobExtractType.FILES); break;
+                            case EXTRACT_LOB_INLINE: transferSettings.setLobExtractType(DataTransferSettings.LobExtractType.INLINE); break;
                         }
                         updatePageCompletion();
                     }
@@ -156,11 +156,11 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
                 lobEncodingCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        DataExportSettings exportSettings = getWizard().getSettings();
+                        DataTransferSettings transferSettings = getWizard().getSettings();
                         switch (lobEncodingCombo.getSelectionIndex()) {
-                            case LOB_ENCODING_BASE64: exportSettings.setLobEncoding(DataExportSettings.LobEncoding.BASE64); break;
-                            case LOB_ENCODING_HEX: exportSettings.setLobEncoding(DataExportSettings.LobEncoding.HEX); break;
-                            case LOB_ENCODING_BINARY: exportSettings.setLobEncoding(DataExportSettings.LobEncoding.BINARY); break;
+                            case LOB_ENCODING_BASE64: transferSettings.setLobEncoding(DataTransferSettings.LobEncoding.BASE64); break;
+                            case LOB_ENCODING_HEX: transferSettings.setLobEncoding(DataTransferSettings.LobEncoding.HEX); break;
+                            case LOB_ENCODING_BINARY: transferSettings.setLobEncoding(DataTransferSettings.LobEncoding.BINARY); break;
                         }
                     }
                 });
@@ -210,17 +210,17 @@ class DataExportPageSettings extends ActiveWizardPage<DataExportWizard> {
 
     @Override
     public void activatePage() {
-        DataExportSettings exportSettings = getWizard().getSettings();
-        DataExporterDescriptor exporter = exportSettings.getDataExporter();
-        propertySource = new PropertySourceCustom(exporter.getProperties(), exportSettings.getExtractorProperties());
+        DataTransferSettings transferSettings = getWizard().getSettings();
+        IStreamDataExporterDescriptor exporter = transferSettings.getExporterDescriptor();
+        propertySource = new PropertySourceCustom(exporter.getProperties(), transferSettings.getExtractorProperties());
         propsEditor.loadProperties(propertySource);
 
-        switch (exportSettings.getLobExtractType()) {
+        switch (transferSettings.getLobExtractType()) {
             case SKIP: lobExtractType.select(EXTRACT_LOB_SKIP); break;
             case FILES: lobExtractType.select(EXTRACT_LOB_FILES); break;
             case INLINE: lobExtractType.select(EXTRACT_LOB_INLINE); break;
         }
-        switch (exportSettings.getLobEncoding()) {
+        switch (transferSettings.getLobEncoding()) {
             case BASE64: lobEncodingCombo.select(LOB_ENCODING_BASE64); break;
             case HEX: lobEncodingCombo.select(LOB_ENCODING_HEX); break;
             case BINARY: lobEncodingCombo.select(LOB_ENCODING_BINARY); break;

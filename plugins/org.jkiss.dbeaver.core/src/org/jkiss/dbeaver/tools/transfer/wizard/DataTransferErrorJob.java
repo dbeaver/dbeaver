@@ -16,31 +16,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+package org.jkiss.dbeaver.tools.transfer.wizard;
 
-package org.jkiss.dbeaver.tools.data;
-
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.io.IOException;
+import org.jkiss.dbeaver.runtime.AbstractUIJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * IDataExporter
+ * DataTransferErrorJob
  */
-public interface IDataExporter {
+public class DataTransferErrorJob extends AbstractUIJob {
 
-    void init(IDataExporterSite site)
-        throws DBException;
+    private Throwable error;
 
-    void exportHeader(DBRProgressMonitor monitor)
-        throws DBException, IOException;
+    public DataTransferErrorJob(Throwable error)
+    {
+        super("Data Export Error");
+        this.error = error;
+    }
 
-    void exportRow(DBRProgressMonitor monitor, Object[] row)
-        throws DBException, IOException;
-
-    void exportFooter(DBRProgressMonitor monitor)
-        throws DBException, IOException;
-
-    void dispose();
+    @Override
+    public IStatus runInUIThread(DBRProgressMonitor monitor)
+    {
+        UIUtils.showErrorDialog(
+            getDisplay().getActiveShell(),
+            "Data export error",
+            error.getMessage(), error);
+        return Status.OK_STATUS;
+    }
 
 }

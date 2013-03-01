@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.wizard;
+package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -29,7 +29,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
-import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterDescriptor;
+import org.jkiss.dbeaver.tools.transfer.stream.impl.StreamTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -37,11 +38,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
+class DataTransferPageInit extends ActiveWizardPage<DataTransferWizard> {
 
     private TableViewer exporterTable;
 
-    DataExportPageInit() {
+    DataTransferPageInit() {
         super(CoreMessages.dialog_export_wizard_init_name);
         setTitle(CoreMessages.dialog_export_wizard_init_title);
         setDescription(CoreMessages.dialog_export_wizard_init_description);
@@ -108,14 +109,14 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
                 } else {
                     exporter = null;
                 }
-                getWizard().getSettings().setDataExporter(exporter);
+                getWizard().getSettings().setExporterDescriptor(exporter);
                 updatePageCompletion();
             }
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
                 if (isPageComplete()) {
-                    getWizard().getContainer().showPage(getWizard().getNextPage(DataExportPageInit.this));
+                    getWizard().getContainer().showPage(getWizard().getNextPage(DataTransferPageInit.this));
                 }
             }
         });
@@ -124,7 +125,7 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
         UIUtils.packColumns(exporterTable.getTable());
         UIUtils.maxTableColumnsWidth(exporterTable.getTable());
 
-        DataExporterDescriptor exporter = getWizard().getSettings().getDataExporter();
+        IStreamDataExporterDescriptor exporter = getWizard().getSettings().getExporterDescriptor();
         if (exporter != null) {
             exporterTable.setSelection(new StructuredSelection(exporter));
         }
@@ -132,20 +133,23 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
     }
 
     private void loadExporters() {
-        List<IDataTransferProducer> dataProducers = getWizard().getSettings().getDataProducers();
+        List<DataTransferPipe> dataPipes = getWizard().getSettings().getDataPipes();
         List<Class> rsSources = new ArrayList<Class>();
-        for (IDataTransferProducer producer : dataProducers) {
-            rsSources.add(producer.getSourceObject().getClass());
+        for (DataTransferPipe transferPipe : dataPipes) {
+            if (transferPipe.getConsumer() == null) {
+                transferPipe.setConsumer(new StreamTransferConsumer());
+            }
+            rsSources.add(transferPipe.getProducer().getSourceObject().getClass());
         }
 
         DataExportersRegistry registry = DBeaverCore.getInstance().getDataExportersRegistry();
-        List<DataExporterDescriptor> exporters = registry.getDataExporters(rsSources);
+        List<IStreamDataExporterDescriptor> exporters = registry.getDataExporters(rsSources);
         exporterTable.setInput(exporters);
     }
 
     @Override
     protected boolean determinePageCompletion() {
-        return getWizard().getSettings().getDataExporter() != null;
+        return getWizard().getSettings().getExporterDescriptor() != null;
     }
 
 }

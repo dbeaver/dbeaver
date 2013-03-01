@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.wizard;
+package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
+class DataTransferPageStreamOutput extends ActiveWizardPage<DataTransferWizard> {
 
     private static final int EXTRACT_TYPE_SINGLE_QUERY = 0;
     private static final int EXTRACT_TYPE_SEGMENTS = 1;
@@ -51,7 +51,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
     private Button rowCountCheckbox;
     private Button showFolderCheckbox;
 
-    DataExportPageOutput() {
+    DataTransferPageStreamOutput() {
         super(CoreMessages.dialog_export_wizard_output_name);
         setTitle(CoreMessages.dialog_export_wizard_output_title);
         setDescription(CoreMessages.dialog_export_wizard_output_description);
@@ -147,7 +147,7 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                     }
                 }
             });
-            if (getWizard().getSettings().getDataProducers().size() < 2) {
+            if (getWizard().getSettings().getDataPipes().size() < 2) {
                 threadsNumLabel.setEnabled(false);
                 threadsNumText.setEnabled(false);
             }
@@ -162,10 +162,10 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
                 rowsExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        DataExportSettings exportSettings = getWizard().getSettings();
+                        DataTransferSettings transferSettings = getWizard().getSettings();
                         switch (rowsExtractType.getSelectionIndex()) {
-                            case EXTRACT_TYPE_SEGMENTS: exportSettings.setExtractType(DataExportSettings.ExtractType.SEGMENTS); break;
-                            case EXTRACT_TYPE_SINGLE_QUERY: exportSettings.setExtractType(DataExportSettings.ExtractType.SINGLE_QUERY); break;
+                            case EXTRACT_TYPE_SEGMENTS: transferSettings.setExtractType(DataTransferSettings.ExtractType.SEGMENTS); break;
+                            case EXTRACT_TYPE_SINGLE_QUERY: transferSettings.setExtractType(DataTransferSettings.ExtractType.SINGLE_QUERY); break;
                         }
                         updatePageCompletion();
                     }
@@ -223,20 +223,20 @@ class DataExportPageOutput extends ActiveWizardPage<DataExportWizard> {
     @Override
     public void activatePage()
     {
-        DataExportSettings exportSettings = getWizard().getSettings();
-        directoryText.setText(exportSettings.getOutputFolder());
-        fileNameText.setText(exportSettings.getOutputFilePattern());
-        threadsNumText.setSelection(exportSettings.getMaxJobCount());
-        newConnectionCheckbox.setSelection(exportSettings.isOpenNewConnections());
-        rowCountCheckbox.setSelection(exportSettings.isQueryRowCount());
-        compressCheckbox.setSelection(exportSettings.isCompressResults());
-        encodingCombo.setText(exportSettings.getOutputEncoding());
-        encodingBOMCheckbox.setSelection(exportSettings.isOutputEncodingBOM());
-        showFolderCheckbox.setSelection(exportSettings.isOpenFolderOnFinish());
+        DataTransferSettings transferSettings = getWizard().getSettings();
+        directoryText.setText(transferSettings.getOutputFolder());
+        fileNameText.setText(transferSettings.getOutputFilePattern());
+        threadsNumText.setSelection(transferSettings.getMaxJobCount());
+        newConnectionCheckbox.setSelection(transferSettings.isOpenNewConnections());
+        rowCountCheckbox.setSelection(transferSettings.isQueryRowCount());
+        compressCheckbox.setSelection(transferSettings.isCompressResults());
+        encodingCombo.setText(transferSettings.getOutputEncoding());
+        encodingBOMCheckbox.setSelection(transferSettings.isOutputEncodingBOM());
+        showFolderCheckbox.setSelection(transferSettings.isOpenFolderOnFinish());
 
         if (segmentSizeText != null) {
-            segmentSizeText.setText(String.valueOf(exportSettings.getSegmentSize()));
-            switch (exportSettings.getExtractType()) {
+            segmentSizeText.setText(String.valueOf(transferSettings.getSegmentSize()));
+            switch (transferSettings.getExtractType()) {
                 case SINGLE_QUERY: rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY); break;
                 case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
             }
