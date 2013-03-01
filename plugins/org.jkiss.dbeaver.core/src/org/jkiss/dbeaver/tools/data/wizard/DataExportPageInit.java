@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.registry.DataExportersRegistry;
-import org.jkiss.dbeaver.tools.data.DataTransferProducer;
+import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -132,10 +132,10 @@ class DataExportPageInit extends ActiveWizardPage<DataExportWizard> {
     }
 
     private void loadExporters() {
-        List<DataTransferProducer> dataProducers = getWizard().getSettings().getDataProducers();
+        List<IDataTransferProducer> dataProducers = getWizard().getSettings().getDataProducers();
         List<Class> rsSources = new ArrayList<Class>();
-        for (DataTransferProducer producer : dataProducers) {
-            rsSources.add(producer.getDataContainer().getClass());
+        for (IDataTransferProducer producer : dataProducers) {
+            rsSources.add(producer.getSourceObject().getClass());
         }
 
         DataExportersRegistry registry = DBeaverCore.getInstance().getDataExportersRegistry();

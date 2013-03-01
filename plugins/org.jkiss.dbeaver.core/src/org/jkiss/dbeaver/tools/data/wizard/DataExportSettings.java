@@ -27,26 +27,19 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.data.DataTransferProducer;
+import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.data.IDataTransferSettings;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Export settings
  */
-public class DataExportSettings {
-
-    enum ExtractType {
-        SINGLE_QUERY,
-        SEGMENTS
-    }
+public class DataExportSettings implements IDataTransferSettings {
 
     enum LobExtractType {
         SKIP,
@@ -66,7 +59,7 @@ public class DataExportSettings {
 
     private static final int DEFAULT_THREADS_NUM = 1;
 
-    private List<DataTransferProducer> dataProducers;
+    private List<IDataTransferProducer> dataProducers;
     private DataExporterDescriptor dataExporter;
 
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
@@ -93,17 +86,17 @@ public class DataExportSettings {
     private transient boolean folderOpened = false;
     private transient int curProviderNum = 0;
 
-    public DataExportSettings(List<DataTransferProducer> dataProducers)
+    public DataExportSettings(List<? extends IDataTransferProducer> dataProducers)
     {
-        this.dataProducers = dataProducers;
+        this.dataProducers = new ArrayList<IDataTransferProducer>(dataProducers);
     }
 
-    public List<DataTransferProducer> getDataProducers()
+    public List<IDataTransferProducer> getDataProducers()
     {
         return dataProducers;
     }
 
-    public synchronized DataTransferProducer acquireDataProvider()
+    public synchronized IDataTransferProducer acquireDataProvider()
     {
         if (curProviderNum >= dataProducers.size()) {
             if (!folderOpened && openFolderOnFinish) {
@@ -118,7 +111,7 @@ public class DataExportSettings {
             }
             return null;
         }
-        DataTransferProducer result = dataProducers.get(curProviderNum);
+        IDataTransferProducer result = dataProducers.get(curProviderNum);
 
         curProviderNum++;
         return result;

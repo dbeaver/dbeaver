@@ -59,7 +59,7 @@ import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
-import org.jkiss.dbeaver.tools.data.DataTransferProducer;
+import org.jkiss.dbeaver.tools.data.ContainerTransferProducer;
 import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
 import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -624,7 +624,7 @@ public class SQLEditor extends SQLEditorBase
                         getSite().getWorkbenchWindow(),
                         new DataExportWizard(
                             Collections.singletonList(
-                                new DataTransferProducer(getDataContainer(), null))),
+                                new ContainerTransferProducer(getDataContainer(), null))),
                         new StructuredSelection(this));
                     dialog.open();
                 } else {

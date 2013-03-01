@@ -26,16 +26,17 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.tools.data.DataTransferProducer;
 import org.jkiss.dbeaver.tools.data.IDataExporter;
 import org.jkiss.dbeaver.tools.data.IDataExporterSite;
+import org.jkiss.dbeaver.tools.data.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
@@ -75,7 +76,7 @@ public class DataExportJob extends AbstractJob {
     {
 
         for (; ;) {
-            DataTransferProducer dataProducer = settings.acquireDataProvider();
+            IDataTransferProducer dataProducer = settings.acquireDataProvider();
             if (dataProducer == null) {
                 break;
             }
@@ -85,15 +86,15 @@ public class DataExportJob extends AbstractJob {
         return Status.OK_STATUS;
     }
 
-    private void extractData(DBRProgressMonitor monitor, DataTransferProducer dataProducer)
+    private void extractData(DBRProgressMonitor monitor, IDataTransferProducer dataProducer)
     {
-        final DBSDataContainer dataContainer = dataProducer.getDataContainer();
-        setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name, dataContainer.getName()));
+        setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name, dataProducer.getSourceObject().getName()));
 
         String contextTask = CoreMessages.dialog_export_wizard_job_task_export;
+        DBPDataSource dataSource = dataProducer.getSourceObject().getDataSource();
         DBCExecutionContext context = settings.isOpenNewConnections() ?
-            dataContainer.getDataSource().openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
-            dataContainer.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
+            dataSource.openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
+            dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
         try {
             if (settings.getFormatterProfile() != null) {
                 context.setDataFormatterProfile(settings.getFormatterProfile());
@@ -108,11 +109,11 @@ public class DataExportJob extends AbstractJob {
         }
     }
 
-    private class ExporterSite implements IDataExporterSite, DBDDataReceiver {
+    private class ExporterSite implements IDataExporterSite, IDataTransferConsumer {
 
         private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 
-        private DataTransferProducer dataProducer;
+        private IDataTransferProducer dataProducer;
         private IDataExporter dataExporter;
         private OutputStream outputStream;
         private PrintWriter writer;
@@ -122,7 +123,7 @@ public class DataExportJob extends AbstractJob {
         private long lobCount;
         private File outputFile;
 
-        private ExporterSite(DataTransferProducer dataProducer)
+        private ExporterSite(IDataTransferProducer dataProducer)
         {
             this.dataProducer = dataProducer;
         }
@@ -130,7 +131,7 @@ public class DataExportJob extends AbstractJob {
         @Override
         public DBPNamedObject getSource()
         {
-            return dataProducer.getDataContainer();
+            return dataProducer.getSourceObject();
         }
 
         @Override
@@ -311,8 +312,6 @@ public class DataExportJob extends AbstractJob {
         public void makeExport(DBCExecutionContext context)
             throws DBException, IOException
         {
-            DBRProgressMonitor monitor = context.getProgressMonitor();
-
             // Create exporter
             try {
                 dataExporter = settings.getDataExporter().createExporter();
@@ -344,37 +343,10 @@ public class DataExportJob extends AbstractJob {
                         }
                     }
 
-                    long totalRows = 0;
-                    if (settings.isQueryRowCount() && (dataProducer.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
-                        monitor.beginTask(CoreMessages.dialog_export_wizard_job_task_retrieve, 1);
-                        totalRows = dataProducer.getDataContainer().countData(context, dataProducer.getDataFilter());
-                        monitor.done();
-                    }
-
                     // init exporter
                     dataExporter.init(this);
 
-                    monitor.beginTask(CoreMessages.dialog_export_wizard_job_task_export_table_data, (int)totalRows);
-
-                    // Perform export
-                    if (settings.getExtractType() == DataExportSettings.ExtractType.SINGLE_QUERY) {
-                        // Just do it in single query
-                        this.dataProducer.getDataContainer().readData(context, this, dataProducer.getDataFilter(), -1, -1);
-                    } else {
-                        // Read all data by segments
-                        long offset = 0;
-                        int segmentSize = settings.getSegmentSize();
-                        for (;;) {
-                            long rowCount = this.dataProducer.getDataContainer().readData(
-                                context, this, dataProducer.getDataFilter(), offset, segmentSize);
-                            if (rowCount < segmentSize) {
-                                // Done
-                                break;
-                            }
-                            offset += rowCount;
-                        }
-                    }
-
+                    dataProducer.transferData(context, this, settings);
                 } finally {
                     try {
                         this.flush();
@@ -402,7 +374,6 @@ public class DataExportJob extends AbstractJob {
                         ContentUtils.close(this.writer);
                         this.writer = null;
                     }
-                    monitor.done();
                 }
             } finally {
                 ContentUtils.close(outputStream);
