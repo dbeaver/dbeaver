@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.impl;
+package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.tools.data.IDataExporterSite;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import javax.imageio.ImageIO;
@@ -38,14 +38,14 @@ import java.util.List;
 /**
  * CSV Exporter
  */
-public class DataExporterXML extends DataExporterAbstract {
+public class DataExporterXML extends StreamExporterAbstract {
 
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
 
     @Override
-    public void init(IDataExporterSite site) throws DBException
+    public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
         out = site.getWriter();

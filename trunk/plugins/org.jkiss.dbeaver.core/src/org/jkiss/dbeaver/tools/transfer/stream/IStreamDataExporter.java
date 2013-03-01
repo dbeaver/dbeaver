@@ -17,24 +17,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.tools.data;
+package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.io.IOException;
 
 /**
- * Data transfer
+ * IStreamDataExporter
  */
-public interface IDataTransferProducer {
+public interface IStreamDataExporter {
 
-    DBSObject getSourceObject();
-
-    void transferData(
-        DBCExecutionContext context,
-        IDataTransferConsumer consumer,
-        IDataTransferSettings settings)
+    void init(IStreamDataExporterSite site)
         throws DBException;
+
+    void exportHeader(DBRProgressMonitor monitor)
+        throws DBException, IOException;
+
+    void exportRow(DBRProgressMonitor monitor, Object[] row)
+        throws DBException, IOException;
+
+    void exportFooter(DBRProgressMonitor monitor)
+        throws DBException, IOException;
+
+    void dispose();
 
 }

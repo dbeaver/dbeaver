@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.impl;
+package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.tools.data.IDataExporterSite;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
@@ -38,7 +38,7 @@ import java.util.List;
 /**
  * SQL Exporter
  */
-public class DataExporterSQL extends DataExporterAbstract {
+public class DataExporterSQL extends StreamExporterAbstract {
 
     private static final String PROP_ESCAPE = "escape";
     private static final String PROP_ROWS_IN_STATEMENT = "rowsInStatement";
@@ -56,7 +56,7 @@ public class DataExporterSQL extends DataExporterAbstract {
     private transient long rowCount;
 
     @Override
-    public void init(IDataExporterSite site) throws DBException
+    public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
         String escapeString = String.valueOf(site.getProperties().get(PROP_ESCAPE));

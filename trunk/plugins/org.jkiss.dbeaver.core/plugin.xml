@@ -355,7 +355,7 @@
                 </with>
             </activeWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.tools.data.handlers.DataExportHandler">
+        <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.tools.transfer.handlers.DataExportHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -1843,7 +1843,7 @@
     <extension point="org.jkiss.dbeaver.dataExportProvider">
         <export
                 id="org.jkiss.dbeaver.core.dataExport.xml"
-                class="org.jkiss.dbeaver.tools.data.impl.DataExporterXML"
+                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterXML"
                 description="%command.org.jkiss.dbeaver.core.resultset.export.xml.description"
                 extension="xml"
                 icon="icons/misc/xml.png"
@@ -1851,7 +1851,7 @@
         </export>
         <export
                 id="org.jkiss.dbeaver.core.dataExport.html"
-                class="org.jkiss.dbeaver.tools.data.impl.DataExporterHTML"
+                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterHTML"
                 description="%command.org.jkiss.dbeaver.core.resultset.export.html.description"
                 extension="html"
                 icon="icons/misc/html.png"
@@ -1862,7 +1862,7 @@
         </export>
         <export
                 id="org.jkiss.dbeaver.core.dataExport.csv"
-                class="org.jkiss.dbeaver.tools.data.impl.DataExporterCSV"
+                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterCSV"
                 description="%command.org.jkiss.dbeaver.core.resultset.export.csv.description"
                 extension="csv"
                 icon="icons/misc/csv.png"
@@ -1875,7 +1875,7 @@
         </export>
         <export
                 id="org.jkiss.dbeaver.core.dataExport.sql"
-                class="org.jkiss.dbeaver.tools.data.impl.DataExporterSQL"
+                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterSQL"
                 description="%command.org.jkiss.dbeaver.core.resultset.export.sql.description"
                 extension="sql"
                 icon="icons/misc/sql.png"

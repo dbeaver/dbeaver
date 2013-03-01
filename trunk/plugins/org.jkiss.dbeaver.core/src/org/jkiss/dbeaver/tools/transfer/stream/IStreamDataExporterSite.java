@@ -16,35 +16,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.wizard;
+package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.AbstractUIJob;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
 
 /**
- * DataExportErrorJob
+ * IStreamDataExporter
  */
-public class DataExportErrorJob extends AbstractUIJob {
+public interface IStreamDataExporterSite {
 
-    private Throwable error;
+    DBPNamedObject getSource();
 
-    public DataExportErrorJob(Throwable error)
-    {
-        super("Data Export Error");
-        this.error = error;
-    }
+    DBDDisplayFormat getExportFormat();
 
-    @Override
-    public IStatus runInUIThread(DBRProgressMonitor monitor)
-    {
-        UIUtils.showErrorDialog(
-            getDisplay().getActiveShell(),
-            "Data export error",
-            error.getMessage(), error);
-        return Status.OK_STATUS;
-    }
+    Map<Object, Object> getProperties();
+
+    List<DBDAttributeBinding> getAttributes();
+
+    OutputStream getOutputStream();
+
+    PrintWriter getWriter();
+
+    void flush() throws IOException;
+
+    void writeBinaryData(InputStream stream, long streamLength) throws IOException;
 
 }

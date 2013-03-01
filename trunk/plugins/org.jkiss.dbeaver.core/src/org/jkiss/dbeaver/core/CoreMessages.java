@@ -562,9 +562,9 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_edit_driver_title_edit_driver;
 
-	public static String dialog_export_wizard_final_column_output;
+	public static String dialog_export_wizard_final_column_source;
 
-	public static String dialog_export_wizard_final_column_table;
+	public static String dialog_export_wizard_final_column_target;
 
 	public static String dialog_export_wizard_final_description;
 

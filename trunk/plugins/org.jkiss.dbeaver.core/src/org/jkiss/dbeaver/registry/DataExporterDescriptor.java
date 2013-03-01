@@ -22,8 +22,10 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.tools.data.IDataExporter;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterDescriptor;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,7 +35,7 @@ import java.util.List;
 /**
  * EntityEditorDescriptor
  */
-public class DataExporterDescriptor extends AbstractDescriptor
+public class DataExporterDescriptor extends AbstractDescriptor implements IStreamDataExporterDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataExportProvider"; //$NON-NLS-1$
 
@@ -83,11 +85,13 @@ public class DataExporterDescriptor extends AbstractDescriptor
         }
     }
 
+    @Override
     public String getId()
     {
         return id;
     }
 
+    @Override
     public String getName()
     {
         return name;
@@ -98,6 +102,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
         return description;
     }
 
+    @Override
     public String getFileExtension()
     {
         return fileExtension;
@@ -108,6 +113,7 @@ public class DataExporterDescriptor extends AbstractDescriptor
         return icon;
     }
 
+    @Override
     public List<IPropertyDescriptor> getProperties() {
         return properties;
     }
@@ -125,15 +131,21 @@ public class DataExporterDescriptor extends AbstractDescriptor
         return false;
     }
 
-    public IDataExporter createExporter() throws IllegalAccessException, InstantiationException
+    @Override
+    public IStreamDataExporter createExporter() throws DBException
     {
-        Class<IDataExporter> clazz = exporterType.getObjectClass(IDataExporter.class);
-        if (clazz == null) {
-            throw new InstantiationException("Cannot find exporter class " + exporterType.implName);
+        try {
+            Class<IStreamDataExporter> clazz = exporterType.getObjectClass(IStreamDataExporter.class);
+            if (clazz == null) {
+                throw new InstantiationException("Cannot find exporter class " + exporterType.implName);
+            }
+            return clazz.newInstance();
+        } catch (Exception e) {
+            throw new DBException("Can't instantiate data exporter", e);
         }
-        return clazz.newInstance();
     }
 
+    @Override
     public DBDDisplayFormat getExportFormat()
     {
         return exportFormat;
