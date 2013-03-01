@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.handlers;
+package org.jkiss.dbeaver.tools.transfer.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -27,9 +27,9 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.data.ContainerTransferProducer;
-import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.data.wizard.DataExportWizard;
+import org.jkiss.dbeaver.tools.transfer.ContainerTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ public class DataExportHandler extends AbstractHandler {
         if (!dataProducers.isEmpty()) {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
                 workbenchWindow,
-                new DataExportWizard(dataProducers));
+                new DataTransferWizard(dataProducers));
             dialog.open();
         }
 

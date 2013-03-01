@@ -16,38 +16,24 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data;
 
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+package org.jkiss.dbeaver.tools.transfer;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * IDataExporter
+ * Data transfer
  */
-public interface IDataExporterSite {
+public interface IDataTransferProducer {
 
-    DBPNamedObject getSource();
+    DBSObject getSourceObject();
 
-    DBDDisplayFormat getExportFormat();
-
-    Map<Object, Object> getProperties();
-
-    List<DBDAttributeBinding> getAttributes();
-
-    OutputStream getOutputStream();
-
-    PrintWriter getWriter();
-
-    void flush() throws IOException;
-
-    void writeBinaryData(InputStream stream, long streamLength) throws IOException;
+    void transferData(
+        DBCExecutionContext context,
+        IDataTransferConsumer consumer,
+        IDataTransferSettings settings)
+        throws DBException;
 
 }

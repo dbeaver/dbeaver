@@ -16,28 +16,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.impl;
+package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.tools.data.IDataExporter;
-import org.jkiss.dbeaver.tools.data.IDataExporterSite;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 
 /**
  * Abstract Exporter
  */
-public abstract class DataExporterAbstract implements IDataExporter {
+public abstract class StreamExporterAbstract implements IStreamDataExporter {
 
-    private IDataExporterSite site;
+    private IStreamDataExporterSite site;
 
-    public IDataExporterSite getSite()
+    public IStreamDataExporterSite getSite()
     {
         return site;
     }
 
     @Override
-    public void init(IDataExporterSite site) throws DBException
+    public void init(IStreamDataExporterSite site) throws DBException
     {
         this.site = site;
     }

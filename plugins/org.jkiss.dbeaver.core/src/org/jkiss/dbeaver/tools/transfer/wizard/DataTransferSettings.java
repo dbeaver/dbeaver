@@ -17,41 +17,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.wizard;
+package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.data.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterDescriptor;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferSettings;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Export settings
  */
-public class DataExportSettings implements IDataTransferSettings {
-
-    enum LobExtractType {
-        SKIP,
-        FILES,
-        INLINE
-    }
-
-    enum LobEncoding {
-        BASE64,
-        HEX,
-        BINARY
-    }
+public class DataTransferSettings implements IStreamTransferSettings {
 
     private static final int DEFAULT_SEGMENT_SIZE = 100000;
     private static final String PATTERN_TABLE = "{table}";
@@ -59,8 +48,8 @@ public class DataExportSettings implements IDataTransferSettings {
 
     private static final int DEFAULT_THREADS_NUM = 1;
 
-    private List<IDataTransferProducer> dataProducers;
-    private DataExporterDescriptor dataExporter;
+    private List<DataTransferPipe> dataPipes;
+    private IStreamDataExporterDescriptor dataExporter;
 
     private ExtractType extractType = ExtractType.SINGLE_QUERY;
     private int segmentSize = DEFAULT_SEGMENT_SIZE;
@@ -81,24 +70,44 @@ public class DataExportSettings implements IDataTransferSettings {
     private boolean openFolderOnFinish = true;
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
-    private Map<DataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<DataExporterDescriptor, Map<Object, Object>>();
+    private Map<IStreamDataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<IStreamDataExporterDescriptor, Map<Object, Object>>();
 
     private transient boolean folderOpened = false;
-    private transient int curProviderNum = 0;
+    private transient int curPipeNum = 0;
 
-    public DataExportSettings(List<? extends IDataTransferProducer> dataProducers)
+    public DataTransferSettings(List<? extends IDataTransferProducer> dataProducers)
     {
-        this.dataProducers = new ArrayList<IDataTransferProducer>(dataProducers);
+        this(dataProducers, null);
     }
 
-    public List<IDataTransferProducer> getDataProducers()
+    public DataTransferSettings(List<? extends IDataTransferProducer> producers, List<? extends IDataTransferConsumer> consumers)
     {
-        return dataProducers;
+        dataPipes = new ArrayList<DataTransferPipe>();
+        if (!CommonUtils.isEmpty(producers)) {
+            for (IDataTransferProducer producer : producers) {
+                dataPipes.add(new DataTransferPipe(producer, null));
+            }
+        } else if (!CommonUtils.isEmpty(consumers)) {
+            for (IDataTransferConsumer consumer : consumers) {
+                dataPipes.add(new DataTransferPipe(null, consumer));
+            }
+        } else if (producers.size() == consumers.size()) {
+            for (int i = 0; i < producers.size(); i++) {
+                dataPipes.add(new DataTransferPipe(producers.get(i), consumers.get(i)));
+            }
+        } else {
+            throw new IllegalArgumentException("Producers must match consumers or must be empty");
+        }
     }
 
-    public synchronized IDataTransferProducer acquireDataProvider()
+    public List<DataTransferPipe> getDataPipes()
     {
-        if (curProviderNum >= dataProducers.size()) {
+        return dataPipes;
+    }
+
+    public synchronized DataTransferPipe acquireDataPipe()
+    {
+        if (curPipeNum >= dataPipes.size()) {
             if (!folderOpened && openFolderOnFinish) {
                 // Last one
                 folderOpened = true;
@@ -111,18 +120,19 @@ public class DataExportSettings implements IDataTransferSettings {
             }
             return null;
         }
-        IDataTransferProducer result = dataProducers.get(curProviderNum);
+        DataTransferPipe result = dataPipes.get(curPipeNum);
 
-        curProviderNum++;
+        curPipeNum++;
         return result;
     }
 
-    public DataExporterDescriptor getDataExporter()
+    @Override
+    public IStreamDataExporterDescriptor getExporterDescriptor()
     {
         return dataExporter;
     }
 
-    public void setDataExporter(DataExporterDescriptor dataExporter)
+    public void setExporterDescriptor(IStreamDataExporterDescriptor dataExporter)
     {
         Map<Object, Object> historyProps = this.exporterPropsHistory.get(dataExporter);
         if (historyProps == null) {
@@ -135,6 +145,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.extractorProperties = historyProps;
     }
 
+    @Override
     public ExtractType getExtractType()
     {
         return extractType;
@@ -145,6 +156,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.extractType = extractType;
     }
 
+    @Override
     public int getSegmentSize()
     {
         return segmentSize;
@@ -157,6 +169,7 @@ public class DataExportSettings implements IDataTransferSettings {
         }
     }
 
+    @Override
     public DBDDataFormatterProfile getFormatterProfile()
     {
         return formatterProfile;
@@ -167,6 +180,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.formatterProfile = formatterProfile;
     }
 
+    @Override
     public LobExtractType getLobExtractType()
     {
         return lobExtractType;
@@ -177,6 +191,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.lobExtractType = lobExtractType;
     }
 
+    @Override
     public LobEncoding getLobEncoding()
     {
         return lobEncoding;
@@ -187,6 +202,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.lobEncoding = lobEncoding;
     }
 
+    @Override
     public Map<Object, Object> getExtractorProperties()
     {
         return extractorProperties;
@@ -197,6 +213,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.extractorProperties = extractorProperties;
     }
 
+    @Override
     public String getOutputFolder()
     {
         return outputFolder;
@@ -207,6 +224,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.outputFolder = outputFolder;
     }
 
+    @Override
     public String getOutputFilePattern()
     {
         return outputFilePattern;
@@ -217,6 +235,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.outputFilePattern = outputFilePattern;
     }
 
+    @Override
     public String getOutputEncoding()
     {
         return outputEncoding;
@@ -227,6 +246,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.outputEncoding = outputEncoding;
     }
 
+    @Override
     public boolean isOutputEncodingBOM()
     {
         return outputEncodingBOM;
@@ -237,6 +257,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.outputEncodingBOM = outputEncodingBOM;
     }
 
+    @Override
     public boolean isCompressResults()
     {
         return compressResults;
@@ -247,6 +268,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.compressResults = compressResults;
     }
 
+    @Override
     public boolean isQueryRowCount()
     {
         return queryRowCount;
@@ -257,6 +279,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.queryRowCount = queryRowCount;
     }
 
+    @Override
     public boolean isOpenNewConnections()
     {
         return openNewConnections;
@@ -267,6 +290,7 @@ public class DataExportSettings implements IDataTransferSettings {
         this.openNewConnections = openNewConnections;
     }
 
+    @Override
     public boolean isOpenFolderOnFinish()
     {
         return openFolderOnFinish;
@@ -289,50 +313,9 @@ public class DataExportSettings implements IDataTransferSettings {
         }
     }
 
-    public String getOutputFileName(DBPNamedObject source)
-    {
-        return processTemplate(stripObjectName(source.getName())) + "." + dataExporter.getFileExtension();
-    }
-
-    public File makeOutputFile(DBPNamedObject source)
-    {
-        File dir = new File(outputFolder);
-        String fileName = getOutputFileName(source);
-        if (compressResults) {
-            fileName += ".zip";
-        }
-        return new File(dir, fileName);
-    }
-
-    private String processTemplate(String tableName)
-    {
-        String timeStamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
-        return outputFilePattern.replaceAll("\\{table\\}", tableName).replaceAll("\\{timestamp\\}", timeStamp);
-    }
-
-    private static String stripObjectName(String name)
-    {
-        StringBuilder result = new StringBuilder();
-        boolean lastUnd = false;
-        for (int i = 0; i < name.length(); i++) {
-            char c = name.charAt(i);
-            if (Character.isJavaIdentifierPart(c)) {
-                result.append(c);
-                lastUnd = false;
-            } else if (!lastUnd) {
-                result.append('_');
-                lastUnd = true;
-            }
-            if (result.length() >= 64) {
-                break;
-            }
-        }
-        return result.toString();
-    }
-
     void loadFrom(IDialogSettings dialogSettings)
     {
-        DataExporterDescriptor dataExporter = null;
+        IStreamDataExporterDescriptor dataExporter = null;
         String expId = dialogSettings.get("exporter");
         if (expId != null) {
             dataExporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
@@ -403,7 +386,7 @@ public class DataExportSettings implements IDataTransferSettings {
         if (expSections != null && expSections.length > 0) {
             for (IDialogSettings expSection : expSections) {
                 expId = expSection.getName();
-                DataExporterDescriptor exporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
+                IStreamDataExporterDescriptor exporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
                 if (exporter != null) {
                     Map<Object, Object> expProps = new HashMap<Object, Object>();
                     exporterPropsHistory.put(exporter, expProps);
@@ -419,7 +402,7 @@ public class DataExportSettings implements IDataTransferSettings {
                 }
             }
         }
-        setDataExporter(dataExporter);
+        setExporterDescriptor(dataExporter);
     }
 
     void saveTo(IDialogSettings dialogSettings)
@@ -450,7 +433,7 @@ public class DataExportSettings implements IDataTransferSettings {
         dialogSettings.put("maxJobCount", maxJobCount);
         dialogSettings.put("openFolderOnFinish", openFolderOnFinish);
 
-        for (DataExporterDescriptor exp : exporterPropsHistory.keySet()) {
+        for (IStreamDataExporterDescriptor exp : exporterPropsHistory.keySet()) {
             IDialogSettings expSettings = dialogSettings.getSection(exp.getName());
             if (expSettings == null) {
                 expSettings = dialogSettings.addNewSection(exp.getId());

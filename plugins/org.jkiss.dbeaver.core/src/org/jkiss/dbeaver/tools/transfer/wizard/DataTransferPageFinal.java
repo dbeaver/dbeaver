@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.data.wizard;
+package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
@@ -28,17 +28,15 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
-import java.io.File;
 import java.util.List;
 
-class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
+class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     private Table resultTable;
 
-    DataExportPageFinal() {
+    DataTransferPageFinal() {
         super(CoreMessages.dialog_export_wizard_final_name);
         setTitle(CoreMessages.dialog_export_wizard_final_title);
         setDescription(CoreMessages.dialog_export_wizard_final_description);
@@ -70,8 +68,8 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
                 }
             });
 
-            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_table);
-            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_output);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_source);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_target);
 
             UIUtils.packColumns(resultTable);
         }
@@ -83,15 +81,15 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
     public void activatePage()
     {
         resultTable.removeAll();
-        List<IDataTransferProducer> dataProducers = getWizard().getSettings().getDataProducers();
-        for (IDataTransferProducer producer : dataProducers) {
+        DataTransferSettings settings = getWizard().getSettings();
+        List<DataTransferPipe> dataPipes = settings.getDataPipes();
+        for (DataTransferPipe pipe : dataPipes) {
+            pipe.consumer.initTransfer(
+                pipe.getProducer().getSourceObject(),
+                settings);
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, producer.getSourceObject().getName());
-            File outputFile = getWizard().getSettings().makeOutputFile(producer.getSourceObject());
-            item.setText(1, outputFile.getAbsolutePath());
-            if (outputFile.exists()) {
-                item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
-            }
+            item.setText(0, pipe.getProducer().getSourceObject().getName());
+            item.setText(1, pipe.getConsumer().getTargetName());
         }
         UIUtils.packColumns(resultTable);
         updatePageCompletion();

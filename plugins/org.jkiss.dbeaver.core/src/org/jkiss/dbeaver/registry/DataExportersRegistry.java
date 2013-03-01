@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,9 +48,9 @@ public class DataExportersRegistry {
 
     }
 
-    public List<DataExporterDescriptor> getDataExporters(Class objectType)
+    public List<IStreamDataExporterDescriptor> getDataExporters(Class objectType)
     {
-        List<DataExporterDescriptor> editors = new ArrayList<DataExporterDescriptor>();
+        List<IStreamDataExporterDescriptor> editors = new ArrayList<IStreamDataExporterDescriptor>();
         for (DataExporterDescriptor descriptor : dataExporters) {
             if (descriptor.appliesToType(objectType)) {
                 editors.add(descriptor);
@@ -63,9 +64,9 @@ public class DataExportersRegistry {
      * @param objectTypes object types
      * @return list of editors
      */
-    public List<DataExporterDescriptor> getDataExporters(List<Class> objectTypes)
+    public List<IStreamDataExporterDescriptor> getDataExporters(List<Class> objectTypes)
     {
-        List<DataExporterDescriptor> editors = new ArrayList<DataExporterDescriptor>();
+        List<IStreamDataExporterDescriptor> editors = new ArrayList<IStreamDataExporterDescriptor>();
         for (DataExporterDescriptor descriptor : dataExporters) {
             boolean supports = true;
             for (Class objectType : objectTypes) {
@@ -81,7 +82,7 @@ public class DataExportersRegistry {
         return editors;
     }
 
-    public DataExporterDescriptor getDataExporter(String id)
+    public IStreamDataExporterDescriptor getDataExporter(String id)
     {
         for (DataExporterDescriptor descriptor : dataExporters) {
             if (descriptor.getId().equals(id)) {
