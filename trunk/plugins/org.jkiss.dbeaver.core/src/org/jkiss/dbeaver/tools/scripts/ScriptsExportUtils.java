@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.impl.resources.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -42,6 +43,9 @@ class ScriptsExportUtils {
     static DBNNode getScriptsNode()
     {
         final IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        if (activeProject == null) {
+			return DBNModel.getInstance().getRoot();
+		}
         final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(activeProject);
         DBNNode scriptsNode = projectNode;
         final IFolder scriptsFolder;
