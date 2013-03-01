@@ -130,9 +130,11 @@ class ScriptsImportWizardPage extends WizardPage {
             scriptsDataSources = new CImageCombo(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
             final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject());
-            for (DataSourceDescriptor dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
-                scriptsDataSources.add(dataSourceDescriptor.getObjectImage(), dataSourceDescriptor.getName(), null, dataSourceDescriptor);
-            }
+            if (dataSourceRegistry != null) {
+                for (DataSourceDescriptor dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
+                    scriptsDataSources.add(dataSourceDescriptor.getObjectImage(), dataSourceDescriptor.getName(), null, dataSourceDescriptor);
+                }
+			}
             if (scriptsDataSources.getItemCount() > 0) {
                 scriptsDataSources.select(0);
             }

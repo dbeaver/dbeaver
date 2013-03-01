@@ -26,7 +26,9 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -57,6 +59,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
     public static IFolder getScriptsFolder(IProject project, boolean forceCreate) throws CoreException
     {
+    	if (project == null) {
+    		IStatus status = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), "No active project to locate Script Folder");
+			throw new CoreException(status);
+		}
         final IFolder scriptsFolder = DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, ScriptsHandlerImpl.class);
         if (!scriptsFolder.exists() && forceCreate) {
             scriptsFolder.create(true, true, new NullProgressMonitor());
