@@ -19,35 +19,22 @@
 
 package org.jkiss.dbeaver.tools.data;
 
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * Data export source
+ * Data transfer
  */
-public class DataTransferProducer {
+public interface IDataTransferProducer {
 
-    private DBSDataContainer dataContainer;
-    private DBDDataFilter dataFilter;
+    DBSObject getSourceObject();
 
-    public DataTransferProducer(DBSDataContainer dataContainer)
-    {
-        this.dataContainer = dataContainer;
-    }
+    void transferData(
+        DBCExecutionContext context,
+        IDataTransferConsumer consumer,
+        IDataTransferSettings settings)
+        throws DBException;
 
-    public DataTransferProducer(DBSDataContainer dataContainer, DBDDataFilter dataFilter)
-    {
-        this.dataContainer = dataContainer;
-        this.dataFilter = dataFilter;
-    }
-
-    public DBSDataContainer getDataContainer()
-    {
-        return dataContainer;
-    }
-
-    public DBDDataFilter getDataFilter()
-    {
-        return dataFilter;
-    }
 }

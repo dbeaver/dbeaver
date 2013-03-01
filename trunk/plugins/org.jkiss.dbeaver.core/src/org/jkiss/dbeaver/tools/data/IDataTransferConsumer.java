@@ -5,6 +5,6 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 /**
  * Data consumer
  */
-public interface DataTransferConsumer extends DBDDataReceiver {
+public interface IDataTransferConsumer extends DBDDataReceiver {
 
 }
