@@ -195,6 +195,9 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType)
     {
+    	if (project == null) {
+			return null;
+		}
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             DBPResourceHandler handler = rhd.getHandler();
             if (handler != null && handler.getClass() == handlerType) {
@@ -206,6 +209,10 @@ public class ProjectRegistry implements IResourceChangeListener {
 
     public DataSourceRegistry getDataSourceRegistry(IProject project)
     {
+        if (project == null) {
+            log.warn("No active project - can't get datasource registry");
+            return null;
+        }
         if (!project.isOpen()) {
             log.warn("Project '" + project.getName() + "' is not open - can't get datasource registry");
             return null;

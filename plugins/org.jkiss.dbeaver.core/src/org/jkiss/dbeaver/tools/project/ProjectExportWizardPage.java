@@ -101,7 +101,10 @@ class ProjectExportWizardPage extends WizardPage {
             }
         }
         if (projectList.isEmpty()) {
-            projectList.add(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+            IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+            if (activeProject != null) {
+    			projectList.add(activeProject);
+			}
         }
 
         Composite placeholder = UIUtils.createPlaceholder(parent, 1);
