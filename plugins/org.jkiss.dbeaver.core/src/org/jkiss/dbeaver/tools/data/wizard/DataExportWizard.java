@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.tools.data.DataTransferProducer;
+import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
@@ -34,7 +34,7 @@ public class DataExportWizard extends Wizard implements IExportWizard {
 
     private DataExportSettings settings;
 
-    public DataExportWizard(List<DataTransferProducer> dataContainers) {
+    public DataExportWizard(List<? extends IDataTransferProducer> dataContainers) {
         this.settings = new DataExportSettings(dataContainers);
         IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
         setDialogSettings(section);

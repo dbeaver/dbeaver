@@ -23,9 +23,12 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.tools.data.DataTransferProducer;
+import org.jkiss.dbeaver.tools.data.IDataTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -80,11 +83,11 @@ class DataExportPageFinal extends ActiveWizardPage<DataExportWizard> {
     public void activatePage()
     {
         resultTable.removeAll();
-        List<DataTransferProducer> dataProducers = getWizard().getSettings().getDataProducers();
-        for (DataTransferProducer producer : dataProducers) {
+        List<IDataTransferProducer> dataProducers = getWizard().getSettings().getDataProducers();
+        for (IDataTransferProducer producer : dataProducers) {
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, producer.getDataContainer().getName());
-            File outputFile = getWizard().getSettings().makeOutputFile(producer.getDataContainer());
+            item.setText(0, producer.getSourceObject().getName());
+            File outputFile = getWizard().getSettings().makeOutputFile(producer.getSourceObject());
             item.setText(1, outputFile.getAbsolutePath());
             if (outputFile.exists()) {
                 item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_RED));
