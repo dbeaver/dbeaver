@@ -52,6 +52,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     private final BASE_OBJECT databaseObject;
     private DBPClientHome clientHome;
     private DBPConnectionInfo connectionInfo;
+    private String toolUserName;
+    private String toolUserPassword;
 
     protected String task;
     protected final DatabaseWizardPageLog logPage;
@@ -83,6 +85,26 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     public DBPClientHome getClientHome()
     {
         return clientHome;
+    }
+
+    public String getToolUserName()
+    {
+        return toolUserName;
+    }
+
+    public void setToolUserName(String toolUserName)
+    {
+        this.toolUserName = toolUserName;
+    }
+
+    public String getToolUserPassword()
+    {
+        return toolUserPassword;
+    }
+
+    public void setToolUserPassword(String toolUserPassword)
+    {
+        this.toolUserPassword = toolUserPassword;
     }
 
     public abstract DBPClientHome findServerHome(String clientHomeId);
