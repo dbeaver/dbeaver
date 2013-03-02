@@ -62,9 +62,9 @@ public class MySQLToolScript implements IExternalTool
             cmd.add("--port=" + connectionInfo.getHostPort());
         }
         cmd.add("-u");
-        cmd.add(connectionInfo.getUserName());
-        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            cmd.add("--password=" + connectionInfo.getUserPassword());
+        cmd.add(toolWizard.getToolUserName());
+        if (!CommonUtils.isEmpty(toolWizard.getToolUserPassword())) {
+            cmd.add("--password=" + toolWizard.getToolUserPassword());
         }
 
         cmd.add(toolWizard.getDatabaseObject().getName());

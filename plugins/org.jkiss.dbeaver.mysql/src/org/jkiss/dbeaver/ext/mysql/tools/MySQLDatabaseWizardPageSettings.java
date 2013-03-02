@@ -39,8 +39,6 @@ import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 
 public abstract class MySQLDatabaseWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
 {
-    private String databaseUserName;
-    private String databaseUserPassword;
 
     public MySQLDatabaseWizardPageSettings(WIZARD wizard, String title)
     {
@@ -67,8 +65,8 @@ public abstract class MySQLDatabaseWizardPageSettings<WIZARD extends AbstractToo
                 }
             }
 
-            databaseUserName = authUser == null ? connectionInfo.getUserName() : authUser;
-            databaseUserPassword = authPassword == null ? connectionInfo.getUserPassword() : authPassword;
+            wizard.setToolUserName(authUser == null ? connectionInfo.getUserName() : authUser);
+            wizard.setToolUserPassword(authPassword == null ? connectionInfo.getUserPassword() : authPassword);
             final boolean savePassword = authUser != null;
             Group securityGroup = UIUtils.createControlGroup(
                 parent, "Security", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
@@ -85,17 +83,17 @@ public abstract class MySQLDatabaseWizardPageSettings<WIZARD extends AbstractToo
                 public void widgetSelected(SelectionEvent e)
                 {
                     BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", null);
-                    authDialog.setUserName(databaseUserName);
-                    authDialog.setUserPassword(databaseUserPassword);
+                    authDialog.setUserName(wizard.getToolUserName());
+                    authDialog.setUserPassword(wizard.getToolUserPassword());
                     authDialog.setSavePassword(savePassword);
                     if (authDialog.open() == IDialogConstants.OK_ID) {
-                        databaseUserName = authDialog.getUserName();
-                        databaseUserPassword = authDialog.getUserPassword();
+                        wizard.setToolUserName(authDialog.getUserName());
+                        wizard.setToolUserPassword(authDialog.getUserPassword());
                         if (authDialog.isSavePassword()) {
                             try {
                                 connectionInfo.getProperties().put(
                                     authProperty,
-                                    encrypter.encrypt(databaseUserName + ':' + databaseUserPassword));
+                                    encrypter.encrypt(wizard.getToolUserName() + ':' + wizard.getToolUserPassword()));
                             } catch (EncryptionException e1) {
                                 // Never be here
                             }
@@ -111,8 +109,8 @@ public abstract class MySQLDatabaseWizardPageSettings<WIZARD extends AbstractToo
                 public void widgetSelected(SelectionEvent e)
                 {
                     connectionInfo.getProperties().remove(authProperty);
-                    databaseUserName = connectionInfo.getUserName();
-                    databaseUserPassword = connectionInfo.getUserPassword();
+                    wizard.setToolUserName(connectionInfo.getUserName());
+                    wizard.setToolUserPassword(connectionInfo.getUserPassword());
                 }
             });
         } catch (EncryptionException e) {
