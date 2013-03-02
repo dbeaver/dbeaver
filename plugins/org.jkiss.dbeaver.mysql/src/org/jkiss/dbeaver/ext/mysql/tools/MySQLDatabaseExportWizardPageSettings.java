@@ -35,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQLDatabaseExportWizard>
+class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSettings<MySQLDatabaseExportWizard>
 {
 
     private Text outputFileText;
@@ -105,6 +105,8 @@ class MySQLDatabaseExportWizardPageSettings extends AbstractToolWizardPage<MySQL
                 }
             }
         });
+
+        createSecurityGroup(composite);
 
         setControl(composite);
 
