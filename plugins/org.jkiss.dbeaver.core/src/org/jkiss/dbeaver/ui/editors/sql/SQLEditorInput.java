@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
@@ -32,6 +33,8 @@ import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
+
+import java.io.ByteArrayInputStream;
 
 /**
  * SQLEditorInput
@@ -128,8 +131,16 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 
     public static void setScriptDataSource(IFile file, DBSDataSourceContainer dataSourceContainer)
     {
+        setScriptDataSource(file, dataSourceContainer, false);
+    }
+
+    public static void setScriptDataSource(IFile file, DBSDataSourceContainer dataSourceContainer, boolean notify)
+    {
         try {
             file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
+            if (notify) {
+                file.appendContents(new ByteArrayInputStream(new byte[0]), true, false, new NullProgressMonitor());
+            }
         } catch (CoreException e) {
             log.error("Internal error while writing file property", e);
         }
