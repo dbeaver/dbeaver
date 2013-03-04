@@ -161,7 +161,12 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
 
     private void collectFiles(File inputDir, List<Pattern> masks, List<File> filesToImport)
     {
-        for (File file : inputDir.listFiles()) {
+        File[] listFiles = inputDir.listFiles();
+        if (listFiles == null) {
+        	//!inputDir.exists()
+			return;
+		}
+		for (File file : listFiles) {
             if (file.isDirectory()) {
                 collectFiles(file, masks, filesToImport);
             } else {
