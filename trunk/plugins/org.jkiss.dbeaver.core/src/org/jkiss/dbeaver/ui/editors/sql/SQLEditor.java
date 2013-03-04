@@ -168,7 +168,7 @@ public class SQLEditor extends SQLEditorBase
             log.warn("File '" + input.getPath() + "' doesn't exists");
             return false;
         }
-        SQLEditorInput.setScriptDataSource(file, container);
+        SQLEditorInput.setScriptDataSource(file, container, true);
         checkConnected();
 
         onDataSourceChange();

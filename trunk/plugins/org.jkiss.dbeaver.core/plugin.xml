@@ -177,6 +177,7 @@
         <command id="org.jkiss.dbeaver.core.project.select" name="%command.org.jkiss.dbeaver.core.project.select.name" description="%command.org.jkiss.dbeaver.core.project.select.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.resource.create.folder" name="%command.org.jkiss.dbeaver.core.resource.create.folder.name" description="%command.org.jkiss.dbeaver.core.resource.create.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.resource.create.link" name="%command.org.jkiss.dbeaver.core.resource.link.folder.name" description="%command.org.jkiss.dbeaver.core.resource.link.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.sql.script.associate" name="%command.org.jkiss.dbeaver.core.sql.script.associate.name" description="%command.org.jkiss.dbeaver.core.sql.script.associate.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
         <command id="org.jkiss.dbeaver.core.connect" name="%command.org.jkiss.dbeaver.core.connect.name" description="%command.org.jkiss.dbeaver.core.connect.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.disconnect" name="%command.org.jkiss.dbeaver.core.disconnect.name" description="%command.org.jkiss.dbeaver.core.disconnect.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -416,6 +417,18 @@
                     <iterate operator="and">
                         <adapt type="org.eclipse.core.resources.IResource">
                             <test property="org.jkiss.dbeaver.core.resource.canCreateLink"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.sql.script.associate" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerAssociateScript">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.eclipse.core.resources.IResource">
+                            <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
                         </adapt>
                     </iterate>
                 </with>
@@ -1266,6 +1279,7 @@
             <command commandId="org.jkiss.dbeaver.core.resource.create.link">
                 <visibleWhen checkEnabled="true"/>
             </command>
+
             <command commandId="org.jkiss.dbeaver.core.sql.editor.open" label="Create SQL script">
                 <visibleWhen>
                     <with variable="selection">
@@ -1313,6 +1327,9 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
+            <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
 
         <!-- Tools context menu -->
