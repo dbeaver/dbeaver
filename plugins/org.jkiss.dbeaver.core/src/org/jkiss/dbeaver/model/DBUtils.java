@@ -91,6 +91,9 @@ public final class DBUtils {
         // Check for keyword conflict
         boolean hasBadChars = dataSource.getContainer().getKeywordManager().getKeywordType(str) == DBPKeywordType.KEYWORD;
 
+        if (!hasBadChars) {
+            hasBadChars = Character.isDigit(str.charAt(0));
+        }
         if (caseSensitiveNames) {
             // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
             if (!hasBadChars && info.supportsQuotedMixedCase()) {
@@ -183,12 +186,12 @@ public final class DBUtils {
      */
     public static boolean isValidObjectName(String name)
     {
-        if (name == null) {
+        if (name == null || name.isEmpty()) {
             return false;
         }
         boolean validName = false;
         for (int i = 0; i < name.length(); i++) {
-            if (Character.isLetter(name.charAt(i))) {
+            if (Character.isLetterOrDigit(name.charAt(i))) {
                 validName = true;
                 break;
             }
