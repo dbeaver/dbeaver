@@ -24,8 +24,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterDescriptor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,11 +32,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * EntityEditorDescriptor
+ * DataTransferProcessorDescriptor
  */
-public class DataExporterDescriptor extends AbstractDescriptor implements IStreamDataExporterDescriptor
+public class DataTransferProcessorDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataExportProvider"; //$NON-NLS-1$
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTransfer"; //$NON-NLS-1$
 
     private String id;
     private ObjectType exporterType;
@@ -49,7 +48,7 @@ public class DataExporterDescriptor extends AbstractDescriptor implements IStrea
     private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
     private DBDDisplayFormat exportFormat;
 
-    public DataExporterDescriptor(IConfigurationElement config)
+    public DataTransferProcessorDescriptor(IConfigurationElement config)
     {
         super(config);
 
@@ -69,14 +68,8 @@ public class DataExporterDescriptor extends AbstractDescriptor implements IStrea
             this.icon = iconToImage(iconPath);
         }
 
-        IConfigurationElement[] typesCfg = config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE);
-        if (typesCfg != null) {
-            for (IConfigurationElement typeCfg : typesCfg) {
-                String objectType = typeCfg.getAttribute(RegistryConstants.ATTR_TYPE);
-                if (objectType != null) {
-                    sourceTypes.add(new ObjectType(objectType));
-                }
-            }
+        for (IConfigurationElement typeCfg : CommonUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
+            sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
         }
 
         IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
@@ -85,25 +78,21 @@ public class DataExporterDescriptor extends AbstractDescriptor implements IStrea
         }
     }
 
-    @Override
     public String getId()
     {
         return id;
     }
 
-    @Override
     public String getName()
     {
         return name;
     }
 
-    @Override
     public String getDescription()
     {
         return description;
     }
 
-    @Override
     public String getFileExtension()
     {
         return fileExtension;
@@ -114,7 +103,6 @@ public class DataExporterDescriptor extends AbstractDescriptor implements IStrea
         return icon;
     }
 
-    @Override
     public List<IPropertyDescriptor> getProperties() {
         return properties;
     }
@@ -132,11 +120,10 @@ public class DataExporterDescriptor extends AbstractDescriptor implements IStrea
         return false;
     }
 
-    @Override
-    public IStreamDataExporter createExporter() throws DBException
+    public IDataTransferProcessor createProcessor() throws DBException
     {
         try {
-            Class<IStreamDataExporter> clazz = exporterType.getObjectClass(IStreamDataExporter.class);
+            Class<IDataTransferProcessor> clazz = exporterType.getObjectClass(IDataTransferProcessor.class);
             if (clazz == null) {
                 throw new InstantiationException("Cannot find exporter class " + exporterType.implName);
             }
@@ -146,7 +133,6 @@ public class DataExporterDescriptor extends AbstractDescriptor implements IStrea
         }
     }
 
-    @Override
     public DBDDisplayFormat getExportFormat()
     {
         return exportFormat;

@@ -19,7 +19,6 @@
 
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -48,20 +47,6 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     {
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;
-    }
-
-    @Override
-    public DatabaseProducerSettings createSettings()
-    {
-        return new DatabaseProducerSettings();
-    }
-
-    @Override
-    public IWizardPage[] createWizardPages()
-    {
-        return new IWizardPage[] {
-            new DatabaseProducerPageExtractSettings()
-        };
     }
 
     @Override

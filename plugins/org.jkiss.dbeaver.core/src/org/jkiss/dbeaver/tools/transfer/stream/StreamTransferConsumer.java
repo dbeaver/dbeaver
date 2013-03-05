@@ -2,9 +2,7 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -18,7 +16,6 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferJob;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
@@ -26,23 +23,25 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
 * Stream transfer consumer
 */
-public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings> {
+public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings, IStreamDataExporter> {
 
     static final Log log = LogFactory.getLog(DataTransferJob.class);
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 
-    private IDataTransferProcessor processor;
+    private IStreamDataExporter processor;
     private StreamConsumerSettings settings;
     private DBSObject sourceObject;
-    private IStreamDataExporter dataExporter;
     private OutputStream outputStream;
     private ZipOutputStream zipStream;
     private PrintWriter writer;
@@ -52,6 +51,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private long lobCount;
     private File outputFile;
     private StreamExportSite exportSite;
+    private Map<Object, Object> processorProperties;
 
     public StreamTransferConsumer()
     {
@@ -72,7 +72,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         row = new Object[metaColumns.size()];
 
         try {
-            dataExporter.exportHeader(context.getProgressMonitor());
+            processor.exportHeader(context.getProgressMonitor());
         } catch (DBException e) {
             log.warn("Error while exporting table header", e);
         } catch (IOException e) {
@@ -109,7 +109,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 row[i] = value;
             }
             // Export row
-            dataExporter.exportRow(context.getProgressMonitor(), row);
+            processor.exportRow(context.getProgressMonitor(), row);
         } catch (DBException e) {
             throw new DBCException("Error while exporting table row", e);
         } catch (IOException e) {
@@ -121,7 +121,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public void fetchEnd(DBCExecutionContext context) throws DBCException
     {
         try {
-            dataExporter.exportFooter(context.getProgressMonitor());
+            processor.exportFooter(context.getProgressMonitor());
         } catch (DBException e) {
             log.warn("Error while exporting table footer", e);
         } catch (IOException e) {
@@ -155,7 +155,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         }
         lobCount++;
-        Boolean extractImages = (Boolean) settings.getExtractorProperties().get("extractImages");
+        Boolean extractImages = (Boolean) processorProperties.get(StreamConsumerSettings.PROP_EXTRACT_IMAGES);
         String fileExt = (extractImages != null && extractImages) ? ".jpg" : ".data";
         File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + fileExt); //$NON-NLS-1$ //$NON-NLS-2$
         ContentUtils.saveContentToFile(contents.getContentStream(), lobFile, monitor);
@@ -169,12 +169,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         exportSite = new StreamExportSite();
-        try {
-            // Create exporter
-            dataExporter = settings.getExporterDescriptor().createExporter();
-        } catch (DBException e) {
-            throw new DBCException("Could not create data exporter", e);
-        }
 
         // Open output streams
         outputFile = makeOutputFile();
@@ -205,7 +199,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         try {
             // init exporter
-            dataExporter.init(exportSite);
+            processor.init(exportSite);
         } catch (DBException e) {
             throw new DBCException("Could not initialize data exporter", e);
         }
@@ -221,10 +215,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             }
         }
 
-        if (dataExporter != null) {
+        if (processor != null) {
             // Dispose exporter
-            dataExporter.dispose();
-            dataExporter = null;
+            processor.dispose();
+            processor = null;
         }
 
         // Finish zip stream
@@ -252,11 +246,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, IDataTransferProcessor processor, StreamConsumerSettings settings)
+    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, IStreamDataExporter processor, Map<Object, Object> processorProperties)
     {
         this.sourceObject = sourceObject;
         this.processor = processor;
         this.settings = settings;
+        this.processorProperties = processorProperties;
     }
 
     @Override
@@ -265,16 +260,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return makeOutputFile().getAbsolutePath();
     }
 
-    @Override
-    public Collection<IDataTransferProcessor> getAvailableProcessors(Collection<Class<?>> objectTypes)
-    {
-        return new ArrayList<IDataTransferProcessor>(
-            DBeaverCore.getInstance().getDataExportersRegistry().getDataExporters(objectTypes));
-    }
-
     public String getOutputFileName()
     {
-        return processTemplate(stripObjectName(sourceObject.getName())) + "." + settings.getExporterDescriptor().getFileExtension();
+        Object extension = processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
+        String fileName = processTemplate(stripObjectName(sourceObject.getName()));
+        if (extension != null) {
+            return fileName + "." + extension;
+        } else {
+            return fileName;
+        }
     }
 
     public File makeOutputFile()
@@ -315,21 +309,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return result.toString();
     }
 
-    @Override
-    public StreamConsumerSettings createSettings()
-    {
-        return new StreamConsumerSettings();
-    }
-
-    @Override
-    public IWizardPage[] createWizardPages()
-    {
-        return new IWizardPage[] {
-            new StreamConsumerPageSettings(),
-            new StreamConsumerPageOutput()
-        };
-    }
-
     private class StreamExportSite implements IStreamDataExporterSite {
         @Override
         public DBPNamedObject getSource()
@@ -340,13 +319,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public DBDDisplayFormat getExportFormat()
         {
-            return settings.getExporterDescriptor().getExportFormat();
+            DBDDisplayFormat format = DBDDisplayFormat.UI;
+            Object formatProp = processorProperties.get(StreamConsumerSettings.PROP_FORMAT);
+            if (formatProp != null) {
+                format = DBDDisplayFormat.valueOf(formatProp.toString());
+            }
+            return format;
         }
 
         @Override
         public Map<Object, Object> getProperties()
         {
-            return settings.getExtractorProperties();
+            return processorProperties;
         }
 
         @Override

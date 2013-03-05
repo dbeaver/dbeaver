@@ -9,7 +9,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 public class DataTransferPipe {
     private IDataTransferProducer producer;
     private IDataTransferConsumer consumer;
-    private boolean configured;
 
     public DataTransferPipe(IDataTransferProducer producer, IDataTransferConsumer consumer)
     {
@@ -37,13 +36,4 @@ public class DataTransferPipe {
         this.consumer = consumer;
     }
 
-    public boolean isConfigured()
-    {
-        return configured;
-    }
-
-    public void setConfigured(boolean configured)
-    {
-        this.configured = configured;
-    }
 }

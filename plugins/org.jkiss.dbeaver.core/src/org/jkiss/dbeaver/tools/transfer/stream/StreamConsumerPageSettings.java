@@ -30,12 +30,15 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
+import org.jkiss.dbeaver.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+
+import java.util.Map;
 
 public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWizard> {
 
@@ -210,8 +213,11 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     @Override
     public void activatePage() {
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
-        IStreamDataExporterDescriptor exporter = settings.getExporterDescriptor();
-        propertySource = new PropertySourceCustom(exporter.getProperties(), settings.getExtractorProperties());
+
+        DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
+        propertySource = new PropertySourceCustom(
+            processor.getProperties(),
+            getWizard().getSettings().getProcessorProperties());
         propsEditor.loadProperties(propertySource);
 
         switch (settings.getLobExtractType()) {
@@ -226,14 +232,6 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
 
         updatePageCompletion();
-    }
-
-    @Override
-    public void deactivatePage()
-    {
-        final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
-        settings.setExtractorProperties(propertySource.getPropertiesWithDefaults());
-        super.deactivatePage();
     }
 
     @Override

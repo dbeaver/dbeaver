@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
