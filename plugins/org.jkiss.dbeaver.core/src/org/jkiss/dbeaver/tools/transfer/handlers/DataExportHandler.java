@@ -27,7 +27,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.transfer.ContainerTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -52,7 +52,7 @@ public class DataExportHandler extends AbstractHandler {
 
             final DBSDataContainer adapted = RuntimeUtils.getObjectAdapter(object, DBSDataContainer.class);
             if (adapted != null) {
-                dataProducers.add(new ContainerTransferProducer(adapted));
+                dataProducers.add(new DatabaseTransferProducer(adapted));
             }
         }
 

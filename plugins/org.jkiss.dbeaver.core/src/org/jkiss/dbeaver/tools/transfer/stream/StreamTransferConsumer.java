@@ -1,8 +1,10 @@
-package org.jkiss.dbeaver.tools.transfer.stream.impl;
+package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -16,10 +18,7 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferJob;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
@@ -27,23 +26,21 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
 * Stream transfer consumer
 */
-public class StreamTransferConsumer implements IDataTransferConsumer {
+public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings> {
 
     static final Log log = LogFactory.getLog(DataTransferJob.class);
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 
-    private IStreamTransferSettings settings;
+    private IDataTransferProcessor processor;
+    private StreamConsumerSettings settings;
     private DBSObject sourceObject;
     private IStreamDataExporter dataExporter;
     private OutputStream outputStream;
@@ -63,7 +60,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer {
     @Override
     public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
     {
-        initExporter();
+        initExporter(context);
 
         // Prepare columns
         metaColumns = new ArrayList<DBDAttributeBinding>();
@@ -165,8 +162,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer {
         return lobFile;
     }
 
-    private void initExporter() throws DBCException
+    private void initExporter(DBCExecutionContext context) throws DBCException
     {
+        if (settings.getFormatterProfile() != null) {
+            context.setDataFormatterProfile(settings.getFormatterProfile());
+        }
+
         exportSite = new StreamExportSite();
         try {
             // Create exporter
@@ -251,16 +252,24 @@ public class StreamTransferConsumer implements IDataTransferConsumer {
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, IDataTransferSettings settings)
+    public void initTransfer(DBSObject sourceObject, IDataTransferProcessor processor, StreamConsumerSettings settings)
     {
         this.sourceObject = sourceObject;
-        this.settings = (IStreamTransferSettings) settings;
+        this.processor = processor;
+        this.settings = settings;
     }
 
     @Override
     public String getTargetName()
     {
         return makeOutputFile().getAbsolutePath();
+    }
+
+    @Override
+    public Collection<IDataTransferProcessor> getAvailableProcessors(Collection<Class<?>> objectTypes)
+    {
+        return new ArrayList<IDataTransferProcessor>(
+            DBeaverCore.getInstance().getDataExportersRegistry().getDataExporters(objectTypes));
     }
 
     public String getOutputFileName()
@@ -304,6 +313,21 @@ public class StreamTransferConsumer implements IDataTransferConsumer {
             }
         }
         return result.toString();
+    }
+
+    @Override
+    public StreamConsumerSettings createSettings()
+    {
+        return new StreamConsumerSettings();
+    }
+
+    @Override
+    public IWizardPage[] createWizardPages()
+    {
+        return new IWizardPage[] {
+            new StreamConsumerPageSettings(),
+            new StreamConsumerPageOutput()
+        };
     }
 
     private class StreamExportSite implements IStreamDataExporterSite {

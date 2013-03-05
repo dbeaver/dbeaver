@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
@@ -47,18 +49,23 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         return settings;
     }
 
+    public <T extends IDataTransferSettings> T getPageSettings(IWizardPage page, Class<T> type)
+    {
+        return type.cast(settings.getPageSettings(page));
+    }
+
     @Override
     public void addPages() {
         super.addPages();
-        addPage(new DataTransferPageInit());
-        addPage(new DataTransferPageStreamSettings());
-        addPage(new DataTransferPageStreamOutput());
+        addPage(new DataTransferPageConsumers());
+        settings.getDataPipes();
+        settings.addWizardPages(this);
         addPage(new DataTransferPageFinal());
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
-        setWindowTitle("Export data");
+        setWindowTitle("Transfer data");
         setNeedsProgressMonitor(true);
     }
 
