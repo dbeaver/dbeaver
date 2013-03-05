@@ -26,10 +26,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.registry.DataExporterDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -91,12 +89,18 @@ class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
         CellLabelProvider labelProvider = new CellLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
-                DataExporterDescriptor element = (DataExporterDescriptor) cell.getElement();
+                TransferTarget element = (TransferTarget) cell.getElement();
                 if (cell.getColumnIndex() == 0) {
-                    cell.setImage(element.getIcon());
-                    cell.setText(element.getName());
+                    if (element.processor != null) {
+                        cell.setImage(element.processor.getIcon());
+                        cell.setText(element.processor.getName());
+                    } else {
+
+                    }
                 } else {
-                    cell.setText(element.getDescription());
+                    if (element.processor != null) {
+                        cell.setText(element.processor.getDescription());
+                    }
                 }
             }
         };

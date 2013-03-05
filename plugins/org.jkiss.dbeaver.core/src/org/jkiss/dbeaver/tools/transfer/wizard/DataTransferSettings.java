@@ -90,6 +90,9 @@ public class DataTransferSettings {
 
     private void addNodeSettings(IDataTransferNode node)
     {
+        if (node == null) {
+            return;
+        }
         Class<? extends IDataTransferNode> nodeClass = node.getClass();
         if (nodeSettings.containsKey(nodeClass)) {
             return;
