@@ -76,7 +76,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.tools.transfer.ContainerTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
@@ -1221,7 +1221,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         site.getWorkbenchWindow(),
                         new DataTransferWizard(
                             Collections.singletonList(
-                                new ContainerTransferProducer(getDataContainer(), model.getDataFilter()))),
+                                new DatabaseTransferProducer(getDataContainer(), model.getDataFilter()))),
                         getSelection());
                     dialog.open();
                 }

@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.tools.transfer.wizard;
+package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
@@ -30,14 +30,14 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterDescriptor;
+import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
-class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard> {
+public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWizard> {
 
     private static final int EXTRACT_LOB_SKIP = 0;
     private static final int EXTRACT_LOB_FILES = 1;
@@ -54,7 +54,7 @@ class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard
     private Combo formatProfilesCombo;
     private PropertySourceCustom propertySource;
 
-    DataTransferPageStreamSettings() {
+    public StreamConsumerPageSettings() {
         super(CoreMessages.dialog_export_wizard_settings_name);
         setTitle(CoreMessages.dialog_export_wizard_settings_title);
         setDescription(CoreMessages.dialog_export_wizard_settings_description);
@@ -64,7 +64,7 @@ class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard
     @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
-
+        final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
         Composite composite = new Composite(parent, SWT.NULL);
         GridLayout gl = new GridLayout();
         gl.marginHeight = 0;
@@ -95,10 +95,10 @@ class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard
                     public void widgetSelected(SelectionEvent e)
                     {
                         if (formatProfilesCombo.getSelectionIndex() > 0) {
-                            getWizard().getSettings().setFormatterProfile(
+                            settings.setFormatterProfile(
                                 DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo)));
                         } else {
-                            getWizard().getSettings().setFormatterProfile(null);
+                            settings.setFormatterProfile(null);
                         }
                     }
                 });
@@ -137,11 +137,10 @@ class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard
                 lobExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        DataTransferSettings transferSettings = getWizard().getSettings();
                         switch (lobExtractType.getSelectionIndex()) {
-                            case EXTRACT_LOB_SKIP: transferSettings.setLobExtractType(DataTransferSettings.LobExtractType.SKIP); break;
-                            case EXTRACT_LOB_FILES: transferSettings.setLobExtractType(DataTransferSettings.LobExtractType.FILES); break;
-                            case EXTRACT_LOB_INLINE: transferSettings.setLobExtractType(DataTransferSettings.LobExtractType.INLINE); break;
+                            case EXTRACT_LOB_SKIP: settings.setLobExtractType(StreamConsumerSettings.LobExtractType.SKIP); break;
+                            case EXTRACT_LOB_FILES: settings.setLobExtractType(StreamConsumerSettings.LobExtractType.FILES); break;
+                            case EXTRACT_LOB_INLINE: settings.setLobExtractType(StreamConsumerSettings.LobExtractType.INLINE); break;
                         }
                         updatePageCompletion();
                     }
@@ -156,11 +155,10 @@ class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard
                 lobEncodingCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        DataTransferSettings transferSettings = getWizard().getSettings();
                         switch (lobEncodingCombo.getSelectionIndex()) {
-                            case LOB_ENCODING_BASE64: transferSettings.setLobEncoding(DataTransferSettings.LobEncoding.BASE64); break;
-                            case LOB_ENCODING_HEX: transferSettings.setLobEncoding(DataTransferSettings.LobEncoding.HEX); break;
-                            case LOB_ENCODING_BINARY: transferSettings.setLobEncoding(DataTransferSettings.LobEncoding.BINARY); break;
+                            case LOB_ENCODING_BASE64: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.BASE64); break;
+                            case LOB_ENCODING_HEX: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.HEX); break;
+                            case LOB_ENCODING_BINARY: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.BINARY); break;
                         }
                     }
                 });
@@ -198,7 +196,8 @@ class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard
         for (DBDDataFormatterProfile profile : registry.getCustomProfiles()) {
             formatProfilesCombo.add(profile.getProfileName());
         }
-        DBDDataFormatterProfile formatterProfile = getWizard().getSettings().getFormatterProfile();
+        final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
+        DBDDataFormatterProfile formatterProfile = settings.getFormatterProfile();
         if (formatterProfile != null) {
             if (!UIUtils.setComboSelection(formatProfilesCombo, formatterProfile.getProfileName())) {
                 formatProfilesCombo.select(0);
@@ -210,17 +209,17 @@ class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard
 
     @Override
     public void activatePage() {
-        DataTransferSettings transferSettings = getWizard().getSettings();
-        IStreamDataExporterDescriptor exporter = transferSettings.getExporterDescriptor();
-        propertySource = new PropertySourceCustom(exporter.getProperties(), transferSettings.getExtractorProperties());
+        final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
+        IStreamDataExporterDescriptor exporter = settings.getExporterDescriptor();
+        propertySource = new PropertySourceCustom(exporter.getProperties(), settings.getExtractorProperties());
         propsEditor.loadProperties(propertySource);
 
-        switch (transferSettings.getLobExtractType()) {
+        switch (settings.getLobExtractType()) {
             case SKIP: lobExtractType.select(EXTRACT_LOB_SKIP); break;
             case FILES: lobExtractType.select(EXTRACT_LOB_FILES); break;
             case INLINE: lobExtractType.select(EXTRACT_LOB_INLINE); break;
         }
-        switch (transferSettings.getLobEncoding()) {
+        switch (settings.getLobEncoding()) {
             case BASE64: lobEncodingCombo.select(LOB_ENCODING_BASE64); break;
             case HEX: lobEncodingCombo.select(LOB_ENCODING_HEX); break;
             case BINARY: lobEncodingCombo.select(LOB_ENCODING_BINARY); break;
@@ -232,7 +231,8 @@ class DataTransferPageStreamSettings extends ActiveWizardPage<DataTransferWizard
     @Override
     public void deactivatePage()
     {
-        getWizard().getSettings().setExtractorProperties(propertySource.getPropertiesWithDefaults());
+        final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
+        settings.setExtractorProperties(propertySource.getPropertiesWithDefaults());
         super.deactivatePage();
     }
 

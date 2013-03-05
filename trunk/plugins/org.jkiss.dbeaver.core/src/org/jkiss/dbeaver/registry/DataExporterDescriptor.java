@@ -97,6 +97,7 @@ public class DataExporterDescriptor extends AbstractDescriptor implements IStrea
         return name;
     }
 
+    @Override
     public String getDescription()
     {
         return description;

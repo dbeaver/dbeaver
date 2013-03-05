@@ -1,25 +1,14 @@
 package org.jkiss.dbeaver.tools.transfer;
 
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.eclipse.jface.dialogs.IDialogSettings;
 
 /**
  * Transfer settings
  */
 public interface IDataTransferSettings {
 
-    enum ExtractType {
-        SINGLE_QUERY,
-        SEGMENTS
-    }
+    void loadSettings(IDialogSettings dialogSettings);
 
-    boolean isOpenNewConnections();
-
-    ExtractType getExtractType();
-
-    int getSegmentSize();
-
-    boolean isQueryRowCount();
-
-    DBDDataFormatterProfile getFormatterProfile();
+    void saveSettings(IDialogSettings dialogSettings);
 
 }
