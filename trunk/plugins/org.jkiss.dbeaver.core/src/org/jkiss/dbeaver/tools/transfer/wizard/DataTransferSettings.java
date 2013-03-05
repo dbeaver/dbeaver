@@ -19,30 +19,38 @@
  */
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.wizard.IWizardPage;
-import org.jkiss.dbeaver.tools.transfer.*;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * Export settings
+ * DataTransferSettings
  */
 public class DataTransferSettings {
+
+    static final Log log = LogFactory.getLog(DataTransferSettings.class);
 
     private static final int DEFAULT_THREADS_NUM = 1;
 
     private static class SubSettings {
-        IDataTransferNode sourceNode;
+        DataTransferNodeDescriptor sourceNode;
         IDataTransferSettings settings;
         IWizardPage[] pages;
 
-        private SubSettings(IDataTransferNode sourceNode)
+        private SubSettings(DataTransferNodeDescriptor sourceNode) throws DBException
         {
             this.sourceNode = sourceNode;
             this.settings = sourceNode.createSettings();
@@ -51,53 +59,67 @@ public class DataTransferSettings {
     }
 
     private List<DataTransferPipe> dataPipes;
-    private IDataTransferConsumer consumer;
-    private IDataTransferProcessor processor;
+
+    private DataTransferNodeDescriptor producer;
+    private DataTransferNodeDescriptor consumer;
+
+    private DataTransferProcessorDescriptor processor;
+    private Map<Object, Object> processorProperties;
+
     private Map<Class, SubSettings> nodeSettings = new LinkedHashMap<Class, SubSettings>();
 
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
     private transient int curPipeNum = 0;
 
-    public DataTransferSettings(List<? extends IDataTransferProducer> dataProducers)
+    public DataTransferSettings(Collection<? extends IDataTransferProducer> sources)
     {
-        this(dataProducers, null);
+        this(sources, null);
     }
 
-    public DataTransferSettings(List<? extends IDataTransferProducer> producers, List<? extends IDataTransferConsumer> consumers)
+    public DataTransferSettings(Collection<? extends IDataTransferProducer> sources, Collection<? extends IDataTransferConsumer> targets)
     {
         dataPipes = new ArrayList<DataTransferPipe>();
-        if (!CommonUtils.isEmpty(producers)) {
-            for (IDataTransferProducer producer : producers) {
-                dataPipes.add(new DataTransferPipe(producer, null));
+        if (!CommonUtils.isEmpty(sources)) {
+            for (IDataTransferProducer source : sources) {
+                dataPipes.add(new DataTransferPipe(source, null));
             }
-        } else if (!CommonUtils.isEmpty(consumers)) {
-            for (IDataTransferConsumer consumer : consumers) {
-                dataPipes.add(new DataTransferPipe(null, consumer));
+        } else if (!CommonUtils.isEmpty(targets)) {
+            for (IDataTransferConsumer target : targets) {
+                dataPipes.add(new DataTransferPipe(null, target));
             }
-        } else if (producers.size() == consumers.size()) {
-            for (int i = 0; i < producers.size(); i++) {
-                dataPipes.add(new DataTransferPipe(producers.get(i), consumers.get(i)));
+        } /*else if (sources.size() == targets.size()) {
+            for (int i = 0; i < sources.size(); i++) {
+                dataPipes.add(new DataTransferPipe(sources.get(i), targets.get(i)));
             }
-        } else {
-            throw new IllegalArgumentException("Producers must match consumers or must be empty");
+        } */else {
+            throw new IllegalArgumentException("Producers must match targets or must be empty");
         }
-        for (DataTransferPipe pipe : dataPipes) {
-            addNodeSettings(pipe.getProducer());
-            addNodeSettings(pipe.getConsumer());
+
+        Collection<Class<?>> objectTypes = getObjectTypes();
+        List<DataTransferNodeDescriptor> nodes = new ArrayList<DataTransferNodeDescriptor>();
+        DataTransferRegistry registry = DBeaverCore.getInstance().getDataTransferRegistry();
+        nodes.addAll(registry.getAvailableProducers(objectTypes));
+        nodes.addAll(registry.getAvailableConsumers(objectTypes));
+        for (DataTransferNodeDescriptor node : nodes) {
+            addNodeSettings(node);
         }
     }
 
-    private void addNodeSettings(IDataTransferNode node)
+    private void addNodeSettings(DataTransferNodeDescriptor node)
     {
         if (node == null) {
             return;
         }
-        Class<? extends IDataTransferNode> nodeClass = node.getClass();
+        Class<? extends IDataTransferNode> nodeClass = node.getNodeClass();
         if (nodeSettings.containsKey(nodeClass)) {
             return;
         }
-        nodeSettings.put(nodeClass, new SubSettings(node));
+        try {
+            nodeSettings.put(nodeClass, new SubSettings(node));
+        } catch (DBException e) {
+            log.error("Can't add node " + node, e);
+        }
     }
 
     void addWizardPages(DataTransferWizard wizard)
@@ -109,6 +131,18 @@ public class DataTransferSettings {
                 }
             }
         }
+    }
+
+    public Collection<Class<?>> getObjectTypes()
+    {
+        List<DataTransferPipe> dataPipes = getDataPipes();
+        Set<Class<?>> objectTypes = new HashSet<Class<?>>();
+        for (DataTransferPipe transferPipe : dataPipes) {
+            if (transferPipe.getProducer() != null) {
+                objectTypes.add(transferPipe.getProducer().getSourceObject().getClass());
+            }
+        }
+        return objectTypes;
     }
 
     public IDataTransferSettings getPageSettings(IWizardPage page)
@@ -159,31 +193,29 @@ public class DataTransferSettings {
         return result;
     }
 
-    public IDataTransferConsumer getConsumer()
+    public DataTransferNodeDescriptor getConsumer()
     {
         return consumer;
     }
 
-    void setConsumer(IDataTransferConsumer consumer)
+    void setConsumer(DataTransferNodeDescriptor consumer)
     {
         this.consumer = consumer;
     }
 
-    public IDataTransferProcessor getProcessor()
+    public DataTransferProcessorDescriptor getProcessor()
     {
         return processor;
     }
 
-    void setProcessor(IDataTransferProcessor processor)
+    void setProcessor(DataTransferProcessorDescriptor processor)
     {
         this.processor = processor;
     }
 
-    IDataTransferConsumer[] getAvailableConsumers()
+    public Map<Object, Object> getProcessorProperties()
     {
-        return new IDataTransferConsumer[] {
-            new StreamTransferConsumer()
-        };
+        return processorProperties;
     }
 
     public int getMaxJobCount()

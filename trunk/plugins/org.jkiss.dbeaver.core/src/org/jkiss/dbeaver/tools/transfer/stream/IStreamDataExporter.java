@@ -21,13 +21,14 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 
 import java.io.IOException;
 
 /**
  * IStreamDataExporter
  */
-public interface IStreamDataExporter {
+public interface IStreamDataExporter extends IDataTransferProcessor {
 
     void init(IStreamDataExporterSite site)
         throws DBException;

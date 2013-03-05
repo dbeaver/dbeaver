@@ -79,7 +79,7 @@ public class DBeaverCore implements DBPApplication {
 
     private DataSourceProviderRegistry dataSourceProviderRegistry;
     private EntityEditorsRegistry editorsRegistry;
-    private DataExportersRegistry dataExportersRegistry;
+    private DataTransferRegistry dataTransferRegistry;
     private DataFormatterRegistry dataFormatterRegistry;
     private NetworkHandlerRegistry networkHandlerRegistry;
 
@@ -186,7 +186,7 @@ public class DBeaverCore implements DBPApplication {
         this.dataSourceProviderRegistry.loadExtensions(extensionRegistry);
 
         this.editorsRegistry = new EntityEditorsRegistry(extensionRegistry);
-        this.dataExportersRegistry = new DataExportersRegistry(extensionRegistry);
+        this.dataTransferRegistry = new DataTransferRegistry(extensionRegistry);
         this.dataFormatterRegistry = new DataFormatterRegistry(extensionRegistry);
         this.networkHandlerRegistry = new NetworkHandlerRegistry(extensionRegistry);
 
@@ -299,9 +299,9 @@ public class DBeaverCore implements DBPApplication {
             this.networkHandlerRegistry.dispose();
             this.networkHandlerRegistry = null;
         }
-        if (this.dataExportersRegistry != null) {
-            this.dataExportersRegistry.dispose();
-            this.dataExportersRegistry = null;
+        if (this.dataTransferRegistry != null) {
+            this.dataTransferRegistry.dispose();
+            this.dataTransferRegistry = null;
         }
         if (this.dataFormatterRegistry != null) {
             this.dataFormatterRegistry.dispose();
@@ -384,9 +384,9 @@ public class DBeaverCore implements DBPApplication {
         return editorsRegistry;
     }
 
-    public DataExportersRegistry getDataExportersRegistry()
+    public DataTransferRegistry getDataTransferRegistry()
     {
-        return dataExportersRegistry;
+        return dataTransferRegistry;
     }
 
     public DataFormatterRegistry getDataFormatterRegistry()

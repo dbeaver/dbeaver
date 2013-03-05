@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -27,7 +29,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -35,6 +39,9 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import java.util.List;
 
 class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
+
+    static final Log log = LogFactory.getLog(DataTransferPageFinal.class);
+
     private Table resultTable;
 
     DataTransferPageFinal() {
@@ -85,10 +92,18 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         List<DataTransferPipe> dataPipes = getWizard().getSettings().getDataPipes();
         for (DataTransferPipe pipe : dataPipes) {
             IDataTransferSettings settings = getWizard().getSettings().getNodeSettings(pipe.getConsumer());
+            IDataTransferProcessor processor;
+            try {
+                processor = getWizard().getSettings().getProcessor().createProcessor();
+            } catch (DBException e) {
+                log.error("Can't create processor", e);
+                continue;
+            }
             pipe.getConsumer().initTransfer(
                 pipe.getProducer().getSourceObject(),
-                getWizard().getSettings().getProcessor(),
-                settings);
+                settings,
+                processor,
+                getWizard().getSettings().getProcessorProperties());
             TableItem item = new TableItem(resultTable, SWT.NONE);
             item.setText(0, pipe.getProducer().getSourceObject().getName());
             item.setText(1, pipe.getConsumer().getTargetName());

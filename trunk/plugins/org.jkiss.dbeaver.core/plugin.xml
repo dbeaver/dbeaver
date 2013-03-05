@@ -25,7 +25,7 @@
     <extension-point id="org.jkiss.dbeaver.dataSourceProvider" name="DataSource provider" schema="schema/org.jkiss.dbeaver.dataSourceProvider.exsd"/>
     <extension-point id="org.jkiss.dbeaver.databaseEditor" name="Custom Entity Editor" schema="schema/org.jkiss.dbeaver.databaseEditor.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataExportProvider" name="Data Export Provider" schema="schema/org.jkiss.dbeaver.dataExportProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTransfer" name="Data Transformer Provider" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data Formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="Network Handlers" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
@@ -1857,53 +1857,71 @@
         </formatter>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataExportProvider">
-        <export
-                id="org.jkiss.dbeaver.core.dataExport.xml"
-                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterXML"
-                description="%command.org.jkiss.dbeaver.core.resultset.export.xml.description"
-                extension="xml"
-                icon="icons/misc/xml.png"
-                label="%command.org.jkiss.dbeaver.core.resultset.export.xml.name">
-        </export>
-        <export
-                id="org.jkiss.dbeaver.core.dataExport.html"
-                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterHTML"
-                description="%command.org.jkiss.dbeaver.core.resultset.export.html.description"
-                extension="html"
-                icon="icons/misc/html.png"
-                label="%command.org.jkiss.dbeaver.core.resultset.export.html.name">
-            <propertyGroup label="General">
-                <property id="extractImages" label="%command.org.jkiss.dbeaver.core.resultset.export.html.property.images.name" type="boolean" description="%command.org.jkiss.dbeaver.core.resultset.export.html.property.images.description" defaultValue="true"/>
-            </propertyGroup>
-        </export>
-        <export
-                id="org.jkiss.dbeaver.core.dataExport.csv"
-                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterCSV"
-                description="%command.org.jkiss.dbeaver.core.resultset.export.csv.description"
-                extension="csv"
-                icon="icons/misc/csv.png"
-                label="%command.org.jkiss.dbeaver.core.resultset.export.csv.name">
-            <propertyGroup label="General">
-                <property id="delimiter" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.delimiter.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.delimiter.description" defaultValue="," required="true"/>
-                <property id="header" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.header.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
-                <property id="escape" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.escape.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
-            </propertyGroup>
-        </export>
-        <export
-                id="org.jkiss.dbeaver.core.dataExport.sql"
-                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterSQL"
-                description="%command.org.jkiss.dbeaver.core.resultset.export.sql.description"
-                extension="sql"
-                icon="icons/misc/sql.png"
-                label="%command.org.jkiss.dbeaver.core.resultset.export.sql.name"
-                format="native">
-            <sourceType type="org.jkiss.dbeaver.model.struct.rdb.DBSTable"/>
-            <propertyGroup label="General">
-                <property id="escape" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.escape.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.escape.description" required="true"/>
-                <property id="rowsInStatement" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.name" type="integer" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
-            </propertyGroup>
-        </export>
+    <extension point="org.jkiss.dbeaver.dataTransfer">
+        <node type="producer"
+                id="database"
+                class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
+                icon="icons/tree/table.png"
+                label="%command.org.jkiss.dbeaver.core.transform.producer.database.name"
+                settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
+            <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerPageExtractSettings"/>
+        </node>
+
+        <node type="consumer"
+                id="stream"
+                class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
+                icon="icons/tree/file.png"
+                label="%command.org.jkiss.dbeaver.core.transform.consumer.stream.name"
+                settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
+            <page class="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageSettings"/>
+            <page class="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageOutput"/>
+            <processor
+                    id="org.jkiss.dbeaver.core.dataExport.xml"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterXML"
+                    description="%command.org.jkiss.dbeaver.core.resultset.export.xml.description"
+                    extension="xml"
+                    icon="icons/misc/xml.png"
+                    label="%command.org.jkiss.dbeaver.core.resultset.export.xml.name">
+            </processor>
+            <processor
+                    id="org.jkiss.dbeaver.core.dataExport.html"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterHTML"
+                    description="%command.org.jkiss.dbeaver.core.resultset.export.html.description"
+                    extension="html"
+                    icon="icons/misc/html.png"
+                    label="%command.org.jkiss.dbeaver.core.resultset.export.html.name">
+                <propertyGroup label="General">
+                    <property id="extractImages" label="%command.org.jkiss.dbeaver.core.resultset.export.html.property.images.name" type="boolean" description="%command.org.jkiss.dbeaver.core.resultset.export.html.property.images.description" defaultValue="true"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="org.jkiss.dbeaver.core.dataExport.csv"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterCSV"
+                    description="%command.org.jkiss.dbeaver.core.resultset.export.csv.description"
+                    extension="csv"
+                    icon="icons/misc/csv.png"
+                    label="%command.org.jkiss.dbeaver.core.resultset.export.csv.name">
+                <propertyGroup label="General">
+                    <property id="delimiter" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.delimiter.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.delimiter.description" defaultValue="," required="true"/>
+                    <property id="header" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.header.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
+                    <property id="escape" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.escape.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="org.jkiss.dbeaver.core.dataExport.sql"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterSQL"
+                    description="%command.org.jkiss.dbeaver.core.resultset.export.sql.description"
+                    extension="sql"
+                    icon="icons/misc/sql.png"
+                    label="%command.org.jkiss.dbeaver.core.resultset.export.sql.name"
+                    format="native">
+                <sourceType type="org.jkiss.dbeaver.model.struct.rdb.DBSTable"/>
+                <propertyGroup label="General">
+                    <property id="escape" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.escape.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.escape.description" required="true"/>
+                    <property id="rowsInStatement" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.name" type="integer" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
+                </propertyGroup>
+            </processor>
+        </node>
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">

@@ -1,7 +1,6 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -30,9 +29,11 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     private static final String PATTERN_TABLE = "{table}";
     private static final String PATTERN_TIMESTAMP = "{timestamp}";
+    public static final String PROP_EXTRACT_IMAGES = "extractImages";
+    public static final String PROP_FILE_EXTENSION = "extension";
+    public static final String PROP_FORMAT = "format";
 
-    private IStreamDataExporterDescriptor dataExporter;
-    private Map<Object, Object> extractorProperties = new HashMap<Object, Object>();
+    //private Map<Object, Object> processorProperties = new HashMap<Object, Object>();
 
     private LobExtractType lobExtractType = LobExtractType.SKIP;
     private LobEncoding lobEncoding = LobEncoding.HEX;
@@ -47,7 +48,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean compressResults = false;
     private boolean openFolderOnFinish = true;
 
-    private Map<IStreamDataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<IStreamDataExporterDescriptor, Map<Object, Object>>();
+    //private Map<IStreamDataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<IStreamDataExporterDescriptor, Map<Object, Object>>();
 
     public LobExtractType getLobExtractType()
     {
@@ -67,16 +68,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public void setLobEncoding(LobEncoding lobEncoding)
     {
         this.lobEncoding = lobEncoding;
-    }
-
-    public Map<Object, Object> getExtractorProperties()
-    {
-        return extractorProperties;
-    }
-
-    public void setExtractorProperties(Map<Object, Object> extractorProperties)
-    {
-        this.extractorProperties = extractorProperties;
     }
 
     public String getOutputFolder()
@@ -148,6 +139,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     {
         this.formatterProfile = formatterProfile;
     }
+/*
 
     public IStreamDataExporterDescriptor getExporterDescriptor()
     {
@@ -161,21 +153,16 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             historyProps = new HashMap<Object, Object>();
         }
         if (this.dataExporter != null) {
-            this.exporterPropsHistory.put(this.dataExporter, this.extractorProperties);
+            this.exporterPropsHistory.put(this.dataExporter, this.processorProperties);
         }
         this.dataExporter = dataExporter;
-        this.extractorProperties = historyProps;
+        this.processorProperties = historyProps;
     }
+*/
 
     @Override
     public void loadSettings(IDialogSettings dialogSettings)
     {
-        IStreamDataExporterDescriptor dataExporter = null;
-        String expId = dialogSettings.get("exporter");
-        if (expId != null) {
-            dataExporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
-        }
-
         if (!CommonUtils.isEmpty(dialogSettings.get("lobExtractType"))) {
             try {
                 lobExtractType = LobExtractType.valueOf(dialogSettings.get("lobExtractType"));
@@ -214,12 +201,12 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         if (!CommonUtils.isEmpty(dialogSettings.get("formatterProfile"))) {
             formatterProfile = DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfile(dialogSettings.get("formatterProfile"));
         }
-
+/*
         IDialogSettings[] expSections = dialogSettings.getSections();
         if (expSections != null && expSections.length > 0) {
             for (IDialogSettings expSection : expSections) {
                 expId = expSection.getName();
-                IStreamDataExporterDescriptor exporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
+                IStreamDataExporterDescriptor exporter = DBeaverCore.getInstance().getDataTransferRegistry().getDataExporter(expId);
                 if (exporter != null) {
                     Map<Object, Object> expProps = new HashMap<Object, Object>();
                     exporterPropsHistory.put(exporter, expProps);
@@ -236,15 +223,18 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             }
         }
         setExporterDescriptor(dataExporter);
+*/
     }
 
     @Override
     public void saveSettings(IDialogSettings dialogSettings)
     {
+/*
         if (this.dataExporter != null) {
-            this.exporterPropsHistory.put(this.dataExporter, this.extractorProperties);
+            this.exporterPropsHistory.put(this.dataExporter, this.processorProperties);
             dialogSettings.put("exporter", dataExporter.getId());
         }
+*/
 
         dialogSettings.put("lobExtractType", lobExtractType.name());
         dialogSettings.put("lobEncoding", lobEncoding.name());
@@ -263,6 +253,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
             dialogSettings.put("formatterProfile", "");
         }
 
+/*
         for (IStreamDataExporterDescriptor exp : exporterPropsHistory.keySet()) {
             IDialogSettings expSettings = dialogSettings.getSection(exp.getName());
             if (expSettings == null) {
@@ -275,6 +266,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
                 }
             }
         }
+*/
 
     }
 
