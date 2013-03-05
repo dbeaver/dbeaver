@@ -21,19 +21,20 @@ package org.jkiss.dbeaver.tools.transfer;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Data transfer
  */
-public interface IDataTransferProducer {
+public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> extends IDataTransferNode<SETTINGS> {
 
     DBSObject getSourceObject();
 
     void transferData(
-        DBCExecutionContext context,
+        DBRProgressMonitor monitor,
         IDataTransferConsumer consumer,
-        IDataTransferSettings settings)
+        SETTINGS settings)
         throws DBException;
 
 }

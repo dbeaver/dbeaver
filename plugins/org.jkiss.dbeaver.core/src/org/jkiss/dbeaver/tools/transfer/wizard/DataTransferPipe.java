@@ -7,8 +7,9 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
  * Data transfer pipe is tuple of produces and consumer
  */
 public class DataTransferPipe {
-    IDataTransferProducer producer;
-    IDataTransferConsumer consumer;
+    private IDataTransferProducer producer;
+    private IDataTransferConsumer consumer;
+    private boolean configured;
 
     public DataTransferPipe(IDataTransferProducer producer, IDataTransferConsumer consumer)
     {
@@ -34,5 +35,15 @@ public class DataTransferPipe {
     public void setConsumer(IDataTransferConsumer consumer)
     {
         this.consumer = consumer;
+    }
+
+    public boolean isConfigured()
+    {
+        return configured;
+    }
+
+    public void setConfigured(boolean configured)
+    {
+        this.configured = configured;
     }
 }

@@ -22,12 +22,14 @@ package org.jkiss.dbeaver.tools.transfer.wizard;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 
 /**
  * Data transfer job
@@ -70,21 +72,16 @@ public class DataTransferJob extends AbstractJob {
         setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name,
             transferPipe.getProducer().getSourceObject().getName()));
 
-        String contextTask = CoreMessages.dialog_export_wizard_job_task_export;
-        DBPDataSource dataSource = transferPipe.getProducer().getSourceObject().getDataSource();
-        DBCExecutionContext context = settings.isOpenNewConnections() ?
-            dataSource.openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
-            dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
+        IDataTransferSettings nodeSettings = settings.getNodeSettings(transferPipe.getProducer());
         try {
-            if (settings.getFormatterProfile() != null) {
-                context.setDataFormatterProfile(settings.getFormatterProfile());
-            }
-            transferPipe.getProducer().transferData(context, transferPipe.getConsumer(), settings);
+            transferPipe.getProducer().transferData(
+                monitor,
+                transferPipe.getConsumer(),
+                nodeSettings);
         } catch (Exception e) {
             new DataTransferErrorJob(e).schedule();
-        } finally {
-            context.close();
         }
+
     }
 
 }

@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -81,11 +82,12 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     public void activatePage()
     {
         resultTable.removeAll();
-        DataTransferSettings settings = getWizard().getSettings();
-        List<DataTransferPipe> dataPipes = settings.getDataPipes();
+        List<DataTransferPipe> dataPipes = getWizard().getSettings().getDataPipes();
         for (DataTransferPipe pipe : dataPipes) {
-            pipe.consumer.initTransfer(
+            IDataTransferSettings settings = getWizard().getSettings().getNodeSettings(pipe.getConsumer());
+            pipe.getConsumer().initTransfer(
                 pipe.getProducer().getSourceObject(),
+                getWizard().getSettings().getProcessor(),
                 settings);
             TableItem item = new TableItem(resultTable, SWT.NONE);
             item.setText(0, pipe.getProducer().getSourceObject().getName());

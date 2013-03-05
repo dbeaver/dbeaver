@@ -20,59 +20,43 @@
 package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.ui.views.properties.IPropertyDescriptor;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamTransferSettings;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.eclipse.jface.wizard.IWizardPage;
+import org.jkiss.dbeaver.tools.transfer.*;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Export settings
  */
-public class DataTransferSettings implements IStreamTransferSettings {
-
-    private static final int DEFAULT_SEGMENT_SIZE = 100000;
-    private static final String PATTERN_TABLE = "{table}";
-    private static final String PATTERN_TIMESTAMP = "{timestamp}";
+public class DataTransferSettings {
 
     private static final int DEFAULT_THREADS_NUM = 1;
 
+    private static class SubSettings {
+        IDataTransferNode sourceNode;
+        IDataTransferSettings settings;
+        IWizardPage[] pages;
+
+        private SubSettings(IDataTransferNode sourceNode)
+        {
+            this.sourceNode = sourceNode;
+            this.settings = sourceNode.createSettings();
+            this.pages = sourceNode.createWizardPages();
+        }
+    }
+
     private List<DataTransferPipe> dataPipes;
-    private IStreamDataExporterDescriptor dataExporter;
+    private IDataTransferConsumer consumer;
+    private IDataTransferProcessor processor;
+    private Map<Class, SubSettings> nodeSettings = new LinkedHashMap<Class, SubSettings>();
 
-    private ExtractType extractType = ExtractType.SINGLE_QUERY;
-    private int segmentSize = DEFAULT_SEGMENT_SIZE;
-    private DBDDataFormatterProfile formatterProfile;
-    private LobExtractType lobExtractType = LobExtractType.SKIP;
-    private LobEncoding lobEncoding = LobEncoding.HEX;
-
-    private Map<Object, Object> extractorProperties = new HashMap<Object, Object>();
-
-    private String outputFolder = System.getProperty("user.home");
-    private String outputFilePattern = PATTERN_TABLE + "_" + PATTERN_TIMESTAMP;
-    private String outputEncoding = ContentUtils.getDefaultFileEncoding();
-    private boolean outputEncodingBOM = true;
-
-    private boolean compressResults = false;
-    private boolean openNewConnections = true;
-    private boolean queryRowCount = true;
-    private boolean openFolderOnFinish = true;
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
-    private Map<IStreamDataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<IStreamDataExporterDescriptor, Map<Object, Object>>();
-
-    private transient boolean folderOpened = false;
     private transient int curPipeNum = 0;
 
     public DataTransferSettings(List<? extends IDataTransferProducer> dataProducers)
@@ -98,6 +82,50 @@ public class DataTransferSettings implements IStreamTransferSettings {
         } else {
             throw new IllegalArgumentException("Producers must match consumers or must be empty");
         }
+        for (DataTransferPipe pipe : dataPipes) {
+            addNodeSettings(pipe.getProducer());
+            addNodeSettings(pipe.getConsumer());
+        }
+    }
+
+    private void addNodeSettings(IDataTransferNode node)
+    {
+        Class<? extends IDataTransferNode> nodeClass = node.getClass();
+        if (nodeSettings.containsKey(nodeClass)) {
+            return;
+        }
+        nodeSettings.put(nodeClass, new SubSettings(node));
+    }
+
+    void addWizardPages(DataTransferWizard wizard)
+    {
+        for (SubSettings subSettings : nodeSettings.values()) {
+            if (subSettings.pages != null) {
+                for (IWizardPage page : subSettings.pages) {
+                    wizard.addPage(page);
+                }
+            }
+        }
+    }
+
+    public IDataTransferSettings getPageSettings(IWizardPage page)
+    {
+        for (SubSettings subSettings : nodeSettings.values()) {
+            if (subSettings.pages != null) {
+                for (IWizardPage nodePage : subSettings.pages) {
+                    if (nodePage == page) {
+                        return subSettings.settings;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public IDataTransferSettings getNodeSettings(IDataTransferNode node)
+    {
+        SubSettings subSettings = nodeSettings.get(node.getClass());
+        return subSettings == null ? null : subSettings.settings;
     }
 
     public List<DataTransferPipe> getDataPipes()
@@ -107,6 +135,7 @@ public class DataTransferSettings implements IStreamTransferSettings {
 
     public synchronized DataTransferPipe acquireDataPipe()
     {
+/*
         if (curPipeNum >= dataPipes.size()) {
             if (!folderOpened && openFolderOnFinish) {
                 // Last one
@@ -120,185 +149,38 @@ public class DataTransferSettings implements IStreamTransferSettings {
             }
             return null;
         }
+*/
         DataTransferPipe result = dataPipes.get(curPipeNum);
 
         curPipeNum++;
         return result;
     }
 
-    @Override
-    public IStreamDataExporterDescriptor getExporterDescriptor()
+    public IDataTransferConsumer getConsumer()
     {
-        return dataExporter;
+        return consumer;
     }
 
-    public void setExporterDescriptor(IStreamDataExporterDescriptor dataExporter)
+    void setConsumer(IDataTransferConsumer consumer)
     {
-        Map<Object, Object> historyProps = this.exporterPropsHistory.get(dataExporter);
-        if (historyProps == null) {
-            historyProps = new HashMap<Object, Object>();
-        }
-        if (this.dataExporter != null) {
-            this.exporterPropsHistory.put(this.dataExporter, this.extractorProperties);
-        }
-        this.dataExporter = dataExporter;
-        this.extractorProperties = historyProps;
+        this.consumer = consumer;
     }
 
-    @Override
-    public ExtractType getExtractType()
+    public IDataTransferProcessor getProcessor()
     {
-        return extractType;
+        return processor;
     }
 
-    public void setExtractType(ExtractType extractType)
+    void setProcessor(IDataTransferProcessor processor)
     {
-        this.extractType = extractType;
+        this.processor = processor;
     }
 
-    @Override
-    public int getSegmentSize()
+    IDataTransferConsumer[] getAvailableConsumers()
     {
-        return segmentSize;
-    }
-
-    public void setSegmentSize(int segmentSize)
-    {
-        if (segmentSize > 0) {
-            this.segmentSize = segmentSize;
-        }
-    }
-
-    @Override
-    public DBDDataFormatterProfile getFormatterProfile()
-    {
-        return formatterProfile;
-    }
-
-    public void setFormatterProfile(DBDDataFormatterProfile formatterProfile)
-    {
-        this.formatterProfile = formatterProfile;
-    }
-
-    @Override
-    public LobExtractType getLobExtractType()
-    {
-        return lobExtractType;
-    }
-
-    public void setLobExtractType(LobExtractType lobExtractType)
-    {
-        this.lobExtractType = lobExtractType;
-    }
-
-    @Override
-    public LobEncoding getLobEncoding()
-    {
-        return lobEncoding;
-    }
-
-    public void setLobEncoding(LobEncoding lobEncoding)
-    {
-        this.lobEncoding = lobEncoding;
-    }
-
-    @Override
-    public Map<Object, Object> getExtractorProperties()
-    {
-        return extractorProperties;
-    }
-
-    public void setExtractorProperties(Map<Object, Object> extractorProperties)
-    {
-        this.extractorProperties = extractorProperties;
-    }
-
-    @Override
-    public String getOutputFolder()
-    {
-        return outputFolder;
-    }
-
-    public void setOutputFolder(String outputFolder)
-    {
-        this.outputFolder = outputFolder;
-    }
-
-    @Override
-    public String getOutputFilePattern()
-    {
-        return outputFilePattern;
-    }
-
-    public void setOutputFilePattern(String outputFilePattern)
-    {
-        this.outputFilePattern = outputFilePattern;
-    }
-
-    @Override
-    public String getOutputEncoding()
-    {
-        return outputEncoding;
-    }
-
-    public void setOutputEncoding(String outputEncoding)
-    {
-        this.outputEncoding = outputEncoding;
-    }
-
-    @Override
-    public boolean isOutputEncodingBOM()
-    {
-        return outputEncodingBOM;
-    }
-
-    public void setOutputEncodingBOM(boolean outputEncodingBOM)
-    {
-        this.outputEncodingBOM = outputEncodingBOM;
-    }
-
-    @Override
-    public boolean isCompressResults()
-    {
-        return compressResults;
-    }
-
-    public void setCompressResults(boolean compressResults)
-    {
-        this.compressResults = compressResults;
-    }
-
-    @Override
-    public boolean isQueryRowCount()
-    {
-        return queryRowCount;
-    }
-
-    public void setQueryRowCount(boolean queryRowCount)
-    {
-        this.queryRowCount = queryRowCount;
-    }
-
-    @Override
-    public boolean isOpenNewConnections()
-    {
-        return openNewConnections;
-    }
-
-    public void setOpenNewConnections(boolean openNewConnections)
-    {
-        this.openNewConnections = openNewConnections;
-    }
-
-    @Override
-    public boolean isOpenFolderOnFinish()
-    {
-        return openFolderOnFinish;
-    }
-
-    public void setOpenFolderOnFinish(boolean openFolderOnFinish)
-    {
-        this.openFolderOnFinish = openFolderOnFinish;
+        return new IDataTransferConsumer[] {
+            new StreamTransferConsumer()
+        };
     }
 
     public int getMaxJobCount()
@@ -315,137 +197,26 @@ public class DataTransferSettings implements IStreamTransferSettings {
 
     void loadFrom(IDialogSettings dialogSettings)
     {
-        IStreamDataExporterDescriptor dataExporter = null;
-        String expId = dialogSettings.get("exporter");
-        if (expId != null) {
-            dataExporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
-        }
-
-        if (dialogSettings.get("extractType") != null) {
-            try {
-                extractType = ExtractType.valueOf(dialogSettings.get("extractType"));
-            } catch (IllegalArgumentException e) {
-                extractType = ExtractType.SINGLE_QUERY;
-            }
-        }
-        try {
-            segmentSize = dialogSettings.getInt("segmentSize");
-        } catch (NumberFormatException e) {
-            segmentSize = DEFAULT_SEGMENT_SIZE;
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("formatterProfile"))) {
-            formatterProfile = DBeaverCore.getInstance().getDataFormatterRegistry().getCustomProfile(dialogSettings.get("formatterProfile"));
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("lobExtractType"))) {
-            try {
-                lobExtractType = LobExtractType.valueOf(dialogSettings.get("lobExtractType"));
-            } catch (IllegalArgumentException e) {
-                lobExtractType = LobExtractType.SKIP;
-            }
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("lobEncoding"))) {
-            try {
-                lobEncoding = LobEncoding.valueOf(dialogSettings.get("lobEncoding"));
-            } catch (IllegalArgumentException e) {
-                lobEncoding = LobEncoding.HEX;
-            }
-        }
-
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputFolder"))) {
-            outputFolder = dialogSettings.get("outputFolder");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputFilePattern"))) {
-            outputFilePattern = dialogSettings.get("outputFilePattern");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputEncoding"))) {
-            outputEncoding = dialogSettings.get("outputEncoding");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("outputEncodingBOM"))) {
-            outputEncodingBOM = dialogSettings.getBoolean("outputEncodingBOM");
-        }
-
-        if (!CommonUtils.isEmpty(dialogSettings.get("compressResults"))) {
-            compressResults = dialogSettings.getBoolean("compressResults");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("openNewConnections"))) {
-            openNewConnections = dialogSettings.getBoolean("openNewConnections");
-        }
-        if (!CommonUtils.isEmpty(dialogSettings.get("queryRowCount"))) {
-            queryRowCount = dialogSettings.getBoolean("queryRowCount");
-        }
         try {
             maxJobCount = dialogSettings.getInt("maxJobCount");
         } catch (NumberFormatException e) {
             maxJobCount = DEFAULT_THREADS_NUM;
         }
-        if (dialogSettings.get("openFolderOnFinish") != null) {
-            openFolderOnFinish = dialogSettings.getBoolean("openFolderOnFinish");
+        // Load nodes' settings
+        for (Map.Entry<Class, SubSettings> entry : nodeSettings.entrySet()) {
+            IDialogSettings nodeSection = dialogSettings.addNewSection(entry.getKey().getSimpleName());
+            entry.getValue().settings.loadSettings(nodeSection);
         }
-
-        IDialogSettings[] expSections = dialogSettings.getSections();
-        if (expSections != null && expSections.length > 0) {
-            for (IDialogSettings expSection : expSections) {
-                expId = expSection.getName();
-                IStreamDataExporterDescriptor exporter = DBeaverCore.getInstance().getDataExportersRegistry().getDataExporter(expId);
-                if (exporter != null) {
-                    Map<Object, Object> expProps = new HashMap<Object, Object>();
-                    exporterPropsHistory.put(exporter, expProps);
-                    for (IPropertyDescriptor prop : exporter.getProperties()) {
-                        Object value = expSection.get(prop.getId().toString());
-                        if (value != null) {
-                            if ("extractImages".equals(prop.getId())) {
-                                value = Boolean.parseBoolean((String) value);
-                            }
-                            expProps.put(prop.getId(), value);
-                        }
-                    }
-                }
-            }
-        }
-        setExporterDescriptor(dataExporter);
     }
 
     void saveTo(IDialogSettings dialogSettings)
     {
-        if (this.dataExporter != null) {
-            this.exporterPropsHistory.put(this.dataExporter, this.extractorProperties);
-            dialogSettings.put("exporter", dataExporter.getId());
-        }
-
-        dialogSettings.put("extractType", extractType.name());
-        dialogSettings.put("segmentSize", segmentSize);
-        if (formatterProfile != null) {
-            dialogSettings.put("formatterProfile", formatterProfile.getProfileName());
-        } else {
-            dialogSettings.put("formatterProfile", "");
-        }
-        dialogSettings.put("lobExtractType", lobExtractType.name());
-        dialogSettings.put("lobEncoding", lobEncoding.name());
-
-        dialogSettings.put("outputFolder", outputFolder);
-        dialogSettings.put("outputFilePattern", outputFilePattern);
-        dialogSettings.put("outputEncoding", outputEncoding);
-        dialogSettings.put("outputEncodingBOM", outputEncodingBOM);
-
-        dialogSettings.put("compressResults", compressResults);
-        dialogSettings.put("openNewConnections", openNewConnections);
-        dialogSettings.put("queryRowCount", queryRowCount);
         dialogSettings.put("maxJobCount", maxJobCount);
-        dialogSettings.put("openFolderOnFinish", openFolderOnFinish);
-
-        for (IStreamDataExporterDescriptor exp : exporterPropsHistory.keySet()) {
-            IDialogSettings expSettings = dialogSettings.getSection(exp.getName());
-            if (expSettings == null) {
-                expSettings = dialogSettings.addNewSection(exp.getId());
-            }
-            Map<Object, Object> props = exporterPropsHistory.get(exp);
-            if (props != null) {
-                for (Map.Entry<Object,Object> prop : props.entrySet()) {
-                    expSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-                }
-            }
+        // Save nodes' settings
+        for (Map.Entry<Class, SubSettings> entry : nodeSettings.entrySet()) {
+            IDialogSettings nodeSection = dialogSettings.addNewSection(entry.getKey().getSimpleName());
+            entry.getValue().settings.saveSettings(nodeSection);
         }
-
     }
 
 }
