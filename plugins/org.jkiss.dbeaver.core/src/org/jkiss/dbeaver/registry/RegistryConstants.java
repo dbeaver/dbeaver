@@ -156,4 +156,9 @@ public class RegistryConstants {
 
     public static final String MAPPED_URL = "*";
     public static final String ATTR_FORMAT = "format";
+
+    public static final String TAG_NODE = "node";
+    public static final String TAG_PROCESSOR = "processor";
+    public static final String TAG_PAGE = "page";
+    public static final String ATTR_SETTINGS = "settings";
 }

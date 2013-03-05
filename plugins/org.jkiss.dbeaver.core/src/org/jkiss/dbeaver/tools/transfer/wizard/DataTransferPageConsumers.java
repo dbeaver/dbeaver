@@ -26,8 +26,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
@@ -38,10 +39,10 @@ class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
     private TableViewer consumersTable;
 
     private static class TransferTarget {
-        IDataTransferConsumer consumer;
-        IDataTransferProcessor processor;
+        DataTransferNodeDescriptor consumer;
+        DataTransferProcessorDescriptor processor;
 
-        private TransferTarget(IDataTransferConsumer consumer, IDataTransferProcessor processor)
+        private TransferTarget(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor)
         {
             this.consumer = consumer;
             this.processor = processor;
@@ -114,7 +115,7 @@ class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
             columnDesc.getColumn().setText(CoreMessages.dialog_export_wizard_init_column_description);
         }
 
-        loadPipes();
+        loadConsumers();
 
         consumersTable.getTable().addSelectionListener(new SelectionListener() {
             @Override
@@ -146,8 +147,8 @@ class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
         UIUtils.packColumns(consumersTable.getTable());
         UIUtils.maxTableColumnsWidth(consumersTable.getTable());
 
-        IDataTransferConsumer consumer = getWizard().getSettings().getConsumer();
-        IDataTransferProcessor processor = getWizard().getSettings().getProcessor();
+        DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
+        DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
         if (consumer != null) {
             Collection<TransferTarget> targets = (Collection<TransferTarget>) consumersTable.getInput();
             for (TransferTarget target : targets) {
@@ -160,19 +161,15 @@ class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
         updatePageCompletion();
     }
 
-    private void loadPipes()
+    private void loadConsumers()
     {
         DataTransferSettings settings = getWizard().getSettings();
-        List<DataTransferPipe> dataPipes = settings.getDataPipes();
-        Set<Class<?>> objectTypes = new HashSet<Class<?>>();
-        for (DataTransferPipe transferPipe : dataPipes) {
-            objectTypes.add(transferPipe.getProducer().getSourceObject().getClass());
-        }
+        Collection<Class<?>> objectTypes = settings.getObjectTypes();
 
         List<TransferTarget> transferTargets = new ArrayList<TransferTarget>();
-        for (IDataTransferConsumer consumer : settings.getAvailableConsumers()) {
-            Collection<IDataTransferProcessor> processors = consumer.getAvailableProcessors(objectTypes);
-            for (IDataTransferProcessor processor : processors) {
+        for (DataTransferNodeDescriptor consumer : DBeaverCore.getInstance().getDataTransferRegistry().getAvailableConsumers(objectTypes)) {
+            Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objectTypes);
+            for (DataTransferProcessorDescriptor processor : processors) {
                 transferTargets.add(new TransferTarget(consumer, processor));
             }
         }
