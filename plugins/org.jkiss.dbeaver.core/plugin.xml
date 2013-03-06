@@ -1864,6 +1864,7 @@
                 icon="icons/tree/table.png"
                 label="%command.org.jkiss.dbeaver.core.transform.producer.database.name"
                 settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
+            <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerPageExtractSettings"/>
         </node>
 
