@@ -73,6 +73,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
     public MySQLCatalog(MySQLDataSource dataSource, ResultSet dbResult)
     {
+        tableCache.setCaseSensitive(false);
         this.dataSource = dataSource;
         if (dbResult != null) {
             this.name = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SCHEMA_NAME);
