@@ -217,7 +217,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
         propertySource = new PropertySourceCustom(
             processor.getProperties(),
-            getWizard().getSettings().getProcessorProperties());
+            getWizard().getSettings().getProcessorProperties(this));
         propsEditor.loadProperties(propertySource);
 
         switch (settings.getLobExtractType()) {
@@ -248,4 +248,5 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         return true;
     }
+
 }

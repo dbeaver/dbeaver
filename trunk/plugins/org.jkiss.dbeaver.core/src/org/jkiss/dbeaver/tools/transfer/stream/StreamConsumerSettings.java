@@ -48,8 +48,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     private boolean compressResults = false;
     private boolean openFolderOnFinish = true;
 
-    //private Map<IStreamDataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<IStreamDataExporterDescriptor, Map<Object, Object>>();
-
     public LobExtractType getLobExtractType()
     {
         return lobExtractType;
