@@ -57,8 +57,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     @Override
     public void addPages() {
         super.addPages();
-        addPage(new DataTransferPageConsumers());
-        settings.getDataPipes();
+        addPage(new DataTransferPagePipes());
         settings.addWizardPages(this);
         addPage(new DataTransferPageFinal());
     }
@@ -67,6 +66,57 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         setWindowTitle("Transfer data");
         setNeedsProgressMonitor(true);
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page)
+    {
+        IWizardPage[] pages = getPages();
+        int curIndex = -1;
+        for (int i = 0; i < pages.length; i++) {
+            if (pages[i] == page) {
+                curIndex = i;
+                break;
+            }
+        }
+        if (curIndex == pages.length - 1) {
+            return null;
+        }
+        if (curIndex != -1) {
+            // Return first node config page
+            for (int i = curIndex + 1; i < pages.length; i++) {
+                if (settings.isPageValid(pages[i])) {
+                    return pages[i];
+                }
+            }
+        }
+        // Final page
+        return pages[pages.length - 1];
+    }
+
+    @Override
+    public IWizardPage getPreviousPage(IWizardPage page)
+    {
+        IWizardPage[] pages = getPages();
+        int curIndex = -1;
+        for (int i = 0; i < pages.length; i++) {
+            if (pages[i] == page) {
+                curIndex = i;
+                break;
+            }
+        }
+        if (curIndex == 0) {
+            return null;
+        }
+        if (curIndex != -1) {
+            for (int i = curIndex - 1; i > 0; i--) {
+                if (settings.isPageValid(pages[i])) {
+                    return pages[i];
+                }
+            }
+        }
+        // First page
+        return pages[0];
     }
 
     @Override
