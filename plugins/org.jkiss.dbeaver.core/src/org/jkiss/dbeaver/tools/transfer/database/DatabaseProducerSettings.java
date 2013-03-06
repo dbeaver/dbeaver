@@ -39,7 +39,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
 
     private boolean openNewConnections = true;
     private boolean queryRowCount = true;
-    private ExtractType extractType;
+    private ExtractType extractType = ExtractType.SINGLE_QUERY;
 
     public DatabaseProducerSettings()
     {
