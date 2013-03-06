@@ -50,7 +50,10 @@ public class TextEditorPropertyTester extends PropertyTester
         } else if (property.equals(PROP_CAN_LOAD)) {
             return !editor.isReadOnly();
         } else if (property.equals(PROP_CAN_COMMENT)) {
-            if (editor.getSelectionProvider().getSelection().isEmpty()) {
+            if (editor.getSelectionProvider() == null ||
+                editor.getSelectionProvider().getSelection() == null ||
+                editor.getSelectionProvider().getSelection().isEmpty())
+            {
                 return false;
             }
             DBPCommentsManager commentsSupport = editor.getCommentsSupport();
