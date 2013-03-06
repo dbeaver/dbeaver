@@ -45,16 +45,27 @@ public class DataTransferSettings {
 
     private static final int DEFAULT_THREADS_NUM = 1;
 
-    private static class SubSettings {
+    public static class NodeSettings {
         DataTransferNodeDescriptor sourceNode;
         IDataTransferSettings settings;
         IWizardPage[] pages;
+        Map<Object, Object> processorProperties;
 
-        private SubSettings(DataTransferNodeDescriptor sourceNode) throws DBException
+        private NodeSettings(DataTransferNodeDescriptor sourceNode) throws DBException
         {
             this.sourceNode = sourceNode;
             this.settings = sourceNode.createSettings();
             this.pages = sourceNode.createWizardPages();
+        }
+
+        public IDataTransferSettings getSettings()
+        {
+            return settings;
+        }
+
+        public Map<Object, Object> getProcessorProperties()
+        {
+            return processorProperties;
         }
     }
 
@@ -64,9 +75,9 @@ public class DataTransferSettings {
     private DataTransferNodeDescriptor consumer;
 
     private DataTransferProcessorDescriptor processor;
-    private Map<Object, Object> processorProperties;
+    //private Map<IStreamDataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<IStreamDataExporterDescriptor, Map<Object, Object>>();
 
-    private Map<Class, SubSettings> nodeSettings = new LinkedHashMap<Class, SubSettings>();
+    private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<Class, NodeSettings>();
 
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
@@ -116,7 +127,7 @@ public class DataTransferSettings {
             return;
         }
         try {
-            nodeSettings.put(nodeClass, new SubSettings(node));
+            nodeSettings.put(nodeClass, new NodeSettings(node));
         } catch (DBException e) {
             log.error("Can't add node " + node, e);
         }
@@ -124,9 +135,9 @@ public class DataTransferSettings {
 
     void addWizardPages(DataTransferWizard wizard)
     {
-        for (SubSettings subSettings : nodeSettings.values()) {
-            if (subSettings.pages != null) {
-                for (IWizardPage page : subSettings.pages) {
+        for (NodeSettings nodeSettings : this.nodeSettings.values()) {
+            if (nodeSettings.pages != null) {
+                for (IWizardPage page : nodeSettings.pages) {
                     wizard.addPage(page);
                 }
             }
@@ -145,13 +156,13 @@ public class DataTransferSettings {
         return objectTypes;
     }
 
-    public IDataTransferSettings getPageSettings(IWizardPage page)
+    public IDataTransferSettings getNodeSettings(IWizardPage page)
     {
-        for (SubSettings subSettings : nodeSettings.values()) {
-            if (subSettings.pages != null) {
-                for (IWizardPage nodePage : subSettings.pages) {
+        for (NodeSettings nodeSettings : this.nodeSettings.values()) {
+            if (nodeSettings.pages != null) {
+                for (IWizardPage nodePage : nodeSettings.pages) {
                     if (nodePage == page) {
-                        return subSettings.settings;
+                        return nodeSettings.settings;
                     }
                 }
             }
@@ -161,8 +172,28 @@ public class DataTransferSettings {
 
     public IDataTransferSettings getNodeSettings(IDataTransferNode node)
     {
-        SubSettings subSettings = nodeSettings.get(node.getClass());
-        return subSettings == null ? null : subSettings.settings;
+        NodeSettings nodeSettings = this.nodeSettings.get(node.getClass());
+        return nodeSettings == null ? null : nodeSettings.settings;
+    }
+
+    public Map<Object, Object> getProcessorProperties(IDataTransferNode node)
+    {
+        NodeSettings nodeSettings = this.nodeSettings.get(node.getClass());
+        return nodeSettings == null ? null : nodeSettings.processorProperties;
+    }
+
+    public Map<Object, Object> getProcessorProperties(IWizardPage page)
+    {
+        for (NodeSettings nodeSettings : this.nodeSettings.values()) {
+            if (nodeSettings.pages != null) {
+                for (IWizardPage nodePage : nodeSettings.pages) {
+                    if (nodePage == page) {
+                        return nodeSettings.processorProperties;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public List<DataTransferPipe> getDataPipes()
@@ -198,24 +229,32 @@ public class DataTransferSettings {
         return consumer;
     }
 
-    void setConsumer(DataTransferNodeDescriptor consumer)
-    {
-        this.consumer = consumer;
-    }
-
     public DataTransferProcessorDescriptor getProcessor()
     {
         return processor;
     }
 
-    void setProcessor(DataTransferProcessorDescriptor processor)
+    void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor)
     {
+        this.consumer = consumer;
         this.processor = processor;
-    }
-
-    public Map<Object, Object> getProcessorProperties()
-    {
-        return processorProperties;
+        if (consumer != null && processor != null) {
+            NodeSettings consumerSettings = this.nodeSettings.get(consumer.getNodeClass());
+            consumerSettings.processorProperties = new HashMap<Object, Object>();
+        }
+        // Configure pipes
+        for (DataTransferPipe pipe : dataPipes) {
+            if (consumer != null) {
+                try {
+                    pipe.setConsumer((IDataTransferConsumer) consumer.createNode());
+                } catch (DBException e) {
+                    log.error(e);
+                    pipe.setConsumer(null);
+                }
+            } else {
+                pipe.setConsumer(null);
+            }
+        }
     }
 
     public int getMaxJobCount()
@@ -238,7 +277,7 @@ public class DataTransferSettings {
             maxJobCount = DEFAULT_THREADS_NUM;
         }
         // Load nodes' settings
-        for (Map.Entry<Class, SubSettings> entry : nodeSettings.entrySet()) {
+        for (Map.Entry<Class, NodeSettings> entry : nodeSettings.entrySet()) {
             IDialogSettings nodeSection = dialogSettings.addNewSection(entry.getKey().getSimpleName());
             entry.getValue().settings.loadSettings(nodeSection);
         }
@@ -248,7 +287,7 @@ public class DataTransferSettings {
     {
         dialogSettings.put("maxJobCount", maxJobCount);
         // Save nodes' settings
-        for (Map.Entry<Class, SubSettings> entry : nodeSettings.entrySet()) {
+        for (Map.Entry<Class, NodeSettings> entry : nodeSettings.entrySet()) {
             IDialogSettings nodeSection = dialogSettings.addNewSection(entry.getKey().getSimpleName());
             entry.getValue().settings.saveSettings(nodeSection);
         }

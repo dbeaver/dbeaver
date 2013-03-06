@@ -128,8 +128,11 @@ class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
                 } else {
                     target = null;
                 }
-                getWizard().getSettings().setConsumer(target == null ? null : target.consumer);
-                getWizard().getSettings().setProcessor(target == null ? null : target.processor);
+                if (target == null) {
+                    getWizard().getSettings().selectConsumer(null, null);
+                } else {
+                    getWizard().getSettings().selectConsumer(target.consumer, target.processor);
+                }
                 updatePageCompletion();
             }
 

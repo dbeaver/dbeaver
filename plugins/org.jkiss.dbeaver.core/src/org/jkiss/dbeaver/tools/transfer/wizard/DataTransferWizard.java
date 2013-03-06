@@ -51,7 +51,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     public <T extends IDataTransferSettings> T getPageSettings(IWizardPage page, Class<T> type)
     {
-        return type.cast(settings.getPageSettings(page));
+        return type.cast(settings.getNodeSettings(page));
     }
 
     @Override
