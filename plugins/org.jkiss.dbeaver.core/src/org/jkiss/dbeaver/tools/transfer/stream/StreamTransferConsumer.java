@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -15,6 +16,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferJob;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -252,6 +254,20 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         this.processor = processor;
         this.settings = settings;
         this.processorProperties = processorProperties;
+    }
+
+    @Override
+    public void finishTransfer()
+    {
+        if (settings.isOpenFolderOnFinish()) {
+            // Last one
+            DBeaverUI.getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    RuntimeUtils.launchProgram(settings.getOutputFolder());
+                }
+            });
+        }
     }
 
     @Override

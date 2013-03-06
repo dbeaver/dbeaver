@@ -203,21 +203,15 @@ public class DataTransferSettings {
 
     public synchronized DataTransferPipe acquireDataPipe()
     {
-/*
         if (curPipeNum >= dataPipes.size()) {
-            if (!folderOpened && openFolderOnFinish) {
-                // Last one
-                folderOpened = true;
-                DBeaverUI.getDisplay().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        RuntimeUtils.launchProgram(outputFolder);
-                    }
-                });
+            // End of transfer
+            // Signal last pipe about it
+            if (!dataPipes.isEmpty()) {
+                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer();
             }
             return null;
         }
-*/
+
         DataTransferPipe result = dataPipes.get(curPipeNum);
 
         curPipeNum++;
