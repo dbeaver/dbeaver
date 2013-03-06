@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 import java.util.*;
 
-class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
+class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     private TableViewer consumersTable;
 
@@ -49,7 +49,7 @@ class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
         }
     }
 
-    DataTransferPageConsumers() {
+    DataTransferPagePipes() {
         super(CoreMessages.dialog_export_wizard_init_name);
         setTitle(CoreMessages.dialog_export_wizard_init_title);
         setDescription(CoreMessages.dialog_export_wizard_init_description);
@@ -141,7 +141,7 @@ class DataTransferPageConsumers extends ActiveWizardPage<DataTransferWizard> {
             {
                 widgetSelected(e);
                 if (isPageComplete()) {
-                    getWizard().getContainer().showPage(getWizard().getNextPage(DataTransferPageConsumers.this));
+                    getWizard().getContainer().showPage(getWizard().getNextPage(DataTransferPagePipes.this));
                 }
             }
         });

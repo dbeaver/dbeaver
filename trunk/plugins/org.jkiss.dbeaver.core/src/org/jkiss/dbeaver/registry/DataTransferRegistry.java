@@ -21,6 +21,8 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -73,5 +75,15 @@ public class DataTransferRegistry {
     public void dispose()
     {
         nodes.clear();
+    }
+
+    public DataTransferNodeDescriptor getNodeByType(Class<? extends IDataTransferNode> type)
+    {
+        for (DataTransferNodeDescriptor node : nodes) {
+            if (node.getNodeClass().equals(type)) {
+                return node;
+            }
+        }
+        return null;
     }
 }
