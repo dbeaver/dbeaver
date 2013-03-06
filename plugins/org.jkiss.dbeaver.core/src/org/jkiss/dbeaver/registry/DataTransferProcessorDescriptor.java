@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
@@ -43,10 +42,8 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
     private List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
     private String name;
     private String description;
-    private String fileExtension;
     private Image icon;
     private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
-    private DBDDisplayFormat exportFormat;
 
     public DataTransferProcessorDescriptor(IConfigurationElement config)
     {
@@ -56,13 +53,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
         this.exporterType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.fileExtension = config.getAttribute(RegistryConstants.ATTR_EXTENSION);
         String formatName = config.getAttribute(RegistryConstants.ATTR_FORMAT);
-        if (CommonUtils.isEmpty(formatName)) {
-            exportFormat = DBDDisplayFormat.UI;
-        } else {
-            exportFormat = DBDDisplayFormat.valueOf(formatName.toUpperCase());
-        }
         String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
         if (!CommonUtils.isEmpty(iconPath)) {
             this.icon = iconToImage(iconPath);
@@ -91,11 +82,6 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
     public String getDescription()
     {
         return description;
-    }
-
-    public String getFileExtension()
-    {
-        return fileExtension;
     }
 
     public Image getIcon()
@@ -133,8 +119,4 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
         }
     }
 
-    public DBDDisplayFormat getExportFormat()
-    {
-        return exportFormat;
-    }
 }

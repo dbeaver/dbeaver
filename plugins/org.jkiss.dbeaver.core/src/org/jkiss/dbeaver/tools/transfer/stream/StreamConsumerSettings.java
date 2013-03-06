@@ -29,6 +29,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
 
     private static final String PATTERN_TABLE = "{table}";
     private static final String PATTERN_TIMESTAMP = "{timestamp}";
+
     public static final String PROP_EXTRACT_IMAGES = "extractImages";
     public static final String PROP_FILE_EXTENSION = "extension";
     public static final String PROP_FORMAT = "format";
