@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -88,23 +89,37 @@ public class DataTransferSettings {
         this(sources, null);
     }
 
-    public DataTransferSettings(Collection<? extends IDataTransferProducer> sources, Collection<? extends IDataTransferConsumer> targets)
+    public DataTransferSettings(Collection<? extends IDataTransferProducer> producers, Collection<? extends IDataTransferConsumer> consumers)
     {
         dataPipes = new ArrayList<DataTransferPipe>();
-        if (!CommonUtils.isEmpty(sources)) {
-            for (IDataTransferProducer source : sources) {
+        if (!CommonUtils.isEmpty(producers)) {
+            // Make pipes
+            for (IDataTransferProducer source : producers) {
                 dataPipes.add(new DataTransferPipe(source, null));
             }
-        } else if (!CommonUtils.isEmpty(targets)) {
-            for (IDataTransferConsumer target : targets) {
+            // Set default producer
+            Class<? extends IDataTransferProducer> producerType = dataPipes.get(0).getProducer().getClass();
+            DataTransferNodeDescriptor producerDesc = DBeaverCore.getInstance().getDataTransferRegistry().getNodeByType(producerType);
+            if (producerDesc != null) {
+                selectProducer(producerDesc);
+            } else {
+                UIUtils.showErrorDialog(null, "Can't find producer", "Can't find data propducer descriptor in registry");
+            }
+        } else if (!CommonUtils.isEmpty(consumers)) {
+            // Make pipes
+            for (IDataTransferConsumer target : consumers) {
                 dataPipes.add(new DataTransferPipe(null, target));
             }
-        } /*else if (sources.size() == targets.size()) {
-            for (int i = 0; i < sources.size(); i++) {
-                dataPipes.add(new DataTransferPipe(sources.get(i), targets.get(i)));
+            // Set default consumer
+            Class<? extends IDataTransferConsumer> consumerType = dataPipes.get(0).getConsumer().getClass();
+            DataTransferNodeDescriptor consumerDesc = DBeaverCore.getInstance().getDataTransferRegistry().getNodeByType(consumerType);
+            if (consumerDesc != null) {
+                selectConsumer(consumerDesc, null);
+            } else {
+                UIUtils.showErrorDialog(null, "Can't find producer", "Can't find data propducer descriptor in registry");
             }
-        } */else {
-            throw new IllegalArgumentException("Producers must match targets or must be empty");
+        } else {
+            throw new IllegalArgumentException("Producers must match consumers or must be empty");
         }
 
         Collection<Class<?>> objectTypes = getObjectTypes();
@@ -142,6 +157,17 @@ public class DataTransferSettings {
                 }
             }
         }
+    }
+
+    public boolean isPageValid(IWizardPage page)
+    {
+        return isPageValid(page, producer) || isPageValid(page, consumer);
+    }
+
+    private boolean isPageValid(IWizardPage page, DataTransferNodeDescriptor node)
+    {
+        NodeSettings nodeSettings = node == null ? null : this.nodeSettings.get(node.getNodeClass());
+        return nodeSettings != null && CommonUtils.contains(nodeSettings.pages, page);
     }
 
     public Collection<Class<?>> getObjectTypes()
@@ -218,6 +244,11 @@ public class DataTransferSettings {
         return result;
     }
 
+    public DataTransferNodeDescriptor getProducer()
+    {
+        return producer;
+    }
+
     public DataTransferNodeDescriptor getConsumer()
     {
         return consumer;
@@ -226,6 +257,11 @@ public class DataTransferSettings {
     public DataTransferProcessorDescriptor getProcessor()
     {
         return processor;
+    }
+
+    private void selectProducer(DataTransferNodeDescriptor producer)
+    {
+        this.producer = producer;
     }
 
     void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor)
