@@ -15,6 +15,8 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
 
     void initTransfer(DBSObject sourceObject, SETTINGS settings, PROCESSOR processor, Map<Object, Object> processorProperties);
 
+    void finishTransfer();
+
     String getTargetName();
 
 }
