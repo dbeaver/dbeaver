@@ -103,7 +103,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 pipe.getProducer().getSourceObject(),
                 settings,
                 processor,
-                getWizard().getSettings().getProcessorProperties(pipe.getConsumer()));
+                getWizard().getSettings().getProcessorProperties());
             TableItem item = new TableItem(resultTable, SWT.NONE);
             item.setText(0, pipe.getProducer().getSourceObject().getName());
             item.setText(1, pipe.getConsumer().getTargetName());

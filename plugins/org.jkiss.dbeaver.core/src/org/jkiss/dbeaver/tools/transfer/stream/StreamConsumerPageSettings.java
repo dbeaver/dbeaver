@@ -38,8 +38,6 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
-import java.util.Map;
-
 public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWizard> {
 
     private static final int EXTRACT_LOB_SKIP = 0;
@@ -217,7 +215,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
         propertySource = new PropertySourceCustom(
             processor.getProperties(),
-            getWizard().getSettings().getProcessorProperties(this));
+            getWizard().getSettings().getProcessorProperties());
         propsEditor.loadProperties(propertySource);
 
         switch (settings.getLobExtractType()) {
@@ -237,7 +235,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     @Override
     public void deactivatePage()
     {
-        getWizard().getSettings().setProcessorProperties(this, propertySource.getPropertiesWithDefaults());
+        getWizard().getSettings().setProcessorProperties(propertySource.getPropertiesWithDefaults());
         super.deactivatePage();
     }
 
