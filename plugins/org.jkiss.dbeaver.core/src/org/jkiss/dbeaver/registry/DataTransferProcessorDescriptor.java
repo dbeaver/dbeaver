@@ -44,11 +44,12 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
     private String description;
     private Image icon;
     private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
+    private DataTransferNodeDescriptor node;
 
-    public DataTransferProcessorDescriptor(IConfigurationElement config)
+    public DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config)
     {
         super(config);
-
+        this.node = node;
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.exporterType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
@@ -119,4 +120,8 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
         }
     }
 
+    public DataTransferNodeDescriptor getNode()
+    {
+        return node;
+    }
 }
