@@ -106,6 +106,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
 
     public IDataTransferNode createNode() throws DBException
     {
+        settingsType.checkObjectClass(IDataTransferNode.class);
         try {
             return implType.getObjectClass(IDataTransferNode.class).newInstance();
         } catch (Throwable e) {
@@ -115,6 +116,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
 
     public IDataTransferSettings createSettings() throws DBException
     {
+        settingsType.checkObjectClass(IDataTransferSettings.class);
         try {
             return settingsType.getObjectClass(IDataTransferSettings.class).newInstance();
         } catch (Throwable e) {
@@ -127,6 +129,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         List<IWizardPage> pages = new ArrayList<IWizardPage>();
         for (ObjectType type : pageTypes) {
             try {
+                type.checkObjectClass(IWizardPage.class);
                 pages.add(type.getObjectClass(IWizardPage.class).newInstance());
             } catch (Throwable e) {
                 log.error("Can't create wizard page", e);

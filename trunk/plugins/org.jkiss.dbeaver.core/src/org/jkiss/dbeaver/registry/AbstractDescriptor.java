@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverIcons;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -67,12 +68,12 @@ public abstract class AbstractDescriptor {
             }
         }
 
-        public <T> Class<T> getObjectClass()
+        public Class getObjectClass()
         {
-            return getObjectClass(null);
+            return getObjectClass(Object.class);
         }
 
-        public <T> Class<T> getObjectClass(Class<T> type)
+        public <T> Class<? extends T> getObjectClass(Class<T> type)
         {
             if (implName == null) {
                 return null;
@@ -80,7 +81,19 @@ public abstract class AbstractDescriptor {
             if (implClass == null) {
                 implClass = AbstractDescriptor.this.getObjectClass(implName, type);
             }
-            return (Class<T>) implClass;
+            return (Class<? extends T>) implClass;
+        }
+
+        public <T> void checkObjectClass(Class<T> type)
+            throws DBException
+        {
+            Class<? extends T> objectClass = getObjectClass(type);
+            if (objectClass == null) {
+                throw new DBException("Class '" + implName + "' not found");
+            }
+            if (!type.isAssignableFrom(objectClass)) {
+                throw new DBException("Class '" + implName + "' do not implements '" + type.getName() + "'");
+            }
         }
 
         public boolean appliesTo(Object object)
@@ -123,6 +136,7 @@ public abstract class AbstractDescriptor {
                 }
             };
         }
+
     }
 
 

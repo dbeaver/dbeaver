@@ -63,12 +63,9 @@ public class EntityManagerDescriptor extends AbstractDescriptor
         if (managerInstance != null) {
             return managerInstance;
         }
-        Class clazz = managerType.getObjectClass();
-        if (clazz == null) {
-            throw new IllegalStateException("Can't load manager class '" + managerType.implName + "'");
-        }
+        Class<? extends DBEObjectManager> clazz = managerType.getObjectClass(DBEObjectManager.class);
         try {
-            managerInstance = (DBEObjectManager) clazz.newInstance();
+            managerInstance = clazz.newInstance();
         } catch (Throwable ex) {
             throw new IllegalStateException("Error instantiating entity manager '" + clazz.getName() + "'", ex);
         }
