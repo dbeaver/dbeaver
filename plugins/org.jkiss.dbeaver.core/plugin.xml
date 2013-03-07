@@ -1859,7 +1859,7 @@
 
     <extension point="org.jkiss.dbeaver.dataTransfer">
         <node type="producer"
-                id="database"
+                id="database_producer"
                 class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
                 icon="icons/tree/table.png"
                 label="%command.org.jkiss.dbeaver.core.transform.producer.database.name"
@@ -1869,7 +1869,7 @@
         </node>
 
         <node type="consumer"
-                id="stream"
+                id="stream_consumer"
                 class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
                 icon="icons/tree/file.png"
                 label="%command.org.jkiss.dbeaver.core.transform.consumer.stream.name"
@@ -1923,6 +1923,16 @@
                     <property id="rowsInStatement" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.name" type="integer" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
                 </propertyGroup>
             </processor>
+        </node>
+
+        <node type="consumer"
+              id="database_consumer"
+              class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
+              icon="icons/tree/table.png"
+              label="%command.org.jkiss.dbeaver.core.transform.consumer.database.name"
+              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
+            <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerPageMapEntities"/>
         </node>
     </extension>
 

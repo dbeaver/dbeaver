@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -109,8 +110,9 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
 
     public IDataTransferProcessor createProcessor() throws DBException
     {
+        exporterType.checkObjectClass(IDataTransferProcessor.class);
         try {
-            Class<IDataTransferProcessor> clazz = exporterType.getObjectClass(IDataTransferProcessor.class);
+            Class<? extends IDataTransferProcessor> clazz = exporterType.getObjectClass(IDataTransferProcessor.class);
             if (clazz == null) {
                 throw new InstantiationException("Cannot find exporter class " + exporterType.implName);
             }
