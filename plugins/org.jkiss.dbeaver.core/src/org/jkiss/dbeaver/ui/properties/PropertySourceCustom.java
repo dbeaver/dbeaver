@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.properties;
 
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -44,9 +45,23 @@ public class PropertySourceCustom implements IPropertySourceEx {
         setValues(values);
     }
 
-    public void setValues(Map<Object, Object> originalValues)
+    public void setValues(Map<Object, Object> values)
     {
-        this.originalValues = originalValues;
+        this.originalValues = new HashMap<Object, Object>();
+        // Set only allowed properties + transform property types
+        for (Map.Entry<Object, Object> value : values.entrySet()) {
+            Object propValue = value.getValue();
+            for (IPropertyDescriptor prop : props) {
+                if (prop.getId().equals(value.getKey())) {
+                    if (propValue instanceof String && prop instanceof IPropertyDescriptorEx) {
+                        propValue = RuntimeUtils.convertString((String) value.getValue(), ((IPropertyDescriptorEx) prop).getDataType());
+                    }
+                    originalValues.put(value.getKey(), propValue);
+                    break;
+                }
+            }
+        }
+
     }
 
     public void setDefaultValues(Map<Object, Object> defaultValues)
