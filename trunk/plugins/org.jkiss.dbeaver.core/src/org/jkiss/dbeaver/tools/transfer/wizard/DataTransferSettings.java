@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,7 +51,6 @@ public class DataTransferSettings {
         DataTransferNodeDescriptor sourceNode;
         IDataTransferSettings settings;
         IWizardPage[] pages;
-        Map<Object, Object> processorProperties;
 
         private NodeSettings(DataTransferNodeDescriptor sourceNode) throws DBException
         {
@@ -61,15 +59,6 @@ public class DataTransferSettings {
             this.pages = sourceNode.createWizardPages();
         }
 
-        public IDataTransferSettings getSettings()
-        {
-            return settings;
-        }
-
-        public Map<Object, Object> getProcessorProperties()
-        {
-            return processorProperties;
-        }
     }
 
     private List<DataTransferPipe> dataPipes;
@@ -204,38 +193,20 @@ public class DataTransferSettings {
         return nodeSettings == null ? null : nodeSettings.settings;
     }
 
-    public Map<Object, Object> getProcessorProperties(IDataTransferNode node)
+    public Map<Object, Object> getProcessorProperties()
     {
-        NodeSettings nodeSettings = this.nodeSettings.get(node.getClass());
-        return nodeSettings == null ? null : nodeSettings.processorProperties;
+        if (processor == null) {
+            throw new IllegalStateException("No processor selected");
+        }
+        return processorPropsHistory.get(processor);
     }
 
-    public Map<Object, Object> getProcessorProperties(IWizardPage page)
+    public void setProcessorProperties(Map<Object, Object> properties)
     {
-        for (NodeSettings nodeSettings : this.nodeSettings.values()) {
-            if (nodeSettings.pages != null) {
-                for (IWizardPage nodePage : nodeSettings.pages) {
-                    if (nodePage == page) {
-                        return nodeSettings.processorProperties;
-                    }
-                }
-            }
+        if (processor == null) {
+            throw new IllegalStateException("No processor selected");
         }
-        return null;
-    }
-
-    public void setProcessorProperties(IWizardPage page, Map<Object, Object> properties)
-    {
-        for (NodeSettings nodeSettings : this.nodeSettings.values()) {
-            if (nodeSettings.pages != null) {
-                for (IWizardPage nodePage : nodeSettings.pages) {
-                    if (nodePage == page) {
-                        nodeSettings.processorProperties.putAll(properties);
-                        break;
-                    }
-                }
-            }
-        }
+        processorPropsHistory.put(processor, properties);
     }
 
 
@@ -286,10 +257,8 @@ public class DataTransferSettings {
         this.consumer = consumer;
         this.processor = processor;
         if (consumer != null && processor != null) {
-            NodeSettings consumerSettings = this.nodeSettings.get(consumer.getNodeClass());
-            consumerSettings.processorProperties = processorPropsHistory.get(processor);
-            if (consumerSettings.processorProperties == null) {
-                consumerSettings.processorProperties = new HashMap<Object, Object>();
+            if (!processorPropsHistory.containsKey(processor)) {
+                processorPropsHistory.put(processor, new HashMap<Object, Object>());
             }
         }
         // Configure pipes
@@ -303,18 +272,6 @@ public class DataTransferSettings {
                 }
             } else {
                 pipe.setConsumer(null);
-            }
-        }
-
-        if (consumer != null && processor != null) {
-            Map<Object, Object> historyProps = this.processorPropsHistory.get(processor);
-            if (historyProps == null) {
-                historyProps = new HashMap<Object, Object>();
-                this.processorPropsHistory.put(processor, historyProps);
-            }
-            NodeSettings nodeSettings = this.nodeSettings.get(consumer.getClass());
-            if (nodeSettings != null) {
-                this.processorPropsHistory.put(processor, nodeSettings.processorProperties);
             }
         }
     }
@@ -369,13 +326,21 @@ public class DataTransferSettings {
         if (processorsSection != null) {
             for (IDialogSettings procSection : CommonUtils.safeArray(processorsSection.getSections())) {
                 String processorId = procSection.getName();
-                String nodeId = procSection.get("node");
+                String nodeId = procSection.get("@node");
+                String propNamesId = procSection.get("@propNames");
                 DataTransferNodeDescriptor node = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(nodeId);
                 if (node != null) {
+                    Map<Object, Object> props = new HashMap<Object, Object>();
                     DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);
                     if (nodeProcessor != null) {
-                        //nodeProcessor
-                        //procSection.get
+                        for (String prop : CommonUtils.splitString(propNamesId, ',')) {
+                            props.put(prop, procSection.get(prop));
+                        }
+                        processorPropsHistory.put(nodeProcessor, props);
+                        NodeSettings nodeSettings = this.nodeSettings.get(node.getNodeClass());
+                        if (nodeSettings != null) {
+
+                        }
                     }
                 }
             }
@@ -405,12 +370,17 @@ public class DataTransferSettings {
         // Save processors' properties
         IDialogSettings processorsSection = DialogSettings.getOrCreateSection(dialogSettings, "processors");
         for (DataTransferProcessorDescriptor procDescriptor : processorPropsHistory.keySet()) {
-            IDialogSettings expSettings = DialogSettings.getOrCreateSection(processorsSection, procDescriptor.getName());
-            expSettings.put("node", procDescriptor.getNode().getId());
+            IDialogSettings procSettings = DialogSettings.getOrCreateSection(processorsSection, procDescriptor.getId());
+            procSettings.put("@node", procDescriptor.getNode().getId());
             Map<Object, Object> props = processorPropsHistory.get(procDescriptor);
             if (props != null) {
+                StringBuilder propNames = new StringBuilder();
                 for (Map.Entry<Object,Object> prop : props.entrySet()) {
-                    expSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+                    propNames.append(prop.getKey()).append(',');
+                }
+                procSettings.put("@propNames", propNames.toString());
+                for (Map.Entry<Object,Object> prop : props.entrySet()) {
+                    procSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
                 }
             }
         }
