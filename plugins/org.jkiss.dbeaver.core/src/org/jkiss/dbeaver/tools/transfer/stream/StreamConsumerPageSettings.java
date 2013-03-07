@@ -235,6 +235,13 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     }
 
     @Override
+    public void deactivatePage()
+    {
+        getWizard().getSettings().setProcessorProperties(this, propertySource.getPropertiesWithDefaults());
+        super.deactivatePage();
+    }
+
+    @Override
     protected boolean determinePageCompletion()
     {
         int selectionIndex = lobExtractType.getSelectionIndex();

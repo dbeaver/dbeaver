@@ -34,8 +34,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     public static final String PROP_FILE_EXTENSION = "extension";
     public static final String PROP_FORMAT = "format";
 
-    //private Map<Object, Object> processorProperties = new HashMap<Object, Object>();
-
     private LobExtractType lobExtractType = LobExtractType.SKIP;
     private LobEncoding lobEncoding = LobEncoding.HEX;
 
@@ -138,26 +136,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     {
         this.formatterProfile = formatterProfile;
     }
-/*
-
-    public IStreamDataExporterDescriptor getExporterDescriptor()
-    {
-        return dataExporter;
-    }
-
-    public void setExporterDescriptor(IStreamDataExporterDescriptor dataExporter)
-    {
-        Map<Object, Object> historyProps = this.exporterPropsHistory.get(dataExporter);
-        if (historyProps == null) {
-            historyProps = new HashMap<Object, Object>();
-        }
-        if (this.dataExporter != null) {
-            this.exporterPropsHistory.put(this.dataExporter, this.processorProperties);
-        }
-        this.dataExporter = dataExporter;
-        this.processorProperties = historyProps;
-    }
-*/
 
     @Override
     public void loadSettings(IDialogSettings dialogSettings)
@@ -228,13 +206,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     @Override
     public void saveSettings(IDialogSettings dialogSettings)
     {
-/*
-        if (this.dataExporter != null) {
-            this.exporterPropsHistory.put(this.dataExporter, this.processorProperties);
-            dialogSettings.put("exporter", dataExporter.getId());
-        }
-*/
-
         dialogSettings.put("lobExtractType", lobExtractType.name());
         dialogSettings.put("lobEncoding", lobEncoding.name());
 
@@ -251,22 +222,6 @@ public class StreamConsumerSettings implements IDataTransferSettings {
         } else {
             dialogSettings.put("formatterProfile", "");
         }
-
-/*
-        for (IStreamDataExporterDescriptor exp : exporterPropsHistory.keySet()) {
-            IDialogSettings expSettings = dialogSettings.getSection(exp.getName());
-            if (expSettings == null) {
-                expSettings = dialogSettings.addNewSection(exp.getId());
-            }
-            Map<Object, Object> props = exporterPropsHistory.get(exp);
-            if (props != null) {
-                for (Map.Entry<Object,Object> prop : props.entrySet()) {
-                    expSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-                }
-            }
-        }
-*/
-
     }
 
 }

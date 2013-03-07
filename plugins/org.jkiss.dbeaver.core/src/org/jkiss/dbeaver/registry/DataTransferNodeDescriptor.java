@@ -75,7 +75,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
             pageTypes.add(new ObjectType(pageConfig.getAttribute(RegistryConstants.ATTR_CLASS)));
         }
         for (IConfigurationElement processorConfig : CommonUtils.safeArray(config.getChildren(RegistryConstants.TAG_PROCESSOR))) {
-            processors.add(new DataTransferProcessorDescriptor(processorConfig));
+            processors.add(new DataTransferProcessorDescriptor(this, processorConfig));
         }
     }
 
