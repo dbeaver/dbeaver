@@ -88,11 +88,11 @@ public class DataFormatterDescriptor extends AbstractDescriptor
 
     public DBDDataFormatter createFormatter() throws IllegalAccessException, InstantiationException
     {
-        Class clazz = formatterType.getObjectClass();
+        Class<? extends DBDDataFormatter> clazz = formatterType.getObjectClass(DBDDataFormatter.class);
         if (clazz == null) {
             return null;
         }
-        return (DBDDataFormatter)clazz.newInstance();
+        return clazz.newInstance();
     }
 
 }

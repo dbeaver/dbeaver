@@ -135,7 +135,7 @@ public class DataTransferSettings {
         try {
             nodeSettings.put(nodeClass, new NodeSettings(node));
         } catch (DBException e) {
-            log.error("Can't add node " + node, e);
+            log.error("Can't add node '" + node.getId() + "'", e);
         }
     }
 
