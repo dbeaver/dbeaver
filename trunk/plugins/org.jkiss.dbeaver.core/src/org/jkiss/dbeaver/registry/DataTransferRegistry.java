@@ -86,4 +86,14 @@ public class DataTransferRegistry {
         }
         return null;
     }
+
+    public DataTransferNodeDescriptor getNodeById(String id)
+    {
+        for (DataTransferNodeDescriptor node : nodes) {
+            if (node.getId().equals(id)) {
+                return node;
+            }
+        }
+        return null;
+    }
 }

@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.DBException;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -76,7 +78,7 @@ public class DataTransferSettings {
     private DataTransferNodeDescriptor consumer;
 
     private DataTransferProcessorDescriptor processor;
-    //private Map<IStreamDataExporterDescriptor, Map<Object,Object>> exporterPropsHistory = new HashMap<IStreamDataExporterDescriptor, Map<Object, Object>>();
+    private Map<DataTransferProcessorDescriptor, Map<Object,Object>> processorPropsHistory = new HashMap<DataTransferProcessorDescriptor, Map<Object, Object>>();
 
     private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<Class, NodeSettings>();
 
@@ -222,6 +224,21 @@ public class DataTransferSettings {
         return null;
     }
 
+    public void setProcessorProperties(IWizardPage page, Map<Object, Object> properties)
+    {
+        for (NodeSettings nodeSettings : this.nodeSettings.values()) {
+            if (nodeSettings.pages != null) {
+                for (IWizardPage nodePage : nodeSettings.pages) {
+                    if (nodePage == page) {
+                        nodeSettings.processorProperties.putAll(properties);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+
     public List<DataTransferPipe> getDataPipes()
     {
         return dataPipes;
@@ -270,7 +287,10 @@ public class DataTransferSettings {
         this.processor = processor;
         if (consumer != null && processor != null) {
             NodeSettings consumerSettings = this.nodeSettings.get(consumer.getNodeClass());
-            consumerSettings.processorProperties = new HashMap<Object, Object>();
+            consumerSettings.processorProperties = processorPropsHistory.get(processor);
+            if (consumerSettings.processorProperties == null) {
+                consumerSettings.processorProperties = new HashMap<Object, Object>();
+            }
         }
         // Configure pipes
         for (DataTransferPipe pipe : dataPipes) {
@@ -283,6 +303,18 @@ public class DataTransferSettings {
                 }
             } else {
                 pipe.setConsumer(null);
+            }
+        }
+
+        if (consumer != null && processor != null) {
+            Map<Object, Object> historyProps = this.processorPropsHistory.get(processor);
+            if (historyProps == null) {
+                historyProps = new HashMap<Object, Object>();
+                this.processorPropsHistory.put(processor, historyProps);
+            }
+            NodeSettings nodeSettings = this.nodeSettings.get(consumer.getClass());
+            if (nodeSettings != null) {
+                this.processorPropsHistory.put(processor, nodeSettings.processorProperties);
             }
         }
     }
@@ -306,11 +338,49 @@ public class DataTransferSettings {
         } catch (NumberFormatException e) {
             maxJobCount = DEFAULT_THREADS_NUM;
         }
+        String producerId = dialogSettings.get("producer");
+        if (!CommonUtils.isEmpty(producerId)) {
+            this.producer = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(producerId);
+        }
+
+        DataTransferNodeDescriptor savedConsumer = null;
+        String consumerId = dialogSettings.get("consumer");
+        if (!CommonUtils.isEmpty(consumerId)) {
+            savedConsumer = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(consumerId);
+        }
+
+        DataTransferProcessorDescriptor savedProcessor = null;
+        if (savedConsumer != null) {
+            String processorId = dialogSettings.get("processor");
+            if (!CommonUtils.isEmpty(processorId)) {
+                savedProcessor = savedConsumer.getProcessor(processorId);
+            }
+        }
+        if (savedConsumer != null) {
+            selectConsumer(savedConsumer, savedProcessor);
+        }
+
         // Load nodes' settings
         for (Map.Entry<Class, NodeSettings> entry : nodeSettings.entrySet()) {
             IDialogSettings nodeSection = dialogSettings.addNewSection(entry.getKey().getSimpleName());
             entry.getValue().settings.loadSettings(nodeSection);
         }
+        IDialogSettings processorsSection = dialogSettings.getSection("processors");
+        if (processorsSection != null) {
+            for (IDialogSettings procSection : CommonUtils.safeArray(processorsSection.getSections())) {
+                String processorId = procSection.getName();
+                String nodeId = procSection.get("node");
+                DataTransferNodeDescriptor node = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(nodeId);
+                if (node != null) {
+                    DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);
+                    if (nodeProcessor != null) {
+                        //nodeProcessor
+                        //procSection.get
+                    }
+                }
+            }
+        }
+
     }
 
     void saveTo(IDialogSettings dialogSettings)
@@ -321,6 +391,30 @@ public class DataTransferSettings {
             IDialogSettings nodeSection = dialogSettings.addNewSection(entry.getKey().getSimpleName());
             entry.getValue().settings.saveSettings(nodeSection);
         }
+
+        if (producer != null) {
+            dialogSettings.put("producer", producer.getId());
+        }
+        if (consumer != null) {
+            dialogSettings.put("consumer", consumer.getId());
+        }
+        if (processor != null) {
+            dialogSettings.put("processor", processor.getId());
+        }
+
+        // Save processors' properties
+        IDialogSettings processorsSection = DialogSettings.getOrCreateSection(dialogSettings, "processors");
+        for (DataTransferProcessorDescriptor procDescriptor : processorPropsHistory.keySet()) {
+            IDialogSettings expSettings = DialogSettings.getOrCreateSection(processorsSection, procDescriptor.getName());
+            expSettings.put("node", procDescriptor.getNode().getId());
+            Map<Object, Object> props = processorPropsHistory.get(procDescriptor);
+            if (props != null) {
+                for (Map.Entry<Object,Object> prop : props.entrySet()) {
+                    expSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+                }
+            }
+        }
+
     }
 
 }

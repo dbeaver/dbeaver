@@ -32,7 +32,7 @@ import java.util.List;
 
 public class DataTransferWizard extends Wizard implements IExportWizard {
 
-    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataExportWizard";//$NON-NLS-1$
+    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
 
     private DataTransferSettings settings;
 
