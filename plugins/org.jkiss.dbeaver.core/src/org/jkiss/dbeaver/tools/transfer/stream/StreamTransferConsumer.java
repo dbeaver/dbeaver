@@ -338,7 +338,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             DBDDisplayFormat format = DBDDisplayFormat.UI;
             Object formatProp = processorProperties.get(StreamConsumerSettings.PROP_FORMAT);
             if (formatProp != null) {
-                format = DBDDisplayFormat.valueOf(formatProp.toString());
+                format = DBDDisplayFormat.valueOf(formatProp.toString().toUpperCase());
             }
             return format;
         }
