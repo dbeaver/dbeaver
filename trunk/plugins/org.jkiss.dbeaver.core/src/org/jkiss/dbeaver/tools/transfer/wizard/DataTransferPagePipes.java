@@ -27,10 +27,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.registry.DataTransferNodeDescriptor;
-import org.jkiss.dbeaver.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.registry.transfer.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.registry.transfer.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -96,11 +97,14 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                         cell.setImage(element.processor.getIcon());
                         cell.setText(element.processor.getName());
                     } else {
-
+                        cell.setImage(element.consumer.getIcon());
+                        cell.setText(element.consumer.getName());
                     }
                 } else {
                     if (element.processor != null) {
                         cell.setText(element.processor.getDescription());
+                    } else {
+                        cell.setText(element.consumer.getDescription());
                     }
                 }
             }
@@ -172,8 +176,12 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         List<TransferTarget> transferTargets = new ArrayList<TransferTarget>();
         for (DataTransferNodeDescriptor consumer : DBeaverCore.getInstance().getDataTransferRegistry().getAvailableConsumers(objectTypes)) {
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objectTypes);
-            for (DataTransferProcessorDescriptor processor : processors) {
-                transferTargets.add(new TransferTarget(consumer, processor));
+            if (CommonUtils.isEmpty(processors)) {
+                transferTargets.add(new TransferTarget(consumer, null));
+            } else {
+                for (DataTransferProcessorDescriptor processor : processors) {
+                    transferTargets.add(new TransferTarget(consumer, processor));
+                }
             }
         }
         consumersTable.setInput(transferTargets);
@@ -181,7 +189,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
     @Override
     protected boolean determinePageCompletion() {
-        return getWizard().getSettings().getConsumer() != null && getWizard().getSettings().getProcessor() != null;
+        return getWizard().getSettings().getConsumer() != null;
     }
 
 }

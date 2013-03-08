@@ -17,10 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.editor;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.registry.AbstractDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
  * EntityEditorDescriptor

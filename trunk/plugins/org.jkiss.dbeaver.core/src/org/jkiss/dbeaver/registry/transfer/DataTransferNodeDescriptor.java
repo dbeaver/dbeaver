@@ -17,12 +17,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.transfer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.registry.AbstractDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
@@ -36,7 +40,7 @@ import java.util.List;
  */
 public class DataTransferNodeDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTransformer"; //$NON-NLS-1$
+    static final Log log = LogFactory.getLog(DataTransferNodeDescriptor.class);
 
     enum NodeType {
         PRODUCER,
@@ -103,7 +107,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
 
     public IDataTransferNode createNode() throws DBException
     {
-        settingsType.checkObjectClass(IDataTransferNode.class);
+        implType.checkObjectClass(IDataTransferNode.class);
         try {
             return implType.getObjectClass(IDataTransferNode.class).newInstance();
         } catch (Throwable e) {

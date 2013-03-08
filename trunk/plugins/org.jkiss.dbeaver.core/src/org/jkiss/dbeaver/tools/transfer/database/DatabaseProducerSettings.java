@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * Export settings
+ * DatabaseProducerSettings
  */
 public class DatabaseProducerSettings implements IDataTransferSettings {
 

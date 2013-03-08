@@ -46,11 +46,11 @@ public abstract class AbstractDescriptor {
     static final Log log = LogFactory.getLog(AbstractDescriptor.class);
 
     protected class ObjectType {
-        final String implName;
-        Class<?> implClass;
-        Expression expression;
+        private final String implName;
+        private Class<?> implClass;
+        private Expression expression;
 
-        ObjectType(String implName)
+        public ObjectType(String implName)
         {
             this.implName = implName;
         }
@@ -66,6 +66,11 @@ public abstract class AbstractDescriptor {
                     log.warn("Can't parse object type expression: " + condition, ex); //$NON-NLS-1$
                 }
             }
+        }
+
+        public String getImplName()
+        {
+            return implName;
         }
 
         public Class getObjectClass()
