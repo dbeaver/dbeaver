@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -72,7 +73,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             resultTable.addControlListener(new ControlAdapter() {
                 @Override
                 public void controlResized(ControlEvent e) {
-                    UIUtils.packColumns(resultTable);
+                    //UIUtils.packColumns(resultTable);
                 }
             });
 
@@ -89,26 +90,40 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     public void activatePage()
     {
         resultTable.removeAll();
-        List<DataTransferPipe> dataPipes = getWizard().getSettings().getDataPipes();
+        DataTransferSettings settings = getWizard().getSettings();
+        List<DataTransferPipe> dataPipes = settings.getDataPipes();
         for (DataTransferPipe pipe : dataPipes) {
-            IDataTransferSettings settings = getWizard().getSettings().getNodeSettings(pipe.getConsumer());
-            IDataTransferProcessor processor;
-            try {
-                processor = getWizard().getSettings().getProcessor().createProcessor();
-            } catch (DBException e) {
-                log.error("Can't create processor", e);
-                continue;
+            IDataTransferSettings consumerSettings = settings.getNodeSettings(pipe.getConsumer());
+            IDataTransferProcessor processor = null;
+            if (settings.getProcessor() != null) {
+                // Processor is optional
+                try {
+                    processor = settings.getProcessor().createProcessor();
+                } catch (DBException e) {
+                    log.error("Can't create processor", e);
+                    continue;
+                }
             }
             pipe.getConsumer().initTransfer(
                 pipe.getProducer().getSourceObject(),
-                settings,
+                consumerSettings,
                 processor,
-                getWizard().getSettings().getProcessorProperties());
+                processor == null ?
+                    null :
+                    settings.getProcessorProperties());
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, pipe.getProducer().getSourceObject().getName());
+            item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getSourceObject()));
+            if (settings.getProducer().getIcon() != null) {
+                item.setImage(0, settings.getProducer().getIcon());
+            }
             item.setText(1, pipe.getConsumer().getTargetName());
+            if (settings.getProcessor() != null && settings.getProcessor().getIcon() != null) {
+                item.setImage(1, settings.getProcessor().getIcon());
+            } else if (settings.getConsumer().getIcon() != null) {
+                item.setImage(1, settings.getConsumer().getIcon());
+            }
         }
-        UIUtils.packColumns(resultTable);
+        UIUtils.packColumns(resultTable, true);
         updatePageCompletion();
     }
 

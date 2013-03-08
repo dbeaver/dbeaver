@@ -214,7 +214,8 @@ public class UIUtils {
                     int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
                     tc.setWidth(newWidth);
                 }
-            } else if (fit && totalWidth < clientArea.width) {
+            }
+            if (fit && totalWidth < clientArea.width) {
                 float extraSpace = (clientArea.width - totalWidth) / columns.length;
                 for (TableColumn tc : columns) {
                     tc.setWidth((int) (tc.getWidth() + extraSpace));
