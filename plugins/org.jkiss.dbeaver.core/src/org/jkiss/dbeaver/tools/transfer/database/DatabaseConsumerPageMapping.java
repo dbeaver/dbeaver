@@ -33,9 +33,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,6 +47,7 @@ import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
 
     private TableViewer mappingViewer;
+    private DBNNode containerNode;
 
     public DatabaseConsumerPageMapping() {
         super("Entities mapping");
@@ -71,10 +74,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             containerPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createControlLabel(containerPanel, "Target container");
 
-            Label containerIcon = new Label(containerPanel, SWT.NONE);
+            final Label containerIcon = new Label(containerPanel, SWT.NONE);
             containerIcon.setImage(DBIcon.TYPE_UNKNOWN.getImage());
 
-            Text containerName = new Text(containerPanel, SWT.BORDER | SWT.READ_ONLY);
+            final Text containerName = new Text(containerPanel, SWT.BORDER | SWT.READ_ONLY);
             containerName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             Button browseButton = new Button(containerPanel, SWT.PUSH);
@@ -88,11 +91,17 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     if (activeProject != null) {
                         final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(
                             activeProject);
-                        BrowseObjectDialog.selectObject(
+                        DBNNode node = BrowseObjectDialog.selectObject(
                             getShell(),
                             "Choose container",
                             rootNode.getDatabases(),
+                            containerNode,
                             DBSObjectContainer.class);
+                        if (node != null) {
+                            containerNode = node;
+                            containerIcon.setImage(containerNode.getNodeIconDefault());
+                            containerName.setText(containerNode.getNodeFullName());
+                        }
                     }
                 }
             });
