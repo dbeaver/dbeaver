@@ -18,22 +18,29 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
 
@@ -73,6 +80,22 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             Button browseButton = new Button(containerPanel, SWT.PUSH);
             browseButton.setImage(DBIcon.TREE_FOLDER.getImage());
             browseButton.setText("...");
+            browseButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+                    if (activeProject != null) {
+                        final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(
+                            activeProject);
+                        BrowseObjectDialog.selectObject(
+                            getShell(),
+                            "Choose container",
+                            rootNode.getDatabases(),
+                            DBSObjectContainer.class);
+                    }
+                }
+            });
         }
 
         {
