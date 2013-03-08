@@ -7,15 +7,14 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 
 import java.util.Map;
 
 /**
 * Stream transfer consumer
 */
-public class DatabaseTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings, IStreamDataExporter> {
+public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
 
     static final Log log = LogFactory.getLog(DatabaseTransferConsumer.class);
 
@@ -55,8 +54,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<StreamCon
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, IStreamDataExporter processor, Map<Object, Object> processorProperties)
+    public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, IDataTransferProcessor processor, Map<Object, Object> processorProperties)
     {
+
     }
 
     @Override
