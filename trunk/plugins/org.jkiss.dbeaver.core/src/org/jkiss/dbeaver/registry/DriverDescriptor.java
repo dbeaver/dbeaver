@@ -84,8 +84,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public static final String PROP_FOLDER = "folder"; //$NON-NLS-1$
     public static final String PROP_FILE = "file"; //$NON-NLS-1$
 
-    private DataSourceProviderDescriptor providerDescriptor;
-    private String id;
+    private final DataSourceProviderDescriptor providerDescriptor;
+    private final String id;
     private String category;
     private String name, origName;
     private String description, origDescription;
@@ -113,11 +113,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private final List<ReplaceInfo> driverReplacements = new ArrayList<ReplaceInfo>();
     private DriverDescriptor replacedBy;
 
-    private Map<Object, Object> defaultParameters = new HashMap<Object, Object>();
-    private Map<Object, Object> customParameters = new HashMap<Object, Object>();
+    private final Map<Object, Object> defaultParameters = new HashMap<Object, Object>();
+    private final Map<Object, Object> customParameters = new HashMap<Object, Object>();
 
-    private Map<Object, Object> defaultConnectionProperties = new HashMap<Object, Object>();
-    private Map<Object, Object> customConnectionProperties = new HashMap<Object, Object>();
+    private final Map<Object, Object> defaultConnectionProperties = new HashMap<Object, Object>();
+    private final Map<Object, Object> customConnectionProperties = new HashMap<Object, Object>();
 
     private Class driverClass;
     private boolean isLoaded;
@@ -169,10 +169,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         this.origFiles.addAll(this.files);
 
-        String iconName = config.getAttribute(RegistryConstants.ATTR_ICON);
-        if (!CommonUtils.isEmpty(iconName)) {
-            this.iconPlain = iconToImage(iconName);
-        }
+        this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.iconPlain == null) {
             this.iconPlain = new Image(null, providerDescriptor.getIcon(), SWT.IMAGE_COPY);
         }
