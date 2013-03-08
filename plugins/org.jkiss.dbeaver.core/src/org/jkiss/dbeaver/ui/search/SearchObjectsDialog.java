@@ -269,7 +269,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
 
                 Group sourceGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_objects_source, 1, GridData.FILL_BOTH, 0);
                 final DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
-                dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode.getDatabases(), SWT.SINGLE);
+                dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode.getDatabases(), SWT.SINGLE | SWT.BORDER);
                 gd = new GridData(GridData.FILL_BOTH);
                 //gd.heightHint = 100;
                 dataSourceTree.setLayoutData(gd);
