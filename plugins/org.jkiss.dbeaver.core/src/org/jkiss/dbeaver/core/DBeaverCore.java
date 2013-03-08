@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.transfer.DataTransferRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;

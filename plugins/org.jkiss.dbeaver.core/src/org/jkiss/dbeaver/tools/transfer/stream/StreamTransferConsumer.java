@@ -18,7 +18,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferJob;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
@@ -37,7 +36,7 @@ import java.util.zip.ZipOutputStream;
 */
 public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings, IStreamDataExporter> {
 
-    static final Log log = LogFactory.getLog(DataTransferJob.class);
+    static final Log log = LogFactory.getLog(StreamTransferConsumer.class);
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 

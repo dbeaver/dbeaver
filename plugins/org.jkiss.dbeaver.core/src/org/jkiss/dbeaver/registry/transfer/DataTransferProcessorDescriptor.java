@@ -17,12 +17,14 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.transfer;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.registry.AbstractDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 import org.jkiss.utils.CommonUtils;
@@ -35,8 +37,6 @@ import java.util.List;
  */
 public class DataTransferProcessorDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTransfer"; //$NON-NLS-1$
-
     private final DataTransferNodeDescriptor node;
     private final String id;
     private final ObjectType processorClass;
@@ -107,9 +107,6 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
         processorClass.checkObjectClass(IDataTransferProcessor.class);
         try {
             Class<? extends IDataTransferProcessor> clazz = processorClass.getObjectClass(IDataTransferProcessor.class);
-            if (clazz == null) {
-                throw new InstantiationException("Cannot find exporter class " + processorClass.implName);
-            }
             return clazz.newInstance();
         } catch (Exception e) {
             throw new DBException("Can't instantiate data exporter", e);

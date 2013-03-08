@@ -1932,7 +1932,7 @@
               label="%command.org.jkiss.dbeaver.core.transform.consumer.database.name"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerPageMapEntities"/>
+            <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerPageMapping"/>
         </node>
     </extension>
 

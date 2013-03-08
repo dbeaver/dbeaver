@@ -16,8 +16,10 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.editor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
@@ -27,6 +29,8 @@ import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInputFactory;
+import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.editors.entity.properties.ObjectPropertiesEditor;
@@ -38,6 +42,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class EntityEditorDescriptor extends AbstractContextDescriptor
 {
+    static final Log log = LogFactory.getLog(EntityEditorDescriptor.class);
+
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseEditor"; //NON-NLS-1 //$NON-NLS-1$
 
     public static final String DEFAULT_OBJECT_EDITOR_ID = "default.object.editor"; //NON-NLS-1 //$NON-NLS-1$
@@ -108,18 +114,6 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor
     {
         return id;
     }
-
-/*
-    public String getClassName()
-    {
-        return className;
-    }
-
-    public String getObjectType()
-    {
-        return objectType;
-    }
-*/
 
     public boolean isMain()
     {
