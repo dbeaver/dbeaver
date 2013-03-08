@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -38,35 +37,30 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTransfer"; //$NON-NLS-1$
 
-    private String id;
-    private ObjectType exporterType;
-    private List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
-    private String name;
-    private String description;
-    private Image icon;
-    private List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
-    private DataTransferNodeDescriptor node;
+    private final DataTransferNodeDescriptor node;
+    private final String id;
+    private final ObjectType processorClass;
+    private final List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
+    private final String name;
+    private final String description;
+    private final Image icon;
+    private final List<IPropertyDescriptor> properties = new ArrayList<IPropertyDescriptor>();
 
     public DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config)
     {
         super(config);
         this.node = node;
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.exporterType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.processorClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        String formatName = config.getAttribute(RegistryConstants.ATTR_FORMAT);
-        String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
-        if (!CommonUtils.isEmpty(iconPath)) {
-            this.icon = iconToImage(iconPath);
-        }
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
         for (IConfigurationElement typeCfg : CommonUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
         }
 
-        IConfigurationElement[] propElements = config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP);
-        for (IConfigurationElement prop : propElements) {
+        for (IConfigurationElement prop : CommonUtils.safeArray(config.getChildren(PropertyDescriptorEx.TAG_PROPERTY_GROUP))) {
             properties.addAll(PropertyDescriptorEx.extractProperties(prop));
         }
     }
@@ -110,11 +104,11 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
 
     public IDataTransferProcessor createProcessor() throws DBException
     {
-        exporterType.checkObjectClass(IDataTransferProcessor.class);
+        processorClass.checkObjectClass(IDataTransferProcessor.class);
         try {
-            Class<? extends IDataTransferProcessor> clazz = exporterType.getObjectClass(IDataTransferProcessor.class);
+            Class<? extends IDataTransferProcessor> clazz = processorClass.getObjectClass(IDataTransferProcessor.class);
             if (clazz == null) {
-                throw new InstantiationException("Cannot find exporter class " + exporterType.implName);
+                throw new InstantiationException("Cannot find exporter class " + processorClass.implName);
             }
             return clazz.newInstance();
         } catch (Exception e) {

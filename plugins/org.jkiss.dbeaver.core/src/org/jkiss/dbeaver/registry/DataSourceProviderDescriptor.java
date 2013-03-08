@@ -74,10 +74,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        String iconName = config.getAttribute(RegistryConstants.ATTR_ICON);
-        if (!CommonUtils.isEmpty(iconName)) {
-            this.icon = iconToImage(iconName);
-        }
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
             this.icon = DBIcon.GEN_DATABASE_TYPE.getImage();
         }

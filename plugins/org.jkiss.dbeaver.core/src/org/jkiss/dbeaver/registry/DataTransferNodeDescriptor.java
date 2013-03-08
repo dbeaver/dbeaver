@@ -43,16 +43,16 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         CONSUMER
     }
 
-    private String id;
-    private String name;
-    private String description;
-    private Image icon;
-    private NodeType nodeType;
-    private ObjectType implType;
-    private ObjectType settingsType;
-    private List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
-    private List<ObjectType> pageTypes = new ArrayList<ObjectType>();
-    private List<DataTransferProcessorDescriptor> processors = new ArrayList<DataTransferProcessorDescriptor>();
+    private final String id;
+    private final String name;
+    private final String description;
+    private final Image icon;
+    private final NodeType nodeType;
+    private final ObjectType implType;
+    private final ObjectType settingsType;
+    private final List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
+    private final List<ObjectType> pageTypes = new ArrayList<ObjectType>();
+    private final List<DataTransferProcessorDescriptor> processors = new ArrayList<DataTransferProcessorDescriptor>();
 
     public DataTransferNodeDescriptor(IConfigurationElement config)
     {
@@ -61,13 +61,10 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        String iconPath = config.getAttribute(RegistryConstants.ATTR_ICON);
-        if (!CommonUtils.isEmpty(iconPath)) {
-            this.icon = iconToImage(iconPath);
-        }
-        nodeType = NodeType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase());
-        implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
-        settingsType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_SETTINGS));
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.nodeType = NodeType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase());
+        this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
+        this.settingsType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_SETTINGS));
         for (IConfigurationElement typeCfg : CommonUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
         }
