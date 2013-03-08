@@ -1862,7 +1862,8 @@
                 id="database_producer"
                 class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
                 icon="icons/tree/table.png"
-                label="%command.org.jkiss.dbeaver.core.transform.producer.database.name"
+                label="%dataTransfer.producer.database.name"
+                description="%dataTransfer.producer.database.description"
                 settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerPageExtractSettings"/>
@@ -1872,55 +1873,58 @@
                 id="stream_consumer"
                 class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
                 icon="icons/tree/file.png"
-                label="%command.org.jkiss.dbeaver.core.transform.consumer.stream.name"
+                label="%dataTransfer.consumer.stream.name"
+                description="%dataTransfer.consumer.stream.description"
                 settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
             <page class="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageSettings"/>
             <page class="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageOutput"/>
 
             <processor
-                    id="org.jkiss.dbeaver.core.dataExport.xml"
+                    id="stream.xml"
                     class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterXML"
-                    description="%command.org.jkiss.dbeaver.core.resultset.export.xml.description"
+                    description="%dataTransfer.processor.xml.description"
                     icon="icons/misc/xml.png"
-                    label="%command.org.jkiss.dbeaver.core.resultset.export.xml.name">
-                <property id="extension" label="File extension" defaultValue="xml"/>
+                    label="%dataTransfer.processor.xml.name">
+                <propertyGroup label="General">
+                    <property id="extension" label="File extension" defaultValue="xml"/>
+                </propertyGroup>
             </processor>
             <processor
-                    id="org.jkiss.dbeaver.core.dataExport.html"
+                    id="stream.html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterHTML"
-                    description="%command.org.jkiss.dbeaver.core.resultset.export.html.description"
+                    description="%dataTransfer.processor.html.description"
                     icon="icons/misc/html.png"
-                    label="%command.org.jkiss.dbeaver.core.resultset.export.html.name">
+                    label="%dataTransfer.processor.html.name">
                 <propertyGroup label="General">
                     <property id="extension" label="File extension" defaultValue="html"/>
-                    <property id="extractImages" label="%command.org.jkiss.dbeaver.core.resultset.export.html.property.images.name" type="boolean" description="%command.org.jkiss.dbeaver.core.resultset.export.html.property.images.description" defaultValue="true"/>
+                    <property id="extractImages" label="%dataTransfer.processor.html.property.images.name" type="boolean" description="%dataTransfer.processor.html.property.images.description" defaultValue="true"/>
                 </propertyGroup>
             </processor>
             <processor
-                    id="org.jkiss.dbeaver.core.dataExport.csv"
+                    id="stream.csv"
                     class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterCSV"
-                    description="%command.org.jkiss.dbeaver.core.resultset.export.csv.description"
+                    description="%dataTransfer.processor.csv.description"
                     icon="icons/misc/csv.png"
-                    label="%command.org.jkiss.dbeaver.core.resultset.export.csv.name">
+                    label="%dataTransfer.processor.csv.name">
                 <propertyGroup label="General">
                     <property id="extension" label="File extension" defaultValue="csv"/>
-                    <property id="delimiter" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.delimiter.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.delimiter.description" defaultValue="," required="true"/>
-                    <property id="header" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.header.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
-                    <property id="escape" label="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.escape.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
+                    <property id="delimiter" label="%dataTransfer.processor.csv.property.delimiter.name" type="string" description="%dataTransfer.processor.csv.property.delimiter.description" defaultValue="," required="true"/>
+                    <property id="header" label="%dataTransfer.processor.csv.property.header.name" type="string" description="%dataTransfer.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
+                    <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
                 </propertyGroup>
             </processor>
             <processor
-                    id="org.jkiss.dbeaver.core.dataExport.sql"
+                    id="stream.sql"
                     class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterSQL"
-                    description="%command.org.jkiss.dbeaver.core.resultset.export.sql.description"
+                    description="%dataTransfer.processor.sql.description"
                     icon="icons/misc/sql.png"
-                    label="%command.org.jkiss.dbeaver.core.resultset.export.sql.name">
+                    label="%dataTransfer.processor.sql.name">
                 <sourceType type="org.jkiss.dbeaver.model.struct.rdb.DBSTable"/>
                 <propertyGroup label="General">
                     <property id="extension" label="File extension" defaultValue="sql"/>
                     <property id="format" label="Dates/numbers format" defaultValue="native" validValues="ui,edit,native"/>
-                    <property id="escape" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.escape.name" type="string" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.escape.description" required="true"/>
-                    <property id="rowsInStatement" label="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.name" type="integer" description="%command.org.jkiss.dbeaver.core.resultset.export.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
+                    <property id="escape" label="%dataTransfer.processor.sql.property.escape.name" type="string" description="%dataTransfer.processor.sql.property.escape.description" required="true"/>
+                    <property id="rowsInStatement" label="%dataTransfer.processor.sql.property.rowsInStatement.name" type="integer" description="%dataTransfer.processor.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
                 </propertyGroup>
             </processor>
         </node>
@@ -1929,7 +1933,8 @@
               id="database_consumer"
               class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
               icon="icons/tree/table.png"
-              label="%command.org.jkiss.dbeaver.core.transform.consumer.database.name"
+              label="%dataTransfer.consumer.database.name"
+              description="%dataTransfer.consumer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerPageMapping"/>

@@ -120,6 +120,17 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     }
 
     @Override
+    public boolean canFinish()
+    {
+        for (IWizardPage page : getPages()) {
+            if (settings.isPageValid(page) && !page.isPageComplete()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
     public boolean performFinish() {
         // Save settings
         getSettings().saveTo(getDialogSettings());
