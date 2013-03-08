@@ -20,18 +20,103 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DatabaseConsumerSettings
  */
 public class DatabaseConsumerSettings implements IDataTransferSettings {
 
+    enum MappingType {
+        unspecified,
+        table,
+        create,
+        skip
+    }
+
+    static class ContainerMapping {
+        DBSDataContainer source;
+        DBSDataManipulator target;
+        String targetName;
+        MappingType mappingType;
+        Map<DBSAttributeBase, AttributeMapping> attributeMappings = new HashMap<DBSAttributeBase, AttributeMapping>();
+
+        public ContainerMapping(DBSDataContainer source)
+        {
+            this.source = source;
+            this.mappingType = MappingType.unspecified;
+        }
+
+        public boolean isCompleted()
+        {
+            for (Map.Entry<DBSAttributeBase, AttributeMapping> attr : attributeMappings.entrySet()) {
+                if (attr.getValue().mappingType == MappingType.unspecified) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
+    static class AttributeMapping {
+        DBSAttributeBase source;
+        DBSEntityAttribute target;
+        String targetName;
+        DBSDataType targetType;
+        MappingType mappingType;
+
+        AttributeMapping(DBSAttributeBase source)
+        {
+            this.source = source;
+            this.mappingType = MappingType.unspecified;
+        }
+    }
+
+    private DBNNode containerNode;
+    private Map<DBSDataContainer, ContainerMapping> dataMappings = new HashMap<DBSDataContainer, ContainerMapping>();
+
     public DatabaseConsumerSettings()
     {
     }
 
+    public DBNNode getContainerNode()
+    {
+        return containerNode;
+    }
+
+    public void setContainerNode(DBNNode containerNode)
+    {
+        this.containerNode = containerNode;
+    }
+
+    public Map<DBSDataContainer, ContainerMapping> getDataMappings()
+    {
+        return dataMappings;
+    }
+
+    public boolean isCompleted(Collection<DataTransferPipe> pipes)
+    {
+        for (DataTransferPipe pipe : pipes) {
+            if (pipe.getProducer() != null) {
+                DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getSourceObject();
+                ContainerMapping containerMapping = dataMappings.get(sourceObject);
+                if (containerMapping == null ||
+                    containerMapping.mappingType == MappingType.unspecified ||
+                    !containerMapping.isCompleted())
+                {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     @Override
     public void loadSettings(IDialogSettings dialogSettings)
