@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -33,13 +31,12 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -51,6 +48,7 @@ public class BrowseObjectDialog extends Dialog {
 
     private String title;
     private DBNNode rootNode;
+    private DBNNode selectedNode;
     private boolean singleSelection;
     private Class[] allowedTypes;
     private List<DBNNode> selectedObjects = new ArrayList<DBNNode>();
@@ -60,12 +58,14 @@ public class BrowseObjectDialog extends Dialog {
         Shell parentShell,
         String title,
         DBNNode rootNode,
+        DBNNode selectedNode,
         boolean singleSelection,
         Class[] allowedTypes)
     {
         super(parentShell);
         this.title = title;
         this.rootNode = rootNode;
+        this.selectedNode = selectedNode;
         this.singleSelection = singleSelection;
         this.allowedTypes = allowedTypes;
     }
@@ -87,6 +87,8 @@ public class BrowseObjectDialog extends Dialog {
 
         navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER);
         gd = new GridData(GridData.FILL_BOTH);
+        gd.widthHint = 500;
+        gd.heightHint = 500;
         navigatorTree.setLayoutData(gd);
 
         navigatorTree.getViewer().addFilter(new ViewerFilter() {
@@ -100,25 +102,59 @@ public class BrowseObjectDialog extends Dialog {
                     if (element instanceof DBNDatabaseFolder) {
                         DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
                         Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
-                        return folderItemsClass != null && DBSObjectContainer.class.isAssignableFrom(folderItemsClass);
+                        return folderItemsClass != null && matchesType(folderItemsClass);
                     }
-                    if (element instanceof DBNProjectDatabases || element instanceof DBNDataSource || (element instanceof DBSWrapper && ((DBSWrapper) element).getObject() instanceof DBSObjectContainer)) {
+                    if (element instanceof DBNProjectDatabases ||
+                        element instanceof DBNDataSource ||
+                        (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass())))
+                    {
                         return true;
                     }
                 }
                 return false;
             }
         });
+        if (selectedNode != null) {
+            navigatorTree.getViewer().setSelection(new StructuredSelection(selectedNode));
+            selectedObjects.add(selectedNode);
+        }
+        navigatorTree.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event)
+            {
+                selectedObjects.clear();
+                IStructuredSelection selection = (IStructuredSelection) navigatorTree.getViewer().getSelection();
+                for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+                    DBNNode node = (DBNNode) iter.next();
+                    if (node instanceof DBSWrapper) {
+                        if (matchesType(((DBSWrapper) node).getObject().getClass())) {
+                            selectedObjects.add(node);
+                        }
+                    }
+                }
+                getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
+            }
+        });
 
         return group;
+    }
+
+    private boolean matchesType(Class<?> nodeType)
+    {
+        for (Class ot : allowedTypes) {
+            if (ot.isAssignableFrom(nodeType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
     protected Control createContents(Composite parent)
     {
-        Control ctl = super.createContents(parent);
-        getButton(IDialogConstants.OK_ID).setEnabled(false);
-        return ctl;
+        Control contents = super.createContents(parent);
+        getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
+        return contents;
     }
 
     @Override
@@ -133,9 +169,9 @@ public class BrowseObjectDialog extends Dialog {
         return selectedObjects;
     }
 
-    public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, Class ... allowedTypes)
+    public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class ... allowedTypes)
     {
-        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, false, allowedTypes);
+        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {
@@ -143,9 +179,9 @@ public class BrowseObjectDialog extends Dialog {
         }
     }
 
-    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, Class ... allowedTypes)
+    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class ... allowedTypes)
     {
-        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, true, allowedTypes);
+        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
