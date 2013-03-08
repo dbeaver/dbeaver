@@ -150,6 +150,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     public void dispose()
     {
         model = null;
+        super.dispose();
     }
 
     /**
