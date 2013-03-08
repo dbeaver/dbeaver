@@ -70,12 +70,6 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultTable.setHeaderVisible(true);
             resultTable.setLinesVisible(true);
-            resultTable.addControlListener(new ControlAdapter() {
-                @Override
-                public void controlResized(ControlEvent e) {
-                    //UIUtils.packColumns(resultTable);
-                }
-            });
 
             UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_source);
             UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_target);

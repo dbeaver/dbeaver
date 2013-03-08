@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.tools.transfer.wizard;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -149,10 +151,16 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 }
             }
         });
+        consumersTable.getTable().addControlListener(new ControlAdapter() {
+            @Override
+            public void controlResized(ControlEvent e)
+            {
+                UIUtils.packColumns(consumersTable.getTable());
+                UIUtils.maxTableColumnsWidth(consumersTable.getTable());
+                consumersTable.getTable().removeControlListener(this);
+            }
+        });
         setControl(composite);
-
-        UIUtils.packColumns(consumersTable.getTable());
-        UIUtils.maxTableColumnsWidth(consumersTable.getTable());
 
         DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
