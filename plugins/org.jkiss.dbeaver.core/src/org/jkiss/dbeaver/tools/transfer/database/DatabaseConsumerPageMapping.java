@@ -55,6 +55,19 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private TableViewer mappingViewer;
 
+    private abstract class MappingLabelProvider extends CellLabelProvider {
+        @Override
+        public void update(ViewerCell cell)
+        {
+            DatabaseConsumerSettings.ContainerMapping mapping = (DatabaseConsumerSettings.ContainerMapping) cell.getElement();
+            if (mapping.mappingType == DatabaseConsumerSettings.MappingType.unspecified) {
+                cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED));
+            } else {
+                cell.setBackground(null);
+            }
+        }
+    }
+
     public DatabaseConsumerPageMapping() {
         super("Entities mapping");
         setTitle("Entities mapping");
@@ -109,6 +122,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             settings.setContainerNode(node);
                             containerIcon.setImage(node.getNodeIconDefault());
                             containerName.setText(node.getNodeFullName());
+                            mappingViewer.setSelection(mappingViewer.getSelection());
                         }
                     }
                 }
@@ -117,64 +131,59 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
         {
             // Mapping table
-            mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
+            mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             mappingViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
             mappingViewer.getTable().setLinesVisible(true);
             mappingViewer.getTable().setHeaderVisible(true);
 
             TableViewerColumn columnSource = new TableViewerColumn(mappingViewer, SWT.LEFT);
-            columnSource.setLabelProvider(new CellLabelProvider() {
+            columnSource.setLabelProvider(new MappingLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
                 {
                     DatabaseConsumerSettings.ContainerMapping mapping = (DatabaseConsumerSettings.ContainerMapping) cell.getElement();
                     cell.setText(DBUtils.getObjectFullName(mapping.source));
                     cell.setImage(getWizard().getSettings().getProducer().getIcon());
+                    super.update(cell);
                 }
             });
             columnSource.getColumn().setText("Source");
 
             TableViewerColumn columnTarget = new TableViewerColumn(mappingViewer, SWT.LEFT);
-            columnTarget.setLabelProvider(new CellLabelProvider() {
+            columnTarget.setLabelProvider(new MappingLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
                 {
                     DatabaseConsumerSettings.ContainerMapping mapping = (DatabaseConsumerSettings.ContainerMapping) cell.getElement();
                     String text = "";
-                    Color background = null;
                     if (mapping.target != null) {
                         text = DBUtils.getObjectFullName(mapping.target);
                     } else if (mapping.targetName != null) {
                         text = mapping.targetName;
                     } else {
                         text = "?";
-                        background = DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED);
                     }
                     cell.setText(text);
-                    cell.setBackground(background);
+                    super.update(cell);
                 }
             });
             columnTarget.getColumn().setText("Target");
 
             TableViewerColumn columnType = new TableViewerColumn(mappingViewer, SWT.LEFT);
-            columnType.setLabelProvider(new CellLabelProvider() {
+            columnType.setLabelProvider(new MappingLabelProvider() {
                 @Override
                 public void update(ViewerCell cell)
                 {
                     DatabaseConsumerSettings.ContainerMapping mapping = (DatabaseConsumerSettings.ContainerMapping) cell.getElement();
                     String text = "";
-                    Color background = null;
                     switch (mapping.mappingType) {
-                        case unspecified:
-                            text = "?";
-                            background = DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED);
-                            break;
+                        case unspecified: text = "?"; break;
                         case table: text = "table"; break;
                         case create: text = "new"; break;
                         case skip: text = "skip"; break;
                     }
                     cell.setText(text);
-                    cell.setBackground(background);
+                    super.update(cell);
                 }
             });
             columnType.getColumn().setText("Type");
@@ -192,27 +201,86 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             mapTableButton.setImage(DBIcon.TREE_TABLE.getImage());
             mapTableButton.setText("Existing table ...");
             mapTableButton.setEnabled(false);
+            mapTableButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    mapExistingTable(getSelectedMapping());
+                }
+            });
 
             final Button createNewButton = new Button(buttonsPanel, SWT.PUSH);
             createNewButton.setImage(DBIcon.TREE_VIEW.getImage());
             createNewButton.setText("Create new ...");
             createNewButton.setEnabled(false);
+            createNewButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    mapNewTable(getSelectedMapping());
+                }
+            });
 
             final Button columnsButton = new Button(buttonsPanel, SWT.PUSH);
             columnsButton.setImage(DBIcon.TREE_COLUMNS.getImage());
             columnsButton.setText("Columns' mappings ...");
             columnsButton.setEnabled(false);
+            columnsButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    mapColumns(getSelectedMapping());
+                }
+            });
 
             mappingViewer.addSelectionChangedListener(new ISelectionChangedListener() {
                 @Override
                 public void selectionChanged(SelectionChangedEvent event)
                 {
-
+                    DatabaseConsumerSettings.ContainerMapping mapping = getSelectedMapping();
+                    mapTableButton.setEnabled(mapping != null);
+                    createNewButton.setEnabled(mapping != null && settings.getContainerNode() != null);
+                    columnsButton.setEnabled(mapping != null && mapping.mappingType != DatabaseConsumerSettings.MappingType.unspecified);
+                }
+            });
+            mappingViewer.addDoubleClickListener(new IDoubleClickListener() {
+                @Override
+                public void doubleClick(DoubleClickEvent event)
+                {
+                    DatabaseConsumerSettings.ContainerMapping selectedMapping = getSelectedMapping();
+                    if (selectedMapping != null) {
+                        if (selectedMapping.mappingType == DatabaseConsumerSettings.MappingType.unspecified) {
+                            mapExistingTable(selectedMapping);
+                        } else {
+                            mapColumns(selectedMapping);
+                        }
+                    }
                 }
             });
         }
 
         setControl(composite);
+    }
+
+    private void mapExistingTable(DatabaseConsumerSettings.ContainerMapping mapping)
+    {
+        UIUtils.showMessageBox(getShell(), "Map table", "Map table", SWT.ICON_INFORMATION);
+    }
+
+    private void mapNewTable(DatabaseConsumerSettings.ContainerMapping mapping)
+    {
+        UIUtils.showMessageBox(getShell(), "Map new table", "Map new table", SWT.ICON_INFORMATION);
+    }
+
+    private void mapColumns(DatabaseConsumerSettings.ContainerMapping mapping)
+    {
+        UIUtils.showMessageBox(getShell(), "Map columns", "Map columns", SWT.ICON_INFORMATION);
+    }
+
+    DatabaseConsumerSettings.ContainerMapping getSelectedMapping()
+    {
+        IStructuredSelection selection = (IStructuredSelection) mappingViewer.getSelection();
+        return selection.isEmpty() ? null : (DatabaseConsumerSettings.ContainerMapping) selection.getFirstElement();
     }
 
     @Override
