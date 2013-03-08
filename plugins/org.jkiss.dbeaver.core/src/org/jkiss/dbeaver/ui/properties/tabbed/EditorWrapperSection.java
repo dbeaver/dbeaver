@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ext.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ext.IPropertyChangeReflector;
 import org.jkiss.dbeaver.ext.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ext.ui.IRefreshablePart;
-import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
+import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 

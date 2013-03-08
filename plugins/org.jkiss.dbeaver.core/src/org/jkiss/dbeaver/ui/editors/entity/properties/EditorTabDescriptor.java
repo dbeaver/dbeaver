@@ -23,7 +23,7 @@ import org.eclipse.ui.views.properties.tabbed.AbstractTabDescriptor;
 import org.eclipse.ui.views.properties.tabbed.ISection;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
-import org.jkiss.dbeaver.registry.EntityEditorDescriptor;
+import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.ui.properties.tabbed.EditorWrapperSection;
 import org.jkiss.dbeaver.ui.properties.tabbed.PropertiesContributor;
 import org.jkiss.dbeaver.ui.properties.tabbed.SectionDescriptor;

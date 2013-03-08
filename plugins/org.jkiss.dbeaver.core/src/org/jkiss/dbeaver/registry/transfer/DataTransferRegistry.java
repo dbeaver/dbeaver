@@ -17,12 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.transfer;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,12 +33,13 @@ import java.util.List;
  */
 public class DataTransferRegistry {
 
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTransfer"; //$NON-NLS-1$
     private List<DataTransferNodeDescriptor> nodes = new ArrayList<DataTransferNodeDescriptor>();
 
     public DataTransferRegistry(IExtensionRegistry registry)
     {
         // Load datasource providers from external plugins
-        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataTransferProcessorDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
             if (RegistryConstants.TAG_NODE.equals(ext.getName())) {
                 nodes.add(new DataTransferNodeDescriptor(ext));
