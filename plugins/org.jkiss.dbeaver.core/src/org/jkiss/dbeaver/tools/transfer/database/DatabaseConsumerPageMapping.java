@@ -19,13 +19,11 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -33,21 +31,29 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
+
+import java.util.Map;
 
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
 
     private TableViewer mappingViewer;
-    private DBNNode containerNode;
 
     public DatabaseConsumerPageMapping() {
         super("Entities mapping");
@@ -59,6 +65,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
+
+        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
 
         Composite composite = new Composite(parent, SWT.NULL);
         GridLayout gl = new GridLayout();
@@ -95,12 +103,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             getShell(),
                             "Choose container",
                             rootNode.getDatabases(),
-                            containerNode,
-                            DBSObjectContainer.class);
+                            settings.getContainerNode(),
+                            DBSSchema.class, DBSCatalog.class);
                         if (node != null) {
-                            containerNode = node;
-                            containerIcon.setImage(containerNode.getNodeIconDefault());
-                            containerName.setText(containerNode.getNodeFullName());
+                            settings.setContainerNode(node);
+                            containerIcon.setImage(node.getNodeIconDefault());
+                            containerName.setText(node.getNodeFullName());
                         }
                     }
                 }
@@ -109,7 +117,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
         {
             // Mapping table
-            mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.MULTI);
+            mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.MULTI | SWT.FULL_SELECTION);
             mappingViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
             mappingViewer.getTable().setLinesVisible(true);
             mappingViewer.getTable().setHeaderVisible(true);
@@ -119,7 +127,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 @Override
                 public void update(ViewerCell cell)
                 {
-
+                    DatabaseConsumerSettings.ContainerMapping mapping = (DatabaseConsumerSettings.ContainerMapping) cell.getElement();
+                    cell.setText(DBUtils.getObjectFullName(mapping.source));
+                    cell.setImage(getWizard().getSettings().getProducer().getIcon());
                 }
             });
             columnSource.getColumn().setText("Source");
@@ -129,7 +139,19 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 @Override
                 public void update(ViewerCell cell)
                 {
-
+                    DatabaseConsumerSettings.ContainerMapping mapping = (DatabaseConsumerSettings.ContainerMapping) cell.getElement();
+                    String text = "";
+                    Color background = null;
+                    if (mapping.target != null) {
+                        text = DBUtils.getObjectFullName(mapping.target);
+                    } else if (mapping.targetName != null) {
+                        text = mapping.targetName;
+                    } else {
+                        text = "?";
+                        background = DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED);
+                    }
+                    cell.setText(text);
+                    cell.setBackground(background);
                 }
             });
             columnTarget.getColumn().setText("Target");
@@ -139,10 +161,25 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 @Override
                 public void update(ViewerCell cell)
                 {
-
+                    DatabaseConsumerSettings.ContainerMapping mapping = (DatabaseConsumerSettings.ContainerMapping) cell.getElement();
+                    String text = "";
+                    Color background = null;
+                    switch (mapping.mappingType) {
+                        case unspecified:
+                            text = "?";
+                            background = DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED);
+                            break;
+                        case table: text = "table"; break;
+                        case create: text = "new"; break;
+                        case skip: text = "skip"; break;
+                    }
+                    cell.setText(text);
+                    cell.setBackground(background);
                 }
             });
             columnType.getColumn().setText("Type");
+
+            mappingViewer.setContentProvider(new ListContentProvider());
         }
 
         {
@@ -151,29 +188,49 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             buttonsPanel.setLayout(new GridLayout(3, false));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            Button mapTableButton = new Button(buttonsPanel, SWT.PUSH);
+            final Button mapTableButton = new Button(buttonsPanel, SWT.PUSH);
             mapTableButton.setImage(DBIcon.TREE_TABLE.getImage());
             mapTableButton.setText("Existing table ...");
+            mapTableButton.setEnabled(false);
 
-            Button createNewButton = new Button(buttonsPanel, SWT.PUSH);
+            final Button createNewButton = new Button(buttonsPanel, SWT.PUSH);
             createNewButton.setImage(DBIcon.TREE_VIEW.getImage());
             createNewButton.setText("Create new ...");
+            createNewButton.setEnabled(false);
 
-            Button columnsButton = new Button(buttonsPanel, SWT.PUSH);
+            final Button columnsButton = new Button(buttonsPanel, SWT.PUSH);
             columnsButton.setImage(DBIcon.TREE_COLUMNS.getImage());
             columnsButton.setText("Columns' mappings ...");
+            columnsButton.setEnabled(false);
+
+            mappingViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+                @Override
+                public void selectionChanged(SelectionChangedEvent event)
+                {
+
+                }
+            });
         }
 
-        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
-
         setControl(composite);
-
     }
 
     @Override
     public void activatePage()
     {
         final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+
+        Map<DBSDataContainer,DatabaseConsumerSettings.ContainerMapping> dataMappings = settings.getDataMappings();
+        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+            if (pipe.getProducer() == null) {
+                continue;
+            }
+            DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getSourceObject();
+            if (!dataMappings.containsKey(sourceObject)) {
+                dataMappings.put(sourceObject, new DatabaseConsumerSettings.ContainerMapping(sourceObject));
+            }
+        }
+        mappingViewer.setInput(dataMappings.values());
 
         UIUtils.packColumns(mappingViewer.getTable(), true);
 
@@ -183,7 +240,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     @Override
     protected boolean determinePageCompletion()
     {
-        return true;
+        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        return settings.isCompleted(getWizard().getSettings().getDataPipes());
     }
 
 }

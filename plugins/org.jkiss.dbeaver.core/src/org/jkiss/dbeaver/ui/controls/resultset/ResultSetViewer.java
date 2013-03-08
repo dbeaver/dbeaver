@@ -108,6 +108,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     static final Log log = LogFactory.getLog(ResultSetViewer.class);
 
     private static final int DEFAULT_ROW_HEADER_WIDTH = 50;
+
     private ResultSetValueController panelValueController;
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
@@ -181,9 +182,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         this.colorRed = Display.getDefault().getSystemColor(SWT.COLOR_RED);
         final ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
-        this.backgroundAdded = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
-        this.backgroundDeleted = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
-        this.backgroundModified = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
+        this.backgroundAdded = sharedColors.getColor(SharedTextColors.COLOR_BACK_NEW);
+        this.backgroundDeleted = sharedColors.getColor(SharedTextColors.COLOR_BACK_DELETED);
+        this.backgroundModified = sharedColors.getColor(SharedTextColors.COLOR_BACK_MODFIIED);
         this.foregroundNull = parent.getDisplay().getSystemColor(SWT.COLOR_GRAY);
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
