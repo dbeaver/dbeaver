@@ -35,13 +35,15 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 
+import java.util.Collection;
+
 /**
  * ColumnsMappingDialog
  */
 public class ColumnsMappingDialog extends Dialog {
 
-    private final DataTransferWizard wizard;
     private final DatabaseMappingContainer mapping;
+    private final Collection<DatabaseMappingAttribute> attributeMappings;
     private TableViewer mappingViewer;
 
     private static abstract class MappingLabelProvider extends CellLabelProvider {
@@ -54,8 +56,8 @@ public class ColumnsMappingDialog extends Dialog {
     public ColumnsMappingDialog(DataTransferWizard wizard, DatabaseMappingContainer mapping)
     {
         super(wizard.getShell());
-        this.wizard = wizard;
         this.mapping = mapping;
+        attributeMappings = mapping.getAttributeMappings(wizard.getContainer());
     }
 
     @Override
@@ -135,7 +137,7 @@ public class ColumnsMappingDialog extends Dialog {
         columnType.getColumn().setText("Type");
         columnType.getColumn().setWidth(60);
 
-        mappingViewer.setInput(mapping.getAttributeMappings(wizard.getContainer()));
+        mappingViewer.setInput(attributeMappings);
 
         return parent;
     }
