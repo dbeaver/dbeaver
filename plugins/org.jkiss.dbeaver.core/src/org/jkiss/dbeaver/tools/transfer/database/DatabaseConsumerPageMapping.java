@@ -199,7 +199,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 public Object[] getChildren(Object parentElement)
                 {
                     if (parentElement instanceof DatabaseMappingContainer) {
-                        return ((DatabaseMappingContainer) parentElement).getAttributeMappings().toArray();
+                        return ((DatabaseMappingContainer) parentElement).getAttributeMappings(
+                            getWizard().getContainer()).toArray();
                     }
                     return null;
                 }
@@ -330,7 +331,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void mapColumns(DatabaseMappingContainer mapping)
     {
-        ColumnsMappingDialog dialog = new ColumnsMappingDialog(getShell(), mapping);
+        ColumnsMappingDialog dialog = new ColumnsMappingDialog(getWizard(), mapping);
         if (dialog.open() == IDialogConstants.OK_ID) {
 
         }

@@ -29,9 +29,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 
@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
  */
 public class ColumnsMappingDialog extends Dialog {
 
+    private final DataTransferWizard wizard;
     private final DatabaseMappingContainer mapping;
     private TableViewer mappingViewer;
 
@@ -50,9 +51,10 @@ public class ColumnsMappingDialog extends Dialog {
         }
     }
 
-    public ColumnsMappingDialog(Shell parentShell, DatabaseMappingContainer mapping)
+    public ColumnsMappingDialog(DataTransferWizard wizard, DatabaseMappingContainer mapping)
     {
-        super(parentShell);
+        super(wizard.getShell());
+        this.wizard = wizard;
         this.mapping = mapping;
     }
 
@@ -133,7 +135,7 @@ public class ColumnsMappingDialog extends Dialog {
         columnType.getColumn().setText("Type");
         columnType.getColumn().setWidth(60);
 
-        mappingViewer.setInput(mapping.getAttributeMappings());
+        mappingViewer.setInput(mapping.getAttributeMappings(wizard.getContainer()));
 
         return parent;
     }

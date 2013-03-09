@@ -18,19 +18,23 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -111,11 +115,11 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
-    public Collection<DatabaseMappingAttribute> getAttributeMappings()
+    public Collection<DatabaseMappingAttribute> getAttributeMappings(IRunnableContext runnableContext)
     {
         if (attributeMappings.isEmpty()) {
             try {
-                readAttributes();
+                readAttributes(runnableContext);
             } catch (InvocationTargetException e) {
                 UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source), e.getTargetException());
             } catch (InterruptedException e) {
@@ -125,24 +129,60 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         return attributeMappings.values();
     }
 
-    private void readAttributes() throws InvocationTargetException, InterruptedException
+    private void readAttributes(IRunnableContext runnableContext) throws InvocationTargetException, InterruptedException
     {
-        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                try {
-                    if (source instanceof DBSEntity) {
-                        for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
-                            attributeMappings.put(attr, new DatabaseMappingAttribute(attr));
+        RuntimeUtils.run(runnableContext, true, true, new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        if (source instanceof DBSEntity) {
+                            for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
+                                attributeMappings.put(attr, new DatabaseMappingAttribute(attr));
+                            }
+                        } else {
+                            // Seems to be a dynamic query. Execute it to get metadata
+                            DBCExecutionContext context = source.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Read query meta data");
+                            try {
+                                MetadataReceiver receiver = new MetadataReceiver();
+                                source.readData(context, receiver, null, 0, 1);
+                                for (DBCAttributeMetaData attr : receiver.attributes) {
+                                    attributeMappings.put(attr, new DatabaseMappingAttribute(attr));
+                                }
+                            } finally {
+                                context.close();
+                            }
                         }
-                    } else {
-                        // Seems to be a dynamic query. Execute it to get metadata
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
                 }
-            }
-        });
+            });
+    }
+
+    private static class MetadataReceiver implements DBDDataReceiver {
+
+        private List<DBCAttributeMetaData> attributes;
+
+        @Override
+        public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
+        {
+            attributes = resultSet.getResultSetMetaData().getAttributes();
+        }
+
+        @Override
+        public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
+        {
+        }
+
+        @Override
+        public void fetchEnd(DBCExecutionContext context) throws DBCException
+        {
+        }
+
+        @Override
+        public void close()
+        {
+        }
     }
 }

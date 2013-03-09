@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
- * Tooo wizard dialog
+ * Tool wizard dialog
  */
 public class ToolWizardDialog extends ActiveWizardDialog
 {
