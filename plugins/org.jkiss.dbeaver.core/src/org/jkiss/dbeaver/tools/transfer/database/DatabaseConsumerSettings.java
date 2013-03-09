@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -36,7 +37,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     enum MappingType {
         unspecified,
-        table,
+        existing,
         create,
         skip
     }
@@ -63,6 +64,16 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
             }
             return true;
         }
+
+        public String getTargetName()
+        {
+            switch (mappingType) {
+                case existing: return DBUtils.getObjectFullName(target);
+                case create: return targetName;
+                case skip: return "[skip]";
+                default: return "?";
+            }
+        }
     }
 
     static class AttributeMapping {
@@ -76,6 +87,16 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         {
             this.source = source;
             this.mappingType = MappingType.unspecified;
+        }
+
+        public String getTargetName()
+        {
+            switch (mappingType) {
+                case existing: return DBUtils.getObjectFullName(target);
+                case create: return targetName;
+                case skip: return "[skip]";
+                default: return "?";
+            }
         }
     }
 

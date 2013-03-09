@@ -19,24 +19,22 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -45,6 +43,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
+import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -52,7 +52,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private TableViewer mappingViewer;
 
-    private abstract class MappingLabelProvider extends CellLabelProvider {
+    private static abstract class MappingLabelProvider extends CellLabelProvider {
         @Override
         public void update(ViewerCell cell)
         {
@@ -107,14 +107,28 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 {
                     IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
                     if (activeProject != null) {
-                        final DBNProject rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(
+                        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                        final DBNProject rootNode = navigatorModel.getRoot().getProject(
                             activeProject);
+                        DBNNode selectedNode = settings.getContainerNode();
+                        if (selectedNode == null && !settings.getDataMappings().isEmpty()) {
+                            // Use first source object as cur selection (it's better than nothing)
+                            DBSDataContainer firstSource = settings.getDataMappings().keySet().iterator().next();
+                            selectedNode = navigatorModel.getNodeByObject(firstSource);
+                            while (selectedNode != null) {
+                                if (selectedNode instanceof DBSWrapper && ((DBSWrapper) selectedNode).getObject() instanceof DBSObjectContainer) {
+                                    break;
+                                } else {
+                                    selectedNode = selectedNode.getParentNode();
+                                }
+                            }
+                        }
                         DBNNode node = BrowseObjectDialog.selectObject(
                             getShell(),
                             "Choose container",
                             rootNode.getDatabases(),
-                            settings.getContainerNode(),
-                            DBSSchema.class, DBSCatalog.class);
+                            selectedNode,
+                            DBSObjectContainer.class);
                         if (node != null) {
                             settings.setContainerNode(node);
                             containerIcon.setImage(node.getNodeIconDefault());
@@ -152,15 +166,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 public void update(ViewerCell cell)
                 {
                     DatabaseConsumerSettings.ContainerMapping mapping = (DatabaseConsumerSettings.ContainerMapping) cell.getElement();
-                    String text = "";
-                    if (mapping.target != null) {
-                        text = DBUtils.getObjectFullName(mapping.target);
-                    } else if (mapping.targetName != null) {
-                        text = mapping.targetName;
-                    } else {
-                        text = "?";
-                    }
-                    cell.setText(text);
+                    cell.setText(mapping.getTargetName());
                     super.update(cell);
                 }
             });
@@ -175,7 +181,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     String text = "";
                     switch (mapping.mappingType) {
                         case unspecified: text = "?"; break;
-                        case table: text = "table"; break;
+                        case existing: text = "table"; break;
                         case create: text = "new"; break;
                         case skip: text = "skip"; break;
                     }
@@ -261,17 +267,56 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void mapExistingTable(DatabaseConsumerSettings.ContainerMapping mapping)
     {
-        UIUtils.showMessageBox(getShell(), "Map table", "Map table", SWT.ICON_INFORMATION);
+        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        if (activeProject != null) {
+            DBNNode rootNode = settings.getContainerNode();
+            if (rootNode == null) {
+                rootNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(
+                    activeProject).getDatabases();
+            }
+            DBNNode selectedNode = rootNode;
+            if (mapping.target != null) {
+                selectedNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(mapping.target);
+            }
+            DBNNode node = BrowseObjectDialog.selectObject(
+                getShell(),
+                "Choose target table",
+                rootNode,
+                selectedNode,
+                DBSObjectContainer.class, DBSDataManipulator.class);
+            if (node != null && node instanceof DBSWrapper) {
+                DBSObject object = ((DBSWrapper) node).getObject();
+                if (object instanceof DBSDataManipulator) {
+                    mapping.target = (DBSDataManipulator) object;
+                    mapping.mappingType = DatabaseConsumerSettings.MappingType.existing;
+                    mapColumns(mapping);
+                } else {
+                    mapping.target = null;
+                    mapping.mappingType = DatabaseConsumerSettings.MappingType.unspecified;
+                }
+                mappingViewer.refresh();
+            }
+        }
     }
 
     private void mapNewTable(DatabaseConsumerSettings.ContainerMapping mapping)
     {
-        UIUtils.showMessageBox(getShell(), "Map new table", "Map new table", SWT.ICON_INFORMATION);
+        String tableName = EnterNameDialog.chooseName(getShell(), "New table name", mapping.targetName);
+        if (!CommonUtils.isEmpty(tableName)) {
+            mapping.targetName = tableName;
+            mapping.mappingType = DatabaseConsumerSettings.MappingType.create;
+            mappingViewer.refresh();
+        }
     }
 
     private void mapColumns(DatabaseConsumerSettings.ContainerMapping mapping)
     {
-        UIUtils.showMessageBox(getShell(), "Map columns", "Map columns", SWT.ICON_INFORMATION);
+        ColumnsMappingDialog dialog = new ColumnsMappingDialog(getShell(), mapping);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+
+        }
+
     }
 
     DatabaseConsumerSettings.ContainerMapping getSelectedMapping()
@@ -297,7 +342,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
         mappingViewer.setInput(dataMappings.values());
 
-        UIUtils.packColumns(mappingViewer.getTable(), true);
+        Table table = mappingViewer.getTable();
+        int totalWidth = table.getClientArea().width;
+        TableColumn[] columns = table.getColumns();
+        columns[0].setWidth(totalWidth * 40 / 100);
+        columns[1].setWidth(totalWidth * 40 / 100);
+        columns[2].setWidth(totalWidth * 10 / 100);
 
         updatePageCompletion();
     }
