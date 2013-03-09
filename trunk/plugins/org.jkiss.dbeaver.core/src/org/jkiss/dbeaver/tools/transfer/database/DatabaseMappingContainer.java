@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
 * DatabaseMappingContainer
@@ -45,7 +42,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     private DBSDataManipulator target;
     private String targetName;
     private DatabaseMappingType mappingType;
-    private Map<DBSAttributeBase, DatabaseMappingAttribute> attributeMappings = new LinkedHashMap<DBSAttributeBase, DatabaseMappingAttribute>();
+    private List<DatabaseMappingAttribute> attributeMappings = new ArrayList<DatabaseMappingAttribute>();
 
     public DatabaseMappingContainer(DBSDataContainer source)
     {
@@ -76,12 +73,30 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     public void setMappingType(DatabaseMappingType mappingType)
     {
         this.mappingType = mappingType;
+        if (!attributeMappings.isEmpty()) {
+            for (DatabaseMappingAttribute attr : attributeMappings) {
+                switch (mappingType) {
+                    case create:
+                        attr.setMappingType(DatabaseMappingType.create);
+                        break;
+                    case existing:
+                        attr.setMappingType(DatabaseMappingType.unspecified);
+                        break;
+                    case skip:
+                        attr.setMappingType(DatabaseMappingType.skip);
+                        break;
+                    case unspecified:
+                        attr.setMappingType(DatabaseMappingType.unspecified);
+                        break;
+                }
+            }
+        }
     }
 
     public boolean isCompleted()
     {
-        for (Map.Entry<DBSAttributeBase, DatabaseMappingAttribute> attr : attributeMappings.entrySet()) {
-            if (attr.getValue().mappingType == DatabaseMappingType.unspecified) {
+        for (DatabaseMappingAttribute attr : attributeMappings) {
+            if (attr.getMappingType() == DatabaseMappingType.unspecified) {
                 return false;
             }
         }
@@ -126,7 +141,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                 // Skip it
             }
         }
-        return attributeMappings.values();
+        return attributeMappings;
     }
 
     private void readAttributes(IRunnableContext runnableContext) throws InvocationTargetException, InterruptedException
@@ -138,7 +153,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                     try {
                         if (source instanceof DBSEntity) {
                             for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
-                                attributeMappings.put(attr, new DatabaseMappingAttribute(attr));
+                                attributeMappings.add(new DatabaseMappingAttribute(attr));
                             }
                         } else {
                             // Seems to be a dynamic query. Execute it to get metadata
@@ -147,7 +162,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                                 MetadataReceiver receiver = new MetadataReceiver();
                                 source.readData(context, receiver, null, 0, 1);
                                 for (DBCAttributeMetaData attr : receiver.attributes) {
-                                    attributeMappings.put(attr, new DatabaseMappingAttribute(attr));
+                                    attributeMappings.add(new DatabaseMappingAttribute(attr));
                                 }
                             } finally {
                                 context.close();
