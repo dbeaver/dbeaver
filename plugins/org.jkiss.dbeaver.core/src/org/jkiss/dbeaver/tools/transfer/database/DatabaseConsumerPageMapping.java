@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -38,12 +39,14 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
@@ -132,80 +135,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             });
         }
 
-        {
-            // Mapping table
-            mappingViewer = new TreeViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-            mappingViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
-            mappingViewer.getTree().setLinesVisible(true);
-            mappingViewer.getTree().setHeaderVisible(true);
-
-            TreeViewerColumn columnSource = new TreeViewerColumn(mappingViewer, SWT.LEFT);
-            columnSource.setLabelProvider(new MappingLabelProvider() {
-                @Override
-                public void update(ViewerCell cell)
-                {
-                    DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
-                    cell.setText(mapping.getSourceName());
-                    cell.setImage(mapping.getIcon());
-                    super.update(cell);
-                }
-            });
-            columnSource.getColumn().setText("Source");
-
-            TreeViewerColumn columnTarget = new TreeViewerColumn(mappingViewer, SWT.LEFT);
-            columnTarget.setLabelProvider(new MappingLabelProvider() {
-                @Override
-                public void update(ViewerCell cell)
-                {
-                    DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
-                    cell.setText(mapping.getTargetName());
-                    if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
-                        cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED));
-                    } else {
-                        cell.setBackground(null);
-                    }
-                    super.update(cell);
-                }
-            });
-            columnTarget.getColumn().setText("Target");
-
-            TreeViewerColumn columnType = new TreeViewerColumn(mappingViewer, SWT.LEFT);
-            columnType.setLabelProvider(new MappingLabelProvider() {
-                @Override
-                public void update(ViewerCell cell)
-                {
-                    DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
-                    String text = "";
-                    switch (mapping.getMappingType()) {
-                        case unspecified: text = "?"; break;
-                        case existing: text = "table"; break;
-                        case create: text = "new"; break;
-                        case skip: text = "skip"; break;
-                    }
-                    cell.setText(text);
-                    super.update(cell);
-                }
-            });
-            columnType.getColumn().setText("Type");
-
-            mappingViewer.setContentProvider(new TreeContentProvider() {
-                @Override
-                public boolean hasChildren(Object element)
-                {
-                    return element instanceof DatabaseMappingContainer;
-                }
-
-                @Override
-                public Object[] getChildren(Object parentElement)
-                {
-                    if (parentElement instanceof DatabaseMappingContainer) {
-                        return ((DatabaseMappingContainer) parentElement).getAttributeMappings(
-                            getWizard().getContainer()).toArray();
-                    }
-                    return null;
-                }
-            });
-        }
+        createMappingsTree(composite);
 
         {
             // Control buttons
@@ -254,9 +184,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 public void selectionChanged(SelectionChangedEvent event)
                 {
                     DatabaseMappingObject mapping = getSelectedMapping();
-                    mapTableButton.setEnabled(mapping != null);
-                    createNewButton.setEnabled(mapping != null && settings.getContainerNode() != null);
-                    columnsButton.setEnabled(mapping != null && mapping.getMappingType() != DatabaseMappingType.unspecified);
+                    mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
+                    createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
+                    columnsButton.setEnabled(mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified);
                 }
             });
             mappingViewer.addDoubleClickListener(new IDoubleClickListener() {
@@ -266,12 +196,13 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     DatabaseMappingObject selectedMapping = getSelectedMapping();
                     if (selectedMapping != null) {
                         if (selectedMapping instanceof DatabaseMappingContainer){
-                            if (selectedMapping.getMappingType() == DatabaseMappingType.unspecified)
-                            {
+/*
+                            if (selectedMapping.getMappingType() == DatabaseMappingType.unspecified) {
                                 mapExistingTable((DatabaseMappingContainer) selectedMapping);
                             } else {
                                 mapColumns((DatabaseMappingContainer) selectedMapping);
                             }
+*/
                         }
                     }
                 }
@@ -279,6 +210,124 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
 
         setControl(composite);
+    }
+
+    private void createMappingsTree(Composite composite)
+    {
+        // Mapping table
+        mappingViewer = new TreeViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+        mappingViewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
+        mappingViewer.getTree().setLinesVisible(true);
+        mappingViewer.getTree().setHeaderVisible(true);
+
+        TreeViewerColumn columnSource = new TreeViewerColumn(mappingViewer, SWT.LEFT);
+        columnSource.setLabelProvider(new MappingLabelProvider() {
+            @Override
+            public void update(ViewerCell cell)
+            {
+                DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
+                cell.setText(mapping.getSourceName());
+                cell.setImage(mapping.getIcon());
+                super.update(cell);
+            }
+        });
+        columnSource.getColumn().setText("Source");
+
+        TreeViewerColumn columnTarget = new TreeViewerColumn(mappingViewer, SWT.LEFT);
+        columnTarget.setLabelProvider(new MappingLabelProvider() {
+            @Override
+            public void update(ViewerCell cell)
+            {
+                DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
+                cell.setText(mapping.getTargetName());
+                if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
+                    cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED));
+                } else {
+                    cell.setBackground(null);
+                }
+                super.update(cell);
+            }
+        });
+        columnTarget.getColumn().setText("Target");
+        columnTarget.setEditingSupport(new EditingSupport(mappingViewer) {
+            @Override
+            protected CellEditor getCellEditor(Object element)
+            {
+                java.util.List<String> items = new ArrayList<String>();
+                items.add("[skip]");
+                items.add("[browse]");
+                if (element instanceof DatabaseMappingContainer) {
+
+                } else {
+
+                }
+                CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
+                    mappingViewer.getTree(),
+                    items.toArray(new String[items.size()]),
+                    SWT.DROP_DOWN | SWT.READ_ONLY);
+                return editor;
+            }
+
+            @Override
+            protected boolean canEdit(Object element)
+            {
+                return true;
+            }
+
+            @Override
+            protected Object getValue(Object element)
+            {
+                if (element instanceof DatabaseMappingContainer) {
+                    return ((DatabaseMappingContainer) element).getTargetName();
+                } else {
+                    return ((DatabaseMappingAttribute) element).getTargetName();
+                }
+            }
+
+            @Override
+            protected void setValue(Object element, Object value)
+            {
+
+            }
+        });
+        //TreeViewerEditor.create(mappingViewer, new TreeViewerFocusCellManager(), ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
+
+        TreeViewerColumn columnType = new TreeViewerColumn(mappingViewer, SWT.LEFT);
+        columnType.setLabelProvider(new MappingLabelProvider() {
+            @Override
+            public void update(ViewerCell cell)
+            {
+                DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
+                String text = "";
+                switch (mapping.getMappingType()) {
+                    case unspecified: text = "?"; break;
+                    case existing: text = "table"; break;
+                    case create: text = "new"; break;
+                    case skip: text = "skip"; break;
+                }
+                cell.setText(text);
+                super.update(cell);
+            }
+        });
+        columnType.getColumn().setText("Type");
+
+        mappingViewer.setContentProvider(new TreeContentProvider() {
+            @Override
+            public boolean hasChildren(Object element)
+            {
+                return element instanceof DatabaseMappingContainer;
+            }
+
+            @Override
+            public Object[] getChildren(Object parentElement)
+            {
+                if (parentElement instanceof DatabaseMappingContainer) {
+                    return ((DatabaseMappingContainer) parentElement).getAttributeMappings(
+                        getWizard().getContainer()).toArray();
+                }
+                return null;
+            }
+        });
     }
 
     private void mapExistingTable(DatabaseMappingContainer mapping)

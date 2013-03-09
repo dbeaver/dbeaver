@@ -76,5 +76,15 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     public void setMappingType(DatabaseMappingType mappingType)
     {
         this.mappingType = mappingType;
+        switch (mappingType) {
+            case create:
+                targetName = getSourceName();
+                break;
+        }
+    }
+
+    public DBSEntityAttribute getTarget()
+    {
+        return target;
     }
 }
