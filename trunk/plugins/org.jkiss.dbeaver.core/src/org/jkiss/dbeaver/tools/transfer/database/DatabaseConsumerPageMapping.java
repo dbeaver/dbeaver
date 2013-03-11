@@ -357,6 +357,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         java.util.List<String> items = new ArrayList<String>();
         items.add(TARGET_NAME_SKIP);
         if (element instanceof DatabaseMappingContainer) {
+            if (settings.getContainerNode() == null) {
+                allowsCreate = false;
+            }
             items.add(TARGET_NAME_BROWSE);
             if (settings.getContainerNode() != null && settings.getContainerNode().getObject() instanceof DBSObjectContainer) {
                 // container's tables

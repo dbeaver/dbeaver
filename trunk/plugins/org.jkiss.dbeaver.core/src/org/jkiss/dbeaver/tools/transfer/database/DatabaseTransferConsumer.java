@@ -76,10 +76,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (dataMapping == null) {
             return "?";
         }
-        if (dataMapping.getMappingType() == DatabaseMappingType.skip) {
-            return "N/A";
+        switch (dataMapping.getMappingType()) {
+            case create: return dataMapping.getTargetName() + " [Create]";
+            case existing: return dataMapping.getTargetName() + " [Insert]";
+            case skip: return "[Skip]";
+            default: return "?";
         }
-        return dataMapping.getTargetName();
     }
 
 }
