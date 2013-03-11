@@ -33,5 +33,4 @@ interface DatabaseMappingObject {
 
     DatabaseMappingType getMappingType();
 
-    void setMappingType(DatabaseMappingType mappingType);
 }
