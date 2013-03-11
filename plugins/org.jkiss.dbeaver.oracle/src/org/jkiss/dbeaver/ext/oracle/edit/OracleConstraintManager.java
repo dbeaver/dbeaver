@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.*;
@@ -47,7 +46,7 @@ public class OracleConstraintManager extends JDBCConstraintManager<OracleTableCo
     @Override
     protected OracleTableConstraint createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent,
+        DBECommandContext context, OracleTableBase parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(

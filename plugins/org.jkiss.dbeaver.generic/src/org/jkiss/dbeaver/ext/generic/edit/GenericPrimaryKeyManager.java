@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
@@ -49,7 +48,7 @@ public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrima
     @Override
     protected GenericPrimaryKey createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, DBECommandContext context, GenericTable parent,
+        DBECommandContext context, GenericTable parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(

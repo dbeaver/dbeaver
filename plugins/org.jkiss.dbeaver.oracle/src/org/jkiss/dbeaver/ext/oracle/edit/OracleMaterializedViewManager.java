@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -62,7 +61,7 @@ public class OracleMaterializedViewManager extends JDBCObjectEditor<OracleMateri
     }
 
     @Override
-    protected OracleMaterializedView createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleMaterializedView createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         OracleMaterializedView newView = new OracleMaterializedView(parent, "NewView"); //$NON-NLS-1$
         return newView;

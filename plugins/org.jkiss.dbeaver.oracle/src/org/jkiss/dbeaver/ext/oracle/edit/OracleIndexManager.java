@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
@@ -53,7 +52,6 @@ public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, Oracl
     @Override
     protected OracleTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor,
         DBECommandContext context, OracleTablePhysical parent,
         Object from)
     {

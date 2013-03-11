@@ -79,7 +79,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 openEditor);
 
             final Object parentObject = container.getValueObject();
-            DBSObject result = objectMaker.createNewObject(workbenchWindow, commandTarget.getEditor(), commandTarget.getContext(), parentObject, sourceObject);
+            DBSObject result = objectMaker.createNewObject(workbenchWindow, commandTarget.getContext(), parentObject, sourceObject);
             if (result == null) {
                 return true;
             }

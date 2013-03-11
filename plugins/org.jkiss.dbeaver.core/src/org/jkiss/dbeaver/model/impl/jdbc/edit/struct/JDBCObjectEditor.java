@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.edit.struct;
 
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -70,9 +69,9 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     }
 
     @Override
-    public final OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
+    public final OBJECT_TYPE createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
-        OBJECT_TYPE newObject = createDatabaseObject(workbenchWindow, activeEditor, commandContext, parent, copyFrom);
+        OBJECT_TYPE newObject = createDatabaseObject(workbenchWindow, commandContext, parent, copyFrom);
         if (newObject == null) {
             return null;
         }
@@ -99,7 +98,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
     protected abstract OBJECT_TYPE createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor,
         DBECommandContext context,
         CONTAINER_TYPE parent,
         Object copyFrom);

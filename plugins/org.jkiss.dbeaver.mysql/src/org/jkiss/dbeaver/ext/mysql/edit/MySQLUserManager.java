@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
@@ -48,7 +47,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
     }
 
     @Override
-    public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
+    public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
         MySQLUser newUser = new MySQLUser(parent, null);
         if (copyFrom instanceof MySQLUser) {

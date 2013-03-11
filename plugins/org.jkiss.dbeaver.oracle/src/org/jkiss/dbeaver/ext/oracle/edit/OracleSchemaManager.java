@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -61,7 +60,7 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
     }
 
     @Override
-    protected OracleSchema createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleDataSource parent, Object copyFrom)
+    protected OracleSchema createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleDataSource parent, Object copyFrom)
     {
         NewUserDialog dialog = new NewUserDialog(workbenchWindow.getShell(), parent);
         if (dialog.open() != IDialogConstants.OK_ID) {
