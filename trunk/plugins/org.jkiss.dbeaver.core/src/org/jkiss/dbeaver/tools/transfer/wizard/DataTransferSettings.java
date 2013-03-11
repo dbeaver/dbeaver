@@ -297,13 +297,19 @@ public class DataTransferSettings {
         }
         String producerId = dialogSettings.get("producer");
         if (!CommonUtils.isEmpty(producerId)) {
-            this.producer = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(producerId);
+            DataTransferNodeDescriptor producerNode = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(producerId);
+            if (producerNode != null) {
+                this.producer = producerNode;
+            }
         }
 
         DataTransferNodeDescriptor savedConsumer = null;
         String consumerId = dialogSettings.get("consumer");
         if (!CommonUtils.isEmpty(consumerId)) {
-            savedConsumer = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(consumerId);
+            DataTransferNodeDescriptor consumerNode = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(consumerId);
+            if (consumerNode != null) {
+                savedConsumer = consumerNode;
+            }
         }
 
         DataTransferProcessorDescriptor savedProcessor = null;

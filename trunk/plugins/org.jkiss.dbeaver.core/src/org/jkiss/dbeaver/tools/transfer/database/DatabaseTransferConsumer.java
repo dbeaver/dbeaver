@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -17,6 +18,9 @@ import java.util.Map;
 public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
 
     static final Log log = LogFactory.getLog(DatabaseTransferConsumer.class);
+
+    private DBSDataContainer sourceObject;
+    private DatabaseConsumerSettings settings;
 
     public DatabaseTransferConsumer()
     {
@@ -56,7 +60,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public void initTransfer(DBSObject sourceObject, DatabaseConsumerSettings settings, IDataTransferProcessor processor, Map<Object, Object> processorProperties)
     {
-
+        this.sourceObject = (DBSDataContainer)sourceObject;
+        this.settings = settings;
     }
 
     @Override
@@ -67,7 +72,14 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public String getTargetName()
     {
-        return "";
+        DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
+        if (dataMapping == null) {
+            return "?";
+        }
+        if (dataMapping.getMappingType() == DatabaseMappingType.skip) {
+            return "N/A";
+        }
+        return dataMapping.getTargetName();
     }
 
 }
