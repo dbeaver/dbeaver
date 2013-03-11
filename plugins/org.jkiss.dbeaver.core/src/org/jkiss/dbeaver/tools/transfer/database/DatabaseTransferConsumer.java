@@ -84,6 +84,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 
         DBSObjectContainer container = settings.getContainer();
+/*
         if (container != null) {
             try {
                 DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(container.getChildType(VoidProgressMonitor.INSTANCE));
@@ -94,6 +95,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 log.error(e);
             }
         }
+*/
 
         switch (dataMapping.getMappingType()) {
             case create: return dataMapping.getTargetName() + " [Create]";
