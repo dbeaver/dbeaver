@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
-import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -108,17 +107,13 @@ public class EditForeignKeyDialog extends Dialog {
     public EditForeignKeyDialog(
         Shell shell,
         String title,
-        IEditorPart curEditor,
         DBSTable table,
         DBSForeignKeyModifyRule[] supportedModifyRules)
     {
         super(shell);
         setShellStyle(SWT.APPLICATION_MODAL | SWT.SHELL_TRIM);
         this.title = title;
-//        if (curEditor instanceof MultiPageAbstractEditor) {
-//            curEditor = ((MultiPageAbstractEditor) curEditor).getActiveEditor();
-//        }
-        this.progressProvider = null;//curEditor instanceof IProgressControlProvider ? (IProgressControlProvider) curEditor : null;
+        this.progressProvider = null;
         this.ownTable = table;
         this.ownerTableNode = DBeaverCore.getInstance().getNavigatorModel().findNode(ownTable);
         this.supportedModifyRules = supportedModifyRules;

@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -51,7 +50,6 @@ public class GenericIndexManager extends JDBCIndexManager<GenericTableIndex, Gen
     @Override
     protected GenericTableIndex createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor,
         DBECommandContext context, GenericTable parent,
         Object from)
     {

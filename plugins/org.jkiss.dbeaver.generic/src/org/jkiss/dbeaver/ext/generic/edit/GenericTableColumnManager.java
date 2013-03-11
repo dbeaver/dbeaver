@@ -19,7 +19,6 @@
 
 package org.jkiss.dbeaver.ext.generic.edit;
 
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -46,7 +45,7 @@ public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTab
     }
 
     @Override
-    protected GenericTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, GenericTable parent, Object copyFrom)
+    protected GenericTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, GenericTable parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
 

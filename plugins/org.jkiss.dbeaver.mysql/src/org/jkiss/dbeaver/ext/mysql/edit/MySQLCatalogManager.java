@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -51,7 +50,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     }
 
     @Override
-    protected MySQLCatalog createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, MySQLDataSource parent, Object copyFrom)
+    protected MySQLCatalog createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, MySQLDataSource parent, Object copyFrom)
     {
         String schemaName = EnterNameDialog.chooseName(workbenchWindow.getShell(), MySQLMessages.edit_catalog_manager_dialog_schema_name);
         if (CommonUtils.isEmpty(schemaName)) {
