@@ -19,12 +19,16 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.utils.CommonUtils;
 
 /**
 * DatabaseMappingAttribute
@@ -80,13 +84,46 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         return mappingType;
     }
 
-    @Override
     public void setMappingType(DatabaseMappingType mappingType)
     {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
                 targetName = getSourceName();
+                break;
+        }
+    }
+
+    void updateMappingType(DBRProgressMonitor monitor) throws DBException
+    {
+        switch (parent.getMappingType()) {
+            case existing:
+            {
+                mappingType = DatabaseMappingType.unspecified;
+                if (parent.getTarget() instanceof DBSEntity) {
+                    target = ((DBSEntity) parent.getTarget()).getAttribute(monitor, source.getName());
+                    if (target != null) {
+                        mappingType = DatabaseMappingType.existing;
+                    } else {
+                        if (CommonUtils.isEmpty(targetName)) {
+                            targetName = source.getName();
+                        }
+                        mappingType = DatabaseMappingType.create;
+                    }
+                }
+                break;
+            }
+            case create:
+                mappingType = DatabaseMappingType.create;
+                if (CommonUtils.isEmpty(targetName)) {
+                    targetName = source.getName();
+                }
+                break;
+            case skip:
+                mappingType = DatabaseMappingType.skip;
+                break;
+            default:
+                mappingType = DatabaseMappingType.unspecified;
                 break;
         }
     }
