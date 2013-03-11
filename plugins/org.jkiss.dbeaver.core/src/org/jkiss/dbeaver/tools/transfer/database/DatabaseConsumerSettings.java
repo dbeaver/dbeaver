@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -35,7 +35,7 @@ import java.util.Map;
 public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     private DBNDatabaseNode containerNode;
-    private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new HashMap<DBSDataContainer, DatabaseMappingContainer>();
+    private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<DBSDataContainer, DatabaseMappingContainer>();
 
     public DatabaseConsumerSettings()
     {
