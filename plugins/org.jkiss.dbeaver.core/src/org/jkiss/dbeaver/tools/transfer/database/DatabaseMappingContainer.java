@@ -65,11 +65,13 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         this.target = target;
     }
 
+    @Override
     public DatabaseMappingType getMappingType()
     {
         return mappingType;
     }
 
+    @Override
     public void setMappingType(DatabaseMappingType mappingType)
     {
         this.mappingType = mappingType;
@@ -95,6 +97,9 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
 
     public boolean isCompleted()
     {
+        if (mappingType == DatabaseMappingType.skip) {
+            return true;
+        }
         for (DatabaseMappingAttribute attr : attributeMappings) {
             if (attr.getMappingType() == DatabaseMappingType.unspecified) {
                 return false;
@@ -115,6 +120,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         return DBUtils.getObjectFullName(source);
     }
 
+    @Override
     public String getTargetName()
     {
         switch (mappingType) {
@@ -153,7 +159,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                     try {
                         if (source instanceof DBSEntity) {
                             for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
-                                attributeMappings.add(new DatabaseMappingAttribute(attr));
+                                attributeMappings.add(new DatabaseMappingAttribute(DatabaseMappingContainer.this, attr));
                             }
                         } else {
                             // Seems to be a dynamic query. Execute it to get metadata
@@ -162,7 +168,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                                 MetadataReceiver receiver = new MetadataReceiver();
                                 source.readData(context, receiver, null, 0, 1);
                                 for (DBCAttributeMetaData attr : receiver.attributes) {
-                                    attributeMappings.add(new DatabaseMappingAttribute(attr));
+                                    attributeMappings.add(new DatabaseMappingAttribute(DatabaseMappingContainer.this, attr));
                                 }
                             } finally {
                                 context.close();

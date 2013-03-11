@@ -32,4 +32,6 @@ interface DatabaseMappingObject {
     String getTargetName();
 
     DatabaseMappingType getMappingType();
+
+    void setMappingType(DatabaseMappingType mappingType);
 }

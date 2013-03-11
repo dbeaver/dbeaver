@@ -20,8 +20,8 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 
@@ -34,19 +34,19 @@ import java.util.Map;
  */
 public class DatabaseConsumerSettings implements IDataTransferSettings {
 
-    private DBNNode containerNode;
+    private DBNDatabaseNode containerNode;
     private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new HashMap<DBSDataContainer, DatabaseMappingContainer>();
 
     public DatabaseConsumerSettings()
     {
     }
 
-    public DBNNode getContainerNode()
+    public DBNDatabaseNode getContainerNode()
     {
         return containerNode;
     }
 
-    public void setContainerNode(DBNNode containerNode)
+    public void setContainerNode(DBNDatabaseNode containerNode)
     {
         this.containerNode = containerNode;
     }
@@ -54,6 +54,11 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     public Map<DBSDataContainer, DatabaseMappingContainer> getDataMappings()
     {
         return dataMappings;
+    }
+
+    public DatabaseMappingContainer getDataMapping(DBSDataContainer dataContainer)
+    {
+        return dataMappings.get(dataContainer);
     }
 
     public boolean isCompleted(Collection<DataTransferPipe> pipes)

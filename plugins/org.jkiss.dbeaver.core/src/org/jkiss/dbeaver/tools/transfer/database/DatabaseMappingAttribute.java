@@ -30,16 +30,23 @@ import org.jkiss.dbeaver.ui.DBIcon;
 * DatabaseMappingAttribute
 */
 class DatabaseMappingAttribute implements DatabaseMappingObject {
+    final DatabaseMappingContainer parent;
     DBSAttributeBase source;
     DBSEntityAttribute target;
     String targetName;
     DBSDataType targetType;
     DatabaseMappingType mappingType;
 
-    DatabaseMappingAttribute(DBSAttributeBase source)
+    DatabaseMappingAttribute(DatabaseMappingContainer parent, DBSAttributeBase source)
     {
+        this.parent = parent;
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
+    }
+
+    public DatabaseMappingContainer getParent()
+    {
+        return parent;
     }
 
     @Override
@@ -73,6 +80,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         return mappingType;
     }
 
+    @Override
     public void setMappingType(DatabaseMappingType mappingType)
     {
         this.mappingType = mappingType;
@@ -86,5 +94,15 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     public DBSEntityAttribute getTarget()
     {
         return target;
+    }
+
+    public void setTarget(DBSEntityAttribute target)
+    {
+        this.target = target;
+    }
+
+    public void setTargetName(String targetName)
+    {
+        this.targetName = targetName;
     }
 }
