@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -71,26 +72,29 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         return mappingType;
     }
 
-    @Override
-    public void setMappingType(DatabaseMappingType mappingType)
+    public void setMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException
     {
         this.mappingType = mappingType;
-        if (!attributeMappings.isEmpty()) {
-            for (DatabaseMappingAttribute attr : attributeMappings) {
-                switch (mappingType) {
-                    case create:
-                        attr.setMappingType(DatabaseMappingType.create);
-                        break;
-                    case existing:
-                        attr.setMappingType(DatabaseMappingType.unspecified);
-                        break;
-                    case skip:
-                        attr.setMappingType(DatabaseMappingType.skip);
-                        break;
-                    case unspecified:
-                        attr.setMappingType(DatabaseMappingType.unspecified);
-                        break;
-                }
+        final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
+        if (!CommonUtils.isEmpty(mappings)) {
+            try {
+                RuntimeUtils.run(context, true, true, new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        for (DatabaseMappingAttribute attr : mappings) {
+                            try {
+                                attr.updateMappingType(monitor);
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                throw new DBCException(e.getTargetException());
+            } catch (InterruptedException e) {
+                // skip
             }
         }
     }
@@ -159,7 +163,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                     try {
                         if (source instanceof DBSEntity) {
                             for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
-                                attributeMappings.add(new DatabaseMappingAttribute(DatabaseMappingContainer.this, attr));
+                                addAttributeMapping(monitor, attr);
                             }
                         } else {
                             // Seems to be a dynamic query. Execute it to get metadata
@@ -168,7 +172,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                                 MetadataReceiver receiver = new MetadataReceiver();
                                 source.readData(context, receiver, null, 0, 1);
                                 for (DBCAttributeMetaData attr : receiver.attributes) {
-                                    attributeMappings.add(new DatabaseMappingAttribute(DatabaseMappingContainer.this, attr));
+                                    addAttributeMapping(monitor, attr);
                                 }
                             } finally {
                                 context.close();
@@ -179,6 +183,13 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                     }
                 }
             });
+    }
+
+    private void addAttributeMapping(DBRProgressMonitor monitor, DBSAttributeBase attr) throws DBException
+    {
+        DatabaseMappingAttribute mapping = new DatabaseMappingAttribute(this, attr);
+        mapping.updateMappingType(monitor);
+        attributeMappings.add(mapping);
     }
 
     private static class MetadataReceiver implements DBDDataReceiver {
