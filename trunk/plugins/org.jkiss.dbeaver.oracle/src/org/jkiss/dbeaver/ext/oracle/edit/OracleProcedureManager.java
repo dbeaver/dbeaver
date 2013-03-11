@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureStandalone;
@@ -47,7 +46,7 @@ public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStan
     }
 
     @Override
-    protected OracleProcedureStandalone createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OracleProcedureStandalone createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         CreateProcedureDialog dialog = new CreateProcedureDialog(workbenchWindow.getShell(), parent.getDataSource());
         if (dialog.open() != IDialogConstants.OK_ID) {

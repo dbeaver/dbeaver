@@ -2,11 +2,17 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 
@@ -76,6 +82,19 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (dataMapping == null) {
             return "?";
         }
+
+        DBSObjectContainer container = settings.getContainer();
+        if (container != null) {
+            try {
+                DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(container.getChildType(VoidProgressMonitor.INSTANCE));
+                if (objectManager instanceof DBEObjectMaker<?, ?>) {
+                    //((DBEObjectMaker) objectManager).createNewObject()
+                }
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+
         switch (dataMapping.getMappingType()) {
             case create: return dataMapping.getTargetName() + " [Create]";
             case existing: return dataMapping.getTargetName() + " [Insert]";

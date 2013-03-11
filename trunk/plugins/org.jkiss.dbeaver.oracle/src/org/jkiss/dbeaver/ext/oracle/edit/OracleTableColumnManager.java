@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.edit;
 
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
@@ -62,7 +61,7 @@ public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTable
     }
 
     @Override
-    protected OracleTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
+    protected OracleTableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleTableBase parent, Object copyFrom)
     {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
 

@@ -46,14 +46,11 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      *
      *
      * @param workbenchWindow workbench window
-     * @param activeEditor active editor (may be null)
      * @param commandContext command context
      * @param parent parent object
-     * @param copyFrom template for new object (usually result of "paste" operation)    @return null if no additional actions should be performed
-     * */
+     * @param copyFrom template for new object (usually result of "paste" operation)    @return null if no additional actions should be performed   */
     OBJECT_TYPE createNewObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor,
         DBECommandContext commandContext,
         CONTAINER_TYPE parent,
         Object copyFrom);

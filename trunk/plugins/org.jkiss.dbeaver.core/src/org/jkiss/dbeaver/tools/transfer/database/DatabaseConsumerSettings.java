@@ -22,6 +22,8 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 
@@ -39,6 +41,15 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     public DatabaseConsumerSettings()
     {
+    }
+
+    public DBSObjectContainer getContainer()
+    {
+        if (containerNode == null) {
+            return null;
+        }
+        DBSObject object = containerNode.getObject();
+        return object instanceof DBSObjectContainer ? (DBSObjectContainer) object :  null;
     }
 
     public DBNDatabaseNode getContainerNode()

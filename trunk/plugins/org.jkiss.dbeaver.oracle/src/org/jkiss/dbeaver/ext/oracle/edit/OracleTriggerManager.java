@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
@@ -65,7 +64,7 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
     }
 
     @Override
-    protected OracleTrigger createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleTableBase parent, Object copyFrom)
+    protected OracleTrigger createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleTableBase parent, Object copyFrom)
     {
         CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), OracleMessages.edit_oracle_trigger_manager_dialog_title);
         if (dialog.open() != IDialogConstants.OK_ID) {

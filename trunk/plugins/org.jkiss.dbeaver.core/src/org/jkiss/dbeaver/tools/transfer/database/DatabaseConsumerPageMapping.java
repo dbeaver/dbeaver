@@ -361,9 +361,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 allowsCreate = false;
             }
             items.add(TARGET_NAME_BROWSE);
-            if (settings.getContainerNode() != null && settings.getContainerNode().getObject() instanceof DBSObjectContainer) {
+            if (settings.getContainer() != null) {
                 // container's tables
-                DBSObjectContainer container = (DBSObjectContainer)settings.getContainerNode().getObject();
+                DBSObjectContainer container = settings.getContainer();
                 for (DBSObject child : container.getChildren(VoidProgressMonitor.INSTANCE)) {
                     if (child instanceof DBSDataManipulator) {
                         items.add(child.getName());
@@ -408,9 +408,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
             if (mapping instanceof DatabaseMappingContainer) {
                 DatabaseMappingContainer containerMapping = (DatabaseMappingContainer)mapping;
-                if (settings.getContainerNode() != null && settings.getContainerNode().getObject() instanceof DBSObjectContainer) {
+                if (settings.getContainer() != null) {
                     // container's tables
-                    DBSObjectContainer container = (DBSObjectContainer)settings.getContainerNode().getObject();
+                    DBSObjectContainer container = settings.getContainer();
                     for (DBSObject child : container.getChildren(VoidProgressMonitor.INSTANCE)) {
                         if (child instanceof DBSDataManipulator && name.equals(child.getName())) {
                             containerMapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.existing);

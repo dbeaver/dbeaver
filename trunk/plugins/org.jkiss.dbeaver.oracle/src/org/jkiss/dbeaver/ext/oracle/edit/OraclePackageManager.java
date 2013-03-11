@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
@@ -49,7 +48,7 @@ public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, Oracle
     }
 
     @Override
-    protected OraclePackage createDatabaseObject(IWorkbenchWindow workbenchWindow, IEditorPart activeEditor, DBECommandContext context, OracleSchema parent, Object copyFrom)
+    protected OraclePackage createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(), OracleMessages.edit_oracle_package_manager_dialog_title);
         if (dialog.open() != IDialogConstants.OK_ID) {

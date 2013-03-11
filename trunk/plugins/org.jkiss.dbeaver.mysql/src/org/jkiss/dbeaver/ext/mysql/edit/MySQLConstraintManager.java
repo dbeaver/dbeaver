@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.*;
@@ -46,7 +45,7 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLTableCons
     @Override
     protected MySQLTableConstraint createDatabaseObject(
         IWorkbenchWindow workbenchWindow,
-        IEditorPart activeEditor, DBECommandContext context, MySQLTable parent,
+        DBECommandContext context, MySQLTable parent,
         Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(
