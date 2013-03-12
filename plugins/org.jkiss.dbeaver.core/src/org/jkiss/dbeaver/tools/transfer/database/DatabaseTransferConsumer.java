@@ -2,17 +2,13 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
-import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 
@@ -71,19 +67,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void finishTransfer()
+    public void startTransfer(DBRProgressMonitor monitor)
     {
-    }
-
-    @Override
-    public String getTargetName()
-    {
-        DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
-        if (dataMapping == null) {
-            return "?";
-        }
-
+        // Create all necessary database objects
         DBSObjectContainer container = settings.getContainer();
+        monitor.beginTask("Create necessary database objects", 1);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+
+        }
+        monitor.done();
 /*
         if (container != null) {
             try {
@@ -96,6 +90,21 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
 */
+
+    }
+
+    @Override
+    public void finishTransfer()
+    {
+    }
+
+    @Override
+    public String getTargetName()
+    {
+        DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
+        if (dataMapping == null) {
+            return "?";
+        }
 
         switch (dataMapping.getMappingType()) {
             case create: return dataMapping.getTargetName() + " [Create]";

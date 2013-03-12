@@ -256,6 +256,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
+    public void startTransfer(DBRProgressMonitor monitor)
+    {
+        // do nothing
+    }
+
+    @Override
     public void finishTransfer()
     {
         if (settings.isOpenFolderOnFinish()) {

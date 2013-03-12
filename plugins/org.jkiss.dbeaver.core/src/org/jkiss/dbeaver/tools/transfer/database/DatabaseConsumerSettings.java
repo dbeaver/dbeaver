@@ -21,18 +21,18 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.utils.CommonUtils;
@@ -108,13 +108,13 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         final String containerPath = dialogSettings.get("container");
         if (!CommonUtils.isEmpty(containerPath)) {
             try {
-                runnableContext.run(true, true, new IRunnableWithProgress() {
+                RuntimeUtils.run(runnableContext, true, true, new DBRRunnableWithProgress() {
                     @Override
-                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
                         try {
                             DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(
-                                new DefaultProgressMonitor(monitor),
+                                monitor,
                                 containerPath);
                             if (node instanceof DBNDatabaseNode) {
                                 containerNode = (DBNDatabaseNode) node;

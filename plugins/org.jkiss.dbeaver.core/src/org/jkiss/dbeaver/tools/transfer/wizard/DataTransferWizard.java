@@ -24,12 +24,16 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 public class DataTransferWizard extends Wizard implements IExportWizard {
@@ -136,6 +140,28 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     public boolean performFinish() {
         // Save settings
         getSettings().saveTo(getDialogSettings());
+
+        // Start consumers
+        try {
+            RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        for (DataTransferPipe pipe : settings.getDataPipes()) {
+                            pipe.getConsumer().startTransfer(monitor);
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(getShell(), "Transfer init failed", "Can't start data transfer", e.getTargetException());
+            return false;
+        } catch (InterruptedException e) {
+            return false;
+        }
 
         // Run export jobs
         executeJobs();
