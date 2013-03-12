@@ -454,7 +454,7 @@
                     webURL="http://cassandra.jkiss.org/"
                     description="Driver for Apache Cassandra">
                     <property name="structResultSet" value="true"/>
-                    <file type="license" path="drivers/cassandra/LICENSE.txt" url="*"/>
+                    <file type="license" path="drivers/cassandra/license.txt" url="*"/>
                     <file type="jar" path="drivers/cassandra/cassandra-jkiss-jdbc-1.0.1.jar" url="*"/>
                     <file type="jar" path="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar" url="*"/>
                     <file type="jar" path="drivers/cassandra/libthrift-0.7.0.jar" url="*"/>

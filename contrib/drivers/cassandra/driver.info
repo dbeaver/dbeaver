@@ -1,7 +1,7 @@
 name=Cassandra JDBC driver
 vendor=JKISS
 version=1.1.0
-license=LICENSE.txt
+license=license.txt
 file1=apache-cassandra-thrift-1.1.6.jar
 file2=cassandra-jkiss-jdbc-1.1.0.jar
 file3=libthrift-0.7.0.jar
