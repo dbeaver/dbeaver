@@ -24,6 +24,8 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,7 +43,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
         setDialogSettings(section);
 
-        settings.loadFrom(section);
+        settings.loadFrom(DBeaverUI.getActiveWorkbenchWindow(), section);
     }
 
     public DataTransferSettings getSettings()

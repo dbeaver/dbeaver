@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
@@ -88,7 +89,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void loadSettings(IDialogSettings dialogSettings)
+    public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings)
     {
         if (dialogSettings.get("extractType") != null) {
             try {

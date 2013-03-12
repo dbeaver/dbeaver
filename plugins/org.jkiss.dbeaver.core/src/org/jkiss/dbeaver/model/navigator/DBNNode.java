@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
@@ -197,4 +198,44 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
     {
         return false;
     }
+
+    /**
+     * Node item path in form type1=name1/type2=name2/...[/typeX]
+     * Where typeN is path element for particular database item, name is database object name.
+     * @return full item node path
+     */
+    public String getNodeItemPath()
+    {
+        StringBuilder pathName = new StringBuilder(100);
+
+//        DBXTreeItem metaChildren = this instanceof DBNDatabaseNode ? ((DBNDatabaseNode)this).getItemsMeta() : null;
+//        if (metaChildren != null) {
+//            pathName.append(metaChildren.getPath());
+//        }
+
+        for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
+            if (node instanceof DBNDataSource) {
+                if (pathName.length() > 0) {
+                    pathName.insert(0, '/');
+                }
+                pathName.insert(0, ((DBNDataSource) node).getDataSourceContainer().getId());
+            } else if (node instanceof DBNDatabaseFolder) {
+                if (pathName.length() > 0) {
+                    pathName.insert(0, '/');
+                }
+                pathName.insert(0, ((DBNDatabaseFolder) node).getMeta().getType());
+            }
+            if (!(node instanceof DBNDatabaseItem)) {
+                // skip folders
+                continue;
+            }
+
+            if (pathName.length() > 0) {
+                pathName.insert(0, '/');
+            }
+            pathName.insert(0, node.getNodeName().replace('/', '_'));
+        }
+        return pathName.toString();
+    }
+
 }

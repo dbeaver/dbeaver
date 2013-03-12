@@ -95,11 +95,14 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             containerPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createControlLabel(containerPanel, "Target container");
 
+            DBNDatabaseNode containerNode = settings.getContainerNode();
             final Label containerIcon = new Label(containerPanel, SWT.NONE);
             containerIcon.setImage(DBIcon.TYPE_UNKNOWN.getImage());
+            if (containerNode != null) containerIcon.setImage(containerNode.getNodeIconDefault());
 
             final Text containerName = new Text(containerPanel, SWT.BORDER | SWT.READ_ONLY);
             containerName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (containerNode != null) containerName.setText(containerNode.getNodeFullName());
 
             Button browseButton = new Button(containerPanel, SWT.PUSH);
             browseButton.setImage(DBIcon.TREE_FOLDER.getImage());
