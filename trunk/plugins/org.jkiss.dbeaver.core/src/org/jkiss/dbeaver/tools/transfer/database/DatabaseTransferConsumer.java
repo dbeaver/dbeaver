@@ -5,6 +5,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeValue;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -12,9 +14,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
 * Stream transfer consumer
@@ -25,6 +25,20 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private DBSDataContainer sourceObject;
     private DatabaseConsumerSettings settings;
+    private DatabaseMappingContainer containerMapping;
+    private ColumnMapping[] columnMappings;
+    private DBCExecutionContext targetContext;
+
+    private static class ColumnMapping {
+        DBCAttributeMetaData rsAttr;
+        DatabaseMappingAttribute targetAttr;
+        DBDValueHandler valueHandler;
+
+        private ColumnMapping(DBCAttributeMetaData rsAttr)
+        {
+            this.rsAttr = rsAttr;
+        }
+    }
 
     public DatabaseTransferConsumer()
     {
@@ -34,12 +48,33 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
     {
         initExporter(context);
-
+        DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
+        List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
+        columnMappings = new ColumnMapping[rsAttributes.size()];
+        for (int i = 0; i < rsAttributes.size(); i++) {
+            columnMappings[i] = new ColumnMapping(rsAttributes.get(i));
+            columnMappings[i].targetAttr = containerMapping.getAttributeMapping(columnMappings[i].rsAttr);
+            columnMappings[i].valueHandler = DBUtils.findValueHandler(context, columnMappings[i].rsAttr);
+        }
     }
 
     @Override
     public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
     {
+        List<DBDAttributeValue> attrValues = new ArrayList<DBDAttributeValue>();
+        for (int i = 0; i < columnMappings.length; i++) {
+            ColumnMapping column = columnMappings[i];
+            attrValues.add(new DBDAttributeValue(
+                column.targetAttr.getTarget(),
+                column.valueHandler.fetchValueObject(context, resultSet, column.rsAttr, i)));
+
+        }
+        DBSDataManipulator target = containerMapping.getTarget();
+        try {
+            target.insertData(targetContext, attrValues, null);
+        } catch (DBException e) {
+            throw new DBCException("Can't insert row", e);
+        }
     }
 
     @Override
@@ -55,10 +90,19 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private void initExporter(DBCExecutionContext context) throws DBCException
     {
+        containerMapping = settings.getDataMapping(sourceObject);
+        if (containerMapping == null) {
+            throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject));
+        }
+        targetContext = containerMapping.getTarget().getDataSource().openContext(context.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
     }
 
     private void closeExporter()
     {
+        if (targetContext != null) {
+            targetContext.close();
+            targetContext = null;
+        }
     }
 
     @Override

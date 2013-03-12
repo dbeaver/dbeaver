@@ -145,6 +145,16 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
+    public DatabaseMappingAttribute getAttributeMapping(DBSAttributeBase sourceAttr)
+    {
+        for (DatabaseMappingAttribute attr : attributeMappings) {
+            if (attr.getSource().getName().equals(sourceAttr.getName())) {
+                return attr;
+            }
+        }
+        return null;
+    }
+
     public Collection<DatabaseMappingAttribute> getAttributeMappings(IRunnableContext runnableContext)
     {
         if (attributeMappings.isEmpty()) {
