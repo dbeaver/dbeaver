@@ -23,10 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,7 +35,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     DBSAttributeBase source;
     DBSEntityAttribute target;
     String targetName;
-    DBSDataType targetType;
+    String targetType;
     DatabaseMappingType mappingType;
 
     DatabaseMappingAttribute(DatabaseMappingContainer parent, DBSAttributeBase source)
@@ -68,6 +65,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         return DBUtils.getObjectFullName(source);
     }
 
+    @Override
     public String getTargetName()
     {
         switch (mappingType) {
@@ -128,6 +126,11 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
+    public DBSAttributeBase getSource()
+    {
+        return source;
+    }
+
     public DBSEntityAttribute getTarget()
     {
         return target;
@@ -141,5 +144,22 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     public void setTargetName(String targetName)
     {
         this.targetName = targetName;
+    }
+
+    public String getTargetType()
+    {
+        if (CommonUtils.isEmpty(targetType)) {
+            String typeName = source.getTypeName();
+            if (source.getDataKind() == DBSDataKind.STRING) {
+                typeName += "(" + source.getMaxLength() + ")";
+            }
+            return typeName;
+        }
+        return targetType;
+    }
+
+    public void setTargetType(String targetType)
+    {
+        this.targetType = targetType;
     }
 }
