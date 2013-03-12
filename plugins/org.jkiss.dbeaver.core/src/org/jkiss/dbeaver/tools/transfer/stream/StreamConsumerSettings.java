@@ -1,14 +1,12 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Stream transfer settings
@@ -138,7 +136,7 @@ public class StreamConsumerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void loadSettings(IDialogSettings dialogSettings)
+    public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings)
     {
         if (!CommonUtils.isEmpty(dialogSettings.get("lobExtractType"))) {
             try {

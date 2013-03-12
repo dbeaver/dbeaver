@@ -28,6 +28,7 @@ public class DBVModel extends DBVContainer {
         this.dataSourceContainer = dataSourceContainer;
     }
 
+    @Override
     public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException
     {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
@@ -73,6 +74,7 @@ public class DBVModel extends DBVContainer {
         return container.getEntity(entity.getName(), createNew);
     }
 
+    @Override
     public void persist(XMLBuilder xml) throws IOException {
         super.persist(xml);
     }

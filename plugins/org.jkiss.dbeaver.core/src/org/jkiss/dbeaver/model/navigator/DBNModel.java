@@ -213,6 +213,41 @@ public class DBNModel implements IResourceChangeListener {
         return getNodeByObject(object);
     }
 
+    public DBNNode getNodeByPath(DBRProgressMonitor monitor, String path) throws DBException
+    {
+        DBNProject project = getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject());
+        if (project == null) {
+            log.debug("Node project");
+            return null;
+        }
+        List<String> items = CommonUtils.splitString(path, '/');
+        DBNNode curNode = project.getDatabases().getDataSource(items.get(0));
+        if (curNode == null) {
+            return null;
+        }
+        for (int i = 1, itemsSize = items.size(); i < itemsSize; i++) {
+            String item = items.get(i);
+            List<? extends DBNNode> children = curNode.getChildren(monitor);
+            DBNNode nextChild = null;
+            for (DBNNode child : children) {
+                if (child instanceof DBNDatabaseFolder) {
+                    if (((DBNDatabaseFolder) child).getMeta().getType().equals(item)) {
+                        nextChild = child;
+                        break;
+                    }
+                } else if (child.getNodeName().equals(item)) {
+                    nextChild = child;
+                    break;
+                }
+            }
+            curNode = nextChild;
+            if (curNode == null) {
+                break;
+            }
+        }
+        return curNode;
+    }
+
     private void cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, Class<?> objectType) throws DBException
     {
         List<? extends DBNDatabaseNode> children = node.getChildren(monitor);
