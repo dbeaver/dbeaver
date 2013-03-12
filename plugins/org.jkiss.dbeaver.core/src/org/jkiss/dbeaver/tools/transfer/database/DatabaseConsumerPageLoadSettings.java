@@ -19,10 +19,16 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTransferWizard> {
@@ -46,6 +52,18 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+
+        {
+            Group generalSettings = UIUtils.createControlGroup(composite, "General", 4, GridData.FILL_HORIZONTAL, 0);
+            final Button showTableCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Open table editor on finish", true);
+            showTableCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setOpenTableOnFinish(showTableCheckbox.getSelection());
+                }
+            });
+            showTableCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+        }
 
         setControl(composite);
 
