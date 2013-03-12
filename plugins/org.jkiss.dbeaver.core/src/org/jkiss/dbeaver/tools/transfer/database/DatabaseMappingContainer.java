@@ -144,7 +144,17 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     {
         if (attributeMappings.isEmpty()) {
             try {
-                readAttributes(runnableContext);
+                RuntimeUtils.run(runnableContext, true, true, new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            readAttributes(monitor);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
             } catch (InvocationTargetException e) {
                 UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source), e.getTargetException());
             } catch (InterruptedException e) {
@@ -154,35 +164,37 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         return attributeMappings;
     }
 
-    private void readAttributes(IRunnableContext runnableContext) throws InvocationTargetException, InterruptedException
+    public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRProgressMonitor monitor)
     {
-        RuntimeUtils.run(runnableContext, true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        if (source instanceof DBSEntity) {
-                            for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
-                                addAttributeMapping(monitor, attr);
-                            }
-                        } else {
-                            // Seems to be a dynamic query. Execute it to get metadata
-                            DBCExecutionContext context = source.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Read query meta data");
-                            try {
-                                MetadataReceiver receiver = new MetadataReceiver();
-                                source.readData(context, receiver, null, 0, 1);
-                                for (DBCAttributeMetaData attr : receiver.attributes) {
-                                    addAttributeMapping(monitor, attr);
-                                }
-                            } finally {
-                                context.close();
-                            }
-                        }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
+        if (attributeMappings.isEmpty()) {
+            try {
+                readAttributes(monitor);
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(null, "Attributes read failed", "Can't get attributes from " + DBUtils.getObjectFullName(source), e);
+            }
+        }
+        return attributeMappings;
+    }
+
+    private void readAttributes(DBRProgressMonitor monitor) throws DBException
+    {
+        if (source instanceof DBSEntity) {
+            for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
+                addAttributeMapping(monitor, attr);
+            }
+        } else {
+            // Seems to be a dynamic query. Execute it to get metadata
+            DBCExecutionContext context = source.getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, "Read query meta data");
+            try {
+                MetadataReceiver receiver = new MetadataReceiver();
+                source.readData(context, receiver, null, 0, 1);
+                for (DBCAttributeMetaData attr : receiver.attributes) {
+                    addAttributeMapping(monitor, attr);
                 }
-            });
+            } finally {
+                context.close();
+            }
+        }
     }
 
     private void addAttributeMapping(DBRProgressMonitor monitor, DBSAttributeBase attr) throws DBException

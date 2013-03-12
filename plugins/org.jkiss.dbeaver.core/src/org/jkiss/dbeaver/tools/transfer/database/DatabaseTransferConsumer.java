@@ -2,16 +2,18 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -67,17 +69,40 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void startTransfer(DBRProgressMonitor monitor)
+    public void startTransfer(DBRProgressMonitor monitor) throws DBException
     {
         // Create all necessary database objects
         DBSObjectContainer container = settings.getContainer();
         monitor.beginTask("Create necessary database objects", 1);
         try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
+            boolean hasNewObjects = false;
+            for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
+                switch (containerMapping.getMappingType()) {
+                    case create:
+                        createTargetTable(monitor, containerMapping);
+                        hasNewObjects = true;
+                        break;
+                    case existing:
+                        for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                            if (attr.getMappingType() == DatabaseMappingType.create) {
+                                createTargetAttribute(monitor, attr);
+                                hasNewObjects = true;
+                            }
+                        }
+                        break;
+                }
+            }
+            if (hasNewObjects) {
+                // Refresh node
+                monitor.subTask("Refresh navigator model");
+                settings.getContainerNode().refreshNode(monitor, this);
 
+                // Reflect database changes in mappings
+            }
         }
-        monitor.done();
+        finally {
+            monitor.done();
+        }
 /*
         if (container != null) {
             try {
@@ -91,6 +116,89 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
 */
 
+    }
+
+    private void createTargetTable(DBRProgressMonitor monitor, DatabaseMappingContainer containerMapping) throws DBException
+    {
+        monitor.subTask("Create table " + containerMapping.getTargetName());
+        StringBuilder sql = new StringBuilder(500);
+        DBSObjectContainer schema = settings.getContainer();
+        DBPDataSource targetDataSource = schema.getDataSource();
+
+        String tableName = containerMapping.getTargetName();
+        sql.append("CREATE TABLE ")
+            .append(DBUtils.getQuotedIdentifier(schema))
+            .append(targetDataSource.getInfo().getCatalogSeparator())
+            .append(DBUtils.getQuotedIdentifier(targetDataSource, tableName))
+            .append("(\n");
+        Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<DBSAttributeBase, DatabaseMappingAttribute>();
+        for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+            if (attr.getMappingType() != DatabaseMappingType.create) {
+                continue;
+            }
+            if (!mappedAttrs.isEmpty()) sql.append(",\n");
+            appendAttributeClause(sql, attr);
+            mappedAttrs.put(attr.getSource(), attr);
+        }
+        if (containerMapping.getSource() instanceof DBSEntity) {
+            // Make primary key
+            Collection<? extends DBSEntityAttribute> identifier = DBUtils.getBestTableIdentifier(monitor, (DBSEntity) containerMapping.getSource());
+            if (!CommonUtils.isEmpty(identifier)) {
+                boolean idMapped = true;
+                for (DBSEntityAttribute idAttr : identifier) {
+                    if (!mappedAttrs.containsKey(idAttr)) {
+                        idMapped = false;
+                        break;
+                    }
+                }
+                if (idMapped) {
+                    sql.append(",\nPRIMARY KEY (");
+                    boolean hasAttr = false;
+                    for (DBSEntityAttribute idAttr : identifier) {
+                        DatabaseMappingAttribute mappedAttr = mappedAttrs.get(idAttr);
+                        if (hasAttr) sql.append(",");
+                        sql.append(mappedAttr.getTargetName());
+                        hasAttr = true;
+                    }
+                    sql.append(")\n");
+                }
+            }
+        }
+        sql.append(")");
+        executeSQL(monitor, targetDataSource, sql.toString());
+    }
+
+    private static void appendAttributeClause(StringBuilder sql, DatabaseMappingAttribute attr)
+    {
+        sql.append(attr.getTargetName()).append(" ").append(attr.getTargetType());
+        if (attr.source.isRequired()) sql.append(" NOT NULL");
+    }
+
+    private void createTargetAttribute(DBRProgressMonitor monitor, DatabaseMappingAttribute attribute) throws DBCException
+    {
+        monitor.subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget()) + "." + attribute.getTargetName());
+        StringBuilder sql = new StringBuilder(500);
+        sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget()))
+            .append(" ADD ");
+        appendAttributeClause(sql, attribute);
+        executeSQL(monitor, attribute.getParent().getTarget().getDataSource(), sql.toString());
+    }
+
+    private void executeSQL(DBRProgressMonitor monitor, DBPDataSource dataSource, String sql)
+        throws DBCException
+    {
+        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Create target metadata");
+        try {
+            DBCStatement dbStat = DBUtils.prepareStatement(context, sql);
+            try {
+                dbStat.executeStatement();
+            } finally {
+                dbStat.close();
+            }
+        }
+        finally {
+            context.close();
+        }
     }
 
     @Override
