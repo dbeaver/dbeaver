@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -190,7 +191,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBSObjectContainer schema = settings.getContainer();
         DBPDataSource targetDataSource = schema.getDataSource();
 
-        String tableName = containerMapping.getTargetName();
+        String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
         sql.append("CREATE TABLE ")
             .append(DBUtils.getQuotedIdentifier(schema))
             .append(targetDataSource.getInfo().getCatalogSeparator())
@@ -260,6 +261,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             } finally {
                 dbStat.close();
             }
+        } catch (DBCException e) {
+            throw new DBCException("Can't alter target schema:\n" + sql, e);
         }
         finally {
             context.close();
