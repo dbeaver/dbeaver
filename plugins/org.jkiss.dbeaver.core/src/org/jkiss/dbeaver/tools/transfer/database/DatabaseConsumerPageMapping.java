@@ -416,8 +416,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     DBSObjectContainer container = settings.getContainer();
                     for (DBSObject child : container.getChildren(VoidProgressMonitor.INSTANCE)) {
                         if (child instanceof DBSDataManipulator && name.equals(child.getName())) {
-                            containerMapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.existing);
                             containerMapping.setTarget((DBSDataManipulator)child);
+                            containerMapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.existing);
                             return;
                         }
                     }
