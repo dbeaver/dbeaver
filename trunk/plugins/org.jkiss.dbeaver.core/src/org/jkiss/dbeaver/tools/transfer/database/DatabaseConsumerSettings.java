@@ -51,6 +51,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     private DBNDatabaseNode containerNode;
     private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<DBSDataContainer, DatabaseMappingContainer>();
+    private boolean openTableOnFinish = true;
 
     public DatabaseConsumerSettings()
     {
@@ -130,12 +131,25 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 // skip
             }
         }
+        if (dialogSettings.get("openTableOnFinish") != null) {
+            openTableOnFinish = dialogSettings.getBoolean("openTableOnFinish");
+        }
     }
 
     @Override
     public void saveSettings(IDialogSettings dialogSettings)
     {
         dialogSettings.put("container", containerNode.getNodeItemPath());
+        dialogSettings.put("openTableOnFinish", openTableOnFinish);
     }
 
+    public boolean isOpenTableOnFinish()
+    {
+        return openTableOnFinish;
+    }
+
+    public void setOpenTableOnFinish(boolean openTableOnFinish)
+    {
+        this.openTableOnFinish = openTableOnFinish;
+    }
 }

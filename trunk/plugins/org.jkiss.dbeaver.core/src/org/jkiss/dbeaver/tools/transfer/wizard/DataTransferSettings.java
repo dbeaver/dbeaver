@@ -222,7 +222,7 @@ public class DataTransferSettings {
             // End of transfer
             // Signal last pipe about it
             if (!dataPipes.isEmpty()) {
-                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer();
+                dataPipes.get(dataPipes.size() - 1).getConsumer().finishTransfer(true);
             }
             return null;
         }

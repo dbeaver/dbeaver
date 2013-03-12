@@ -22,13 +22,11 @@ package org.jkiss.dbeaver.tools.transfer.wizard;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 
 /**
@@ -61,23 +59,27 @@ public class DataTransferJob extends AbstractJob {
             if (transferPipe == null) {
                 break;
             }
-            extractData(monitor, transferPipe);
+            transferData(monitor, transferPipe);
         }
 
         return Status.OK_STATUS;
     }
 
-    private void extractData(DBRProgressMonitor monitor, DataTransferPipe transferPipe)
+    private void transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe)
     {
-        setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name,
-            transferPipe.getProducer().getSourceObject().getName()));
+        IDataTransferProducer producer = transferPipe.getProducer();
+        IDataTransferConsumer consumer = transferPipe.getConsumer();
 
-        IDataTransferSettings nodeSettings = settings.getNodeSettings(transferPipe.getProducer());
+        setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name,
+            producer.getSourceObject().getName()));
+
+        IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
         try {
-            transferPipe.getProducer().transferData(
+            producer.transferData(
                 monitor,
-                transferPipe.getConsumer(),
+                consumer,
                 nodeSettings);
+            consumer.finishTransfer(false);
         } catch (Exception e) {
             new DataTransferErrorJob(e).schedule();
         }

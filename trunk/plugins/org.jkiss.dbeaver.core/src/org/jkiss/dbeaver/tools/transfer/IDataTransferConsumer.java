@@ -5,7 +5,6 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -19,7 +18,7 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
 
     void startTransfer(DBRProgressMonitor monitor) throws DBException;
 
-    void finishTransfer();
+    void finishTransfer(boolean last);
 
     String getTargetName();
 
