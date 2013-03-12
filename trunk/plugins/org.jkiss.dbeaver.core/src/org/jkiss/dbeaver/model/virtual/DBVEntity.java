@@ -56,6 +56,7 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         return null;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -234,6 +235,7 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         return DBUtils.getQuotedIdentifier(stringColumns.values().iterator().next());
     }
 
+    @Override
     public void persist(XMLBuilder xml) throws IOException
     {
         xml.startElement(RegistryConstants.TAG_ENTITY);
@@ -265,6 +267,7 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         xml.endElement();
     }
 
+    @Override
     public boolean hasValuableData() {
         if (!CommonUtils.isEmpty(descriptionColumnNames) || !CommonUtils.isEmpty(properties)) {
             return true;

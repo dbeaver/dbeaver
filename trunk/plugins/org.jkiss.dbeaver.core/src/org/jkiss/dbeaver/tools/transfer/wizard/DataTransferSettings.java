@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.DialogSettings;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -288,7 +289,7 @@ public class DataTransferSettings {
         }
     }
 
-    void loadFrom(IDialogSettings dialogSettings)
+    void loadFrom(IRunnableContext runnableContext, IDialogSettings dialogSettings)
     {
         try {
             maxJobCount = dialogSettings.getInt("maxJobCount");
@@ -325,8 +326,8 @@ public class DataTransferSettings {
 
         // Load nodes' settings
         for (Map.Entry<Class, NodeSettings> entry : nodeSettings.entrySet()) {
-            IDialogSettings nodeSection = dialogSettings.addNewSection(entry.getKey().getSimpleName());
-            entry.getValue().settings.loadSettings(nodeSection);
+            IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
+            entry.getValue().settings.loadSettings(runnableContext, nodeSection);
         }
         IDialogSettings processorsSection = dialogSettings.getSection("processors");
         if (processorsSection != null) {
@@ -359,7 +360,7 @@ public class DataTransferSettings {
         dialogSettings.put("maxJobCount", maxJobCount);
         // Save nodes' settings
         for (Map.Entry<Class, NodeSettings> entry : nodeSettings.entrySet()) {
-            IDialogSettings nodeSection = dialogSettings.addNewSection(entry.getKey().getSimpleName());
+            IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
             entry.getValue().settings.saveSettings(nodeSection);
         }
 

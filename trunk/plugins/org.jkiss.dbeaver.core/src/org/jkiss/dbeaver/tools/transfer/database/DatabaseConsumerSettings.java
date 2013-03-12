@@ -19,14 +19,25 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
+import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -35,6 +46,8 @@ import java.util.Map;
  * DatabaseConsumerSettings
  */
 public class DatabaseConsumerSettings implements IDataTransferSettings {
+
+    static final Log log = LogFactory.getLog(DatabaseConsumerSettings.class);
 
     private DBNDatabaseNode containerNode;
     private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<DBSDataContainer, DatabaseMappingContainer>();
@@ -90,13 +103,39 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void loadSettings(IDialogSettings dialogSettings)
+    public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings)
     {
+        final String containerPath = dialogSettings.get("container");
+        if (!CommonUtils.isEmpty(containerPath)) {
+            try {
+                runnableContext.run(true, true, new IRunnableWithProgress() {
+                    @Override
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(
+                                new DefaultProgressMonitor(monitor),
+                                containerPath);
+                            if (node instanceof DBNDatabaseNode) {
+                                containerNode = (DBNDatabaseNode) node;
+                            }
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                log.error("Error getting container node", e.getTargetException());
+            } catch (InterruptedException e) {
+                // skip
+            }
+        }
     }
 
     @Override
     public void saveSettings(IDialogSettings dialogSettings)
     {
+        dialogSettings.put("container", containerNode.getNodeItemPath());
     }
 
 }

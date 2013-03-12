@@ -123,38 +123,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         return image;
     }
 
-    /**
-     * Node item path in form type1=name1/type2=name2/...[/typeX]
-     * Where typeN is path element for particular database item, name is database object name.
-     * @return full item node path
-     */
-    public String getNodeItemPath()
-    {
-        StringBuilder pathName = new StringBuilder(100);
-
-        DBXTreeItem metaChildren = this.getItemsMeta();
-        if (metaChildren != null) {
-            pathName.append(metaChildren.getPath());
-        }
-
-        for (DBNNode node = this; node instanceof DBNDatabaseNode; node = node.getParentNode()) {
-            if (!(node instanceof DBNDatabaseItem)) {
-                // skip folders
-                continue;
-            }
-            String nodePath = ((DBNDatabaseItem) node).getMeta().getPath();
-            if (pathName.length() > 0) {
-                pathName.insert(0, '/');
-            }
-            pathName
-                .insert(0, node.getNodeName().replace('/', '_'))
-                .insert(0, '=')
-                .insert(0, nodePath);
-            //pathName.append(nodePath).append('=').append(node.getNodeName().replace(':', '_'));
-        }
-        return pathName.toString();
-    }
-
     @Override
     public boolean allowsChildren()
     {

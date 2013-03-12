@@ -118,6 +118,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         entities.put(entity.getName().toLowerCase(), entity);
     }
 
+    @Override
     public void persist(XMLBuilder xml) throws IOException
     {
         if (!this.hasValuableData()) {
@@ -140,6 +141,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         xml.endElement();
     }
 
+    @Override
     public boolean hasValuableData() {
         for (DBVEntity entity : getEntities()) {
             if (entity.hasValuableData()) {
