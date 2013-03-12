@@ -53,7 +53,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
                     // oracle fails if unquoted complex identifier specified
                     // but other DBs (and logically it's correct) do not want quote chars in this query
                     // so let's fix it in oracle plugin
-                    forParent == null ? null : DBUtils.getQuotedIdentifier(owner.getDataSource(), forParent.getName()),
+                    forParent == null ? null : DBUtils.getQuotedIdentifier(forParent),
                     false,
                     true).getSource();
         } catch (SQLException e) {
