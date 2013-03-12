@@ -1938,6 +1938,7 @@
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerPageMapping"/>
+            <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerPageLoadSettings"/>
         </node>
     </extension>
 

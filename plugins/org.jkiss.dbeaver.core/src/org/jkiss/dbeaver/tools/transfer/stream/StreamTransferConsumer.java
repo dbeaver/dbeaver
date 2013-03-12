@@ -262,9 +262,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void finishTransfer()
+    public void finishTransfer(boolean last)
     {
-        if (settings.isOpenFolderOnFinish()) {
+        if (last && settings.isOpenFolderOnFinish()) {
             // Last one
             DBeaverUI.getDisplay().asyncExec(new Runnable() {
                 @Override

@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
@@ -13,6 +14,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -270,8 +273,19 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public void finishTransfer()
+    public void finishTransfer(boolean last)
     {
+        if (!last && settings.isOpenTableOnFinish()) {
+            if (containerMapping != null && containerMapping.getTarget() != null) {
+                UIUtils.runInUI(DBeaverUI.getActiveWorkbenchShell(), new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        NavigatorHandlerObjectOpen.openEntityEditor(containerMapping.getTarget());
+                    }
+                });
+            }
+        }
     }
 
     @Override
