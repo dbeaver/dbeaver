@@ -165,6 +165,33 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                         }
                     }
                 }
+            } else if (blob != null) {
+                try {
+                    preparedStatement.setBlob(paramIndex, blob);
+                }
+                catch (Throwable e0) {
+                    // Write new blob value
+                    tmpStream = blob.getBinaryStream();
+                    try {
+                        preparedStatement.setBinaryStream(paramIndex, tmpStream);
+                    }
+                    catch (Throwable e) {
+                        if (e instanceof SQLException) {
+                            throw (SQLException)e;
+                        } else {
+                            try {
+                                preparedStatement.setBinaryStream(paramIndex, tmpStream, blob.length());
+                            }
+                            catch (Throwable e1) {
+                                if (e1 instanceof SQLException) {
+                                    throw (SQLException)e1;
+                                } else {
+                                    preparedStatement.setBinaryStream(paramIndex, tmpStream, (int)blob.length());
+                                }
+                            }
+                        }
+                    }
+                }
             } else {
                 preparedStatement.setNull(paramIndex, java.sql.Types.BLOB);
             }
