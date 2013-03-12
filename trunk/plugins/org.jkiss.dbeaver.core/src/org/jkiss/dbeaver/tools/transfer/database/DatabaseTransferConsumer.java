@@ -98,6 +98,27 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 settings.getContainerNode().refreshNode(monitor, this);
 
                 // Reflect database changes in mappings
+                for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
+                    switch (containerMapping.getMappingType()) {
+                        case create:
+                            DBSObject newTarget = container.getChild(monitor, containerMapping.getTargetName());
+                            if (newTarget == null) {
+                                throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container));
+                            } else if (!(newTarget instanceof DBSDataManipulator)) {
+                                throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget) + " doesn't support data manipulation");
+                            }
+                            containerMapping.setTarget((DBSDataManipulator) newTarget);
+                            containerMapping.setMappingType(DatabaseMappingType.existing);
+                            // ! Fall down is ok here
+                        case existing:
+                            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                                if (attr.getMappingType() == DatabaseMappingType.create) {
+                                    attr.updateMappingType(monitor);
+                                }
+                            }
+                            break;
+                    }
+                }
             }
         }
         finally {

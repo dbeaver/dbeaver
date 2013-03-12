@@ -72,7 +72,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         return mappingType;
     }
 
-    public void setMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException
+    void setMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException
     {
         this.mappingType = mappingType;
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);
@@ -97,6 +97,11 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                 // skip
             }
         }
+    }
+
+    void setMappingType(DatabaseMappingType mappingType) throws DBException
+    {
+        this.mappingType = mappingType;
     }
 
     public boolean isCompleted()
