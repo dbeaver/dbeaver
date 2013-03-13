@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -49,11 +50,6 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     {
         this.source = source;
         this.mappingType = DatabaseMappingType.unspecified;
-    }
-
-    public DBSDataContainer getSource()
-    {
-        return source;
     }
 
     public DBSDataManipulator getTarget()
@@ -124,9 +120,9 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     }
 
     @Override
-    public String getSourceName()
+    public DBSDataContainer getSource()
     {
-        return DBUtils.getObjectFullName(source);
+        return source;
     }
 
     @Override
