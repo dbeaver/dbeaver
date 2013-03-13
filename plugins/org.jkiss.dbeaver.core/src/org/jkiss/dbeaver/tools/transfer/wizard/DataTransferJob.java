@@ -70,11 +70,15 @@ public class DataTransferJob extends AbstractJob {
         IDataTransferProducer producer = transferPipe.getProducer();
         IDataTransferConsumer consumer = transferPipe.getConsumer();
 
+        IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
+
         setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name,
             producer.getSourceObject().getName()));
 
         IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
         try {
+            //consumer.initTransfer(producer.getSourceObject(), consumerSettings, );
+
             producer.transferData(
                 monitor,
                 consumer,
