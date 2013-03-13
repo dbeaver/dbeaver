@@ -236,9 +236,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         executeSQL(monitor, targetDataSource, sql.toString());
     }
 
-    private static void appendAttributeClause(StringBuilder sql, DatabaseMappingAttribute attr)
+    private void appendAttributeClause(StringBuilder sql, DatabaseMappingAttribute attr)
     {
-        sql.append(attr.getTargetName()).append(" ").append(attr.getTargetType());
+        sql.append(attr.getTargetName()).append(" ").append(attr.getTargetType(settings.getContainer().getDataSource()));
         if (attr.source.isRequired()) sql.append(" NOT NULL");
     }
 
