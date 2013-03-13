@@ -21,16 +21,22 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
 * DatabaseMappingAttribute
 */
 class DatabaseMappingAttribute implements DatabaseMappingObject {
+    public static final String DEFAULT_TARGET_TYPE = "VARCHAR";
     final DatabaseMappingContainer parent;
     DBSAttributeBase source;
     DBSEntityAttribute target;
@@ -146,16 +152,48 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
-    public String getTargetType()
+    public String getTargetType(DBPDataSource targetDataSource)
     {
-        if (CommonUtils.isEmpty(targetType)) {
-            String typeName = source.getTypeName();
-            if (source.getDataKind() == DBSDataKind.STRING) {
-                typeName += "(" + source.getMaxLength() + ")";
-            }
-            return typeName;
+        if (!CommonUtils.isEmpty(targetType)) {
+            return targetType;
         }
-        return targetType;
+        String typeName = source.getTypeName();
+        if (targetDataSource instanceof DBPDataTypeProvider) {
+            DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) targetDataSource;
+            DBSDataType dataType = dataTypeProvider.getDataType(typeName);
+            if (dataType == null) {
+                // Type not supported by target database
+                // Let's try to find something similar
+                List<DBSDataType> possibleTypes = new ArrayList<DBSDataType>();
+                for (DBSDataType type : dataTypeProvider.getDataTypes()) {
+                    if (type.getDataKind() == source.getDataKind()) {
+                        possibleTypes.add(type);
+                    }
+                }
+                if (possibleTypes.isEmpty()) {
+                    // Not supported by target database
+                    typeName = source.getDataKind().getDefaultTypeName();
+                } else {
+                    DBSDataType targetType = null;
+                    for (DBSDataType type : possibleTypes) {
+                        if (type.getName().equals(source.getDataKind().getDefaultTypeName()) ||
+                            type.getPrecision() == source.getPrecision()) {
+                            targetType = type;
+                            break;
+                        }
+                    }
+                    if (targetType == null) {
+                        targetType = possibleTypes.get(0);
+                    }
+                    typeName = targetType.getTypeName();
+                }
+            }
+        }
+
+        if (source.getDataKind() == DBSDataKind.STRING) {
+            typeName += "(" + source.getMaxLength() + ")";
+        }
+        return typeName;
     }
 
     public void setTargetType(String targetType)
