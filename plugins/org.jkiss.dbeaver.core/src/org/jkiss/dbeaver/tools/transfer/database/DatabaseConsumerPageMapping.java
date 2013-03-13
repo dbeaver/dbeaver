@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -102,7 +103,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
             final Text containerName = new Text(containerPanel, SWT.BORDER | SWT.READ_ONLY);
             containerName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            if (containerNode != null) containerName.setText(containerNode.getNodeFullName());
+            if (containerNode != null) containerName.setText(settings.getContainerFullName());
 
             Button browseButton = new Button(containerPanel, SWT.PUSH);
             browseButton.setImage(DBIcon.TREE_FOLDER.getImage());
@@ -138,7 +139,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         if (node instanceof DBNDatabaseNode) {
                             settings.setContainerNode((DBNDatabaseNode) node);
                             containerIcon.setImage(node.getNodeIconDefault());
-                            containerName.setText(node.getNodeFullName());
+                            containerName.setText(settings.getContainerFullName());
                             mappingViewer.setSelection(mappingViewer.getSelection());
                         }
                     }
@@ -237,7 +238,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             public void update(ViewerCell cell)
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
-                cell.setText(mapping.getSourceName());
+                cell.setText(DBUtils.getObjectFullName(mapping.getSource()));
                 cell.setImage(mapping.getIcon());
                 super.update(cell);
             }
@@ -285,7 +286,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject)element;
                 if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
-                    return TARGET_NAME_SKIP;
+                    return mapping.getSource().getName();
                 }
                 if (mapping instanceof DatabaseMappingContainer) {
                     if (mapping.getMappingType() == DatabaseMappingType.existing) {
@@ -315,24 +316,32 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         });
         //TreeViewerEditor.create(mappingViewer, new TreeViewerFocusCellManager(), ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
 
-        TreeViewerColumn columnType = new TreeViewerColumn(mappingViewer, SWT.LEFT);
-        columnType.setLabelProvider(new MappingLabelProvider() {
+        TreeViewerColumn columnMapping = new TreeViewerColumn(mappingViewer, SWT.LEFT);
+        columnMapping.setLabelProvider(new MappingLabelProvider() {
             @Override
             public void update(ViewerCell cell)
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
                 String text = "";
                 switch (mapping.getMappingType()) {
-                    case unspecified: text = "?"; break;
-                    case existing: text = "select"; break;
-                    case create: text = "new"; break;
-                    case skip: text = "skip"; break;
+                    case unspecified:
+                        text = "?";
+                        break;
+                    case existing:
+                        text = "existing";
+                        break;
+                    case create:
+                        text = "new";
+                        break;
+                    case skip:
+                        text = "skip";
+                        break;
                 }
                 cell.setText(text);
                 super.update(cell);
             }
         });
-        columnType.getColumn().setText("Type");
+        columnMapping.getColumn().setText("Mapping");
 
         mappingViewer.setContentProvider(new TreeContentProvider() {
             @Override
@@ -358,12 +367,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
         boolean allowsCreate = true;
         java.util.List<String> items = new ArrayList<String>();
-        items.add(TARGET_NAME_SKIP);
         if (element instanceof DatabaseMappingContainer) {
             if (settings.getContainerNode() == null) {
                 allowsCreate = false;
             }
-            items.add(TARGET_NAME_BROWSE);
             if (settings.getContainer() != null) {
                 // container's tables
                 DBSObjectContainer container = settings.getContainer();
@@ -374,6 +381,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 }
 
             }
+            items.add(TARGET_NAME_BROWSE);
         } else {
             DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
             switch (mapping.getParent().getMappingType()) {
@@ -390,6 +398,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             }
 
         }
+        items.add(TARGET_NAME_SKIP);
         CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
             mappingViewer.getTree(),
             items.toArray(new String[items.size()]),
@@ -505,7 +514,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     private void mapColumns(DatabaseMappingContainer mapping)
     {
-        ColumnsMappingDialog dialog = new ColumnsMappingDialog(getWizard(), mapping);
+        ColumnsMappingDialog dialog = new ColumnsMappingDialog(
+            getWizard(),
+            getWizard().getPageSettings(this, DatabaseConsumerSettings.class),
+            mapping);
         if (dialog.open() == IDialogConstants.OK_ID) {
             mappingViewer.refresh();
             updatePageCompletion();
@@ -542,7 +554,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             TreeColumn[] columns = table.getColumns();
             columns[0].setWidth(totalWidth * 40 / 100);
             columns[1].setWidth(totalWidth * 40 / 100);
-            columns[2].setWidth(totalWidth * 10 / 100);
+            columns[2].setWidth(totalWidth * 20 / 100);
         }
 
         updatePageCompletion();

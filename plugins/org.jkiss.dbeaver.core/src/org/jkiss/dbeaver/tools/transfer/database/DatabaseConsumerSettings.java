@@ -25,6 +25,8 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -146,6 +148,26 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         this.commitAfterRows = commitAfterRows;
     }
 
+    DBPDataSource getTargetDataSource(DatabaseMappingAttribute attrMapping)
+    {
+        DBSObjectContainer container = getContainer();
+        if (container != null) {
+            return container.getDataSource();
+        } else {
+            return attrMapping.getTarget().getDataSource();
+        }
+    }
+
+    DBPDataSource getTargetDataSource(DatabaseMappingContainer containerMapping)
+    {
+        DBSObjectContainer container = getContainer();
+        if (container != null) {
+            return container.getDataSource();
+        } else {
+            return containerMapping.getTarget().getDataSource();
+        }
+    }
+
     @Override
     public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings)
     {
@@ -196,6 +218,12 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         dialogSettings.put("useTransactions", useTransactions);
         dialogSettings.put("commitAfterRows", commitAfterRows);
         dialogSettings.put("openTableOnFinish", openTableOnFinish);
+    }
+
+    public String getContainerFullName()
+    {
+        return DBUtils.getObjectFullName(getContainer()) +
+            " [" + getContainer().getDataSource().getContainer().getName() + "]";
     }
 
 }

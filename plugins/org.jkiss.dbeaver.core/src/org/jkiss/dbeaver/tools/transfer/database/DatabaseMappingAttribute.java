@@ -66,9 +66,9 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     }
 
     @Override
-    public String getSourceName()
+    public DBSAttributeBase getSource()
     {
-        return DBUtils.getObjectFullName(source);
+        return source;
     }
 
     @Override
@@ -93,7 +93,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         this.mappingType = mappingType;
         switch (mappingType) {
             case create:
-                targetName = getSourceName();
+                targetName = getSource().getName();
                 break;
         }
     }
@@ -130,11 +130,6 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                 mappingType = DatabaseMappingType.unspecified;
                 break;
         }
-    }
-
-    public DBSAttributeBase getSource()
-    {
-        return source;
     }
 
     public DBSEntityAttribute getTarget()

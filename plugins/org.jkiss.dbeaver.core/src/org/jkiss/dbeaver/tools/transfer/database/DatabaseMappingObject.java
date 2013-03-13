@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
 * DatabaseMappingContainer
@@ -27,7 +29,7 @@ interface DatabaseMappingObject {
 
     Image getIcon();
 
-    String getSourceName();
+    DBPNamedObject getSource();
 
     String getTargetName();
 

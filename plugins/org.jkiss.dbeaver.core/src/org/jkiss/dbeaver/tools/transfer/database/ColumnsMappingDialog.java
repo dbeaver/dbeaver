@@ -30,7 +30,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -42,20 +44,15 @@ import java.util.Collection;
  */
 public class ColumnsMappingDialog extends Dialog {
 
+    private final DatabaseConsumerSettings settings;
     private final DatabaseMappingContainer mapping;
     private final Collection<DatabaseMappingAttribute> attributeMappings;
     private TableViewer mappingViewer;
 
-    private static abstract class MappingLabelProvider extends CellLabelProvider {
-        @Override
-        public void update(ViewerCell cell)
-        {
-        }
-    }
-
-    public ColumnsMappingDialog(DataTransferWizard wizard, DatabaseMappingContainer mapping)
+    public ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping)
     {
         super(wizard.getShell());
+        this.settings = settings;
         this.mapping = mapping;
         attributeMappings = mapping.getAttributeMappings(wizard.getContainer());
     }
@@ -75,67 +72,99 @@ public class ColumnsMappingDialog extends Dialog {
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        new Label(composite, SWT.NONE).setText("Source entity: " + DBUtils.getObjectFullName(mapping.getSource()));
-        new Label(composite, SWT.NONE).setText("Target entity: " + mapping.getTargetName());
+        new Label(composite, SWT.NONE).setText("Source entity: " + DBUtils.getObjectFullName(mapping.getSource()) +
+            " [" + mapping.getSource().getDataSource().getContainer().getName() + "]");
+        new Label(composite, SWT.NONE).setText("Target entity: " + mapping.getTargetName() +
+            " [" + settings.getTargetDataSource(mapping).getContainer().getName() + "]");
         mappingViewer = new TableViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
         GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 400;
+        gd.widthHint = 600;
         gd.heightHint = 300;
         mappingViewer.getTable().setLayoutData(gd);
         mappingViewer.getTable().setLinesVisible(true);
         mappingViewer.getTable().setHeaderVisible(true);
         mappingViewer.setContentProvider(new ListContentProvider());
 
-        TableViewerColumn columnSource = new TableViewerColumn(mappingViewer, SWT.LEFT);
-        columnSource.setLabelProvider(new MappingLabelProvider() {
-            @Override
-            public void update(ViewerCell cell)
-            {
-                DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) cell.getElement();
-                cell.setText(DBUtils.getObjectFullName(mapping.source));
-                super.update(cell);
-            }
-        });
-        columnSource.getColumn().setText("Source");
-        columnSource.getColumn().setWidth(170);
-
-        TableViewerColumn columnTarget = new TableViewerColumn(mappingViewer, SWT.LEFT);
-        columnTarget.setLabelProvider(new MappingLabelProvider() {
-            @Override
-            public void update(ViewerCell cell)
-            {
-                DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) cell.getElement();
-                cell.setText(mapping.getTargetName());
-                if (mapping.mappingType == DatabaseMappingType.unspecified) {
-                    cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED));
-                } else {
-                    cell.setBackground(null);
+        {
+            TableViewerColumn columnSource = new TableViewerColumn(mappingViewer, SWT.LEFT);
+            columnSource.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
+                    cell.setText(DBUtils.getObjectFullName(attrMapping.getSource()));
+                    cell.setImage(attrMapping.getIcon());
                 }
-                super.update(cell);
-            }
-        });
-        columnTarget.getColumn().setText("Target");
-        columnTarget.getColumn().setWidth(170);
-
-        TableViewerColumn columnType = new TableViewerColumn(mappingViewer, SWT.LEFT);
-        columnType.setLabelProvider(new MappingLabelProvider() {
-            @Override
-            public void update(ViewerCell cell)
-            {
-                DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) cell.getElement();
-                String text = "";
-                switch (mapping.getMappingType()) {
-                    case unspecified: text = "?"; break;
-                    case existing: text = "column"; break;
-                    case create: text = "new"; break;
-                    case skip: text = "skip"; break;
+            });
+            columnSource.getColumn().setText("Source Column");
+            columnSource.getColumn().setWidth(170);
+        }
+        {
+            TableViewerColumn columnSourceType = new TableViewerColumn(mappingViewer, SWT.LEFT);
+            columnSourceType.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    cell.setText(((DatabaseMappingAttribute) cell.getElement()).getSource().getTypeName());
                 }
-                cell.setText(text);
-                super.update(cell);
-            }
-        });
-        columnType.getColumn().setText("Type");
-        columnType.getColumn().setWidth(60);
+            });
+            columnSourceType.getColumn().setText("Source Type");
+            columnSourceType.getColumn().setWidth(100);
+        }
+
+        {
+            TableViewerColumn columnTarget = new TableViewerColumn(mappingViewer, SWT.LEFT);
+            columnTarget.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) cell.getElement();
+                    cell.setText(mapping.getTargetName());
+                    if (mapping.mappingType == DatabaseMappingType.unspecified) {
+                        cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_BACK_DELETED));
+                    } else {
+                        cell.setBackground(null);
+                    }
+                }
+            });
+            columnTarget.getColumn().setText("Target Column");
+            columnTarget.getColumn().setWidth(170);
+        }
+        {
+            TableViewerColumn columnTargetType = new TableViewerColumn(mappingViewer, SWT.LEFT);
+            columnTargetType.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
+                    DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
+                    cell.setText(attrMapping.getTargetType(dataSource));
+                }
+            });
+            columnTargetType.getColumn().setText("Target Type");
+            columnTargetType.getColumn().setWidth(100);
+        }
+
+        {
+            TableViewerColumn columnType = new TableViewerColumn(mappingViewer, SWT.LEFT);
+            columnType.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell)
+                {
+                    DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) cell.getElement();
+                    String text = "";
+                    switch (mapping.getMappingType()) {
+                        case unspecified: text = "?"; break;
+                        case existing: text = "existing"; break;
+                        case create: text = "new"; break;
+                        case skip: text = "skip"; break;
+                    }
+                    cell.setText(text);
+                }
+            });
+            columnType.getColumn().setText("Mapping");
+            columnType.getColumn().setWidth(60);
+        }
 
         mappingViewer.setInput(attributeMappings);
 
