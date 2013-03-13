@@ -69,9 +69,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     }
 
     public DatabaseConsumerPageMapping() {
-        super("Entities mapping");
-        setTitle("Entities mapping");
-        setDescription("Map entities transfer");
+        super("Tables mapping");
+        setTitle("Tables mapping");
+        setDescription("Map tables and columns transfer");
         setPageComplete(false);
     }
 

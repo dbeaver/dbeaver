@@ -51,6 +51,9 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     private DBNDatabaseNode containerNode;
     private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<DBSDataContainer, DatabaseMappingContainer>();
+    private boolean openNewConnections = true;
+    private boolean useTransactions = true;
+    private int commitAfterRows = 10000;
     private boolean openTableOnFinish = true;
 
     public DatabaseConsumerSettings()
@@ -103,6 +106,46 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         return true;
     }
 
+    public boolean isOpenTableOnFinish()
+    {
+        return openTableOnFinish;
+    }
+
+    public void setOpenTableOnFinish(boolean openTableOnFinish)
+    {
+        this.openTableOnFinish = openTableOnFinish;
+    }
+
+    public boolean isOpenNewConnections()
+    {
+        return openNewConnections;
+    }
+
+    public void setOpenNewConnections(boolean openNewConnections)
+    {
+        this.openNewConnections = openNewConnections;
+    }
+
+    public boolean isUseTransactions()
+    {
+        return useTransactions;
+    }
+
+    public void setUseTransactions(boolean useTransactions)
+    {
+        this.useTransactions = useTransactions;
+    }
+
+    public int getCommitAfterRows()
+    {
+        return commitAfterRows;
+    }
+
+    public void setCommitAfterRows(int commitAfterRows)
+    {
+        this.commitAfterRows = commitAfterRows;
+    }
+
     @Override
     public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings)
     {
@@ -131,6 +174,15 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 // skip
             }
         }
+        if (dialogSettings.get("openNewConnections") != null) {
+            openNewConnections = dialogSettings.getBoolean("openNewConnections");
+        }
+        if (dialogSettings.get("useTransactions") != null) {
+            useTransactions = dialogSettings.getBoolean("useTransactions");
+        }
+        if (dialogSettings.get("commitAfterRows") != null) {
+            commitAfterRows = dialogSettings.getInt("commitAfterRows");
+        }
         if (dialogSettings.get("openTableOnFinish") != null) {
             openTableOnFinish = dialogSettings.getBoolean("openTableOnFinish");
         }
@@ -140,16 +192,10 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     public void saveSettings(IDialogSettings dialogSettings)
     {
         dialogSettings.put("container", containerNode.getNodeItemPath());
+        dialogSettings.put("openNewConnections", openNewConnections);
+        dialogSettings.put("useTransactions", useTransactions);
+        dialogSettings.put("commitAfterRows", commitAfterRows);
         dialogSettings.put("openTableOnFinish", openTableOnFinish);
     }
 
-    public boolean isOpenTableOnFinish()
-    {
-        return openTableOnFinish;
-    }
-
-    public void setOpenTableOnFinish(boolean openTableOnFinish)
-    {
-        this.openTableOnFinish = openTableOnFinish;
-    }
 }

@@ -1,7 +1,5 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -25,13 +23,12 @@ import java.util.*;
 */
 public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
 
-    static final Log log = LogFactory.getLog(DatabaseTransferConsumer.class);
-
     private DBSDataContainer sourceObject;
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
     private DBCExecutionContext targetContext;
+    private long rowsExported = 0;
 
     private static class ColumnMapping {
         DBCAttributeMetaData rsAttr;
@@ -79,11 +76,18 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         } catch (DBException e) {
             throw new DBCException("Can't insert row", e);
         }
+        rowsExported++;
+        if (settings.isUseTransactions() && (rowsExported % settings.getCommitAfterRows()) == 0) {
+            targetContext.getTransactionManager().commit();
+        }
     }
 
     @Override
     public void fetchEnd(DBCExecutionContext context) throws DBCException
     {
+        if (settings.isUseTransactions()) {
+            targetContext.getTransactionManager().commit();
+        }
         closeExporter();
     }
 
@@ -98,7 +102,15 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (containerMapping == null) {
             throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject));
         }
-        targetContext = containerMapping.getTarget().getDataSource().openContext(context.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
+        DBPDataSource dataSource = containerMapping.getTarget().getDataSource();
+        if (settings.isOpenNewConnections()) {
+            targetContext = dataSource.openIsolatedContext(context.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
+        } else {
+            targetContext = dataSource.openContext(context.getProgressMonitor(), DBCExecutionPurpose.UTIL, "Data load");
+        }
+        if (settings.isUseTransactions()) {
+            targetContext.getTransactionManager().setAutoCommit(false);
+        }
     }
 
     private void closeExporter()
@@ -172,19 +184,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         finally {
             monitor.done();
         }
-/*
-        if (container != null) {
-            try {
-                DBEObjectManager<?> objectManager = DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(container.getChildType(VoidProgressMonitor.INSTANCE));
-                if (objectManager instanceof DBEObjectMaker<?, ?>) {
-                    //((DBEObjectMaker) objectManager).createNewObject()
-                }
-            } catch (DBException e) {
-                log.error(e);
-            }
-        }
-*/
-
     }
 
     private void createTargetTable(DBRProgressMonitor monitor, DatabaseMappingContainer containerMapping) throws DBException
