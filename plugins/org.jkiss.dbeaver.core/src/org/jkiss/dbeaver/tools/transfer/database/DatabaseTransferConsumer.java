@@ -194,6 +194,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBPDataSource targetDataSource = schema.getDataSource();
 
         String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
+        containerMapping.setTargetName(tableName);
         sql.append("CREATE TABLE ")
             .append(DBUtils.getQuotedIdentifier(schema))
             .append(targetDataSource.getInfo().getCatalogSeparator())

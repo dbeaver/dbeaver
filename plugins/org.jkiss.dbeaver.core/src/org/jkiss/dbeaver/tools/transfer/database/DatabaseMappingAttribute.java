@@ -157,10 +157,18 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (!CommonUtils.isEmpty(targetType)) {
             return targetType;
         }
+        // TODO: make some smart data type matcher
+        // Current solution looks like hack
         String typeName = source.getTypeName();
         if (targetDataSource instanceof DBPDataTypeProvider) {
             DBPDataTypeProvider dataTypeProvider = (DBPDataTypeProvider) targetDataSource;
             DBSDataType dataType = dataTypeProvider.getDataType(typeName);
+            if (dataType == null && typeName.equals("DOUBLE")) {
+                dataType = dataTypeProvider.getDataType("DOUBLE PRECISION");
+                if (dataType != null) {
+                    typeName = dataType.getTypeName();
+                }
+            }
             if (dataType == null) {
                 // Type not supported by target database
                 // Let's try to find something similar
