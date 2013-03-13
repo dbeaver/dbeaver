@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -305,7 +306,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             protected void setValue(Object element, Object value)
             {
                 try {
-                    setMappingTarget((DatabaseMappingObject) element, CommonUtils.toString(value));
+                    final DatabaseConsumerSettings settings = getWizard().getPageSettings(DatabaseConsumerPageMapping.this, DatabaseConsumerSettings.class);
+                    String name = CommonUtils.toString(value);
+                    if (!name.equals(TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE)) {
+                        name = DBObjectNameCaseTransformer.transformName(settings.getTargetDataSource((DatabaseMappingObject) element), name);
+                    }
+                    setMappingTarget((DatabaseMappingObject) element, name);
                     mappingViewer.refresh();
                     updatePageCompletion();
                     setErrorMessage(null);
@@ -424,7 +430,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     // container's tables
                     DBSObjectContainer container = settings.getContainer();
                     for (DBSObject child : container.getChildren(VoidProgressMonitor.INSTANCE)) {
-                        if (child instanceof DBSDataManipulator && name.equals(child.getName())) {
+                        if (child instanceof DBSDataManipulator && name.equalsIgnoreCase(child.getName())) {
                             containerMapping.setTarget((DBSDataManipulator)child);
                             containerMapping.setMappingType(getWizard().getContainer(), DatabaseMappingType.existing);
                             return;
@@ -438,7 +444,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 if (attrMapping.getParent().getTarget() instanceof DBSEntity) {
                     DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
                     for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
-                        if (name.equals(attr.getName())) {
+                        if (name.equalsIgnoreCase(attr.getName())) {
                             attrMapping.setMappingType(DatabaseMappingType.existing);
                             attrMapping.setTarget(attr);
                             return;

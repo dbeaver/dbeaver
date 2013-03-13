@@ -31,6 +31,8 @@ interface DatabaseMappingObject {
 
     DBPNamedObject getSource();
 
+    DBSObject getTarget();
+
     String getTargetName();
 
     DatabaseMappingType getMappingType();
