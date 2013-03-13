@@ -25,9 +25,11 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,12 +43,14 @@ import java.util.List;
 public class DataExporterSQL extends StreamExporterAbstract {
 
     private static final String PROP_ESCAPE = "escape";
+    private static final String PROP_OMIT_SCHEMA = "omitSchema";
     private static final String PROP_ROWS_IN_STATEMENT = "rowsInStatement";
     private static final char DEF_ESCAPE_CHAR = '\\';
     private static final char STRING_QUOTE = '\'';
 
     private char escapeChar = DEF_ESCAPE_CHAR;
     private String rowDelimiter;
+    private boolean omitSchema;
     private int rowsInStatement;
     private PrintWriter out;
     private String tableName;
@@ -74,6 +78,9 @@ public class DataExporterSQL extends StreamExporterAbstract {
         } else {
             escapeChar = DEF_ESCAPE_CHAR;
         }
+        if (site.getProperties().containsKey(PROP_OMIT_SCHEMA)) {
+            omitSchema = CommonUtils.toBoolean(site.getProperties().get(PROP_OMIT_SCHEMA));
+        }
         try {
             rowsInStatement = Integer.parseInt(String.valueOf(site.getProperties().get(PROP_ROWS_IN_STATEMENT)));
         } catch (NumberFormatException e) {
@@ -95,8 +102,10 @@ public class DataExporterSQL extends StreamExporterAbstract {
     {
         columns = getSite().getAttributes();
         DBPNamedObject source = getSite().getSource();
-        if (source instanceof DBSTable) {
-            tableName = ((DBSTable)source).getFullQualifiedName();
+        if (source instanceof DBSObject) {
+            tableName = omitSchema ?
+                DBUtils.getQuotedIdentifier((DBSObject) source) :
+                DBUtils.getObjectFullName(source);
         } else {
             throw new DBException("SQL export may be done only from table object");
         }

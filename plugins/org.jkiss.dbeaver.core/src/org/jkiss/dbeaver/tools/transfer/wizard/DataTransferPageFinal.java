@@ -42,6 +42,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     static final Log log = LogFactory.getLog(DataTransferPageFinal.class);
 
     private Table resultTable;
+    private boolean activated = false;
 
     DataTransferPageFinal() {
         super(CoreMessages.dialog_export_wizard_final_name);
@@ -115,14 +116,20 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 item.setImage(1, settings.getConsumer().getIcon());
             }
         }
+        activated = true;
         UIUtils.packColumns(resultTable, true);
         updatePageCompletion();
+    }
+
+    public boolean isActivated()
+    {
+        return activated;
     }
 
     @Override
     protected boolean determinePageCompletion()
     {
-        return true;
+        return activated;
     }
 
 }

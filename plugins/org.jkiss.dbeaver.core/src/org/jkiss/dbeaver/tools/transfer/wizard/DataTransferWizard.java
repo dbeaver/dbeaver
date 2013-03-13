@@ -132,6 +132,9 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
             if (settings.isPageValid(page) && !page.isPageComplete()) {
                 return false;
             }
+            if (page instanceof DataTransferPageFinal && !((DataTransferPageFinal) page).isActivated()) {
+                return false;
+            }
         }
         return true;
     }
