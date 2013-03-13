@@ -148,23 +148,13 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         this.commitAfterRows = commitAfterRows;
     }
 
-    DBPDataSource getTargetDataSource(DatabaseMappingAttribute attrMapping)
+    DBPDataSource getTargetDataSource(DatabaseMappingObject attrMapping)
     {
         DBSObjectContainer container = getContainer();
         if (container != null) {
             return container.getDataSource();
         } else {
             return attrMapping.getTarget().getDataSource();
-        }
-    }
-
-    DBPDataSource getTargetDataSource(DatabaseMappingContainer containerMapping)
-    {
-        DBSObjectContainer container = getContainer();
-        if (container != null) {
-            return container.getDataSource();
-        } else {
-            return containerMapping.getTarget().getDataSource();
         }
     }
 
