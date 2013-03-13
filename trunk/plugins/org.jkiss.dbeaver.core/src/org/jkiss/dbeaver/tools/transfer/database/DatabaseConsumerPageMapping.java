@@ -141,7 +141,17 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             settings.setContainerNode((DBNDatabaseNode) node);
                             containerIcon.setImage(node.getNodeIconDefault());
                             containerName.setText(settings.getContainerFullName());
-                            mappingViewer.setSelection(mappingViewer.getSelection());
+                            // Reset mappings
+                            for (DatabaseMappingContainer mappingContainer : settings.getDataMappings().values()) {
+                                if (mappingContainer.getMappingType() == DatabaseMappingType.create) {
+                                    try {
+                                        mappingContainer.setMappingType(getContainer(), DatabaseMappingType.create);
+                                    } catch (DBException e1) {
+                                        log.error(e1);
+                                    }
+                                }
+                            }
+                            mappingViewer.refresh();
                         }
                     }
                 }
