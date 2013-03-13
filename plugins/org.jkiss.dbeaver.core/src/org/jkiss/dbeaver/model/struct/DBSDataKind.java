@@ -24,15 +24,27 @@ package org.jkiss.dbeaver.model.struct;
  */
 public enum DBSDataKind
 {
-    BOOLEAN,
-    NUMERIC,
-    STRING,
-    DATETIME,
-    BINARY,
-    LOB,
-    STRUCT,
-    ARRAY,
-    OBJECT,
-    REFERENCE,
-    UNKNOWN,
+    BOOLEAN("BOOLEAN"),
+    NUMERIC("NUMERIC"),
+    STRING("VARCHAR"),
+    DATETIME("TIMESTAMP"),
+    BINARY("BLOB"),
+    LOB("BLOB"),
+    STRUCT("VARCHAR"),
+    ARRAY("VARCHAR"),
+    OBJECT("VARCHAR"),
+    REFERENCE("VARCHAR"),
+    UNKNOWN("VARCHAR");
+
+    private final String defaultTypeName;
+
+    private DBSDataKind(String defaultTypeName)
+    {
+        this.defaultTypeName = defaultTypeName;
+    }
+
+    public String getDefaultTypeName()
+    {
+        return defaultTypeName;
+    }
 }
