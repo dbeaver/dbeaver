@@ -60,7 +60,7 @@ public class DataImportHandler extends DataTransferHandler {
             final DBNProject rootNode = navigatorModel.getRoot().getProject(activeProject);
             DBNNode node = BrowseObjectDialog.selectObject(
                 HandlerUtil.getActiveShell(event),
-                "Select data container",
+                "Select source container for '" + consumer.getTargetName() + "'",
                 rootNode.getDatabases(),
                 null,
                 new Class[] {DBSObjectContainer.class, DBSDataContainer.class},

@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -34,6 +36,8 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
  * Data container transfer producer
  */
 public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseProducerSettings> {
+
+    static final Log log = LogFactory.getLog(DatabaseTransferProducer.class);
 
     private DBSDataContainer dataContainer;
     private DBDDataFilter dataFilter;
@@ -73,6 +77,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_retrieve, 1);
                 try {
                     totalRows = dataContainer.countData(context, dataFilter);
+                } catch (Throwable e) {
+                    log.warn("Can't retrieve row count from '" + dataContainer.getName() + "'", e);
                 } finally {
                     monitor.done();
                 }

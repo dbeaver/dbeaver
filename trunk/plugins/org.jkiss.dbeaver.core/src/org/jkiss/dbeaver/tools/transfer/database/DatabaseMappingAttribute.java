@@ -36,7 +36,7 @@ import java.util.List;
 * DatabaseMappingAttribute
 */
 class DatabaseMappingAttribute implements DatabaseMappingObject {
-    public static final String DEFAULT_TARGET_TYPE = "VARCHAR";
+
     final DatabaseMappingContainer parent;
     DBSAttributeBase source;
     DBSEntityAttribute target;
@@ -189,8 +189,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                 } else {
                     DBSDataType targetType = null;
                     for (DBSDataType type : possibleTypes) {
-                        if (type.getName().equals(source.getDataKind().getDefaultTypeName()) ||
-                            type.getPrecision() == source.getPrecision()) {
+                        if (type.getName().equals(source.getDataKind().getDefaultTypeName())) {
                             targetType = type;
                             break;
                         }
