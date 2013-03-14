@@ -1,5 +1,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -24,7 +26,10 @@ import java.util.*;
 */
 public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
 
+    static final Log log = LogFactory.getLog(DatabaseTransferConsumer.class);
+
     private DBSDataContainer sourceObject;
+    private DBSDataManipulator targetObject;
     private DatabaseConsumerSettings settings;
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
@@ -49,7 +54,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     public DatabaseTransferConsumer(DBSDataManipulator targetObject)
     {
-
+        this.targetObject = targetObject;
     }
 
     @Override
@@ -83,7 +88,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         do {
             try {
                 target.insertData(targetContext, attrValues, null);
-            } catch (DBException e) {
+            } catch (Throwable e) {
+                log.error("Error inserting row", e);
                 if (!ignoreErrors) {
                     ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(
                         DBUtils.getObjectFullName(target) + " data load",
@@ -328,9 +334,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
+    public DBSDataManipulator getTargetObject()
+    {
+        return targetObject;
+    }
+
     @Override
     public String getTargetName()
     {
+        if (targetObject != null) {
+            return DBUtils.getObjectFullName(targetObject);
+        }
         DatabaseMappingContainer dataMapping = settings.getDataMapping(sourceObject);
         if (dataMapping == null) {
             return "?";

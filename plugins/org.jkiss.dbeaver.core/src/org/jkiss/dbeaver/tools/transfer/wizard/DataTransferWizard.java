@@ -69,7 +69,9 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     @Override
     public void addPages() {
         super.addPages();
-        addPage(new DataTransferPagePipes());
+        if (settings.isConsumerOptional()) {
+            addPage(new DataTransferPagePipes());
+        }
         settings.addWizardPages(this);
         addPage(new DataTransferPageFinal());
     }

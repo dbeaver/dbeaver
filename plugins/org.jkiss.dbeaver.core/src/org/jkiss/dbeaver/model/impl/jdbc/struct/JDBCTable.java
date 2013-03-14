@@ -255,7 +255,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     continue;
                 }
                 DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attribute.getAttribute());
-                valueHandler.bindValueObject(context, dbStat, attribute.getAttribute(), paramNum++, attribute.getValue());
+                Object realValue = valueHandler.getValueFromObject(context, attribute.getAttribute(), attribute.getValue(), false);
+                valueHandler.bindValueObject(context, dbStat, attribute.getAttribute(), paramNum++, realValue);
             }
 
             // Execute statement
