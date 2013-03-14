@@ -76,18 +76,8 @@ public class DataTransferSettings {
 
     private transient int curPipeNum = 0;
 
-    public DataTransferSettings(Collection<? extends IDataTransferNode> transferNodes)
+    public DataTransferSettings(IDataTransferProducer[] producers, IDataTransferConsumer[] consumers)
     {
-        final List<IDataTransferProducer> producers = new ArrayList<IDataTransferProducer>();
-        final List<IDataTransferConsumer> consumers = new ArrayList<IDataTransferConsumer>();
-        for (IDataTransferNode node : transferNodes) {
-            if (node instanceof IDataTransferProducer) {
-                producers.add((IDataTransferProducer) node);
-            } else if (node instanceof IDataTransferConsumer) {
-                consumers.add((IDataTransferConsumer) node);
-            }
-        }
-
         dataPipes = new ArrayList<DataTransferPipe>();
         if (!CommonUtils.isEmpty(producers)) {
             // Make pipes

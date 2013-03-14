@@ -76,6 +76,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
@@ -1221,8 +1222,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     ActiveWizardDialog dialog = new ActiveWizardDialog(
                         site.getWorkbenchWindow(),
                         new DataTransferWizard(
-                            Collections.singletonList(
-                                new DatabaseTransferProducer(getDataContainer(), model.getDataFilter()))),
+                            new IDataTransferProducer[] {
+                                new DatabaseTransferProducer(getDataContainer(), model.getDataFilter())},
+                            null),
                         getSelection());
                     dialog.open();
                 }

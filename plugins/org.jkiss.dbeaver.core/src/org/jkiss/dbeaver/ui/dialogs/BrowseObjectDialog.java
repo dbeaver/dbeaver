@@ -51,6 +51,7 @@ public class BrowseObjectDialog extends Dialog {
     private DBNNode selectedNode;
     private boolean singleSelection;
     private Class[] allowedTypes;
+    private Class[] resultTypes;
     private List<DBNNode> selectedObjects = new ArrayList<DBNNode>();
     private DatabaseNavigatorTree navigatorTree;
 
@@ -60,7 +61,8 @@ public class BrowseObjectDialog extends Dialog {
         DBNNode rootNode,
         DBNNode selectedNode,
         boolean singleSelection,
-        Class[] allowedTypes)
+        Class[] allowedTypes,
+        Class[] resultTypes)
     {
         super(parentShell);
         this.title = title;
@@ -68,6 +70,7 @@ public class BrowseObjectDialog extends Dialog {
         this.selectedNode = selectedNode;
         this.singleSelection = singleSelection;
         this.allowedTypes = allowedTypes;
+        this.resultTypes = resultTypes == null ? allowedTypes : resultTypes;
     }
 
     @Override
@@ -102,11 +105,11 @@ public class BrowseObjectDialog extends Dialog {
                     if (element instanceof DBNDatabaseFolder) {
                         DBNDatabaseFolder folder = (DBNDatabaseFolder) element;
                         Class<? extends DBSObject> folderItemsClass = folder.getChildrenClass();
-                        return folderItemsClass != null && matchesType(folderItemsClass);
+                        return folderItemsClass != null && matchesType(folderItemsClass, false);
                     }
                     if (element instanceof DBNProjectDatabases ||
                         element instanceof DBNDataSource ||
-                        (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass())))
+                        (element instanceof DBSWrapper && matchesType(((DBSWrapper) element).getObject().getClass(), false)))
                     {
                         return true;
                     }
@@ -127,7 +130,7 @@ public class BrowseObjectDialog extends Dialog {
                 for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
                     DBNNode node = (DBNNode) iter.next();
                     if (node instanceof DBSWrapper) {
-                        if (matchesType(((DBSWrapper) node).getObject().getClass())) {
+                        if (matchesType(((DBSWrapper) node).getObject().getClass(), true)) {
                             selectedObjects.add(node);
                         }
                     }
@@ -139,9 +142,9 @@ public class BrowseObjectDialog extends Dialog {
         return group;
     }
 
-    private boolean matchesType(Class<?> nodeType)
+    private boolean matchesType(Class<?> nodeType, boolean result)
     {
-        for (Class ot : allowedTypes) {
+        for (Class ot : result ? resultTypes : allowedTypes) {
             if (ot.isAssignableFrom(nodeType)) {
                 return true;
             }
@@ -169,6 +172,7 @@ public class BrowseObjectDialog extends Dialog {
         return selectedObjects;
     }
 
+/*
     public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class ... allowedTypes)
     {
         BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes);
@@ -178,10 +182,11 @@ public class BrowseObjectDialog extends Dialog {
             return null;
         }
     }
+*/
 
-    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class ... allowedTypes)
+    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class[] allowedTypes, Class[] resultTypes)
     {
-        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes);
+        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes, resultTypes);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);

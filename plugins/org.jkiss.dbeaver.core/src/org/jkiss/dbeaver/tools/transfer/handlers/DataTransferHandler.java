@@ -23,15 +23,16 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,24 +48,45 @@ public abstract class DataTransferHandler extends AbstractHandler {
             return null;
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
-        final List<IDataTransferNode> transferNodes = new ArrayList<IDataTransferNode>();
+        final List<IDataTransferProducer> producers = new ArrayList<IDataTransferProducer>();
+        final List<IDataTransferConsumer> consumers = new ArrayList<IDataTransferConsumer>();
         for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
             Object object = iter.next();
 
             IDataTransferNode node = adaptTransferNode(object);
-            if (node != null) {
-                transferNodes.add(node);
+            if (node instanceof IDataTransferProducer) {
+                producers.add((IDataTransferProducer) node);
+            } else if (node instanceof IDataTransferConsumer) {
+                consumers.add((IDataTransferConsumer) node);
+            }
+        }
+
+        if (!consumers.isEmpty()) {
+            // We need to choose producer for consumers
+            for (IDataTransferConsumer consumer : consumers) {
+                IDataTransferProducer producer = chooseProducer(event, consumer);
+                if (producer == null) {
+                    return null;
+                }
+                producers.add(producer);
             }
         }
 
         // Run transfer wizard
-        if (!transferNodes.isEmpty()) {
+        if (!producers.isEmpty() || !consumers.isEmpty()) {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
                 workbenchWindow,
-                new DataTransferWizard(transferNodes));
+                new DataTransferWizard(
+                    producers.toArray(new IDataTransferProducer[producers.size()]),
+                    consumers.toArray(new IDataTransferConsumer[consumers.size()])));
             dialog.open();
         }
 
+        return null;
+    }
+
+    protected IDataTransferProducer chooseProducer(ExecutionEvent event, IDataTransferConsumer consumer)
+    {
         return null;
     }
 

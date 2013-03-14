@@ -30,12 +30,12 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 public class DataTransferWizard extends Wizard implements IExportWizard {
 
@@ -43,8 +43,8 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     private DataTransferSettings settings;
 
-    public DataTransferWizard(List<? extends IDataTransferNode> transferNodes) {
-        this.settings = new DataTransferSettings(transferNodes);
+    public DataTransferWizard(IDataTransferProducer[] producers, IDataTransferConsumer[] consumers) {
+        this.settings = new DataTransferSettings(producers, consumers);
         loadSettings();
     }
 
