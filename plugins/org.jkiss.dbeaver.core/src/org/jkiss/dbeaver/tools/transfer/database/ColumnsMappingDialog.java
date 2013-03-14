@@ -105,7 +105,7 @@ public class ColumnsMappingDialog extends Dialog {
                 @Override
                 public void update(ViewerCell cell)
                 {
-                    cell.setText(((DatabaseMappingAttribute) cell.getElement()).getSource().getTypeName());
+                    cell.setText(((DatabaseMappingAttribute) cell.getElement()).getSourceType());
                 }
             });
             columnSourceType.getColumn().setText("Source Type");

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -164,9 +165,11 @@ public class SQLQueryJob extends DataSourceJob
                         if (lastError != null) {
                             log.error(lastError);
                         }
-                        SQLQueryErrorJob errorJob = new SQLQueryErrorJob(
+                        boolean isQueue = queryNum < queries.size() - 1;
+                        ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(
+                            isQueue ? "SQL script execution" : "SQL query execution",
                             lastError,
-                            queryNum < queries.size() - 1);
+                            isQueue);
                         errorJob.schedule();
                         try {
                             errorJob.join();
