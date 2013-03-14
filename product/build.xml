@@ -235,7 +235,7 @@
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
         <antcall target="pde-runtime"/>
         <antcall target="update-site"/>
-        <!--antcall target="pde-standalone"/-->
+        <antcall target="pde-standalone"/>
     </target>
 
     <!-- ===================================================================== -->
