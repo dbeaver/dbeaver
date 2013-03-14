@@ -136,7 +136,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             "Choose container",
                             rootNode.getDatabases(),
                             selectedNode,
-                            DBSObjectContainer.class);
+                            new Class[] {DBSObjectContainer.class},
+                            null);
                         if (node instanceof DBNDatabaseNode) {
                             settings.setContainerNode((DBNDatabaseNode) node);
                             containerIcon.setImage(node.getNodeIconDefault());
@@ -486,7 +487,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 "Choose target table",
                 rootNode,
                 selectedNode,
-                DBSObjectContainer.class, DBSDataManipulator.class);
+                new Class[] {DBSObjectContainer.class, DBSDataManipulator.class},
+                new Class[] {DBSDataManipulator.class});
             if (node != null && node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper) node).getObject();
                 try {
