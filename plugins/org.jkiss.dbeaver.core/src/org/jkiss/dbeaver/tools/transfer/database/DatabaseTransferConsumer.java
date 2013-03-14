@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -29,6 +30,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private ColumnMapping[] columnMappings;
     private DBCExecutionContext targetContext;
     private long rowsExported = 0;
+    private boolean ignoreErrors = false;
 
     private static class ColumnMapping {
         DBCAttributeMetaData rsAttr;
@@ -71,11 +73,44 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
         }
         DBSDataManipulator target = containerMapping.getTarget();
-        try {
-            target.insertData(targetContext, attrValues, null);
-        } catch (DBException e) {
-            throw new DBCException("Can't insert row", e);
-        }
+
+        boolean retryInsert = false;
+        do {
+            try {
+                target.insertData(targetContext, attrValues, null);
+            } catch (DBException e) {
+                if (!ignoreErrors) {
+                    ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(
+                        DBUtils.getObjectFullName(target) + " data load",
+                        e,
+                        true);
+                    errorJob.schedule();
+                    try {
+                        errorJob.join();
+                    }
+                    catch (InterruptedException e1) {
+                        // ignore
+                        throw new DBCException("Transfer interrupted", e);
+                    }
+                    switch (errorJob.getResponse()) {
+                        case STOP:
+                            // just stop execution
+                            throw new DBCException("Can't insert row", e);
+                        case RETRY:
+                            // do it again
+                            retryInsert = true;
+                            break;
+                        case IGNORE:
+                            // Just do nothing and go to the next row
+                            break;
+                        case IGNORE_ALL:
+                            ignoreErrors = true;
+                            break;
+                    }
+                }
+            }
+        } while (retryInsert);
+
         rowsExported++;
         if (settings.isUseTransactions() && (rowsExported % settings.getCommitAfterRows()) == 0) {
             targetContext.getTransactionManager().commit();
