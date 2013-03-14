@@ -18,19 +18,19 @@
  */
 package org.jkiss.dbeaver.tools.transfer.handlers;
 
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
-import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 
-public class DataExportHandler extends DataTransferHandler {
+public class DataImportHandler extends DataTransferHandler {
 
     @Override
     protected IDataTransferNode adaptTransferNode(Object object)
     {
-        final DBSDataContainer adapted = RuntimeUtils.getObjectAdapter(object, DBSDataContainer.class);
+        final DBSDataManipulator adapted = RuntimeUtils.getObjectAdapter(object, DBSDataManipulator.class);
         if (adapted != null) {
-            return new DatabaseTransferProducer(adapted);
+            return new DatabaseTransferConsumer(adapted);
         } else {
             return null;
         }
