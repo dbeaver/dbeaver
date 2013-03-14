@@ -72,6 +72,7 @@ public class DataTransferSettings {
 
     private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<Class, NodeSettings>();
 
+    private boolean consumerOptional;
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
     private transient int curPipeNum = 0;
@@ -79,7 +80,16 @@ public class DataTransferSettings {
     public DataTransferSettings(IDataTransferProducer[] producers, IDataTransferConsumer[] consumers)
     {
         dataPipes = new ArrayList<DataTransferPipe>();
-        if (!CommonUtils.isEmpty(producers)) {
+        if (!CommonUtils.isEmpty(producers) && !CommonUtils.isEmpty(consumers)) {
+            if (producers.length != consumers.length) {
+                throw new IllegalArgumentException("Producers number must match consumers number");
+            }
+            // Make pipes
+            for (int i = 0; i < producers.length; i++) {
+                dataPipes.add(new DataTransferPipe(producers[i], consumers[i]));
+            }
+            consumerOptional = false;
+        } else if (!CommonUtils.isEmpty(producers)) {
             // Make pipes
             for (IDataTransferProducer source : producers) {
                 dataPipes.add(new DataTransferPipe(source, null));
@@ -89,6 +99,7 @@ public class DataTransferSettings {
             DataTransferNodeDescriptor producerDesc = DBeaverCore.getInstance().getDataTransferRegistry().getNodeByType(producerType);
             if (producerDesc != null) {
                 selectProducer(producerDesc);
+                consumerOptional = true;
             } else {
                 UIUtils.showErrorDialog(null, "Can't find producer", "Can't find data propducer descriptor in registry");
             }
@@ -102,18 +113,38 @@ public class DataTransferSettings {
             DataTransferNodeDescriptor consumerDesc = DBeaverCore.getInstance().getDataTransferRegistry().getNodeByType(consumerType);
             if (consumerDesc != null) {
                 selectConsumer(consumerDesc, null);
+                consumerOptional = false;
             } else {
                 UIUtils.showErrorDialog(null, "Can't find producer", "Can't find data propducer descriptor in registry");
             }
         } else {
-            throw new IllegalArgumentException("Producers must match consumers or must be empty");
+            throw new IllegalArgumentException("Producers or consumers must be specified");
         }
 
         Collection<Class<?>> objectTypes = getObjectTypes();
         List<DataTransferNodeDescriptor> nodes = new ArrayList<DataTransferNodeDescriptor>();
         DataTransferRegistry registry = DBeaverCore.getInstance().getDataTransferRegistry();
-        nodes.addAll(registry.getAvailableProducers(objectTypes));
-        nodes.addAll(registry.getAvailableConsumers(objectTypes));
+        if (CommonUtils.isEmpty(producers)) {
+            nodes.addAll(registry.getAvailableProducers(objectTypes));
+        } else {
+            for (IDataTransferProducer source : producers) {
+                DataTransferNodeDescriptor node = registry.getNodeByType(source.getClass());
+                if (node != null && !nodes.contains(node)) {
+                    nodes.add(node);
+                }
+            }
+        }
+        if (CommonUtils.isEmpty(consumers)) {
+            nodes.addAll(registry.getAvailableConsumers(objectTypes));
+        } else {
+            for (IDataTransferConsumer target : consumers) {
+                DataTransferNodeDescriptor node = registry.getNodeByType(target.getClass());
+                if (node != null && !nodes.contains(node)) {
+                    nodes.add(node);
+                    this.consumer = node;
+                }
+            }
+        }
         for (DataTransferNodeDescriptor node : nodes) {
             addNodeSettings(node);
         }
@@ -144,6 +175,11 @@ public class DataTransferSettings {
                 }
             }
         }
+    }
+
+    public boolean isConsumerOptional()
+    {
+        return consumerOptional;
     }
 
     public boolean isPageValid(IWizardPage page)
@@ -299,24 +335,26 @@ public class DataTransferSettings {
             }
         }
 
-        DataTransferNodeDescriptor savedConsumer = null;
-        String consumerId = dialogSettings.get("consumer");
-        if (!CommonUtils.isEmpty(consumerId)) {
-            DataTransferNodeDescriptor consumerNode = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(consumerId);
-            if (consumerNode != null) {
-                savedConsumer = consumerNode;
+        if (consumerOptional) {
+            DataTransferNodeDescriptor savedConsumer = null;
+            String consumerId = dialogSettings.get("consumer");
+            if (!CommonUtils.isEmpty(consumerId)) {
+                DataTransferNodeDescriptor consumerNode = DBeaverCore.getInstance().getDataTransferRegistry().getNodeById(consumerId);
+                if (consumerNode != null) {
+                    savedConsumer = consumerNode;
+                }
             }
-        }
 
-        DataTransferProcessorDescriptor savedProcessor = null;
-        if (savedConsumer != null) {
-            String processorId = dialogSettings.get("processor");
-            if (!CommonUtils.isEmpty(processorId)) {
-                savedProcessor = savedConsumer.getProcessor(processorId);
+            DataTransferProcessorDescriptor savedProcessor = null;
+            if (savedConsumer != null) {
+                String processorId = dialogSettings.get("processor");
+                if (!CommonUtils.isEmpty(processorId)) {
+                    savedProcessor = savedConsumer.getProcessor(processorId);
+                }
             }
-        }
-        if (savedConsumer != null) {
-            selectConsumer(savedConsumer, savedProcessor);
+            if (savedConsumer != null) {
+                selectConsumer(savedConsumer, savedProcessor);
+            }
         }
 
         // Load nodes' settings

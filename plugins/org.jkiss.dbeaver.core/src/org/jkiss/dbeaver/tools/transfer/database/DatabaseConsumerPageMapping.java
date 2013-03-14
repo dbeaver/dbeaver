@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -371,8 +372,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             public Object[] getChildren(Object parentElement)
             {
                 if (parentElement instanceof DatabaseMappingContainer) {
-                    return ((DatabaseMappingContainer) parentElement).getAttributeMappings(
-                        getWizard().getContainer()).toArray();
+                    return ((DatabaseMappingContainer) parentElement).getAttributeMappings(getContainer()).toArray();
                 }
                 return null;
             }
@@ -562,7 +562,18 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 }
                 DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getSourceObject();
                 if (!dataMappings.containsKey(sourceObject)) {
-                    dataMappings.put(sourceObject, new DatabaseMappingContainer(sourceObject));
+                    DatabaseMappingContainer mapping;
+                    if (pipe.getConsumer() instanceof DatabaseTransferConsumer && ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject() != null) {
+                        try {
+                            mapping = new DatabaseMappingContainer(getContainer(), sourceObject, ((DatabaseTransferConsumer)pipe.getConsumer()).getTargetObject());
+                        } catch (DBException e) {
+                            setMessage(e.getMessage(), IMessageProvider.ERROR);
+                            mapping = new DatabaseMappingContainer(sourceObject);
+                        }
+                    } else {
+                        mapping = new DatabaseMappingContainer(sourceObject);
+                    }
+                    dataMappings.put(sourceObject, mapping);
                 }
             }
             mappingViewer.setInput(dataMappings.values());
