@@ -18,36 +18,44 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.TableViewerColumn;
-import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.StatusDialog;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.SharedTextColors;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
  * ColumnsMappingDialog
  */
-public class ColumnsMappingDialog extends Dialog {
+public class ColumnsMappingDialog extends StatusDialog {
 
     private final DatabaseConsumerSettings settings;
     private final DatabaseMappingContainer mapping;
     private final Collection<DatabaseMappingAttribute> attributeMappings;
     private TableViewer mappingViewer;
+    private Font boldFont;
 
     public ColumnsMappingDialog(DataTransferWizard wizard, DatabaseConsumerSettings settings, DatabaseMappingContainer mapping)
     {
@@ -67,6 +75,7 @@ public class ColumnsMappingDialog extends Dialog {
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText("Map columns of " + mapping.getTargetName());
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(1, false));
@@ -125,11 +134,82 @@ public class ColumnsMappingDialog extends Dialog {
                     } else {
                         cell.setBackground(null);
                     }
+                    cell.setFont(boldFont);
                 }
             });
             columnTarget.getColumn().setText("Target Column");
             columnTarget.getColumn().setWidth(170);
+            columnTarget.setEditingSupport(new EditingSupport(mappingViewer) {
+                @Override
+                protected CellEditor getCellEditor(Object element)
+                {
+                    try {
+                        java.util.List<String> items = new ArrayList<String>();
+                        DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
+                        if (mapping.getParent().getMappingType() == DatabaseMappingType.existing &&
+                            mapping.getParent().getTarget() instanceof DBSEntity)
+                        {
+                            DBSEntity parentEntity = (DBSEntity)mapping.getParent().getTarget();
+                            for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
+                                items.add(attr.getName());
+                            }
+                        }
+
+                        items.add(DatabaseConsumerPageMapping.TARGET_NAME_SKIP);
+                        CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
+                            mappingViewer.getTable(),
+                            items.toArray(new String[items.size()]),
+                            SWT.DROP_DOWN);
+                        updateStatus(Status.OK_STATUS);
+                        return editor;
+                    } catch (DBException e) {
+                        updateStatus(RuntimeUtils.makeExceptionStatus(e));
+                        return null;
+                    }
+                }
+
+                @Override
+                protected boolean canEdit(Object element)
+                {
+                    return true;
+                }
+
+                @Override
+                protected Object getValue(Object element)
+                {
+                    return ((DatabaseMappingAttribute)element).getTargetName();
+                }
+
+                @Override
+                protected void setValue(Object element, Object value)
+                {
+                    try {
+                        String name = CommonUtils.toString(value);
+                        DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
+                        if (attrMapping.getParent().getMappingType() == DatabaseMappingType.existing &&
+                            attrMapping.getParent().getTarget() instanceof DBSEntity)
+                        {
+                            DBSEntity parentEntity = (DBSEntity)attrMapping.getParent().getTarget();
+                            for (DBSEntityAttribute attr : parentEntity.getAttributes(VoidProgressMonitor.INSTANCE)) {
+                                if (name.equalsIgnoreCase(attr.getName())) {
+                                    attrMapping.setTarget(attr);
+                                    attrMapping.setMappingType(DatabaseMappingType.existing);
+                                    return;
+                                }
+                            }
+                        }
+                        attrMapping.setMappingType(DatabaseMappingType.create);
+                        attrMapping.setTargetName(name);
+                        updateStatus(Status.OK_STATUS);
+                    } catch (DBException e) {
+                        updateStatus(RuntimeUtils.makeExceptionStatus(e));
+                    } finally {
+                        mappingViewer.refresh();
+                    }
+                }
+            });
         }
+
         {
             TableViewerColumn columnTargetType = new TableViewerColumn(mappingViewer, SWT.LEFT);
             columnTargetType.setLabelProvider(new CellLabelProvider() {
@@ -139,10 +219,36 @@ public class ColumnsMappingDialog extends Dialog {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
                     DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
                     cell.setText(attrMapping.getTargetType(dataSource));
+                    cell.setFont(boldFont);
                 }
             });
             columnTargetType.getColumn().setText("Target Type");
             columnTargetType.getColumn().setWidth(100);
+            columnTargetType.setEditingSupport(new EditingSupport(mappingViewer) {
+                @Override
+                protected CellEditor getCellEditor(Object element)
+                {
+                    return new TextCellEditor(mappingViewer.getTable(), SWT.BORDER);
+                }
+                @Override
+                protected boolean canEdit(Object element)
+                {
+                    return true;
+                }
+                @Override
+                protected Object getValue(Object element)
+                {
+                    DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
+                    return attrMapping.getTargetType(settings.getTargetDataSource(attrMapping));
+                }
+                @Override
+                protected void setValue(Object element, Object value)
+                {
+                    DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
+                    attrMapping.setTargetType(CommonUtils.toString(value));
+                    mappingViewer.refresh(element);
+                }
+            });
         }
 
         {
@@ -177,4 +283,10 @@ public class ColumnsMappingDialog extends Dialog {
         super.okPressed();
     }
 
+    @Override
+    public boolean close()
+    {
+        UIUtils.dispose(boldFont);
+        return super.close();
+    }
 }
