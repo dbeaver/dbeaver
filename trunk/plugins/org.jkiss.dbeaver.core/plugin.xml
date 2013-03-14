@@ -371,7 +371,7 @@
         <handler commandId="org.jkiss.dbeaver.core.import.data" class="org.jkiss.dbeaver.tools.transfer.handlers.DataImportHandler">
             <enabledWhen>
                 <with variable="selection">
-                    <count value="+"/>
+                    <count value="1"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
                     </iterate>

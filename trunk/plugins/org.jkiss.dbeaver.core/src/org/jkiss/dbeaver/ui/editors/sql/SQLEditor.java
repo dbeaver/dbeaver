@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.runtime.sql.ISQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
@@ -623,8 +624,9 @@ public class SQLEditor extends SQLEditorBase
                     ActiveWizardDialog dialog = new ActiveWizardDialog(
                         getSite().getWorkbenchWindow(),
                         new DataTransferWizard(
-                            Collections.singletonList(
-                                new DatabaseTransferProducer(getDataContainer(), null))),
+                            new IDataTransferProducer[] {
+                                new DatabaseTransferProducer(getDataContainer(), null)},
+                            null),
                         new StructuredSelection(this));
                     dialog.open();
                 } else {

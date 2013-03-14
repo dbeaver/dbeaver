@@ -18,10 +18,25 @@
  */
 package org.jkiss.dbeaver.tools.transfer.handlers;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 
 public class DataImportHandler extends DataTransferHandler {
 
@@ -34,5 +49,29 @@ public class DataImportHandler extends DataTransferHandler {
         } else {
             return null;
         }
+    }
+
+    @Override
+    protected IDataTransferProducer chooseProducer(ExecutionEvent event, IDataTransferConsumer consumer)
+    {
+        IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        if (activeProject != null) {
+            final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+            final DBNProject rootNode = navigatorModel.getRoot().getProject(activeProject);
+            DBNNode node = BrowseObjectDialog.selectObject(
+                HandlerUtil.getActiveShell(event),
+                "Select data container",
+                rootNode.getDatabases(),
+                null,
+                new Class[] {DBSObjectContainer.class, DBSDataContainer.class},
+                new Class[] {DBSDataContainer.class});
+            if (node instanceof DBNDatabaseNode) {
+                DBSObject object = ((DBNDatabaseNode) node).getObject();
+                if (object instanceof DBSDataContainer) {
+                    return new DatabaseTransferProducer((DBSDataContainer) object);
+                }
+            }
+        }
+        return null;
     }
 }
