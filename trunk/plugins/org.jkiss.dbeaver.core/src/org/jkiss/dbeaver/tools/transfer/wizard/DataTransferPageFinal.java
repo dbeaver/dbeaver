@@ -45,9 +45,9 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
     private boolean activated = false;
 
     DataTransferPageFinal() {
-        super(CoreMessages.dialog_export_wizard_final_name);
-        setTitle(CoreMessages.dialog_export_wizard_final_title);
-        setDescription(CoreMessages.dialog_export_wizard_final_description);
+        super(CoreMessages.data_transfer_wizard_final_name);
+        setTitle(CoreMessages.data_transfer_wizard_final_title);
+        setDescription(CoreMessages.data_transfer_wizard_final_description);
         setPageComplete(false);
     }
 
@@ -63,15 +63,15 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group tablesGroup = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_final_group_tables, 3, GridData.FILL_BOTH, 0);
+            Group tablesGroup = UIUtils.createControlGroup(composite, CoreMessages.data_transfer_wizard_final_group_tables, 3, GridData.FILL_BOTH, 0);
 
             resultTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             resultTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultTable.setHeaderVisible(true);
             resultTable.setLinesVisible(true);
 
-            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_source);
-            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.dialog_export_wizard_final_column_target);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.data_transfer_wizard_final_column_source);
+            UIUtils.createTableColumn(resultTable, SWT.LEFT, CoreMessages.data_transfer_wizard_final_column_target);
 
             UIUtils.packColumns(resultTable);
         }

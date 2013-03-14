@@ -38,7 +38,7 @@ public class DataTransferJob extends AbstractJob {
 
     public DataTransferJob(DataTransferSettings settings)
     {
-        super(CoreMessages.dialog_export_wizard_job_name);
+        super(CoreMessages.data_transfer_wizard_job_name);
         this.settings = settings;
 
         setUser(true);
@@ -72,7 +72,7 @@ public class DataTransferJob extends AbstractJob {
 
         IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
 
-        setName(NLS.bind(CoreMessages.dialog_export_wizard_job_container_name,
+        setName(NLS.bind(CoreMessages.data_transfer_wizard_job_container_name,
             producer.getSourceObject().getName()));
 
         IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);

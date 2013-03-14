@@ -53,9 +53,9 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
     }
 
     DataTransferPagePipes() {
-        super(CoreMessages.dialog_export_wizard_init_name);
-        setTitle(CoreMessages.dialog_export_wizard_init_title);
-        setDescription(CoreMessages.dialog_export_wizard_init_description);
+        super(CoreMessages.data_transfer_wizard_init_name);
+        setTitle(CoreMessages.data_transfer_wizard_init_title);
+        setDescription(CoreMessages.data_transfer_wizard_init_description);
         setPageComplete(false);
     }
 
@@ -114,11 +114,11 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         {
             TableViewerColumn columnName = new TableViewerColumn(consumersTable, SWT.LEFT);
             columnName.setLabelProvider(labelProvider);
-            columnName.getColumn().setText(CoreMessages.dialog_export_wizard_init_column_exported);
+            columnName.getColumn().setText(CoreMessages.data_transfer_wizard_init_column_exported);
 
             TableViewerColumn columnDesc = new TableViewerColumn(consumersTable, SWT.LEFT);
             columnDesc.setLabelProvider(labelProvider);
-            columnDesc.getColumn().setText(CoreMessages.dialog_export_wizard_init_column_description);
+            columnDesc.getColumn().setText(CoreMessages.data_transfer_wizard_init_column_description);
         }
 
         loadConsumers();

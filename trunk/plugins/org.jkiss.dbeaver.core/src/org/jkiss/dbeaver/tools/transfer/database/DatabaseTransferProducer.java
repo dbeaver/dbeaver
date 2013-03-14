@@ -62,7 +62,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         DatabaseProducerSettings settings)
         throws DBException
     {
-        String contextTask = CoreMessages.dialog_export_wizard_job_task_export;
+        String contextTask = CoreMessages.data_transfer_wizard_job_task_export;
         DBPDataSource dataSource = getSourceObject().getDataSource();
         DBCExecutionContext context = settings.isOpenNewConnections() ?
             dataSource.openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
@@ -70,7 +70,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         try {
             long totalRows = 0;
             if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
-                monitor.beginTask(CoreMessages.dialog_export_wizard_job_task_retrieve, 1);
+                monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_retrieve, 1);
                 try {
                     totalRows = dataContainer.countData(context, dataFilter);
                 } finally {
@@ -78,7 +78,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 }
             }
 
-            monitor.beginTask(CoreMessages.dialog_export_wizard_job_task_export_table_data, (int)totalRows);
+            monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_export_table_data, (int)totalRows);
 
             try {
                 // Perform export
