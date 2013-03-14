@@ -562,105 +562,107 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_edit_driver_title_edit_driver;
 
-	public static String dialog_export_wizard_final_column_source;
+    public static String data_transfer_wizard_name;
 
-	public static String dialog_export_wizard_final_column_target;
+    public static String data_transfer_wizard_final_column_source;
 
-	public static String dialog_export_wizard_final_description;
+	public static String data_transfer_wizard_final_column_target;
 
-	public static String dialog_export_wizard_final_group_tables;
+	public static String data_transfer_wizard_final_description;
 
-	public static String dialog_export_wizard_final_name;
+	public static String data_transfer_wizard_final_group_tables;
 
-	public static String dialog_export_wizard_final_title;
+	public static String data_transfer_wizard_final_name;
 
-	public static String dialog_export_wizard_init_column_description;
+	public static String data_transfer_wizard_final_title;
 
-	public static String dialog_export_wizard_init_column_exported;
+	public static String data_transfer_wizard_init_column_description;
 
-	public static String dialog_export_wizard_init_description;
+	public static String data_transfer_wizard_init_column_exported;
 
-	public static String dialog_export_wizard_init_name;
+	public static String data_transfer_wizard_init_description;
 
-	public static String dialog_export_wizard_init_title;
+	public static String data_transfer_wizard_init_name;
 
-	public static String dialog_export_wizard_job_container_name;
+	public static String data_transfer_wizard_init_title;
 
-	public static String dialog_export_wizard_job_name;
+	public static String data_transfer_wizard_job_container_name;
 
-	public static String dialog_export_wizard_job_task_export;
+	public static String data_transfer_wizard_job_name;
 
-	public static String dialog_export_wizard_job_task_export_table_data;
+	public static String data_transfer_wizard_job_task_export;
 
-	public static String dialog_export_wizard_job_task_retrieve;
+	public static String data_transfer_wizard_job_task_export_table_data;
 
-	public static String dialog_export_wizard_output_checkbox_compress;
+	public static String data_transfer_wizard_job_task_retrieve;
 
-	public static String dialog_export_wizard_output_checkbox_new_connection;
+	public static String data_transfer_wizard_output_checkbox_compress;
 
-	public static String dialog_export_wizard_output_checkbox_open_folder;
+	public static String data_transfer_wizard_output_checkbox_new_connection;
 
-	public static String dialog_export_wizard_output_checkbox_select_row_count;
+	public static String data_transfer_wizard_output_checkbox_open_folder;
 
-	public static String dialog_export_wizard_output_combo_extract_type_item_by_segments;
+	public static String data_transfer_wizard_output_checkbox_select_row_count;
 
-	public static String dialog_export_wizard_output_combo_extract_type_item_single_query;
+	public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
 
-	public static String dialog_export_wizard_output_description;
+	public static String data_transfer_wizard_output_combo_extract_type_item_single_query;
 
-	public static String dialog_export_wizard_output_dialog_directory_message;
+	public static String data_transfer_wizard_output_description;
 
-	public static String dialog_export_wizard_output_dialog_directory_text;
+	public static String data_transfer_wizard_output_dialog_directory_message;
 
-	public static String dialog_export_wizard_output_group_general;
+	public static String data_transfer_wizard_output_dialog_directory_text;
 
-	public static String dialog_export_wizard_output_group_progress;
+	public static String data_transfer_wizard_output_group_general;
 
-	public static String dialog_export_wizard_output_label_directory;
+	public static String data_transfer_wizard_output_group_progress;
 
-	public static String dialog_export_wizard_output_label_encoding;
+	public static String data_transfer_wizard_output_label_directory;
 
-	public static String dialog_export_wizard_output_label_extract_type;
+	public static String data_transfer_wizard_output_label_encoding;
 
-	public static String dialog_export_wizard_output_label_file_name_pattern;
+	public static String data_transfer_wizard_output_label_extract_type;
 
-	public static String dialog_export_wizard_output_label_insert_bom;
+	public static String data_transfer_wizard_output_label_file_name_pattern;
 
-	public static String dialog_export_wizard_output_label_insert_bom_tooltip;
+	public static String data_transfer_wizard_output_label_insert_bom;
 
-	public static String dialog_export_wizard_output_label_max_threads;
+	public static String data_transfer_wizard_output_label_insert_bom_tooltip;
 
-	public static String dialog_export_wizard_output_label_segment_size;
+	public static String data_transfer_wizard_output_label_max_threads;
 
-	public static String dialog_export_wizard_output_name;
+	public static String data_transfer_wizard_output_label_segment_size;
 
-	public static String dialog_export_wizard_output_title;
+	public static String data_transfer_wizard_output_name;
 
-	public static String dialog_export_wizard_settings_binaries_item_inline;
+	public static String data_transfer_wizard_output_title;
 
-	public static String dialog_export_wizard_settings_binaries_item_save_to_file;
+	public static String data_transfer_wizard_settings_binaries_item_inline;
 
-	public static String dialog_export_wizard_settings_binaries_item_set_to_null;
+	public static String data_transfer_wizard_settings_binaries_item_save_to_file;
 
-	public static String dialog_export_wizard_settings_button_edit;
+	public static String data_transfer_wizard_settings_binaries_item_set_to_null;
 
-	public static String dialog_export_wizard_settings_description;
+	public static String data_transfer_wizard_settings_button_edit;
 
-	public static String dialog_export_wizard_settings_group_exporter;
+	public static String data_transfer_wizard_settings_description;
 
-	public static String dialog_export_wizard_settings_group_general;
+	public static String data_transfer_wizard_settings_group_exporter;
 
-	public static String dialog_export_wizard_settings_label_binaries;
+	public static String data_transfer_wizard_settings_group_general;
 
-	public static String dialog_export_wizard_settings_label_encoding;
+	public static String data_transfer_wizard_settings_label_binaries;
 
-	public static String dialog_export_wizard_settings_label_formatting;
+	public static String data_transfer_wizard_settings_label_encoding;
 
-	public static String dialog_export_wizard_settings_listbox_formatting_item_default;
+	public static String data_transfer_wizard_settings_label_formatting;
 
-	public static String dialog_export_wizard_settings_name;
+	public static String data_transfer_wizard_settings_listbox_formatting_item_default;
 
-	public static String dialog_export_wizard_settings_title;
+	public static String data_transfer_wizard_settings_name;
+
+	public static String data_transfer_wizard_settings_title;
 
 	public static String dialog_filter_button_add;
 

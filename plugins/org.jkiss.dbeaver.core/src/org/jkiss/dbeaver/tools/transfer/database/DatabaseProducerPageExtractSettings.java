@@ -64,9 +64,9 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
         final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.data_transfer_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
 
-            Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_max_threads);
+            Label threadsNumLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_max_threads);
             threadsNumText = new Spinner(generalSettings, SWT.BORDER);
             threadsNumText.setMinimum(1);
             threadsNumText.setMaximum(10);
@@ -87,11 +87,11 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
             threadsNumText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             {
-                UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_extract_type);
+                UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_extract_type);
                 rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 rowsExtractType.setItems(new String[] {
-                    CoreMessages.dialog_export_wizard_output_combo_extract_type_item_single_query,
-                    CoreMessages.dialog_export_wizard_output_combo_extract_type_item_by_segments });
+                    CoreMessages.data_transfer_wizard_output_combo_extract_type_item_single_query,
+                    CoreMessages.data_transfer_wizard_output_combo_extract_type_item_by_segments });
                 rowsExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -103,7 +103,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                     }
                 });
 
-                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_segment_size);
+                segmentSizeLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_segment_size);
                 segmentSizeLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
                 segmentSizeText = new Text(generalSettings, SWT.BORDER);
                 segmentSizeText.addModifyListener(new ModifyListener() {
@@ -120,7 +120,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
             }
 
-            newConnectionCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_new_connection, true);
+            newConnectionCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_new_connection, true);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -129,7 +129,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
             });
             newConnectionCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
-            rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_select_row_count, true);
+            rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_select_row_count, true);
             rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
