@@ -47,6 +47,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
     }
 
+    public DatabaseTransferConsumer(DBSDataManipulator targetObject)
+    {
+
+    }
+
     @Override
     public void fetchStart(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
     {
