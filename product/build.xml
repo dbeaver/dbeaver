@@ -29,6 +29,7 @@
     <tstamp>
         <format property="current-date" pattern="dd MMM yyyy" locale="en"/>
     </tstamp>
+    <property name="repositoryLocation" value="${buildDirectory}/repository"/>
     <property name="updateSiteLocation" value="${buildDirectory}/updateSite"/>
     <property name="updateSiteDist" value="${distDirectory}/update-site-${productVersion}"/>
 
@@ -160,10 +161,18 @@
     </target>
 
     <target name="update-site">
+        <mkdir dir="${repositoryLocation}"/>
+        <echo message="Extract runtime into repository"/>
+        <unzip src="${buildDirectory}/${buildId}/${buildId}-.zip" dest="${repositoryLocation}" overwrite="true"/>
+        <move file="${repositoryLocation}/dbeaver/plugins" todir="${repositoryLocation}"/>
+        <move file="${repositoryLocation}/dbeaver/features" todir="${repositoryLocation}"/>
+        <delete dir="${repositoryLocation}/dbeaver"/>
+
         <echo message="Generate JDBC drivers' plugin and features"/>
         <ant dir="../tools/driver-manager" antfile="build.xml" target="generate-features">
             <property name="driversSource" value="../contrib/drivers"/>
             <property name="buildDirectory" value="${buildDirectory}"/>
+            <property name="targetDirectory" value="${repositoryLocation}"/>
         </ant>
         <!-- Generate P2 repository artifacts -->
         <property name="p2.repo.path" value="${buildDirectory}/p2.repo"/>
@@ -172,7 +181,7 @@
             <arg value="-application" />
             <arg value="org.eclipse.equinox.p2.publisher.FeaturesAndBundlesPublisher" />
             <arg value="-source" />
-            <arg value="${buildDirectory}" />
+            <arg value="${repositoryLocation}" />
             <arg value="-metadataRepository" />
             <arg value="file://${updateSiteLocation}" />
             <arg value="-metadataRepositoryName"/>
@@ -224,9 +233,9 @@
     <target name="pde-build" depends="init">
         <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
-        <antcall target="pde-standalone"/>
         <antcall target="pde-runtime"/>
         <antcall target="update-site"/>
+        <!--antcall target="pde-standalone"/-->
     </target>
 
     <!-- ===================================================================== -->

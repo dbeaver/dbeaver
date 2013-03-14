@@ -7,6 +7,7 @@
 <project name="DriverManager" default="build">
 
     <property name="buildDirectory" value="build"/>
+    <property name="targetDirectory" value="build"/>
     <property name="driversSource" value="../../contrib/drivers"/>
 
     <path id="classpath">
@@ -39,7 +40,7 @@
     <target name="generate-features" depends="declare">
         <generate-features
         driversdirectory="${driversSource}"
-        targetDirectory="${buildDirectory}"/>
+        targetDirectory="${targetDirectory}"/>
     </target>
 
 </project>
