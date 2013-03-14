@@ -56,9 +56,9 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     private PropertySourceCustom propertySource;
 
     public StreamConsumerPageSettings() {
-        super(CoreMessages.dialog_export_wizard_settings_name);
-        setTitle(CoreMessages.dialog_export_wizard_settings_title);
-        setDescription(CoreMessages.dialog_export_wizard_settings_description);
+        super(CoreMessages.data_transfer_wizard_settings_name);
+        setTitle(CoreMessages.data_transfer_wizard_settings_title);
+        setDescription(CoreMessages.data_transfer_wizard_settings_description);
         setPageComplete(false);
     }
 
@@ -75,7 +75,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         {
             Group generalSettings = new Group(composite, SWT.NONE);
-            generalSettings.setText(CoreMessages.dialog_export_wizard_settings_group_general);
+            generalSettings.setText(CoreMessages.data_transfer_wizard_settings_group_general);
             gl = new GridLayout(4, false);
             generalSettings.setLayout(gl);
             generalSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -86,7 +86,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                 gd.horizontalSpan = 4;
                 formattingGroup.setLayoutData(gd);
                 
-                UIUtils.createControlLabel(formattingGroup, CoreMessages.dialog_export_wizard_settings_label_formatting);
+                UIUtils.createControlLabel(formattingGroup, CoreMessages.data_transfer_wizard_settings_label_formatting);
                 formatProfilesCombo = new Combo(formattingGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.widthHint = 200;
@@ -105,7 +105,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                 });
 
                 Button profilesManageButton = new Button(formattingGroup, SWT.PUSH);
-                profilesManageButton.setText(CoreMessages.dialog_export_wizard_settings_button_edit);
+                profilesManageButton.setText(CoreMessages.data_transfer_wizard_settings_button_edit);
                 profilesManageButton.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
@@ -129,12 +129,12 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                 reloadFormatProfiles();
             }
             {
-                UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_settings_label_binaries);
+                UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_settings_label_binaries);
                 lobExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobExtractType.setItems(new String[] {
-                    CoreMessages.dialog_export_wizard_settings_binaries_item_set_to_null,
-                    CoreMessages.dialog_export_wizard_settings_binaries_item_save_to_file,
-                    CoreMessages.dialog_export_wizard_settings_binaries_item_inline });
+                    CoreMessages.data_transfer_wizard_settings_binaries_item_set_to_null,
+                    CoreMessages.data_transfer_wizard_settings_binaries_item_save_to_file,
+                    CoreMessages.data_transfer_wizard_settings_binaries_item_inline });
                 lobExtractType.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -147,7 +147,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
                     }
                 });
 
-                lobEncodingLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_settings_label_encoding);
+                lobEncodingLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_settings_label_encoding);
                 lobEncodingCombo = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobEncodingCombo.setItems(new String[] {
                     "Base64", //$NON-NLS-1$
@@ -167,7 +167,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
 
         Group exporterSettings = new Group(composite, SWT.NONE);
-        exporterSettings.setText(CoreMessages.dialog_export_wizard_settings_group_exporter);
+        exporterSettings.setText(CoreMessages.data_transfer_wizard_settings_group_exporter);
         exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
         exporterSettings.setLayout(new GridLayout(1, false));
         
@@ -193,7 +193,7 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
     {
         DataFormatterRegistry registry = DBeaverCore.getInstance().getDataFormatterRegistry();
         formatProfilesCombo.removeAll();
-        formatProfilesCombo.add(CoreMessages.dialog_export_wizard_settings_listbox_formatting_item_default);
+        formatProfilesCombo.add(CoreMessages.data_transfer_wizard_settings_listbox_formatting_item_default);
         for (DBDDataFormatterProfile profile : registry.getCustomProfiles()) {
             formatProfilesCombo.add(profile.getProfileName());
         }

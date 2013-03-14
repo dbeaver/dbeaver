@@ -907,7 +907,7 @@ public class UIUtils {
 
     public static Text createOutputFolderChooser(final Composite parent, String label, ModifyListener changeListener)
     {
-        UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.dialog_export_wizard_output_label_directory);
+        UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory);
         Composite chooserPlaceholder = UIUtils.createPlaceholder(parent, 2);
         chooserPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         final Text directoryText = new Text(chooserPlaceholder, SWT.BORDER);
@@ -921,8 +921,8 @@ public class UIUtils {
             public void run()
             {
                 DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
-                dialog.setMessage(CoreMessages.dialog_export_wizard_output_dialog_directory_message);
-                dialog.setText(CoreMessages.dialog_export_wizard_output_dialog_directory_text);
+                dialog.setMessage(CoreMessages.data_transfer_wizard_output_dialog_directory_message);
+                dialog.setText(CoreMessages.data_transfer_wizard_output_dialog_directory_text);
                 String directory = directoryText.getText();
                 if (!CommonUtils.isEmpty(directory)) {
                     dialog.setFilterPath(directory);

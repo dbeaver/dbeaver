@@ -59,7 +59,7 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
 
             final Button newConnectionCheckbox = UIUtils.createLabelCheckbox(
                 performanceSettings,
-                CoreMessages.dialog_export_wizard_output_checkbox_new_connection,
+                CoreMessages.data_transfer_wizard_output_checkbox_new_connection,
                 settings.isOpenNewConnections());
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override

@@ -25,13 +25,12 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -77,7 +76,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
-        setWindowTitle("Transfer data");
+        setWindowTitle(CoreMessages.data_transfer_wizard_name);
         setNeedsProgressMonitor(true);
     }
 

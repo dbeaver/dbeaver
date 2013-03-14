@@ -44,9 +44,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     private Button showFolderCheckbox;
 
     public StreamConsumerPageOutput() {
-        super(CoreMessages.dialog_export_wizard_output_name);
-        setTitle(CoreMessages.dialog_export_wizard_output_title);
-        setDescription(CoreMessages.dialog_export_wizard_output_description);
+        super(CoreMessages.data_transfer_wizard_output_name);
+        setTitle(CoreMessages.data_transfer_wizard_output_title);
+        setDescription(CoreMessages.data_transfer_wizard_output_description);
         setPageComplete(false);
     }
 
@@ -64,7 +64,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.data_transfer_wizard_output_group_general, 5, GridData.FILL_HORIZONTAL, 0);
             directoryText = UIUtils.createOutputFolderChooser(generalSettings, null, new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
@@ -74,7 +74,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             });
             ((GridData)directoryText.getParent().getLayoutData()).horizontalSpan = 4;
 
-            UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_file_name_pattern);
+            UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_file_name_pattern);
             fileNameText = new Text(generalSettings, SWT.BORDER);
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
@@ -88,7 +88,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             });
 
             {
-                UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_encoding);
+                UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_encoding);
                 encodingCombo = UIUtils.createEncodingCombo(generalSettings, settings.getOutputEncoding());
                 //encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingCombo.addModifyListener(new ModifyListener() {
@@ -101,8 +101,8 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                         updatePageCompletion();
                     }
                 });
-                encodingBOMLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_export_wizard_output_label_insert_bom);
-                encodingBOMLabel.setToolTipText(CoreMessages.dialog_export_wizard_output_label_insert_bom_tooltip);
+                encodingBOMLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_insert_bom);
+                encodingBOMLabel.setToolTipText(CoreMessages.data_transfer_wizard_output_label_insert_bom_tooltip);
                 encodingBOMCheckbox = new Button(generalSettings, SWT.CHECK);
                 encodingBOMCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
                 encodingBOMCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -114,7 +114,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 new Label(generalSettings, SWT.NONE);
             }
 
-            compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_compress, false);
+            compressCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_compress, false);
             compressCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 4, 1));
             compressCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -125,9 +125,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         }
 
         {
-            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.dialog_export_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
+            Group generalSettings = UIUtils.createControlGroup(composite, CoreMessages.data_transfer_wizard_output_group_progress, 4, GridData.FILL_HORIZONTAL, 0);
 
-            showFolderCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.dialog_export_wizard_output_checkbox_open_folder, true);
+            showFolderCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_open_folder, true);
             showFolderCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
