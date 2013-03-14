@@ -113,6 +113,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                             break;
                         case IGNORE:
                             // Just do nothing and go to the next row
+                            retryInsert = false;
                             break;
                         case IGNORE_ALL:
                             ignoreErrors = true;
