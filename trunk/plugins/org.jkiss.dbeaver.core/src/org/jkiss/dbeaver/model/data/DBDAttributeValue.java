@@ -41,4 +41,9 @@ public class DBDAttributeValue {
         return value;
     }
 
+    @Override
+    public String toString()
+    {
+        return attribute.getName() + "=" + value;
+    }
 }

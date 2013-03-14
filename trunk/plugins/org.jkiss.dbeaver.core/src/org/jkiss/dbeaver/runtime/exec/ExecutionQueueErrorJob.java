@@ -16,55 +16,56 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.runtime.exec;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 /**
- * SQLQueryErrorJob
+ * ExecutionQueueErrorJob
  */
-public class SQLQueryErrorJob extends AbstractUIJob {
+public class ExecutionQueueErrorJob extends AbstractUIJob {
 
+    private String errorName;
     private Throwable error;
-    private boolean script;
-    private SQLQueryErrorResponse response = SQLQueryErrorResponse.STOP;
+    private boolean queue;
+    private ExecutionQueueErrorResponse response = ExecutionQueueErrorResponse.STOP;
 
-    public SQLQueryErrorJob(Throwable error, boolean script)
+    public ExecutionQueueErrorJob(String errorName, Throwable error, boolean queue)
     {
-        super("SQL Error Job");
+        super("Execution Error Job");
+        this.errorName = errorName;
         this.error = error;
-        this.script = script;
+        this.queue = queue;
     }
 
     @Override
     public IStatus runInUIThread(DBRProgressMonitor monitor)
     {
-        SQLQueryErrorDialog dialog = new SQLQueryErrorDialog(
-            null,
-            "SQL Error",
-            script ?
-                "Error occurred during SQL script execution" :
-                "Error occurred during SQL query execution",
+        ExecutionQueueErrorDialog dialog = new ExecutionQueueErrorDialog(
+            DBeaverUI.getActiveWorkbenchShell(),
+            "Execution Error",
+            "Error occurred during " + errorName,
             RuntimeUtils.makeExceptionStatus(error),
             IStatus.INFO | IStatus.WARNING | IStatus.ERROR,
-            script);
+            queue);
         int result = dialog.open();
         switch (result) {
-            case IDialogConstants.STOP_ID: response = SQLQueryErrorResponse.STOP; break;
-            case IDialogConstants.SKIP_ID: response = SQLQueryErrorResponse.IGNORE; break;
-            case IDialogConstants.RETRY_ID: response = SQLQueryErrorResponse.RETRY; break;
-            default: response = SQLQueryErrorResponse.IGNORE_ALL; break;
+            case IDialogConstants.STOP_ID: response = ExecutionQueueErrorResponse.STOP; break;
+            case IDialogConstants.SKIP_ID: response = ExecutionQueueErrorResponse.IGNORE; break;
+            case IDialogConstants.RETRY_ID: response = ExecutionQueueErrorResponse.RETRY; break;
+            default: response = ExecutionQueueErrorResponse.IGNORE_ALL; break;
         }
 
         return Status.OK_STATUS;
     }
 
-    public SQLQueryErrorResponse getResponse()
+    public ExecutionQueueErrorResponse getResponse()
     {
         return response;
     }

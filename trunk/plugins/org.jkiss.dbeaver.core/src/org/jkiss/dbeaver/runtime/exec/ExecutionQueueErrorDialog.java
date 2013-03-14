@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.runtime.exec;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -25,13 +25,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
 /**
- * SQLQueryErrorDialog
+ * ExecutionQueueErrorDialog
  */
-public class SQLQueryErrorDialog extends ErrorDialog {
+class ExecutionQueueErrorDialog extends ErrorDialog {
 
     private boolean script;
 
-    public SQLQueryErrorDialog(
+    public ExecutionQueueErrorDialog(
         Shell parentShell,
         String dialogTitle,
         String message,

@@ -71,6 +71,15 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         return source;
     }
 
+    public String getSourceType()
+    {
+        String typeName = source.getTypeName();
+        if (source.getDataKind() == DBSDataKind.STRING) {
+            typeName += "(" + source.getMaxLength() + ")";
+        }
+        return typeName;
+    }
+
     @Override
     public String getTargetName()
     {
@@ -132,6 +141,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
+    @Override
     public DBSEntityAttribute getTarget()
     {
         return target;

@@ -17,12 +17,12 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.runtime.sql;
+package org.jkiss.dbeaver.runtime.exec;
 
 /**
- * SQLQueryErrorResponse
+ * ExecutionQueueErrorResponse
  */
-public enum SQLQueryErrorResponse {
+public enum ExecutionQueueErrorResponse {
     STOP,
     RETRY,
     IGNORE,
