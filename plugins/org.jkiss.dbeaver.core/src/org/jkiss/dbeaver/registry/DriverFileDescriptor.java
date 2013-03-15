@@ -134,7 +134,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         return path.startsWith(DriverDescriptor.DRIVERS_FOLDER);
     }
 
-    File getLocalFile()
+    private File getLocalFile()
     {
         // Try to use relative path from installation dir
         File file = new File(new File(Platform.getInstallLocation().getURL().getFile()), path);
