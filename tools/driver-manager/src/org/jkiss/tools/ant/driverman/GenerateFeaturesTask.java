@@ -41,6 +41,7 @@ public class GenerateFeaturesTask extends Task
 
     private String targetDirectory;
     private String driversDirectory;
+    private String updateSiteDirectory;
 
     private List<DriverInfo> drivers = new ArrayList<DriverInfo>();
     private File pluginsPath;
@@ -65,6 +66,9 @@ public class GenerateFeaturesTask extends Task
 
     private void generateFeatures() throws IOException
     {
+        if (updateSiteDirectory == null) {
+            updateSiteDirectory = targetDirectory + "/updateSite";
+        }
         File targetPath = new File(targetDirectory);
         System.out.println("Generate Eclipse features into " + targetPath.getAbsolutePath() + "...");
 
@@ -77,9 +81,11 @@ public class GenerateFeaturesTask extends Task
             generateDriverFeature(driver);
         }
 
-        File updateSiteDir = new File(targetPath, "updateSite");
+        System.out.println("Modify update site " + updateSiteDirectory);
+        File updateSiteDir = new File(updateSiteDirectory);
         if (updateSiteDir.exists()) {
             File siteXML = new File(updateSiteDir, "site.xml");
+            System.out.println("Patch update site index " + siteXML.getAbsolutePath() + "...");
             if (siteXML.exists()) {
                 patchUpdateSite(siteXML);
             }
@@ -295,6 +301,11 @@ public class GenerateFeaturesTask extends Task
     public void setDriversDirectory(String driversDirectory)
     {
         this.driversDirectory = driversDirectory;
+    }
+
+    public void setUpdateSiteDirectory(String updateSiteDirectory)
+    {
+        this.updateSiteDirectory = updateSiteDirectory;
     }
 
     private void makeDirectory(File featurePath) throws IOException
