@@ -885,7 +885,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 // Wrong OS or architecture
                 continue;
             }
-            final File libraryFile = file.getLocalFile();
+            final File libraryFile = file.getFile();
             if (!libraryFile.exists()) {
                 downloadCandidates.add(file);
             }
@@ -943,7 +943,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         // User must accept all licenses before actual drivers download
         for (final DriverFileDescriptor file : getFiles()) {
             if (file.getType() == DBPDriverFileType.license) {
-                final File libraryFile = file.getLocalFile();
+                final File libraryFile = file.getFile();
                 if (!libraryFile.exists()) {
                     try {
                         DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
@@ -1054,7 +1054,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         //final String contentType = connection.getContentType();
         monitor.beginTask("Download " + file.getExternalURL(), contentLength);
         boolean success = false;
-        final File localFile = file.getLocalFile();
+        final File localFile = file.getFile();
         final File localDir = localFile.getParentFile();
         if (!localDir.exists()) {
             if (!localDir.mkdirs()) {
