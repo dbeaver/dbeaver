@@ -8,6 +8,7 @@
 
     <property name="buildDirectory" value="build"/>
     <property name="targetDirectory" value="build"/>
+    <property name="updateSiteDirectory" value="build"/>
     <property name="driversSource" value="../../contrib/drivers"/>
 
     <path id="classpath">
@@ -40,7 +41,8 @@
     <target name="generate-features" depends="declare">
         <generate-features
         driversdirectory="${driversSource}"
-        targetDirectory="${targetDirectory}"/>
+        targetDirectory="${targetDirectory}"
+        updateSiteDirectory="${updateSiteDirectory}"/>
     </target>
 
 </project>
