@@ -159,7 +159,7 @@ public class GenerateFeaturesTask extends Task
                 metaWriter.println("Manifest-Version: 1.0");
                 metaWriter.println("Bundle-ManifestVersion: 2");
                 metaWriter.println("Bundle-Name: " + driver.getName());
-                metaWriter.println("Bundle-SymbolicName: " + driver.getPluginID());
+                metaWriter.println("Bundle-SymbolicName: " + driver.getPluginID() + ";singleton:=true");
                 metaWriter.println("Bundle-Version: " + driver.getVersion());
                 metaWriter.println("Bundle-Vendor: " + driver.getVendor());
                 metaWriter.println("Bundle-ActivationPolicy: lazy");
