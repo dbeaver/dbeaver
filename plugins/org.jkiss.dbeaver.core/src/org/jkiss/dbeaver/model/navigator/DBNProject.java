@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
 
@@ -134,8 +135,11 @@ public class DBNProject extends DBNResource implements IAdaptable
                 throw new DBException("Can't open project '" + getProject().getName() + "'", e);
             }
         }
+        DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(getProject());
         List<DBNNode> children = super.readChildNodes(monitor);
-        children.add(0, new DBNProjectDatabases(this));
+        if (dataSourceRegistry != null) {
+            children.add(0, new DBNProjectDatabases(this, dataSourceRegistry));
+        }
         return children;
     }
 
