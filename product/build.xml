@@ -235,8 +235,8 @@
         <property name="buildFile" value="${baseLocation}/plugins/org.eclipse.pde.build_${pdeBuildPluginVersion}/scripts/productBuild/productBuild.xml"/>
         <property name="launcherLibLocation" value="${baseLocation}/plugins/org.eclipse.equinox.launcher_${equinoxLauncherPluginVersion}.jar"/>
         <antcall target="pde-runtime"/>
-<!--        <antcall target="update-site"/>
-        <antcall target="pde-standalone"/> -->
+        <antcall target="update-site"/>
+        <antcall target="pde-standalone"/>
     </target>
 
     <!-- ===================================================================== -->
