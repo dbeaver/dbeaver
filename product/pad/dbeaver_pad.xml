@@ -21,12 +21,6 @@
 <XML_DIZ_INFO>
   <Company_Info>
     <Company_Name>JKISS</Company_Name>
-    <Address_1>Engelsa pr. 97-212</Address_1>
-    <Address_2></Address_2>
-    <City_Town>Saint-Petersburg</City_Town>
-    <State_Province>SPb</State_Province>
-    <Zip_Postal_Code>194214</Zip_Postal_Code>
-    <Country>Russian Federation</Country>
     <Company_WebSite_URL>http://jkiss.org</Company_WebSite_URL>
     <Contact_Info>
       <Contact_First_Name>Serge</Contact_First_Name>
@@ -46,7 +40,7 @@
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>2.1.0</Program_Version>
     <Program_Release_Month>03</Program_Release_Month>
-    <Program_Release_Day>17</Program_Release_Day>
+    <Program_Release_Day>18</Program_Release_Day>
     <Program_Release_Year>2013</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -55,28 +49,19 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Apache Cassandra extension plugin
-        - ResultSet cell properties
-        - Inline integer value editor fixed
-        - Inline binary editor added
-        - MySQL stored procedures editor fixed
-        - Oracle XML editor fixed
-        - PostgreSQL big schema loading fixed (performance increased)
-        - SQL generation improved (MERGE operator)
-        - Date viewer performance increased
-        - A few UI bugfixes
+        - Data transfer/import feature (transfer data between any tables/views/queries in different databases)
+        - In Eclipse plugin version JDBC drivers can be installed from update site as plugins
+        - SQL editor improved (braces matching, current line highlight, print margins support)
+        - 64-bit Windows installer fixed
+        - JDBC driver for CSV/DBF files added
+        - Oracle IOT tables support added, view meta information improved
+        - Advanced authentication for MySQL native tools
+        - Auto-completion fixed (insert full qualified table names when needed)
+        - SQL scripts to database group linking feature added
+        - A lot of minor UI and database-specific fixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
-    <File_Info>
-      <File_Size_Bytes>24687519</File_Size_Bytes>
-      <File_Size_K>23885</File_Size_K>
-      <File_Size_M>23.3</File_Size_M>
-      <Filename_Versioned></Filename_Versioned>
-      <Filename_Previous></Filename_Previous>
-      <Filename_Generic></Filename_Generic>
-      <Filename_Long></Filename_Long>
-    </File_Info>
     <Expire_Info>
       <Has_Expire_Info>N</Has_Expire_Info>
     </Expire_Info>

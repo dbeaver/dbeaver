@@ -49,10 +49,19 @@
         <version>
             <number>2.1.0</number>
             <type>stable</type>
-            <date>17.03.2013</date>
+            <date>18.03.2013</date>
 
             <release-notes>
-                -
+                - Data transfer/import feature (transfer data between any tables/views/queries in different databases)
+                - In Eclipse plugin version JDBC drivers can be installed from update site as plugins
+                - SQL editor improved (braces matching, current line highlight, print margins support)
+                - 64-bit Windows installer fixed
+                - JDBC driver for CSV/DBF files added
+                - Oracle IOT tables support added, view meta information improved
+                - Advanced authentication for MySQL native tools
+                - Auto-completion fixed (insert full qualified table names when needed)
+                - SQL scripts to database group linking feature added
+                - A lot of minor UI and database-specific fixes
             </release-notes>
         </version>
 
