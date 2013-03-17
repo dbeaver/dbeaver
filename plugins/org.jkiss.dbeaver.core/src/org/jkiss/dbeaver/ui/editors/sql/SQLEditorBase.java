@@ -215,9 +215,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IDataSourc
             getSharedColors());
 
         char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
-        ICharacterPairMatcher matcher = new DefaultCharacterPairMatcher(matchChars,
-            SQLPartitionScanner.SQL_PARTITIONING,
-            true);
+        ICharacterPairMatcher matcher;
+        try {
+            matcher = new DefaultCharacterPairMatcher(matchChars,
+                SQLPartitionScanner.SQL_PARTITIONING,
+                true);
+        } catch (Throwable e) {
+            // If we below Eclipse 4.2.1
+            matcher = new DefaultCharacterPairMatcher(matchChars, SQLPartitionScanner.SQL_PARTITIONING);
+        }
 
         SQLEditorSourceViewer sourceViewer = new SQLEditorSourceViewer(
             parent,
