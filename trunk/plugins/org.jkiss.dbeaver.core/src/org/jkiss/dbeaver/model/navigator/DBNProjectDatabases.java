@@ -43,13 +43,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
     private DataSourceRegistry dataSourceRegistry;
 
-    public DBNProjectDatabases(DBNProject parentNode)
+    public DBNProjectDatabases(DBNProject parentNode, DataSourceRegistry dataSourceRegistry)
     {
         super(parentNode);
-        dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(parentNode.getProject());
-        dataSourceRegistry.addDataSourceListener(this);
+        this.dataSourceRegistry = dataSourceRegistry;
+        this.dataSourceRegistry.addDataSourceListener(this);
 
-        List<DataSourceDescriptor> projectDataSources = dataSourceRegistry.getDataSources();
+        List<DataSourceDescriptor> projectDataSources = this.dataSourceRegistry.getDataSources();
         for (DataSourceDescriptor ds : projectDataSources) {
             addDataSource(ds, false);
         }

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 
 import java.io.ByteArrayInputStream;
@@ -119,7 +120,8 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         try {
             String dataSourceId = file.getPersistentProperty(PROP_DATA_SOURCE_ID);
             if (dataSourceId != null) {
-                return DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject()).getDataSource(dataSourceId);
+                DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject());
+                return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSource(dataSourceId);
             } else {
                 return null;
             }

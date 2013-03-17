@@ -46,6 +46,9 @@ public abstract class BaseSQLEditorHandler extends DataSourceHandler {
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : projectRegistry.getActiveProject();
         if (dataSourceContainer == null) {
             final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+            if (dataSourceRegistry == null) {
+                return null;
+            }
             if (dataSourceRegistry.getDataSources().size() == 1) {
                 dataSourceContainer = dataSourceRegistry.getDataSources().get(0);
             } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
