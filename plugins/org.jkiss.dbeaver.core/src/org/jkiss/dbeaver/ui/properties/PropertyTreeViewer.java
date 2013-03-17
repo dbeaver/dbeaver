@@ -201,6 +201,7 @@ public class PropertyTreeViewer extends TreeViewer {
         super.expandAll();
 
         disposeOldEditor();
+        UIUtils.packColumns(getTree(), true, new float[] {0.5f, 0.5f});
     }
 
     private Map<String, TreeNode> loadTreeNodes(TreeNode parent, IPropertySource propertySource) {
