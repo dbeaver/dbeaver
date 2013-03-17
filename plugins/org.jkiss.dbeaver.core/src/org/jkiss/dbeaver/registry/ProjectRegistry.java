@@ -219,7 +219,7 @@ public class ProjectRegistry implements IResourceChangeListener {
         }
         DataSourceRegistry dataSourceRegistry = projectDatabases.get(project);
         if (dataSourceRegistry == null) {
-            throw new IllegalStateException("Project '" + project.getName() + "' not found in registry");
+            log.warn("Project '" + project.getName() + "' not found in registry");
         }
         return dataSourceRegistry;
     }
