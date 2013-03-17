@@ -203,7 +203,9 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     @Override
     public void saveSettings(IDialogSettings dialogSettings)
     {
-        dialogSettings.put("container", containerNode.getNodeItemPath());
+        if (containerNode != null) {
+            dialogSettings.put("container", containerNode.getNodeItemPath());
+        }
         dialogSettings.put("openNewConnections", openNewConnections);
         dialogSettings.put("useTransactions", useTransactions);
         dialogSettings.put("commitAfterRows", commitAfterRows);
