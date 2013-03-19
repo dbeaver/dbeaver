@@ -12,6 +12,7 @@ public class JDBCConnectionHolder {
 
     private final Connection connection;
     private volatile Boolean autoCommit;
+    private volatile Integer transactionIsolationLevel;
 
     public JDBCConnectionHolder(Connection connection)
     {
@@ -34,7 +35,20 @@ public class JDBCConnectionHolder {
     public void setAutoCommit(boolean autoCommit) throws SQLException
     {
         this.connection.setAutoCommit(autoCommit);
-        this.autoCommit = autoCommit;
+        this.autoCommit = null;
     }
 
+    public void setTransactionIsolation(int level) throws SQLException
+    {
+        connection.setTransactionIsolation(level);
+        transactionIsolationLevel = null;
+    }
+
+    public int getTransactionIsolation() throws SQLException
+    {
+        if (transactionIsolationLevel == null) {
+            transactionIsolationLevel = connection.getTransactionIsolation();
+        }
+        return transactionIsolationLevel;
+    }
 }

@@ -331,14 +331,14 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public void setTransactionIsolation(int level)
         throws SQLException
     {
-        getConnection().setTransactionIsolation(level);
+        getConnectionHolder().setTransactionIsolation(level);
     }
 
     @Override
     public int getTransactionIsolation()
         throws SQLException
     {
-        return getConnection().getTransactionIsolation();
+        return getConnectionHolder().getTransactionIsolation();
     }
 
     @Override
