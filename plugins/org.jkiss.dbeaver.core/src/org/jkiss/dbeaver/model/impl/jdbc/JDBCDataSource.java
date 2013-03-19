@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -55,7 +56,7 @@ public abstract class JDBCDataSource
     static final Log log = LogFactory.getLog(JDBCDataSource.class);
 
     private DBSDataSourceContainer container;
-    private Connection connection;
+    private JDBCConnectionHolder connection;
 
     protected DBPDataSourceInfo dataSourceInfo;
 
@@ -76,7 +77,7 @@ public abstract class JDBCDataSource
         }
     }
 
-    protected Connection openConnection()
+    protected JDBCConnectionHolder openConnection()
         throws DBException
     {
         // It MUST be a JDBC driver
@@ -136,7 +137,7 @@ public abstract class JDBCDataSource
                 connection.setReadOnly(true);
             }
 
-            return connection;
+            return new JDBCConnectionHolder(connection);
         }
         catch (SQLException ex) {
             throw new DBException(ex);
@@ -173,13 +174,13 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public Connection getConnection()
+    public JDBCConnectionHolder getConnection()
     {
         return connection;
     }
 
     @Override
-    public Connection openIsolatedConnection() throws SQLException {
+    public JDBCConnectionHolder openIsolatedConnection() throws SQLException {
         try {
             return openConnection();
         } catch (DBException e) {
@@ -237,7 +238,7 @@ public abstract class JDBCDataSource
             return;
         }
 
-        if (!JDBCUtils.isConnectionAlive(connection)) {
+        if (!JDBCUtils.isConnectionAlive(connection.getConnection())) {
             close();
             connection = openConnection();
         }
@@ -266,8 +267,8 @@ public abstract class JDBCDataSource
         synchronized (this) {
             if (connection != null) {
                 try {
-                    if (!connection.isClosed()) {
-                        connection.close();
+                    if (!connection.getConnection().isClosed()) {
+                        connection.getConnection().close();
                     }
                 }
                 catch (SQLException ex) {

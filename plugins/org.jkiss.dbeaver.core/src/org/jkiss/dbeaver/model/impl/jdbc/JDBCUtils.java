@@ -224,36 +224,6 @@ public class JDBCUtils {
         }
     }
 
-    public static void startConnectionBlock(
-        DBRProgressMonitor monitor,
-        JDBCConnector connector,
-        String taskName)
-    {
-        monitor.startBlock(makeBlockingObject(connector.getConnection()), taskName);
-    }
-
-    public static void endConnectionBlock(
-        DBRProgressMonitor monitor)
-    {
-        monitor.endBlock();
-    }
-
-    private static DBRBlockingObject makeBlockingObject(final Connection connection)
-    {
-        return new DBRBlockingObject() {
-            @Override
-            public void cancelBlock()
-                throws DBException
-            {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    throw new DBCException("Can't close connection", e);
-                }
-            }
-        };
-    }
-
     public static String normalizeIdentifier(String value)
     {
         return value == null ? null : value.trim();
