@@ -32,21 +32,17 @@ import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -359,22 +355,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected Connection openConnection() throws DBException {
-        Connection mysqlConnection = super.openConnection();
-
-        // Fix "errorMessageEncoding" error. Dirty hack.
-        // characterSetMetadata -> errorMessageEncoding
-        try {
-            Field characterSetMetadataField = mysqlConnection.getClass().getDeclaredField("characterSetMetadata");
-            Field errorMessageEncodingField = mysqlConnection.getClass().getDeclaredField("errorMessageEncoding");
-            characterSetMetadataField.setAccessible(true);
-            errorMessageEncodingField.setAccessible(true);
-            errorMessageEncodingField.set(
-                mysqlConnection,
-                characterSetMetadataField.get(mysqlConnection));
-        } catch (Throwable e) {
-            log.debug(e);
-        }
+    protected JDBCConnectionHolder openConnection() throws DBException {
+        JDBCConnectionHolder mysqlConnection = super.openConnection();
 
         {
             // Provide client info

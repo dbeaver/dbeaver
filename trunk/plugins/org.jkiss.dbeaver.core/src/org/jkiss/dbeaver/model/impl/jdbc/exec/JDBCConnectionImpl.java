@@ -50,7 +50,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
 
     private final JDBCConnector connector;
     private boolean isolated;
-    private Connection isolatedConnection;
+    private JDBCConnectionHolder isolatedConnection;
 
     public JDBCConnectionImpl(JDBCConnector connector, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, boolean isolated)
     {
@@ -70,13 +70,19 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public Connection getOriginal()
     {
         if (isolatedConnection != null) {
-            return isolatedConnection;
+            return isolatedConnection.getConnection();
         } else {
-            return connector.getConnection();
+            return connector.getConnection().getConnection();
         }
     }
 
     private Connection getConnection()
+        throws SQLException
+    {
+        return getConnectionHolder().getConnection();
+    }
+
+    private JDBCConnectionHolder getConnectionHolder()
         throws SQLException
     {
         if (isolated) {
@@ -221,7 +227,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public void setAutoCommit(boolean autoCommit)
         throws SQLException
     {
-        getConnection().setAutoCommit(autoCommit);
+        getConnectionHolder().setAutoCommit(autoCommit);
 
         QMUtils.getDefaultHandler().handleTransactionAutocommit(this, autoCommit);
     }
@@ -230,7 +236,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public boolean getAutoCommit()
         throws SQLException
     {
-        return getConnection().getAutoCommit();
+        return getConnectionHolder().getAutoCommit();
     }
 
     @Override
@@ -266,7 +272,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         }
         if (isolatedConnection != null) {
             try {
-                isolatedConnection.close();
+                isolatedConnection.getConnection().close();
             } catch (SQLException e) {
                 log.error("Error closing isolated connection", e);
             }
