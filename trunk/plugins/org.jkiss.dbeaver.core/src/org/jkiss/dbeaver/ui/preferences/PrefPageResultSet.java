@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -39,6 +40,11 @@ public class PrefPageResultSet extends TargetPrefPage
     private Button binaryShowStrings;
     private Spinner binaryStringMaxLength;
 
+    private Button keepStatementOpenCheck;
+    private Button rollbackOnErrorCheck;
+    private Spinner memoryContentSize;
+    private Button readExpensiveCheck;
+
     public PrefPageResultSet()
     {
         super();
@@ -51,7 +57,11 @@ public class PrefPageResultSet extends TargetPrefPage
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(PrefConstants.RESULT_SET_MAX_ROWS) ||
-            store.contains(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS) ||
+                store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
+                store.contains(PrefConstants.KEEP_STATEMENT_OPEN) ||
+                store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
+                store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES) ||
+                store.contains(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS) ||
             store.contains(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN)
             ;
     }
@@ -79,6 +89,31 @@ public class PrefPageResultSet extends TargetPrefPage
             resultSetSize.setMaximum(1024 * 1024);
         }
 
+        // General settings
+        {
+            Group txnGroup = new Group(composite, SWT.NONE);
+            txnGroup.setText(CoreMessages.pref_page_database_general_group_transactions);
+            txnGroup.setLayout(new GridLayout(2, false));
+
+            keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
+            rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
+        }
+
+        {
+            Group performanceGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_performance, 2, SWT.NONE, 0);
+
+            readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, false);
+
+            UIUtils.createControlLabel(performanceGroup, CoreMessages.pref_page_database_general_label_max_lob_length);
+
+            memoryContentSize = new Spinner(performanceGroup, SWT.BORDER);
+            memoryContentSize.setSelection(0);
+            memoryContentSize.setDigits(0);
+            memoryContentSize.setIncrement(1);
+            memoryContentSize.setMinimum(0);
+            memoryContentSize.setMaximum(1024 * 1024 * 1024);
+        }
+
         {
             Group performanceGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
 
@@ -102,6 +137,10 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         try {
             resultSetSize.setSelection(store.getInt(PrefConstants.RESULT_SET_MAX_ROWS));
+            keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
+            rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
+            memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
+            readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
             binaryShowStrings.setSelection(store.getBoolean(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS));
             binaryStringMaxLength.setSelection(store.getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN));
         } catch (Exception e) {
@@ -114,6 +153,10 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         try {
             store.setValue(PrefConstants.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
+            store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
+            store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
+            store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
+            store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
             store.setValue(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, binaryShowStrings.getSelection());
             store.setValue(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
         } catch (Exception e) {
@@ -126,6 +169,10 @@ public class PrefPageResultSet extends TargetPrefPage
     protected void clearPreferences(IPreferenceStore store)
     {
         store.setToDefault(PrefConstants.RESULT_SET_MAX_ROWS);
+        store.setToDefault(PrefConstants.KEEP_STATEMENT_OPEN);
+        store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
+        store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
+        store.setToDefault(PrefConstants.READ_EXPENSIVE_PROPERTIES);
         store.setToDefault(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
         store.setToDefault(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
     }
