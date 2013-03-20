@@ -31,13 +31,15 @@ class ScriptsImportData {
 
     private final File inputDir;
     private final String fileMasks;
+    private final boolean overwriteFiles;
     private final DBNResource importDir;
     private final DBSDataSourceContainer dataSourceContainer;
 
-    ScriptsImportData(File inputDir, String fileMasks, DBNResource importDir, DBSDataSourceContainer dataSourceContainer)
+    ScriptsImportData(File inputDir, String fileMasks, boolean overwriteFiles, DBNResource importDir, DBSDataSourceContainer dataSourceContainer)
     {
         this.inputDir = inputDir;
         this.fileMasks = fileMasks;
+        this.overwriteFiles = overwriteFiles;
         this.importDir = importDir;
         this.dataSourceContainer = dataSourceContainer;
     }
@@ -50,6 +52,11 @@ class ScriptsImportData {
     public String getFileMasks()
     {
         return fileMasks;
+    }
+
+    public boolean isOverwriteFiles()
+    {
+        return overwriteFiles;
     }
 
     public DBNResource getImportDir()
