@@ -40,8 +40,7 @@ import java.util.List;
 /**
  * DatabaseNavigatorContentProvider
 */
-class DatabaseNavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider
-{
+class DatabaseNavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider {
     static final Log log = LogFactory.getLog(DatabaseNavigatorContentProvider.class);
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
@@ -125,7 +124,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 if (CommonUtils.isEmpty(children)) {
                     return EMPTY_CHILDREN;
                 } else {
-                    return children.toArray();
+                    return children.toArray(new Object[children.size()]);
                 }
                 //return DBNNode.convertNodesToObjects(children);
             }

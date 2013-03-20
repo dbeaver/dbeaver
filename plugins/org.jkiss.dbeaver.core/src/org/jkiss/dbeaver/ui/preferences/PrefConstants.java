@@ -23,11 +23,13 @@ package org.jkiss.dbeaver.ui.preferences;
  */
 public final class PrefConstants
 {
-    public static final String NATIVE_LIB_PATH = "native.lib.path"; //$NON-NLS-1$
-
     public static final String AGENT_ENABLED = "agent.enabled"; //$NON-NLS-1$
     public static final String AGENT_LONG_OPERATION_NOTIFY = "agent.long.operation.notify"; //$NON-NLS-1$
     public static final String AGENT_LONG_OPERATION_TIMEOUT = "agent.long.operation.timeout"; //$NON-NLS-1$
+
+    public static final String NAVIGATOR_EXPAND_ON_CONNECT = "navigator.expand.on.connect"; //$NON-NLS-1$
+    public static final String NAVIGATOR_SORT_ALPHABETICALLY = "navigator.sort.case.insensitive"; //$NON-NLS-1$
+    public static final String NAVIGATOR_GROUP_BY_DRIVER = "navigator.group.by.driver"; //$NON-NLS-1$
 
     public static final String DEFAULT_AUTO_COMMIT = "default.autocommit"; //$NON-NLS-1$
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$

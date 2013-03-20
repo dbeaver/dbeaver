@@ -1168,8 +1168,6 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_data_format_label_type;
 
-	public static String pref_page_database_general_checkbox_auto_commit_by_default;
-
 	public static String pref_page_database_general_checkbox_case_sensitive_names;
 
 	public static String pref_page_database_general_checkbox_keep_cursor;
@@ -1177,6 +1175,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_checkbox_rollback_on_error;
 
 	public static String pref_page_database_general_checkbox_show_row_count;
+
+    public static String pref_page_database_general_group_navigator;
 
 	public static String pref_page_database_general_group_metadata;
 
