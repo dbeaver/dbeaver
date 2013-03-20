@@ -427,6 +427,11 @@ public class DBeaverCore implements DBPApplication {
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_NOTIFY, true);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, 30);
 
+        // Navigator
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY, false);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.NAVIGATOR_GROUP_BY_DRIVER, false);
+
         // Common
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.DEFAULT_AUTO_COMMIT, true);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.KEEP_STATEMENT_OPEN, false);

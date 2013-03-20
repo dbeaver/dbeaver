@@ -18,14 +18,16 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.database.load;
 
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * TreeLoadService
@@ -80,7 +82,28 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
                 filtered.add(node);
             }
         }
-        return filtered == null ? children : filtered;
+        List<? extends DBNNode> result = filtered == null ? children : filtered;
+        if (!result.isEmpty()) {
+            sortChildren(result);
+        }
+        return result;
+    }
+
+    public static void sortChildren(List<? extends DBNNode> children)
+    {
+        // Sort children is we have this feature on in preferences
+        // and if children are not folders
+        if (!children.isEmpty() && DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY)) {
+            if (!(children.get(0) instanceof DBNContainer)) {
+                Collections.sort(children, new Comparator<DBNNode>() {
+                    @Override
+                    public int compare(DBNNode node1, DBNNode node2)
+                    {
+                        return node1.getNodeName().compareToIgnoreCase(node2.getNodeName());
+                    }
+                });
+            }
+        }
     }
 
 }

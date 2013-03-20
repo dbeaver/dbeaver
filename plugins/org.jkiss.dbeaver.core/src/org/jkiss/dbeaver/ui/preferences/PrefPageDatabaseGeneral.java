@@ -19,31 +19,30 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 /**
  * PrefPageDatabaseGeneral
  */
-public class PrefPageDatabaseGeneral extends TargetPrefPage
+public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenchPreferencePage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 
-    //private Button agentEnabledCheck;
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
 
-    private Button keepStatementOpenCheck;
-    private Button rollbackOnErrorCheck;
-    private Spinner memoryContentSize;
-    private Button readExpensiveCheck;
+    private Button expandOnConnectCheck;
+    private Button sortCaseInsensitiveCheck;
+    private Button groupByDriverCheck;
+
     private Button caseSensitiveNamesCheck;
 
     public PrefPageDatabaseGeneral()
@@ -53,66 +52,30 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
+    public void init(IWorkbench workbench)
     {
-        AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
-        return
-            store.contains(PrefConstants.AGENT_ENABLED) ||
-            store.contains(PrefConstants.AGENT_LONG_OPERATION_NOTIFY) ||
-            store.contains(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT) ||
-            store.contains(PrefConstants.QUERY_ROLLBACK_ON_ERROR) ||
-            store.contains(PrefConstants.KEEP_STATEMENT_OPEN) ||
-            store.contains(PrefConstants.MEMORY_CONTENT_MAX_SIZE) ||
-            store.contains(PrefConstants.READ_EXPENSIVE_PROPERTIES) ||
-            store.contains(PrefConstants.META_CASE_SENSITIVE)
-            ;
+
     }
 
     @Override
-    protected boolean supportsDataSourceSpecificOptions()
-    {
-        return true;
-    }
-
-    @Override
-    protected Control createPreferenceContent(Composite parent)
+    protected Control createContents(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         // Agent settings
         {
-            Group agentGroup = new Group(composite, SWT.NONE);
-            agentGroup.setText("Taskbar");
-            agentGroup.setLayout(new GridLayout(2, false));
+            Group agentGroup = UIUtils.createControlGroup(composite, "Taskbar", 2, SWT.NONE, 0);
 
-            //agentEnabledCheck = UIUtils.createLabelCheckbox(agentGroup, "Enable taskbar agent", false);
             longOperationsCheck = UIUtils.createLabelCheckbox(agentGroup, "Enable long-time operations notification", false);
             longOperationsTimeout = UIUtils.createLabelSpinner(agentGroup, "Long-time operation timeout", 0, 0, Integer.MAX_VALUE);
         }
 
-        // General settings
         {
-            Group txnGroup = new Group(composite, SWT.NONE);
-            txnGroup.setText(CoreMessages.pref_page_database_general_group_transactions);
-            txnGroup.setLayout(new GridLayout(2, false));
+            Group navigatorGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_navigator, 2, SWT.NONE, 0);
 
-            keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
-            rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
-        }
-
-        {
-            Group performanceGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_performance, 2, SWT.NONE, 0);
-
-            readExpensiveCheck = UIUtils.createLabelCheckbox(performanceGroup, CoreMessages.pref_page_database_general_checkbox_show_row_count, false);
-
-            UIUtils.createControlLabel(performanceGroup, CoreMessages.pref_page_database_general_label_max_lob_length);
-
-            memoryContentSize = new Spinner(performanceGroup, SWT.BORDER);
-            memoryContentSize.setSelection(0);
-            memoryContentSize.setDigits(0);
-            memoryContentSize.setIncrement(1);
-            memoryContentSize.setMinimum(0);
-            memoryContentSize.setMaximum(1024 * 1024 * 1024);
+            expandOnConnectCheck = UIUtils.createLabelCheckbox(navigatorGroup, "Expand navigator tree on connect", false);
+            sortCaseInsensitiveCheck = UIUtils.createLabelCheckbox(navigatorGroup, "Order elements alphabetically", false);
+            groupByDriverCheck = UIUtils.createLabelCheckbox(navigatorGroup, "Group databases by driver", false);
         }
 
         {
@@ -120,67 +83,46 @@ public class PrefPageDatabaseGeneral extends TargetPrefPage
 
             caseSensitiveNamesCheck = UIUtils.createLabelCheckbox(metadataGroup, CoreMessages.pref_page_database_general_checkbox_case_sensitive_names, false);
         }
+
+        performDefaults();
+
         return composite;
     }
 
     @Override
-    protected void loadPreferences(IPreferenceStore store)
+    protected void performDefaults()
     {
-        try {
-            //agentEnabledCheck.setSelection(store.getBoolean(PrefConstants.AGENT_ENABLED));
-            longOperationsCheck.setSelection(store.getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY));
-            longOperationsTimeout.setSelection(store.getInt(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT));
-            keepStatementOpenCheck.setSelection(store.getBoolean(PrefConstants.KEEP_STATEMENT_OPEN));
-            rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
-            memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
-            readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
-            caseSensitiveNamesCheck.setSelection(store.getBoolean(PrefConstants.META_CASE_SENSITIVE));
-        } catch (Exception e) {
-            log.warn(e);
-        }
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+
+        longOperationsCheck.setSelection(store.getBoolean(PrefConstants.AGENT_LONG_OPERATION_NOTIFY));
+        longOperationsTimeout.setSelection(store.getInt(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT));
+        expandOnConnectCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT));
+        sortCaseInsensitiveCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY));
+        groupByDriverCheck.setSelection(store.getBoolean(PrefConstants.NAVIGATOR_GROUP_BY_DRIVER));
+        caseSensitiveNamesCheck.setSelection(store.getBoolean(PrefConstants.META_CASE_SENSITIVE));
     }
 
     @Override
-    protected void savePreferences(IPreferenceStore store)
+    public boolean performOk()
     {
-        try {
-            //store.setValue(PrefConstants.AGENT_ENABLED, agentEnabledCheck.getSelection());
-            store.setValue(PrefConstants.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
-            store.setValue(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
-            store.setValue(PrefConstants.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
-            store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
-            store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
-            store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
-            store.setValue(PrefConstants.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
-        } catch (Exception e) {
-            log.warn(e);
-        }
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+
+        //store.setValue(PrefConstants.AGENT_ENABLED, agentEnabledCheck.getSelection());
+        store.setValue(PrefConstants.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
+        store.setValue(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
+        store.setValue(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT, expandOnConnectCheck.getSelection());
+        store.setValue(PrefConstants.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
+        store.setValue(PrefConstants.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
+        store.setValue(PrefConstants.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
         RuntimeUtils.savePreferenceStore(store);
-    }
 
-    @Override
-    protected void clearPreferences(IPreferenceStore store)
-    {
-        store.setToDefault(PrefConstants.AGENT_ENABLED);
-        store.setToDefault(PrefConstants.AGENT_LONG_OPERATION_NOTIFY);
-        store.setToDefault(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT);
-        store.setToDefault(PrefConstants.KEEP_STATEMENT_OPEN);
-        store.setToDefault(PrefConstants.QUERY_ROLLBACK_ON_ERROR);
-        store.setToDefault(PrefConstants.MEMORY_CONTENT_MAX_SIZE);
-        store.setToDefault(PrefConstants.READ_EXPENSIVE_PROPERTIES);
-        store.setToDefault(PrefConstants.META_CASE_SENSITIVE);
+        return true;
     }
 
     @Override
     public void applyData(Object data)
     {
         super.applyData(data);
-    }
-
-    @Override
-    protected String getPropertyPageID()
-    {
-        return PAGE_ID;
     }
 
 }
