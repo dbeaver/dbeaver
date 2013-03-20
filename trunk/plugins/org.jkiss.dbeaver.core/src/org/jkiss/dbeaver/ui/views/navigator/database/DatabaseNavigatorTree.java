@@ -34,17 +34,22 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.IDBNListener;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.runtime.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 public class DatabaseNavigatorTree extends Composite implements IDBNListener
 {
@@ -162,8 +167,8 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
                             if (event.getNode() != null) {
                                 switch (event.getNodeChange()) {
                                     case LOAD:
-                                        //viewer.expandToLevel(event.getNode(), 1);
                                         viewer.refresh(getViewerObject(event.getNode()));
+                                        expandNodeOnLoad(event.getNode());
                                         break;
                                     case UNLOAD:
                                         viewer.collapseToLevel(event.getNode(), -1);
@@ -187,6 +192,52 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
             default:
                 break;
         }
+    }
+
+    private void expandNodeOnLoad(final DBNNode node)
+    {
+        if (node instanceof DBNDataSource && DBeaverCore.getGlobalPreferenceStore().getBoolean(PrefConstants.NAVIGATOR_EXPAND_ON_CONNECT)) {
+            try {
+                DBRRunnableWithResult<DBNNode> runnable = new DBRRunnableWithResult<DBNNode>() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        try {
+                            result = finaActiveNode(monitor, node);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                };
+                DBeaverUI.runInProgressService(runnable);
+                if (runnable.getResult() != null) {
+                    showNode(runnable.getResult());
+                    viewer.expandToLevel(runnable.getResult(), 1);
+                }
+            } catch (InvocationTargetException e) {
+                log.error("Can't expand node", e.getTargetException());
+            } catch (InterruptedException e) {
+                // skip it
+            }
+        }
+    }
+
+    private DBNNode finaActiveNode(DBRProgressMonitor monitor, DBNNode node) throws DBException
+    {
+        List<? extends DBNNode> children = node.getChildren(monitor);
+        if (!CommonUtils.isEmpty(children)) {
+            if (children.get(0) instanceof DBNContainer) {
+                // Use only first folder to search
+                return finaActiveNode(monitor, children.get(0));
+            }
+            for (DBNNode child : children) {
+                if (NavigatorUtils.isDefaultElement(child)) {
+                    return child;
+                }
+            }
+        }
+
+        return node;
     }
 
     Object getViewerObject(DBNNode node)
