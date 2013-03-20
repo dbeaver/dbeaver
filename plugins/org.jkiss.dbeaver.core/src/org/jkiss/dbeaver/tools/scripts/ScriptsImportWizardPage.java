@@ -55,6 +55,7 @@ class ScriptsImportWizardPage extends WizardPage {
     private Text directoryText;
     private Text extensionsText;
     private CImageCombo scriptsDataSources;
+    private Button overwriteCheck;
     private DBNNode importRoot = null;
 
     protected ScriptsImportWizardPage()
@@ -171,6 +172,11 @@ class ScriptsImportWizardPage extends WizardPage {
         });
         scriptsNavigator.getViewer().expandToLevel(2);
 
+        overwriteCheck = UIUtils.createCheckbox(placeholder, CoreMessages.dialog_project_export_wizard_page_checkbox_overwrite_files, false);
+        GridData gd = new GridData(GridData.BEGINNING);
+        gd.horizontalSpan = 3;
+        overwriteCheck.setLayoutData(gd);
+
         setControl(placeholder);
 
         updateState();
@@ -193,6 +199,7 @@ class ScriptsImportWizardPage extends WizardPage {
         return new ScriptsImportData(
             new File(outputDir),
             extensionsText.getText(),
+            overwriteCheck.getSelection(),
             (DBNResource) importRoot,
             dataSourceContainer);
     }

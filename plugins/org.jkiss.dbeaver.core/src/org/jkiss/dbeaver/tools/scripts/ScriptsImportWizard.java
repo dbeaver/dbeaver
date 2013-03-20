@@ -118,7 +118,8 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         // Use null monitor for resource actions to not break our main monitor
         final IProgressMonitor nullMonitor = new NullProgressMonitor();
         // Import scripts
-        monitor.beginTask(CoreMessages.dialog_scripts_import_wizard_monitor_import_scripts, filesToImport.size());
+        int imported = filesToImport.size();
+		monitor.beginTask(CoreMessages.dialog_scripts_import_wizard_monitor_import_scripts, imported);
         for (File file : filesToImport) {
             // Create dirs
             monitor.subTask(file.getName());
@@ -140,6 +141,17 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             }
 
             final IFile targetFile = targetDir.getFile(targetName);
+            
+            if (targetFile.exists()) {
+				if (importData.isOverwriteFiles()) {
+	                log.warn("Overwriting file '" + targetFile.getFullPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+					targetFile.delete(true, true, monitor.getNestedMonitor());
+				} else {
+	                log.warn("File '" + targetFile.getFullPath() + "' already exists - skipped"); //$NON-NLS-1$ //$NON-NLS-2$
+	                imported--;
+					continue;
+				}
+			}
             // Copy file
             FileInputStream in = new FileInputStream(file);
             try {
@@ -156,7 +168,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         }
         monitor.done();
 
-        return filesToImport.size();
+        return imported;
     }
 
     private void collectFiles(File inputDir, List<Pattern> masks, List<File> filesToImport)
