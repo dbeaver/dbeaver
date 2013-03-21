@@ -308,6 +308,10 @@ public class JDBCUtils {
     public static void reportWarnings(JDBCExecutionContext context, SQLWarning rootWarning)
     {
         for (SQLWarning warning = rootWarning; warning != null; warning = warning.getNextWarning()) {
+            if (warning.getMessage() == null && warning.getErrorCode() == 0) {
+                // Skip trash [Excel driver]
+                continue;
+            }
             log.warn(
                 "SQL Warning (DataSource: " + context.getDataSource().getContainer().getName() +
                     "; Code: " + warning.getErrorCode() +

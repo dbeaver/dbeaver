@@ -71,11 +71,13 @@ public class DataSourcePropertyTester extends PropertyTester
             }
             DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check auto commit state");
             try {
-                boolean transactional = /*context.isConnected() && */!context.getTransactionManager().isAutoCommit();
+                boolean transactional = !context.getTransactionManager().isAutoCommit();
                 return Boolean.valueOf(transactional).equals(expectedValue);
             }
             catch (DBCException e) {
-                log.error(e);
+                // Log in debug. IF there are any errors occurs here then
+                // we'll generate a lot of log errors because property tester invoked by eclipse many times per second
+                log.debug(e);
             }
             finally {
                 context.close();
