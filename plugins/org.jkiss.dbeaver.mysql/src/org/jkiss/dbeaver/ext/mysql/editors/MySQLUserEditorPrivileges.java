@@ -331,14 +331,16 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void highlightCatalogs()
     {
         // Highlight granted catalogs
-        for (TableItem item : catalogsTable.getItems()) {
-            MySQLCatalog catalog = (MySQLCatalog)item.getData();
-            item.setFont(null);
-            if (grants != null) {
-                for (MySQLGrant grant : grants) {
-                    if (grant.matches(catalog) && !grant.isEmpty()) {
-                        item.setFont(boldFont);
-                        break;
+        if (catalogsTable != null && !catalogsTable.isDisposed()) {
+            for (TableItem item : catalogsTable.getItems()) {
+                MySQLCatalog catalog = (MySQLCatalog)item.getData();
+                item.setFont(null);
+                if (grants != null) {
+                    for (MySQLGrant grant : grants) {
+                        if (grant.matches(catalog) && !grant.isEmpty()) {
+                            item.setFont(boldFont);
+                            break;
+                        }
                     }
                 }
             }
@@ -347,14 +349,16 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private void highlightTables()
     {
-        for (TableItem item : tablesTable.getItems()) {
-            MySQLTableBase table = (MySQLTableBase) item.getData();
-            item.setFont(null);
-            if (grants != null) {
-                for (MySQLGrant grant : grants) {
-                    if (grant.matches(selectedCatalog) && grant.matches(table) && !grant.isEmpty()) {
-                        item.setFont(boldFont);
-                        break;
+        if (tablesTable != null && !tablesTable.isDisposed()) {
+            for (TableItem item : tablesTable.getItems()) {
+                MySQLTableBase table = (MySQLTableBase) item.getData();
+                item.setFont(null);
+                if (grants != null) {
+                    for (MySQLGrant grant : grants) {
+                        if (grant.matches(selectedCatalog) && grant.matches(table) && !grant.isEmpty()) {
+                            item.setFont(boldFont);
+                            break;
+                        }
                     }
                 }
             }
