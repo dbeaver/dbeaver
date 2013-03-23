@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
@@ -53,9 +52,9 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     private String alias;
     private List<JDBCColumnMetaData> columns = new ArrayList<JDBCColumnMetaData>();
     private List<JDBCTableIdentifier> identifiers;
-    private DBSTable table;
+    private DBSEntity table;
 
-    public JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSTable table, String catalogName, String schemaName, String tableName, String alias)
+    public JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSEntity table, String catalogName, String schemaName, String tableName, String alias)
     {
         this.resultSetMetaData = resultSetMetaData;
         this.catalogName = catalogName;
@@ -71,7 +70,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     }
 
     @Override
-    public DBSTable getEntity(DBRProgressMonitor monitor)
+    public DBSEntity getEntity(DBRProgressMonitor monitor)
         throws DBException
     {
         if (table == null) {
@@ -89,8 +88,8 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
                 }
                 if (tableObject == null) {
                     throw new DBException("Table '" + tableName + "' not found in metadata catalog");
-                } else if (tableObject instanceof DBSTable) {
-                    table = (DBSTable) tableObject;
+                } else if (tableObject instanceof DBSEntity) {
+                    table = (DBSEntity) tableObject;
                 } else {
                     throw new DBException("Unsupported table class: " + tableObject.getClass().getName());
                 }
@@ -132,27 +131,30 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {
-        DBSTable table = getEntity(monitor);
+        DBSEntity table = getEntity(monitor);
 
         if (identifiers == null) {
             // Load identifiers
             identifiers = new ArrayList<JDBCTableIdentifier>();
 
-            if (!table.isView()) { // Skip physical identifiers for views. There are nothing anyway
+            if (table instanceof DBSTable && ((DBSTable) table).isView()) {
+                // Skip physical identifiers for views. There are nothing anyway
+
+            } else {
                 // Check constraints
-                Collection<? extends DBSTableConstraint> uniqueKeys = table.getConstraints(monitor);
+                Collection<? extends DBSEntityConstraint> uniqueKeys = table.getConstraints(monitor);
                 if (!CommonUtils.isEmpty(uniqueKeys)) {
-                    for (DBSTableConstraint constraint : uniqueKeys) {
-                        if (constraint.getConstraintType().isUnique()) {
+                    for (DBSEntityConstraint constraint : uniqueKeys) {
+                        if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
                             identifiers.add(
-                                new JDBCTableIdentifier(monitor, constraint, this));
+                                new JDBCTableIdentifier(monitor, (DBSEntityReferrer)constraint, this));
                         }
                     }
                 }
-                if (identifiers.isEmpty()) {
+                if (identifiers.isEmpty() && table instanceof DBSTable) {
                     try {
                         // Check indexes only if no unique constraints found
-                        Collection<? extends DBSTableIndex> indexes = table.getIndexes(monitor);
+                        Collection<? extends DBSTableIndex> indexes = ((DBSTable)table).getIndexes(monitor);
                         if (!CommonUtils.isEmpty(indexes)) {
                             for (DBSTableIndex index : indexes) {
                                 if (index.isUnique()) {
