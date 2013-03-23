@@ -90,9 +90,9 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
             // some constant instead of table name
             return null;
         }
-        StringBuilder fullName = new StringBuilder();
-        if (catalogName != null) fullName.append(catalogName).append("|");
-        if (schemaName != null) fullName.append(schemaName).append("|");
+        StringBuilder fullName = new StringBuilder(tableName.length() + 32);
+        if (!CommonUtils.isEmpty(catalogName)) fullName.append(catalogName).append("|");
+        if (!CommonUtils.isEmpty(schemaName)) fullName.append(schemaName).append("|");
         fullName.append(tableName);
         String fullQualifiedName = fullName.toString();
 
@@ -118,7 +118,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
             catalog = null;
         }
 
-        StringBuilder fullName = new StringBuilder();
+        StringBuilder fullName = new StringBuilder(64);
         if (catalog != null) fullName.append(catalog.getName()).append("|");
         if (schema != null) fullName.append(schema.getName()).append("|");
         fullName.append(table.getName());

@@ -326,11 +326,11 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
         if (tableColumn == null) {
             return false;
         }
-        DBSTable table = tableMetaData.getEntity(monitor);
-        if (table == null) {
+        DBSEntity entity = tableMetaData.getEntity(monitor);
+        if (entity == null) {
             return false;
         }
-        Collection<? extends DBSEntityAssociation> foreignKeys = table.getAssociations(monitor);
+        Collection<? extends DBSEntityAssociation> foreignKeys = entity.getAssociations(monitor);
         if (foreignKeys != null) {
             for (DBSEntityAssociation fk : foreignKeys) {
                 if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintColumn(monitor, (DBSEntityReferrer)fk, tableColumn) != null) {
