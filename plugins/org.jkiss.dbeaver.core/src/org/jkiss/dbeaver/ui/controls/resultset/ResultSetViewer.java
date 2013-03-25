@@ -203,7 +203,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
             resultsSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultsSash.setSashWidth(5);
-            resultsSash.setBackground(resultsSash.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+            //resultsSash.setBackground(resultsSash.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
 
             this.spreadsheet = new Spreadsheet(
                 resultsSash,

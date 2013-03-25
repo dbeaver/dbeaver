@@ -56,9 +56,11 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
         boolean drawSelected = ((isMouseDown() && isHover()));
 
         if (flat && isSelected()) {
-            gc.setBackground(grid.getCellHeaderSelectionBackground());
+            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
+            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
         } else {
             gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
 
         }
 
@@ -91,7 +93,7 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
             width -= arrowMargin + arrowRenderer.getSize().x + arrowMargin;
         }
 
-        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
+        //gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 
         int y;
 
