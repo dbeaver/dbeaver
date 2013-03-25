@@ -449,11 +449,11 @@ public abstract class LightGrid extends Canvas {
 
 
         RGB sel = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB();
-        RGB white = getDisplay().getSystemColor(SWT.COLOR_WHITE).getRGB();
+        RGB white = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND).getRGB();
 
         RGB cellSel = blend(sel, white, 50);
 
-        cellHeaderSelectionBackground = new Color(getDisplay(), cellSel);
+        cellHeaderSelectionBackground = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
 
         setDragDetect(false);
     }

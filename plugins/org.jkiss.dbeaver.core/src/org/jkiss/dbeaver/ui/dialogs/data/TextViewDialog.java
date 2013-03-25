@@ -105,7 +105,6 @@ public class TextViewDialog extends ValueViewDialog {
             if (maxSize > 0) {
                 textEdit.setTextLimit((int) maxSize);
             }
-            textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_WHITE));
             GridData gd = new GridData(isForeignKey ? GridData.FILL_HORIZONTAL : GridData.FILL_BOTH);
             gd.widthHint = 300;
             if (!isForeignKey) {
