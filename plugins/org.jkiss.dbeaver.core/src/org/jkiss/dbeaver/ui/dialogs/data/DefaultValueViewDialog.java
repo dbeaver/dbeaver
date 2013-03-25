@@ -51,7 +51,9 @@ public class DefaultValueViewDialog extends ValueViewDialog {
         label.setText(CoreMessages.dialog_data_label_value);
 
         Composite editorPlaceholder = UIUtils.createPlaceholder(dialogGroup, 1);
-        editorPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.minimumHeight = label.computeSize(SWT.DEFAULT, SWT.DEFAULT).y + 4;
+        editorPlaceholder.setLayoutData(gd);
         editorPlaceholder.setLayout(new FillLayout());
 
         try {

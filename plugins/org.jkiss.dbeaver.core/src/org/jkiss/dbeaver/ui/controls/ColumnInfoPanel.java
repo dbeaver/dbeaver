@@ -58,20 +58,10 @@ public class ColumnInfoPanel extends Composite {
             infoItem.addProperty(null, "Key", CoreMessages.controls_column_info_panel_property_key, new CellKeyInfo(valueController) ); //$NON-NLS-1$
         }
 
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalIndent = 0;
-        gd.verticalIndent = 0;
-        this.setLayoutData(gd);
         this.setLayout(new FillLayout());
         {
-            Composite ph = UIUtils.createPlaceholder(this, 1);
-            ph.setLayout(new FillLayout());
-            PropertyTreeViewer propViewer = new PropertyTreeViewer(ph, SWT.NONE);
+            PropertyTreeViewer propViewer = new PropertyTreeViewer(this, SWT.H_SCROLL | SWT.V_SCROLL);
             propViewer.loadProperties(infoItem);
-//            PropertyPageStandard properties = new PropertyPageStandard();
-//            properties.init(new ProxyPageSite(valueController.getValueSite()));
-//            properties.createControl(ph);
-//            properties.selectionChanged(valueController.getValueSite().getPart(), new StructuredSelection(infoItem));
         }
     }
 
