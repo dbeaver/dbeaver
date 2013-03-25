@@ -257,7 +257,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
             }
         });
         columnPanel = new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
-        columnPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        columnPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         initColumnInfoVisibility(columnHideLink);
 
