@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetSelection;
-import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
 
 /**
  * SQLUtilsPropertyTester

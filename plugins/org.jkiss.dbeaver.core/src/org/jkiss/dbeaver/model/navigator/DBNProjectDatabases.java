@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;

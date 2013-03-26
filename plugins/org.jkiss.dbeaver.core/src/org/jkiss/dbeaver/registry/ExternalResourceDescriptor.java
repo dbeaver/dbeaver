@@ -21,12 +21,8 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 
-import java.lang.reflect.Field;
 import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * ExternalResourceDescriptor

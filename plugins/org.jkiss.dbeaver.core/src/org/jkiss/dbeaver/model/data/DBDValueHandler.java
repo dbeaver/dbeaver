@@ -22,7 +22,10 @@ package org.jkiss.dbeaver.model.data;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.dnd.Clipboard;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 

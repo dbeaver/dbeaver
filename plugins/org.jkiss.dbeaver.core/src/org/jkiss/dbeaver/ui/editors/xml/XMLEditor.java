@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.editors.xml;
 
 import org.eclipse.ui.texteditor.ITextEditorExtension3;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 
 
 public class XMLEditor extends BaseTextEditor {
