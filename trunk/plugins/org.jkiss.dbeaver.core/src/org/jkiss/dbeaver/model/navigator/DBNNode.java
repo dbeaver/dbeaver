@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPPersistedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.utils.CommonUtils;
 

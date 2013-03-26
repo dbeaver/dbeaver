@@ -20,8 +20,6 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * Array

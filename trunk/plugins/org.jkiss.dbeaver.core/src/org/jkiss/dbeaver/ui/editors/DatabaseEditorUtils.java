@@ -1,10 +1,8 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 

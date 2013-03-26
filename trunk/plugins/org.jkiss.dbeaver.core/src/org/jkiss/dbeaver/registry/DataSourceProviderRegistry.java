@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IContributor;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.jface.resource.StringConverter;
 import org.jkiss.dbeaver.core.DBeaverCore;

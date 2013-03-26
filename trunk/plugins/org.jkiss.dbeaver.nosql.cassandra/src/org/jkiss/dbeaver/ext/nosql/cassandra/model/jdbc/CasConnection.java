@@ -1,7 +1,10 @@
 package org.jkiss.dbeaver.ext.nosql.cassandra.model.jdbc;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnector;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCPreparedStatementImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;

@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.data.DBDRowController;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 

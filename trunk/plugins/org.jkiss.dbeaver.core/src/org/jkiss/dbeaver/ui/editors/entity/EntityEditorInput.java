@@ -18,21 +18,12 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * EntityEditorInput
