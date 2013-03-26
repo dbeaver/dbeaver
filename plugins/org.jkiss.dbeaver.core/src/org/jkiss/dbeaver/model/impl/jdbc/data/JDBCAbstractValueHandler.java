@@ -210,7 +210,9 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
                     @Override
                     public void run()
                     {
-                        inlineControl.setFocus();
+                        if (!inlineControl.isDisposed()) {
+                            inlineControl.setFocus();
+                        }
                     }
                 });
 
