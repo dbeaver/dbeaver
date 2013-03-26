@@ -47,11 +47,6 @@ public abstract class AbstractJob extends Job
         super(name);
     }
 
-    protected DBRProgressMonitor getProgressMonitor()
-    {
-        return progressMonitor;
-    }
-
     public int getCancelTimeout()
     {
         return cancelTimeout;
@@ -118,7 +113,7 @@ public abstract class AbstractJob extends Job
                 protected IStatus run(IProgressMonitor monitor)
                 {
                     if (!finished && !blockCanceled) {
-                        DBRBlockingObject block = getProgressMonitor().getActiveBlock();
+                        DBRBlockingObject block = progressMonitor.getActiveBlock();
                         if (block != null) {
                             try {
                                 block.cancelBlock();
