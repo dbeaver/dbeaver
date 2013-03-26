@@ -329,12 +329,17 @@
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.eclipse.ui.edit.copy" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopyObject">
             <activeWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPNamedObject"/>
-                    </iterate>
-                </with>
+                <and>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.DBPNamedObject"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                    </with>
+                </and>
             </activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopySpecial">
