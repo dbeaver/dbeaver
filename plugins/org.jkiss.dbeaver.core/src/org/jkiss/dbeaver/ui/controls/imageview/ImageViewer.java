@@ -21,14 +21,9 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.eclipse.swt.widgets.Composite;
 
 import java.io.InputStream;
 

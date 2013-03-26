@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 /**
