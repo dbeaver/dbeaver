@@ -1784,7 +1784,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             for (int i = 0; i < columns.length; i++) {
                                 DBDAttributeBinding metaColumn = columns[i];
                                 try {
-                                    cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getMetaAttribute());
+                                    cells[i] = DBUtils.makeNullValue(context, metaColumn.getValueHandler(), metaColumn.getAttribute());
                                 } catch (DBCException e) {
                                     log.warn(e);
                                 }
