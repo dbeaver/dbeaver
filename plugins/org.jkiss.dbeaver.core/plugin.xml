@@ -344,12 +344,17 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.edit.copy.special" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCopySpecial">
             <activeWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
-                    </iterate>
-                </with>
+                <and>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                    </with>
+                </and>
             </activeWhen>
         </handler>
 
@@ -580,7 +585,7 @@
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.object.open" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen">
-            <enabledWhen>
+            <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
@@ -594,18 +599,23 @@
                         </or>
                     </iterate>
                 </with>
-            </enabledWhen>
+            </activeWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.object.create" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectCreateNew">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canCreate"/>
-                    </iterate>
-                </with>
-            </enabledWhen>
+            <activeWhen>
+                <and>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.canCreate"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                    </with>
+                </and>
+            </activeWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.object.filter" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter">
@@ -621,24 +631,34 @@
 
         <handler commandId="org.eclipse.ui.edit.paste" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectCreateCopy">
             <activeWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canPaste"/>
-                    </iterate>
-                </with>
+                <and>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.canPaste"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                    </with>
+                </and>
             </activeWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.object.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canDelete"/>
-                    </iterate>
-                </with>
-            </enabledWhen>
+            <activeWhen>
+                <and>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                    </with>
+                </and>
+            </activeWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectFind">
@@ -650,24 +670,34 @@
         </handler>
 
         <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectDelete">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canDelete"/>
-                    </iterate>
-                </with>
-            </enabledWhen>
+            <activeWhen>
+                <and>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.canDelete"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                    </with>
+                </and>
+            </activeWhen>
         </handler>
 
         <handler commandId="org.eclipse.ui.edit.rename" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename">
             <activeWhen>
-                <with variable="selection">
-                    <count value="1"/>
-                    <iterate operator="and">
-                        <test property="org.jkiss.dbeaver.core.object.canRename"/>
-                    </iterate>
-                </with>
+                <and>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <test property="org.jkiss.dbeaver.core.object.canRename"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <instanceof value="org.jkiss.dbeaver.ext.ui.INavigatorModelView"/>
+                    </with>
+                </and>
             </activeWhen>
         </handler>
 
