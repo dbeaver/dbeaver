@@ -1208,7 +1208,7 @@ public class CImageCombo extends Composite {
             case SWT.Paint:
                 // draw black rectangle around list
                 Rectangle listRect = this.table.getBounds();
-                Color black = getDisplay().getSystemColor(SWT.COLOR_BLACK);
+                Color black = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND);
                 event.gc.setForeground(black);
                 event.gc.drawRectangle(0, 0, listRect.width + 1, listRect.height + 1);
                 break;

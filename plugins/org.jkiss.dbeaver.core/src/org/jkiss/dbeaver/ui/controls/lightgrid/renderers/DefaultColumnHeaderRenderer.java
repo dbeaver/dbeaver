@@ -56,13 +56,13 @@ public class DefaultColumnHeaderRenderer extends GridColumnRenderer {
         boolean drawSelected = ((isMouseDown() && isHover()));
 
         if (flat && isSelected()) {
-            gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION));
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+            gc.setBackground(grid.getCellHeaderSelectionBackground());
+            //gc.setForeground(grid.getCellHeaderSelectionForeground());
         } else {
             gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
-
+            //gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         }
+        gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
 
         gc.fillRectangle(getBounds().x, getBounds().y, getBounds().width, getBounds().height);
 
