@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.NullScrollBar;
@@ -277,6 +278,7 @@ public abstract class LightGrid extends Canvas {
     private boolean columnScrolling = false;
 
     private Color cellHeaderSelectionBackground;
+    private Color cellHeaderSelectionForeground;
 
     /**
      * Dispose listener.  This listener is removed during the dispose event to allow re-firing of
@@ -448,12 +450,16 @@ public abstract class LightGrid extends Canvas {
         itemHeight = sizingGC.getFontMetrics().getHeight() + 3;
 
 
-        RGB sel = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB();
-        RGB white = getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND).getRGB();
+        //RGB white = getDisplay().getSystemColor(SWT.COLOR_WHITE).getRGB();
 
-        RGB cellSel = blend(sel, white, 50);
+        RGB cellSel = blend(
+            getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB(),
+            new RGB(255, 255, 255),
+            50);
 
-        cellHeaderSelectionBackground = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        cellHeaderSelectionBackground = new Color(getDisplay(), cellSel);// = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION);
+        cellHeaderSelectionForeground = getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT);
+
 
         setDragDetect(false);
     }
@@ -566,20 +572,12 @@ public abstract class LightGrid extends Canvas {
      */
     public Color getCellHeaderSelectionBackground()
     {
-        checkWidget();
         return cellHeaderSelectionBackground;
     }
 
-    /**
-     * Sets the background color of column and row headers displayed when a cell in
-     * the row or header is selected.
-     *
-     * @param cellSelectionBackground color to set.
-     */
-    public void setCellHeaderSelectionBackground(Color cellSelectionBackground)
+    public Color getCellHeaderSelectionForeground()
     {
-        checkWidget();
-        this.cellHeaderSelectionBackground = cellSelectionBackground;
+        return cellHeaderSelectionForeground;
     }
 
     /**
@@ -3021,7 +3019,8 @@ public abstract class LightGrid extends Canvas {
 
         disposing = true;
 
-        cellHeaderSelectionBackground.dispose();
+        UIUtils.dispose(cellHeaderSelectionBackground);
+        UIUtils.dispose(cellHeaderSelectionForeground);
 
         for (GridColumn col : columns) {
             col.dispose();
