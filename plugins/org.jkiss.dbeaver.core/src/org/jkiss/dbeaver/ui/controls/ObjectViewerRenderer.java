@@ -48,7 +48,7 @@ public abstract class ObjectViewerRenderer {
     private SortListener sortListener;
 
     private final TextLayout linkLayout;
-    private final Color linkColor;
+    //private final Color linkColor;
     private final Cursor linkCursor;
     private final Cursor arrowCursor;
     private final Color selectionBackgroundColor;
@@ -61,7 +61,7 @@ public abstract class ObjectViewerRenderer {
         Display display = itemsViewer.getControl().getDisplay();
         this.linkLayout = new TextLayout(display);
         this.selectionBackgroundColor = display.getSystemColor(SWT.COLOR_LIST_SELECTION);
-        this.linkColor = display.getSystemColor(SWT.COLOR_BLUE);
+        //this.linkColor = display.getSystemColor(SWT.COLOR_BLUE);
         this.linkCursor = display.getSystemCursor(SWT.CURSOR_HAND);
         this.arrowCursor = display.getSystemCursor(SWT.CURSOR_ARROW);
 
@@ -145,7 +145,7 @@ public abstract class ObjectViewerRenderer {
     }
 
     private Rectangle getCellLinkBounds(Item item, int column, Object cellValue) {
-        prepareLinkStyle(cellValue, linkColor);
+        prepareLinkStyle(cellValue, null);
 
         Rectangle itemBounds;
         if (isTree) {
@@ -182,7 +182,7 @@ public abstract class ObjectViewerRenderer {
             } else if (isHyperlink(cellValue)) {
                 // Print link
                 boolean isSelected = gc.getBackground().equals(selectionBackgroundColor);
-                prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : linkColor);
+                prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : null);
                 Rectangle textBounds;
                 if (event.item instanceof TreeItem) {
                     textBounds = ((TreeItem) event.item).getTextBounds(event.index);
