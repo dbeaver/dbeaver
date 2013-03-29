@@ -41,7 +41,7 @@ public class OCIClassLoader extends URLClassLoader
         //this.oracleHomeDescriptor = oracleHomeDescriptor;
 
         File oraHomeFile = new File(oracleHomeDescriptor.getHomeId());
-        File dllFolder = oracleHomeDescriptor.isInstantClient() ? oraHomeFile : new File(oraHomeFile, "BIN");
+        File dllFolder = oracleHomeDescriptor.isInstantClient() ? oraHomeFile : new File(oraHomeFile, "bin");
         if (dllFolder.exists()) {
             oraHomeLibraries = dllFolder.listFiles(new FilenameFilter()
             {
