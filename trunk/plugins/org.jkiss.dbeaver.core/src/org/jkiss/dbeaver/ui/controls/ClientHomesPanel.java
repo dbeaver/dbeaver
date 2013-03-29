@@ -96,7 +96,7 @@ public class ClientHomesPanel extends Composite
             }
         });
 
-        GridLayout layout = new GridLayout(2, true);
+        GridLayout layout = new GridLayout(2, false);
         setLayout(layout);
 
         Composite listGroup = UIUtils.createPlaceholder(this, 1, 5);
@@ -144,11 +144,12 @@ public class ClientHomesPanel extends Composite
         });
 
         Group infoGroup = UIUtils.createControlGroup(this, CoreMessages.controls_client_homes_panel_group_information, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        idText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_id, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
-        pathText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_path, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
-        nameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_name, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
-        productNameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_product_name, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
-        productVersionText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_product_version, "", SWT.BORDER | SWT.READ_ONLY); //$NON-NLS-2$
+        ((GridData)(infoGroup.getLayoutData())).widthHint = 200;
+        idText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_id, null, SWT.BORDER | SWT.READ_ONLY);
+        pathText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_path, null, SWT.BORDER | SWT.READ_ONLY);
+        nameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_name, null, SWT.BORDER | SWT.READ_ONLY);
+        productNameText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_product_name, null, SWT.BORDER | SWT.READ_ONLY);
+        productVersionText = UIUtils.createLabelText(infoGroup, CoreMessages.controls_client_homes_panel_label_product_version, null, SWT.BORDER | SWT.READ_ONLY);
     }
 
     private void removeClientHome()
