@@ -43,6 +43,12 @@ public class OCIUtils
     public static final String WIN_REG_ORA_HOME = "ORACLE_HOME";
     public static final String WIN_REG_ORA_HOME_NAME = "ORACLE_HOME_NAME";
 
+    public static final String VAR_ORA_HOME = "ORA_HOME";
+    public static final String VAR_ORACLE_HOME = "ORACLE_HOME";
+    public static final String VAR_TNS_ADMIN = "TNS_ADMIN";
+    public static final String TNSNAMES_FILE_NAME = "tnsnames.ora";
+    public static final String TNSNAMES_FILE_PATH = "network/admin/";
+
     /**
      * A list of Oracle client homes found in the system.
      * The first one is always a current Oracle home (from PATH) 
@@ -130,7 +136,6 @@ public class OCIUtils
 
     /**
      * Searches Oracle home locations.
-     * @return a list of Oracle home locations pathes
      */
     private static void findOraHomes()
     {
@@ -152,7 +157,10 @@ public class OCIUtils
             }
         }
 
-        String oraHome = System.getenv("ORA_HOME");
+        String oraHome = System.getenv(VAR_ORA_HOME);
+        if (oraHome == null) {
+            oraHome = System.getenv(VAR_ORACLE_HOME);
+        }
         if (oraHome != null) {
             try {
                 addOraHome(oraHome);
@@ -260,13 +268,13 @@ public class OCIUtils
     {
         File tnsNamesFile = null;
         if (checkTnsAdmin) {
-            String tnsAdmin = System.getenv("TNS_ADMIN");
+            String tnsAdmin = System.getenv(VAR_TNS_ADMIN);
             if (tnsAdmin != null) {
-                tnsNamesFile = new File (CommonUtils.removeTrailingSlash(tnsAdmin) + "/TNSNAMES.ORA");
+                tnsNamesFile = new File (CommonUtils.removeTrailingSlash(tnsAdmin) + "/" + TNSNAMES_FILE_NAME);
             }
         }
         if ((tnsNamesFile == null || !tnsNamesFile.exists()) && oraHome != null) {
-            tnsNamesFile = new File (oraHome, "Network/Admin/TNSNAMES.ORA");
+            tnsNamesFile = new File (oraHome, TNSNAMES_FILE_PATH + TNSNAMES_FILE_NAME);
         }
         if (tnsNamesFile != null && tnsNamesFile.exists()) {
             return parseTnsNames(tnsNamesFile.getAbsolutePath());
