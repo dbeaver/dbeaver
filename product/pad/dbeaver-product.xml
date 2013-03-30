@@ -47,6 +47,25 @@
 
     <versions>
         <version>
+            <number>2.1.1</number>
+            <type>stable</type>
+            <date>31.03.2013</date>
+
+            <release-notes>
+                - Eclipse 4.2.2 is now base platform for standalone version
+                - UI freeze during MySQL long queries fix
+                - Sort navigator tree alphabetically (configurable)
+                - Expand navigator tree on conect (configurable)
+                - MySQL enum/set data types handle fix
+                - Oracle TNS names load fix (on Linux)
+                - Autocomplete fix (SQLite)
+                - Cell editor dialog UI fixed
+                - Standard commands' handlers fix
+                - Minor UI and functional fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.1.0</number>
             <type>stable</type>
             <date>18.03.2013</date>
