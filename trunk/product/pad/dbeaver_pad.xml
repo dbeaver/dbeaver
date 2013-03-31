@@ -39,8 +39,8 @@
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>2.1.1</Program_Version>
-    <Program_Release_Month>03</Program_Release_Month>
-    <Program_Release_Day>18</Program_Release_Day>
+    <Program_Release_Month>04</Program_Release_Month>
+    <Program_Release_Day>01</Program_Release_Day>
     <Program_Release_Year>2013</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -49,16 +49,16 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Data transfer/import feature (transfer data between any tables/views/queries in different databases)
-        - In Eclipse plugin version JDBC drivers can be installed from update site as plugins
-        - SQL editor improved (braces matching, current line highlight, print margins support)
-        - 64-bit Windows installer fixed
-        - JDBC driver for CSV/DBF files added
-        - Oracle IOT tables support added, view meta information improved
-        - Advanced authentication for MySQL native tools
-        - Auto-completion fixed (insert full qualified table names when needed)
-        - SQL scripts to database group linking feature added
-        - A lot of minor UI and database-specific fixes
+        - Eclipse 4.2.2 is base platform for standalone version
+        - UI freeze during MySQL long queries fix
+        - Sort navigator tree alphabetically (configurable)
+        - Expand navigator tree on connect (configurable)
+        - MySQL enum/set data types handle fix
+        - Oracle TNS names load fix (on Linux)
+        - Autocomplete fix (SQLite)
+        - Cell editor dialog UI fixed
+        - Standard commands' handlers fix
+        - Minor UI and functional fixes
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
