@@ -148,7 +148,8 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
 
         String defaultValue = CommonUtils.toString(column.getDefaultValue());
         if (!CommonUtils.isEmpty(defaultValue)) {
-            boolean useQuotes = true;
+            boolean useQuotes = false;
+/*
             try {
                 Double.parseDouble(defaultValue);
                 useQuotes = false;
@@ -159,6 +160,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
             if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
                 useQuotes = false;
             }
+*/
             decl.append(" DEFAULT "); //$NON-NLS-1$
             if (useQuotes) decl.append(QUOTE);
             decl.append(defaultValue);
