@@ -55,6 +55,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
     static final Log log = LogFactory.getLog(ProjectExportWizard.class);
 
     public static final int COPY_BUFFER_SIZE = 5000;
+    public static final String PROJECT_DESC_FILE = ".project";
     private ProjectExportWizardPage mainPage;
 
     public ProjectExportWizard() {
@@ -297,6 +298,10 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
     private void exportResourceTree(DBRProgressMonitor monitor, ProjectExportData exportData, String parentPath, IResource resource) throws CoreException, IOException
     {
+        if (resource.getName().equals(PROJECT_DESC_FILE)) {
+            // Skip it
+            return;
+        }
         monitor.subTask(parentPath + resource.getName());
 
         exportData.meta.startElement(ExportConstants.TAG_RESOURCE);
