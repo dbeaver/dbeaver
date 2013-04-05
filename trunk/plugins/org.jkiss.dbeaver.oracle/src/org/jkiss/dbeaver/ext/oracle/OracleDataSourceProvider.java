@@ -117,7 +117,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        return new OracleDataSource(container);
+        return new OracleDataSource(monitor, container);
     }
 
     //////////////////////////////////////

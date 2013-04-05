@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -145,6 +146,12 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
             return true;
         }
         return this.connectionEditor != null && this.connectionEditor.isComplete();
+    }
+
+    @Override
+    public IRunnableContext getRunnableContext()
+    {
+        return wizard.getContainer();
     }
 
     @Override

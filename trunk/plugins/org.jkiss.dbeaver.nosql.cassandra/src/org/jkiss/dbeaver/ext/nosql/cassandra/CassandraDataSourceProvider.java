@@ -53,7 +53,7 @@ public class CassandraDataSourceProvider extends JDBCDataSourceProvider {
         DBSDataSourceContainer container)
         throws DBException
     {
-        return new CassandraDataSource(container);
+        return new CassandraDataSource(monitor, container);
     }
 
 }

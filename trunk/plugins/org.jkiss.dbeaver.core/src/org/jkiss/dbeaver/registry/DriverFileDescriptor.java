@@ -186,7 +186,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         }
 
         // Nothing fits - just return plain url
-        return libraryFile;
+        return platformFile;
     }
 
     @Override

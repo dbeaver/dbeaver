@@ -76,7 +76,10 @@ public abstract class ConnectionPageAdvanced extends DialogPage implements IData
             DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
             saveSettings(tmpConnectionInfo);
             tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
-            propertySource = propsControl.makeProperties(site.getDriver(), tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
+            propertySource = propsControl.makeProperties(
+                site.getRunnableContext(),
+                site.getDriver(),
+                tmpConnectionInfo/*.getUrl(), site.getConnectionInfo().getProperties()*/);
             propsControl.loadProperties(propertySource);
             driverPropsLoaded = true;
         }
