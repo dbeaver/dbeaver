@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
@@ -60,11 +61,11 @@ public abstract class JDBCDataSource
 
     protected DBPDataSourceInfo dataSourceInfo;
 
-    public JDBCDataSource(DBSDataSourceContainer container)
+    public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
-        this.connection = openConnection();
+        this.connection = openConnection(monitor);
         {
             // Notify QM
             boolean autoCommit = false;
@@ -77,11 +78,11 @@ public abstract class JDBCDataSource
         }
     }
 
-    protected JDBCConnectionHolder openConnection()
+    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor)
         throws DBException
     {
         // It MUST be a JDBC driver
-        Driver driverInstance = getDriverInstance();
+        Driver driverInstance = getDriverInstance(monitor);
 
         // Set properties
         Properties connectProps = new Properties();
@@ -157,10 +158,13 @@ public abstract class JDBCDataSource
         return connectionInfo.getUserPassword();
     }
 
-    protected Driver getDriverInstance()
+    protected Driver getDriverInstance(DBRProgressMonitor monitor)
         throws DBException
     {
-        return Driver.class.cast(container.getDriver().getDriverInstance());
+        return Driver.class.cast(
+            container.getDriver().getDriverInstance(
+                RuntimeUtils.makeContext(monitor)
+            ));
     }
 
     /**
@@ -180,9 +184,9 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public JDBCConnectionHolder openIsolatedConnection() throws SQLException {
+    public JDBCConnectionHolder openIsolatedConnection(DBRProgressMonitor monitor) throws SQLException {
         try {
-            return openConnection();
+            return openConnection(monitor);
         } catch (DBException e) {
             if (e.getCause() instanceof SQLException) {
                 throw (SQLException)e.getCause();
@@ -234,13 +238,13 @@ public abstract class JDBCDataSource
         throws DBException
     {
         if (connection == null) {
-            connection = openConnection();
+            connection = openConnection(monitor);
             return;
         }
 
         if (!JDBCUtils.isConnectionAlive(connection.getConnection())) {
             close();
-            connection = openConnection();
+            connection = openConnection(monitor);
         }
     }
 

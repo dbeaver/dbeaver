@@ -89,7 +89,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        return new MySQLDataSource(container);
+        return new MySQLDataSource(monitor, container);
     }
 
     //////////////////////////////////////

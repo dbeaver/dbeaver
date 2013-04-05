@@ -19,7 +19,11 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -27,7 +31,10 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -41,12 +48,13 @@ import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
  * EditDriverDialog
  */
-public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener {
+public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener, IRunnableContext {
 
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
@@ -58,7 +66,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button deleteButton;
     private DriverTreeControl treeControl;
     private Image dialogImage;
-    private Label driverDescription;
+    //private Label driverDescription;
+    private ProgressMonitorPart monitorPart;
 
     public DriverManagerDialog(Shell shell)
     {
@@ -68,10 +77,10 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        List<DataSourceProviderDescriptor> provders = DataSourceProviderRegistry.getDefault().getDataSourceProviders();
+        List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getDefault().getDataSourceProviders();
         {
             DataSourceProviderDescriptor manProvider = null;
-            for (DataSourceProviderDescriptor provider : provders) {
+            for (DataSourceProviderDescriptor provider : providers) {
                 if (provider.isDriversManagable()) {
                     if (manProvider != null) {
                         manProvider = null;
@@ -95,7 +104,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
         {
             treeControl = new DriverTreeControl(group);
-            treeControl.initDrivers(this, provders);
+            treeControl.initDrivers(this, providers);
             treeControl.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
@@ -197,11 +206,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 */
         //UIUtils.setHelp(group, IHelpContextIds.CTX_DRIVER_MANAGER);
 
-        driverDescription = new Label(group, SWT.NONE);
+        //driverDescription = new Label(group, SWT.NONE);
+
+        monitorPart = new ProgressMonitorPart(group, null, true);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 5;
         gd.horizontalSpan = 2;
-        driverDescription.setLayoutData(gd);
+        monitorPart.setLayoutData(gd);
+        //monitorPart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         return group;
     }
@@ -263,13 +275,13 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
 
         if (selectedDriver != null) {
-            driverDescription.setText(CommonUtils.toString(selectedDriver.getDescription()));
+            monitorPart.setTaskName(CommonUtils.toString(selectedDriver.getDescription()));
         } else if (selectedCategory != null) {
-            driverDescription.setText(selectedProvider.getName() + " " + selectedCategory + " drivers");
+            monitorPart.setTaskName(selectedProvider.getName() + " " + selectedCategory + " drivers");
         } else if (selectedProvider != null) {
-            driverDescription.setText(selectedProvider.getName() + " provider");
+            monitorPart.setTaskName(selectedProvider.getName() + " provider");
         } else {
-            driverDescription.setText("");
+            monitorPart.setTaskName("");
         }
     }
 
@@ -289,14 +301,15 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
     private void editDriver()
     {
-        if (selectedDriver != null) {
-            selectedDriver.validateFilesPresence();
+        DriverDescriptor driver = selectedDriver;
+        if (driver != null) {
+            driver.validateFilesPresence(this);
 
-            DriverEditDialog dialog = new DriverEditDialog(getShell(), selectedDriver);
+            DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 // Do nothing
             }
-            treeControl.refresh(selectedDriver);
+            treeControl.refresh(driver);
         }
     }
 
@@ -327,5 +340,24 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     {
         UIUtils.dispose(dialogImage);
         return super.close();
+    }
+
+    @Override
+    public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
+    {
+        // Code copied from WizardDialog
+
+        // The operation can only be canceled if it is executed in a separate
+        // thread.
+        // Otherwise the UI is blocked anyway.
+        try {
+            ModalContext.run(runnable, false, monitorPart, getShell().getDisplay());
+        } finally {
+            // explicitly invoke done() on our progress monitor so that its
+            // label does not spill over to the next invocation, see bug 271530
+            if (monitorPart != null) {
+                monitorPart.done();
+            }
+        }
     }
 }

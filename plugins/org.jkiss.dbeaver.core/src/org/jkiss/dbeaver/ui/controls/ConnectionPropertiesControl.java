@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -55,7 +56,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         setExpandSingleRoot(false);
     }
 
-    public PropertySourceCustom makeProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    public PropertySourceCustom makeProperties(IRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         Map<Object, Object> connectionProps = new HashMap<Object, Object>();
         connectionProps.putAll(driver.getConnectionProperties());
@@ -63,7 +64,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         driverProvidedProperties = null;
         customProperties = null;
 
-        loadDriverProperties(driver, connectionInfo);
+        loadDriverProperties(runnableContext, driver, connectionInfo);
         loadCustomProperties(driver, connectionProps);
 
         return new PropertySourceCustom(
@@ -132,11 +133,11 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         return propertyDescriptors;
     }
 
-    private void loadDriverProperties(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    private void loadDriverProperties(IRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         try {
             final Collection<IPropertyDescriptor> connectionsProps =
-                driver.getDataSourceProvider().getConnectionProperties(driver, connectionInfo);
+                driver.getDataSourceProvider().getConnectionProperties(runnableContext, driver, connectionInfo);
             driverProvidedProperties = new ArrayList<IPropertyDescriptor>();
             if (connectionsProps != null) {
                 driverProvidedProperties.addAll(connectionsProps);

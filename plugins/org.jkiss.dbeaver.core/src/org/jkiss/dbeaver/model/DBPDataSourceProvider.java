@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -47,12 +48,15 @@ public interface DBPDataSourceProvider
     
     /**
      * Supported connection properties.
+     *
+     * @param runnableContext runnable context. May be used by implementation to load necessary driver artifacts.
      * @param driver driver
      * @param connectionInfo connection information
      * @return property group which contains all supported properties
      * @throws DBException on any error
      */
     Collection<IPropertyDescriptor> getConnectionProperties(
+        IRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
         throws DBException;

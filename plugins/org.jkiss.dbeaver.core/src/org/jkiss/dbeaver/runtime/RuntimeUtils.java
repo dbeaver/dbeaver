@@ -129,6 +129,17 @@ public class RuntimeUtils {
         return new DefaultProgressMonitor(monitor);
     }
 
+    public static IRunnableContext makeContext(final DBRProgressMonitor monitor)
+    {
+        return new IRunnableContext() {
+            @Override
+            public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
+            {
+                runnable.run(monitor.getNestedMonitor());
+            }
+        };
+    }
+
     public static void run(
         IRunnableContext runnableContext,
         boolean fork,

@@ -84,7 +84,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         DBSDataSourceContainer container)
         throws DBException
     {
-        return new GenericDataSource(container);
+        return new GenericDataSource(monitor, container);
     }
 
     private static String makePropPattern(String prop)

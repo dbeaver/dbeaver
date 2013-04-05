@@ -39,6 +39,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -666,7 +667,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         provider.getRegistry().saveDrivers();
 
         try {
-            driver.loadDriver(true);
+            driver.loadDriver(DBeaverUI.getDefaultRunnableContext(), true);
         } catch (Throwable ex) {
             UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_edit_driver_dialog_driver_error_title, CoreMessages.dialog_edit_driver_dialog_driver_error_message, ex);
         }
