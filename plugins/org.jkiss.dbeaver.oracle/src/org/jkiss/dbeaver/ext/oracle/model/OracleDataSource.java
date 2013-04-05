@@ -84,10 +84,10 @@ public class OracleDataSource extends JDBCDataSource
     private boolean isAdminVisible;
     private String planTableName;
 
-    public OracleDataSource(DBSDataSourceContainer container)
+    public OracleDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        super(container);
+        super(monitor, container);
     }
 
     @Override
@@ -180,7 +180,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Driver getDriverInstance() throws DBException {
+    protected Driver getDriverInstance(DBRProgressMonitor monitor) throws DBException {
         DBSDataSourceContainer container = getContainer();
         DBPDriver driver = container.getDriver();
         boolean ociDriver = OCIUtils.isOciDriver(driver);
@@ -209,7 +209,7 @@ public class OracleDataSource extends JDBCDataSource
                 }
             }
         }
-        return super.getDriverInstance();
+        return super.getDriverInstance(monitor);
     }
 
     @Override

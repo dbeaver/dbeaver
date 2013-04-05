@@ -65,10 +65,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private String activeCatalogName;
     //private List<MySQLInformationFolder> informationFolders;
 
-    public MySQLDataSource(DBSDataSourceContainer container)
+    public MySQLDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        super(container);
+        super(monitor, container);
         dataTypeCache = new JDBCBasicDataTypeCache(container);
     }
 
@@ -355,8 +355,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected JDBCConnectionHolder openConnection() throws DBException {
-        JDBCConnectionHolder mysqlConnection = super.openConnection();
+    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBException {
+        JDBCConnectionHolder mysqlConnection = super.openConnection(monitor);
 
         {
             // Provide client info

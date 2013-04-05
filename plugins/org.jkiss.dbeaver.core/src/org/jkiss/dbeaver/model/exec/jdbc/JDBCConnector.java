@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
 
@@ -32,6 +33,6 @@ public interface JDBCConnector
 
     JDBCConnectionHolder getConnection();
 
-    JDBCConnectionHolder openIsolatedConnection() throws SQLException;
+    JDBCConnectionHolder openIsolatedConnection(DBRProgressMonitor monitor) throws SQLException;
 
 }

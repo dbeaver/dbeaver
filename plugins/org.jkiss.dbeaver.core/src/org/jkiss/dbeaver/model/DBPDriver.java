@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
@@ -46,7 +47,7 @@ public interface DBPDriver extends DBPObject
 
     String getDriverClassName();
 
-    Object getDriverInstance() throws DBException;
+    Object getDriverInstance(IRunnableContext runnableContext) throws DBException;
 
     String getDefaultPort();
 
@@ -84,7 +85,7 @@ public interface DBPDriver extends DBPObject
 
     Collection<? extends DBPDriverFile> getFiles();
 
-    void validateFilesPresence();
+    void validateFilesPresence(IRunnableContext runnableContext);
 
-    void loadDriver() throws DBException;
+    void loadDriver(IRunnableContext runnableContext) throws DBException;
 }

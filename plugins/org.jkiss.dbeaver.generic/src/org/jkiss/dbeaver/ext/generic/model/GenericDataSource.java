@@ -32,11 +32,12 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Driver;
@@ -67,10 +68,10 @@ public class GenericDataSource extends JDBCDataSource
     private String selectedEntityName;
     private boolean selectedEntityFromAPI;
 
-    public GenericDataSource(DBSDataSourceContainer container)
+    public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        super(container);
+        super(monitor, container);
         final DBPDriver driver = container.getDriver();
         this.dataTypeCache = new JDBCBasicDataTypeCache(container);
         this.tableTypeCache = new TableTypeCache();
@@ -106,7 +107,7 @@ public class GenericDataSource extends JDBCDataSource
         String paramShutdown = CommonUtils.toString(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SHUTDOWN_URL_PARAM));
         if (!CommonUtils.isEmpty(paramShutdown)) {
             try {
-                final Driver driver = getDriverInstance();
+                final Driver driver = getDriverInstance(VoidProgressMonitor.INSTANCE); // Use void monitor - driver already loaded
                 if (driver != null) {
                     driver.connect(getContainer().getActualConnectionInfo().getUrl() + paramShutdown, null);
                 }

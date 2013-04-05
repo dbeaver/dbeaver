@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -51,12 +52,13 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
 
     @Override
     public Collection<IPropertyDescriptor> getConnectionProperties(
+        IRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
         throws DBException
     {
         Collection<IPropertyDescriptor> props = null;
-        Object driverInstance = driver.getDriverInstance();
+        Object driverInstance = driver.getDriverInstance(runnableContext);
         if (driverInstance instanceof Driver) {
             props = readDriverProperties(connectionInfo, (Driver) driverInstance);
         }

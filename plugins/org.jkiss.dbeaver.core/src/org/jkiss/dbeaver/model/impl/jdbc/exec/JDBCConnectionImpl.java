@@ -87,7 +87,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     {
         if (isolated) {
             if (isolatedConnection == null) {
-                isolatedConnection = connector.openIsolatedConnection();
+                isolatedConnection = connector.openIsolatedConnection(getProgressMonitor());
             }
             return isolatedConnection;
         } else {

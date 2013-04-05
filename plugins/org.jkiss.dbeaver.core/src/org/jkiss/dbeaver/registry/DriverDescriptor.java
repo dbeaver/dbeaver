@@ -21,10 +21,13 @@ package org.jkiss.dbeaver.registry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.framework.internal.core.BundleHost;
@@ -39,8 +42,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.OverlayImageDescriptor;
@@ -483,11 +484,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    public Object getDriverInstance()
+    public Object getDriverInstance(IRunnableContext runnableContext)
         throws DBException
     {
         if (driverInstance == null) {
-            loadDriver();
+            loadDriver(runnableContext);
         }
         return driverInstance;
     }
@@ -792,13 +793,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    public void loadDriver()
+    public void loadDriver(IRunnableContext runnableContext)
         throws DBException
     {
-        this.loadDriver(false);
+        this.loadDriver(runnableContext, false);
     }
 
-    public void loadDriver(boolean forceReload)
+    public void loadDriver(IRunnableContext runnableContext, boolean forceReload)
         throws DBException
     {
         if (isLoaded && !forceReload) {
@@ -806,7 +807,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         isLoaded = false;
 
-        loadLibraries();
+        loadLibraries(runnableContext);
 
         try {
             if (!isCustomDriverLoader()) {
@@ -837,11 +838,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private void loadLibraries()
+    private void loadLibraries(IRunnableContext runnableContext)
     {
         this.classLoader = null;
 
-        validateFilesPresence();
+        validateFilesPresence(runnableContext);
 
         List<URL> libraryURLs = new ArrayList<URL>();
         // Load libraries
@@ -866,7 +867,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    public void validateFilesPresence()
+    public void validateFilesPresence(final IRunnableContext runnableContext)
     {
         for (DriverFileDescriptor file : files) {
             if (file.isCustom() && file.getFile().exists()) {
@@ -897,33 +898,24 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 if (libNames.length() > 0) libNames.append(", ");
                 libNames.append(lib.getPath());
             }
-            UIUtils.runInUI(null, new Runnable() {
-                @Override
-                public void run()
-                {
-                    if (ConfirmationDialog.showConfirmDialog(
-                        null,
-                        PrefConstants.CONFIRM_DRIVER_DOWNLOAD,
-                        ConfirmationDialog.QUESTION,
-                        getName(),
-                        libNames) == IDialogConstants.YES_ID) {
-                        // Download drivers
-                        downloadLibraryFiles(downloadCandidates);
-                    }
-                }
-            });
+            DownloadConfirm confirm = new DownloadConfirm(libNames);
+            UIUtils.runInUI(null, confirm);
+            if (confirm.proceed) {
+                // Download drivers
+                downloadLibraryFiles(runnableContext, downloadCandidates);
+            }
         }
     }
 
-    private void downloadLibraryFiles(final List<DriverFileDescriptor> files)
+    private void downloadLibraryFiles(IRunnableContext runnableContext, final List<DriverFileDescriptor> files)
     {
-        if (!acceptDriverLicenses()) {
+        if (!acceptDriverLicenses(runnableContext)) {
             return;
         }
 
         for (int i = 0, filesSize = files.size(); i < filesSize; ) {
             DriverFileDescriptor lib = files.get(i);
-            int result = downloadLibraryFile(lib);
+            int result = downloadLibraryFile(runnableContext, lib);
             switch (result) {
                 case IDialogConstants.CANCEL_ID:
                 case IDialogConstants.ABORT_ID:
@@ -938,7 +930,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private boolean acceptDriverLicenses()
+    private boolean acceptDriverLicenses(IRunnableContext runnableContext)
     {
         // User must accept all licenses before actual drivers download
         for (final DriverFileDescriptor file : getFiles()) {
@@ -946,9 +938,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 final File libraryFile = file.getFile();
                 if (!libraryFile.exists()) {
                     try {
-                        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                        runnableContext.run(true, true, new IRunnableWithProgress() {
                             @Override
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 try {
                                     downloadLibraryFile(monitor, file);
@@ -964,13 +956,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 if (libraryFile.exists()) {
                     try {
                         String licenseText = ContentUtils.readFileToString(libraryFile);
-                        if (!AcceptLicenseDialog.acceptLicense(
-                            DBeaverUI.getActiveWorkbenchShell(),
-                            "You have to accept license of '" + this.getFullName() + " ' to continue",
-                            licenseText)) {
+                        LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
+                        UIUtils.runInUI(null, licenceAcceptor);
+                        if (!licenceAcceptor.result) {
                             return false;
                         }
-
                     } catch (IOException e) {
                         log.warn("Can't read license text", e);
                     }
@@ -980,12 +970,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return true;
     }
 
-    private int downloadLibraryFile(final DriverFileDescriptor file)
+    private int downloadLibraryFile(IRunnableContext runnableContext, final DriverFileDescriptor file)
     {
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            runnableContext.run(true, true, new IRunnableWithProgress() {
                 @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
                         downloadLibraryFile(monitor, file);
@@ -1011,7 +1001,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private void downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
+    private void downloadLibraryFile(IProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
     {
         IPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
         String proxyHost = prefs.getString(PrefConstants.UI_PROXY_HOST);
@@ -1500,5 +1490,44 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
+    private class LicenceAcceptor implements Runnable {
+        private boolean result;
+        private String licenseText;
+
+        private LicenceAcceptor(String licenseText)
+        {
+            this.licenseText = licenseText;
+        }
+
+        @Override
+        public void run()
+        {
+            result =  AcceptLicenseDialog.acceptLicense(
+                DBeaverUI.getActiveWorkbenchShell(),
+                "You have to accept license of '" + getFullName() + " ' to continue",
+                licenseText);
+        }
+    }
+
+    private class DownloadConfirm implements Runnable {
+        private final StringBuilder libNames;
+        private boolean proceed;
+
+        public DownloadConfirm(StringBuilder libNames)
+        {
+            this.libNames = libNames;
+        }
+
+        @Override
+        public void run()
+        {
+            proceed = ConfirmationDialog.showConfirmDialog(
+                null,
+                PrefConstants.CONFIRM_DRIVER_DOWNLOAD,
+                ConfirmationDialog.QUESTION,
+                getName(),
+                libNames) == IDialogConstants.YES_ID;
+        }
+    }
 }
 

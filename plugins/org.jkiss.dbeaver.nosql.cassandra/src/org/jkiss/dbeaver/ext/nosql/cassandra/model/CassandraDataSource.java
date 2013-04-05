@@ -57,10 +57,10 @@ public class CassandraDataSource extends JDBCDataSource
     private List<CassandraKeyspace> keyspaces;
     private String selectedKeyspace;
 
-    public CassandraDataSource(DBSDataSourceContainer container)
+    public CassandraDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
     {
-        super(container);
+        super(monitor, container);
         this.dataTypeCache = new JDBCBasicDataTypeCache(container);
     }
 

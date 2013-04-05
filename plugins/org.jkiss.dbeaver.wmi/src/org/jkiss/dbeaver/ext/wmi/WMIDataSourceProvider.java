@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.wmi;
 
+import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.wmi.model.WMIDataSource;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.wmi.service.WMIService;
 
 import java.util.Collection;
@@ -45,9 +47,12 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     }
 
     @Override
-    public Collection<IPropertyDescriptor> getConnectionProperties(DBPDriver driver, DBPConnectionInfo connectionInfo) throws DBException
+    public Collection<IPropertyDescriptor> getConnectionProperties(
+        IRunnableContext runnableContext,
+        DBPDriver driver,
+        DBPConnectionInfo connectionInfo) throws DBException
     {
-        driver.validateFilesPresence();
+        driver.validateFilesPresence(runnableContext);
         return null;
     }
 
@@ -65,7 +70,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     {
         if (!libLoaded) {
             DBPDriver driver = container.getDriver();
-            driver.loadDriver();
+            driver.loadDriver(RuntimeUtils.makeContext(monitor));
             loadNativeLib(driver);
             libLoaded = true;
         }
