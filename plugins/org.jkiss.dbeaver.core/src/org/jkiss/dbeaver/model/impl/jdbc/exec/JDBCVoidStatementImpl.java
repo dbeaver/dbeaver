@@ -699,6 +699,16 @@ public class JDBCVoidStatementImpl implements PreparedStatement {
     }
 
     @Override
+    public void closeOnCompletion() throws SQLException {
+
+    }
+
+    @Override
+    public boolean isCloseOnCompletion() throws SQLException {
+        return false;
+    }
+
+    @Override
     public <T> T unwrap(Class<T> iface)
         throws SQLException
     {

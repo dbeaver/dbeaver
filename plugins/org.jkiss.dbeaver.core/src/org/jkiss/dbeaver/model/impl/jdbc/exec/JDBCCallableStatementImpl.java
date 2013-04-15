@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -829,5 +830,23 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNClob(parameterName, reader);
+    }
+
+    @Override
+    public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException {
+        try {
+            return getOriginal().getObject(parameterIndex, type);
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
+    }
+
+    @Override
+    public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
+        try {
+            return getOriginal().getObject(parameterName, type);
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
     }
 }
