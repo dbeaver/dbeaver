@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -690,6 +691,24 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         throws SQLException
     {
         return getOriginal().isPoolable();
+    }
+
+    @Override
+    public void closeOnCompletion() throws SQLException {
+        try {
+            getOriginal().closeOnCompletion();
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
+    }
+
+    @Override
+    public boolean isCloseOnCompletion() throws SQLException {
+        try {
+            return getOriginal().isCloseOnCompletion();
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -35,11 +36,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.BeanUtils;
 
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 /**
  * Managable connection
@@ -368,8 +369,8 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         throws SQLException
     {
         return createPreparedStatementImpl(
-            getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency),
-            sql);
+                getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency),
+                sql);
     }
 
     @Override
@@ -467,8 +468,8 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         throws SQLException
     {
         return createPreparedStatementImpl(
-            getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
-            sql);
+                getConnection().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
+                sql);
     }
 
     @Override
@@ -476,8 +477,8 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
         throws SQLException
     {
         return createCallableStatementImpl(
-            getConnection().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
-            sql);
+                getConnection().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
+                sql);
     }
 
     @Override
@@ -505,29 +506,46 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public String getSchema() throws SQLException
     {
         try {
-            // Use reflection to read JDBC API 7 function
-            Object schema = BeanUtils.invokeObjectMethod(getConnection(), "getSchema", null, null);
-            if (schema != null) {
-                return schema.toString();
-            }
-        } catch (Exception e) {
-            JDBCUtils.rethrowSQLException(e);
-            // ignore
-            log.debug(e);
+            return getConnection().getSchema();
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
-        return null;
     }
 
     @Override
     public void setSchema(String schema) throws SQLException
     {
         try {
-            // Use reflection to read JDBC API 7 function
-            BeanUtils.invokeObjectMethod(getConnection(), "setSchema", new Class[] {String.class}, new Object[] {schema});
-        } catch (Exception e) {
-            JDBCUtils.rethrowSQLException(e);
-            // ignore
-            log.debug(e);
+            getConnection().setSchema(schema);
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
+    }
+
+    @Override
+    public void abort(Executor executor) throws SQLException {
+        try {
+            getConnection().abort(executor);
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
+    }
+
+    @Override
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        try {
+            getConnection().setNetworkTimeout(executor, milliseconds);
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
+    }
+
+    @Override
+    public int getNetworkTimeout() throws SQLException {
+        try {
+            return getConnection().getNetworkTimeout();
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
 
