@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
@@ -1602,6 +1603,24 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         throws SQLException
     {
         original.updateNClob(columnLabel, reader);
+    }
+
+    @Override
+    public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+        try {
+            return original.getObject(columnIndex, type);
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
+    }
+
+    @Override
+    public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+        try {
+            return original.getObject(columnLabel, type);
+        } catch (AbstractMethodError e) {
+            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
+        }
     }
 
     @Override
