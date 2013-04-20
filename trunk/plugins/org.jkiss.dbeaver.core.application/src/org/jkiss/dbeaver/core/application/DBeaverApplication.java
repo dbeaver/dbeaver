@@ -68,6 +68,7 @@ public class DBeaverApplication implements IApplication
             e.printStackTrace();
         }
 */
+        System.out.println("DBeaver is starting"); //$NON-NLS-1$
         System.out.println("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         System.out.println("Workspace path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         PlatformUI.getPreferenceStore().setDefault(
@@ -104,6 +105,7 @@ public class DBeaverApplication implements IApplication
     @Override
     public void stop()
     {
+        System.out.println("DBeaver is stopping"); //$NON-NLS-1$
         final IWorkbench workbench = PlatformUI.getWorkbench();
         if (workbench == null)
             return;
