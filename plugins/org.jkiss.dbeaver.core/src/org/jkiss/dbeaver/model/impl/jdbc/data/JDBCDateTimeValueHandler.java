@@ -245,8 +245,18 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
             try {
                 return getFormatter(type).parseValue(strValue);
             } catch (ParseException e) {
-                log.warn("Can't parse string value [" + strValue + "] to date/time value", e);
-                return null;
+                // Try to parse with standard date/time formats
+
+                //DateFormat.get
+                try {
+                    // Try to parse as java date
+                    @SuppressWarnings("deprecation")
+                    Date result = new Date(strValue);
+                    return result;
+                } catch (Exception e1) {
+                    log.warn("Can't parse string value [" + strValue + "] to date/time value", e);
+                    return null;
+                }
             }
         } else {
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
