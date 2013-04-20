@@ -2546,7 +2546,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         viewer.getColumnValueFromClipboard(column),
                         format);
                 } catch (DBCException e) {
-                    log.error("Error copying from clipboard", e);
+                    log.debug("Error copying from clipboard", e);
                     return null;
                 }
             }

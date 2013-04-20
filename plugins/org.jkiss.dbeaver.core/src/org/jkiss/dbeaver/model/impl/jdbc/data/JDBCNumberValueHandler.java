@@ -92,9 +92,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     {
         Number value;
         switch (type.getTypeID()) {
-            case java.sql.Types.BIGINT:
-                value = resultSet.getLong(index);
-                break;
             case java.sql.Types.DOUBLE:
             case java.sql.Types.REAL:
                 value = resultSet.getDouble(index);
@@ -152,6 +149,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             Number number = (Number) value;
             switch (paramType.getTypeID()) {
                 case java.sql.Types.BIGINT:
+                    if (number instanceof BigInteger) {
+                        statement.setBigDecimal(paramIndex, new BigDecimal((BigInteger) number));
+                    } else {
+                        statement.setLong(paramIndex, number.longValue());
+                    }
                     statement.setLong(paramIndex, number.longValue());
                     break;
                 case java.sql.Types.FLOAT:
@@ -331,7 +333,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             } else {
                 switch (type.getTypeID()) {
                     case java.sql.Types.BIGINT:
-                        return Long.valueOf(text);
+                        try {
+                            return Long.parseLong(text);
+                        } catch (NumberFormatException e) {
+                            return new BigInteger(text);
+                        }
                     case java.sql.Types.DECIMAL:
                     case java.sql.Types.DOUBLE:
                     case java.sql.Types.REAL:
