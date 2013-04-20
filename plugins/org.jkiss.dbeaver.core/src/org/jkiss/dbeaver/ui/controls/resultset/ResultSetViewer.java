@@ -2605,6 +2605,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             } else {
                 filterColumn.setCondition(stringValue);
             }
+            updateFiltersText();
             refresh();
         }
     }
