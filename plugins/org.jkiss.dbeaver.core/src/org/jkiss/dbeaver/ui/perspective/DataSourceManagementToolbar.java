@@ -450,6 +450,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     {
         if (databaseCombo != null && !databaseCombo.isDisposed()) {
             final DBSDataSourceContainer dsContainer = getDataSourceContainer();
+            databaseCombo.setEnabled(dsContainer != null);
             if (dsContainer != null && dsContainer.isConnected()) {
                 final DBPDataSource dataSource = dsContainer.getDataSource();
 
