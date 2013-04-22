@@ -992,12 +992,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             if (file.getType() == DBPDriverFileType.license) {
                 return IDialogConstants.OK_ID;
             }
-            DownloadErrorDialog dialog = new DownloadErrorDialog(
-                null,
-                file.getPath(),
-                "Driver file download failed.\nDo you want to retry?",
-                e.getTargetException());
-            return dialog.open();
+            DownloadRetry retryConfirm = new DownloadRetry(file, e.getTargetException());
+            UIUtils.runInUI(null, retryConfirm);
+            return retryConfirm.result;
         }
     }
 
@@ -1527,6 +1524,29 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 ConfirmationDialog.QUESTION,
                 getName(),
                 libNames) == IDialogConstants.YES_ID;
+        }
+    }
+
+    private class DownloadRetry implements Runnable {
+        private final DriverFileDescriptor file;
+        private final Throwable error;
+        private int result;
+
+        public DownloadRetry(DriverFileDescriptor file, Throwable error)
+        {
+            this.file = file;
+            this.error = error;
+        }
+
+        @Override
+        public void run()
+        {
+            DownloadErrorDialog dialog = new DownloadErrorDialog(
+                null,
+                file.getPath(),
+                "Driver file download failed.\nDo you want to retry?",
+                error);
+            result = dialog.open();
         }
     }
 }
