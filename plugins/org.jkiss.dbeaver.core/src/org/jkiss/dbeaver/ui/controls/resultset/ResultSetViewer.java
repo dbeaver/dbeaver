@@ -2625,6 +2625,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             DBQCondition filterColumn = filter.getFilterColumn(column.getAttributeName());
             if (filterColumn != null) {
                 filter.removeFilterColumn(filterColumn);
+                updateFiltersText();
             }
             refresh();
         }
