@@ -200,7 +200,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
         if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
             Calendar cal = Calendar.getInstance();
             cal.setTime((Date) value);
-            final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY) + 1);
+            final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY));
             final String minutes = getTwoDigitValue(cal.get(Calendar.MINUTE));
             final String seconds = getTwoDigitValue(cal.get(Calendar.SECOND));
             final String year = String.valueOf(cal.get(Calendar.YEAR));
@@ -254,7 +254,7 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
                     Date result = new Date(strValue);
                     return result;
                 } catch (Exception e1) {
-                    log.warn("Can't parse string value [" + strValue + "] to date/time value", e);
+                    log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
                     return null;
                 }
             }
