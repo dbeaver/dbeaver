@@ -52,7 +52,7 @@ public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
             toolTip.append(node.getNodeType());
             toolTip.append(": ");
             toolTip.append(node.getNodeName());
-            toolTip.append("\n");
+            toolTip.append(" \n");
             if (node instanceof DBNDataSource) {
                 break;
             }
