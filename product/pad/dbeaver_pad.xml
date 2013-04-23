@@ -49,7 +49,12 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        -
+        - MS Access driver added (UCanAccess)
+        - Drivers download fixed
+        - Projects import/export fixed
+        - Big Integer values handling fixed
+        - Oracle TIMESTAMP formatting fixed (filters)
+        - ResultSet UI improvements
     </Program_Change_Info>
     <Program_System_Requirements>Java 1.6 or higher</Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
