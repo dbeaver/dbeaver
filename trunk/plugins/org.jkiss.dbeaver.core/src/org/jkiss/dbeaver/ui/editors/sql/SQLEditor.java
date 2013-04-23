@@ -34,10 +34,9 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.jkiss.dbeaver.DBException;
@@ -240,11 +239,27 @@ public class SQLEditor extends SQLEditorBase
                 }
             });
             resultTabs.setSimple(true);
+            //resultTabs.getItem(0).addListener();
 
             resultsView = new ResultSetViewer(resultTabs, getSite(), this);
 
             planView = new ExplainPlanViewer(this, resultTabs, this);
             final SQLLogPanel logViewer = new SQLLogPanel(resultTabs, this);
+
+            resultTabs.addListener(SWT.MouseDoubleClick, new Listener() {
+                @Override
+                public void handleEvent(Event event)
+                {
+                    CTabItem selectedItem = resultTabs.getItem(new Point(event.getBounds().x, event.getBounds().y));
+                    if (selectedItem != null && selectedItem  == resultTabs.getSelection()) {
+                        if (sashForm.getMaximizedControl() == null) {
+                            sashForm.setMaximizedControl(resultTabs);
+                        } else {
+                            sashForm.setMaximizedControl(null);
+                        }
+                    }
+                }
+            });
 
             // Create tabs
             CTabItem item = new CTabItem(resultTabs, SWT.NONE, PAGE_INDEX_RESULTSET);
