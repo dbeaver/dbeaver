@@ -24,8 +24,11 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -129,6 +132,12 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     @Override
     public Color getBackground(Object element)
     {
+        if (element instanceof DBNDataSource) {
+            DataSourceDescriptor ds = ((DBNDatabaseNode) element).getDataSourceContainer();
+            if (ds != null) {
+                return ds.getConnectionInfo().getColor();
+            }
+        }
         return null;
     }
 
@@ -136,4 +145,5 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     {
         return element instanceof DBNNode && ((DBNNode) element).isFiltered();
     }
+
 }

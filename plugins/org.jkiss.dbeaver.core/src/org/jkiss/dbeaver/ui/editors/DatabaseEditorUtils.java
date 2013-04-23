@@ -34,7 +34,7 @@ public class DatabaseEditorUtils {
             return;
         }
         rootComposite.setBackground(
-            dataSource.getContainer().getConnectionInfo().getConnectionType().getColor());
+            dataSource.getContainer().getConnectionInfo().getColor());
     }
 
 }
