@@ -52,7 +52,12 @@
             <date>24.04.2013</date>
 
             <release-notes>
-                -
+                - MS Access driver added (UCanAccess)
+                - Drivers download fixed
+                - Projects import/export fixed
+                - Big Integer values handling fixed
+                - Oracle TIMESTAMP formatting fixed (filters)
+                - ResultSet UI improvements
             </release-notes>
         </version>
 
