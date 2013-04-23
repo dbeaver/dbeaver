@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -42,6 +43,7 @@ public class DBPConnectionInfo implements DBPObject
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
     private final List<DBWHandlerConfiguration> handlers;
     private DBPConnectionType connectionType;
+    private Color connectionColor;
 
     public DBPConnectionInfo()
     {
@@ -220,4 +222,18 @@ public class DBPConnectionInfo implements DBPObject
         this.connectionType = connectionType;
     }
 
+    public Color getColor()
+    {
+        return connectionColor != null ? connectionColor : connectionType.getColor();
+    }
+
+    public Color getConnectionColor()
+    {
+        return connectionColor != null ? connectionColor : connectionType.getColor();
+    }
+
+    public void setConnectionColor(Color color)
+    {
+        this.connectionColor = color;
+    }
 }
