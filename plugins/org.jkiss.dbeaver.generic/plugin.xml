@@ -476,6 +476,20 @@
                     <file type="license" path="drivers/csvjdbc/LICENSE.txt" url="*"/>
                     <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0.12.jar" url="*"/>
                 </driver>
+                <driver
+                    id="msaccess_ucanaccess"
+                    label="UCanAccess"
+                    category="MS Access"
+                    class="net.ucanaccess.jdbc.UcanaccessDriver"
+                    sampleURL="jdbc:ucanaccess://{file}"
+                    webURL="http://ucanaccess.sourceforge.net/site.html"
+                    description="Microsoft Access driver">
+                    <file type="license" path="drivers/ucanaccess/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/ucanaccess/ucanaccess-0.1.1.jar" url="*"/>
+                    <file type="jar" path="drivers/ucanaccess/commons-lang-2.4.jar" url="*"/>
+                    <file type="jar" path="drivers/ucanaccess/hsqldb.jar" url="*"/>
+                    <file type="jar" path="drivers/ucanaccess/jackcess-1.2.10.jar" url="*"/>
+                </driver>
             </drivers>
 
             <views>

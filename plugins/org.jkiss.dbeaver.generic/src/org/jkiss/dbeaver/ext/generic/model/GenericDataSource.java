@@ -43,6 +43,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -286,8 +287,11 @@ public class GenericDataSource extends JDBCDataSource
                     } finally {
                         dbResult.close();
                     }
+                } catch (SQLFeatureNotSupportedException e) {
+                    // Just skip it
                 } catch (SQLException e) {
-                    // Error reading catalogs - just skip em
+                    // Error reading catalogs - just warn about it
+                    log.warn(e);
                 }
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<GenericCatalog>();
@@ -389,6 +393,10 @@ public class GenericDataSource extends JDBCDataSource
                 dbResult.close();
             }
             return tmpSchemas;
+        } catch (SQLFeatureNotSupportedException e) {
+            // Schemas are not supported
+            log.debug(e);
+            return null;
         } catch (Exception ex) {
             // Schemas do not supported - jsut ignore this error
             log.warn("Could not read schema list", ex);
