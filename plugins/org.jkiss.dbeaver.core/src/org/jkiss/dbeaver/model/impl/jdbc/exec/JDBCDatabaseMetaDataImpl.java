@@ -243,7 +243,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
             return makeResultSet(
                 getOriginal().getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern),
                 "Load pseudo columns", catalog, schemaPattern, tableNamePattern, columnNamePattern);
-        } catch (AbstractMethodError e) {
+        } catch (LinkageError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
@@ -252,7 +252,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     public boolean generatedKeyAlwaysReturned() throws SQLException {
         try {
             return getOriginal().generatedKeyAlwaysReturned();
-        } catch (AbstractMethodError e) {
+        } catch (LinkageError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
