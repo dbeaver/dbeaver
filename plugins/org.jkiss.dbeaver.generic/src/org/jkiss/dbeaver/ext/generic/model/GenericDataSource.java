@@ -287,6 +287,8 @@ public class GenericDataSource extends JDBCDataSource
                     } finally {
                         dbResult.close();
                     }
+                } catch (UnsupportedOperationException e) {
+                    // Just skip it
                 } catch (SQLFeatureNotSupportedException e) {
                     // Just skip it
                 } catch (SQLException e) {
@@ -393,6 +395,10 @@ public class GenericDataSource extends JDBCDataSource
                 dbResult.close();
             }
             return tmpSchemas;
+        } catch (UnsupportedOperationException e) {
+            // Schemas are not supported
+            log.debug(e);
+            return null;
         } catch (SQLFeatureNotSupportedException e) {
             // Schemas are not supported
             log.debug(e);
