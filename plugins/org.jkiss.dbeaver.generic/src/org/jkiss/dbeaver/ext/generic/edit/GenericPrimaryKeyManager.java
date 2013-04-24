@@ -40,7 +40,7 @@ import org.jkiss.utils.CommonUtils;
 public class GenericPrimaryKeyManager extends JDBCConstraintManager<GenericPrimaryKey, GenericTable> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, GenericPrimaryKey> getObjectsCache(GenericPrimaryKey object)
+    public DBSObjectCache<? extends DBSObject, GenericPrimaryKey> getObjectsCache(GenericPrimaryKey object)
     {
         return object.getParentObject().getContainer().getPrimaryKeysCache();
     }

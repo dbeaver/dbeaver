@@ -42,7 +42,7 @@ import java.util.Collections;
 public class GenericIndexManager extends JDBCIndexManager<GenericTableIndex, GenericTable> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, GenericTableIndex> getObjectsCache(GenericTableIndex object)
+    public DBSObjectCache<? extends DBSObject, GenericTableIndex> getObjectsCache(GenericTableIndex object)
     {
         return object.getTable().getContainer().getIndexCache();
     }

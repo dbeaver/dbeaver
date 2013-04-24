@@ -42,7 +42,7 @@ import java.util.List;
 public class OraclePackageManager extends JDBCObjectEditor<OraclePackage, OracleSchema> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OraclePackage> getObjectsCache(OraclePackage object)
+    public DBSObjectCache<? extends DBSObject, OraclePackage> getObjectsCache(OraclePackage object)
     {
         return object.getSchema().packageCache;
     }

@@ -54,14 +54,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     public static final String PATTERN_ITEM_INDEX_SHORT = "%INDEX_SHORT%"; //$NON-NLS-1$
     public static final String PATTERN_ITEM_CONSTRAINT = "%CONSTRAINT%"; //$NON-NLS-1$
 
-    /**
-     * Provides access to objects cache.
-     * Editor will reflect object create/delete in commands model update method
-     * @param object contained object
-     * @return objects cache or null
-     */
-    protected abstract DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object);
-
     @Override
     public final DBEPropertyHandler<OBJECT_TYPE> makePropertyHandler(OBJECT_TYPE object, IPropertyDescriptor property)
     {
@@ -78,7 +70,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
 
         final ObjectCreateCommand createCommand = makeCreateCommand(newObject);
         commandContext.getUserParams().put(newObject, createCommand);
-        commandContext.addCommand(createCommand, new CreateObjectReflector<OBJECT_TYPE>(), true);
+        commandContext.addCommand(createCommand, new CreateObjectReflector<OBJECT_TYPE>(this), true);
 
         return newObject;
     }
@@ -88,7 +80,7 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     {
         commandContext.addCommand(
             new ObjectDeleteCommand(object, CoreMessages.model_jdbc_delete_object),
-            new DeleteObjectReflector<OBJECT_TYPE>(), true);
+            new DeleteObjectReflector<OBJECT_TYPE>(this), true);
     }
 
     public ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)
@@ -248,10 +240,6 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
         {
             super.updateModel();
             OBJECT_TYPE object = getObject();
-            DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = getObjectsCache(object);
-            if (cache != null) {
-                cache.cacheObject(object);
-            }
             if (!object.isPersisted()) {
                 object.setPersisted(true);
                 DBUtils.fireObjectUpdate(object);

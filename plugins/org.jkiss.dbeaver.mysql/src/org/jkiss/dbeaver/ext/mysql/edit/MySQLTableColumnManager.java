@@ -41,7 +41,7 @@ import java.sql.Types;
 public class MySQLTableColumnManager extends JDBCTableColumnManager<MySQLTableColumn, MySQLTableBase> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, MySQLTableColumn> getObjectsCache(MySQLTableColumn object)
+    public DBSObjectCache<? extends DBSObject, MySQLTableColumn> getObjectsCache(MySQLTableColumn object)
     {
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }

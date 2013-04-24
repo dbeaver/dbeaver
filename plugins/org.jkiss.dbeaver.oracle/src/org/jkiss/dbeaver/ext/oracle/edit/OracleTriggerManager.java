@@ -58,7 +58,7 @@ public class OracleTriggerManager extends JDBCObjectEditor<OracleTrigger, Oracle
     }
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleTrigger> getObjectsCache(OracleTrigger object)
+    public DBSObjectCache<? extends DBSObject, OracleTrigger> getObjectsCache(OracleTrigger object)
     {
         return object.getSchema().triggerCache;
     }

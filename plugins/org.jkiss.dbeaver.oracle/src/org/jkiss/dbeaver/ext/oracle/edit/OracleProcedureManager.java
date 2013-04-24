@@ -40,7 +40,7 @@ import java.util.List;
 public class OracleProcedureManager extends JDBCObjectEditor<OracleProcedureStandalone, OracleSchema> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleProcedureStandalone> getObjectsCache(OracleProcedureStandalone object)
+    public DBSObjectCache<? extends DBSObject, OracleProcedureStandalone> getObjectsCache(OracleProcedureStandalone object)
     {
         return object.getSchema().proceduresCache;
     }

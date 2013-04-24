@@ -39,7 +39,7 @@ import java.util.Collections;
 public class MySQLIndexManager extends JDBCIndexManager<MySQLTableIndex, MySQLTable> {
 
     @Override
-    protected DBSObjectCache<MySQLCatalog, MySQLTableIndex> getObjectsCache(MySQLTableIndex object)
+    public DBSObjectCache<MySQLCatalog, MySQLTableIndex> getObjectsCache(MySQLTableIndex object)
     {
         return object.getTable().getContainer().getIndexCache();
     }

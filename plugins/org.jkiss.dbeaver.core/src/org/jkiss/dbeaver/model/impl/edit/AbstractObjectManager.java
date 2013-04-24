@@ -23,7 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
@@ -33,11 +35,38 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
 
     protected static final Log log = LogFactory.getLog(AbstractObjectManager.class);
 
-    public static class CreateObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
+    public static abstract class AbstractObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
+        private final DBEObjectMaker<OBJECT_TYPE, ? extends DBSObject> objectMaker;
+        protected AbstractObjectReflector(DBEObjectMaker<OBJECT_TYPE, ? extends DBSObject> objectMaker)
+        {
+            this.objectMaker = objectMaker;
+        }
+        protected void cacheModelObject(OBJECT_TYPE object)
+        {
+            DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = objectMaker.getObjectsCache(object);
+            if (cache != null) {
+                cache.cacheObject(object);
+            }
+        }
+        protected void removeModelObject(OBJECT_TYPE object)
+        {
+            DBSObjectCache<? extends DBSObject, OBJECT_TYPE> cache = objectMaker.getObjectsCache(object);
+            if (cache != null) {
+                cache.removeObject(object);
+            }
+        }
+    }
+
+    public static class CreateObjectReflector<OBJECT_TYPE extends DBSObject> extends AbstractObjectReflector<OBJECT_TYPE> {
+        public CreateObjectReflector(DBEObjectMaker<OBJECT_TYPE, ? extends DBSObject> objectMaker)
+        {
+            super(objectMaker);
+        }
 
         @Override
         public void redoCommand(DBECommand<OBJECT_TYPE> command)
         {
+            cacheModelObject(command.getObject());
             DBUtils.fireObjectAdd(command.getObject());
         }
 
@@ -45,20 +74,27 @@ public abstract class AbstractObjectManager<OBJECT_TYPE extends DBSObject> imple
         public void undoCommand(DBECommand<OBJECT_TYPE> command)
         {
             DBUtils.fireObjectRemove(command.getObject());
+            removeModelObject(command.getObject());
         }
     }
 
-    public static class DeleteObjectReflector<OBJECT_TYPE extends DBSObject> implements DBECommandReflector<OBJECT_TYPE, DBECommand<OBJECT_TYPE>> {
+    public static class DeleteObjectReflector<OBJECT_TYPE extends DBSObject> extends AbstractObjectReflector<OBJECT_TYPE> {
+        public DeleteObjectReflector(DBEObjectMaker<OBJECT_TYPE, ? extends DBSObject> objectMaker)
+        {
+            super(objectMaker);
+        }
 
         @Override
         public void redoCommand(DBECommand<OBJECT_TYPE> command)
         {
             DBUtils.fireObjectRemove(command.getObject());
+            removeModelObject(command.getObject());
         }
 
         @Override
         public void undoCommand(DBECommand<OBJECT_TYPE> command)
         {
+            cacheModelObject(command.getObject());
             DBUtils.fireObjectAdd(command.getObject());
         }
 

@@ -43,7 +43,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
     };
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, GenericTable> getObjectsCache(GenericTable object)
+    public DBSObjectCache<? extends DBSObject, GenericTable> getObjectsCache(GenericTable object)
     {
         return object.getContainer().getTableCache();
     }

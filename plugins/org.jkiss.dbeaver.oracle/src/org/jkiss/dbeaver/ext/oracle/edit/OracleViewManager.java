@@ -59,7 +59,7 @@ public class OracleViewManager extends JDBCObjectEditor<OracleView, OracleSchema
     }
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleView> getObjectsCache(OracleView object)
+    public DBSObjectCache<? extends DBSObject, OracleView> getObjectsCache(OracleView object)
     {
         return (DBSObjectCache) object.getSchema().tableCache;
     }
