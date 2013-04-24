@@ -697,7 +697,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     public void closeOnCompletion() throws SQLException {
         try {
             getOriginal().closeOnCompletion();
-        } catch (AbstractMethodError e) {
+        } catch (LinkageError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
@@ -706,7 +706,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     public boolean isCloseOnCompletion() throws SQLException {
         try {
             return getOriginal().isCloseOnCompletion();
-        } catch (AbstractMethodError e) {
+        } catch (LinkageError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }

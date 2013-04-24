@@ -281,7 +281,7 @@ public class JDBCUtils {
         } catch (SQLException e) {
             // Seems to be not supported
             log.debug(e.getMessage());
-        } catch (AbstractMethodError e) {
+        } catch (LinkageError e) {
             // Seems to be legacy JDBC
             log.debug(e.getMessage());
         } catch (UnsupportedOperationException e) {
