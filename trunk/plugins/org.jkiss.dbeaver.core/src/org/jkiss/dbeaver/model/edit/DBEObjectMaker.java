@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.model.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
@@ -34,6 +35,14 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     public static final long FEATURE_EDITOR_ON_CREATE = 4;
 
     long getMakerOptions();
+
+    /**
+     * Provides access to objects cache.
+     * Editor will reflect object create/delete in commands model update method
+     * @param object contained object
+     * @return objects cache or null
+     */
+    DBSObjectCache<? extends DBSObject, OBJECT_TYPE> getObjectsCache(OBJECT_TYPE object);
 
     /**
      * Creates new object and sets it as manager's object.

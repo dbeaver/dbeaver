@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 public class MySQLConstraintManager extends JDBCConstraintManager<MySQLTableConstraint, MySQLTable> {
 
     @Override
-    protected DBSObjectCache<MySQLCatalog, MySQLTableConstraint> getObjectsCache(MySQLTableConstraint object)
+    public DBSObjectCache<MySQLCatalog, MySQLTableConstraint> getObjectsCache(MySQLTableConstraint object)
     {
         return object.getTable().getContainer().getConstraintCache();
     }

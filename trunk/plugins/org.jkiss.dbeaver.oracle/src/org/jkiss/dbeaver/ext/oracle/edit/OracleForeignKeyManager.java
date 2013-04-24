@@ -38,7 +38,7 @@ public class OracleForeignKeyManager extends JDBCForeignKeyManager<OracleTableFo
 
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleTableForeignKey> getObjectsCache(OracleTableForeignKey object)
+    public DBSObjectCache<? extends DBSObject, OracleTableForeignKey> getObjectsCache(OracleTableForeignKey object)
     {
         return object.getParentObject().getSchema().foreignKeyCache;
     }

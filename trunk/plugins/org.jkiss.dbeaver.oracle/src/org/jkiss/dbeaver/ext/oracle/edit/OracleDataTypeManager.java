@@ -42,7 +42,7 @@ import java.util.List;
 public class OracleDataTypeManager extends JDBCObjectEditor<OracleDataType, OracleSchema> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleDataType> getObjectsCache(OracleDataType object)
+    public DBSObjectCache<? extends DBSObject, OracleDataType> getObjectsCache(OracleDataType object)
     {
         return object.getSchema().dataTypeCache;
     }

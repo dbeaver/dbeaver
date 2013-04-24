@@ -54,7 +54,7 @@ public class OracleSchemaManager extends JDBCObjectEditor<OracleSchema, OracleDa
     }
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleSchema> getObjectsCache(OracleSchema object)
+    public DBSObjectCache<? extends DBSObject, OracleSchema> getObjectsCache(OracleSchema object)
     {
         return object.getDataSource().schemaCache;
     }

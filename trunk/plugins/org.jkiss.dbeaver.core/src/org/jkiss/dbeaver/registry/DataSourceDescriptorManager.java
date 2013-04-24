@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
@@ -39,6 +41,12 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
     public long getMakerOptions()
     {
         return 0;
+    }
+
+    @Override
+    public DBSObjectCache<? extends DBSObject, DataSourceDescriptor> getObjectsCache(DataSourceDescriptor object)
+    {
+        return null;
     }
 
     @Override

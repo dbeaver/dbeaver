@@ -39,7 +39,7 @@ import java.sql.Types;
 public class GenericTableColumnManager extends JDBCTableColumnManager<GenericTableColumn, GenericTable> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, GenericTableColumn> getObjectsCache(GenericTableColumn object)
+    public DBSObjectCache<? extends DBSObject, GenericTableColumn> getObjectsCache(GenericTableColumn object)
     {
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }

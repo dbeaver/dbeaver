@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 public class MySQLProcedureManager extends JDBCObjectEditor<MySQLProcedure, MySQLCatalog> {
 
     @Override
-    protected DBSObjectCache<MySQLCatalog, MySQLProcedure> getObjectsCache(MySQLProcedure object)
+    public DBSObjectCache<MySQLCatalog, MySQLProcedure> getObjectsCache(MySQLProcedure object)
     {
         return object.getContainer().getProceduresCache();
     }

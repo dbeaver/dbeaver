@@ -28,10 +28,12 @@ import org.jkiss.dbeaver.model.edit.DBECommandFilter;
 import org.jkiss.dbeaver.model.edit.DBECommandQueue;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.DatabaseObjectScriptCommand;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
 
@@ -47,6 +49,12 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
     }
 
     @Override
+    public DBSObjectCache<? extends DBSObject, MySQLUser> getObjectsCache(MySQLUser object)
+    {
+        return null;
+    }
+
+    @Override
     public MySQLUser createNewObject(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, MySQLDataSource parent, Object copyFrom)
     {
         MySQLUser newUser = new MySQLUser(parent, null);
@@ -59,7 +67,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
             newUser.setMaxConnections(tplUser.getMaxConnections());
             newUser.setMaxUserConnections(tplUser.getMaxUserConnections());
         }
-        commandContext.addCommand(new CommandCreateUser(newUser), new CreateObjectReflector<MySQLUser>(), true);
+        commandContext.addCommand(new CommandCreateUser(newUser), new CreateObjectReflector<MySQLUser>(this), true);
 
         return newUser;
     }
@@ -67,7 +75,7 @@ public class MySQLUserManager extends JDBCObjectManager<MySQLUser> implements DB
     @Override
     public void deleteObject(DBECommandContext commandContext, MySQLUser user, Map<String, Object> options)
     {
-        commandContext.addCommand(new CommandDropUser(user), new DeleteObjectReflector<MySQLUser>(), true);
+        commandContext.addCommand(new CommandDropUser(user), new DeleteObjectReflector<MySQLUser>(this), true);
     }
 
     @Override

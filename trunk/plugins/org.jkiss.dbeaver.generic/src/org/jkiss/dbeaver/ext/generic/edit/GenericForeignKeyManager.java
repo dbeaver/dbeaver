@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 public class GenericForeignKeyManager extends JDBCForeignKeyManager<GenericTableForeignKey, GenericTable> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, GenericTableForeignKey> getObjectsCache(GenericTableForeignKey object)
+    public DBSObjectCache<? extends DBSObject, GenericTableForeignKey> getObjectsCache(GenericTableForeignKey object)
     {
         return object.getParentObject().getContainer().getForeignKeysCache();
     }

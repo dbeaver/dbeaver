@@ -44,7 +44,7 @@ public class MySQLCatalogManager extends JDBCObjectEditor<MySQLCatalog, MySQLDat
     }
 
     @Override
-    protected DBSObjectCache<MySQLDataSource, MySQLCatalog> getObjectsCache(MySQLCatalog object)
+    public DBSObjectCache<MySQLDataSource, MySQLCatalog> getObjectsCache(MySQLCatalog object)
     {
         return object.getDataSource().getCatalogCache();
     }

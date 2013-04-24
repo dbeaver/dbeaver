@@ -38,7 +38,7 @@ import org.jkiss.utils.CommonUtils;
 public class OracleConstraintManager extends JDBCConstraintManager<OracleTableConstraint, OracleTableBase> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleTableConstraint> getObjectsCache(OracleTableConstraint object)
+    public DBSObjectCache<? extends DBSObject, OracleTableConstraint> getObjectsCache(OracleTableConstraint object)
     {
         return object.getParentObject().getSchema().constraintCache;
     }
