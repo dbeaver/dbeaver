@@ -92,6 +92,9 @@ public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
     @Override
     void close();
 
+    ////////////////////////////////////////////////////////////////////////////
+    // JDBC 1.7
+
     @Override
     String getSchema() throws SQLException;
 
