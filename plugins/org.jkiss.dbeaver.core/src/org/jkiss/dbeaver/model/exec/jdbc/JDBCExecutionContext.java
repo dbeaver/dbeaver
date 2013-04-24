@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatementType;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.Executor;
 
 /**
  * JDBC connection
@@ -91,4 +92,18 @@ public interface JDBCExecutionContext extends DBCExecutionContext, Connection {
     @Override
     void close();
 
+    @Override
+    String getSchema() throws SQLException;
+
+    @Override
+    void setSchema(String schema) throws SQLException;
+
+    @Override
+    void abort(Executor executor) throws SQLException;
+
+    @Override
+    void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException;
+
+    @Override
+    int getNetworkTimeout() throws SQLException;
 }
