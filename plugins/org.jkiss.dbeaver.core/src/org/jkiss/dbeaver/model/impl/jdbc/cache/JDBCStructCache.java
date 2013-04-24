@@ -168,6 +168,13 @@ public abstract class JDBCStructCache<
     }
 
     @Override
+    public void removeObject(OBJECT object)
+    {
+        super.removeObject(object);
+        clearChildrenCache(object);
+    }
+
+    @Override
     public void clearCache()
     {
         this.clearChildrenCache(null);
