@@ -132,10 +132,13 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
                         scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                         updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                 }
-                catch (LinkageError e) {
+                catch (SQLFeatureNotSupportedException e) {
                     return prepareCall(sqlQuery);
                 }
                 catch (UnsupportedOperationException e) {
+                    return prepareCall(sqlQuery);
+                }
+                catch (IncompatibleClassChangeError e) {
                     return prepareCall(sqlQuery);
                 }
             } else if (type == DBCStatementType.SCRIPT) {
@@ -156,13 +159,13 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
                         sqlQuery,
                         Statement.RETURN_GENERATED_KEYS);
                 }
-                catch (LinkageError e) {
+                catch (SQLFeatureNotSupportedException e) {
                     return prepareStatement(sqlQuery);
                 }
                 catch (UnsupportedOperationException e) {
                     return prepareStatement(sqlQuery);
                 }
-                catch (SQLException e) {
+                catch (IncompatibleClassChangeError e) {
                     return prepareStatement(sqlQuery);
                 }
             } else {
@@ -507,7 +510,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     {
         try {
             return getConnection().getSchema();
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
@@ -517,7 +520,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     {
         try {
             getConnection().setSchema(schema);
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
@@ -526,7 +529,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public void abort(Executor executor) throws SQLException {
         try {
             getConnection().abort(executor);
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
@@ -535,7 +538,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
         try {
             getConnection().setNetworkTimeout(executor, milliseconds);
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
@@ -544,7 +547,7 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     public int getNetworkTimeout() throws SQLException {
         try {
             return getConnection().getNetworkTimeout();
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
