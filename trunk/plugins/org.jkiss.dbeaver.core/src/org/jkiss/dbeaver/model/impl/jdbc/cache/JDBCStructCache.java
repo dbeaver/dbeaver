@@ -181,10 +181,24 @@ public abstract class JDBCStructCache<
         super.clearCache();
     }
 
+    /**
+     * Returns cache for child objects. Creates cache i it doesn't exists
+     * @param forObject parent object
+     * @return cache
+     */
     public DBSObjectCache<OBJECT, CHILD> getChildrenCache(final OBJECT forObject)
     {
         synchronized (childrenCache) {
-            return childrenCache.get(forObject);
+            SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
+            if (nestedCache == null) {
+                // Create new empty children cache
+                // This may happen only when invoked for newly created object (e.g. when we create new column
+                // in a new created table)
+                nestedCache = new SimpleObjectCache<OBJECT, CHILD>();
+                nestedCache.setCache(new ArrayList<CHILD>());
+                childrenCache.put(forObject, nestedCache);
+            }
+            return nestedCache;
         }
     }
 
