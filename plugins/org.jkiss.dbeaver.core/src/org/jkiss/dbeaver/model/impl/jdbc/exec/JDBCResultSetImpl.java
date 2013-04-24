@@ -1609,7 +1609,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
         try {
             return original.getObject(columnIndex, type);
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
@@ -1618,7 +1618,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
         try {
             return original.getObject(columnLabel, type);
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }

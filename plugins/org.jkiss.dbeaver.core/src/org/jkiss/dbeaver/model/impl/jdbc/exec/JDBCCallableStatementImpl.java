@@ -836,7 +836,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException {
         try {
             return getOriginal().getObject(parameterIndex, type);
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
@@ -845,7 +845,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
         try {
             return getOriginal().getObject(parameterName, type);
-        } catch (LinkageError e) {
+        } catch (IncompatibleClassChangeError e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
         }
     }
