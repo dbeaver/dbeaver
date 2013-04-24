@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 public class MySQLViewManager extends JDBCObjectEditor<MySQLTableBase, MySQLCatalog> {
 
     @Override
-    protected DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
+    public DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
     {
         return object.getContainer().getTableCache();
     }

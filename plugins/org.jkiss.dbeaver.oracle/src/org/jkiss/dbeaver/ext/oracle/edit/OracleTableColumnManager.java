@@ -44,7 +44,7 @@ import java.util.List;
 public class OracleTableColumnManager extends JDBCTableColumnManager<OracleTableColumn, OracleTableBase> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleTableColumn> getObjectsCache(OracleTableColumn object)
+    public DBSObjectCache<? extends DBSObject, OracleTableColumn> getObjectsCache(OracleTableColumn object)
     {
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }

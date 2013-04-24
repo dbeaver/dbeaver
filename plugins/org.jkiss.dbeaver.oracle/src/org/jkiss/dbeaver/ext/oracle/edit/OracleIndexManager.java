@@ -44,7 +44,7 @@ import java.util.Collections;
 public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, OracleTablePhysical> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleTableIndex> getObjectsCache(OracleTableIndex object)
+    public DBSObjectCache<? extends DBSObject, OracleTableIndex> getObjectsCache(OracleTableIndex object)
     {
         return object.getParentObject().getSchema().indexCache;
     }

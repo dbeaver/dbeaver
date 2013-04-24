@@ -46,7 +46,7 @@ public class MySQLTableManager extends JDBCTableManager<MySQLTableBase, MySQLCat
     };
 
     @Override
-    protected DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
+    public DBSObjectCache<MySQLCatalog, MySQLTableBase> getObjectsCache(MySQLTableBase object)
     {
         return object.getContainer().getTableCache();
     }

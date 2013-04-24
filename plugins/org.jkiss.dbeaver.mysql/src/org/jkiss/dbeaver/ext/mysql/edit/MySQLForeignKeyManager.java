@@ -37,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 public class MySQLForeignKeyManager extends JDBCForeignKeyManager<MySQLTableForeignKey, MySQLTable> {
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, MySQLTableForeignKey> getObjectsCache(MySQLTableForeignKey object)
+    public DBSObjectCache<? extends DBSObject, MySQLTableForeignKey> getObjectsCache(MySQLTableForeignKey object)
     {
         return object.getParentObject().getForeignKeyCache();
     }

@@ -47,7 +47,7 @@ public class OracleTableManager extends JDBCTableManager<OracleTable, OracleSche
     };
 
     @Override
-    protected DBSObjectCache<? extends DBSObject, OracleTable> getObjectsCache(OracleTable object)
+    public DBSObjectCache<? extends DBSObject, OracleTable> getObjectsCache(OracleTable object)
     {
         return (DBSObjectCache) object.getSchema().tableCache;
     }
