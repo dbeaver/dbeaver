@@ -281,10 +281,10 @@ public class JDBCUtils {
         } catch (SQLException e) {
             // Seems to be not supported
             log.debug(e.getMessage());
-        } catch (LinkageError e) {
+        } catch (UnsupportedOperationException e) {
             // Seems to be legacy JDBC
             log.debug(e.getMessage());
-        } catch (UnsupportedOperationException e) {
+        } catch (IncompatibleClassChangeError e) {
             // Seems to be legacy JDBC
             log.debug(e.getMessage());
         }
@@ -294,7 +294,7 @@ public class JDBCUtils {
                 try {
                     dbResult.next();
                 } catch (SQLException e) {
-                    throw new SQLException("Could not scroll result set to " + offset + " row", e);
+                    throw new SQLException("Can't scroll result set to row " + offset, e);
                 }
             }
         }
