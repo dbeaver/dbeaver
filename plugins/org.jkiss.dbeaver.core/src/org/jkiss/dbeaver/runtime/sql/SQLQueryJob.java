@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -60,6 +61,7 @@ public class SQLQueryJob extends DataSourceJob
     private SQLEditorBase editor;
     private List<SQLStatementInfo> queries;
     private DBDDataReceiver dataReceiver;
+    private DBDDataFilter dataFilter;
     private boolean connectionInvalidated = false;
 
     private SQLScriptCommitType commitType;
@@ -286,6 +288,7 @@ public class SQLQueryJob extends DataSourceJob
 
         long startTime = System.currentTimeMillis();
         String sqlQuery = sqlStatement.getQuery();
+
         SQLQueryResult result = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
             result.setRowOffset(rsOffset);
@@ -556,4 +559,8 @@ public class SQLQueryJob extends DataSourceJob
         return rowCount;
     }
 
+    public void setDataFilter(DBDDataFilter dataFilter)
+    {
+        this.dataFilter = dataFilter;
+    }
 }
