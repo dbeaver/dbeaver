@@ -54,8 +54,8 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     private TableViewer columnsViewer;
     //private TableViewer filterViewer;
     private DBDDataFilter dataFilter;
-    private Text orderText;
     private Text whereText;
+    private Text orderText;
 
     public ResultSetFilterDialog(ResultSetViewer resultSetViewer)
     {
@@ -117,18 +117,18 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             filterGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             filterGroup.setLayout(new GridLayout(1, false));
 
-            UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_orderby);
-            orderText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-            orderText.setLayoutData(new GridData(GridData.FILL_BOTH));
-            if (dataFilter.getOrder() != null) {
-                orderText.setText(dataFilter.getOrder());
-            }
-
             UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_where);
             whereText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
             whereText.setLayoutData(new GridData(GridData.FILL_BOTH));
             if (dataFilter.getWhere() != null) {
                 whereText.setText(dataFilter.getWhere());
+            }
+
+            UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_orderby);
+            orderText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+            orderText.setLayoutData(new GridData(GridData.FILL_BOTH));
+            if (dataFilter.getOrder() != null) {
+                orderText.setText(dataFilter.getOrder());
             }
 
             if (!resultSetViewer.supportsDataFilter()) {
