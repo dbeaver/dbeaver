@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -37,6 +40,8 @@ import java.util.Set;
  * Tables cache implementation
  */
 public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> {
+
+    static final Log log = LogFactory.getLog(TableCache.class);
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects
@@ -77,6 +82,11 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME);
         String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
         String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+
+        if (CommonUtils.isEmpty(tableName)) {
+            log.debug("Empty table name" + (owner == null ? "" : " in container " + owner.getName()));
+            return null;
+        }
 
         if (tableType != null && INVALID_TABLE_TYPES.contains(tableType)) {
             // Bad table type. Just skip it
