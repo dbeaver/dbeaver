@@ -837,7 +837,7 @@ public class SQLEditor extends SQLEditorBase
         @Override
         public int getSupportedFeatures()
         {
-            return DATA_SELECT;
+            return DATA_SELECT | DATA_FILTER;
         }
 
         @Override
@@ -847,6 +847,7 @@ public class SQLEditor extends SQLEditorBase
             if (job != null) {
                 job.setDataReceiver(dataReceiver);
                 job.setResultSetLimit(firstRow, maxRows);
+                job.setDataFilter(dataFilter);
                 return job.extractData(context);
             } else {
                 return 0;
