@@ -385,7 +385,7 @@ public class OracleDataSource extends JDBCDataSource
         {
             return DBSDataKind.LOB;
         }
-        DBSDataKind dataKind = OracleDataType.getDataKind(valueType);
+        DBSDataKind dataKind = OracleDataType.getDataKind(typeName);
         if (dataKind != null) {
             return dataKind;
         }

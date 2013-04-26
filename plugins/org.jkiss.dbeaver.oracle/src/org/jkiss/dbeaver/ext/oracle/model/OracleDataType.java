@@ -87,14 +87,14 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("DOUBLE PRECISION", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.DOUBLE, 63, 127, -84));
         PREDEFINED_TYPES.put("FLOAT", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.FLOAT, 63, 127, -84));
         PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.INTEGER, 63, 127, -84));
-        PREDEFINED_TYPES.put("INTERVAL DAY TO SECOND", new TypeDesc(DBSDataKind.UNKNOWN, java.sql.Types.VARCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("INTERVAL YEAR TO MONTH", new TypeDesc(DBSDataKind.UNKNOWN, java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("INTERVAL DAY TO SECOND", new TypeDesc(DBSDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("INTERVAL YEAR TO MONTH", new TypeDesc(DBSDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("LOB POINTER", new TypeDesc(DBSDataKind.LOB, java.sql.Types.BLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("NAMED COLLECTION", new TypeDesc(DBSDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
         PREDEFINED_TYPES.put("NAMED OBJECT", new TypeDesc(DBSDataKind.OBJECT, java.sql.Types.STRUCT, 0, 0, 0));
         PREDEFINED_TYPES.put("NUMBER", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.NUMERIC, 63, 127, -84));
         PREDEFINED_TYPES.put("OCTET", new TypeDesc(DBSDataKind.BINARY, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("OID", new TypeDesc(DBSDataKind.UNKNOWN, java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("OID", new TypeDesc(DBSDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("POINTER", new TypeDesc(DBSDataKind.UNKNOWN, java.sql.Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("RAW", new TypeDesc(DBSDataKind.BINARY, java.sql.Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("REAL", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.REAL, 63, 127, -84));
@@ -221,9 +221,9 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
     }
 
-    public static DBSDataKind getDataKind(int typeID)
+    public static DBSDataKind getDataKind(String typeName)
     {
-        TypeDesc desc = PREDEFINED_TYPE_IDS.get(typeID);
+        TypeDesc desc = PREDEFINED_TYPES.get(typeName);
         return desc != null ? desc.dataKind : null;
     }
 

@@ -645,6 +645,7 @@ public class SQLEditor extends SQLEditorBase
                         new StructuredSelection(this));
                     dialog.open();
                 } else {
+                    resultsView.setDataFilter(new DBDDataFilter(), false);
                     resultsView.refresh();
                 }
             } else {
