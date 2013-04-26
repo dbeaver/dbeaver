@@ -192,12 +192,23 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
-        this.filtersText = new Text(viewerPanel, SWT.READ_ONLY | SWT.BORDER);
-        this.filtersText.setForeground(colorRed);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.exclude = true;
-        this.filtersText.setLayoutData(gd);
-        this.filtersText.setVisible(false);
+        {
+            Composite filtersPanel = new Composite(viewerPanel, SWT.NONE);
+            filtersPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            GridLayout gl = new GridLayout(2, false);
+            gl.marginHeight = 3;
+            gl.marginWidth = 3;
+            filtersPanel.setLayout(gl);
+
+            UIUtils.createControlLabel(filtersPanel, " Filter");
+
+            this.filtersText = new Text(filtersPanel, SWT.BORDER);
+            this.filtersText.setForeground(colorRed);
+            //gd.exclude = true;
+            this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            //this.filtersText.setVisible(false);
+        }
 
         {
             resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
@@ -535,16 +546,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         StringBuilder where = new StringBuilder();
         model.getDataFilter().appendConditionString(getDataSource(), where);
         boolean show = false;
+        filtersText.setText(where.toString());
         if (where.length() > 0) {
-            filtersText.setText(where.toString());
             show = true;
         }
-        if (filtersText.getVisible() == show) {
-            return;
-        }
-        filtersText.setVisible(show);
-        ((GridData)filtersText.getLayoutData()).exclude = !show;
-        viewerPanel.layout();
+//        if (filtersText.getVisible() == show) {
+//            return;
+//        }
+        //filtersText.setVisible(show);
+        //((GridData)filtersText.getLayoutData()).exclude = !show;
+        //viewerPanel.layout();
     }
 
     private void updateStatusMessage()
