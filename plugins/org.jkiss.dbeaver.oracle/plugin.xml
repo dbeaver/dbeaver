@@ -407,7 +407,10 @@
             <type name="XMLTYPE"/>
             <type name="SYS.XMLTYPE"/>
             <type name="TIMESTAMP"/>
+            <type name="TIMESTAMP WITH TZ"/>
+            <type name="TIMESTAMP WITH LOCAL TZ"/>
             <type name="TIMESTAMP WITH TIME ZONE"/>
+            <type name="TIMESTAMP WITH LOCAL TIME ZONE"/>
             <!--type standard="STRUCT"/-->
 
         </provider>
