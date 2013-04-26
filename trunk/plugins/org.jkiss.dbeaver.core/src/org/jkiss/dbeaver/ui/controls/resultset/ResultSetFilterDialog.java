@@ -207,7 +207,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         } else {
             dataFilter.setWhere(null);
         }
-        resultSetViewer.setDataFilter(dataFilter);
+        resultSetViewer.setDataFilter(dataFilter, true);
         super.okPressed();
     }
 
