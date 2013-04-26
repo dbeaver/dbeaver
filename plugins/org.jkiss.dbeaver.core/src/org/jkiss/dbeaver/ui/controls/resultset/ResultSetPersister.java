@@ -353,7 +353,10 @@ class ResultSetPersister {
                         if (monitor.isCanceled()) break;
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.table);
-                            insertCount += dataContainer.insertData(context, statement.keyAttributes, new KeyDataReceiver(statement));
+                            insertCount += dataContainer.insertData(
+                                context,
+                                statement.keyAttributes,
+                                statement.needKeys() ? new KeyDataReceiver(statement) : null);
                             processStatementChanges(statement);
                         }
                         catch (DBException e) {
@@ -366,7 +369,11 @@ class ResultSetPersister {
                         if (monitor.isCanceled()) break;
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.table);
-                            this.updateCount += dataContainer.updateData(context, statement.keyAttributes, statement.updateAttributes, new KeyDataReceiver(statement));
+                            this.updateCount += dataContainer.updateData(
+                                context,
+                                statement.keyAttributes,
+                                statement.updateAttributes,
+                                null);
                             processStatementChanges(statement);
                         }
                         catch (DBException e) {
@@ -520,6 +527,15 @@ class ResultSetPersister {
             this.type = type;
             this.row = row;
             this.table = table;
+        }
+        boolean needKeys()
+        {
+            for (DBDAttributeValue col : keyAttributes) {
+                if (col.getAttribute().isSequence() && DBUtils.isNullValue(col.getValue())) {
+                    return true;
+                }
+            }
+            return false;
         }
         boolean hasUpdateColumn(DBDAttributeBinding column)
         {
