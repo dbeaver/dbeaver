@@ -2188,17 +2188,17 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private class ContentProvider implements IGridContentProvider {
 
         @Override
-        public GridPos getSize()
+        public int getRowCount()
         {
-            if (mode == ResultSetMode.RECORD) {
-                return new GridPos(
-                    1,
-                    model.getVisibleColumnCount());
-            } else {
-                return new GridPos(
-                    model.getVisibleColumnCount(),
-                    model.getRowCount());
-            }
+            return (mode == ResultSetMode.RECORD) ?
+                    model.getVisibleColumnCount() : model.getRowCount();
+        }
+
+        @Override
+        public int getColumnCount()
+        {
+            return (mode == ResultSetMode.RECORD) ?
+                    1: model.getVisibleColumnCount();
         }
 
         @Override

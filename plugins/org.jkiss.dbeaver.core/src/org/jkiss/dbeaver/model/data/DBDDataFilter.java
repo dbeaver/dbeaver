@@ -158,11 +158,19 @@ public class DBDDataFilter {
 
     public void appendConditionString(DBPDataSource dataSource, StringBuilder query)
     {
+        appendConditionString(dataSource, null, query);
+    }
+
+    public void appendConditionString(DBPDataSource dataSource, String conditionTable, StringBuilder query)
+    {
         boolean hasWhere = false;
         if (!CommonUtils.isEmpty(getFilters())) {
             for (DBQCondition filter : getFilters()) {
                 if (hasWhere) query.append(" AND "); //$NON-NLS-1$
                 hasWhere = true;
+                if (conditionTable != null) {
+                    query.append(conditionTable).append('.');
+                }
                 query.append(DBUtils.getQuotedIdentifier(dataSource, filter.getColumnName()));
                 final String condition = filter.getCondition();
                 final char firstChar = condition.trim().charAt(0);
