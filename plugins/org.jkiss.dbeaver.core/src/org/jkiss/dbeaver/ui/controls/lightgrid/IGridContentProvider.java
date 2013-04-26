@@ -23,11 +23,9 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 
 public interface IGridContentProvider extends IStructuredContentProvider {
 
-    /**
-     * Row count
-     * @return row count
-     */
-    public GridPos getSize();
+    public int getRowCount();
+
+    public int getColumnCount();
 
     /**
      * Gets element by position

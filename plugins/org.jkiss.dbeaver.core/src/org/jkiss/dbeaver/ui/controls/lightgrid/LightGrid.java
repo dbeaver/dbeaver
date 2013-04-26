@@ -76,7 +76,6 @@ public abstract class LightGrid extends Canvas {
         KEYBOARD,
     }
 
-    private GridPos gridSize;
     /**
      * Tracks whether the scroll values are correct. If not they will be
      * recomputed in onPaint. This allows us to get a free ride on top of the
@@ -490,15 +489,14 @@ public abstract class LightGrid extends Canvas {
         if (contentProvider == null) {
             return;
         }
-        this.gridSize = contentProvider.getSize();
-        this.currentVisibleItems = this.gridSize.row;
+        this.currentVisibleItems = contentProvider.getRowCount();
         this.topIndex = 0;
         this.bottomIndex = -1;
         this.startColumnIndex = -1;
         this.endColumnIndex = -1;
 
         // Add columns
-        int columnCount = contentProvider.getSize().col;
+        int columnCount = contentProvider.getColumnCount();
         for (int i = 0; i < columnCount; i++) {
             GridColumn column = new GridColumn(this, SWT.NONE);
             column.setText(getColumnLabelProvider().getText(i));
@@ -976,7 +974,7 @@ public abstract class LightGrid extends Canvas {
      */
     public int getItemCount()
     {
-        return gridSize == null ? 0 : gridSize.row;
+        return getContentProvider().getRowCount();
     }
 
     /**
@@ -1446,7 +1444,6 @@ public abstract class LightGrid extends Canvas {
         checkWidget();
         deselectAll();
 
-        gridSize = null;
         currentVisibleItems = 0;
         focusItem = -1;
         focusColumn = null;
