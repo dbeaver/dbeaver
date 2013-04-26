@@ -837,7 +837,12 @@ public class SQLEditor extends SQLEditorBase
         @Override
         public int getSupportedFeatures()
         {
-            return DATA_SELECT | DATA_FILTER;
+            int features = DATA_SELECT;
+
+            if (getDataSource().getInfo().supportsSubqueries()) {
+                features |= DATA_FILTER;
+            }
+            return features;
         }
 
         @Override

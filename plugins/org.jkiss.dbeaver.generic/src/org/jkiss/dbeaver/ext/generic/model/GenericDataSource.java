@@ -98,6 +98,11 @@ public class GenericDataSource extends JDBCDataSource
         if (supportsIndexes != null) {
             info.setSupportsIndexes(Boolean.valueOf(supportsIndexes.toString()));
         }
+
+        final Object supportsSubqueries = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_SUBQUERIES);
+        if (supportsSubqueries != null) {
+            info.setSupportsIndexes(Boolean.valueOf(supportsSubqueries.toString()));
+        }
         return info;
     }
 

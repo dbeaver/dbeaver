@@ -29,6 +29,7 @@ public class GenericConstants {
     public static final String PARAM_ACTIVE_ENTITY_TYPE = "active-entity-type";
     public static final String PARAM_SUPPORTS_REFERENCES = "supports-references";
     public static final String PARAM_SUPPORTS_INDEXES = "supports-indexes";
+    public static final String PARAM_SUPPORTS_SUBQUERIES = "supports-subqueries";
     public static final String PARAM_SUPPORTS_SELECT_COUNT = "supports-select-count";
     public static final String PARAM_OMIT_TYPE_CACHE = "omit-type-cache";
 

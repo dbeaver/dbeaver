@@ -228,6 +228,12 @@ public class WMIDataSourceInfo implements DBPDataSourceInfo {
     }
 
     @Override
+    public boolean supportsSubqueries()
+    {
+        return false;
+    }
+
+    @Override
     public DBPIdentifierCase storesUnquotedCase()
     {
         return DBPIdentifierCase.MIXED;
