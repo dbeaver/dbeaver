@@ -266,6 +266,8 @@ public interface DBPDataSourceInfo
 
     boolean supportsQuotedMixedCase();
 
+    boolean supportsSubqueries();
+
     DBPIdentifierCase storesUnquotedCase();
 
     DBPIdentifierCase storesQuotedCase();
