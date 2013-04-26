@@ -1239,9 +1239,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         int columnIndex = translateGridPos(currentPosition).col;
         if (supportsDataFilter() && columnIndex >= 0) {
             DBDAttributeBinding column = model.getVisibleColumn(columnIndex);
-            if (column.getEntityAttribute() == null) {
-                return;
-            }
             DBSDataKind dataKind = column.getMetaAttribute().getDataKind();
             if (!column.getMetaAttribute().isRequired()) {
                 filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.NONE, column));
@@ -2583,7 +2580,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private final DBDAttributeBinding column;
         public FilterByColumnAction(String pattern, FilterByColumnType type, DBDAttributeBinding column)
         {
-            super(DBUtils.getQuotedIdentifier(column.getEntityAttribute()) + " " + translateFilterPattern(pattern, type, column), type.icon);
+            super(DBUtils.getQuotedIdentifier(getDataSource(), column.getAttributeName()) + " " + translateFilterPattern(pattern, type, column), type.icon);
             this.pattern = pattern;
             this.type = type;
             this.column = column;
