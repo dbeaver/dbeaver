@@ -174,8 +174,20 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     statement.setByte(paramIndex, number.byteValue());
                     break;
                 case java.sql.Types.NUMERIC:
-                    if (number instanceof BigDecimal) {
+                    if (number instanceof Long) {
+                        statement.setLong(paramIndex, number.intValue());
+                    } else if (number instanceof Integer) {
+                        statement.setInt(paramIndex, number.intValue());
+                    } else if (number instanceof Short) {
+                        statement.setShort(paramIndex, number.shortValue());
+                    } else if (number instanceof Byte) {
+                        statement.setByte(paramIndex, number.byteValue());
+                    } else if (number instanceof Float) {
+                        statement.setFloat(paramIndex, number.floatValue());
+                    } else if (number instanceof BigDecimal) {
                         statement.setBigDecimal(paramIndex, (BigDecimal) number);
+                    } else if (number instanceof BigInteger) {
+                        statement.setBigDecimal(paramIndex, new BigDecimal((BigInteger) number));
                     } else {
                         statement.setDouble(paramIndex, number.doubleValue());
                     }
