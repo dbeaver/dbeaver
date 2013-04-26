@@ -78,6 +78,7 @@ public class SQLQueryJob extends DataSourceJob
     private Throwable lastError = null;
 
     private List<ISQLQueryListener> queryListeners = new ArrayList<ISQLQueryListener>();
+    private static final String NESTED_QUERY_AlIAS = "origdbvr";
 
     public SQLQueryJob(
         String name,
@@ -288,7 +289,15 @@ public class SQLQueryJob extends DataSourceJob
 
         long startTime = System.currentTimeMillis();
         String sqlQuery = sqlStatement.getQuery();
-
+        if (dataFilter != null && dataFilter.hasConditions()) {
+            // Append filter conditions to query
+            StringBuilder modifiedQuery = new StringBuilder(sqlQuery.length() + 100);
+            modifiedQuery.append("SELECT * FROM (\n");
+            modifiedQuery.append(sqlQuery);
+            modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS).append(" WHERE ");
+            dataFilter.appendConditionString(getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
+            sqlQuery = modifiedQuery.toString();
+        }
         SQLQueryResult result = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
             result.setRowOffset(rsOffset);
