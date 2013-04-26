@@ -34,6 +34,7 @@ public enum DBSDataKind
     ARRAY("VARCHAR"),
     OBJECT("VARCHAR"),
     REFERENCE("VARCHAR"),
+    ROWID("ROWID"),
     UNKNOWN("VARCHAR");
 
     private final String defaultTypeName;
