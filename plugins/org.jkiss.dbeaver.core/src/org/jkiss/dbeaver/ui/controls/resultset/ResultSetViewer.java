@@ -512,19 +512,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     ////////////////////////////////////////////////////////////
     // Filters
 
-    public void setDataFilter(final DBDDataFilter dataFilter)
+    public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
         if (CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
             return;
         }
         model.setDataFilter(dataFilter);
-        reorderResultSet(true, new Runnable() {
+        if (refreshData) {
+            reorderResultSet(true, new Runnable() {
             @Override
             public void run()
             {
                 resetColumnOrdering();
             }
         });
+        }
         this.updateFiltersText();
     }
 
