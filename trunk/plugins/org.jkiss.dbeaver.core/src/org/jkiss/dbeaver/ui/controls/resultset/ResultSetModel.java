@@ -216,6 +216,15 @@ public class ResultSetModel {
         if (this.visibleColumns == null || this.visibleColumns.length != columns.length) {
             update = true;
         } else {
+            if (dataFilter != null && dataFilter.hasConditions()) {
+                // This is a filtered result set so keep old metadata.
+                // Filtering modifies original query (adds subquery)
+                // and it may change metadata (depends on driver)
+                // but actually it doesn't change any column or table names/types
+                // so let's keep old info
+                return false;
+            }
+
             for (int i = 0; i < this.visibleColumns.length; i++) {
                 if (!this.visibleColumns[i].getMetaAttribute().equals(columns[i].getMetaAttribute())) {
                     update = true;
