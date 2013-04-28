@@ -47,10 +47,8 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
                 return new JDBCBooleanValueHandler();
             case STRING:
                 if (valueType == java.sql.Types.LONGVARCHAR || valueType == java.sql.Types.LONGNVARCHAR) {
-                    // Eval longvarchars as LOBs
+                    // Eval long varchars as LOBs
                     return JDBCContentValueHandler.INSTANCE;
-                } else if (valueType == java.sql.Types.ROWID) {
-                    return JDBCObjectValueHandler.INSTANCE;
                 } else {
                     return JDBCStringValueHandler.INSTANCE;
                 }
@@ -67,6 +65,8 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
                 return JDBCStructValueHandler.INSTANCE;
             case REFERENCE:
                 return JDBCReferenceValueHandler.INSTANCE;
+            case ROWID:
+                return JDBCObjectValueHandler.INSTANCE;
             default:
                 return null;
         }
