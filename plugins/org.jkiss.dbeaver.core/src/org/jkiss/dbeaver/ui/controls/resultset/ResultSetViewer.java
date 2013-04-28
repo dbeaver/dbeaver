@@ -870,6 +870,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
      */
     public boolean setMetaData(DBDAttributeBinding[] columns)
     {
+        if (!CommonUtils.isEmpty(model.getVisibleColumns()) &&
+            model.getDataFilter() != null && model.getDataFilter().hasConditions())
+        {
+            // This is a filtered result set so keep old metadata.
+            // Filtering modifies original query (adds subquery)
+            // and it may change metadata (depends on driver)
+            // but actually it doesn't change any column or table names/types
+            // so let's keep old info
+            return false;
+        }
         if (model.setMetaData(columns)) {
             this.panelValueController = null;
             UIUtils.runInUI(null, new Runnable() {
