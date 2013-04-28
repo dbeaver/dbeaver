@@ -131,7 +131,14 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     public DBCEntityIdentifier getBestIdentifier(DBRProgressMonitor monitor)
         throws DBException
     {
-        DBSEntity table = getEntity(monitor);
+        DBSEntity table;
+        try {
+            table = getEntity(monitor);
+        } catch (DBException e) {
+            // Table not recognized
+            log.debug(e);
+            return null;
+        }
 
         if (identifiers == null) {
             // Load identifiers
