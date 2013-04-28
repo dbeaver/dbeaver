@@ -129,7 +129,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
-    private final Text filtersText;
+    private final Combo filtersText;
     private Text statusLabel;
 
     private final SashForm resultsSash;
@@ -203,10 +203,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
             UIUtils.createControlLabel(filtersPanel, " Filter");
 
-            this.filtersText = new Text(filtersPanel, SWT.BORDER);
-            this.filtersText.setForeground(colorRed);
+            this.filtersText = new Combo(filtersPanel, SWT.BORDER | SWT.DROP_DOWN);
+            //this.filtersText.setForeground(colorRed);
             //gd.exclude = true;
             this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            this.filtersText.setEnabled(false);
             //this.filtersText.setVisible(false);
         }
 
@@ -545,17 +546,29 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         StringBuilder where = new StringBuilder();
         model.getDataFilter().appendConditionString(getDataSource(), where);
-        boolean show = false;
-        filtersText.setText(where.toString());
-        if (where.length() > 0) {
-            show = true;
+        String whereCondition = where.toString().trim();
+        filtersText.setText(whereCondition);
+        filtersText.setEnabled(getModel().getVisibleColumnCount() > 0);
+        if (!whereCondition.isEmpty()) {
+            addFiltersHistory(whereCondition);
         }
-//        if (filtersText.getVisible() == show) {
-//            return;
-//        }
-        //filtersText.setVisible(show);
-        //((GridData)filtersText.getLayoutData()).exclude = !show;
-        //viewerPanel.layout();
+    }
+
+    private void addFiltersHistory(String whereCondition)
+    {
+        int historyCount = filtersText.getItemCount();
+        for (int i = 0; i < historyCount; i++) {
+            if (filtersText.getItem(i).equals(whereCondition)) {
+                if (i > 0) {
+                    // Move to beginning
+                    filtersText.remove(i);
+                    break;
+                } else {
+                    return;
+                }
+            }
+        }
+        filtersText.add(whereCondition, 0);
     }
 
     private void updateStatusMessage()
