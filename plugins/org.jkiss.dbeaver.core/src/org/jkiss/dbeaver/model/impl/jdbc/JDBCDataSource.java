@@ -394,8 +394,7 @@ public abstract class JDBCDataSource
             case Types.ARRAY:
                 return DBSDataKind.ARRAY;
             case Types.ROWID:
-                // threat ROWID as string
-                return DBSDataKind.STRING;
+                return DBSDataKind.ROWID;
             case Types.REF:
                 return DBSDataKind.REFERENCE;
 
