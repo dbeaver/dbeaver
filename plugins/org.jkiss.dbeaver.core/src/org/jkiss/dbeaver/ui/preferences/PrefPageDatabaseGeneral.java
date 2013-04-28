@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -32,7 +34,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * PrefPageDatabaseGeneral
  */
-public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenchPreferencePage
+public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 
@@ -123,6 +125,17 @@ public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenc
     public void applyData(Object data)
     {
         super.applyData(data);
+    }
+
+    @Override
+    public IAdaptable getElement()
+    {
+        return null;
+    }
+
+    @Override
+    public void setElement(IAdaptable element)
+    {
     }
 
 }
