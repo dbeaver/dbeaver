@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
+import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -36,7 +37,6 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ControlEditor;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -129,7 +129,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
-    private final Combo filtersText;
+    private Composite filtersPanel;
+    private ControlEnableState filtersEnableState;
+    private Combo filtersText;
     private Text statusLabel;
 
     private final SashForm resultsSash;
@@ -192,24 +194,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
-        {
-            Composite filtersPanel = new Composite(viewerPanel, SWT.NONE);
-            filtersPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            GridLayout gl = new GridLayout(2, false);
-            gl.marginHeight = 3;
-            gl.marginWidth = 3;
-            filtersPanel.setLayout(gl);
-
-            UIUtils.createControlLabel(filtersPanel, " Filter");
-
-            this.filtersText = new Combo(filtersPanel, SWT.BORDER | SWT.DROP_DOWN);
-            //this.filtersText.setForeground(colorRed);
-            //gd.exclude = true;
-            this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            this.filtersText.setEnabled(false);
-            //this.filtersText.setVisible(false);
-        }
+        createFiltersPanel();
 
         {
             resultsSash = new SashForm(viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
@@ -281,7 +266,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 updateGridCursor(event.x, event.y);
             }
         });
-        this.spreadsheet.setTopLeftRenderer(new TopLeftRenderer(this));
+        //this.spreadsheet.setTopLeftRenderer(new TopLeftRenderer(this));
         applyThemeSettings();
 
         spreadsheet.addFocusListener(new FocusListener() {
@@ -306,6 +291,168 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         });
     }
+
+    ////////////////////////////////////////////////////////////
+    // Filters
+
+    private void createFiltersPanel()
+    {
+        filtersPanel = new Composite(viewerPanel, SWT.NONE);
+        filtersPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        GridLayout gl = new GridLayout(3, false);
+        gl.marginHeight = 3;
+        gl.marginWidth = 3;
+        filtersPanel.setLayout(gl);
+
+        Button customizeButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        customizeButton.setImage(DBIcon.FILTER.getImage());
+        customizeButton.setText("Filters");
+        customizeButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                new ResultSetFilterDialog(ResultSetViewer.this).open();
+            }
+        });
+
+        //UIUtils.createControlLabel(filtersPanel, " Filter");
+
+        this.filtersText = new Combo(filtersPanel, SWT.BORDER | SWT.DROP_DOWN);
+        this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        this.filtersText.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                setCustomDataFilter();
+            }
+        });
+
+        // Handle all shortcuts by filters editor, not by host editor
+        this.filtersText.addFocusListener(new FocusListener() {
+            private boolean activated = false;
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+                if (!activated) {
+                    UIUtils.enableHostEditorKeyBindings(site, false);
+                    activated = true;
+                }
+            }
+            @Override
+            public void focusLost(FocusEvent e)
+            {
+                if (activated) {
+                    UIUtils.enableHostEditorKeyBindings(site, true);
+                    activated = false;
+                }
+            }
+        });
+
+
+        final Button applyButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        applyButton.setText("Apply");
+        applyButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                setCustomDataFilter();
+            }
+        });
+        applyButton.setEnabled(false);
+
+        this.filtersText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e)
+            {
+                applyButton.setEnabled(!filtersText.getText().trim().isEmpty());
+            }
+        });
+
+        filtersPanel.addTraverseListener(new TraverseListener() {
+            @Override
+            public void keyTraversed(TraverseEvent e)
+            {
+                if (e.detail == SWT.TRAVERSE_RETURN) {
+                    setCustomDataFilter();
+                    e.doit = false;
+                    e.detail = SWT.TRAVERSE_NONE;
+                }
+            }
+        });
+
+        filtersEnableState = ControlEnableState.disable(filtersPanel);
+    }
+
+    private void setCustomDataFilter()
+    {
+        String condition = filtersText.getText();
+        StringBuilder currentCondition = new StringBuilder();
+        model.getDataFilter().appendConditionString(getDataSource(), currentCondition);
+        if (!currentCondition.toString().trim().equals(condition.trim())) {
+            // The same
+            return;
+        }
+        DBDDataFilter newFilter = new DBDDataFilter();
+        newFilter.setWhere(condition);
+        setDataFilter(newFilter, true);
+        spreadsheet.setFocus();
+    }
+
+    private void updateFiltersText()
+    {
+        StringBuilder where = new StringBuilder();
+        model.getDataFilter().appendConditionString(getDataSource(), where);
+        String whereCondition = where.toString().trim();
+        filtersText.setText(whereCondition);
+        if (!whereCondition.isEmpty()) {
+            addFiltersHistory(whereCondition);
+        }
+
+        if (getModel().getVisibleColumnCount() > 0 && filtersEnableState != null) {
+            filtersEnableState.restore();
+            filtersEnableState = null;
+        }
+    }
+
+    private void addFiltersHistory(String whereCondition)
+    {
+        int historyCount = filtersText.getItemCount();
+        for (int i = 0; i < historyCount; i++) {
+            if (filtersText.getItem(i).equals(whereCondition)) {
+                if (i > 0) {
+                    // Move to beginning
+                    filtersText.remove(i);
+                    break;
+                } else {
+                    return;
+                }
+            }
+        }
+        filtersText.add(whereCondition, 0);
+        filtersText.setText(whereCondition);
+    }
+
+    public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
+    {
+        if (CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
+            return;
+        }
+        model.setDataFilter(dataFilter);
+        if (refreshData) {
+            reorderResultSet(true, new Runnable() {
+                @Override
+                public void run()
+                {
+                    resetColumnOrdering();
+                }
+            });
+        }
+        this.updateFiltersText();
+    }
+
+    ////////////////////////////////////////////////////////////
+    // Misc
 
     IPreferenceStore getPreferences()
     {
@@ -519,56 +666,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public DBSDataContainer getDataContainer()
     {
         return resultSetProvider.getDataContainer();
-    }
-
-    ////////////////////////////////////////////////////////////
-    // Filters
-
-    public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
-    {
-        if (CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
-            return;
-        }
-        model.setDataFilter(dataFilter);
-        if (refreshData) {
-            reorderResultSet(true, new Runnable() {
-            @Override
-            public void run()
-            {
-                resetColumnOrdering();
-            }
-        });
-        }
-        this.updateFiltersText();
-    }
-
-    private void updateFiltersText()
-    {
-        StringBuilder where = new StringBuilder();
-        model.getDataFilter().appendConditionString(getDataSource(), where);
-        String whereCondition = where.toString().trim();
-        filtersText.setText(whereCondition);
-        filtersText.setEnabled(getModel().getVisibleColumnCount() > 0);
-        if (!whereCondition.isEmpty()) {
-            addFiltersHistory(whereCondition);
-        }
-    }
-
-    private void addFiltersHistory(String whereCondition)
-    {
-        int historyCount = filtersText.getItemCount();
-        for (int i = 0; i < historyCount; i++) {
-            if (filtersText.getItem(i).equals(whereCondition)) {
-                if (i > 0) {
-                    // Move to beginning
-                    filtersText.remove(i);
-                    break;
-                } else {
-                    return;
-                }
-            }
-        }
-        filtersText.add(whereCondition, 0);
     }
 
     private void updateStatusMessage()
@@ -2831,6 +2928,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
+/*
     static class TopLeftRenderer extends AbstractRenderer {
         private Button cfgButton;
 
@@ -2867,4 +2965,5 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
     }
+*/
 }
