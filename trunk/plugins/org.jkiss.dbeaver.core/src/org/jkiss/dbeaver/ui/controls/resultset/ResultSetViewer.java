@@ -389,7 +389,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         String condition = filtersText.getText();
         StringBuilder currentCondition = new StringBuilder();
         model.getDataFilter().appendConditionString(getDataSource(), currentCondition);
-        if (!currentCondition.toString().trim().equals(condition.trim())) {
+        if (currentCondition.toString().trim().equals(condition.trim())) {
             // The same
             return;
         }
