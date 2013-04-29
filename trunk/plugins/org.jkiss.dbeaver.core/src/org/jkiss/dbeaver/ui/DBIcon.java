@@ -123,6 +123,7 @@ public enum DBIcon
     FILTER_CLIPBOARD("filter_clipboard", "/icons/misc/filter_clipboard.png"), //$NON-NLS-1$ //$NON-NLS-2$
 
     FIND("find", "/icons/misc/find.png"), //$NON-NLS-1$ //$NON-NLS-2$
+    FIND_TEXT("find_text", "/icons/misc/find_text.png"), //$NON-NLS-1$ //$NON-NLS-2$
     SEARCH("search", "/icons/misc/search.png"), //$NON-NLS-1$ //$NON-NLS-2$
     CHECK("check", "/icons/misc/check.png"), //$NON-NLS-1$ //$NON-NLS-2$
     CHECK2("check2", "/icons/misc/check2.png"), //$NON-NLS-1$ //$NON-NLS-2$

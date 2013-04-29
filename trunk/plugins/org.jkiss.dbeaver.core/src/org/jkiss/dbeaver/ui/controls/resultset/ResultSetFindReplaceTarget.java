@@ -56,7 +56,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public boolean canPerformFind()
     {
-        return UIUtils.hasFocus(resultSet.getControl());
+        return true;//resultSet.getModel().isEmpty();
     }
 
     @Override
@@ -147,12 +147,11 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     {
         IGridContentProvider contentProvider = resultSet.getSpreadsheet().getContentProvider();
         ResultSetModel model = resultSet.getModel();
-        int rowCount = model.getRowCount();
-        int columnCount = model.getVisibleColumns().length;
-        if (rowCount <= 0 || columnCount <= 0) {
-            // Empty model
+        if (model.isEmpty()) {
             return -1;
         }
+        int rowCount = model.getRowCount();
+        int columnCount = model.getVisibleColumns().length;
         GridPos startPosition = resultSet.getSelection().getFirstElement();
         if (startPosition == null) {
             // From the beginning
