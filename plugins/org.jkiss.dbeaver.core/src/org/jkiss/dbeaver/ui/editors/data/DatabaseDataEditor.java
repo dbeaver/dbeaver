@@ -61,13 +61,6 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
 
             // Set selection provider from resultset
             getSite().setSelectionProvider(resultSetView);
-
-//            FindReplaceAction findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", this); //$NON-NLS-1$
-//            findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
-//
-//            IActionBars actionBars = getEditorSite().getActionBars();
-//            actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(), findReplaceAction);
-//            actionBars.updateActionBars();
         }
 
 //        FindReplaceAction action = (FindReplaceAction)getEditorSite().getActionBars().getGlobalActionHandler(ActionFactory.FIND.getId());
@@ -123,6 +116,16 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
         if (resultSetView != null) {
             resultSetView.getSpreadsheet().setFocus();
         }
+
+        // Register find/replace action
+        // We do it in setFocus because each entity editor registers it's own action - and they
+        // share a single action bars instance. To avoid mess just update handler every time editor activated
+        FindReplaceAction findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", this); //$NON-NLS-1$
+        findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
+
+        IActionBars actionBars = getEditorSite().getActionBars();
+        actionBars.setGlobalActionHandler("dde_findReplace", findReplaceAction);
+        actionBars.updateActionBars();
     }
 
     @Override
