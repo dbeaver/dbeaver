@@ -33,6 +33,12 @@ public class GridPos
         this.row = row;
     }
 
+    public GridPos(GridPos copy)
+    {
+        this.col = copy.col;
+        this.row = copy.row;
+    }
+
     public boolean isValid()
     {
         return col >= 0 && row >= 0;

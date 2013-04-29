@@ -33,6 +33,10 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 /**
  * Find/Replace target for result set viewer
  */
@@ -156,7 +160,20 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
             // From the beginning
             startPosition = new GridPos(0, 0);
         }
-        for (GridPos curPosition = startPosition;;) {
+        Pattern findPattern = null;
+        if (regExSearch) {
+            try {
+                findPattern = Pattern.compile(findString, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+            } catch (PatternSyntaxException e) {
+                log.warn("Bad regex pattern: " + findString);
+                return -1;
+            }
+        } else {
+            if (!caseSensitive) {
+                findString = findString.toLowerCase();
+            }
+        }
+        for (GridPos curPosition = new GridPos(startPosition);;) {
             //Object element = contentProvider.getElement(curPosition);
             if (searchForward) {
                 curPosition.col++;
@@ -186,11 +203,24 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                 }
             }
             String cellText = labelProvider.getText(curPosition);
-            if (cellText.contains(findString)) {
+            if (matchesValue(findString, findPattern, cellText, caseSensitive, wholeWord)) {
                 resultSet.setSelection(
                     new StructuredSelection(curPosition), true);
                 return curPosition.row;
             }
+        }
+    }
+
+    private boolean matchesValue(String findString, Pattern findPattern, String text, boolean caseSensitive, boolean wholeWord)
+    {
+        if (findPattern != null) {
+            Matcher matcher = findPattern.matcher(text);
+            return wholeWord ? matcher.matches() : matcher.find();
+        }
+        if (wholeWord) {
+            return caseSensitive ? findString.equals(text) : findString.equalsIgnoreCase(text);
+        } else {
+            return caseSensitive ? text.contains(findString) : text.toLowerCase().contains(findString);
         }
     }
 
