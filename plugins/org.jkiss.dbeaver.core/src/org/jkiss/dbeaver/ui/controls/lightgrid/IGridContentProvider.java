@@ -28,11 +28,18 @@ public interface IGridContentProvider extends IStructuredContentProvider {
     public int getColumnCount();
 
     /**
-     * Gets element by position
+     * Gets raw element value by position
      * @param pos grid position
      * @return element (may be null)
      */
     public Object getElement(GridPos pos);
+
+    /**
+     * Gets element string representation. Returns string in native format
+     * @param pos grid position
+     * @return string representation (never null)
+     */
+    public String getElementText(GridPos pos);
 
     /**
      * Updates grid column properties.
