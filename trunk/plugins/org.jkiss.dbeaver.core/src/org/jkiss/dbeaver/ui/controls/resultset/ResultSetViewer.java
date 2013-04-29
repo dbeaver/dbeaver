@@ -2363,6 +2363,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
+        public String getElementText(GridPos pos)
+        {
+            Object value = getElement(pos);
+            DBDAttributeBinding column = model.getVisibleColumn(translateGridPos(pos).col);
+            return column.getValueHandler().getValueDisplayString(column.getAttribute(), value, DBDDisplayFormat.EDIT);
+        }
+
+        @Override
         public void updateColumn(GridColumn column)
         {
             if (mode == ResultSetMode.RECORD) {
