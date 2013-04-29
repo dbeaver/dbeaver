@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 
 import java.util.Collection;
 
@@ -31,5 +32,8 @@ public interface ResultSetSelection extends IStructuredSelection {
     ResultSetViewer getResultSetViewer();
 
     Collection<ResultSetRow> getSelectedRows();
+
+    @Override
+    GridPos getFirstElement();
 
 }

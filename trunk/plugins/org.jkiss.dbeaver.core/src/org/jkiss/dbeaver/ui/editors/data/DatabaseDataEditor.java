@@ -20,7 +20,12 @@ package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.actions.ActionFactory;
+import org.eclipse.ui.texteditor.FindReplaceAction;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetListener;
@@ -56,6 +61,13 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
 
             // Set selection provider from resultset
             getSite().setSelectionProvider(resultSetView);
+
+            FindReplaceAction findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", this); //$NON-NLS-1$
+            findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
+
+            IActionBars actionBars = getEditorSite().getActionBars();
+            actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(), findReplaceAction);
+            actionBars.updateActionBars();
         }
 
         if (!loaded) {
