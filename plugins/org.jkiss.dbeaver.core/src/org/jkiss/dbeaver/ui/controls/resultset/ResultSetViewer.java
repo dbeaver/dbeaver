@@ -1517,6 +1517,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
             spreadsheet.selectCells(cellSelection);
+            if (reveal) {
+                spreadsheet.showSelection();
+            }
         }
         fireSelectionChanged(new SelectionChangedEvent(this, selection));
     }
