@@ -298,7 +298,7 @@ public class SQLEditor extends SQLEditorBase
 
             final CompositeSelectionProvider selectionProvider = new CompositeSelectionProvider();
             selectionProvider.trackViewer(getTextViewer().getTextWidget(), getTextViewer());
-            selectionProvider.trackViewer(resultsView.getGridControl(), resultsView);
+            selectionProvider.trackViewer(resultsView.getSpreadsheet(), resultsView);
             selectionProvider.trackViewer(planView.getViewer().getControl(), planView.getViewer());
             getSite().setSelectionProvider(selectionProvider);
         }

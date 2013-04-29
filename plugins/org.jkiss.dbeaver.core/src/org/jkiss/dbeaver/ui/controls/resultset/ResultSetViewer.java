@@ -53,6 +53,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
+import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
@@ -61,6 +62,7 @@ import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.IPropertySourceProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
@@ -654,7 +656,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         toolBarManager.add(new Separator());
         //toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH, "Refresh result set", DBIcon.RS_REFRESH.getImageDescriptor()));
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
-        toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, CommandContributionItem.STYLE_PUSH, DBIcon.FIND_TEXT.getImageDescriptor()));
+        //toolBarManager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE, CommandContributionItem.STYLE_PUSH, DBIcon.FIND_TEXT.getImageDescriptor()));
+
+        FindReplaceAction findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", site.getPart()); //$NON-NLS-1$
+        findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
+        findReplaceAction.setImageDescriptor(DBIcon.FIND_TEXT.getImageDescriptor());
+        toolBarManager.add(findReplaceAction);
+
         Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBIcon.RS_REFRESH.getImageDescriptor()) {
             @Override
             public void run()
@@ -1475,11 +1483,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public IWorkbenchPartSite getSite()
     {
         return site;
-    }
-
-    public Spreadsheet getGridControl()
-    {
-        return this.spreadsheet;
     }
 
     public ResultSetModel getModel()
