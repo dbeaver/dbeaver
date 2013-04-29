@@ -2604,7 +2604,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public void runWithEvent(Event event)
         {
-            Menu menu = getMenu(getControl());
+            Menu menu = getMenu(getSpreadsheet());
             if (menu != null && event.widget instanceof ToolItem) {
                 Rectangle bounds = ((ToolItem) event.widget).getBounds();
                 Point point = ((ToolItem) event.widget).getParent().toDisplay(bounds.x, bounds.y + bounds.height);
@@ -2622,7 +2622,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Menu getMenu(Control parent)
         {
-            ResultSetViewer.this.getControl().setFocus();
             MenuManager menuManager = new MenuManager();
             menuManager.add(new ShowFiltersAction());
             menuManager.add(new Separator());
@@ -2657,7 +2656,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private class ShowFiltersAction extends Action {
         public ShowFiltersAction()
         {
-            super(CoreMessages.controls_resultset_viewer_action_custom_filter);
+            super(CoreMessages.controls_resultset_viewer_action_order_filter, DBIcon.FILTER.getImageDescriptor());
         }
 
         @Override
