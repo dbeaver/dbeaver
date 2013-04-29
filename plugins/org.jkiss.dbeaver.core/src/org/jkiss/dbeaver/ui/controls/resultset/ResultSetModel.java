@@ -145,6 +145,11 @@ public class ResultSetModel {
         return -1;
     }
 
+    public boolean isEmpty()
+    {
+        return getRowCount() <= 0 || visibleColumns.length <= 0;
+    }
+
     public int getRowCount()
     {
         return curRows.size();
@@ -503,4 +508,5 @@ public class ResultSetModel {
             }
         });
     }
+
 }
