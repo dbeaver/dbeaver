@@ -1127,6 +1127,25 @@ public class UIUtils {
     }
 
     /**
+     * Determine wether this control or any of it's child has focus
+     * @param control control to check
+     * @return true if it has focus
+     */
+    public static boolean hasFocus(Control control)
+    {
+        Control focusControl = control.getDisplay().getFocusControl();
+        if (focusControl == null) {
+            return false;
+        }
+        for (Control fc = focusControl; fc != null; fc = fc.getParent()) {
+            if (fc == control) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Eclipse hack.
      * Disables/enabled all key bindings in specified site's part.
      * Works only if host editor is extender of AbstractTextEditor

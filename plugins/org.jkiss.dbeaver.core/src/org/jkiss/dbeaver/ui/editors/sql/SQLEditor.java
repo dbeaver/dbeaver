@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -61,6 +62,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
+import org.jkiss.dbeaver.ui.CompositeFindReplaceTarget;
 import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -194,6 +196,12 @@ public class SQLEditor extends SQLEditorBase
     public Object getAdapter(Class required)
     {
         if (resultsView != null) {
+            if (required == IFindReplaceTarget.class) {
+                return new CompositeFindReplaceTarget(
+                    new IFindReplaceTarget[] {
+                        resultsView.getFindReplaceTarget(),
+                        getViewer().getFindReplaceTarget()});
+            }
             Object adapter = resultsView.getAdapter(required);
             if (adapter != null) {
                 return adapter;

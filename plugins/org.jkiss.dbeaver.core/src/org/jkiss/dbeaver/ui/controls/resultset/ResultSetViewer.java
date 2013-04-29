@@ -31,6 +31,7 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -161,6 +162,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private final Font boldFont;
 
     private ResultSetDataPumpJob dataPumpJob;
+    private ResultSetFindReplaceTarget findReplaceTarget;
 
     private final ResultSetModel model = new ResultSetModel();
 
@@ -465,6 +467,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return getDataContainer().getDataSource();
     }
 
+    public IFindReplaceTarget getFindReplaceTarget()
+    {
+        if (findReplaceTarget == null) {
+            findReplaceTarget = new ResultSetFindReplaceTarget(this);
+        }
+        return findReplaceTarget;
+    }
+
     @Override
     public Object getAdapter(Class adapter)
     {
@@ -492,6 +502,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             });
             return page;
+        } else if (adapter == IFindReplaceTarget.class) {
+            return getFindReplaceTarget();
         }
         return null;
     }
@@ -2809,7 +2821,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private class ResultSetSelectionImpl implements ResultSetSelection {
         @Override
-        public Object getFirstElement()
+        public GridPos getFirstElement()
         {
             Collection<GridPos> ssSelection = spreadsheet.getSelection();
             return ssSelection.isEmpty() ? null : ssSelection.iterator().next();
