@@ -226,4 +226,10 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     {
     }
 
+    @Override
+    public String toString()
+    {
+        return "Target: " + resultSet.getDataContainer().getName();
+    }
+
 }
