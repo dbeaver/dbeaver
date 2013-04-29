@@ -24,11 +24,13 @@ import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.IFindReplaceTargetExtension;
 import org.eclipse.jface.text.IFindReplaceTargetExtension3;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -140,12 +142,56 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
+        IGridContentProvider contentProvider = resultSet.getSpreadsheet().getContentProvider();
+        ILabelProvider labelProvider = resultSet.getSpreadsheet().getContentLabelProvider();
+        ResultSetModel model = resultSet.getModel();
+        int rowCount = model.getRowCount();
+        int columnCount = model.getVisibleColumns().length;
+        if (rowCount <= 0 || columnCount <= 0) {
+            // Empty model
+            return -1;
+        }
         GridPos startPosition = resultSet.getSelection().getFirstElement();
         if (startPosition == null) {
             // From the beginning
             startPosition = new GridPos(0, 0);
         }
-        return 0;
+        for (GridPos curPosition = startPosition;;) {
+            //Object element = contentProvider.getElement(curPosition);
+            if (searchForward) {
+                curPosition.col++;
+                if (curPosition.col >= columnCount) {
+                    curPosition.col = 0;
+                    curPosition.row++;
+                }
+            } else {
+                curPosition.col--;
+                if (curPosition.col < 0) {
+                    curPosition.col = columnCount - 1;
+                    curPosition.row--;
+                }
+            }
+            if (curPosition.row < 0 || curPosition.row >= rowCount) {
+                if (offset == -1) {
+                    // Wrap search - redo search one more time
+                    offset = 0;
+                    if (searchForward) {
+                        curPosition = new GridPos(0, 0);
+                    } else {
+                        curPosition = new GridPos(columnCount - 1, rowCount - 1);
+                    }
+                } else {
+                    // Not found
+                    return -1;
+                }
+            }
+            String cellText = labelProvider.getText(curPosition);
+            if (cellText.contains(findString)) {
+                resultSet.setSelection(
+                    new StructuredSelection(curPosition), true);
+                return curPosition.row;
+            }
+        }
     }
 
     @Override
