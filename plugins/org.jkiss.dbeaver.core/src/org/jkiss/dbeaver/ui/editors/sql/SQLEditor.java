@@ -32,6 +32,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -62,7 +64,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.CompositeFindReplaceTarget;
+import org.jkiss.dbeaver.ui.DynamicFindReplaceTarget;
 import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -109,6 +111,7 @@ public class SQLEditor extends SQLEditorBase
     private volatile int curJobRunning = 0;
     private final DataContainer dataContainer;
     private DBSDataSourceContainer dataSourceContainer;
+    private final DynamicFindReplaceTarget findReplaceTarget = new DynamicFindReplaceTarget();;
 
     private static Image imgDataGrid;
     private static Image imgExplainPlan;
@@ -195,13 +198,19 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public Object getAdapter(Class required)
     {
+/*
+        // Return find/replace target of RSV only if it is in focus
+        if (required == IFindReplaceTarget.class) {
+            return
+                UIUtils.hasFocus(resultsView.getControl()) ?
+                    resultsView.getAdapter(required) :
+                    super.getAdapter(required);
+        }
+*/
+        if (required == IFindReplaceTarget.class) {
+            return findReplaceTarget;
+        }
         if (resultsView != null) {
-            if (required == IFindReplaceTarget.class) {
-                return new CompositeFindReplaceTarget(
-                    new IFindReplaceTarget[] {
-                        resultsView.getFindReplaceTarget(),
-                        getViewer().getFindReplaceTarget()});
-            }
             Object adapter = resultsView.getAdapter(required);
             if (adapter != null) {
                 return adapter;
@@ -293,6 +302,24 @@ public class SQLEditor extends SQLEditorBase
             selectionProvider.trackViewer(planView.getViewer().getControl(), planView.getViewer());
             getSite().setSelectionProvider(selectionProvider);
         }
+
+        // Find/replace target activation
+        resultsView.getSpreadsheet().addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+                findReplaceTarget.setTarget(resultsView.getFindReplaceTarget());
+            }
+        });
+        getViewer().getTextWidget().addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+                findReplaceTarget.setTarget(getViewer().getFindReplaceTarget());
+            }
+        });
+        // By default use editor's target
+        findReplaceTarget.setTarget(getViewer().getFindReplaceTarget());
 
         // Check connection
         checkConnected();

@@ -28,65 +28,63 @@ import org.eclipse.swt.graphics.Point;
 /**
  * Composite find/replace target
  */
-public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
+public class DynamicFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
 
-    private final IFindReplaceTarget[] targets;
+    private IFindReplaceTarget target;
 
-    public CompositeFindReplaceTarget(IFindReplaceTarget[] targets)
+    public DynamicFindReplaceTarget()
     {
-        this.targets = targets;
     }
 
-    private IFindReplaceTarget getCurrentTarget()
+    public IFindReplaceTarget getTarget()
     {
-        for (IFindReplaceTarget target : targets) {
-            if (target.canPerformFind()) {
-                return target;
-            }
-        }
-        return targets[0];
+        return target;
+    }
+
+    public void setTarget(IFindReplaceTarget target)
+    {
+        this.target = target;
     }
 
     @Override
     public boolean canPerformFind()
     {
-        return getCurrentTarget().canPerformFind();
+        return this.target != null && this.target.canPerformFind();
     }
 
     @Override
     public int findAndSelect(int widgetOffset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord)
     {
-        return getCurrentTarget().findAndSelect(widgetOffset, findString, searchForward, caseSensitive, wholeWord);
+        return this.target.findAndSelect(widgetOffset, findString, searchForward, caseSensitive, wholeWord);
     }
 
     @Override
     public Point getSelection()
     {
-        return getCurrentTarget().getSelection();
+        return this.target.getSelection();
     }
 
     @Override
     public String getSelectionText()
     {
-        return getCurrentTarget().getSelectionText();
+        return this.target.getSelectionText();
     }
 
     @Override
     public boolean isEditable()
     {
-        return getCurrentTarget().isEditable();
+        return this.target.isEditable();
     }
 
     @Override
     public void replaceSelection(String text)
     {
-        getCurrentTarget().replaceSelection(text);
+        this.target.replaceSelection(text);
     }
 
     @Override
     public void beginSession()
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension) {
             ((IFindReplaceTargetExtension) target).beginSession();
         }
@@ -95,7 +93,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public void endSession()
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension) {
             ((IFindReplaceTargetExtension) target).endSession();
         }
@@ -104,7 +101,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public IRegion getScope()
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension) {
             return ((IFindReplaceTargetExtension) target).getScope();
         }
@@ -114,7 +110,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public void setScope(IRegion scope)
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension) {
             ((IFindReplaceTargetExtension) target).setScope(scope);
         }
@@ -123,7 +118,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public Point getLineSelection()
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension) {
             return ((IFindReplaceTargetExtension) target).getLineSelection();
         }
@@ -133,7 +127,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public void setSelection(int offset, int length)
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension) {
             ((IFindReplaceTargetExtension) target).setSelection(offset, length);
         }
@@ -142,7 +135,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public void setScopeHighlightColor(Color color)
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension) {
             ((IFindReplaceTargetExtension) target).setScopeHighlightColor(color);
         }
@@ -151,7 +143,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public void setReplaceAllMode(boolean replaceAll)
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension) {
             ((IFindReplaceTargetExtension) target).setReplaceAllMode(replaceAll);
         }
@@ -160,7 +151,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension3) {
             return ((IFindReplaceTargetExtension3) target).findAndSelect(offset, findString, searchForward, caseSensitive, wholeWord, regExSearch);
         }
@@ -170,7 +160,6 @@ public class CompositeFindReplaceTarget implements IFindReplaceTarget, IFindRepl
     @Override
     public void replaceSelection(String text, boolean regExReplace)
     {
-        IFindReplaceTarget target = getCurrentTarget();
         if (target instanceof IFindReplaceTargetExtension3) {
             ((IFindReplaceTargetExtension3) target).replaceSelection(text, regExReplace);
         }
