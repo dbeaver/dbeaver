@@ -62,13 +62,18 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
             // Set selection provider from resultset
             getSite().setSelectionProvider(resultSetView);
 
-            FindReplaceAction findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", this); //$NON-NLS-1$
-            findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
-
-            IActionBars actionBars = getEditorSite().getActionBars();
-            actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(), findReplaceAction);
-            actionBars.updateActionBars();
+//            FindReplaceAction findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", this); //$NON-NLS-1$
+//            findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
+//
+//            IActionBars actionBars = getEditorSite().getActionBars();
+//            actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(), findReplaceAction);
+//            actionBars.updateActionBars();
         }
+
+//        FindReplaceAction action = (FindReplaceAction)getEditorSite().getActionBars().getGlobalActionHandler(ActionFactory.FIND.getId());
+//        if (action != null) {
+//            action.update();
+//        }
 
         if (!loaded) {
             if (getDatabaseObject() != null && getDatabaseObject().isPersisted()) {
@@ -116,7 +121,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     public void setFocus()
     {
         if (resultSetView != null) {
-            resultSetView.getGridControl().setFocus();
+            resultSetView.getSpreadsheet().setFocus();
         }
     }
 
