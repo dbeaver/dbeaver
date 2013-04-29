@@ -670,7 +670,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         //updateEditControls();
     }
 
-    Spreadsheet getSpreadsheet()
+    public Spreadsheet getSpreadsheet()
     {
         return spreadsheet;
     }
@@ -1505,6 +1505,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public void setSelection(ISelection selection, boolean reveal)
     {
+        spreadsheet.deselectAllCells();
+        if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+            List<GridPos> cellSelection = new ArrayList<GridPos>();
+            for (Iterator iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
+                Object cell = iter.next();
+                if (cell instanceof GridPos) {
+                    cellSelection.add((GridPos) cell);
+                } else {
+                    log.warn("Bad selection object: " + cell);
+                }
+            }
+            spreadsheet.selectCells(cellSelection);
+        }
         fireSelectionChanged(new SelectionChangedEvent(this, selection));
     }
 
