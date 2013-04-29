@@ -24,7 +24,6 @@ import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.IFindReplaceTargetExtension;
 import org.eclipse.jface.text.IFindReplaceTargetExtension3;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
@@ -80,7 +79,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         if (selection == null) {
             return "";
         }
-        String value = resultSet.getSpreadsheet().getContentLabelProvider().getText(selection);
+        String value = resultSet.getSpreadsheet().getContentProvider().getElementText(selection);
         return CommonUtils.toString(value);
     }
 
@@ -147,7 +146,6 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
         IGridContentProvider contentProvider = resultSet.getSpreadsheet().getContentProvider();
-        ILabelProvider labelProvider = resultSet.getSpreadsheet().getContentLabelProvider();
         ResultSetModel model = resultSet.getModel();
         int rowCount = model.getRowCount();
         int columnCount = model.getVisibleColumns().length;
@@ -202,7 +200,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
                     return -1;
                 }
             }
-            String cellText = labelProvider.getText(curPosition);
+            String cellText = contentProvider.getElementText(curPosition);
             if (matchesValue(findString, findPattern, cellText, caseSensitive, wholeWord)) {
                 resultSet.setSelection(
                     new StructuredSelection(curPosition), true);
