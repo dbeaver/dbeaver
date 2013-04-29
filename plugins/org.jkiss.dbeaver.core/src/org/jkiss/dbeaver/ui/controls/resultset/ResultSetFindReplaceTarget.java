@@ -24,13 +24,11 @@ import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.text.IFindReplaceTargetExtension;
 import org.eclipse.jface.text.IFindReplaceTargetExtension3;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -41,15 +39,12 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     static final Log log = LogFactory.getLog(ResultSetFindReplaceTarget.class);
 
     private final ResultSetViewer resultSet;
-    private IFindReplaceTarget hostTarget;
+    private Color scopeHighlightColor;
+    private boolean replaceAll;
 
     ResultSetFindReplaceTarget(ResultSetViewer resultSet)
     {
-        IWorkbenchPartSite site = resultSet.getSite();
-        IWorkbenchPart part = site.getPart();
-        if (part instanceof BaseTextEditor) {
-            hostTarget = ((BaseTextEditor) part).getViewer().getFindReplaceTarget();
-        }
+
         this.resultSet = resultSet;
     }
 
@@ -62,7 +57,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public int findAndSelect(int widgetOffset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord)
     {
-        return 0;
+        return findAndSelect(widgetOffset, findString, searchForward, caseSensitive, wholeWord, false);
     }
 
     @Override
@@ -86,12 +81,13 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public boolean isEditable()
     {
-        return false;
+        return !resultSet.isReadOnly();
     }
 
     @Override
     public void replaceSelection(String text)
     {
+        replaceSelection(text, false);
     }
 
     @Override
@@ -124,21 +120,31 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public void setSelection(int offset, int length)
     {
+        resultSet.setSelection(
+            new StructuredSelection(
+                new GridPos(offset, length)));
     }
 
     @Override
     public void setScopeHighlightColor(Color color)
     {
+        this.scopeHighlightColor = color;
     }
 
     @Override
     public void setReplaceAllMode(boolean replaceAll)
     {
+        this.replaceAll = replaceAll;
     }
 
     @Override
     public int findAndSelect(int offset, String findString, boolean searchForward, boolean caseSensitive, boolean wholeWord, boolean regExSearch)
     {
+        GridPos startPosition = resultSet.getSelection().getFirstElement();
+        if (startPosition == null) {
+            // From the beginning
+            startPosition = new GridPos(0, 0);
+        }
         return 0;
     }
 
