@@ -260,6 +260,7 @@ public class ResultSetModel {
             DBSEntity sourceTable = null;
             for (DBDAttributeBinding column : visibleColumns) {
                 if (isColumnReadOnly(column)) {
+                    singleSourceCells = false;
                     break;
                 }
                 if (sourceTable == null) {
