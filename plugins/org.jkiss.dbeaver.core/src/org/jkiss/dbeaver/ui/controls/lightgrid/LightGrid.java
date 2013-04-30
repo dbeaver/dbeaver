@@ -423,6 +423,7 @@ public abstract class LightGrid extends Canvas {
 
         setForeground(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
         setLineColor(getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
+        backgroundColor = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 
         if ((style & SWT.MULTI) != 0) {
             selectionType = SWT.MULTI;
@@ -447,9 +448,6 @@ public abstract class LightGrid extends Canvas {
         initListeners();
 
         itemHeight = sizingGC.getFontMetrics().getHeight() + 3;
-
-
-        //RGB white = getDisplay().getSystemColor(SWT.COLOR_WHITE).getRGB();
 
         RGB cellSel = blend(
             getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION).getRGB(),
@@ -545,9 +543,6 @@ public abstract class LightGrid extends Canvas {
     @Override
     public Color getBackground()
     {
-        checkWidget();
-        if (backgroundColor == null)
-            return getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         return backgroundColor;
     }
 
@@ -557,7 +552,6 @@ public abstract class LightGrid extends Canvas {
     @Override
     public void setBackground(Color color)
     {
-        checkWidget();
         backgroundColor = color;
         redraw();
     }
@@ -4391,12 +4385,12 @@ public abstract class LightGrid extends Canvas {
         } while (true);
     }
 
-    private int blend(int v1, int v2, int ratio)
+    private static int blend(int v1, int v2, int ratio)
     {
         return (ratio * v1 + (100 - ratio) * v2) / 100;
     }
 
-    private RGB blend(RGB c1, RGB c2, int ratio)
+    public static RGB blend(RGB c1, RGB c2, int ratio)
     {
         int r = blend(c1.red, c2.red, ratio);
         int g = blend(c1.green, c2.green, ratio);
