@@ -44,6 +44,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     static final Log log = LogFactory.getLog(ResultSetFindReplaceTarget.class);
 
     private final ResultSetViewer resultSet;
+    private String searchString;
     private Color scopeHighlightColor;
     private boolean replaceAll;
 
@@ -203,6 +204,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
             if (matchesValue(findString, findPattern, cellText, caseSensitive, wholeWord)) {
                 resultSet.setSelection(
                     new StructuredSelection(curPosition), true);
+                searchString = findString;
                 return curPosition.row;
             }
         }
@@ -224,6 +226,27 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
     @Override
     public void replaceSelection(String text, boolean regExReplace)
     {
+        GridPos selection = resultSet.getSelection().getFirstElement();
+        if (selection == null || !resultSet.isValidCell(selection)) {
+            return;
+        }
+        String oldValue = resultSet.getSpreadsheet().getContentProvider().getElementText(selection);
+        String newValue = text;
+/*
+        if (regExReplace) {
+            newValue = oldValue.replaceAll(searchString, text);
+        } else {
+            newValue = oldValue.replace(searchString, text);
+        }
+*/
+
+        selection = resultSet.translateGridPos(selection);
+        resultSet.getModel().getCellValue(selection.row, selection.col);
+        resultSet.getModel().updateCellValue(selection.row, selection.col, newValue);
+
+        resultSet.updateEditControls();
+        resultSet.getSpreadsheet().redrawGrid();
+        resultSet.previewValue();
     }
 
     @Override
