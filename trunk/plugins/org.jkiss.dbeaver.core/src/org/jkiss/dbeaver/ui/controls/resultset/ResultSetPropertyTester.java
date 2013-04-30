@@ -71,7 +71,14 @@ public class ResultSetPropertyTester extends PropertyTester
             }
             if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
                 GridPos pos = rsv.getCurrentPosition();
-                return pos != null && rsv.isValidCell(pos);
+                if (pos == null || !rsv.isValidCell(pos)) {
+                    return false;
+                }
+                if ("inline".equals(expectedValue)) {
+                    return !rsv.isColumnReadOnly(pos);
+                } else {
+                    return true;
+                }
             } else if ("add".equals(expectedValue)) {
                 return rsv.isInsertable();
             } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
