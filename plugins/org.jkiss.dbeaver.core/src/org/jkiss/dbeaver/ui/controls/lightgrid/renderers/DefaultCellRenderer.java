@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid.renderers;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
@@ -73,7 +74,17 @@ public class DefaultCellRenderer extends GridCellRenderer {
         }
 
         if (drawAsSelected) {
-            gc.setBackground(colorSelected);
+            Color cellBackground = grid.getCellBackground(column, row);
+            if (cellBackground.equals(grid.getBackground())) {
+                gc.setBackground(colorSelected);
+            } else {
+                RGB cellSel = LightGrid.blend(
+                    cellBackground.getRGB(),
+                    colorSelected.getRGB(),
+                    50);
+
+                gc.setBackground(DBeaverUI.getSharedTextColors().getColor(cellSel));
+            }
             gc.setForeground(colorSelectedText);
         } else {
             if (grid.isEnabled()) {
