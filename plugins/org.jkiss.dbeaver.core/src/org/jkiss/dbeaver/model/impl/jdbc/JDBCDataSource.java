@@ -337,6 +337,11 @@ public abstract class JDBCDataSource
             } else if ("NCLOB".equalsIgnoreCase(typeName)) {
                 return Types.NCLOB;
             }
+        } else if (valueType == Types.BIT) {
+            // Workaround for MySQL (and maybe others) when TINYINT(1) == BOOLEAN
+            if ("TINYINT".equalsIgnoreCase(typeName)) {
+                return Types.TINYINT;
+            }
         }
         return valueType;
     }
