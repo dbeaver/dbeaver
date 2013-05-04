@@ -13,13 +13,14 @@
    </configIni>
 
    <launcherArgs>
+      <programArgs>-showsplash</programArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
    </launcherArgs>
 
    <windowImages i48="/org.jkiss.dbeaver.core.application/icons/dbeaver.png"/>
 
    <splash
-      location="org.jkiss.dbeaver.core"
+      location="org.jkiss.dbeaver.core.application"
       startupProgressRect="25,45,150,15"
       startupMessageRect="25,25,200,15"
       startupForegroundColor="000000" />
