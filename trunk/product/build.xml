@@ -255,11 +255,38 @@
     <!-- ===================================================================== -->
 
     <target name="nsis">
+        <echo message="Extract archive"/>
         <unzip 
             src="${distDirectory}/${buildId}-win32.win32.${arch}.zip"
             dest="${buildDirectory}/installer/raw/win32.${arch}"
             overwrite="true"
             />
+        <echo message="Unsgn jars"/>
+        <ant dir="../tools/jar-unsigner" antfile="build.xml" target="jar-unsign">
+            <property name="jarDirectory" value="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins"/>
+        </ant>
+
+        <echo message="Extract JRE"/>
+        <unzip
+            src="${buildDirectory}/../../contrib/jre/windows/jre6_u43_${arch}.zip"
+            dest="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/jre"
+            overwrite="true"
+            />
+
+        <echo message="Pack200 all jars"/>
+        <apply executable="pack200" parallel="false" dest="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" verbose="true">
+            <arg value="--modification-time=latest"/>
+            <arg value="--deflate-hint=true"/>
+            <arg value="--segment-limit=-1"/>
+            <arg value="-g"/>
+            <targetfile/>
+            <srcfile/>
+            <fileset dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="*.jar" />
+            <mapper type="glob" from="*" to="*.pack" />
+        </apply>
+        <delete dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="*.jar"/>
+
+        <echo message="Filter installer script"/>
         <filter filtersfile="build.properties"/>
         <filter token="arch" value="${arch}"/>
         <filter token="product.dir" value="..\..\.."/>

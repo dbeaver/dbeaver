@@ -30,14 +30,6 @@
   VIAddVersionKey "FileVersion" "@productVersion@"
   VIProductVersion "@productVersion@.0"
 
-; Definitions for Java 6.0
-  !define JRE_VERSION "6.0"
-  !define JRE_URL "http://javadl.sun.com/webapps/download/AutoDL?BundleId=74822"
- 
-; use javaw.exe to avoid dosbox.
-; use java.exe to keep stdout/stderr
-  !define JAVAEXE "javaw.exe"
-
   ;Default installation folder
   InstallDir "$PROGRAMFILES\DBeaver"
 
@@ -46,6 +38,8 @@
 
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin
+
+  SetCompressor /FINAL /SOLID lzma
 
   Var JAVA_LOCALE
 
@@ -110,8 +104,6 @@ FunctionEnd
 !include "WordFunc.nsh"
 !insertmacro VersionCompare
 
-!include "JRE.nsh"
-
 ;--------------------------------
 ;Languages
 
@@ -145,34 +137,37 @@ FunctionEnd
 
 Section "-DBeaver Core" SecCore
 
-  ; Install JRE on demand
-  SetShellVarContext all
-  Call GetJRE
-  
   ; If there is previous version of DBeaver - remove it's configuration and plugins
   RMDir /r $INSTDIR\configuration
   RMDir /r $INSTDIR\plugins
   RMDir /r $INSTDIR\licenses
+  RMDir /r $INSTDIR\jre
 
   SetOutPath "$INSTDIR"
-  
-  ; Copy files
+
+  ; Eclipse files
   File "..\raw\win32.@arch@\dbeaver\.eclipseproduct"
   File "..\raw\win32.@arch@\dbeaver\readme.txt"
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
-  File /r  /x org.jkiss.*.jar "..\raw\win32.@arch@\dbeaver\plugins"
+  File /r  /x org.jkiss.* "..\raw\win32.@arch@\dbeaver\plugins"
 
+  ; JRE and unpack script
+  File /r "..\raw\win32.@arch@\dbeaver\jre"
+  File "..\..\..\installer\nsis\install.cmd"
+
+  ; Licenses
   CreateDirectory $INSTDIR\licenses
   SetOutPath "$INSTDIR\licenses"
 
   File "..\raw\win32.@arch@\dbeaver\licenses\*.*"
 
+  ; Core plugins
   SetOutPath "$INSTDIR\plugins"
   
-  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core_*.jar"
-  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core.application_*.jar"
-  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.utils_*.jar"
+  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core_*"
+  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.core.application_*"
+  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.utils_*"
   
   ;Store installation folder
   WriteRegStr HKCU "Software\DBeaver" "" $INSTDIR
@@ -197,7 +192,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.generic_*.jar"
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.generic_*"
 
 	SectionEnd
 
@@ -205,7 +200,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.mysql_*.jar"
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.mysql_*"
 
 	SectionEnd
 
@@ -213,7 +208,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.oracle_*.jar"
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.oracle_*"
 
 	SectionEnd
 
@@ -221,8 +216,8 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.wmi_*.jar"
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.wmi_*.jar"
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.wmi_*"
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.wmi_*"
 
 	SectionEnd
 
@@ -230,7 +225,7 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.nosql*.jar"
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.nosql*"
 
 	SectionEnd
 
@@ -238,12 +233,12 @@ SectionGroup /e "Plugins"
 
 	  SetOutPath "$INSTDIR\plugins"
 	  
-	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.erd_*.jar"
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.erd_*"
 
 	SectionEnd
 	
 	Section "-Import 3rd Party Configurations" Sec3RD
-		File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.import_config_*.jar"
+		File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.import_config_*"
 	SectionEnd
 
 SectionGroupEnd
@@ -252,6 +247,12 @@ Section "-Drivers" SecDrivers
   SetOutPath "$INSTDIR"
 ;  File /r "..\raw\win32.@arch@\dbeaver\drivers"
 
+SectionEnd
+
+Section "-UnpackJars" SecUnpackJars
+    ExpandEnvStrings $0 %COMSPEC%
+    ExecWait '"$0" /C "$INSTDIR\install.cmd"'
+    Delete "$INSTDIR\install.cmd"
 SectionEnd
 
 ;--------------------------------
@@ -295,6 +296,7 @@ Section "Uninstall"
   RMDir /r "$INSTDIR\configuration"
   RMDir /r "$INSTDIR\plugins"
   RMDir /r "$INSTDIR\drivers"
+  RMDir /r "$INSTDIR\jre"
   RMDir "$INSTDIR"
 
   !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder
