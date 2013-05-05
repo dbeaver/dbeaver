@@ -53,15 +53,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     @Override
     public void activatePart()
     {
-        if (resultSetView == null) {
-            resultSetView = new ResultSetViewer(parent, getSite(), this);
-            resultSetView.addListener(this);
-            parent.layout();
-            resultSetView.getControl().setFocus();
-
-            // Set selection provider from resultset
-            getSite().setSelectionProvider(resultSetView);
-        }
+        createResultSetView();
 
 //        FindReplaceAction action = (FindReplaceAction)getEditorSite().getActionBars().getGlobalActionHandler(ActionFactory.FIND.getId());
 //        if (action != null) {
@@ -76,6 +68,19 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
             }
         }
         //resultSetView.setSelection(resultSetView.getSelection());
+    }
+
+    private void createResultSetView()
+    {
+        if (resultSetView == null) {
+            resultSetView = new ResultSetViewer(parent, getSite(), this);
+            resultSetView.addListener(this);
+            parent.layout();
+            resultSetView.getControl().setFocus();
+
+            // Set selection provider from resultset
+            getSite().setSelectionProvider(resultSetView);
+        }
     }
 
     @Override
@@ -113,6 +118,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     @Override
     public void setFocus()
     {
+        createResultSetView();
         if (resultSetView != null) {
             resultSetView.getSpreadsheet().setFocus();
         }
