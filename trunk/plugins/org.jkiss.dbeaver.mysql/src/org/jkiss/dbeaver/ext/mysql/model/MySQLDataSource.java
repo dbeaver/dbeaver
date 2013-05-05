@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -364,7 +363,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             if (product != null) {
                 String appName = DBeaverCore.getProductTitle();
                 try {
-                    ((Connection)mysqlConnection).setClientInfo("ApplicationName", appName);
+                    mysqlConnection.getConnection().setClientInfo("ApplicationName", appName);
                 } catch (Throwable e) {
                     // just ignore
                     log.debug(e);
