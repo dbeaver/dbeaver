@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 
 /**
@@ -74,7 +73,9 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
                         PrefConstants.CONFIRM_KEEP_STATEMENT_OPEN,
                         ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID) {
                     globalPreferenceStore.setValue(PrefConstants.KEEP_STATEMENT_OPEN, true);
-                    ((SQLEditor)valueController.getValueSite().getPart()).getResultsView().refresh();
+                    if (valueController.getValueSite().getPart() instanceof ResultSetProvider) {
+                        ((ResultSetProvider)valueController.getValueSite().getPart()).getResultSetViewer().refresh();
+                    }
                 }
                 dialogGroup.getDisplay().asyncExec(new Runnable()
                 {

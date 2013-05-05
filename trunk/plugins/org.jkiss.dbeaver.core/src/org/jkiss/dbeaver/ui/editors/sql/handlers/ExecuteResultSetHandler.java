@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 
-public class ExecuteStatementHandler extends AbstractHandler
+public class ExecuteResultSetHandler extends AbstractHandler
 {
 
     @Override
@@ -34,7 +34,7 @@ public class ExecuteStatementHandler extends AbstractHandler
     {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
-            editor.processSQL(false, false);
+            editor.processSQL(true, false);
         }
         return null;
     }

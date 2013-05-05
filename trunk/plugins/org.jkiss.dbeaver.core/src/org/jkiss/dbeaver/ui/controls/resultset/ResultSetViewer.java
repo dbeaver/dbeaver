@@ -321,7 +321,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         //UIUtils.createControlLabel(filtersPanel, " Filter");
 
-        this.filtersText = new Combo(filtersPanel, SWT.BORDER | SWT.DROP_DOWN);
+        this.filtersText = new Combo(filtersPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.NO_FOCUS);
         this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         this.filtersText.addSelectionListener(new SelectionAdapter() {
             @Override

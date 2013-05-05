@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.runtime.qm.QMEventFilter;
 import org.jkiss.dbeaver.runtime.qm.QMMetaEvent;
 import org.jkiss.dbeaver.runtime.qm.meta.*;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
@@ -46,16 +47,19 @@ class SQLLogFilter implements QMEventFilter {
         QMMObject object = event.getObject();
         if (object instanceof QMMSessionInfo) {
             return ((QMMSessionInfo)object).getContainer() == editor.getDataSourceContainer();
-        } else if (object instanceof QMMStatementExecuteInfo) {
-            DBCStatement statement = ((QMMStatementExecuteInfo) object).getStatement().getReference();
-            return statement != null && statement.getUserData() == editor.getResultsView().getDataReceiver();
-        } else if (object instanceof QMMStatementInfo) {
-            DBCStatement statement = ((QMMStatementInfo) object).getReference();
-            return statement != null && statement.getUserData() == editor.getResultsView().getDataReceiver();
-        } else if (object instanceof QMMTransactionInfo) {
-            return ((QMMTransactionInfo)object).getSession().getReference() == editor.getDataSource();
-        } else if (object instanceof QMMTransactionSavepointInfo) {
-            return ((QMMTransactionSavepointInfo)object).getTransaction().getSession().getReference() == editor.getDataSource();
+        } else {
+            ResultSetViewer resultSetViewer = editor.getResultSetViewer();
+            if (object instanceof QMMStatementExecuteInfo) {
+                DBCStatement statement = ((QMMStatementExecuteInfo) object).getStatement().getReference();
+                return statement != null && resultSetViewer != null && statement.getUserData() == resultSetViewer.getDataReceiver();
+            } else if (object instanceof QMMStatementInfo) {
+                DBCStatement statement = ((QMMStatementInfo) object).getReference();
+                return statement != null && resultSetViewer != null && statement.getUserData() == resultSetViewer.getDataReceiver();
+            } else if (object instanceof QMMTransactionInfo) {
+                return ((QMMTransactionInfo)object).getSession().getReference() == editor.getDataSource();
+            } else if (object instanceof QMMTransactionSavepointInfo) {
+                return ((QMMTransactionSavepointInfo)object).getTransaction().getSession().getReference() == editor.getDataSource();
+            }
         }
         return false;
     }
