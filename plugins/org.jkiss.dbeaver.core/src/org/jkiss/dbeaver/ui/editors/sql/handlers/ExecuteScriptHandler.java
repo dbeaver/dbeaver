@@ -34,7 +34,7 @@ public class ExecuteScriptHandler extends AbstractHandler
     {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
-            editor.processSQL(true);
+            editor.processSQL(false, true);
         }
         return null;
     }
