@@ -22,7 +22,7 @@
   OutFile "@product.dir@\dist\@archivePrefix@-@productVersion@-@arch@-setup.exe"
 
   VIAddVersionKey "ProductName" "DBeaver"
-  VIAddVersionKey "Comments" "Univarsal Database Manager"
+  VIAddVersionKey "Comments" "Universal Database Manager"
   VIAddVersionKey "CompanyName" "JKISS"
   VIAddVersionKey "LegalTrademarks" "DBeaver is a trademark of JKISS"
   VIAddVersionKey "LegalCopyright" "JKISS"
@@ -140,6 +140,7 @@ Section "-DBeaver Core" SecCore
   ; If there is previous version of DBeaver - remove it's configuration and plugins
   RMDir /r $INSTDIR\configuration
   RMDir /r $INSTDIR\plugins
+  RMDir /r $INSTDIR\features
   RMDir /r $INSTDIR\licenses
   RMDir /r $INSTDIR\jre
 
@@ -151,6 +152,7 @@ Section "-DBeaver Core" SecCore
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
   File /r  /x org.jkiss.* "..\raw\win32.@arch@\dbeaver\plugins"
+  File /r  "..\raw\win32.@arch@\dbeaver\features"
 
   ; JRE and unpack script
   File /r "..\raw\win32.@arch@\dbeaver\jre"

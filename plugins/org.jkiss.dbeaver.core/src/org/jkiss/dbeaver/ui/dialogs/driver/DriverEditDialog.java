@@ -143,8 +143,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         {
             Composite propsGroup = new Composite(group, SWT.NONE);
             propsGroup.setLayout(new GridLayout(2, false));
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            propsGroup.setLayoutData(gd);
+            propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_label_driver_name);
             final Composite namePlaceholder = UIUtils.createPlaceholder(propsGroup, 3, 5);
@@ -208,6 +207,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 
             UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_label_default_port);
             Composite ph = hasSite ? UIUtils.createPlaceholder(propsGroup, 3) : propsGroup;
+            ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             driverPortText = new Text(ph, SWT.BORDER | advStyle);
             driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort()); //$NON-NLS-1$
             driverPortText.setLayoutData(new GridData(SWT.NONE));
@@ -233,7 +233,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                         RuntimeUtils.launchProgram(driver.getWebURL());
                     }
                 });
-                //urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             }
 //            if (!isReadOnly) {
