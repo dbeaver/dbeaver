@@ -368,7 +368,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             @Override
             public void modifyText(ModifyEvent e)
             {
-                applyButton.setEnabled(!filtersText.getText().trim().isEmpty());
+                applyButton.setEnabled(true);
             }
         });
 
