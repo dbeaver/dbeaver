@@ -30,6 +30,7 @@ public class SQLQueryResult
     private Long rowOffset;
     private Long rowCount;
     private Long updateCount;
+    private boolean hasResultSet;
     private Throwable error;
     private long queryTime;
 
@@ -41,25 +42,6 @@ public class SQLQueryResult
     public SQLStatementInfo getStatement() {
         return statement;
     }
-
-/*
-    public DBCResultSetMetaData getResultSetMetaData()
-    {
-        return metaData;
-    }
-
-    public List<Object[]> getRows()
-    {
-        return rows;
-    }
-
-    public void setResultSet(DBCResultSetMetaData metaData, List<Object[]> rows)
-    {
-        this.metaData = metaData;
-        this.rows = rows;
-    }
-
-*/
 
     public Long getRowOffset() {
         return rowOffset;
@@ -87,6 +69,16 @@ public class SQLQueryResult
     public void setUpdateCount(Long updateCount)
     {
         this.updateCount = updateCount;
+    }
+
+    public boolean hasResultSet()
+    {
+        return hasResultSet;
+    }
+
+    public void setHasResultSet(boolean hasResultSet)
+    {
+        this.hasResultSet = hasResultSet;
     }
 
     public boolean hasError()
