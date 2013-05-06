@@ -39,6 +39,7 @@ public class ResultSetModel {
     private final Set<RowInfo> addedRows = new TreeSet<RowInfo>();
     private final Set<RowInfo> removedRows = new TreeSet<RowInfo>();
     private final Map<GridPos, Object> editedValues = new HashMap<GridPos, Object>();
+    private long executionTime;
 
     public boolean isSingleSource()
     {
@@ -510,4 +511,13 @@ public class ResultSetModel {
         });
     }
 
+    public long getExecutionTime()
+    {
+        return executionTime;
+    }
+
+    public void setExecutionTime(long executionTime)
+    {
+        this.executionTime = executionTime;
+    }
 }
