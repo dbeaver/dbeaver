@@ -417,11 +417,11 @@ public class SQLQueryJob extends DataSourceJob
                     if (fetchResultSets) {
                         // Fetch fake result set
                         LocalResultSet fakeResultSet = new LocalResultSet(context, curStatement);
-                        if (updateCount >= 0) {
-                            fakeResultSet.addColumn("Affected Rows", DBSDataKind.NUMERIC);
+                        if (updateCount > 0) {
+                            fakeResultSet.addColumn("Updated Rows", DBSDataKind.NUMERIC);
                             fakeResultSet.addRow(updateCount);
                         } else {
-
+                            fakeResultSet.addColumn("Result", DBSDataKind.NUMERIC);
                         }
                         fetchQueryData(context, fakeResultSet);
                     }
@@ -500,6 +500,27 @@ public class SQLQueryJob extends DataSourceJob
         dataReceiver.fetchStart(context, curResultSet);
 
         try {
+            // Retrieve source entity
+            {
+                DBCResultSetMetaData rsMeta = curResultSet.getResultSetMetaData();
+                String sourceName = null;
+                for (DBCAttributeMetaData attr : rsMeta.getAttributes()) {
+                    String entityName = attr.getEntityName();
+                    if (!CommonUtils.isEmpty(entityName)) {
+                        if (sourceName == null) {
+                            sourceName = entityName;
+                        } else if (!sourceName.equals(entityName)) {
+                            // Multiple source entities
+                            sourceName = null;
+                            break;
+                        }
+                    }
+                }
+                if (!CommonUtils.isEmpty(sourceName)) {
+                    curResult.setSourceEntity(sourceName);
+                }
+            }
+            // Fetch all rows
             while ((!hasLimits() || rowCount < rsMaxRows) && curResultSet.nextRow()) {
                 if (monitor.isCanceled()) {
                     break;

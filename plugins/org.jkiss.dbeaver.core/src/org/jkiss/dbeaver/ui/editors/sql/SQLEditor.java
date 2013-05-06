@@ -586,11 +586,11 @@ public class SQLEditor extends SQLEditorBase
         if (newTab) {
             createResultSetViewer();
         }
-        CTabItem curTab = resultTabs.getSelection();
-        if (!(curTab.getData() instanceof ResultSetViewer)) {
+        if (!(resultTabs.getSelection().getData() instanceof ResultSetViewer)) {
             // Set first results viewer by default
             resultTabs.setSelection(0);
         }
+        final CTabItem curTab = resultTabs.getSelection();
 
         final ResultSetViewer resultsView = getResultSetViewer();
         // Prepare execution job
@@ -672,6 +672,14 @@ public class SQLEditor extends SQLEditorBase
                     if (queries.size() < 2) {
                         getSelectionProvider().setSelection(originalSelection);
                     }
+                    curTab.setToolTipText(result.getStatement().getQuery());
+                    if (!CommonUtils.isEmpty(result.getSourceEntity())) {
+                        curTab.setText(result.getSourceEntity());
+                    } else {
+                        int tabIndex = getTabIndex(curTab);
+                        curTab.setText(
+                            CoreMessages.editors_sql_data_grid + (tabIndex == 0 ? "" : " [" + (tabIndex + 1) + "]"));
+                    }
 
                     if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                         DBeaverUI.notifyAgent(
@@ -716,12 +724,23 @@ public class SQLEditor extends SQLEditorBase
                 } else {
                     resultsView.setDataFilter(new DBDDataFilter(), false);
                     resultsView.refresh();
-                    curTab.setToolTipText(queries.get(0).getQuery());
                 }
             } else {
                 job.schedule();
             }
         }
+    }
+
+    private int getTabIndex(CTabItem tab)
+    {
+        CTabItem[] items = resultTabs.getItems();
+        for (int i = 0; i < items.length; i++) {
+            if (items[i] == tab) {
+                return i;
+            }
+        }
+        log.warn("Bad tab: " + tab);
+        return 0;
     }
 
     private void checkSession()
@@ -892,7 +911,7 @@ public class SQLEditor extends SQLEditorBase
     public ResultSetViewer getResultSetViewer()
     {
         CTabItem curTab = resultTabs == null ? null : resultTabs.getSelection();
-        if (curTab != null) {
+        if (curTab != null && !curTab.isDisposed()) {
             Object tabData = curTab.getData();
             if (tabData instanceof ResultSetViewer) {
                 return (ResultSetViewer) tabData;
