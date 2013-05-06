@@ -32,8 +32,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -77,6 +79,8 @@ public class SQLQueryJob extends DataSourceJob
     private boolean statementCanceled = false;
     private Throwable lastError = null;
 
+    private SQLQueryResult curResult;
+
     private List<ISQLQueryListener> queryListeners = new ArrayList<ISQLQueryListener>();
     private static final String NESTED_QUERY_AlIAS = "origdbvr";
 
@@ -99,7 +103,11 @@ public class SQLQueryJob extends DataSourceJob
             IPreferenceStore preferenceStore = getDataSource().getContainer().getPreferenceStore();
             this.commitType = SQLScriptCommitType.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_COMMIT_TYPE));
             this.errorHandling = SQLScriptErrorHandling.valueOf(preferenceStore.getString(PrefConstants.SCRIPT_ERROR_HANDLING));
-            this.fetchResultSets = (queries.size() == 1);
+            if (queries.size() == 1) {
+                this.fetchResultSets = true;
+            } else {
+                this.fetchResultSets = preferenceStore.getBoolean(PrefConstants.SCRIPT_FETCH_RESULT_SETS);
+            }
             this.rsMaxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
         }
     }
@@ -107,6 +115,11 @@ public class SQLQueryJob extends DataSourceJob
     public SQLStatementInfo getLastQuery()
     {
         return queries.isEmpty() ? null : queries.get(0);
+    }
+
+    public SQLQueryResult getLastResult()
+    {
+        return curResult;
     }
 
     public void setDataReceiver(DBDDataReceiver dataReceiver)
@@ -298,9 +311,9 @@ public class SQLQueryJob extends DataSourceJob
             dataFilter.appendConditionString(getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
             sqlQuery = modifiedQuery.toString();
         }
-        SQLQueryResult result = new SQLQueryResult(sqlStatement);
+        curResult = new SQLQueryResult(sqlStatement);
         if (rsOffset > 0) {
-            result.setRowOffset(rsOffset);
+            curResult.setRowOffset(rsOffset);
         }
         //if (rsMaxRows > 0) {
         //    result.setRowCount(rsMaxRows);
@@ -381,23 +394,36 @@ public class SQLQueryJob extends DataSourceJob
             try {
                 //monitor.subTask("Execute query");
                 boolean hasResultSet = curStatement.executeStatement();
+                curResult.setHasResultSet(hasResultSet);
                 // Show results only if we are not in the script execution
                 // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
                 // return messy results here
                 if (hasResultSet && fetchResultSets) {
-                    fetchQueryData(result, context);
+                    fetchQueryData(context, curStatement.openResultSet());
                 }
                 if (!hasResultSet) {
+                    long updateCount = -1;
                     try {
-                        long updateCount = curStatement.getUpdateRowCount();
+                        updateCount = curStatement.getUpdateRowCount();
                         if (updateCount >= 0) {
-                            result.setUpdateCount(updateCount);
+                            curResult.setUpdateCount(updateCount);
                         }
                     } catch (DBCException e) {
                         // In some cases we can't read update count
                         // This is bad but we can live with it
-                        // Jsut print a warning
+                        // Just print a warning
                         log.warn("Can't obtain update count", e);
+                    }
+                    if (fetchResultSets) {
+                        // Fetch fake result set
+                        LocalResultSet fakeResultSet = new LocalResultSet(context, curStatement);
+                        if (updateCount >= 0) {
+                            fakeResultSet.addColumn("Affected Rows", DBSDataKind.NUMERIC);
+                            fakeResultSet.addRow(updateCount);
+                        } else {
+
+                        }
+                        fetchQueryData(context, fakeResultSet);
                     }
                 }
             }
@@ -418,19 +444,19 @@ public class SQLQueryJob extends DataSourceJob
             }
         }
         catch (Throwable ex) {
-            result.setError(ex);
+            curResult.setError(ex);
             lastError = ex;
         }
-        result.setQueryTime(System.currentTimeMillis() - startTime);
+        curResult.setQueryTime(System.currentTimeMillis() - startTime);
 
         if (fireEvents) {
             // Notify query end
             for (ISQLQueryListener listener : queryListeners) {
-                listener.onEndQuery(result);
+                listener.onEndQuery(curResult);
             }
         }
 
-        if (result.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
+        if (curResult.getError() != null && errorHandling != SQLScriptErrorHandling.IGNORE) {
             return false;
         }
         // Success
@@ -455,7 +481,7 @@ public class SQLQueryJob extends DataSourceJob
         return binder.getResult();
     }
 
-    private void fetchQueryData(SQLQueryResult result, DBCExecutionContext context)
+    private void fetchQueryData(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException
     {
         if (dataReceiver == null) {
@@ -463,7 +489,7 @@ public class SQLQueryJob extends DataSourceJob
             return;
         }
         closeResultSet();
-        curResultSet = curStatement.openResultSet();
+        curResultSet = resultSet;
         if (curResultSet == null) {
             return;
         }
@@ -501,7 +527,7 @@ public class SQLQueryJob extends DataSourceJob
             dataReceiver.close();
         }
 
-        result.setRowCount(rowCount);
+        curResult.setRowCount(rowCount);
         monitor.subTask(rowCount + " rows fetched");
     }
 

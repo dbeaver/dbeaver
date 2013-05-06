@@ -35,6 +35,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private int offset;
     private int maxRows;
     private Throwable error;
+    private long timeSpent;
 
     protected ResultSetDataPumpJob(ResultSetViewer resultSetViewer) {
         super(CoreMessages.controls_rs_pump_job_name, DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
@@ -56,9 +57,16 @@ class ResultSetDataPumpJob extends DataSourceJob {
         return error;
     }
 
+    public long getTimeSpent()
+    {
+        return timeSpent;
+    }
+
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
         error = null;
+        timeSpent = 0;
+        long startTime = System.currentTimeMillis();
         DBCExecutionContext context = getDataSource().openContext(
                 monitor,
                 DBCExecutionPurpose.USER,
@@ -76,6 +84,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
         }
         finally {
             context.close();
+            timeSpent = System.currentTimeMillis() - startTime;
         }
 
         return Status.OK_STATUS;

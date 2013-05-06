@@ -666,26 +666,7 @@ public class SQLEditor extends SQLEditorBase
 
                 private void processQueryResult(SQLQueryResult result)
                 {
-                    if (!result.hasError()) {
-                        if (result.getRowCount() != null) {
-                            // No status message for selected rows - this info is set by RS viewer itself
-/*
-                            status = result.getRowCount() + " row(s) fetched";
-                            if (result.getRowOffset() != null) {
-                                status += " (" + result.getRowOffset() + " - " + (result.getRowOffset() + result.getRowCount()) + ")";
-                            }
-*/
-                        } else if (result.getUpdateCount() != null) {
-                            if (result.getUpdateCount() == 0) {
-                                setStatus(CoreMessages.editors_sql_status_statement_executed_no_rows_updated, false);
-                            } else {
-                                setStatus(String.valueOf(result.getUpdateCount()) + CoreMessages.editors_sql_status_rows_updated, false);
-                            }
-                        } else {
-                            setStatus(CoreMessages.editors_sql_status_statement_executed, false);
-                        }
-                        resultsView.setExecutionTime(result.getQueryTime());
-                    } else {
+                    if (result.hasError()) {
                         setStatus(result.getError().getMessage(), true);
                     }
                     if (queries.size() < 2) {
@@ -939,8 +920,11 @@ public class SQLEditor extends SQLEditorBase
         {
             int features = DATA_SELECT;
 
-            if (getDataSource().getInfo().supportsSubqueries()) {
-                features |= DATA_FILTER;
+            final SQLQueryJob job = curJob;
+            if (job != null && job.getLastResult() != null && job.getLastResult().hasResultSet()) {
+                if (getDataSource().getInfo().supportsSubqueries()) {
+                    features |= DATA_FILTER;
+                }
             }
             return features;
         }

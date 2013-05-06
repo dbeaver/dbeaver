@@ -412,9 +412,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             addFiltersHistory(whereCondition);
         }
 
-        if (getModel().getVisibleColumnCount() > 0 && filtersEnableState != null) {
-            filtersEnableState.restore();
-            filtersEnableState = null;
+        if (getModel().getVisibleColumnCount() > 0 && supportsDataFilter()) {
+            if (filtersEnableState != null) {
+                filtersEnableState.restore();
+                filtersEnableState = null;
+            }
+        } else if (filtersEnableState == null) {
+            filtersEnableState = ControlEnableState.disable(filtersPanel);
         }
     }
 
@@ -438,18 +442,17 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
-        if (CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
-            return;
-        }
-        model.setDataFilter(dataFilter);
-        if (refreshData) {
-            reorderResultSet(true, new Runnable() {
-                @Override
-                public void run()
-                {
-                    resetColumnOrdering();
-                }
-            });
+        if (!CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
+            model.setDataFilter(dataFilter);
+            if (refreshData) {
+                reorderResultSet(true, new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        resetColumnOrdering();
+                    }
+                });
+            }
         }
         this.updateFiltersText();
     }
@@ -683,24 +686,6 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public DBSDataContainer getDataContainer()
     {
         return resultSetProvider.getDataContainer();
-    }
-
-    private void updateStatusMessage()
-    {
-        if (model.getRowCount() == 0) {
-            if (model.getVisibleColumnCount() == 0) {
-                setStatus("Empty");
-            } else {
-                setStatus(CoreMessages.controls_resultset_viewer_status_no_data);
-            }
-        } else {
-            if (mode == ResultSetMode.RECORD) {
-                this.resetRecordHeaderWidth();
-                setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRowNum + 1) + "/" + model.getRowCount());
-            } else {
-                setStatus(String.valueOf(model.getRowCount()) + CoreMessages.controls_resultset_viewer_status_rows_fetched);
-            }
-        }
     }
 
     // Update all columns ordering
@@ -982,12 +967,30 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         statusLabel.setText(status);
     }
 
-    public void setExecutionTime(long executionTime)
+    public void updateStatusMessage()
     {
-        if (statusLabel.isDisposed()) {
-            return;
+        if (model.getRowCount() == 0) {
+            if (model.getVisibleColumnCount() == 0) {
+                setStatus("Empty");
+            } else {
+                setStatus(CoreMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage());
+            }
+        } else {
+            if (mode == ResultSetMode.RECORD) {
+                this.resetRecordHeaderWidth();
+                setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRowNum + 1) + "/" + model.getRowCount() + getExecutionTimeMessage());
+            } else {
+                setStatus(String.valueOf(model.getRowCount()) + CoreMessages.controls_resultset_viewer_status_rows_fetched + getExecutionTimeMessage());
+            }
         }
-        statusLabel.setText(statusLabel.getText() + " - " + executionTime + CoreMessages.controls_resultset_viewer_ms); //$NON-NLS-1$
+    }
+
+    private String getExecutionTimeMessage()
+    {
+        if (model.getExecutionTime() <= 0) {
+            return "";
+        }
+        return " - " + model.getExecutionTime() + CoreMessages.controls_resultset_viewer_ms;
     }
 
     /**
@@ -1031,7 +1034,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         model.appendData(rows);
         refreshSpreadsheet(true);
 
-        setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()));
+        setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
     }
 
     private void closeEditors() {
@@ -1644,6 +1647,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 @Override
                 public void done(IJobChangeEvent event) {
                     final Throwable error = dataPumpJob == null ? null : dataPumpJob.getError();
+                    model.setExecutionTime(dataPumpJob == null ? 0 : dataPumpJob.getTimeSpent());
                     dataPumpJob = null;
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override
@@ -1657,8 +1661,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                     "Error executing query",
                                     "Query execution failed",
                                     error);
-                            }
-                            if (oldPos != null) {
+                            } else if (oldPos != null) {
                                 // Seems to be refresh
                                 // Restore original position
                                 ResultSetViewer.this.curRowNum = Math.min(oldPos.row, model.getRowCount() - 1);
@@ -1670,6 +1673,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 }
                                 spreadsheet.setSelection(-1, -1);
                                 updateStatusMessage();
+                                updateFiltersText();
                                 previewValue();
                             }
                             if (finalizer != null) {
