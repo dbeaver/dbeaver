@@ -1570,7 +1570,7 @@
                 commandId="org.jkiss.dbeaver.ui.editors.sql.run.resultSet"
                 contextId="org.jkiss.dbeaver.ui.editors.sql"
                 schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+SHIFT+Enter"/>
+                sequence="CTRL+\"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
