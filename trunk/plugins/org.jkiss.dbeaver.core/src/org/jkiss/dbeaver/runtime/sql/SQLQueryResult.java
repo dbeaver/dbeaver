@@ -33,6 +33,7 @@ public class SQLQueryResult
     private boolean hasResultSet;
     private Throwable error;
     private long queryTime;
+    private String sourceEntity;
 
     public SQLQueryResult(SQLStatementInfo statement)
     {
@@ -104,5 +105,15 @@ public class SQLQueryResult
     public void setQueryTime(long queryTime)
     {
         this.queryTime = queryTime;
+    }
+
+    public String getSourceEntity()
+    {
+        return sourceEntity;
+    }
+
+    public void setSourceEntity(String sourceEntity)
+    {
+        this.sourceEntity = sourceEntity;
     }
 }

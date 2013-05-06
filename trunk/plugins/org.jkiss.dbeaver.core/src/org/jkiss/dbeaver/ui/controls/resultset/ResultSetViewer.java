@@ -971,7 +971,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         if (model.getRowCount() == 0) {
             if (model.getVisibleColumnCount() == 0) {
-                setStatus("Empty");
+                setStatus(CoreMessages.controls_resultset_viewer_status_empty + getExecutionTimeMessage());
             } else {
                 setStatus(CoreMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage());
             }

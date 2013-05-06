@@ -336,7 +336,7 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_viewer_ms;
 
 	public static String controls_resultset_viewer_status_inserted_;
-
+    public static String controls_resultset_viewer_status_empty;
 	public static String controls_resultset_viewer_status_no_data;
 
 	public static String controls_resultset_viewer_status_row;
