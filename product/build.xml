@@ -256,12 +256,12 @@
 
     <target name="nsis">
         <echo message="Extract archive"/>
-        <unzip 
+        <unzip
             src="${distDirectory}/${buildId}-win32.win32.${arch}.zip"
             dest="${buildDirectory}/installer/raw/win32.${arch}"
             overwrite="true"
             />
-        <echo message="Unsgn jars"/>
+        <echo message="Unsign jars"/>
         <ant dir="../tools/jar-unsigner" antfile="build.xml" target="jar-unsign">
             <property name="jarDirectory" value="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins"/>
         </ant>
