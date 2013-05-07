@@ -1653,6 +1653,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         @Override
                         public void run()
                         {
+                            if (getControl() == null || getControl().isDisposed()) {
+                                return;
+                            }
                             final Shell shell = getControl().getShell();
                             if (error != null) {
                                 setStatus(error.getMessage(), true);

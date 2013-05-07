@@ -12,14 +12,13 @@ Minor:
 rename mysql (generic?) table,column
 comment mysql table, column
 
-scripts refactoring
-
 Plugin:
 Customize resource roots
-Disable Quick Access toolbar
-Variable number of columns in RS (cassandra)
-
 
 generate sql
 - exclipse secure store (doesn't work)
 USE JDBC DRIVER API IN PLUGIN (HACK OSGI?)
+
+Cassandra:
+
+compile with 1.6

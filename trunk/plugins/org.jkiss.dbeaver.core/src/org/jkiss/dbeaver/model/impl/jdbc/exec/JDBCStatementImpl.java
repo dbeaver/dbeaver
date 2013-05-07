@@ -695,20 +695,12 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     @Override
     public void closeOnCompletion() throws SQLException {
-        try {
-            getOriginal().closeOnCompletion();
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        JDBCUtils.callMethod17(getOriginal(), "closeOnCompletion", null, null);
     }
 
     @Override
     public boolean isCloseOnCompletion() throws SQLException {
-        try {
-            return getOriginal().isCloseOnCompletion();
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        return JDBCUtils.callMethod17(getOriginal(), "isCloseOnCompletion", Boolean.TYPE, null);
     }
 
     @Override
