@@ -60,7 +60,7 @@
 ;Pages
 
   !insertmacro MUI_PAGE_WELCOME
-  !insertmacro MUI_PAGE_LICENSE "@product.dir@\..\docs\licenses\dbeaver_license.txt"
+  ;!insertmacro MUI_PAGE_LICENSE "@product.dir@\..\docs\licenses\dbeaver_license.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   
@@ -154,9 +154,9 @@ Section "-DBeaver Core" SecCore
   File /r  /x org.jkiss.* "..\raw\win32.@arch@\dbeaver\plugins"
   File /r  "..\raw\win32.@arch@\dbeaver\features"
 
-  ; JRE and unpack script
-  File /r "..\raw\win32.@arch@\dbeaver\jre"
+  ; Unpack script
   File "..\..\..\installer\nsis\install.cmd"
+  File "..\raw\win32.@arch@\dbeaver\jre\bin\unpack200.exe"
 
   ; Licenses
   CreateDirectory $INSTDIR\licenses
@@ -188,7 +188,15 @@ Section "-DBeaver Core" SecCore
 
 SectionEnd
 
-SectionGroup /e "Plugins"
+Section "JRE" SecJRE
+
+  ; JRE and unpack script
+  SetOutPath "$INSTDIR"
+  File /r "..\raw\win32.@arch@\dbeaver\jre"
+
+SectionEnd
+
+SectionGroup /e "Plugins" SecPlugins
 
 	Section "Generic JDBC" SecGeneric
 
@@ -252,9 +260,11 @@ Section "-Drivers" SecDrivers
 SectionEnd
 
 Section "-UnpackJars" SecUnpackJars
+    SetOutPath "$INSTDIR"
     ExpandEnvStrings $0 %COMSPEC%
     ExecWait '"$0" /C "$INSTDIR\install.cmd"'
     Delete "$INSTDIR\install.cmd"
+    Delete "$INSTDIR\unpack200.exe"
 SectionEnd
 
 ;--------------------------------
@@ -262,6 +272,8 @@ SectionEnd
 
   ;Language strings
   LangString DESC_SecCore ${LANG_ENGLISH} "DBeaver core executables and resources."
+  LangString DESC_SecJRE ${LANG_ENGLISH} "Java Runtime Environment 1.6."
+  LangString DESC_SecPlugins ${LANG_ENGLISH} "DBeaver extension plugins."
   LangString DESC_SecGeneric ${LANG_ENGLISH} "Support of generic JDBC drivers."
   LangString DESC_SecMySQL ${LANG_ENGLISH} "Supports additional features for MySQL 5.x databases. Includes MySQL JDBC driver"
   LangString DESC_SecOracle ${LANG_ENGLISH} "Supports additional features for Oracle 8.x-11.x databases."
@@ -273,6 +285,8 @@ SectionEnd
   ;Assign language strings to sections
   !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
     !insertmacro MUI_DESCRIPTION_TEXT ${SecCore} $(DESC_SecCore)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecJRE} $(DESC_SecJRE)
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecPlugins} $(DESC_SecPlugins)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecGeneric} $(DESC_SecGeneric)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecMySQL} $(DESC_SecMySQL)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecOracle} $(DESC_SecOracle)

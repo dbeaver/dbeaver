@@ -14,7 +14,7 @@ goto :EOF
 
 for %%f in (%~1\*.pack) do (
     echo Unpack jar "%~1\%%~nf"
-	jre\bin\unpack200 %~1\%%~nf.pack %~1\%%~nf%~2
+	unpack200 %~1\%%~nf.pack %~1\%%~nf%~2
 	del %~1\%%~nf.pack
 )
 
