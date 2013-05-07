@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.*;
 
@@ -239,22 +240,16 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
 
     @Override
     public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-        try {
-            return makeResultSet(
-                getOriginal().getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern),
-                "Load pseudo columns", catalog, schemaPattern, tableNamePattern, columnNamePattern);
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        return makeResultSet(
+            JDBCUtils.callMethod17(getOriginal(), "getPseudoColumns", ResultSet.class,
+                new Class[]{String.class, String.class, String.class, String.class},
+                catalog, schemaPattern, tableNamePattern, columnNamePattern),
+            "Load pseudo columns", catalog, schemaPattern, tableNamePattern, columnNamePattern);
     }
 
     @Override
     public boolean generatedKeyAlwaysReturned() throws SQLException {
-        try {
-            return getOriginal().generatedKeyAlwaysReturned();
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        return JDBCUtils.callMethod17(getOriginal(), "generatedKeyAlwaysReturned", Boolean.TYPE, null);
     }
 
     @Override
