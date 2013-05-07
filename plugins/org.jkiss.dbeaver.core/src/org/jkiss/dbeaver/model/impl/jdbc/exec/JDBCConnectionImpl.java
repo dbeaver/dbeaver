@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCTransactionIsolation;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -508,48 +507,28 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     @Override
     public String getSchema() throws SQLException
     {
-        try {
-            return getConnection().getSchema();
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        return JDBCUtils.callMethod17(getConnection(), "getSchema", String.class, null);
     }
 
     @Override
     public void setSchema(String schema) throws SQLException
     {
-        try {
-            getConnection().setSchema(schema);
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        JDBCUtils.callMethod17(getConnection(), "setSchema", null, new Class[]{String.class}, schema);
     }
 
     @Override
     public void abort(Executor executor) throws SQLException {
-        try {
-            getConnection().abort(executor);
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        JDBCUtils.callMethod17(getConnection(), "abort", null, new Class[]{Executor.class}, executor);
     }
 
     @Override
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        try {
-            getConnection().setNetworkTimeout(executor, milliseconds);
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        JDBCUtils.callMethod17(getConnection(), "setNetworkTimeout", null, new Class[]{Executor.class, Integer.TYPE}, executor, milliseconds);
     }
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-        try {
-            return getConnection().getNetworkTimeout();
-        } catch (IncompatibleClassChangeError e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17);
-        }
+        return JDBCUtils.callMethod17(getConnection(), "getNetworkTimeout", Integer.class, null);
     }
 
     @Override
