@@ -293,11 +293,7 @@ public class SQLEditor extends SQLEditorBase
                 }
                 CTabItem selectedItem = resultTabs.getItem(new Point(event.getBounds().x, event.getBounds().y));
                 if (selectedItem != null && selectedItem  == resultTabs.getSelection()) {
-                    if (sashForm.getMaximizedControl() == null) {
-                        sashForm.setMaximizedControl(resultTabs);
-                    } else {
-                        sashForm.setMaximizedControl(null);
-                    }
+                    toggleEditorMaximize();
                 }
             }
         });
@@ -314,7 +310,7 @@ public class SQLEditor extends SQLEditorBase
                             @Override
                             public void run()
                             {
-
+                                toggleEditorMaximize();
                             }
                         });
                     } else {
@@ -322,7 +318,7 @@ public class SQLEditor extends SQLEditorBase
                             @Override
                             public void run()
                             {
-
+                                toggleEditorMaximize();
                             }
                         });
                     }
@@ -331,7 +327,7 @@ public class SQLEditor extends SQLEditorBase
                             @Override
                             public void run()
                             {
-
+                                closeExtraResultTabs();
                             }
                         });
                     }
@@ -358,6 +354,15 @@ public class SQLEditor extends SQLEditorBase
 
         selectionProvider.trackViewer(getTextViewer().getTextWidget(), getTextViewer());
         selectionProvider.trackViewer(planView.getViewer().getControl(), planView.getViewer());
+    }
+
+    private void toggleEditorMaximize()
+    {
+        if (sashForm.getMaximizedControl() == null) {
+            sashForm.setMaximizedControl(resultTabs);
+        } else {
+            sashForm.setMaximizedControl(null);
+        }
     }
 
     private ResultSetViewer createResultSetViewer()
@@ -635,12 +640,7 @@ public class SQLEditor extends SQLEditorBase
         final boolean isSingleQuery = (queries.size() == 1);
 
         if (newTab && !isSingleQuery) {
-            // Close all tabs except first one
-            for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
-                if (resultTabs.getItem(i).getData() instanceof ResultSetViewer) {
-                    resultTabs.getItem(i).dispose();
-                }
-            }
+            closeExtraResultTabs();
         }
 
         // Prepare execution job
@@ -802,6 +802,16 @@ public class SQLEditor extends SQLEditorBase
                     job.setFetchResultSets(true);
                 }
                 job.schedule();
+            }
+        }
+    }
+
+    private void closeExtraResultTabs()
+    {
+        // Close all tabs except first one
+        for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
+            if (resultTabs.getItem(i).getData() instanceof ResultSetViewer) {
+                resultTabs.getItem(i).dispose();
             }
         }
     }
