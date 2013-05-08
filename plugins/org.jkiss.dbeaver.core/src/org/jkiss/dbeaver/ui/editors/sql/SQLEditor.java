@@ -97,6 +97,7 @@ public class SQLEditor extends SQLEditorBase
     private Control editorControl;
     private CTabFolder resultTabs;
     private final List<ResultSetViewer> resultSetViewers = new ArrayList<ResultSetViewer>();
+    private ResultSetViewer curResultSet = null;
 
     private ExplainPlanViewer planView;
 
@@ -252,8 +253,10 @@ public class SQLEditor extends SQLEditorBase
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    resultTabs.indexOf((CTabItem) e.item);
-                    //pageChange(newPageIndex);
+                    Object data = e.item.getData();
+                    if (data instanceof ResultSetViewer) {
+                        curResultSet = (ResultSetViewer) data;
+                    }
                 }
             });
             resultTabs.setSimple(true);
@@ -291,8 +294,6 @@ public class SQLEditor extends SQLEditorBase
             item.setText(CoreMessages.editors_sql_execution_log);
             item.setImage(imgLog);
             item.setData(logViewer);
-
-            resultTabs.setSelection(0);
 
             selectionProvider.trackViewer(getTextViewer().getTextWidget(), getTextViewer());
             selectionProvider.trackViewer(planView.getViewer().getControl(), planView.getViewer());
@@ -337,7 +338,7 @@ public class SQLEditor extends SQLEditorBase
         final CTabItem item = new CTabItem(resultTabs, SWT.NONE, tabIndex);
         String tabName = CoreMessages.editors_sql_data_grid;
         if (!firstResultSet) {
-            tabName += " [" + tabIndex + "]";
+            tabName += " [" + (getTabIndex(item) + 1) + "]";
         }
         item.setText(tabName);
         item.setImage(imgDataGrid);
@@ -354,12 +355,18 @@ public class SQLEditor extends SQLEditorBase
                 if (viewer != null) {
                     resultSetViewers.remove(viewer);
                 }
+                if (viewer == curResultSet) {
+                    if (resultSetViewers.isEmpty()) {
+                        curResultSet = null;
+                    } else {
+                        curResultSet = resultSetViewers.get(0);
+                    }
+                }
             }
         });
 
-        if (!firstResultSet) {
-           resultTabs.setSelection(item);
-        }
+        resultTabs.setSelection(item);
+        curResultSet = resultsView;
 
         return resultsView;
     }
@@ -559,7 +566,7 @@ public class SQLEditor extends SQLEditorBase
         }
     }
 
-    private void processQuery(final List<SQLStatementInfo> queries, boolean newTab, boolean export)
+    private void processQuery(final List<SQLStatementInfo> queries, final boolean newTab, final boolean export)
     {
         if (queries.isEmpty()) {
             // Nothing to process
@@ -582,34 +589,43 @@ public class SQLEditor extends SQLEditorBase
                 ex.getMessage());
             return;
         }
+        final boolean isSingleQuery = (queries.size() == 1);
 
-        if (newTab) {
-            createResultSetViewer();
+        if (newTab && !isSingleQuery) {
+            // Close all tabs except first one
+            for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
+                if (resultTabs.getItem(i).getData() instanceof ResultSetViewer) {
+                    resultTabs.getItem(i).dispose();
+                }
+            }
         }
-        if (!(resultTabs.getSelection().getData() instanceof ResultSetViewer)) {
-            // Set first results viewer by default
-            resultTabs.setSelection(0);
-        }
-        final CTabItem curTab = resultTabs.getSelection();
 
-        final ResultSetViewer resultsView = getResultSetViewer();
         // Prepare execution job
         {
             final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
-            final boolean isSingleQuery = (queries.size() == 1);
             final SQLQueryJob job = new SQLQueryJob(
                 isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
                 this,
-                queries,
-                resultsView.getDataReceiver());
+                queries)
+            {
+                @Override
+                protected DBDDataReceiver getDataReceiver()
+                {
+                    ResultSetViewer resultSetViewer = getResultSetViewer();
+                    return resultSetViewer == null ? null : resultSetViewer.getDataReceiver();
+                }
+            };
+
             job.addQueryListener(new ISQLQueryListener() {
 
+                private CTabItem curTab;
+                private int queryNumber = 0;
                 private long lastUIUpdateTime = -1l;
 
                 @Override
                 public void onStartJob()
                 {
-                    if (!isSingleQuery) {
+                    if (!isSingleQuery && !newTab) {
                         UIUtils.runInUI(null, new Runnable() {
                             @Override
                             public void run()
@@ -619,6 +635,7 @@ public class SQLEditor extends SQLEditorBase
                         });
                     }
                 }
+
                 @Override
                 public void onStartQuery(final SQLStatementInfo query)
                 {
@@ -628,6 +645,14 @@ public class SQLEditor extends SQLEditorBase
                         selectStatementInEditor(query);
                         lastUIUpdateTime = System.currentTimeMillis();
                     }
+
+                    UIUtils.runInUI(null, new Runnable() {
+                        @Override
+                        public void run()
+                        {
+                            curTab = obtainResultTab(newTab && queryNumber > 0);
+                        }});
+                    queryNumber++;
                 }
 
                 @Override
@@ -641,7 +666,7 @@ public class SQLEditor extends SQLEditorBase
                     if (result.hasError()) {
                         selectStatementInEditor(result.getStatement());
                     }
-                    if (isSingleQuery) {
+                    if (isSingleQuery || newTab) {
                         UIUtils.runInUI(null, new Runnable() {
                             @Override
                             public void run()
@@ -672,13 +697,15 @@ public class SQLEditor extends SQLEditorBase
                     if (queries.size() < 2) {
                         getSelectionProvider().setSelection(originalSelection);
                     }
-                    curTab.setToolTipText(result.getStatement().getQuery());
-                    if (!CommonUtils.isEmpty(result.getSourceEntity())) {
-                        curTab.setText(result.getSourceEntity());
-                    } else {
-                        int tabIndex = getTabIndex(curTab);
-                        curTab.setText(
-                            CoreMessages.editors_sql_data_grid + (tabIndex == 0 ? "" : " [" + (tabIndex + 1) + "]"));
+                    if (curTab != null && !curTab.isDisposed()) {
+                        curTab.setToolTipText(result.getStatement().getQuery());
+                        if (!CommonUtils.isEmpty(result.getSourceEntity())) {
+                            curTab.setText(result.getSourceEntity());
+                        } else {
+                            int tabIndex = getTabIndex(curTab);
+                            curTab.setText(
+                                CoreMessages.editors_sql_data_grid + (tabIndex == 0 ? "" : " [" + (tabIndex + 1) + "]"));
+                        }
                     }
 
                     if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(PrefConstants.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
@@ -722,12 +749,39 @@ public class SQLEditor extends SQLEditorBase
                         new StructuredSelection(this));
                     dialog.open();
                 } else {
+                    obtainResultTab(newTab);
+                    final ResultSetViewer resultsView = getResultSetViewer();
                     resultsView.setDataFilter(new DBDDataFilter(), false);
                     resultsView.refresh();
                 }
             } else {
+                if (newTab) {
+                    job.setFetchResultSets(true);
+                }
                 job.schedule();
             }
+        }
+    }
+
+    private CTabItem obtainResultTab(boolean newTab)
+    {
+        if (!resultTabs.isDisposed()) {
+            // Acquire result tabs
+            if (newTab) {
+                createResultSetViewer();
+            }
+            if (!(resultTabs.getSelection().getData() instanceof ResultSetViewer)) {
+                // Set tab to last result set
+                for (CTabItem item : resultTabs.getItems()) {
+                    if (item.getData() == curResultSet) {
+                        resultTabs.setSelection(item);
+                        break;
+                    }
+                }
+            }
+            return resultTabs.getSelection();
+        } else {
+            return null;
         }
     }
 
@@ -831,6 +885,7 @@ public class SQLEditor extends SQLEditorBase
 
         planView = null;
         resultSetViewers.clear();
+        curResultSet = null;
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
         super.dispose();
@@ -910,14 +965,7 @@ public class SQLEditor extends SQLEditorBase
     @Override
     public ResultSetViewer getResultSetViewer()
     {
-        CTabItem curTab = resultTabs == null ? null : resultTabs.getSelection();
-        if (curTab != null && !curTab.isDisposed()) {
-            Object tabData = curTab.getData();
-            if (tabData instanceof ResultSetViewer) {
-                return (ResultSetViewer) tabData;
-            }
-        }
-        return resultSetViewers.isEmpty() ? null : resultSetViewers.get(0);
+        return curResultSet;
     }
 
     @Override
@@ -953,7 +1001,6 @@ public class SQLEditor extends SQLEditorBase
         {
             final SQLQueryJob job = curJob;
             if (job != null) {
-                job.setDataReceiver(dataReceiver);
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
                 return job.extractData(context);
