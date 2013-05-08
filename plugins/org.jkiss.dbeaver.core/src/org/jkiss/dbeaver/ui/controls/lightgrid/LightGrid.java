@@ -507,11 +507,12 @@ public abstract class LightGrid extends Canvas {
             // Sometimes (when new grid created and filled with data very fast our client area size is zero
             // So let's add a workaround for it and use column's width in this case
             GridColumn column = getColumn(0);
-            column.pack();
+            int columnWidth = column.computeHeaderWidth();
             int gridWidth = getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x;
-            if (gridWidth > column.getWidth()) {
-                column.setWidth(gridWidth);
+            if (gridWidth > columnWidth) {
+                columnWidth = gridWidth;
             }
+            column.setWidth(columnWidth);
         } else {
             int totalWidth = 0;
             for (GridColumn curColumn : columns) {
