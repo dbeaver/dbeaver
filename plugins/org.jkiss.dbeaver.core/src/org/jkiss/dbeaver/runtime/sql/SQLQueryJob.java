@@ -53,7 +53,7 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class SQLQueryJob extends DataSourceJob
+public abstract class SQLQueryJob extends DataSourceJob
 {
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
 
@@ -62,7 +62,6 @@ public class SQLQueryJob extends DataSourceJob
 
     private SQLEditorBase editor;
     private List<SQLStatementInfo> queries;
-    private DBDDataReceiver dataReceiver;
     private DBDDataFilter dataFilter;
     private boolean connectionInvalidated = false;
 
@@ -87,8 +86,7 @@ public class SQLQueryJob extends DataSourceJob
     public SQLQueryJob(
         String name,
         SQLEditorBase editor,
-        List<SQLStatementInfo> queries,
-        DBDDataReceiver dataReceiver)
+        List<SQLStatementInfo> queries)
     {
         super(
             name,
@@ -96,7 +94,6 @@ public class SQLQueryJob extends DataSourceJob
             editor.getDataSource());
         this.editor = editor;
         this.queries = queries;
-        this.dataReceiver = dataReceiver;
 
         {
             // Read config form preference store
@@ -112,6 +109,13 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
+    protected abstract DBDDataReceiver getDataReceiver();
+
+    public void setFetchResultSets(boolean fetchResultSets)
+    {
+        this.fetchResultSets = fetchResultSets;
+    }
+
     public SQLStatementInfo getLastQuery()
     {
         return queries.isEmpty() ? null : queries.get(0);
@@ -120,11 +124,6 @@ public class SQLQueryJob extends DataSourceJob
     public SQLQueryResult getLastResult()
     {
         return curResult;
-    }
-
-    public void setDataReceiver(DBDDataReceiver dataReceiver)
-    {
-        this.dataReceiver = dataReceiver;
     }
 
     public boolean hasLimits()
@@ -349,7 +348,7 @@ public class SQLQueryJob extends DataSourceJob
                 sqlQuery,
                 rsOffset,
                 rsMaxRows);
-            curStatement.setUserData(dataReceiver);
+            curStatement.setUserData(editor);
 
             if (hasParameters) {
                 // Bind them
@@ -484,6 +483,7 @@ public class SQLQueryJob extends DataSourceJob
     private void fetchQueryData(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException
     {
+        DBDDataReceiver dataReceiver = getDataReceiver();
         if (dataReceiver == null) {
             // No data pump - skip fetching stage
             return;

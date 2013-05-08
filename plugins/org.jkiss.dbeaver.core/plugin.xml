@@ -195,8 +195,9 @@
         <command id="org.jkiss.dbeaver.core.object.filter" name="%command.org.jkiss.dbeaver.core.object.filter.name" description="%command.org.jkiss.dbeaver.core.object.filter.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.run.resultSet" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.resultSet.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.resultSet.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.script" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.script.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.script.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.scriptNew.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.scriptNew.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.explain" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.explain.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.validate" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.validate.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.validate.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.analyse" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.analyse.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.analyse.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -266,8 +267,9 @@
         <image commandId="org.jkiss.dbeaver.core.object.filter" icon="icons/misc/filter.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="icons/sql/sql_exec.png"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.resultSet" icon="icons/sql/sql_exec_new.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="icons/sql/sql_exec_new.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="icons/sql/sql_script_exec.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" icon="icons/sql/sql_script_exec_new.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" icon="icons/sql/sql_plan.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" icon="icons/sql/sql_validate.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" icon="icons/sql/sql_analyse.png"/>
@@ -729,7 +731,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.resultSet" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteResultSetHandler">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementNewHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
@@ -739,6 +741,15 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteScriptHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
+                        <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
+                    </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteScriptNewHandler">
             <enabledWhen>
                 <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
@@ -1446,7 +1457,7 @@
                         </with>
                     </visibleWhen>
                 </command>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.resultSet">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
@@ -1454,6 +1465,13 @@
                     </visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script">
+                    <visibleWhen>
+                        <with variable="activeEditor">
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
+                        </with>
+                    </visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew">
                     <visibleWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
@@ -1506,8 +1524,9 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
             <separator name="execute" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.resultSet"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
             <separator name="other" visible="true"/>
         </menuContribution>
@@ -1567,7 +1586,7 @@
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="CTRL+Enter"/>
         <key
-                commandId="org.jkiss.dbeaver.ui.editors.sql.run.resultSet"
+                commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"
                 contextId="org.jkiss.dbeaver.ui.editors.sql"
                 schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
                 sequence="CTRL+\"/>
@@ -1576,6 +1595,11 @@
               contextId="org.jkiss.dbeaver.ui.editors.sql"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="ALT+X"/>
+        <key
+                commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"
+                contextId="org.jkiss.dbeaver.ui.editors.sql"
+                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+                sequence="CTRL+ALT+X"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"
               contextId="org.jkiss.dbeaver.ui.editors.sql"

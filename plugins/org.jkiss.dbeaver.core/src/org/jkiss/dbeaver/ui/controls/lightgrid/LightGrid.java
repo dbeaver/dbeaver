@@ -503,7 +503,15 @@ public abstract class LightGrid extends Canvas {
         }
 
         if (getColumnCount() == 1) {
-            getColumn(0).setWidth(getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x);
+            // Here we going to maximize single column to entire grid's width
+            // Sometimes (when new grid created and filled with data very fast our client area size is zero
+            // So let's add a workaround for it and use column's width in this case
+            GridColumn column = getColumn(0);
+            column.pack();
+            int gridWidth = getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x;
+            if (gridWidth > column.getWidth()) {
+                column.setWidth(gridWidth);
+            }
         } else {
             int totalWidth = 0;
             for (GridColumn curColumn : columns) {
