@@ -22,6 +22,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IFindReplaceTarget;
@@ -61,10 +62,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLStatementInfo;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.DynamicFindReplaceTarget;
-import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -246,58 +244,7 @@ public class SQLEditor extends SQLEditorBase
         selectionProvider = new CompositeSelectionProvider();
         getSite().setSelectionProvider(selectionProvider);
 
-        {
-            resultTabs = new CTabFolder(sashForm, SWT.TOP | SWT.FLAT);
-            resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
-            resultTabs.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    Object data = e.item.getData();
-                    if (data instanceof ResultSetViewer) {
-                        curResultSet = (ResultSetViewer) data;
-                    }
-                }
-            });
-            resultTabs.setSimple(true);
-            //resultTabs.getItem(0).addListener();
-
-            planView = new ExplainPlanViewer(this, resultTabs, this);
-            final SQLLogPanel logViewer = new SQLLogPanel(resultTabs, this);
-
-            resultTabs.addListener(SWT.MouseDoubleClick, new Listener() {
-                @Override
-                public void handleEvent(Event event)
-                {
-                    CTabItem selectedItem = resultTabs.getItem(new Point(event.getBounds().x, event.getBounds().y));
-                    if (selectedItem != null && selectedItem  == resultTabs.getSelection()) {
-                        if (sashForm.getMaximizedControl() == null) {
-                            sashForm.setMaximizedControl(resultTabs);
-                        } else {
-                            sashForm.setMaximizedControl(null);
-                        }
-                    }
-                }
-            });
-
-            // Create tabs
-            createResultSetViewer();
-
-            CTabItem item = new CTabItem(resultTabs, SWT.NONE);
-            item.setControl(planView.getControl());
-            item.setText(CoreMessages.editors_sql_explain_plan);
-            item.setImage(imgExplainPlan);
-            item.setData(planView);
-
-            item = new CTabItem(resultTabs, SWT.NONE);
-            item.setControl(logViewer);
-            item.setText(CoreMessages.editors_sql_execution_log);
-            item.setImage(imgLog);
-            item.setData(logViewer);
-
-            selectionProvider.trackViewer(getTextViewer().getTextWidget(), getTextViewer());
-            selectionProvider.trackViewer(planView.getViewer().getControl(), planView.getViewer());
-        }
+        createResultTabs();
 
         // Find/replace target activation
         getViewer().getTextWidget().addFocusListener(new FocusAdapter() {
@@ -315,6 +262,102 @@ public class SQLEditor extends SQLEditorBase
 
         // Update controls
         onDataSourceChange();
+    }
+
+    private void createResultTabs()
+    {
+        resultTabs = new CTabFolder(sashForm, SWT.TOP | SWT.FLAT);
+        resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
+        resultTabs.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                Object data = e.item.getData();
+                if (data instanceof ResultSetViewer) {
+                    curResultSet = (ResultSetViewer) data;
+                }
+            }
+        });
+        resultTabs.setSimple(true);
+        //resultTabs.getItem(0).addListener();
+
+        planView = new ExplainPlanViewer(this, resultTabs, this);
+        final SQLLogPanel logViewer = new SQLLogPanel(resultTabs, this);
+
+        resultTabs.addListener(SWT.MouseDoubleClick, new Listener() {
+            @Override
+            public void handleEvent(Event event)
+            {
+                if (event.button != 1) {
+                    return;
+                }
+                CTabItem selectedItem = resultTabs.getItem(new Point(event.getBounds().x, event.getBounds().y));
+                if (selectedItem != null && selectedItem  == resultTabs.getSelection()) {
+                    if (sashForm.getMaximizedControl() == null) {
+                        sashForm.setMaximizedControl(resultTabs);
+                    } else {
+                        sashForm.setMaximizedControl(null);
+                    }
+                }
+            }
+        });
+
+        {
+            MenuManager menuMgr = new MenuManager();
+            Menu menu = menuMgr.createContextMenu(resultTabs);
+            menuMgr.addMenuListener(new IMenuListener() {
+                @Override
+                public void menuAboutToShow(IMenuManager manager)
+                {
+                    if (sashForm.getMaximizedControl() == null) {
+                        manager.add(new Action("Maximize results") {
+                            @Override
+                            public void run()
+                            {
+
+                            }
+                        });
+                    } else {
+                        manager.add(new Action("Normalize results") {
+                            @Override
+                            public void run()
+                            {
+
+                            }
+                        });
+                    }
+                    if (resultTabs.getItemCount() > 3) {
+                        manager.add(new Action("Close multiple results") {
+                            @Override
+                            public void run()
+                            {
+
+                            }
+                        });
+                    }
+                }
+            });
+            menuMgr.setRemoveAllWhenShown(true);
+            resultTabs.setMenu(menu);
+        }
+
+        // Create tabs
+        createResultSetViewer();
+
+        CTabItem item = new CTabItem(resultTabs, SWT.NONE);
+        item.setControl(planView.getControl());
+        item.setText(CoreMessages.editors_sql_explain_plan);
+        item.setImage(imgExplainPlan);
+        item.setData(planView);
+
+        item = new CTabItem(resultTabs, SWT.NONE);
+        item.setControl(logViewer);
+        item.setText(CoreMessages.editors_sql_execution_log);
+        item.setImage(imgLog);
+        item.setData(logViewer);
+
+        selectionProvider.trackViewer(getTextViewer().getTextWidget(), getTextViewer());
+        selectionProvider.trackViewer(planView.getViewer().getControl(), planView.getViewer());
     }
 
     private ResultSetViewer createResultSetViewer()
