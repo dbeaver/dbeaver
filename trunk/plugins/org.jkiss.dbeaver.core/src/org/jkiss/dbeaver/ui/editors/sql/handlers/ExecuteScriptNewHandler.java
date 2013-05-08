@@ -18,11 +18,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-public class ExecuteStatementHandler extends AbstractExecuteHandler
+public class ExecuteScriptNewHandler extends AbstractExecuteHandler
 {
-
-    public ExecuteStatementHandler()
+    public ExecuteScriptNewHandler()
     {
-        super(false, false);
+        super(true, true);
     }
 }

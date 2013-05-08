@@ -26,16 +26,28 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 
-public class ExecuteResultSetHandler extends AbstractHandler
+public abstract class AbstractExecuteHandler extends AbstractHandler
 {
+
+    private final boolean openNewTab;
+    private final boolean script;
+
+    protected AbstractExecuteHandler(boolean openNewTab, boolean script)
+    {
+        this.openNewTab = openNewTab;
+        this.script = script;
+    }
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
-            editor.processSQL(true, false);
+            editor.processSQL(
+                openNewTab,
+                script);
         }
         return null;
     }
+
 }
