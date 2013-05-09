@@ -85,6 +85,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
@@ -2414,10 +2415,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private class ContentLabelProvider extends LabelProvider implements IColorProvider {
-        private Object getValue(Object element, boolean formatString)
+    private class ContentLabelProvider implements IGridLabelProvider {
+        private Object getValue(int col, int row, boolean formatString)
         {
-            GridPos cell = (GridPos)element;
             Object value;
             DBDValueHandler valueHandler;
             int rowNum;
@@ -2430,24 +2430,24 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return "";
                 }
                 Object[] values = model.getRowData(curRowNum);
-                if (cell.row >= values.length) {
-                    log.warn("Bad record row number: " + cell.row);
+                if (row >= values.length) {
+                    log.warn("Bad record row number: " + row);
                     return null;
                 }
-                value = values[cell.row];
-                valueHandler = model.getVisibleColumn(cell.row).getValueHandler();
+                value = values[row];
+                valueHandler = model.getVisibleColumn(row).getValueHandler();
             } else {
-                rowNum = cell.row;
-                if (cell.row >= rowCount) {
-                    log.warn("Bad grid row number: " + cell.row);
+                rowNum = row;
+                if (row >= rowCount) {
+                    log.warn("Bad grid row number: " + row);
                     return null;
                 }
-                if (cell.col >= model.getVisibleColumnCount()) {
-                    log.warn("Bad grid column number: " + cell.col);
+                if (col >= model.getVisibleColumnCount()) {
+                    log.warn("Bad grid column number: " + col);
                     return null;
                 }
-                value = model.getCellValue(cell.row, cell.col);
-                valueHandler = model.getVisibleColumn(cell.col).getValueHandler();
+                value = model.getCellValue(row, col);
+                valueHandler = model.getVisibleColumn(col).getValueHandler();
             }
 
             if (rowNum == rowCount - 1 && (mode == ResultSetMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
@@ -2456,7 +2456,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
             if (formatString) {
                 return valueHandler.getValueDisplayString(
-                    model.getVisibleColumn(cell.col).getMetaAttribute(),
+                    model.getVisibleColumn(col).getMetaAttribute(),
                     value,
                     DBDDisplayFormat.UI);
             } else {
@@ -2465,20 +2465,19 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public Image getImage(Object element)
+        public Image getImage(int col, int row)
         {
-            GridPos cell = (GridPos)element;
             DBDAttributeBinding attr;
             if (mode == ResultSetMode.RECORD) {
-                if (cell.row >= model.getVisibleColumnCount()) {
+                if (row >= model.getVisibleColumnCount()) {
                     return null;
                 }
-                attr = model.getVisibleColumn(cell.row);
+                attr = model.getVisibleColumn(row);
             } else {
-                if (cell.col >= model.getVisibleColumnCount()) {
+                if (col >= model.getVisibleColumnCount()) {
                     return null;
                 }
-                attr = model.getVisibleColumn(cell.col);
+                attr = model.getVisibleColumn(col);
             }
             if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
                 return getTypeImage(attr.getMetaAttribute());
@@ -2488,15 +2487,15 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public String getText(Object element)
+        public String getText(int col, int row)
         {
-            return String.valueOf(getValue(element, true));
+            return String.valueOf(getValue(col, row, true));
         }
 
         @Override
-        public Color getForeground(Object element)
+        public Color getForeground(int col, int row)
         {
-            Object value = getValue(element, false);
+            Object value = getValue(col, row, false);
             if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
             } else {
@@ -2505,16 +2504,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         @Override
-        public Color getBackground(Object element)
+        public Color getBackground(int col, int row)
         {
-            GridPos cell = translateGridPos((GridPos)element);
-            if (model.isRowAdded(cell.row)) {
+            if (mode == ResultSetMode.RECORD) {
+                col = row;
+                row = curRowNum;
+            }
+
+            if (model.isRowAdded(row)) {
                 return backgroundAdded;
             }
-            if (model.isRowDeleted(cell.row)) {
+            if (model.isRowDeleted(row)) {
                 return backgroundDeleted;
             }
-            if (model.isCellModified(cell)) {
+            if (model.isDirty() && model.isCellModified(new GridPos(col, row))) {
                 return backgroundModified;
             }
             return null;
