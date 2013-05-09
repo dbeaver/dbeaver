@@ -24,6 +24,7 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid;
  */
 public class GridPos
 {
+    private static long count = 0;
     public int col;
     public int row;
 
@@ -31,13 +32,23 @@ public class GridPos
     {
         this.col = col;
         this.row = row;
+//        measureCount();
     }
 
     public GridPos(GridPos copy)
     {
         this.col = copy.col;
         this.row = copy.row;
+//        measureCount();
     }
+
+//    private static void measureCount()
+//    {
+//        count++;
+//        if (count % 1000 == 0) {
+//            System.out.println(count);
+//        }
+//    }
 
     public boolean isValid()
     {
