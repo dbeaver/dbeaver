@@ -274,6 +274,7 @@ public class SQLEditor extends SQLEditorBase
                 Object data = e.item.getData();
                 if (data instanceof DataContainer) {
                     curDataContainer = (DataContainer) data;
+                    curDataContainer.viewer.getSpreadsheet().setFocus();
                 }
             }
         });
