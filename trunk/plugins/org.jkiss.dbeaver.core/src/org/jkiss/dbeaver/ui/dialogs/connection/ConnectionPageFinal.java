@@ -223,14 +223,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite group = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
-        //gl.marginHeight = 20;
-        //gl.marginWidth = 20;
-        //gl.verticalSpacing = 10;
         group.setLayout(gl);
-        GridData gd;// = new GridData(GridData.FILL_HORIZONTAL);
-        //gd.horizontalAlignment = GridData.HORIZONTAL_ALIGN_CENTER;
-        //gd.verticalAlignment = GridData.VERTICAL_ALIGN_CENTER;
-        //group.setLayoutData(gd);
 
         String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
         connectionNameText = UIUtils.createLabelText(group, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
@@ -243,14 +236,25 @@ class ConnectionPageFinal extends ActiveWizardPage {
             }
         });
 
-        UIUtils.createControlLabel(group, "Connection type");
-        connectionTypeCombo = new CImageCombo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-        loadConnectionTypes();
-        connectionTypeCombo.select(0);
+        {
+            UIUtils.createControlLabel(group, "Connection type");
+
+            //Composite colorGroup = UIUtils.createPlaceholder(group, 4, 5);
+            connectionTypeCombo = new CImageCombo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            loadConnectionTypes();
+            connectionTypeCombo.select(0);
+
+/*
+            UIUtils.createControlLabel(colorGroup, "Custom color");
+            new CImageCombo(colorGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            Button pickerButton = new Button(colorGroup, SWT.PUSH);
+            pickerButton.setText("...");
+*/
+        }
 
         {
             Group securityGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.FILL_HORIZONTAL, 0);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             gd.widthHint = 400;
             securityGroup.setLayoutData(gd);
@@ -261,67 +265,69 @@ class ConnectionPageFinal extends ActiveWizardPage {
             savePasswordCheck.setLayoutData(gd);
         }
 
-        Composite optionsGroup = new Composite(group, SWT.NONE);
-        gl = new GridLayout(2, true);
-        gl.verticalSpacing = 0;
-        gl.horizontalSpacing = 5;
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        optionsGroup.setLayout(gl);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
-        optionsGroup.setLayoutData(gd);
-
         {
-            Group miscGroup = UIUtils.createControlGroup(
-                optionsGroup,
-                CoreMessages.dialog_connection_wizard_final_group_misc,
-                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+            Composite optionsGroup = new Composite(group, SWT.NONE);
+            gl = new GridLayout(2, true);
+            gl.verticalSpacing = 0;
+            gl.horizontalSpacing = 5;
+            gl.marginHeight = 0;
+            gl.marginWidth = 0;
+            optionsGroup.setLayout(gl);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            optionsGroup.setLayoutData(gd);
 
-            showSystemObjects = UIUtils.createCheckbox(
-                miscGroup,
-                CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
-                dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
-            showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            {
+                Group miscGroup = UIUtils.createControlGroup(
+                    optionsGroup,
+                    CoreMessages.dialog_connection_wizard_final_group_misc,
+                    1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
 
-            readOnlyConnection = UIUtils.createCheckbox(
-                miscGroup,
-                CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
-                dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            //gd.horizontalSpan = 2;
-            readOnlyConnection.setLayoutData(gd);
-        }
-        {
-            // Filters
-            filtersGroup = UIUtils.createControlGroup(
-                optionsGroup,
-                CoreMessages.dialog_connection_wizard_final_group_filters,
-                1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+                showSystemObjects = UIUtils.createCheckbox(
+                    miscGroup,
+                    CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
+                    dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
+                showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            for (int i = 0; i < filters.size(); i++) {
-                final FilterInfo filterInfo = filters.get(i);
-                filterInfo.link = new Link(filtersGroup,SWT.NONE);
-                filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
-                filterInfo.link.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        //DBSObjectFilter filter = 
-                        EditObjectFilterDialog dialog = new EditObjectFilterDialog(
-                            getShell(),
-                            filterInfo.title,
-                            filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter(),
-                            true);
-                        if (dialog.open() == IDialogConstants.OK_ID) {
-                            filterInfo.filter = dialog.getFilter();
-                            if (filterInfo.filter != null && !filterInfo.filter.isEmpty()) {
-                                filterInfo.link.setFont(boldFont);
-                            } else {
-                                filterInfo.link.setFont(getFont());
+                readOnlyConnection = UIUtils.createCheckbox(
+                    miscGroup,
+                    CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
+                    dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                //gd.horizontalSpan = 2;
+                readOnlyConnection.setLayoutData(gd);
+            }
+            {
+                // Filters
+                filtersGroup = UIUtils.createControlGroup(
+                    optionsGroup,
+                    CoreMessages.dialog_connection_wizard_final_group_filters,
+                    1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+
+                for (int i = 0; i < filters.size(); i++) {
+                    final FilterInfo filterInfo = filters.get(i);
+                    filterInfo.link = new Link(filtersGroup,SWT.NONE);
+                    filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
+                    filterInfo.link.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            //DBSObjectFilter filter =
+                            EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                                getShell(),
+                                filterInfo.title,
+                                filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter(),
+                                true);
+                            if (dialog.open() == IDialogConstants.OK_ID) {
+                                filterInfo.filter = dialog.getFilter();
+                                if (filterInfo.filter != null && !filterInfo.filter.isEmpty()) {
+                                    filterInfo.link.setFont(boldFont);
+                                } else {
+                                    filterInfo.link.setFont(getFont());
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
 
@@ -336,15 +342,9 @@ class ConnectionPageFinal extends ActiveWizardPage {
             buttonsGroup.setLayout(gl);
 
             //buttonsGroup.setLayout(new GridLayout(2, true));
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
-
-//            String catFilter = dataSourceDescriptor == null ? null : dataSourceDescriptor.getCatalogFilter();
-//            catFilterText = UIUtils.createCheckText(buttonsGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_catalogs, CommonUtils.getString(catFilter), !CommonUtils.isEmpty(catFilter), 200);
-//
-//            String schFilter = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getSchemaFilter(); //$NON-NLS-1$
-//            schemaFilterText = UIUtils.createCheckText(buttonsGroup, CoreMessages.dialog_connection_wizard_final_checkbox_filter_schemas, CommonUtils.getString(schFilter), !CommonUtils.isEmpty(schFilter), 200);
 
             {
                 tunnelButton = new Button(buttonsGroup, SWT.PUSH);
