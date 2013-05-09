@@ -107,6 +107,7 @@ public abstract class LightGrid extends Canvas {
     private GridColumn shiftSelectionAnchorColumn;
 
     private GridColumn focusColumn;
+    private final GridPos focusCell = new GridPos(-1, -1);
 
     /**
      * List of table columns in creation/index order.
@@ -463,7 +464,7 @@ public abstract class LightGrid extends Canvas {
 
     public abstract IGridContentProvider getContentProvider();
 
-    public abstract ILabelProvider getContentLabelProvider();
+    public abstract IGridLabelProvider getContentLabelProvider();
 
     public abstract ILabelProvider getColumnLabelProvider();
 
@@ -4039,8 +4040,9 @@ public abstract class LightGrid extends Canvas {
 
         if (focusColumn != null)
             x = focusColumn.getIndex();
-
-        return new GridPos(x, focusItem);
+        focusCell.col = x;
+        focusCell.row = focusItem;
+        return focusCell;
     }
 
     /**
@@ -4680,9 +4682,9 @@ public abstract class LightGrid extends Canvas {
 
     public String getCellText(int column, int row)
     {
-        ILabelProvider contentLabelProvider = getContentLabelProvider();
+        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
         if (contentLabelProvider != null) {
-            String text = contentLabelProvider.getText(new GridPos(column, row));
+            String text = contentLabelProvider.getText(column, row);
             // Truncate too long texts (they are really bad for performance)
             if (text.length() > MAX_TOOLTIP_LENGTH) {
                 text = text.substring(0, MAX_TOOLTIP_LENGTH) + " ...";
@@ -4695,7 +4697,7 @@ public abstract class LightGrid extends Canvas {
 
     public String getCellToolTip(int column, int row)
     {
-        ILabelProvider contentLabelProvider = getContentLabelProvider();
+        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
         if (contentLabelProvider != null) {
             String toolTip = getCellText(column, row);
             if (toolTip == null) {
@@ -4731,30 +4733,24 @@ public abstract class LightGrid extends Canvas {
 
     public Image getCellImage(int column, int row)
     {
-        ILabelProvider contentLabelProvider = getContentLabelProvider();
+        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
         if (contentLabelProvider != null) {
-            return contentLabelProvider.getImage(new GridPos(column,  row));
+            return contentLabelProvider.getImage(column,  row);
         }
         return null;
     }
 
     public Color getCellBackground(int column, int row)
     {
-        ILabelProvider contentLabelProvider = getContentLabelProvider();
-        Color color = null;
-        if (contentLabelProvider instanceof IColorProvider) {
-            color = ((IColorProvider)contentLabelProvider).getBackground(new GridPos(column,  row));
-        }
+        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
+        Color color = contentLabelProvider.getBackground(column,  row);
         return color != null ? color : getBackground();
     }
 
     public Color getCellForeground(int column, int row)
     {
-        ILabelProvider contentLabelProvider = getContentLabelProvider();
-        Color color = null;
-        if (contentLabelProvider instanceof IColorProvider) {
-            color = ((IColorProvider)contentLabelProvider).getForeground(new GridPos(column,  row));
-        }
+        IGridLabelProvider contentLabelProvider = getContentLabelProvider();
+        Color color = contentLabelProvider.getForeground(column,  row);
         return color != null ? color : getForeground();
     }
 

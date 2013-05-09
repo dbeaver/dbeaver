@@ -348,7 +348,7 @@ public class ResultSetModel {
 
     boolean isRowAdded(int row)
     {
-        return addedRows.contains(new RowInfo(row));
+        return !addedRows.isEmpty() && addedRows.contains(new RowInfo(row));
     }
 
     void addNewRow(int rowNum, Object[] data)
@@ -360,7 +360,7 @@ public class ResultSetModel {
 
     boolean isRowDeleted(int row)
     {
-        return removedRows.contains(new RowInfo(row));
+        return !removedRows.isEmpty() && removedRows.contains(new RowInfo(row));
     }
 
     /**
