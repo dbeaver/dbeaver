@@ -54,6 +54,11 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         connectionsProps.put("zeroDateTimeBehavior", "convertToNull");
         // Set utf-8 as default charset
         connectionsProps.put("characterEncoding", "utf-8");
+        // Auth plugins
+//        connectionsProps.put("authenticationPlugins",
+//            "com.mysql.jdbc.authentication.MysqlClearPasswordPlugin," +
+//            "com.mysql.jdbc.authentication.MysqlOldPasswordPlugin," +
+//            "org.jkiss.dbeaver.ext.mysql.auth.DialogAuthenticationPlugin");
     }
 
     public static Map<String,String> getConnectionsProps() {
