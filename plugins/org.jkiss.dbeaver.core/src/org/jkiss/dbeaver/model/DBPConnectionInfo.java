@@ -229,7 +229,7 @@ public class DBPConnectionInfo implements DBPObject
 
     public Color getConnectionColor()
     {
-        return connectionColor != null ? connectionColor : connectionType.getColor();
+        return connectionColor;
     }
 
     public void setConnectionColor(Color color)
