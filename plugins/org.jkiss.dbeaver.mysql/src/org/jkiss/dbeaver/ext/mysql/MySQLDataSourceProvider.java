@@ -58,7 +58,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 //        connectionsProps.put("authenticationPlugins",
 //            "com.mysql.jdbc.authentication.MysqlClearPasswordPlugin," +
 //            "com.mysql.jdbc.authentication.MysqlOldPasswordPlugin," +
-//            "org.jkiss.dbeaver.ext.mysql.auth.DialogAuthenticationPlugin");
+//            "org.jkiss.jdbc.mysql.auth.DialogAuthenticationPlugin");
     }
 
     public static Map<String,String> getConnectionsProps() {
