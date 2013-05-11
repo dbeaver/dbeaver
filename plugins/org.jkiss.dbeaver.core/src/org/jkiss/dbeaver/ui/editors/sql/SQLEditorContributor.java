@@ -161,15 +161,6 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     {
         if (!isNestedEditor()) {
             super.contributeToToolBar(manager);
-
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT));
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_STATEMENT_NEW));
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_SCRIPT));
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXECUTE_SCRIPT_NEW));
-            manager.add(new Separator());
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_EXPLAIN_PLAN));
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_ANALYSE_STATEMENT));
-            manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), ICommandIds.CMD_VALIDATE_STATEMENT));
         }
     }
 
