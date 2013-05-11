@@ -89,9 +89,6 @@
             <command commandId="org.eclipse.ui.file.import"/>
             <command commandId="org.eclipse.ui.file.export"/>
 
-            <separator name="settings" visible="true"/>
-            <command commandId="org.eclipse.ui.window.preferences"/>
-
             <separator name="exit" visible="true"/>
             <command commandId="org.eclipse.ui.file.exit"/>
         </menuContribution>
@@ -99,15 +96,22 @@
         <!-- Window menu -->
 
         <menuContribution allPopups="false" locationURI="menu:window?before=additions">
+            <separator name="perspective" visible="true"/>
+            <command commandId="org.eclipse.ui.window.customizePerspective"/>
+            <command commandId="org.eclipse.ui.window.resetPerspective"/>
             <separator name="tabs" visible="true"/>
-            <command commandId="org.eclipse.ui.navigate.nextTab"/>
-            <command commandId="org.eclipse.ui.navigate.previousTab"/>
-            <command commandId="org.eclipse.ui.navigate.nextSubTab"/>
-            <command commandId="org.eclipse.ui.navigate.previousSubTab"/>
-            <separator name="editors" visible="true"/>
-            <command commandId="org.eclipse.ui.window.nextEditor"/>
-            <command commandId="org.eclipse.ui.window.previousEditor"/>
-            <command commandId="org.eclipse.ui.window.switchToEditor"/>
+            <menu label="Navigation">
+                <command commandId="org.eclipse.ui.navigate.nextTab"/>
+                <command commandId="org.eclipse.ui.navigate.previousTab"/>
+                <command commandId="org.eclipse.ui.navigate.nextSubTab"/>
+                <command commandId="org.eclipse.ui.navigate.previousSubTab"/>
+                <separator name="editors" visible="true"/>
+                <command commandId="org.eclipse.ui.window.nextEditor"/>
+                <command commandId="org.eclipse.ui.window.previousEditor"/>
+                <command commandId="org.eclipse.ui.window.switchToEditor"/>
+            </menu>
+            <separator name="settings" visible="true"/>
+            <command commandId="org.eclipse.ui.window.preferences"/>
         </menuContribution>
 
     </extension>
