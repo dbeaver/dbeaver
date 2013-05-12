@@ -49,10 +49,17 @@
         <version>
             <number>2.2.0</number>
             <type>stable</type>
-            <date>11.05.2013</date>
+            <date>12.05.2013</date>
 
             <release-notes>
-                -
+                - Multiple result sets in SQL editor
+                - Result set filters improvement
+                - Find/replace support in result sets
+                - Metadata (tables/constraints/foreign keys) editor improvement
+                - JRE included in Windows installers
+                - MySQL TINYINT(1) data type problem fixed
+                - Oracle date/time data type problems fixed
+                - Many minor UI bug fixes
             </release-notes>
         </version>
 
