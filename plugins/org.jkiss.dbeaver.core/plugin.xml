@@ -1518,7 +1518,7 @@
             </menu>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext">
+        <!--menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext">
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
@@ -1527,7 +1527,7 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate"/>
-        </menuContribution>
+        </menuContribution-->
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext">
             <separator name="files" visible="true"/>

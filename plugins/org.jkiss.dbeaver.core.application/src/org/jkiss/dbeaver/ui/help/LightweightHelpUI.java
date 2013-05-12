@@ -30,7 +30,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.help.AbstractHelpUI;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 import java.io.IOException;
@@ -56,7 +55,7 @@ public class LightweightHelpUI extends AbstractHelpUI {
     {
         try {
             IHelpResource[] relatedTopics = context.getRelatedTopics();
-            if (CommonUtils.isEmpty(relatedTopics)) {
+            if (relatedTopics == null || relatedTopics.length == 0) {
                 return;
             }
             IHelpResource relatedTopic = relatedTopics[0];

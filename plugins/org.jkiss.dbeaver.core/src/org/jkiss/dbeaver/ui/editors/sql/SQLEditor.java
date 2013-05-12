@@ -589,7 +589,7 @@ public class SQLEditor extends SQLEditorBase
             // Execute each query in a new tab
             for (int i = 0; i < queries.size(); i++) {
                 SQLStatementInfo query = queries.get(i);
-                DataContainer dataContainer = (i == 0 && !isSingleQuery ? curDataContainer : createDataContainer(false));
+                DataContainer dataContainer = (i == 0 && !isSingleQuery ? curDataContainer : createDataContainer(queries.size() == 1));
                 dataContainer.processQueries(Collections.singletonList(query), true);
             }
         } else {
