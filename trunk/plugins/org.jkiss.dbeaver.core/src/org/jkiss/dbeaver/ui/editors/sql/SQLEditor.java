@@ -594,6 +594,7 @@ public class SQLEditor extends SQLEditorBase
             }
         } else {
             // Use current tab
+            resultTabs.setSelection(curDataContainer.tabItem);
             curDataContainer.processQueries(queries, false);
         }
     }
