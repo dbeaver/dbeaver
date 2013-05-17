@@ -18,6 +18,10 @@
       %license
    </license>
 
+   <includes
+         id="org.jkiss.dbeaver.core"
+         version="0.0.0"/>
+
    <requires>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.core.resources"/>
@@ -35,28 +39,7 @@
    </requires>
 
    <plugin
-         id="org.jkiss.dbeaver.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.erd"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.jkiss.dbeaver.ext.generic"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.import_config"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -78,13 +61,6 @@
 
    <plugin
          id="org.jkiss.dbeaver.ext.wmi"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.utils"
          download-size="0"
          install-size="0"
          version="0.0.0"
