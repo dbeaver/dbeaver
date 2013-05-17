@@ -1,7 +1,0 @@
-id=sqlite.werner
-name=SQLite Werner driver
-vendor=Werner
-version=2012.02.09
-license=LICENSE.txt
-file1=sqlite.jar
-file2=sqlite_jni.dll

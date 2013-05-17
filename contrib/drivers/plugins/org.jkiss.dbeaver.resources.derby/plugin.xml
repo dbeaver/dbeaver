@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<extension point="org.jkiss.dbeaver.resources">
+		<resource name="drivers/derby/LICENSE.txt"/>
+		<resource name="drivers/derby/derby.jar"/>
+		<resource name="drivers/derby/derbyclient.jar"/>
+	</extension>
+</plugin>

@@ -1,8 +1,0 @@
-name=Oracle driver
-vendor=Oracle
-version=11.2.0
-license=LICENSE.txt
-file1=ojdbc6.jar
-file2=orai18n.jar
-file3=xdb.jar
-file4=xmlparserv2.jar

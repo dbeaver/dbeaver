@@ -1,5 +1,0 @@
-name=MySQL JDBC Connector
-vendor=MySQL
-version=5.1.22
-license=LICENSE.txt
-file1=mysql-connector-java-5.1.22-bin.jar

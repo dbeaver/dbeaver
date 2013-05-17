@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SQLite Werner driver
+Bundle-SymbolicName: org.jkiss.dbeaver.resources.sqlite.werner;singleton:=true
+Bundle-Version: 2012.02.09
+Bundle-Vendor: Werner
+Bundle-ActivationPolicy: lazy

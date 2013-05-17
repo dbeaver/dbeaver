@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="org.jkiss.dbeaver.resources.sqlite.werner" label="%featureName" version="2012.02.09" provider="%providerName" plugin="org.jkiss.dbeaver.resources.sqlite.werner">
+	<description>%description</description>
+	<copyright>%copyright</copyright>
+	<license>%license</license>
+	<requires/>
+	<plugin id="org.jkiss.dbeaver.resources.sqlite.werner" download-size="0" install-size="0" version="0.0.0" unpack="true"/>
+</feature>

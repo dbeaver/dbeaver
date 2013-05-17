@@ -1,6 +1,0 @@
-name=PostgreSQL driver
-vendor=PostgreSQL
-version=9.1.901
-license=LICENSE.txt
-file1=postgresql-9.1-901.jdbc4.jar
-
