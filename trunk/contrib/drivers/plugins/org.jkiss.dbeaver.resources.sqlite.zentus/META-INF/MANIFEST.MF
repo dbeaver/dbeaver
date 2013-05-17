@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: SQLite Zentus driver
+Bundle-SymbolicName: org.jkiss.dbeaver.resources.sqlite.zentus;singleton:=true
+Bundle-Version: 0.5.6
+Bundle-Vendor: Zentus
+Bundle-ActivationPolicy: lazy

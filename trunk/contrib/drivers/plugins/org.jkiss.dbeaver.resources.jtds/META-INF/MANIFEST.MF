@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: jTDS driver (MS SQL Server and Sybase)
+Bundle-SymbolicName: org.jkiss.dbeaver.resources.jtds;singleton:=true
+Bundle-Version: 1.2.5
+Bundle-Vendor: jTDS
+Bundle-ActivationPolicy: lazy

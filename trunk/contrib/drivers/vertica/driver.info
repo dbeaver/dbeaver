@@ -1,5 +1,0 @@
-name=Vertica driver
-vendor=Vertica
-version=6.0.1
-#license=LICENSE.txt
-file1=vertica-jdk5-6.0.1-0.jar

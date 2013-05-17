@@ -1,6 +1,0 @@
-id=sqlite.zentus
-name=SQLite Zentus driver
-vendor=Zentus
-version=0.5.6
-license=LICENSE.txt
-file1=sqlitejdbc-v056.jar

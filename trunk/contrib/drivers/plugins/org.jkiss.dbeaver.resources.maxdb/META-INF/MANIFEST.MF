@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: MaxDB driver
+Bundle-SymbolicName: org.jkiss.dbeaver.resources.maxdb;singleton:=true
+Bundle-Version: 7.6.06
+Bundle-Vendor: SAP
+Bundle-ActivationPolicy: lazy
