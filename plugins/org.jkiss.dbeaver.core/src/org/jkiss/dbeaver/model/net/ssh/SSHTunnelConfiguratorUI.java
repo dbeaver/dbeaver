@@ -48,6 +48,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Button savePasswordCheckbox;
     private Label privateKeyLabel;
     private Composite pkControlGroup;
+    private Spinner keepAliveText;
 
     @Override
     public void createControl(Composite parent)
@@ -109,6 +110,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         
         UIUtils.createPlaceholder(composite,1);
         savePasswordCheckbox = UIUtils.createCheckbox(composite, CoreMessages.model_ssh_configurator_checkbox_save_pass, false);
+
+        keepAliveText = UIUtils.createLabelSpinner(composite, CoreMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
     }
 
     @Override
@@ -130,6 +133,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         passwordText.setText(CommonUtils.getString(configuration.getPassword()));
         savePasswordCheckbox.setSelection(configuration.isSavePassword());
 
+        String kaString = configuration.getProperties().get(SSHConstants.PROP_ALIVE_INTERVAL);
+        if (!CommonUtils.isEmpty(kaString)) {
+            keepAliveText.setSelection(Integer.parseInt(kaString));
+        }
+
         updatePrivateKeyVisibility();
     }
 
@@ -148,6 +156,12 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         configuration.setUserName(userNameText.getText());
         configuration.setPassword(passwordText.getText());
         configuration.setSavePassword(savePasswordCheckbox.getSelection());
+        int kaInterval = keepAliveText.getSelection();
+        if (kaInterval <= 0) {
+            properties.remove(SSHConstants.PROP_ALIVE_INTERVAL);
+        } else {
+            properties.put(SSHConstants.PROP_ALIVE_INTERVAL, String.valueOf(kaInterval));
+        }
     }
 
     private void updatePrivateKeyVisibility()

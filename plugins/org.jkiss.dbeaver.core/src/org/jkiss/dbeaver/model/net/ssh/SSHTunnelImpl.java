@@ -66,6 +66,8 @@ public class SSHTunnelImpl implements DBWTunnel {
         String sshHost = properties.get(SSHConstants.PROP_HOST);
         String sshPort = properties.get(SSHConstants.PROP_PORT);
         String sshUser = configuration.getUserName();
+        String aliveInterval = properties.get(SSHConstants.PROP_ALIVE_INTERVAL);
+        //String aliveCount = properties.get(SSHConstants.PROP_ALIVE_COUNT);
         if (CommonUtils.isEmpty(sshHost)) {
             throw new DBException("SSH host not specified");
         }
@@ -121,6 +123,9 @@ public class SSHTunnelImpl implements DBWTunnel {
             session.connect();
             try {
                 session.setPortForwardingL(localPort, dbHost, dbPort);
+                if (!CommonUtils.isEmpty(aliveInterval)) {
+                    session.setServerAliveInterval(Integer.parseInt(aliveInterval));
+                }
             } catch (JSchException e) {
                 closeTunnel(monitor, connectionInfo);
                 throw e;
