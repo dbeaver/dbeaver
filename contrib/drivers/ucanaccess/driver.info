@@ -1,9 +1,0 @@
-name=MS Access (UCanAccess)
-vendor=Marco Amadei
-version=0.1.1
-license=LICENSE.txt
-file1=ucanaccess-0.1.1.jar
-file2=commons-lang-2.4.jar
-file3=hsqldb.jar
-file4=jackcess-1.2.10.jar
-

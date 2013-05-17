@@ -1,6 +1,0 @@
-name=Apache Derby (JavaDB) driver
-vendor=Apache Group
-version=10.9.1
-license=LICENSE.txt
-file1=derby.jar
-file2=derbyclient.jar

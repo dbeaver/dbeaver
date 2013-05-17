@@ -1,6 +1,0 @@
-name=Informix driver
-vendor=Informix
-version=0.0.0
-license=LICENSE.txt
-file1=ifxjdbc.jar
-file2=ifxlang.jar

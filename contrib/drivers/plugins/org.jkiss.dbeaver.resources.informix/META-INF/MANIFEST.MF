@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Informix driver
+Bundle-SymbolicName: org.jkiss.dbeaver.resources.informix;singleton:=true
+Bundle-Version: 0.0.0
+Bundle-Vendor: Informix
+Bundle-ActivationPolicy: lazy

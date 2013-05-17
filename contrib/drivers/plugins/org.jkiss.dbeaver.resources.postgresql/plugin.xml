@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<extension point="org.jkiss.dbeaver.resources">
+		<resource name="drivers/postgresql/LICENSE.txt"/>
+		<resource name="drivers/postgresql/postgresql-9.1-901.jdbc4.jar"/>
+	</extension>
+</plugin>

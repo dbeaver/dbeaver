@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Firebird (Interbase) driver
+Bundle-SymbolicName: org.jkiss.dbeaver.resources.firebird;singleton:=true
+Bundle-Version: 2.1.6
+Bundle-Vendor: Firebird
+Bundle-ActivationPolicy: lazy

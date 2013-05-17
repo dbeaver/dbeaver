@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<extension point="org.jkiss.dbeaver.resources">
+		<resource name="drivers/informix/LICENSE.txt"/>
+		<resource name="drivers/informix/ifxjdbc.jar"/>
+		<resource name="drivers/informix/ifxlang.jar"/>
+	</extension>
+</plugin>

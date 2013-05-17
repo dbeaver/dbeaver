@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature id="org.jkiss.dbeaver.resources.cassandra" label="%featureName" version="1.2.0" provider="%providerName" plugin="org.jkiss.dbeaver.resources.cassandra">
+	<description>%description</description>
+	<copyright>%copyright</copyright>
+	<license>%license</license>
+	<requires/>
+	<plugin id="org.jkiss.dbeaver.resources.cassandra" download-size="0" install-size="0" version="0.0.0" unpack="true"/>
+</feature>

@@ -1,6 +1,0 @@
-name=Ingres driver
-vendor=Ingres
-version=0.0.0
-license=LICENSE.txt
-file1=iijdbc.jar
-
