@@ -1126,6 +1126,8 @@ public class CoreMessages extends NLS {
 
 	public static String model_ssh_configurator_label_user_name;
 
+    public static String model_ssh_configurator_label_keep_alive;
+
 	public static String model_struct_Cascade;
 	public static String model_struct_Check;
 	public static String model_struct_Clustered;

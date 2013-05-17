@@ -29,6 +29,8 @@ public class SSHConstants {
     public static final String PROP_PORT = "port";
     public static final String PROP_AUTH_TYPE = "authType";
     public static final String PROP_KEY_PATH = "keyPath";
+    public static final String PROP_ALIVE_INTERVAL = "aliveInterval";
+    public static final String PROP_ALIVE_COUNT = "aliveCount";
 
     public static enum AuthType {
         PASSWORD,
