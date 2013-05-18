@@ -284,11 +284,7 @@
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver. Doesn't require Oracle client.">
-                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/ojdbc6.jar"/>
-                    <file type="jar" path="drivers/oracle/orai18n.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/orai18n.jar"/>
-                    <file type="jar" path="drivers/oracle/xdb.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/xdb.jar"/>
-                    <file type="jar" path="drivers/oracle/xmlparserv2.jar" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/xmlparserv2.jar"/>
-                    <file type="license" path="drivers/oracle/LICENSE.txt" url="http://dbeaver.jkiss.org/files/jdbc/drivers/oracle/LICENSE.txt"/>
+                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.oracle/LICENSE.txt"/>
                     <replace provider="generic" driver="oracle"/>
                     <replace provider="oracle" driver="oracle"/>
                 </driver>
@@ -302,6 +298,7 @@
                     customDriverLoader="true"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle OCI driver. Requires Oracle client installation.">
+                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.oracle/LICENSE.txt"/>
                 </driver>
             </drivers>
             <views>
