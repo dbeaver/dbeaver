@@ -55,6 +55,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -537,6 +540,19 @@ public class RuntimeUtils {
                     result = false;
                     break;
             }
+        }
+    }
+
+    public static File getPlatformFile(String platformURL) throws IOException
+    {
+        URL url = new URL(platformURL);
+        URL fileURL = FileLocator.toFileURL(url);
+        // Escape spaces to avoid URI syntax error
+        String filePath = fileURL.toString().replace(" ", "%20");
+        try {
+            return new File(new URI(filePath));
+        } catch (URISyntaxException e) {
+            throw new IOException("Bad local file path: " + filePath, e);
         }
     }
 
