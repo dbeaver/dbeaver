@@ -9,7 +9,8 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.core,
  org.eclipse.jface.text,
  org.eclipse.ui.views,
- org.eclipse.ui.workbench
+ org.eclipse.ui.workbench,
+ org.jkiss.jdbc.cassandra
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Serge Rieder

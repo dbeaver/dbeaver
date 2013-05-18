@@ -1,10 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
-	<extension point="org.jkiss.dbeaver.resources">
-		<resource name="drivers/cassandra/license.txt"/>
-		<resource name="drivers/cassandra/apache-cassandra-thrift-1.1.6.jar"/>
-		<resource name="drivers/cassandra/cassandra-jkiss-jdbc-1.2.0.jar"/>
-		<resource name="drivers/cassandra/libthrift-0.7.0.jar"/>
-		<resource name="drivers/cassandra/slf4j-api-1.6.1.jar"/>
-	</extension>
 </plugin>

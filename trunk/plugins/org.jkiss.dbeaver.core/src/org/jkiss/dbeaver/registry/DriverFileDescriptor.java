@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDriverFileType;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -153,6 +154,14 @@ public class DriverFileDescriptor implements DBPDriverFile
     @Override
     public File getFile()
     {
+        if (path.startsWith("platform:/")) {
+            try {
+                URL fileURL = new URL(path);
+                return new File(FileLocator.toFileURL(fileURL).toURI());
+            } catch (Exception e) {
+                log.warn("Bad file URL: " + path, e);
+            }
+        }
         // Try to use direct path
         File libraryFile = new File(path);
         if (libraryFile.exists()) {
