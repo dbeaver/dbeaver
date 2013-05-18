@@ -254,7 +254,9 @@ public class DriverEditDialog extends HelpEnabledDialog
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
             //tabFolder.setLayout(new FillLayout());
 
-            createLibrariesTab(tabFolder);
+            if (provider.isDriversManagable()) {
+                createLibrariesTab(tabFolder);
+            }
             createConnectionPropertiesTab(tabFolder);
             createParametersTab(tabFolder);
             // Client homes
