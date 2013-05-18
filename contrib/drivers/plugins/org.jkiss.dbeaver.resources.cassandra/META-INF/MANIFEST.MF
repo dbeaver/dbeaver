@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Cassandra JDBC driver
-Bundle-SymbolicName: org.jkiss.dbeaver.resources.cassandra;singleton:=true
-Bundle-Version: 1.2.0
-Bundle-Vendor: JKISS
-Bundle-ActivationPolicy: lazy
