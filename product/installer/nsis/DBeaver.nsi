@@ -4,7 +4,6 @@
 ;Based on StartMenu.nsi by Joost Verburg
 
 !include "x64.nsh"
-!include "RecFind.nsh"
 
 ;--------------------------------
 ;Include Modern UI
@@ -43,6 +42,9 @@
   SetCompressor /FINAL /SOLID lzma
 
   Var JAVA_LOCALE
+  Var path
+  Var fileName
+  Var fileExt
 
 ;--------------------------------
 ;Variables
@@ -85,6 +87,11 @@
   !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
   !define MUI_FINISHPAGE_SHOWREADME_TEXT "Create Desktop Shortcut"
   !define MUI_FINISHPAGE_SHOWREADME_FUNCTION FinishPageAction
+
+  !define MUI_FINISHPAGE_LINK "Visit DBeaver web site"
+  !define MUI_FINISHPAGE_LINK_LOCATION "http://dbeaver.jkiss.org/"
+
+  !define MUI_FINISHPAGE_CANCEL_ENABLED
 
   !insertmacro MUI_PAGE_FINISH
 
@@ -138,6 +145,8 @@ FunctionEnd
 
 Section "-DBeaver Core" SecCore
 
+  DetailPrint "Cleanup previous installation in $INSTDIR"
+
   ; If there is previous version of DBeaver - remove it's configuration and plugins
   RMDir /r $INSTDIR\configuration
   RMDir /r $INSTDIR\plugins
@@ -148,15 +157,16 @@ Section "-DBeaver Core" SecCore
   SetOutPath "$INSTDIR"
 
   ; Eclipse files
+  DetailPrint "Copy core files"
+
   File "..\raw\win32.@arch@\dbeaver\.eclipseproduct"
   File "..\raw\win32.@arch@\dbeaver\readme.txt"
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
-  File /r  /x org.jkiss.* "..\raw\win32.@arch@\dbeaver\plugins"
   File /r  "..\raw\win32.@arch@\dbeaver\features"
+  File /r  /x org.jkiss.* /x com.oracle.* /x com.mysql.* "..\raw\win32.@arch@\dbeaver\plugins"
 
   ; Unpack script
-  File "..\..\..\installer\nsis\install.cmd"
   File "..\raw\win32.@arch@\dbeaver\jre\bin\unpack200.exe"
 
   ; Licenses
@@ -264,11 +274,16 @@ Section "-Drivers" SecDrivers
 SectionEnd
 
 Section "-UnpackJars" SecUnpackJars
+    DetailPrint "Unpack java archives"
+
     SetOutPath "$INSTDIR"
-    ExpandEnvStrings $0 %COMSPEC%
-    ExecWait '"$0" /C "$INSTDIR\install.cmd"'
-    Delete "$INSTDIR\install.cmd"
+    StrCpy $path "$INSTDIR"
+    SetDetailsView show
+    Call UnpackFolder
+
     Delete "$INSTDIR\unpack200.exe"
+
+    DetailPrint "Unpack completed"
 SectionEnd
 
 ;--------------------------------
@@ -392,14 +407,42 @@ Function .onInit
 FunctionEnd
 
 Function UnpackFolder
+;    MessageBox MB_OK "UnpackFolder $path"
 
-    ${RecFindOpen} "$path\*.jar" $R0 $R1
-        DetailPrint "Dir: $R0"
-    ${RecFindFirst}
-        DetailPrint "File: $R0\$R1"
-        StrCmp $R1 "a_file.txt" Found
-    ${RecFindNext}
-        Found:
-    ${RecFindClose}|
+    Push $0 ; search handle
+    Push $1 ; file name
+    Push $2 ; attributes
 
+    FindFirst $0 $1 "$path\*"
+
+    loop:
+        StrCmp $1 "" done
+        ${GetFileAttributes} "$path\$1" DIRECTORY $2
+        IntCmp $2 1 isdir
+
+        ${GetBaseName} $1 $fileName
+        ${GetFileExt} $1 $fileExt
+        StrCmp $fileExt "pack" unpack
+        Goto cont
+    isdir:
+        StrCmp $1 . cont
+        StrCmp $1 .. cont
+        Push $path
+        StrCpy $path "$path\$1"
+        Call UnpackFolder
+        Pop $path
+    cont:
+        FindNext $0 $1
+        Goto loop
+    unpack:
+        DetailPrint "Unpack $path\$1"
+        nsExec::Exec '"$INSTDIR\unpack200.exe" -r "$path\$1" "$path\$fileName.jar"'
+        Pop $3
+        Goto cont
+    done:
+        FindClose $0
+
+      Pop $2
+      Pop $1
+      Pop $0
 FunctionEnd
