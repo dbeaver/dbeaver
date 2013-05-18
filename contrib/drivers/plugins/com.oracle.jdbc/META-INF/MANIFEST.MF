@@ -5,7 +5,8 @@ Bundle-SymbolicName: com.oracle.jdbc;singleton:=true
 Bundle-Version: 11.2.0.1
 Bundle-ClassPath: ojdbc6.jar,
  xdb.jar,
- xmlparserv2.jar
+ xmlparserv2.jar,
+ orai18n.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Oracle Corporation
 Export-Package: oracle.core.lmx,

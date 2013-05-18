@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import oracle.xdb.XMLType;
+
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import java.io.InputStream;
@@ -33,9 +35,9 @@ import java.sql.SQLXML;
  */
 public class OracleXMLWrapper implements SQLXML {
 
-    private final Object xmlType;
+    private final XMLType xmlType;
 
-    public OracleXMLWrapper(Object xmlType)
+    public OracleXMLWrapper(XMLType xmlType)
     {
         this.xmlType = xmlType;
     }
@@ -44,7 +46,7 @@ public class OracleXMLWrapper implements SQLXML {
     public void free() throws SQLException
     {
         try {
-            xmlType.getClass().getMethod("close").invoke(xmlType);
+            xmlType.close();
         } catch (Throwable e) {
             throw new SQLException("Can't free XMLType", e);
         }
@@ -53,11 +55,7 @@ public class OracleXMLWrapper implements SQLXML {
     @Override
     public InputStream getBinaryStream() throws SQLException
     {
-        try {
-            return (InputStream) xmlType.getClass().getMethod("getInputStream").invoke(xmlType);
-        } catch (Throwable e) {
-            throw new SQLException("Can't obtain binary stream from XMLType", e);
-        }
+        return xmlType.getInputStream();
     }
 
     @Override
@@ -69,12 +67,7 @@ public class OracleXMLWrapper implements SQLXML {
     @Override
     public Reader getCharacterStream() throws SQLException
     {
-        try {
-            final Clob clob = (Clob)xmlType.getClass().getMethod("getClobVal").invoke(xmlType);
-            return clob.getCharacterStream();
-        } catch (Throwable e) {
-            throw new SQLException("Can't obtain binary stream from XMLType", e);
-        }
+        return xmlType.getClobVal().getCharacterStream();
     }
 
     @Override
@@ -86,11 +79,7 @@ public class OracleXMLWrapper implements SQLXML {
     @Override
     public String getString() throws SQLException
     {
-        try {
-            return (String) xmlType.getClass().getMethod("getStringVal").invoke(xmlType);
-        } catch (Throwable e) {
-            throw new SQLException("Can't obtain binary stream from XMLType", e);
-        }
+        return xmlType.getStringVal();
     }
 
     @Override
