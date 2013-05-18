@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.model.DBPDriverFileType;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -156,9 +157,8 @@ public class DriverFileDescriptor implements DBPDriverFile
     {
         if (path.startsWith("platform:/")) {
             try {
-                URL fileURL = new URL(path);
-                return new File(FileLocator.toFileURL(fileURL).toURI());
-            } catch (Exception e) {
+                return RuntimeUtils.getPlatformFile(path);
+            } catch (IOException e) {
                 log.warn("Bad file URL: " + path, e);
             }
         }
