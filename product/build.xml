@@ -279,6 +279,18 @@
             overwrite="true"
             />
 
+        <echo message="Pack200 all jars"/>
+        <apply executable="pack200" parallel="false" dest="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" verbose="true">
+            <arg value="--modification-time=latest"/>
+            <arg value="--deflate-hint=true"/>
+            <arg value="--segment-limit=-1"/>
+            <arg value="-g"/>
+            <targetfile/>
+            <srcfile/>
+            <fileset dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="**/*.jar" />
+            <mapper type="glob" from="*" to="*.pack" />
+        </apply>
+        <delete dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="**/*.jar"/>
 
         <echo message="Filter installer script"/>
         <filter filtersfile="build.properties"/>
@@ -302,11 +314,9 @@
         <antcall target="nsis">
             <param name="arch" value="x86"/>
         </antcall>
-<!--
         <antcall target="nsis">
             <param name="arch" value="x86_64"/>
         </antcall>
--->
 
         <!--delete dir="${buildDirectory}/installer" /-->
     </target>
