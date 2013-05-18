@@ -1,11 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Oracle 11g R2 JDBC Driver
-Bundle-SymbolicName: com.oracle.jdbc
+Bundle-SymbolicName: com.oracle.jdbc;singleton:=true
 Bundle-Version: 11.2.0.1
 Bundle-ClassPath: ojdbc6.jar,
  xdb.jar,
  xmlparserv2.jar
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Oracle Corporation
 Export-Package: oracle.core.lmx,
  oracle.core.lvf,
@@ -60,4 +61,3 @@ Export-Package: oracle.core.lmx,
  oracle.xml.xqxp.functions.builtIns,
  oracle.xml.xslt,
  org.w3c.dom.validation
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
