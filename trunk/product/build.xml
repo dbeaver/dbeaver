@@ -288,7 +288,7 @@
             <targetfile/>
             <srcfile/>
             <fileset dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="**/*.jar" />
-            <mapper type="glob" from="*" to="*.pack" />
+            <mapper type="glob" from="*.jar" to="*.pack" />
         </apply>
         <delete dir="${buildDirectory}/installer/raw/win32.${arch}/dbeaver/plugins" includes="**/*.jar"/>
 
