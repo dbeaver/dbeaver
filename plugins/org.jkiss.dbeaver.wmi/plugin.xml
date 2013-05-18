@@ -70,8 +70,8 @@
                     description="WMI Native driver"
                     class="org.jkiss.wmi.service.WMIServiceNative"
                     customDriverLoader="true">
-                    <file type="lib" os="win32" arch="x86" path="drivers/wmi/x86/jkiss_wmi.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/wmi/x86/jkiss_wmi.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/wmi/x64/jkiss_wmi.dll" url="http://dbeaver.jkiss.org/files/jdbc/drivers/wmi/x64/jkiss_wmi.dll"/>
+                    <file type="lib" os="win32" arch="x86" path="platform:/plugin/org.jkiss.wmi/native/x86/jkiss_wmi.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="platform:/plugin/org.jkiss.wmi/native/x64/jkiss_wmi.dll"/>
                 </driver>
             </drivers>
             <views>
