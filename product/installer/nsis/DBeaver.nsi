@@ -4,6 +4,7 @@
 ;Based on StartMenu.nsi by Joost Verburg
 
 !include "x64.nsh"
+!include "RecFind.nsh"
 
 ;--------------------------------
 ;Include Modern UI
@@ -211,6 +212,7 @@ SectionGroup /e "Plugins" SecPlugins
 	  SetOutPath "$INSTDIR\plugins"
 	  
 	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.mysql_*"
+	  File "..\raw\win32.@arch@\dbeaver\plugins\com.mysql.*"
 
 	SectionEnd
 
@@ -219,6 +221,7 @@ SectionGroup /e "Plugins" SecPlugins
 	  SetOutPath "$INSTDIR\plugins"
 
 	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.oracle_*"
+	  File /r "..\raw\win32.@arch@\dbeaver\plugins\com.oracle.*"
 
 	SectionEnd
 
@@ -236,6 +239,7 @@ SectionGroup /e "Plugins" SecPlugins
 	  SetOutPath "$INSTDIR\plugins"
 
 	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.nosql*"
+	  File /r "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.jdbc.cassandra*"
 
 	SectionEnd
 
@@ -387,3 +391,15 @@ Function .onInit
 
 FunctionEnd
 
+Function UnpackFolder
+
+    ${RecFindOpen} "$path\*.jar" $R0 $R1
+        DetailPrint "Dir: $R0"
+    ${RecFindFirst}
+        DetailPrint "File: $R0\$R1"
+        StrCmp $R1 "a_file.txt" Found
+    ${RecFindNext}
+        Found:
+    ${RecFindClose}|
+
+FunctionEnd
