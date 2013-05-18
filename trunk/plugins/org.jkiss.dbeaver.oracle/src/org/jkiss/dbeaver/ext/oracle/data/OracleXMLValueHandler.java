@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import oracle.jdbc.OracleResultSet;
+import oracle.xdb.XMLType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -40,6 +42,7 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
     {
         Object object;
 
+        //OracleResultSet oracleResultSet = (OracleResultSet) resultSet.getOriginal();
         try {
             object = resultSet.getObject(index);
         } catch (SQLException e) {
@@ -68,8 +71,8 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
 
         if (object == null) {
             return new OracleContentXML(context.getDataSource(), null);
-        } else if (object.getClass().getName().equals("oracle.xdb.XMLType")) {
-            return new OracleContentXML(context.getDataSource(), new OracleXMLWrapper(object));
+        } else if (object instanceof XMLType) {
+            return new OracleContentXML(context.getDataSource(), new OracleXMLWrapper((XMLType) object));
         } else if (object instanceof SQLXML) {
             return new OracleContentXML(context.getDataSource(), (SQLXML) object);
         } else {

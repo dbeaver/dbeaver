@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import oracle.xdb.XMLType;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 
@@ -82,9 +82,8 @@ public class OracleContentXML extends JDBCContentXML {
     private Object createXmlObject(JDBCExecutionContext context, InputStream stream) throws DBCException
     {
         try {
-            final Class<?> xmlTypeClass = context.getOriginal().getClass().getClassLoader().loadClass("oracle.xdb.XMLType");
-            return xmlTypeClass.getMethod("createXML", Connection.class, InputStream.class).invoke(null, context.getOriginal(), stream);
-        } catch (Exception e) {
+            return XMLType.createXML(context.getOriginal(), stream);
+        } catch (SQLException e) {
             throw new DBCException(e);
         }
     }
