@@ -277,18 +277,6 @@
                     description="Oracle obsolete driver. Use Thin or OCI driver.">
                 </driver>
                 <driver
-                    id="oracle_thin"
-                    label="Oracle Thin"
-                    class="oracle.jdbc.OracleDriver"
-                    sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
-                    defaultPort="1521"
-                    webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
-                    description="Oracle thin driver. Doesn't require Oracle client.">
-                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.oracle/LICENSE.txt"/>
-                    <replace provider="generic" driver="oracle"/>
-                    <replace provider="oracle" driver="oracle"/>
-                </driver>
-                <driver
                     id="oracle_oci"
                     label="Oracle OCI"
                     class="oracle.jdbc.OracleDriver"
@@ -299,6 +287,19 @@
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle OCI driver. Requires Oracle client installation.">
                     <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.oracle/LICENSE.txt"/>
+                </driver>
+                <driver
+                    id="oracle_thin"
+                    label="Oracle"
+                    class="oracle.jdbc.OracleDriver"
+                    sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
+                    defaultPort="1521"
+                    webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
+                    description="Oracle thin driver. Doesn't require Oracle client.">
+                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.oracle/LICENSE.txt"/>
+                    <replace provider="generic" driver="oracle"/>
+                    <replace provider="oracle" driver="oracle"/>
+                    <replace provider="oracle" driver="oracle_oci"/>
                 </driver>
             </drivers>
             <views>

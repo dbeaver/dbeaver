@@ -28,7 +28,7 @@ import java.net.URLClassLoader;
 /**
  * Class loader loads libraries from Oracle home folder.
  */
-public class OCIClassLoader extends URLClassLoader
+public class OCIClassLoader extends ClassLoader
 {
     static final Log log = LogFactory.getLog(OCIClassLoader.class);
 
@@ -37,7 +37,7 @@ public class OCIClassLoader extends URLClassLoader
 
     public OCIClassLoader(OracleHomeDescriptor oracleHomeDescriptor, ClassLoader parent)
     {
-        super(oracleHomeDescriptor.getLibraries(), parent);
+        super(parent);
         //this.oracleHomeDescriptor = oracleHomeDescriptor;
 
         File oraHomeFile = new File(oracleHomeDescriptor.getHomeId());
@@ -76,7 +76,7 @@ public class OCIClassLoader extends URLClassLoader
     }
 
     @Override
-    protected String findLibrary(String libname)
+    public String findLibrary(String libname)
     {
         String nativeName = System.mapLibraryName(libname);
         for (File library : oraHomeLibraries) {

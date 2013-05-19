@@ -79,7 +79,7 @@ public class ConnectJob extends EventProcessorJob
                 CoreMessages.runtime_jobs_connect_status_connected);
         }
         catch (Throwable ex) {
-            log.debug(ex);
+            log.error(ex);
             return RuntimeUtils.makeExceptionStatus(
                 NLS.bind(CoreMessages.runtime_jobs_connect_status_error, container.getName()),
                 ex);
