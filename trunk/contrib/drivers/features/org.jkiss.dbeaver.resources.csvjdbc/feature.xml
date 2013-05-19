@@ -1,8 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<feature id="org.jkiss.dbeaver.resources.csvjdbc" label="%featureName" version="1.0.12" provider="%providerName" plugin="org.jkiss.dbeaver.resources.csvjdbc">
-	<description>%description</description>
-	<copyright>%copyright</copyright>
-	<license>%license</license>
-	<requires/>
-	<plugin id="org.jkiss.dbeaver.resources.csvjdbc" download-size="0" install-size="0" version="0.0.0" unpack="true"/>
+<feature
+      id="org.jkiss.dbeaver.resources.csvjdbc"
+      label="%featureName"
+      version="1.0.12"
+      plugin="org.jkiss.dbeaver.resources.csvjdbc">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license>
+      %license
+   </license>
+
+   <requires>
+      <import feature="org.jkiss.dbeaver.ext.generic" version="1.0.0" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="org.jkiss.dbeaver.resources.csvjdbc"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
 </feature>
