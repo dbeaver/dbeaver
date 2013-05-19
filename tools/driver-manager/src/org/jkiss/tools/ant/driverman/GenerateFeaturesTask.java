@@ -36,7 +36,13 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Generates Eclipse plugins and features from driver descriptors
+ * Generates Eclipse plugins and features from driver descriptors.
+ *
+ * 1. Loads drivers' plugin descriptors
+ * 2. Generate driver's feature in target dir
+ * 3. Copies drivers' plugin into target dir
+ * 4. Generate update site in update site dir
+ * 5. Create driver-pack archive in build dir
  */
 public class GenerateFeaturesTask extends Task
 {
@@ -57,6 +63,7 @@ public class GenerateFeaturesTask extends Task
 
     private List<DriverInfo> drivers = new ArrayList<DriverInfo>();
     private File featuresPath;
+    private File pluginsPath;
     private ZipOutputStream driversZip;
     private File zipFile;
 
@@ -126,7 +133,9 @@ public class GenerateFeaturesTask extends Task
         System.out.println("Generate Eclipse features into " + targetPath.getAbsolutePath() + "...");
 
         featuresPath = new File(targetPath, "features");
+        pluginsPath = new File(targetPath, "plugins");
         makeDirectory(featuresPath);
+        makeDirectory(pluginsPath);
 
         for (DriverInfo driver : drivers) {
             generateDriverFeature(driver);
@@ -145,7 +154,9 @@ public class GenerateFeaturesTask extends Task
     {
         System.out.println("\t-Generate feature " + driver.getFeatureID());
         File featurePath = new File(featuresPath, driver.getFeatureID());
+        File pluginPath = new File(pluginsPath, driver.getPluginID());
         makeDirectory(featurePath);
+        makeDirectory(pluginPath);
 
         // Driver pack
         {
@@ -227,6 +238,11 @@ public class GenerateFeaturesTask extends Task
                 featureXML.addAttribute("version", "1.0.0");
                 featureXML.addAttribute("match", "greaterOrEqual");
                 featureXML.endElement();
+                featureXML.startElement("import");
+                featureXML.addAttribute("feature", "org.jkiss.dbeaver.runtime");
+                featureXML.addAttribute("version", "1.0.0");
+                featureXML.addAttribute("match", "greaterOrEqual");
+                featureXML.endElement();
                 featureXML.endElement();
 
                 featureXML.startElement("plugin");
@@ -242,6 +258,9 @@ public class GenerateFeaturesTask extends Task
                 pluginWriter.close();
             }
         }
+
+        System.out.println("\t-Copy driver plugin " + driver.getFeatureID());
+        copyDirs(driver.getPath(), pluginPath);
     }
 
     private void createUpdateSiteMap(File siteFile) throws IOException
@@ -382,6 +401,22 @@ public class GenerateFeaturesTask extends Task
     {
         if (!featurePath.exists() && !featurePath.mkdirs()) {
             throw new IOException("Can't create directory " + featurePath.getAbsolutePath());
+        }
+    }
+
+    private void copyDirs(File src, File dest) throws IOException
+    {
+        for (File file : CommonUtils.safeArray(src.listFiles())) {
+            if (file.isDirectory()) {
+                if (file.getName().equals(".") || file.getName().equals("..")) {
+                    continue;
+                }
+                File destDir = new File(dest, file.getName());
+                makeDirectory(destDir);
+                copyDirs(file, destDir);
+            } else {
+                copyFiles(file, new File(dest, file.getName()));
+            }
         }
     }
 
