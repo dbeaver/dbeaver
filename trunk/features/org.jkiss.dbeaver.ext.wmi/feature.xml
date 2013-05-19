@@ -4,7 +4,8 @@
       label="%featureName"
       version="1.0.0"
       provider-name="%providerName"
-      plugin="org.jkiss.dbeaver.ext.wmi">
+      plugin="org.jkiss.dbeaver.ext.wmi"
+      os="win32">
 
    <description>
       %description
