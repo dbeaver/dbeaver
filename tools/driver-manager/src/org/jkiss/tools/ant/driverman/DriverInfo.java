@@ -1,8 +1,16 @@
 package org.jkiss.tools.ant.driverman;
 
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -19,39 +27,64 @@ class DriverInfo {
     private String vendor;
     private String description;
     private String license;
-    private String category;
     private List<String> files = new ArrayList<String>();
 
-    DriverInfo(File path, Properties properties)
+    DriverInfo(File path)
+        throws IllegalArgumentException
     {
+        File pluginFile = new File(path, "plugin.xml");
+        File metainfFile = new File(path, "META-INF/MANIFEST.MF");
+        if (!metainfFile.exists()) {
+            throw new IllegalArgumentException("No MANIFEST.MF file");
+        }
+        if (!pluginFile.exists()) {
+            throw new IllegalArgumentException("No plugin.xml file");
+        }
+        Properties props = new Properties();
+        try {
+            FileReader propReader = new FileReader(metainfFile);
+            props.load(propReader);
+            propReader.close();
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
+
         this.path = path;
         this.id = path.getName().toLowerCase();
-        this.pluginId = properties.getProperty("id", id);
-        this.name = properties.getProperty("name", id);
-        this.version = properties.getProperty("version", "1.0.0");
-        this.vendor = properties.getProperty("vendor", "Unknown");
-        this.description = properties.getProperty("description", this.name + " database driver");
-        this.license = properties.getProperty("license");
-        if (!CommonUtils.isEmpty(license)) {
-            this.files.add(license);
+        this.pluginId = props.getProperty("Bundle-SymbolicName", id);
+        if (this.pluginId.indexOf(';') != -1) {
+            this.pluginId = this.pluginId.substring(0, this.pluginId.indexOf(';'));
         }
-        for (int i = 1; ; i++) {
-            String file = properties.getProperty("file" + i);
-            if (file == null) {
-                break;
+        this.name = props.getProperty("Bundle-Name", id);
+        this.version = props.getProperty("Bundle-Version", "1.0.0");
+        this.vendor = props.getProperty("Bundle-Vendor", "Unknown");
+        this.description = props.getProperty("Bundle-Description", this.name + " database driver");
+
+        try {
+            Document pluginDocument = XMLUtils.parseDocument(pluginFile);
+            NodeList resourceNodes = pluginDocument.getElementsByTagName("resource");
+            for (int i = 0; i < resourceNodes.getLength(); i++) {
+                Element resourceElement = (Element)resourceNodes.item(i);
+                String resourceName = resourceElement.getAttribute("name");
+                if (resourceName.toLowerCase().contains("license.txt")) {
+                    this.license = resourceName;
+                } else {
+                    this.files.add(resourceName);
+                }
             }
-            this.files.add(file);
+        } catch (XMLException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 
     public String getPluginID()
     {
-        return "org.jkiss.dbeaver.resources." + pluginId;
+        return pluginId;
     }
 
     public String getFeatureID()
     {
-        return "org.jkiss.dbeaver.resources." + pluginId;
+        return pluginId;
     }
 
     public File getPath()
@@ -92,17 +125,5 @@ class DriverInfo {
     public String getDescription()
     {
         return description;
-    }
-
-    public String getCategory()
-    {
-        return category;
-    }
-
-    public void setCategory(String category)
-    {
-        while (category.startsWith("/")) category = category.substring(1);
-        while (category.endsWith("/")) category = category.substring(0, category.length() - 1);
-        this.category = category;
     }
 }

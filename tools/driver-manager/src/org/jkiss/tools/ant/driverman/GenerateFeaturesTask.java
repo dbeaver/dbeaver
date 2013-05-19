@@ -23,15 +23,13 @@ import org.apache.tools.ant.Task;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
-import org.jkiss.utils.xml.XMLUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
+import java.util.zip.Deflater;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Generates Eclipse plugins and features from driver descriptors
@@ -39,25 +37,37 @@ import java.util.Properties;
 public class GenerateFeaturesTask extends Task
 {
 
+    private String buildDirectory;
     private String targetDirectory;
     private String driversDirectory;
     private String updateSiteDirectory;
 
     private List<DriverInfo> drivers = new ArrayList<DriverInfo>();
-    private File pluginsPath;
     private File featuresPath;
+    private ZipOutputStream driversZip;
+    private File zipFile;
 
     @Override
     public void execute() throws BuildException
     {
         File rootPath = new File(driversDirectory);
         System.out.println("Search drivers in " + rootPath.getAbsolutePath() + "...");
-        searchDrivers(0, rootPath);
+        searchDrivers(rootPath);
         System.out.println(drivers.size() + " driver(s) found");
 
         if (!drivers.isEmpty()) {
             try {
-                generateFeatures();
+                makeDirectory(new File(buildDirectory));
+                zipFile = new File(buildDirectory, "drivers-pack.zip");
+                System.out.println("Add drivers to archive [" + zipFile.getAbsolutePath() + "]");
+                driversZip = new ZipOutputStream(
+                    new FileOutputStream(zipFile));
+                driversZip.setLevel(Deflater.BEST_COMPRESSION);
+                try {
+                    generateFeatures();
+                } finally {
+                    driversZip.close();
+                }
             } catch (IOException e) {
                 throw new BuildException("Can't generate features", e);
             }
@@ -72,8 +82,6 @@ public class GenerateFeaturesTask extends Task
         File targetPath = new File(targetDirectory);
         System.out.println("Generate Eclipse features into " + targetPath.getAbsolutePath() + "...");
 
-        pluginsPath = new File(targetPath, "plugins");
-        makeDirectory(pluginsPath);
         featuresPath = new File(targetPath, "features");
         makeDirectory(featuresPath);
 
@@ -95,75 +103,32 @@ public class GenerateFeaturesTask extends Task
     private void generateDriverFeature(DriverInfo driver) throws IOException
     {
         System.out.println("\t-Generate feature " + driver.getFeatureID());
-        File pluginPath = new File(pluginsPath, driver.getPluginID());
         File featurePath = new File(featuresPath, driver.getFeatureID());
-        makeDirectory(pluginPath);
         makeDirectory(featurePath);
 
-        // Plugin
+        // Driver pack
         {
-            String filePrefix = "drivers/";
-            if (!CommonUtils.isEmpty(driver.getCategory())) {
-                filePrefix += driver.getCategory() + "/";
+            String filePrefix = "drivers/" + driver.getId() + "/";
+            List<String> pluginFiles = new ArrayList<String>();
+            pluginFiles.addAll(driver.getFiles());
+            if (!CommonUtils.isEmpty(driver.getLicense())) {
+                pluginFiles.add(driver.getLicense());
             }
-            filePrefix += driver.getId() + "/";
-            for (String driverFile : driver.getFiles()) {
+            for (String driverFile : pluginFiles) {
                 File sourceFile = new File(driver.getPath(), driverFile);
                 if (!sourceFile.exists()) {
                     System.err.println("File '" + sourceFile.getAbsolutePath() + "' doesn't exist");
                     continue;
                 }
-                System.out.println("\t\tCopy " + driverFile + " [" + sourceFile.length() + "]");
-                File targetDir = new File(pluginPath, filePrefix);
-                File targetFile = new File(targetDir, driverFile);
-                makeDirectory(targetFile.getParentFile());
-                copyFiles(sourceFile, targetFile);
-            }
-
-            {
-                // Generate build.properties
-                File buildPropertiesFile = new File(pluginPath, "build.properties");
-                PrintWriter propsWriter = new PrintWriter(new FileWriter(buildPropertiesFile));
-                propsWriter.println("source.. = ");
-                StringBuilder binPath = new StringBuilder("bin.includes = .,plugin.xml,META-INF/");
-                for (String file : driver.getFiles()) binPath.append(',').append(filePrefix).append(file);
-                propsWriter.println(binPath.toString());
-                propsWriter.println("src.includes = ");
-                propsWriter.close();
-            }
-
-            {
-                // Generate plugin.xml
-                FileWriter pluginWriter = new FileWriter(new File(pluginPath, "plugin.xml"));
-                XMLBuilder pluginXML = new XMLBuilder(pluginWriter, "UTF-8");
-                pluginXML.setButify(true);
-                pluginXML.startElement("plugin");
-                pluginXML.startElement("extension");
-                pluginXML.addAttribute("point", "org.jkiss.dbeaver.resources");
-                for (String file : driver.getFiles()) {
-                    pluginXML.startElement("resource");
-                    pluginXML.addAttribute("name", filePrefix + file);
-                    pluginXML.endElement();
+                System.out.println("\t\tAdd " + driverFile + " [" + sourceFile.length() + "] to driver pack");
+                ZipEntry zipEntry = new ZipEntry(driverFile);
+                driversZip.putNextEntry(zipEntry);
+                FileInputStream is = new FileInputStream(sourceFile);
+                try {
+                    IOUtils.copyStream(is, driversZip, 10000);
+                } finally {
+                    is.close();
                 }
-                pluginXML.endElement();
-                pluginXML.endElement();
-                pluginXML.flush();
-                pluginWriter.close();
-            }
-
-            {
-                // Generate MANIFEST.MF
-                File metaPath = new File(pluginPath, "META-INF");
-                makeDirectory(metaPath);
-                PrintWriter metaWriter = new PrintWriter(new FileWriter(new File(metaPath, "MANIFEST.MF")));
-                metaWriter.println("Manifest-Version: 1.0");
-                metaWriter.println("Bundle-ManifestVersion: 2");
-                metaWriter.println("Bundle-Name: " + driver.getName());
-                metaWriter.println("Bundle-SymbolicName: " + driver.getPluginID() + ";singleton:=true");
-                metaWriter.println("Bundle-Version: " + driver.getVersion());
-                metaWriter.println("Bundle-Vendor: " + driver.getVendor());
-                metaWriter.println("Bundle-ActivationPolicy: lazy");
-                metaWriter.close();
             }
         }
 
@@ -216,6 +181,11 @@ public class GenerateFeaturesTask extends Task
                 featureXML.endElement();
 
                 featureXML.startElement("requires");
+                featureXML.startElement("import");
+                featureXML.addAttribute("feature", "org.jkiss.dbeaver.ext.generic");
+                featureXML.addAttribute("version", "1.0.0");
+                featureXML.addAttribute("match", "greaterOrEqual");
+                featureXML.endElement();
                 featureXML.endElement();
 
                 featureXML.startElement("plugin");
@@ -261,36 +231,26 @@ public class GenerateFeaturesTask extends Task
         out.close();
     }
 
-    private void searchDrivers(int level, File path)
+    private void searchDrivers(File path)
     {
-        File info = new File(path, "driver.info");
-        if (info.exists()) {
-            try {
-                Properties props = new Properties();
-                FileReader propReader = new FileReader(info);
-                props.load(propReader);
-                propReader.close();
-                DriverInfo driver = new DriverInfo(path, props);
-                if (level > 1) {
-                    StringBuilder category = new StringBuilder();
-                    File parent = path.getParentFile();
-                    for (int i = level; i > 1; i--) {
-                        category.insert(0, parent.getName());
-                        category.insert(0, '/');
-                        parent = parent.getParentFile();
-                    }
-                    driver.setCategory(category.toString());
+        File sourcePluginsDir = new File(path, "plugins");
+        for (File pluginDir : CommonUtils.safeArray(sourcePluginsDir.listFiles())) {
+            if (pluginDir.isDirectory()) {
+                try {
+                    DriverInfo driver = new DriverInfo(pluginDir);
+                    drivers.add(driver);
+                } catch (IllegalArgumentException e) {
+                    // Bad driver
+                    System.out.println("Plugin '" + pluginDir.getName() + "' has incorrect description [" + e.getMessage() + "]");
+                    continue;
                 }
-                drivers.add(driver);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
-        for (File child : CommonUtils.safeArray(path.listFiles())) {
-            if (child.isDirectory()) {
-                searchDrivers(level + 1, child);
-            }
-        }
+    }
+
+    public void setBuildDirectory(String buildDirectory)
+    {
+        this.buildDirectory = buildDirectory;
     }
 
     public void setTargetDirectory(String targetDirectory)
@@ -347,8 +307,10 @@ public class GenerateFeaturesTask extends Task
     public static void main(String[] args)
     {
         GenerateFeaturesTask task = new GenerateFeaturesTask();
-        task.setTargetDirectory("D:\\devel\\dbeaver\\product\\build\\");
-        task.setDriversDirectory("../../contrib/drivers");
+        task.setBuildDirectory("D:\\temp\\build");
+        task.setTargetDirectory("D:\\temp\\target");
+        task.setUpdateSiteDirectory("D:\\temp\\update-site");
+        task.setDriversDirectory("D:\\Devel\\My\\dbeaver\\contrib\\drivers");
         task.execute();
     }
 

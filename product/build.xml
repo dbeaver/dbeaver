@@ -172,15 +172,14 @@
         <move file="${repositoryLocation}/dbeaver/features" todir="${repositoryLocation}"/>
         <delete dir="${repositoryLocation}/dbeaver"/>
 
-<!--
-        <echo message="Generate JDBC drivers' plugin and features"/>
+        <echo message="Generate JDBC drivers' features"/>
         <ant dir="../tools/driver-manager" antfile="build.xml" target="generate-features">
             <property name="driversSource" value="../contrib/drivers"/>
             <property name="buildDirectory" value="${buildDirectory}"/>
             <property name="targetDirectory" value="${repositoryLocation}"/>
             <property name="updateSiteDirectory" value="${updateSiteLocation}"/>
         </ant>
--->
+
         <!-- Generate P2 repository artifacts -->
         <property name="p2.repo.path" value="${buildDirectory}/p2.repo"/>
         <echo message="Publish features and bundles"/>
