@@ -79,9 +79,6 @@
             <fileset dir="../features">
                 <include name="**" />
             </fileset>
-            <fileset dir="../contrib/drivers/features">
-                <include name="**" />
-            </fileset>
         </copy>
         <echo message="Copy update site"/>
         <copy todir="${updateSiteLocation}" filtering="true">
@@ -175,10 +172,12 @@
         <echo message="Generate JDBC drivers' features"/>
         <ant dir="../tools/driver-manager" antfile="build.xml" target="generate-features">
             <property name="driversSource" value="../contrib/drivers"/>
+            <property name="featuresSource" value="../features"/>
             <property name="buildDirectory" value="${buildDirectory}"/>
             <property name="targetDirectory" value="${repositoryLocation}"/>
             <property name="updateSiteDirectory" value="${updateSiteLocation}"/>
         </ant>
+        <move file="${buildDirectory}/driver-pack.zip" tofile="${distDirectory}/driver-pack-${productVersion}.zip"/>
 
         <!-- Generate P2 repository artifacts -->
         <property name="p2.repo.path" value="${buildDirectory}/p2.repo"/>
@@ -242,17 +241,6 @@
         <antcall target="pde-runtime"/>
         <antcall target="update-site"/>
         <antcall target="pde-standalone"/>
-    </target>
-
-    <!-- ===================================================================== -->
-    <!-- Makes driver pack archive -->
-    <!-- ===================================================================== -->
-
-    <target name="driver-pack">
-        <zip destfile="${distDirectory}/driver-pack-${productVersion}.zip">
-		<zipfileset dir="../contrib/drivers" excludes="*.svn" prefix="drivers"/>
-		<zipfileset dir="docs" includes="drivers.txt" fullpath="readme_drivers.txt"/>
-        </zip>
     </target>
 
     <!-- ===================================================================== -->
@@ -543,7 +531,7 @@
 
     </target>
 
-    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos,driver-pack">
+    <target name="all" depends="clean,build,dist-win,dist-deb,dist-rpm,dist-macos">
 
     </target>
 

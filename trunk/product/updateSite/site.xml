@@ -1,88 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <description name="DBeaver Update Site" url="http://dbeaver.jkiss.org/update/2.0">
-      DBeaver Update Site
-   </description>
-   <feature url="features/org.jkiss.dbeaver.ext.cassandra_1.0.0.jar" id="org.jkiss.dbeaver.ext.cassandra" version="1.0.0">
-      <category name="org.jkiss.dbeaver"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.ext.generic_1.0.0.jar" id="org.jkiss.dbeaver.ext.generic" version="1.0.0">
-      <category name="org.jkiss.dbeaver"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.ext.mysql_1.0.0.jar" id="org.jkiss.dbeaver.ext.mysql" version="1.0.0">
-      <category name="org.jkiss.dbeaver"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.ext.oracle_1.0.0.jar" id="org.jkiss.dbeaver.ext.oracle" version="1.0.0">
-      <category name="org.jkiss.dbeaver"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.ext.wmi_1.0.0.jar" id="org.jkiss.dbeaver.ext.wmi" version="1.0.0">
-      <category name="org.jkiss.dbeaver"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.runtime_2.2.0.jar" id="org.jkiss.dbeaver.runtime" version="2.2.0">
-      <category name="org.jkiss.dbeaver"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.cache_2010.2.3.jar" id="org.jkiss.dbeaver.resources.cache" version="2010.2.3">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.csvjdbc_1.0.12.jar" id="org.jkiss.dbeaver.resources.csvjdbc" version="1.0.12">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.db2_0.0.0.jar" id="org.jkiss.dbeaver.resources.db2" version="0.0.0">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.derby_10.9.1.jar" id="org.jkiss.dbeaver.resources.derby" version="10.9.1">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.firebird_2.1.6.jar" id="org.jkiss.dbeaver.resources.firebird" version="2.1.6">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.h2_1.2.147.jar" id="org.jkiss.dbeaver.resources.h2" version="1.2.147">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.hsqldb_2.1.0.jar" id="org.jkiss.dbeaver.resources.hsqldb" version="2.1.0">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.informix_0.0.0.jar" id="org.jkiss.dbeaver.resources.informix" version="0.0.0">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.ingres_0.0.0.jar" id="org.jkiss.dbeaver.resources.ingres" version="0.0.0">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.jtds_1.2.5.jar" id="org.jkiss.dbeaver.resources.jtds" version="1.2.5">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.maxdb_7.6.6.jar" id="org.jkiss.dbeaver.resources.maxdb" version="7.6.06">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.mssql_4.0.2206.jar" id="org.jkiss.dbeaver.resources.mssql" version="4.0.2206">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.postgresql_9.1.901.jar" id="org.jkiss.dbeaver.resources.postgresql" version="9.1.901">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.sqlite.werner_2012.2.9.jar" id="org.jkiss.dbeaver.resources.sqlite.werner" version="2012.02.09">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.sqlite.xerial_3.7.2.jar" id="org.jkiss.dbeaver.resources.sqlite.xerial" version="3.7.2">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.sqlite.zentus_0.5.6.jar" id="org.jkiss.dbeaver.resources.sqlite.zentus" version="0.5.6">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.ucanaccess_0.1.1.jar" id="org.jkiss.dbeaver.resources.ucanaccess" version="0.1.1">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <feature url="features/org.jkiss.dbeaver.resources.vertica_6.0.1.jar" id="org.jkiss.dbeaver.resources.vertica" version="6.0.1">
-      <category name="org.jkiss.dbeaver.drivers"/>
-   </feature>
-   <category-def name="org.jkiss.dbeaver" label="DBeaver">
-      <description>
-         Universal Database Manager
-      </description>
-   </category-def>
-   <category-def name="org.jkiss.dbeaver.drivers" label="External database drivers">
-      <description>
-         3rd party JDBC drivers for DBeaver
-      </description>
-   </category-def>
+    <description name="DBeaver Update Site" url="http://dbeaver.jkiss.org/update/2.0">
+        DBeaver Update Site
+    </description>
+    <category-def name="org.jkiss.dbeaver" label="DBeaver">
+        <description>
+            Universal Database Manager
+        </description>
+    </category-def>
+    <category-def name="org.jkiss.dbeaver.drivers" label="External database drivers">
+        <description>
+            3rd party JDBC drivers for DBeaver
+        </description>
+    </category-def>
 </site>

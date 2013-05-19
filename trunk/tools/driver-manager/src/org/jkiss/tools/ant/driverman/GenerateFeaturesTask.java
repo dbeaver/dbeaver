@@ -23,6 +23,10 @@ import org.apache.tools.ant.Task;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLBuilder;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -36,10 +40,19 @@ import java.util.zip.ZipOutputStream;
  */
 public class GenerateFeaturesTask extends Task
 {
+    private static String[] RUNTIME_FEATURES = {
+        "org.jkiss.dbeaver.runtime",
+        "org.jkiss.dbeaver.ext.generic",
+        "org.jkiss.dbeaver.ext.mysql",
+        "org.jkiss.dbeaver.ext.oracle",
+        "org.jkiss.dbeaver.ext.cassandra",
+        "org.jkiss.dbeaver.ext.wmi",
+    };
 
     private String buildDirectory;
     private String targetDirectory;
     private String driversDirectory;
+    private String featuresDirectory;
     private String updateSiteDirectory;
 
     private List<DriverInfo> drivers = new ArrayList<DriverInfo>();
@@ -58,13 +71,14 @@ public class GenerateFeaturesTask extends Task
         if (!drivers.isEmpty()) {
             try {
                 makeDirectory(new File(buildDirectory));
-                zipFile = new File(buildDirectory, "drivers-pack.zip");
+                zipFile = new File(buildDirectory, "driver-pack.zip");
                 System.out.println("Add drivers to archive [" + zipFile.getAbsolutePath() + "]");
                 driversZip = new ZipOutputStream(
                     new FileOutputStream(zipFile));
                 driversZip.setLevel(Deflater.BEST_COMPRESSION);
                 try {
                     generateFeatures();
+                    addDriversReadme();
                 } finally {
                     driversZip.close();
                 }
@@ -72,6 +86,35 @@ public class GenerateFeaturesTask extends Task
                 throw new BuildException("Can't generate features", e);
             }
         }
+    }
+
+    private void addDriversReadme() throws IOException
+    {
+        driversZip.putNextEntry(new ZipEntry("drivers_readme.txt"));
+        PrintWriter out = new PrintWriter(driversZip);
+        out.println("JDBC Drivers Pack");
+        out.println();
+        out.println("This archive contains following JDBC drivers:");
+        out.println();
+        for (DriverInfo driver : drivers) {
+            out.println("\t" + driver.getName() + " (version " + driver.getVersion() + ")");
+        }
+        out.println();
+        out.println("DBeaver has configurations for all these drivers.");
+        out.println("If you don't have internet access when using DBeaver then you may just extract this archive");
+        out.println("in the same directory where DBeaver was installed.");
+        out.println("");
+        out.println("Default DBeaver installation folder in Windows is standard \"Program Files\" folder,");
+        out.println("so typically it will be \"C:\\Program Files\\DBeaver\\\" for Windows XP 32-bit.");
+        out.println("Extract this archive in this folder so drivers will be located in");
+        out.println("\"C:\\Program Files\\DBeaver\\drivers\\\" folder.");
+        out.println("");
+        out.println("After that DBeaver will automatically locate driver's files whenever you create a new connection.");
+        out.println("");
+        out.println("Thank you for using DBeaver!");
+        out.println("Visit us at http://dbeaver.jkiss.org/");
+        out.flush();
+        out.close();
     }
 
     private void generateFeatures() throws IOException
@@ -93,10 +136,8 @@ public class GenerateFeaturesTask extends Task
         File updateSiteDir = new File(updateSiteDirectory);
         if (updateSiteDir.exists()) {
             File siteXML = new File(updateSiteDir, "site.xml");
-            System.out.println("Patch update site index " + siteXML.getAbsolutePath() + "...");
-            if (siteXML.exists()) {
-                patchUpdateSite(siteXML);
-            }
+            System.out.println("Create update site index " + siteXML.getAbsolutePath() + "...");
+            createUpdateSiteMap(siteXML);
         }
     }
 
@@ -203,32 +244,93 @@ public class GenerateFeaturesTask extends Task
         }
     }
 
-    private void patchUpdateSite(File siteFile) throws IOException
+    private void createUpdateSiteMap(File siteFile) throws IOException
     {
-        System.out.println("Patch update site...");
-        String siteContent = readFileToString(siteFile);
-        StringBuilder extraFeatures = new StringBuilder();
-        for (DriverInfo driver : drivers) {
-            if (siteContent.contains(driver.getFeatureID())) {
-                // Already patched
+        System.out.println("Create update site map...");
+
+        FileOutputStream os = new FileOutputStream(siteFile);
+        XMLBuilder siteXML = new XMLBuilder(os, "utf-8");
+        siteXML.setButify(true);
+
+        siteXML.startElement("site");
+
+        siteXML.startElement("description");
+        siteXML.addAttribute("name", "DBeaver Update Site");
+        siteXML.addAttribute("url", "http://dbeaver.jkiss.org/update/2.0");
+        siteXML.addText("DBeaver Update Site");
+        siteXML.endElement();
+
+        siteXML.startElement("category-def");
+        siteXML.addAttribute("name", "org.jkiss.dbeaver");
+        siteXML.addAttribute("label", "DBeaver");
+        siteXML.startElement("description");
+        siteXML.addText("Universal Database Manager");
+        siteXML.endElement();
+        siteXML.endElement();
+
+        siteXML.startElement("category-def");
+        siteXML.addAttribute("name", "org.jkiss.dbeaver.drivers");
+        siteXML.addAttribute("label", "External database drivers");
+        siteXML.startElement("description");
+        siteXML.addText("3rd party JDBC drivers for DBeaver");
+        siteXML.endElement();
+        siteXML.endElement();
+
+        // Add runtime features
+        for (String featureID : RUNTIME_FEATURES) {
+            File featureFile = new File(featuresDirectory, featureID + "/feature.xml");
+            if (!featureFile.exists()) {
+                System.out.println("Feature [" + featureID + "] not found in [" + featuresDirectory + "]");
                 continue;
             }
-            extraFeatures.append("\n   <feature id=\"").append(driver.getFeatureID()).
-                append("\" version=\"").append(driver.getVersion())
-                .append("\" url=\"features/").append(driver.getFeatureID()).append("_").append(driver.getVersion()).append(".jar\"")
-                .append(">\n")
-                .append("      <category name=\"org.jkiss.dbeaver.drivers\"/>\n")
-                .append("   </feature>\n");
+            String featureVersion;
+            String featureOS;
+            try {
+                Document pluginDocument = XMLUtils.parseDocument(featureFile);
+                Element featureElement = pluginDocument.getDocumentElement();
+                featureVersion = featureElement.getAttribute("version");
+                if (CommonUtils.isEmpty(featureVersion)) {
+                    System.out.println("Feature [" + featureID + "] doesn't has version info");
+                    continue;
+                }
+                featureOS = featureElement.getAttribute("os");
+            } catch (XMLException e) {
+                throw new IllegalArgumentException(e);
+            }
 
-            System.out.println("\t-Feature " + driver.getFeatureID() + " added");
+            siteXML.startElement("feature");
+            siteXML.addAttribute("id", featureID);
+            siteXML.addAttribute("version", featureVersion);
+            siteXML.addAttribute("url", "features/" + featureID + "_" + featureVersion + ".jar");
+            if (!CommonUtils.isEmpty(featureOS)) {
+                siteXML.addAttribute("os", featureOS);
+            }
+            siteXML.startElement("category");
+            siteXML.addAttribute("name", "org.jkiss.dbeaver");
+            siteXML.endElement();
+            siteXML.endElement();
+
+            System.out.println("\t-Runtime feature " + featureID + " added");
         }
-        int divPos = siteContent.indexOf("</site>");
-        if (divPos != -1) {
-            siteContent = siteContent.substring(0, divPos) + extraFeatures + siteContent.substring(divPos);
+
+        // Add drivers' features
+        for (DriverInfo driver : drivers) {
+            siteXML.startElement("feature");
+            siteXML.addAttribute("id", driver.getFeatureID());
+            siteXML.addAttribute("version", driver.getVersion());
+            siteXML.addAttribute("url", "features/" + driver.getFeatureID() + "_" + driver.getVersion() + ".jar");
+            siteXML.startElement("category");
+            siteXML.addAttribute("name", "org.jkiss.dbeaver.drivers");
+            siteXML.endElement();
+            siteXML.endElement();
+
+            System.out.println("\t-Driver feature " + driver.getFeatureID() + " added");
         }
-        FileWriter out = new FileWriter(siteFile);
-        out.write(siteContent);
-        out.close();
+
+        siteXML.endElement();
+
+        siteXML.flush();
+        os.close();
     }
 
     private void searchDrivers(File path)
@@ -238,6 +340,9 @@ public class GenerateFeaturesTask extends Task
             if (pluginDir.isDirectory()) {
                 try {
                     DriverInfo driver = new DriverInfo(pluginDir);
+                    if (driver.getFiles().isEmpty()) {
+                        continue;
+                    }
                     drivers.add(driver);
                 } catch (IllegalArgumentException e) {
                     // Bad driver
@@ -261,6 +366,11 @@ public class GenerateFeaturesTask extends Task
     public void setDriversDirectory(String driversDirectory)
     {
         this.driversDirectory = driversDirectory;
+    }
+
+    public void setFeaturesDirectory(String featuresDirectory)
+    {
+        this.featuresDirectory = featuresDirectory;
     }
 
     public void setUpdateSiteDirectory(String updateSiteDirectory)
@@ -311,6 +421,7 @@ public class GenerateFeaturesTask extends Task
         task.setTargetDirectory("D:\\temp\\target");
         task.setUpdateSiteDirectory("D:\\temp\\update-site");
         task.setDriversDirectory("D:\\Devel\\My\\dbeaver\\contrib\\drivers");
+        task.setFeaturesDirectory("D:\\Devel\\My\\dbeaver\\features");
         task.execute();
     }
 

@@ -40,8 +40,9 @@
 
     <target name="generate-features" depends="declare">
         <generate-features
-            buildDirectory="${driversSource}"
+            buildDirectory="${buildDirectory}"
             driversDirectory="${driversSource}"
+            featuresDirectory="${featuresSource}"
             targetDirectory="${targetDirectory}"
             updateSiteDirectory="${updateSiteDirectory}"/>
     </target>
