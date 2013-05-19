@@ -69,11 +69,11 @@ Support
   For technical support and assistance, you may find necessary information at the Support page
   (http://dbeaver.jkiss.org/forum) or contact us at support@jkiss.org.
 
-Bug Reporting:
+Bug Reports
 ==============
   Send emails to bugs@jkiss.org
 
-Contacting us:
+Contact us
 ==============
   support@jkiss.org     - Technical support
   serge@jkiss.org       - Technical support, feature suggestions and any other questions.

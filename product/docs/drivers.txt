@@ -1,8 +1,28 @@
 JDBC Drivers Pack
 
-This archive contains JDBC drivers for a set of databases.
+This archive contains following JDBC drivers:
+
+	Cache driver (version 2010.2.3)
+	CSV/DBF driver (version 1.0.12)
+	DB2 driver (version 0.0.0)
+	Apache Derby (JavaDB) driver (version 10.9.1)
+	Firebird (Interbase) driver (version 2.1.6)
+	H2 driver (version 1.2.147)
+	HSQLDB driver (version 2.1.0)
+	Informix driver (version 0.0.0)
+	Ingres driver (version 0.0.0)
+	jTDS driver (MS SQL Server and Sybase) (version 1.2.5)
+	MaxDB driver (version 7.6.06)
+	MS SQL Server driver (version 4.0.2206)
+	PostgreSQL driver (version 9.1.901)
+	SQLite Werner driver (version 2012.02.09)
+	SQLite Xerial driver (version 3.7.2)
+	SQLite Zentus driver (version 0.5.6)
+	MS Access (UCanAccess) (version 0.1.1)
+	Vertica driver (version 6.0.1)
+
 DBeaver has configurations for all these drivers.
-Of you don't have internet access when using DBeaver then you may just extract this archive
+If you don't have internet access when using DBeaver then you may just extract this archive
 in the same directory where DBeaver was installed.
 
 Default DBeaver installation folder in Windows is standard "Program Files" folder,
@@ -10,4 +30,7 @@ so typically it will be "C:\Program Files\DBeaver\" for Windows XP 32-bit.
 Extract this archive in this folder so drivers will be located in
 "C:\Program Files\DBeaver\drivers\" folder.
 
-After that DBeaver will automatically locate driver's files when you create new connection.
+After that DBeaver will automatically locate driver's files whenever you create a new connection.
+
+Thank you for using DBeaver!
+Visit us at http://dbeaver.jkiss.org/
