@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 
@@ -70,7 +71,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
     private ControlsListener controlModifyListener;
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
-    private boolean isOCI;
+    //private boolean isOCI;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
     private Combo languageCombo;
@@ -231,31 +232,25 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         tnsNameCombo.addModifyListener(controlModifyListener);
     }
 
-    private void populateTnsNameCombo() {
-        tnsNameCombo.removeAll();
-        String oraHome = null;
-        if (isOCI) {
-            if (oraHomeSelector != null) {
-                oraHome = oraHomeSelector.getSelectedHome();
-            }
-            if (CommonUtils.isEmpty(oraHome)) {
-                if (!OCIUtils.getOraHomes().isEmpty()) {
-                    oraHome = OCIUtils.getOraHomes().get(0).getDisplayName();
-                }
-            }
-            if (!CommonUtils.isEmpty(oraHome)) {
-                OracleHomeDescriptor home = OCIUtils.getOraHomeByName(oraHome);
-                if (home != null) {
-                    for (String alias : home.getOraServiceNames()) {
-                        tnsNameCombo.add(alias);
-                    }
-                }
+    private Collection<String> getAvailableServiceNames()
+    {
+        String oraHome = oraHomeSelector.getSelectedHome();
+        if (CommonUtils.isEmpty(oraHome)) {
+            return OCIUtils.readTnsNames(null, true);
+        } else {
+            OracleHomeDescriptor home = OCIUtils.getOraHomeByName(oraHome);
+            if (home != null) {
+                return home.getOraServiceNames();
+            } else {
+                return OCIUtils.readTnsNames(new File(oraHome), true);
             }
         }
-        else {
-            for (String alias : OCIUtils.readTnsNames(null, true)) {
-                tnsNameCombo.add(alias);
-            }
+    }
+
+    private void populateTnsNameCombo() {
+        tnsNameCombo.removeAll();
+        for (String alias : getAvailableServiceNames()) {
+            tnsNameCombo.add(alias);
         }
     }
 
@@ -412,9 +407,9 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     @Override
     public boolean isComplete()
     {
-        if (isOCI && CommonUtils.isEmpty(oraHomeSelector.getSelectedHome())) {
-            return false;
-        }
+//        if (isOCI && CommonUtils.isEmpty(oraHomeSelector.getSelectedHome())) {
+//            return false;
+//        }
         switch (connectionType) {
             case BASIC:
                 return !CommonUtils.isEmpty(serviceNameCombo.getText());
@@ -436,20 +431,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
     @Override
     public void loadSettings()
     {
-        isOCI = OCIUtils.isOciDriver(site.getDriver());
-
-        oraHomeSelector.setVisible(isOCI);
-
-        if (tnsNameCombo.getItemCount() == 0) {
-            populateTnsNameCombo();
-        }
-
-        if (serviceNameCombo.getItemCount() == 0) {
-            String oraHome = isOCI ? (!OCIUtils.getOraHomes().isEmpty() ? OCIUtils.getOraHomes().get(0).getHomeId() : null) : null;
-            for (String alias : OCIUtils.readTnsNames(oraHome == null ? null : new File(oraHome), true)) {
-                serviceNameCombo.add(alias);
-            }
-        }
+        //oraHomeSelector.setVisible(isOCI);
 
         // Load values from new connection info
         DBPConnectionInfo connectionInfo = site.getConnectionInfo();
@@ -461,8 +443,18 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
                 sidServiceCombo.setText(OracleConnectionType.valueOf(sidService.toString()).getTitle());
             }
 
-            if (isOCI) {
+            //if (isOCI) {
                 oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
+            //}
+
+            if (tnsNameCombo.getItemCount() == 0) {
+                populateTnsNameCombo();
+            }
+
+            if (serviceNameCombo.getItemCount() == 0) {
+                for (String alias : getAvailableServiceNames()) {
+                    serviceNameCombo.add(alias);
+                }
             }
 
             Object conTypeProperty = connectionProperties.get(OracleConstants.PROP_CONNECTION_TYPE);
@@ -546,13 +538,13 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         }
         super.saveSettings(connectionInfo);
         Map<Object, Object> connectionProperties = connectionInfo.getProperties();
-        if (isOCI) {
+        //if (isOCI) {
             connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
-        }
+        //}
 
         connectionProperties.put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
-        connectionProperties.put(
-                OracleConstants.PROP_DRIVER_TYPE, isOCI ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
+//        connectionProperties.put(
+//                OracleConstants.PROP_DRIVER_TYPE, isOCI ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
 //            connectionInfo.getProperties().put(OracleConstants.PROP_DRIVER_TYPE,
 //                ociDriverCheck.getSelection() ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
         switch (connectionType) {

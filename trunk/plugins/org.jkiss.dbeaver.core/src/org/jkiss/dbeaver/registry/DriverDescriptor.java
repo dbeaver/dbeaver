@@ -1294,12 +1294,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     curDriver = new DriverDescriptor(curProvider, idAttr);
                     curProvider.addDriver(curDriver);
                 }
-                curDriver.setCategory(atts.getValue(RegistryConstants.ATTR_CATEGORY));
-                curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
-                curDriver.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
-                curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
-                curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
+                if (curProvider.isDriversManagable()) {
+                    curDriver.setCategory(atts.getValue(RegistryConstants.ATTR_CATEGORY));
+                    curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                    curDriver.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                    curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
+                    curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
+                    curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
+                }
                 curDriver.setCustomDriverLoader(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false));
                 curDriver.setModified(true);
                 String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);

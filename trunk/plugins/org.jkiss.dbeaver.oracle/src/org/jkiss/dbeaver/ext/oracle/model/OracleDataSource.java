@@ -25,9 +25,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
-import org.jkiss.dbeaver.ext.oracle.oci.OCIClassLoader;
-import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
-import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -57,7 +54,6 @@ import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -69,7 +65,7 @@ public class OracleDataSource extends JDBCDataSource
 {
     static final Log log = LogFactory.getLog(OracleDataSource.class);
 
-    private final static Map<String, ClassLoader> ociClassLoadersCache = new HashMap<String, ClassLoader>();
+    //private final static Map<String, OCIClassLoader> ociClassLoadersCache = new HashMap<String, OCIClassLoader>();
 
     final public SchemaCache schemaCache = new SchemaCache();
     final DataTypeCache dataTypeCache = new DataTypeCache();
@@ -183,17 +179,19 @@ public class OracleDataSource extends JDBCDataSource
     protected Driver getDriverInstance(DBRProgressMonitor monitor) throws DBException {
         DBSDataSourceContainer container = getContainer();
         DBPDriver driver = container.getDriver();
+/*
         boolean ociDriver = OCIUtils.isOciDriver(driver);
         if (ociDriver) {
             String homeId = container.getConnectionInfo().getClientHomeId();
             if (homeId != null) {
-                ClassLoader ociClassLoader = ociClassLoadersCache.get(homeId);
+                OCIClassLoader ociClassLoader = ociClassLoadersCache.get(homeId);
                 if (ociClassLoader == null) {
                     OracleHomeDescriptor homeDescriptor = (OracleHomeDescriptor)driver.getClientHome(homeId);
                     if (homeDescriptor == null) {
                         throw new DBException("Can't load driver from '" + homeId + "'");
                     }
                     ociClassLoader = new OCIClassLoader(homeDescriptor, getClass().getClassLoader());
+                    loadOCILibraries(ociClassLoader);
                     ociClassLoadersCache.put(homeId, ociClassLoader);
                 }
                 String driverClassName = driver.getDriverClassName();
@@ -209,8 +207,25 @@ public class OracleDataSource extends JDBCDataSource
                 }
             }
         }
+*/
         return super.getDriverInstance(monitor);
     }
+
+/*
+    private void loadOCILibraries(OCIClassLoader classLoader)
+    {
+        loadOCILibrary(classLoader, "oci");
+        loadOCILibrary(classLoader, "ocijdbc11");
+    }
+
+    private void loadOCILibrary(OCIClassLoader classLoader, String libName)
+    {
+        String libPath = classLoader.findLibrary(libName);
+        if (libPath != null) {
+            System.load(libPath);
+        }
+    }
+*/
 
     @Override
     public void initialize(DBRProgressMonitor monitor)
