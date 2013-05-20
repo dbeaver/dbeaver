@@ -912,6 +912,7 @@ public class SQLEditor extends SQLEditorBase
             if (job != null) {
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
+                job.setDataReceiver(dataReceiver);
                 return job.extractData(context);
             } else {
                 return 0;
@@ -990,15 +991,8 @@ public class SQLEditor extends SQLEditorBase
                 final SQLQueryJob job = new SQLQueryJob(
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
                     SQLEditor.this,
-                    queries)
-                {
-                    @Override
-                    protected DBDDataReceiver getDataReceiver()
-                    {
-                        return viewer.getDataReceiver();
-                    }
-                };
-
+                    queries);
+                job.setDataReceiver(viewer.getDataReceiver());
                 job.addQueryListener(new ISQLQueryListener() {
 
                     private long lastUIUpdateTime = -1l;
