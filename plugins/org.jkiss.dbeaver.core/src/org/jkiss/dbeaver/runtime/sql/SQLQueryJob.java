@@ -53,7 +53,7 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public abstract class SQLQueryJob extends DataSourceJob
+public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = LogFactory.getLog(SQLQueryJob.class);
 
@@ -63,6 +63,7 @@ public abstract class SQLQueryJob extends DataSourceJob
     private SQLEditorBase editor;
     private List<SQLStatementInfo> queries;
     private DBDDataFilter dataFilter;
+    private DBDDataReceiver dataReceiver;
     private boolean connectionInvalidated = false;
 
     private SQLScriptCommitType commitType;
@@ -108,8 +109,6 @@ public abstract class SQLQueryJob extends DataSourceJob
             this.rsMaxRows = preferenceStore.getInt(PrefConstants.RESULT_SET_MAX_ROWS);
         }
     }
-
-    protected abstract DBDDataReceiver getDataReceiver();
 
     public void setFetchResultSets(boolean fetchResultSets)
     {
@@ -483,7 +482,6 @@ public abstract class SQLQueryJob extends DataSourceJob
     private void fetchQueryData(DBCExecutionContext context, DBCResultSet resultSet)
         throws DBCException
     {
-        DBDDataReceiver dataReceiver = getDataReceiver();
         if (dataReceiver == null) {
             // No data pump - skip fetching stage
             return;
@@ -618,5 +616,10 @@ public abstract class SQLQueryJob extends DataSourceJob
     public void setDataFilter(DBDDataFilter dataFilter)
     {
         this.dataFilter = dataFilter;
+    }
+
+    public void setDataReceiver(DBDDataReceiver dataReceiver)
+    {
+        this.dataReceiver = dataReceiver;
     }
 }
