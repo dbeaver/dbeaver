@@ -566,18 +566,6 @@ public class SQLEditor extends SQLEditorBase
             return;
         }
 
-        if (export) {
-            ActiveWizardDialog dialog = new ActiveWizardDialog(
-                getSite().getWorkbenchWindow(),
-                new DataTransferWizard(
-                    new IDataTransferProducer[] {
-                        new DatabaseTransferProducer(getDataContainer(), null)},
-                    null),
-                new StructuredSelection(this));
-            dialog.open();
-            return;
-        }
-
         final boolean isSingleQuery = (queries.size() == 1);
 
         if (newTab && !isSingleQuery) {
@@ -590,12 +578,12 @@ public class SQLEditor extends SQLEditorBase
             for (int i = 0; i < queries.size(); i++) {
                 SQLStatementInfo query = queries.get(i);
                 DataContainer dataContainer = (i == 0 && !isSingleQuery ? curDataContainer : createDataContainer(queries.size() == 1));
-                dataContainer.processQueries(Collections.singletonList(query), true);
+                dataContainer.processQueries(Collections.singletonList(query), true, export);
             }
         } else {
             // Use current tab
             resultTabs.setSelection(curDataContainer.tabItem);
-            curDataContainer.processQueries(queries, false);
+            curDataContainer.processQueries(queries, false, export);
         }
     }
 
@@ -915,6 +903,7 @@ public class SQLEditor extends SQLEditorBase
                 job.setDataReceiver(dataReceiver);
                 return job.extractData(context);
             } else {
+                log.warn("No active query - can't read data");
                 return 0;
             }
         }
@@ -970,7 +959,7 @@ public class SQLEditor extends SQLEditorBase
             }
         }
 
-        void processQueries(final List<SQLStatementInfo> queries, final boolean fetchResults)
+        void processQueries(final List<SQLStatementInfo> queries, final boolean fetchResults, boolean export)
         {
             if (queries.isEmpty()) {
                 // Nothing to process
@@ -1103,7 +1092,18 @@ public class SQLEditor extends SQLEditorBase
                     }
                 });
 
-                if (isSingleQuery) {
+                if (export) {
+                    // Assign current job from active query and open wizard
+                    curJob = job;
+                    ActiveWizardDialog dialog = new ActiveWizardDialog(
+                        getSite().getWorkbenchWindow(),
+                        new DataTransferWizard(
+                            new IDataTransferProducer[] {
+                                new DatabaseTransferProducer(getDataContainer(), null)},
+                            null),
+                        new StructuredSelection(this));
+                    dialog.open();
+                } else if (isSingleQuery) {
                     closeJob();
                     curJob = job;
                     viewer.setDataFilter(new DBDDataFilter(), false);
