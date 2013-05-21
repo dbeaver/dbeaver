@@ -106,12 +106,7 @@
     </target>
 
     <target name="copy-drivers">
-        <copy todir="${driversDirectory}">
-            <fileset dir="../contrib/drivers">
-                <include name="**" />
-                <exclude name="**/.svn" />
-            </fileset>
-        </copy>
+        <unzip src="${distDirectory}/driver-pack-${productVersion}.zip" dest="${driversDirectory}" overwrite="false"/>
     </target>
 
     <!-- ===================================================================== -->

@@ -2,6 +2,6 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: MS Access (UCanAccess)
 Bundle-SymbolicName: org.jkiss.dbeaver.resources.ucanaccess;singleton:=true
-Bundle-Version: 0.1.1
+Bundle-Version: 1.0.0
 Bundle-Vendor: Marco Amadei
 Bundle-ActivationPolicy: lazy
