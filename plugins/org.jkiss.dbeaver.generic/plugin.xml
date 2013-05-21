@@ -485,10 +485,10 @@
                     webURL="http://ucanaccess.sourceforge.net/site.html"
                     description="Microsoft Access driver">
                     <file type="license" path="drivers/ucanaccess/LICENSE.txt" url="*"/>
-                    <file type="jar" path="drivers/ucanaccess/ucanaccess-0.1.1.jar" url="*"/>
+                    <file type="jar" path="drivers/ucanaccess/ucanaccess-1.0.0.jar" url="*"/>
                     <file type="jar" path="drivers/ucanaccess/commons-lang-2.4.jar" url="*"/>
                     <file type="jar" path="drivers/ucanaccess/hsqldb.jar" url="*"/>
-                    <file type="jar" path="drivers/ucanaccess/jackcess-1.2.10.jar" url="*"/>
+                    <file type="jar" path="drivers/ucanaccess/jackcess-1.2.1.jar" url="*"/>
                 </driver>
             </drivers>
 
