@@ -67,7 +67,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
-        boolean isOCI = OCIUtils.isOciDriver(driver);
+        //boolean isOCI = OCIUtils.isOciDriver(driver);
         OracleConstants.ConnectionType connectionType;
         Object conTypeProperty = connectionInfo.getProperties().get(OracleConstants.PROP_CONNECTION_TYPE);
         if (conTypeProperty != null) {
@@ -78,11 +78,11 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
 
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:oracle:"); //$NON-NLS-1$
-        if (isOCI) {
-            url.append("oci"); //$NON-NLS-1$
-        } else {
+//        if (isOCI) {
+//            url.append("oci"); //$NON-NLS-1$
+//        } else {
             url.append("thin"); //$NON-NLS-1$
-        }
+//        }
         url.append(":@"); //$NON-NLS-1$
         if ((connectionType == OracleConstants.ConnectionType.TNS || CommonUtils.isEmpty(connectionInfo.getHostName())) && !CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             // TNS name specified
@@ -90,7 +90,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         } else {
             // Basic connection info specified
             boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE));
-            if (!isOCI && !isSID) {
+            if (!isSID) {
                 url.append("//"); //$NON-NLS-1$
             }
             if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
@@ -100,7 +100,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
                 url.append(":"); //$NON-NLS-1$
                 url.append(connectionInfo.getHostPort());
             }
-            if (isOCI || isSID) {
+            if (isSID) {
                 url.append(":"); //$NON-NLS-1$
             } else {
                 url.append("/"); //$NON-NLS-1$

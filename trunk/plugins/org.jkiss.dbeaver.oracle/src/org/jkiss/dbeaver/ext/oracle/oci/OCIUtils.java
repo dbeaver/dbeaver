@@ -50,7 +50,7 @@ public class OCIUtils
     public static final String TNSNAMES_FILE_NAME = "tnsnames.ora";
     public static final String TNSNAMES_FILE_PATH = "network/admin/";
 
-    public static final String DRIVER_NAME_OCI = "oracle_oci";
+    //public static final String DRIVER_NAME_OCI = "oracle_oci";
 
     /**
      * A list of Oracle client homes found in the system.
@@ -226,10 +226,12 @@ public class OCIUtils
         return null;
     }
 
+/*
     public static boolean isOciDriver(DBPDriver driver)
     {
         return DRIVER_NAME_OCI.equals(driver.getId());
     }
+*/
 
     /**
      * Returns an installed Oracle client full version
