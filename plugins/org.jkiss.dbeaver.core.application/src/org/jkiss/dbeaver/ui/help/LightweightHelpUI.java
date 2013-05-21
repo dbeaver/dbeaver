@@ -48,6 +48,13 @@ public class LightweightHelpUI extends AbstractHelpUI {
     @Override
     public void displayHelp()
     {
+        try {
+            showHelpPage("org.jkiss.dbeaver.core", "/org.jkiss.dbeaver.core/docs/help/html/toc.html");
+        } catch (IOException e) {
+            log.error(e);
+        } catch (PartInitException e) {
+            log.error(e);
+        }
     }
 
     @Override
@@ -61,26 +68,31 @@ public class LightweightHelpUI extends AbstractHelpUI {
             IHelpResource relatedTopic = relatedTopics[0];
             String topicRef = relatedTopic.getHref();
             String pluginID = HrefUtil.getPluginIDFromHref(topicRef);
-            String topicPath = HrefUtil.getResourcePathFromHref(topicRef);
-            Bundle plugin = Platform.getBundle(pluginID);
-
-            // Cache all html content
-            {
-                int divPos = topicPath.indexOf("/html/");
-                if (divPos != -1) {
-                    String rootPath = topicPath.substring(0, divPos + 5);
-                    cacheContent(plugin, rootPath);
-                }
-            }
-
-            URL bundleURL = plugin.getEntry(topicPath);
-            if (bundleURL != null) {
-                URL fileURL = FileLocator.toFileURL(bundleURL);
-                showHelpPage(fileURL);
-            }
+            showHelpPage(pluginID, topicRef);
 
         } catch (Exception e) {
             log.error(e);
+        }
+    }
+
+    private void showHelpPage(String pluginID, String topicRef) throws IOException, PartInitException
+    {
+        String topicPath = HrefUtil.getResourcePathFromHref(topicRef);
+        Bundle plugin = Platform.getBundle(pluginID);
+
+        // Cache all html content
+        {
+            int divPos = topicPath.indexOf("/html/");
+            if (divPos != -1) {
+                String rootPath = topicPath.substring(0, divPos + 5);
+                cacheContent(plugin, rootPath);
+            }
+        }
+
+        URL bundleURL = plugin.getEntry(topicPath);
+        if (bundleURL != null) {
+            URL fileURL = FileLocator.toFileURL(bundleURL);
+            showHelpPage(fileURL);
         }
     }
 
