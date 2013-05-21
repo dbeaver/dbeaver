@@ -58,8 +58,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private IActionDelegate aboutAction;
     private IActionDelegate checkUpdatesAction;
     private IWorkbenchAction showHelpAction;
-    private IWorkbenchAction searchHelpAction;
-    private IWorkbenchAction dynamicHelpAction;
+//    private IWorkbenchAction searchHelpAction;
+//    private IWorkbenchAction dynamicHelpAction;
     private IWorkbenchAction newWindowAction;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
@@ -81,8 +81,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         aboutAction = new AboutBoxAction(window);
         emergentExitAction = new EmergentExitAction(window);
         register(showHelpAction = ActionFactory.HELP_CONTENTS.create(window));
-        register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
-        register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
+//        register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
+//        register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
         checkUpdatesAction = new CheckForUpdateAction();
 
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
@@ -165,8 +165,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // Help
         helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
         helpMenu.add(showHelpAction);
-        helpMenu.add(searchHelpAction);
-        helpMenu.add(dynamicHelpAction);
+        //helpMenu.add(searchHelpAction);
+        //helpMenu.add(dynamicHelpAction);
         helpMenu.add(ActionUtils.makeAction(checkUpdatesAction, null, null, CoreMessages.actions_menu_check_update, null, null));
     }
 
