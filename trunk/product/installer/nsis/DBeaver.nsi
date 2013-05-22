@@ -1,7 +1,6 @@
 ;DBeaver installer
 ;Start Menu Folder Selection Example Script
 ;Written by Serge Rieder
-;Based on StartMenu.nsi by Joost Verburg
 
 !include "x64.nsh"
 
@@ -18,7 +17,6 @@
   Caption "DBeaver Setup"
   BrandingText "Universal Database Manager"
   Icon "@product.dir@\docs\dbeaver.ico"
-  ;OutFile "dbeaver_setup.exe"
   OutFile "@product.dir@\dist\@archivePrefix@-@productVersion@-@arch@-setup.exe"
 
   VIAddVersionKey "ProductName" "DBeaver"
@@ -39,7 +37,7 @@
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin
 
-  SetCompressor /FINAL /SOLID lzma
+;  SetCompressor /FINAL /SOLID lzma
 
   Var JAVA_LOCALE
   Var path
@@ -406,43 +404,51 @@ Function .onInit
 
 FunctionEnd
 
+Var searchHandle
+Var filePath
+Var fileAttrs
+
 Function UnpackFolder
 ;    MessageBox MB_OK "UnpackFolder $path"
 
-    Push $0 ; search handle
-    Push $1 ; file name
-    Push $2 ; attributes
+    Push $searchHandle ; search handle
+    Push $filePath ; file name
+    Push $fileAttrs ; attributes
 
-    FindFirst $0 $1 "$path\*"
+    FindFirst $searchHandle $filePath "$path\*"
 
     loop:
-        StrCmp $1 "" done
-        ${GetFileAttributes} "$path\$1" DIRECTORY $2
-        IntCmp $2 1 isdir
+        StrCmp $filePath . cont
+        StrCmp $filePath .. cont
+        StrCmp $filePath "" done
+        ${GetFileAttributes} "$path\$filePath" DIRECTORY $fileAttrs
+        IntCmp $fileAttrs 1 isdir
 
-        ${GetBaseName} $1 $fileName
-        ${GetFileExt} $1 $fileExt
+DetailPrint "Check file $path\$filePath [$fileAttrs]"
+        ${GetBaseName} $filePath $fileName
+        ${GetFileExt} $filePath $fileExt
         StrCmp $fileExt "pack" unpack
         Goto cont
     isdir:
-        StrCmp $1 . cont
-        StrCmp $1 .. cont
+DetailPrint "Explore dir $path\$filePath"
         Push $path
-        StrCpy $path "$path\$1"
+        StrCpy $path "$path\$filePath"
         Call UnpackFolder
         Pop $path
     cont:
-        FindNext $0 $1
+        FindNext $searchHandle $filePath
         Goto loop
     unpack:
-        DetailPrint "Unpack $path\$1"
-        nsExec::Exec '"$INSTDIR\unpack200.exe" -r "$path\$1" "$path\$fileName.jar"'
+        DetailPrint "Unpack $path\$filePath"
+        nsExec::Exec '"$INSTDIR\unpack200.exe" -r "$path\$filePath" "$path\$fileName.jar"'
         Pop $3
         Goto cont
     done:
-        FindClose $0
+        FindClose $searchHandle
 
-      Pop $2
-      Pop $1
-      Pop $0
+;nsExec::Exec '"notepad.exe"'
+
+      Pop $fileAttrs
+      Pop $filePath
+      Pop $searchHandle
 FunctionEnd
