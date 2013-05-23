@@ -37,7 +37,7 @@
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin
 
-  SetCompressor /FINAL /SOLID lzma
+  ;SetCompressor /FINAL /SOLID lzma
 
   Var JAVA_LOCALE
   Var path
@@ -54,7 +54,7 @@
 
   !define MUI_ABORTWARNING
   !define MUI_ICON "@product.dir@\docs\dbeaver.ico"
-  ;!define MUI_WELCOMEFINISHPAGE_BITMAP "@product.dir@\docs\jkiss.bmp"
+  !define MUI_WELCOMEFINISHPAGE_BITMAP "@product.dir@\docs\dbeaver_back.bmp"
   ;!define MUI_WELCOMEFINISHPAGE_BITMAP_NOSTRETCH
 
 ;--------------------------------
@@ -159,7 +159,7 @@ Section "-DBeaver Core" SecCore
   ; If there is previous version of DBeaver - remove it's configuration and plugins
   RMDir /r $INSTDIR\configuration
   RMDir /r $INSTDIR\plugins
-  RMDir /r $INSTDIR\features
+  ;RMDir /r $INSTDIR\features
   RMDir /r $INSTDIR\licenses
   RMDir /r $INSTDIR\jre
 
@@ -172,7 +172,7 @@ Section "-DBeaver Core" SecCore
   File "..\raw\win32.@arch@\dbeaver\readme.txt"
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
-  File /r  "..\raw\win32.@arch@\dbeaver\features"
+  ;File /r  "..\raw\win32.@arch@\dbeaver\features"
   File /r  /x org.jkiss.* /x com.oracle.* /x com.mysql.* "..\raw\win32.@arch@\dbeaver\plugins"
 
   ; Unpack script
@@ -423,13 +423,14 @@ Function .onInit
 
 FunctionEnd
 
+; Unpack folder is turned off because it works very unstable on 64bit Windows
+; Replaced with cmd file
+
 Var searchHandle
 Var filePath
 Var fileAttrs
 
 Function UnpackFolder
-;    MessageBox MB_OK "UnpackFolder $path"
-
     Push $searchHandle ; search handle
     Push $filePath ; file name
     Push $fileAttrs ; attributes
@@ -443,13 +444,11 @@ Function UnpackFolder
         ${GetFileAttributes} "$path\$filePath" DIRECTORY $fileAttrs
         IntCmp $fileAttrs 1 isdir
 
-DetailPrint "Check file $path\$filePath [$fileAttrs]"
         ${GetBaseName} $filePath $fileName
         ${GetFileExt} $filePath $fileExt
         StrCmp $fileExt "pack" unpack
         Goto cont
     isdir:
-DetailPrint "Explore dir $path\$filePath"
         Push $path
         StrCpy $path "$path\$filePath"
         Call UnpackFolder
