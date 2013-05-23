@@ -280,7 +280,7 @@
         <filter token="product.dir" value="..\..\.."/>
         <copy todir="${buildDirectory}/installer/${arch}" filtering="true">
             <fileset dir="installer/nsis">
-                <include name="*.ns*" />
+                <include name="*.*" />
             </fileset>
         </copy>
 
