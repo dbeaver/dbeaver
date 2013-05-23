@@ -37,7 +37,7 @@
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin
 
-;  SetCompressor /FINAL /SOLID lzma
+  SetCompressor /FINAL /SOLID lzma
 
   Var JAVA_LOCALE
   Var path
@@ -165,7 +165,10 @@ Section "-DBeaver Core" SecCore
   File /r  /x org.jkiss.* /x com.oracle.* /x com.mysql.* "..\raw\win32.@arch@\dbeaver\plugins"
 
   ; Unpack script
+  File "install.cmd"
   File "..\raw\win32.@arch@\dbeaver\jre\bin\unpack200.exe"
+  File /nonfatal "..\raw\win32.@arch@\dbeaver\jre\bin\msvcrt.dll"
+  File /nonfatal "..\raw\win32.@arch@\dbeaver\jre\bin\msvcr71.dll"
 
   ; Licenses
   CreateDirectory $INSTDIR\licenses
@@ -277,9 +280,14 @@ Section "-UnpackJars" SecUnpackJars
     SetOutPath "$INSTDIR"
     StrCpy $path "$INSTDIR"
     SetDetailsView show
-    Call UnpackFolder
 
+    nsExec::ExecToLog '"$INSTDIR\install.cmd"'
+    Pop $3
+
+    Delete "$INSTDIR\install.cmd"
     Delete "$INSTDIR\unpack200.exe"
+    Delete "$INSTDIR\msvcrt.dll"
+    Delete "$INSTDIR\msvcr71.dll"
 
     DetailPrint "Unpack completed"
 SectionEnd
