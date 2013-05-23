@@ -61,7 +61,7 @@
 ;Pages
 
   !insertmacro MUI_PAGE_WELCOME
-  ;!insertmacro MUI_PAGE_LICENSE "@product.dir@\..\docs\licenses\dbeaver_license.txt"
+  !insertmacro MUI_PAGE_LICENSE "@product.dir@\..\docs\licenses\dbeaver_license.txt"
   !insertmacro MUI_PAGE_COMPONENTS
   !insertmacro MUI_PAGE_DIRECTORY
   
@@ -89,9 +89,20 @@
   !define MUI_FINISHPAGE_LINK "Visit DBeaver web site"
   !define MUI_FINISHPAGE_LINK_LOCATION "http://dbeaver.jkiss.org/"
 
-  !define MUI_FINISHPAGE_CANCEL_ENABLED
+  ;!define MUI_FINISHPAGE_CANCEL_ENABLED
+  ; Cancel enable is buggy in MUI2
+  !define MUI_PAGE_CUSTOMFUNCTION_SHOW NSIS2d46_MUI2_CancelEnabledFix
 
   !insertmacro MUI_PAGE_FINISH
+
+!ifndef SC_CLOSE
+!define SC_CLOSE 0xF060
+!endif
+Function NSIS2d46_MUI2_CancelEnabledFix
+EnableWindow $mui.Button.Cancel 1
+System::Call 'USER32::GetSystemMenu(i $hwndparent,i0)i.s'
+System::Call 'USER32::EnableMenuItem(is,i${SC_CLOSE},i0)'
+FunctionEnd
 
 Function FinishPageAction
 	CreateShortCut "$DESKTOP\DBeaver.lnk" "$INSTDIR\dbeaver.exe" "-nl $JAVA_LOCALE"
