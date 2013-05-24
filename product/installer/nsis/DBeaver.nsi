@@ -37,7 +37,7 @@
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin
 
-  ;SetCompressor /FINAL /SOLID lzma
+  SetCompressor /FINAL /SOLID lzma
 
   Var JAVA_LOCALE
   Var path
