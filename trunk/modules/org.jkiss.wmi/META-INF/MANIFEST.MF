@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: WMI native interface
 Bundle-SymbolicName: org.jkiss.wmi
-Bundle-Version: 1.0.10
+Bundle-Version: 1.0.11
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: Serge Rieder
 Export-Package: org.jkiss.wmi.service
