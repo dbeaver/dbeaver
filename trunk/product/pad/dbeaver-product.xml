@@ -52,7 +52,12 @@
             <date>27.05.2013</date>
 
             <release-notes>
-                -
+                - Oracle, MySQL and Cassandra drivers included in standard DBeaver distribution.
+                - Oracle OCI driver is now obsolete
+                - Data export from query/SQL script fixed
+                - SSH keep-alive support
+                - Windows installer fixed
+                - Minor UI fixes
             </release-notes>
         </version>
 
