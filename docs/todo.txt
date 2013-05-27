@@ -3,9 +3,7 @@ Major:
 Search refactoring (scripts search)
 Localizations
 JDBC driver versions update
-Execution history
 DB2 & PostgreSQL & MS SQL plugins
-DDL tab for Generic plugin
 
 Minor:
 
@@ -18,4 +16,4 @@ Customize resource roots
 generate sql
 - exclipse secure store (doesn't work)
 
-Refactor plugins and onclude jdbc drivers in extension plugins (Oracle, MySQL, Cassandra, WMI)
+Disconnect detection (by error code)
