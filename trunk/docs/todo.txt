@@ -17,3 +17,5 @@ generate sql
 - exclipse secure store (doesn't work)
 
 Disconnect detection (by error code)
+
+Cancel/disconnect improvement
