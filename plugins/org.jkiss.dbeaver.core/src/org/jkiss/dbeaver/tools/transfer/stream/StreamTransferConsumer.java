@@ -316,7 +316,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         boolean lastUnd = false;
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (Character.isJavaIdentifierPart(c)) {
+            if (Character.isLetterOrDigit(c)) {
                 result.append(c);
                 lastUnd = false;
             } else if (!lastUnd) {
