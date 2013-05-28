@@ -615,19 +615,32 @@ public class DataSourceDescriptor
                     QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
                     QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
                     if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
-
-                        // Ask for confirmation
-                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
-                        UIUtils.runInUI(null, closeConfirmer);
-                        switch (closeConfirmer.result) {
-                            case IDialogConstants.YES_ID:
-                                context.getTransactionManager().commit();
-                                break;
-                            case IDialogConstants.NO_ID:
-                                context.getTransactionManager().rollback(null);
-                                break;
-                            default:
-                                return false;
+                        boolean hasUserExec = false;
+                        if (true) {
+                            // Do not check whether we have user queries, just ask for confirmation
+                            hasUserExec = true;
+                        } else {
+                            for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
+                                if (psp.hasUserExecutions()) {
+                                    hasUserExec = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (hasUserExec) {
+                            // Ask for confirmation
+                            TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer();
+                            UIUtils.runInUI(null, closeConfirmer);
+                            switch (closeConfirmer.result) {
+                                case IDialogConstants.YES_ID:
+                                    context.getTransactionManager().commit();
+                                    break;
+                                case IDialogConstants.NO_ID:
+                                    context.getTransactionManager().rollback(null);
+                                    break;
+                                default:
+                                    return false;
+                            }
                         }
                     }
                 }
