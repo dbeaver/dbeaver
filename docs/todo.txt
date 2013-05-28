@@ -19,3 +19,4 @@ generate sql
 Disconnect detection (by error code)
 
 Cancel/disconnect improvement
+Autocommit option in connection wizard
