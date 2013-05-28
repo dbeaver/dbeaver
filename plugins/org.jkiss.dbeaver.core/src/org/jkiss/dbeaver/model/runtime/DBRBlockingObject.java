@@ -30,7 +30,7 @@ public interface DBRBlockingObject {
     /**
      * Cancels block.
      * In actual implementation this object may not block process at the moment of invocation
-     * of this methid. Implementor should check object's state and cancel blocking on demand.
+     * of this method. Implementor should check object's state and cancel blocking on demand.
      * @throws DBException on error
      */
     void cancelBlock() throws DBException;

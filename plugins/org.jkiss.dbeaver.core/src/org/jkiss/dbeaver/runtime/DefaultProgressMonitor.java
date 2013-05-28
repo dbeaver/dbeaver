@@ -104,7 +104,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
     }
 
     @Override
-    public DBRBlockingObject getActiveBlock()
+    public synchronized DBRBlockingObject getActiveBlock()
     {
         return blocks == null || blocks.isEmpty() ? null : blocks.get(blocks.size() - 1);
     }

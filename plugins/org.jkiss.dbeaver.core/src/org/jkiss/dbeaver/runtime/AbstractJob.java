@@ -38,7 +38,7 @@ public abstract class AbstractJob extends Job
     public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 1 * 1000;
 
     private DBRProgressMonitor progressMonitor;
-    private boolean finished = false;
+    private volatile boolean finished = false;
     private volatile boolean blockCanceled = false;
     private int cancelTimeout = TIMEOUT_BEFORE_BLOCK_CANCEL;
 
@@ -100,13 +100,7 @@ public abstract class AbstractJob extends Job
     @Override
     protected void canceling()
     {
-/*
-        if (!cancelRequested) {
-            cancelRequested = true;
-            return;
-        }
-*/
-        // do it only on second request
+        // Run canceling job
         if (!blockCanceled) {
             Job cancelJob = new Job("Cancel block") { //$NON-NLS-1$
                 @Override
