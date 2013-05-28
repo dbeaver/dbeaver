@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.core;
 
 import org.apache.commons.logging.Log;
+import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
@@ -210,18 +211,25 @@ public class DBeaverLogger implements Log, Serializable
 
     private static void writeExceptionStatus(int severity, Object message, Throwable t)
     {
-        if (t == null) {
-            DBeaverActivator.getInstance().getLog().log(new Status(
-                severity,
-                corePluginID,
-                message == null ? null : message.toString()));
-        } else {
-            DBeaverActivator.getInstance().getLog().log(new MultiStatus(
-                corePluginID,
-                0,
-                new IStatus[]{ RuntimeUtils.makeExceptionStatus(severity, t) },
-                message == null ? null : message.toString(),
-                t));
+        DBeaverActivator activator = DBeaverActivator.getInstance();
+        if (activator != null) {
+            // Activator may be null in some unclear circumstances (like shutdown is in progress)
+            ILog log = activator.getLog();
+            if (log != null) {
+                if (t == null) {
+                    log.log(new Status(
+                        severity,
+                        corePluginID,
+                        message == null ? null : message.toString()));
+                } else {
+                    log.log(new MultiStatus(
+                        corePluginID,
+                        0,
+                        new IStatus[]{RuntimeUtils.makeExceptionStatus(severity, t)},
+                        message == null ? null : message.toString(),
+                        t));
+                }
+            }
         }
     }
 
