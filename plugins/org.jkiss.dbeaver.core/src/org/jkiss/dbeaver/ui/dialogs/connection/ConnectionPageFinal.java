@@ -48,6 +48,8 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -239,11 +241,27 @@ class ConnectionPageFinal extends ActiveWizardPage {
         {
             UIUtils.createControlLabel(group, "Connection type");
 
-            //Composite colorGroup = UIUtils.createPlaceholder(group, 4, 5);
-            connectionTypeCombo = new CImageCombo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            Composite ctGroup = UIUtils.createPlaceholder(group, 2, 5);
+            connectionTypeCombo = new CImageCombo(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             loadConnectionTypes();
             connectionTypeCombo.select(0);
 
+            Button pickerButton = new Button(ctGroup, SWT.PUSH);
+            pickerButton.setText("Edit");
+            pickerButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    UIUtils.showPreferencesFor(
+                        getControl().getShell(),
+                        dataSourceDescriptor,
+                        PrefPageConnectionTypes.PAGE_ID);
+                    if (dataSourceDescriptor != null) {
+                        loadConnectionTypes();
+                        connectionTypeCombo.select(dataSourceDescriptor.getConnectionInfo().getConnectionType());
+                    }
+                }
+            });
 /*
             UIUtils.createControlLabel(colorGroup, "Custom color");
             new CImageCombo(colorGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);

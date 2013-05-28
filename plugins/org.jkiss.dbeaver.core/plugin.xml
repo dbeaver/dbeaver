@@ -1759,6 +1759,13 @@
               <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
            </enabledWhen>
         </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.main.connectionTypes" name="Connection Types">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
     </extension>
 
     <extension point="org.eclipse.ui.elementFactories">
