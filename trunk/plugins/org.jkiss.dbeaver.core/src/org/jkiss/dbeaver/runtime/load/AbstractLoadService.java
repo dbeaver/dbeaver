@@ -71,7 +71,7 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
                 return true;
             }
             catch (DBException e) {
-                throw new InvocationTargetException(e, "Could not cancel blocking object");
+                throw new InvocationTargetException(e);
             }
         }
         return false;

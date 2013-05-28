@@ -56,10 +56,10 @@ public abstract class JDBCDataSource
 {
     static final Log log = LogFactory.getLog(JDBCDataSource.class);
 
-    private DBSDataSourceContainer container;
-    private JDBCConnectionHolder connection;
+    private final DBSDataSourceContainer container;
 
-    protected DBPDataSourceInfo dataSourceInfo;
+    private volatile JDBCConnectionHolder connection;
+    protected volatile DBPDataSourceInfo dataSourceInfo;
 
     public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
@@ -222,13 +222,13 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public synchronized DBPDataSourceInfo getInfo()
+    public DBPDataSourceInfo getInfo()
     {
         return dataSourceInfo;
     }
 
     @Override
-    public synchronized boolean isConnected()
+    public boolean isConnected()
     {
         return connection != null;
     }
