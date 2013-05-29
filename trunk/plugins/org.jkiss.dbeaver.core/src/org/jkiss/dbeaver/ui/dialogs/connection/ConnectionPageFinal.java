@@ -312,7 +312,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
 
                 autocommit = UIUtils.createCheckbox(
                     miscGroup,
-                    "Auto-commit",
+                    CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
                     dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
                 autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
