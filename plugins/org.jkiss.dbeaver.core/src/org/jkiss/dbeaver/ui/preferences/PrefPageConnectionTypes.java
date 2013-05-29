@@ -56,6 +56,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     private Button autocommitCheck;
     private Button confirmCheck;
     private Button deleteButton;
+    private DBPConnectionType selectedType;
 
     private Map<DBPConnectionType, DBPConnectionType> changedInfo = new HashMap<DBPConnectionType, DBPConnectionType>();
 
@@ -283,6 +284,14 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
             addTypeToTable(source, new DBPConnectionType(source));
         }
         typeTable.select(0);
+        if (selectedType != null) {
+            for (int i = 0; i < typeTable.getItemCount(); i++) {
+                if (typeTable.getItem(i).getData().equals(selectedType)) {
+                    typeTable.select(i);
+                    break;
+                }
+            }
+        }
         // Ad predefined colors
         int[] colorList = { SWT.COLOR_WHITE, SWT.COLOR_BLACK, SWT.COLOR_RED, SWT.COLOR_DARK_RED,
         SWT.COLOR_GREEN, SWT.COLOR_DARK_GREEN, SWT.COLOR_YELLOW, SWT.COLOR_DARK_YELLOW,
@@ -354,13 +363,17 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     @Override
     public IAdaptable getElement()
     {
-        return null;
+        return selectedType;
     }
 
     @Override
     public void setElement(IAdaptable element)
     {
-
+        if (element instanceof DBPConnectionType) {
+            selectedType = (DBPConnectionType) element;
+        } else {
+            selectedType = null;
+        }
     }
 
 }

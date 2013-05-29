@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -7,7 +8,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 /**
  * Connection type
  */
-public class DBPConnectionType {
+public class DBPConnectionType implements IAdaptable {
 
     public static final DBPConnectionType DEV = new DBPConnectionType("dev", "Development", new RGB(0xFF, 0xFF, 0xFF), "Regular development database", true, false, true);
     public static final DBPConnectionType TEST = new DBPConnectionType("test", "Test", new RGB(0xC4, 0xFF, 0xB5), "Test (QA) database", true, false, true);
@@ -105,4 +106,21 @@ public class DBPConnectionType {
         this.confirmExecute = confirmExecute;
     }
 
+    @Override
+    public Object getAdapter(Class adapter)
+    {
+        return null;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        return obj instanceof DBPConnectionType && id.equals(((DBPConnectionType)obj).id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return id.hashCode();
+    }
 }
