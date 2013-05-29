@@ -254,7 +254,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 {
                     UIUtils.showPreferencesFor(
                         getControl().getShell(),
-                        dataSourceDescriptor,
+                        dataSourceDescriptor.getConnectionInfo().getConnectionType(),
                         PrefPageConnectionTypes.PAGE_ID);
                     if (dataSourceDescriptor != null) {
                         loadConnectionTypes();
