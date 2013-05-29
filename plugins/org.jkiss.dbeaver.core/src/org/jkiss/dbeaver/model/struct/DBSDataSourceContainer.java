@@ -68,6 +68,12 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     boolean isConnectionReadOnly();
 
+    boolean isDefaultAutoCommit();
+
+    void setDefaultAutoCommit(boolean autoCommit, boolean updateConnection);
+
+    boolean isConnectionAutoCommit();
+
     /**
      * Search for object filter which corresponds specified object type and parent object.
      * Search filter which match any super class or interface implemented by specified type.
@@ -129,4 +135,5 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
     DBPKeywordManager getKeywordManager();
 
     void persistConfiguration();
+
 }

@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
-import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -69,6 +68,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private Text connectionNameText;
     private CImageCombo connectionTypeCombo;
     private Button savePasswordCheck;
+    private Button autocommit;
     private Button showSystemObjects;
     private Button readOnlyConnection;
     private Font boldFont;
@@ -174,6 +174,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
         if (dataSourceDescriptor != null && !activated) {
             connectionTypeCombo.select(dataSourceDescriptor.getConnectionInfo().getConnectionType());
             savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
+            autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
             showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
             readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
             activated = true;
@@ -245,6 +246,14 @@ class ConnectionPageFinal extends ActiveWizardPage {
             connectionTypeCombo = new CImageCombo(ctGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             loadConnectionTypes();
             connectionTypeCombo.select(0);
+            connectionTypeCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    DBPConnectionType type = (DBPConnectionType)connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()).getData();
+                    autocommit.setSelection(type.isAutocommit());
+                }
+            });
 
             Button pickerButton = new Button(ctGroup, SWT.PUSH);
             pickerButton.setText("Edit");
@@ -256,10 +265,10 @@ class ConnectionPageFinal extends ActiveWizardPage {
                         getControl().getShell(),
                         dataSourceDescriptor.getConnectionInfo().getConnectionType(),
                         PrefPageConnectionTypes.PAGE_ID);
-                    if (dataSourceDescriptor != null) {
-                        loadConnectionTypes();
-                        connectionTypeCombo.select(dataSourceDescriptor.getConnectionInfo().getConnectionType());
-                    }
+                    loadConnectionTypes();
+                    DBPConnectionType connectionType = wizard.getPageSettings().getConnectionInfo().getConnectionType();
+                    connectionTypeCombo.select(connectionType);
+                    autocommit.setSelection(connectionType.isAutocommit());
                 }
             });
 /*
@@ -300,6 +309,12 @@ class ConnectionPageFinal extends ActiveWizardPage {
                     optionsGroup,
                     CoreMessages.dialog_connection_wizard_final_group_misc,
                     1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+
+                autocommit = UIUtils.createCheckbox(
+                    miscGroup,
+                    "Auto-commit",
+                    dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
+                autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 showSystemObjects = UIUtils.createCheckbox(
                     miscGroup,
@@ -419,6 +434,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     {
         dataSource.setName(connectionNameText.getText());
         dataSource.setSavePassword(savePasswordCheck.getSelection());
+        dataSource.setDefaultAutoCommit(autocommit.getSelection(), true);
         dataSource.setShowSystemObjects(showSystemObjects.getSelection());
         dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
         if (!dataSource.isSavePassword()) {
