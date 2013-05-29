@@ -26,11 +26,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
@@ -65,23 +61,7 @@ public class DataSourcePropertyTester extends PropertyTester
             if (!dataSourceContainer.isConnected()) {
                 return Boolean.FALSE.equals(expectedValue);
             }
-            DBPDataSource dataSource = dataSourceContainer.getDataSource();
-            if (dataSource == null || !dataSource.isConnected()) {
-                return false;
-            }
-            DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Check auto commit state");
-            try {
-                boolean transactional = !context.getTransactionManager().isAutoCommit();
-                return Boolean.valueOf(transactional).equals(expectedValue);
-            }
-            catch (DBCException e) {
-                // Log in debug. IF there are any errors occurs here then
-                // we'll generate a lot of log errors because property tester invoked by eclipse many times per second
-                log.debug(e);
-            }
-            finally {
-                context.close();
-            }
+            return Boolean.valueOf(!dataSourceContainer.isConnectionAutoCommit()).equals(expectedValue);
         } else if (PROP_TRANSACTION_ACTIVE.equals(property)) {
             if (dataSourceContainer.isConnected()) {
                 DBPDataSource dataSource = dataSourceContainer.getDataSource();

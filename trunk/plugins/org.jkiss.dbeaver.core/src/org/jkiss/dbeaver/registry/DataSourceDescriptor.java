@@ -28,6 +28,7 @@ import org.eclipse.ui.ISaveablePart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -45,9 +46,11 @@ import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMCollector;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionInfo;
@@ -61,6 +64,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
 
@@ -283,6 +287,73 @@ public class DataSourceDescriptor
     public void setConnectionReadOnly(boolean connectionReadOnly)
     {
         this.connectionReadOnly = connectionReadOnly;
+    }
+
+    @Override
+    public boolean isDefaultAutoCommit()
+    {
+        if (getPreferenceStore().contains(PrefConstants.DEFAULT_AUTO_COMMIT)) {
+            return getPreferenceStore().getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+        } else {
+            return getConnectionInfo().getConnectionType().isAutocommit();
+        }
+    }
+
+    @Override
+    public void setDefaultAutoCommit(final boolean autoCommit, boolean updateConnection)
+    {
+        if (updateConnection && dataSource != null) {
+            try {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException
+                    {
+                        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, "Change '" + getName() + "' transactional mode");
+                        try {
+                            DBCTransactionManager txnManager = context.getTransactionManager();
+                            // Change auto-commit mode
+                            txnManager.setAutoCommit(autoCommit);
+                        } catch (DBCException e) {
+                            throw new InvocationTargetException(e);
+                        } finally {
+                            context.close();
+                        }
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                UIUtils.showErrorDialog(null, "Auto-Commit", "Error while toggle auto-commit", e.getTargetException());
+                return;
+            } catch (InterruptedException e) {
+                // do nothing
+                return;
+            }
+        }
+        // Save in preferences
+        if (autoCommit == getConnectionInfo().getConnectionType().isAutocommit()) {
+            getPreferenceStore().setToDefault(PrefConstants.DEFAULT_AUTO_COMMIT);
+        } else {
+            getPreferenceStore().setValue(PrefConstants.DEFAULT_AUTO_COMMIT, autoCommit);
+        }
+    }
+
+    @Override
+    public boolean isConnectionAutoCommit()
+    {
+        if (dataSource != null) {
+            // We read this one synchronously because this function invoked many times per second by UI
+            DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE,
+                DBCExecutionPurpose.UTIL, "Get '" + getName() + "' auto-commit mode");
+            try {
+                return context.getTransactionManager().isAutoCommit();
+            } catch (DBCException e) {
+                log.debug("Can't check auto-commit flag", e);
+                return false;
+            } finally {
+                context.close();
+            }
+        }
+        return false;
     }
 
     public Collection<FilterMapping> getObjectFilters()
