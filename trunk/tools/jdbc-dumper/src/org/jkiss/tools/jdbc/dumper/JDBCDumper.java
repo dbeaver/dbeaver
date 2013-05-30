@@ -18,9 +18,7 @@
  */
 package org.jkiss.tools.jdbc.dumper;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
+import java.sql.*;
 
 /**
  * Dumps JDBC metadata
@@ -30,14 +28,14 @@ public class JDBCDumper
     public static void main(String [] args)
         throws Exception
     {
-        if (args.length < 4) {
-            System.out.println("Usage: JDBCDumper driver-class jdbc-url user password");
+        if (args.length < 3) {
+            System.out.println("Usage: JDBCDumper driver-class jdbc-url user [password]");
             System.exit(1);
         }
         String className = args[0];
         String url = args[1];
         String user = args[2];
-        String password = args[3];
+        String password = args.length >= 4 ? args[3] : null;
 
         Class.forName(className);
 
@@ -50,8 +48,31 @@ public class JDBCDumper
         }
     }
 
-    private static void dumpMetaData(DatabaseMetaData metaData)
+    private static void dumpMetaData(DatabaseMetaData metaData) throws SQLException
     {
+        dumpResultSet("Catalogs", metaData.getCatalogs());
+        dumpResultSet("Schemas", metaData.getSchemas());
+        dumpResultSet("Tables", metaData.getTables(null, null, null, null));
+    }
 
+    private static void dumpResultSet(String name, ResultSet dbResult) throws SQLException
+    {
+        System.out.println("Dump of [" + name + "]");
+        System.out.println("======================================================");
+
+        ResultSetMetaData rsMeta = dbResult.getMetaData();
+        int columnCount = rsMeta.getColumnCount();
+        for (int i = 1; i <= columnCount; i++) {
+            System.out.print(rsMeta.getColumnName(i) + " " + rsMeta.getColumnTypeName(i) + "[" + rsMeta.getColumnDisplaySize(i) + "]" + "(" + rsMeta.getColumnType(i) + ")\t");
+        }
+        System.out.println();
+        while (dbResult.next()) {
+            for (int i = 1; i <= columnCount; i++) {
+                System.out.print(dbResult.getObject(i) + "\t");
+            }
+            System.out.println();
+        }
+
+        System.out.println("======================================================");
     }
 }
