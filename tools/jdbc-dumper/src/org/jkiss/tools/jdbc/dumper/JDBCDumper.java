@@ -50,9 +50,21 @@ public class JDBCDumper
 
     private static void dumpMetaData(DatabaseMetaData metaData) throws SQLException
     {
-        dumpResultSet("Catalogs", metaData.getCatalogs());
-        dumpResultSet("Schemas", metaData.getSchemas());
-        dumpResultSet("Tables", metaData.getTables(null, null, null, null));
+        try {
+            dumpResultSet("Catalogs", metaData.getCatalogs());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            dumpResultSet("Schemas", metaData.getSchemas());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            dumpResultSet("Tables", metaData.getTables(null, null, null, null));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void dumpResultSet(String name, ResultSet dbResult) throws SQLException
