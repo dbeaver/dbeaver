@@ -22,3 +22,4 @@ Cancel/disconnect improvement
 Connection "dirty" flag handle
 Transaction isolation level config in connection
 Formatting profiles to connection association
+RSV segments fetch UI
