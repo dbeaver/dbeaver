@@ -19,5 +19,6 @@ generate sql
 Disconnect detection (by error code)
 
 Cancel/disconnect improvement
-Autocommit option in connection wizard
 Connection "dirty" flag handle
+Transaction isolation level config in connection
+Formatting profiles to connection association
