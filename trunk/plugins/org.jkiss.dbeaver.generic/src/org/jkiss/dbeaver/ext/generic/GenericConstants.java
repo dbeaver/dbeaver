@@ -19,6 +19,9 @@
 
 package org.jkiss.dbeaver.ext.generic;
 
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetadataReader;
+import org.jkiss.dbeaver.ext.generic.model.meta.StandardMetadataReader;
+
 /**
  * Generic provider constants
  */
@@ -32,6 +35,7 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_SUBQUERIES = "supports-subqueries";
     public static final String PARAM_SUPPORTS_SELECT_COUNT = "supports-select-count";
     public static final String PARAM_OMIT_TYPE_CACHE = "omit-type-cache";
+    public static final String PARAM_METADATA_TYPE = "metadata-type";
 
     public static final String ENTITY_TYPE_CATALOG = "catalog";
     public static final String ENTITY_TYPE_SCHEMA = "schema";
@@ -44,4 +48,24 @@ public class GenericConstants {
     public static final String TERM_SCHEMA = "schema";
     public static final String TERM_PROCEDURE = "procedure";
 
+    public static enum MetadataType {
+        standard
+            {
+                @Override
+                public GenericMetadataReader createReader()
+                {
+                    return new StandardMetadataReader();
+                }
+            },
+        indexed
+            {
+                @Override
+                public GenericMetadataReader createReader()
+                {
+                    return new StandardMetadataReader();
+                }
+            };
+
+        public abstract GenericMetadataReader createReader();
+    }
 }
