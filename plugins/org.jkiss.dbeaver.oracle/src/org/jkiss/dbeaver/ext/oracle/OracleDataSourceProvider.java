@@ -86,7 +86,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         url.append(":@"); //$NON-NLS-1$
         if ((connectionType == OracleConstants.ConnectionType.TNS || CommonUtils.isEmpty(connectionInfo.getHostName())) && !CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             // TNS name specified
-            url.append(connectionInfo.getDatabaseName());
+            url.append('/').append(connectionInfo.getDatabaseName());
         } else {
             // Basic connection info specified
             boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE));
