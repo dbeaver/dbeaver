@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetadataReader;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -44,37 +45,24 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
 
     public GenericTableColumn(
         GenericTable table,
-        String columnName,
-        String typeName,
-        int valueType,
-        int sourceType,
-        int ordinalPosition,
-        long columnSize,
-        long charLength,
-        int scale,
-        int precision,
-        int radix,
-        boolean notNull,
-        String remarks,
-        String defaultValue,
-        boolean autoIncrement)
+        GenericMetadataReader.TableColumnInfo columnInfo)
     {
         super(table,
             true,
-            columnName,
-            typeName,
-            valueType,
-            ordinalPosition,
-            columnSize,
-            scale,
-            precision,
-            notNull,
-            defaultValue);
-        this.sourceType = sourceType;
-        this.charLength = charLength;
-        this.autoIncrement = autoIncrement;
-        this.remarks = remarks;
-        this.radix = radix;
+            columnInfo.columnName,
+            columnInfo.typeName,
+            columnInfo.valueType,
+            columnInfo.ordinalPos,
+            columnInfo.columnSize,
+            columnInfo.scale,
+            columnInfo.precision,
+            columnInfo.isNotNull,
+            columnInfo.defaultValue);
+        this.sourceType = columnInfo.sourceType;
+        this.charLength = columnInfo.charLength;
+        this.autoIncrement = columnInfo.autoIncrement;
+        this.remarks = columnInfo.remarks;
+        this.radix = columnInfo.radix;
     }
 
     @Override
