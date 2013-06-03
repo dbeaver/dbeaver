@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -60,7 +61,7 @@ public class GenericDataSource extends JDBCDataSource
     private final JDBCBasicDataTypeCache dataTypeCache;
     private List<GenericCatalog> catalogs;
     private List<GenericSchema> schemas;
-
+    private final GenericMetaModel metaModel;
     private GenericObjectContainer structureContainer;
 
     private String queryGetActiveDB;
@@ -69,10 +70,11 @@ public class GenericDataSource extends JDBCDataSource
     private String selectedEntityName;
     private boolean selectedEntityFromAPI;
 
-    public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
+    public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
     {
         super(monitor, container);
+        this.metaModel = metaModel;
         final DBPDriver driver = container.getDriver();
         this.dataTypeCache = new JDBCBasicDataTypeCache(container);
         this.tableTypeCache = new TableTypeCache();
@@ -82,6 +84,11 @@ public class GenericDataSource extends JDBCDataSource
         if (CommonUtils.isEmpty(this.selectedEntityType)) {
             this.selectedEntityType = null;
         }
+    }
+
+    public GenericMetaModel getMetaModel()
+    {
+        return metaModel;
     }
 
     @Override

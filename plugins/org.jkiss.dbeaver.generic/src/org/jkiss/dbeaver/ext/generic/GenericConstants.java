@@ -24,6 +24,7 @@ package org.jkiss.dbeaver.ext.generic;
  */
 public class GenericConstants {
 
+    public static final String PARAM_META_MODEL = "meta-model";
     public static final String PARAM_QUERY_GET_ACTIVE_DB = "query-get-active-db";
     public static final String PARAM_QUERY_SET_ACTIVE_DB = "query-set-active-db";
     public static final String PARAM_ACTIVE_ENTITY_TYPE = "active-entity-type";

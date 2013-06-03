@@ -18,8 +18,12 @@
  */
 package org.jkiss.dbeaver.ext.generic;
 
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -29,10 +33,24 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GenericDataSourceProvider extends JDBCDataSourceProvider {
+
+    private final Map<String, GenericMetaModel> metaModels = new HashMap<String, GenericMetaModel>();
+    private static final String EXTENSION_ID = "org.jkiss.dbeaver.generic.meta";
 
     public GenericDataSourceProvider()
     {
+        IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
+        IConfigurationElement[] extElements = extensionRegistry.getConfigurationElementsFor(EXTENSION_ID);
+        for (IConfigurationElement ext : extElements) {
+            //for (IConfigurationElement metaChild : ext.getChildren("meta")) {
+                GenericMetaModel metaModel = new GenericMetaModel(ext);
+                metaModels.put(metaModel.getId(), metaModel);
+            //}
+        }
     }
 
     @Override
@@ -84,11 +102,20 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         DBSDataSourceContainer container)
         throws DBException
     {
-        return new GenericDataSource(monitor, container);
+        GenericMetaModel metaModel = null;
+        Object metaModelId = container.getDriver().getDriverParameter(GenericConstants.PARAM_META_MODEL);
+        if (metaModelId != null) {
+            metaModel = metaModels.get(metaModelId.toString());
+            if (metaModel == null) {
+                log.warn("Meta model '" + metaModelId + "' not recognized. Default one will be used");
+            }
+        }
+        return new GenericDataSource(monitor, container, metaModel);
     }
 
     private static String makePropPattern(String prop)
     {
         return "{" + prop + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
+
 }
