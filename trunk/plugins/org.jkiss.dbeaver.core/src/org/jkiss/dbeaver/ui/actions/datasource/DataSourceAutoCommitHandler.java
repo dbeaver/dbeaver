@@ -79,6 +79,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                 // Update command image
                 element.setIcon(autoCommit ? DBIcon.TXN_COMMIT_AUTO.getImageDescriptor() : DBIcon.TXN_COMMIT_MANUAL.getImageDescriptor());
                 element.setText(autoCommit ? "Switch to manual commit mode" : "Switch to auto commit mode");
+                element.setTooltip(autoCommit ? "Auto-commit" : "Manual commit (" + txnManager.getTransactionIsolation().getName() + ")");
             } catch (DBCException e) {
                 log.warn(e);
             } finally {
