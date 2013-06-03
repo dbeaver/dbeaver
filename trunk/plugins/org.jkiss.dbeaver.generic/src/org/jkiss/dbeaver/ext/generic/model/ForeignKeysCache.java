@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -42,11 +44,17 @@ import java.util.Map;
 */
 class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericTableForeignKey, GenericTableForeignKeyColumnTable> {
 
-    Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
+    private final Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
+    private final GenericMetaObject foreignKeyObject;
 
     ForeignKeysCache(TableCache tableCache)
     {
-        super(tableCache, GenericTable.class, JDBCConstants.FKTABLE_NAME, JDBCConstants.FK_NAME);
+        super(
+            tableCache, 
+            GenericTable.class,
+            GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_FOREIGN_KEY, JDBCConstants.FKTABLE_NAME),
+            GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_FOREIGN_KEY, JDBCConstants.FK_NAME));
+        foreignKeyObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
     }
 
     @Override
@@ -71,15 +79,15 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     protected GenericTableForeignKey fetchObject(JDBCExecutionContext context, GenericStructContainer owner, GenericTable parent, String fkName, ResultSet dbResult)
         throws SQLException, DBException
     {
-        String pkTableCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_CAT);
-        String pkTableSchema = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_SCHEM);
-        String pkTableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKTABLE_NAME);
+        String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
+        String pkTableSchema = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_SCHEM);
+        String pkTableName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
 
-        int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-        int updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
-        int deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
-        String pkName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PK_NAME);
-        int defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
+        int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
+        int updateRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.UPDATE_RULE);
+        int deleteRuleNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DELETE_RULE);
+        String pkName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PK_NAME);
+        int defferabilityNum = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.DEFERRABILITY);
 
         DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
         DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
@@ -111,7 +119,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             }
         }
         if (pk == null) {
-            String pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
+            String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
             GenericTableColumn pkColumn = pkTable.getAttribute(context.getProgressMonitor(), pkColumnName);
             if (pkColumn == null) {
                 log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
@@ -151,15 +159,15 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         GenericTable parent, GenericTableForeignKey foreignKey, ResultSet dbResult)
         throws SQLException, DBException
     {
-        String pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
+        String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
         GenericTableConstraintColumn pkColumn = (GenericTableConstraintColumn)DBUtils.getConstraintColumn(context.getProgressMonitor(), foreignKey.getReferencedConstraint(), pkColumnName);
         if (pkColumn == null) {
             log.warn("Can't find PK table " + foreignKey.getReferencedConstraint().getTable().getFullQualifiedName() + " column " + pkColumnName);
             return null;
         }
-        int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
+        int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
 
-        String fkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKCOLUMN_NAME);
+        String fkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKCOLUMN_NAME);
         GenericTableColumn fkColumn = foreignKey.getTable().getAttribute(context.getProgressMonitor(), fkColumnName);
         if (fkColumn == null) {
             log.warn("Can't find FK table " + foreignKey.getTable().getFullQualifiedName() + " column " + fkColumnName);
