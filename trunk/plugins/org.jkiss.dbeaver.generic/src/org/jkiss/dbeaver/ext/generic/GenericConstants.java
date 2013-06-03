@@ -45,4 +45,11 @@ public class GenericConstants {
     public static final String TERM_SCHEMA = "schema";
     public static final String TERM_PROCEDURE = "procedure";
 
+    public static final String OBJECT_CATALOG = "catalog";
+    public static final String OBJECT_SCHEMA = "schema";
+    public static final String OBJECT_TABLE = "table";
+    public static final String OBJECT_TABLE_COLUMN = "table-column";
+    public static final String OBJECT_INDEX = "index";
+    public static final String OBJECT_INDEX_COLUMN = "index-column";
+
 }

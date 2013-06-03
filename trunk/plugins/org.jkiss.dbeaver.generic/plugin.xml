@@ -569,6 +569,7 @@
             </object>
             <object type="schema">
                 <column id="TABLE_SCHEM" index="1"/>
+                <column id="TABLE_CATALOG" index="2"/>
             </object>
             <object type="table">
                 <column id="TABLE_NAME" index="1"/>
