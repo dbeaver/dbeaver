@@ -93,6 +93,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private String driverClassName, origClassName;
     private String driverDefaultPort, origDefaultPort;
     private String sampleURL, origSampleURL;
+    private String note;
     private String webURL;
     private Image iconPlain;
     private Image iconNormal;
@@ -147,6 +148,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.category = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_CATEGORY));
         this.origName = this.name = CommonUtils.getString(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.note = config.getAttribute(RegistryConstants.ATTR_NOTE);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
         if (!CommonUtils.isEmpty(config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT))) {
             try {
@@ -397,6 +399,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public String getNote()
+    {
+        return note;
     }
 
     public String getFullName()
