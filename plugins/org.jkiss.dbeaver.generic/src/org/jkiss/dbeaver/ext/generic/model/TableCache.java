@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -58,9 +59,16 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         INVALID_TABLE_TYPES.add("TRIGGER");
     }
 
-    TableCache()
+    private final GenericDataSource dataSource;
+    private final GenericMetaObject tableObject;
+    private final GenericMetaObject columnObject;
+
+    TableCache(GenericDataSource dataSource)
     {
-        super(JDBCConstants.TABLE_NAME);
+        super(GenericUtils.getColumn(dataSource, GenericConstants.OBJECT_TABLE, JDBCConstants.TABLE_NAME));
+        this.dataSource = dataSource;
+        this.tableObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE);
+        this.columnObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE_COLUMN);
         setListOrderComparator(DBUtils.<GenericTable>nameComparator());
     }
 
@@ -79,9 +87,9 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     protected GenericTable fetchObject(JDBCExecutionContext context, GenericStructContainer owner, ResultSet dbResult)
         throws SQLException, DBException
     {
-        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME);
-        String tableType = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_TYPE);
-        String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+        String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
+        String tableType = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_TYPE);
+        String remarks = GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.REMARKS);
 
         if (CommonUtils.isEmpty(tableName)) {
             log.debug("Empty table name" + (owner == null ? "" : " in container " + owner.getName()));
@@ -106,9 +114,9 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         // Do not read table type object
         // Actually dunno what to do with it and it often throws stupid warnings in debug
 
-        String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-        String typeCatalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_CAT);
-        String typeSchemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
+        String typeName = GenericUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
+        String typeCatalogName = GenericUtils.safeGetString(dbResult, JDBCConstants.TYPE_CAT);
+        String typeSchemaName = GenericUtils.safeGetString(dbResult, JDBCConstants.TYPE_SCHEM);
         GenericCatalog typeCatalog = CommonUtils.isEmpty(typeCatalogName) ?
             null :
             getDataSourceContainer().getCatalog(context.getProgressMonitor(), typeCatalogName);
@@ -141,20 +149,20 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     protected GenericTableColumn fetchChild(JDBCExecutionContext context, GenericStructContainer owner, GenericTable table, ResultSet dbResult)
         throws SQLException, DBException
     {
-        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
-        int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-        int sourceType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SOURCE_DATA_TYPE);
-        String typeName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TYPE_NAME);
-        long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.COLUMN_SIZE);
-        boolean isNotNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls;
-        int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DECIMAL_DIGITS);
+        String columnName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.COLUMN_NAME);
+        int valueType = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.DATA_TYPE);
+        int sourceType = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.SOURCE_DATA_TYPE);
+        String typeName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.TYPE_NAME);
+        long columnSize = GenericUtils.safeGetLong(columnObject, dbResult, JDBCConstants.COLUMN_SIZE);
+        boolean isNotNull = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls;
+        int scale = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.DECIMAL_DIGITS);
         int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
-        int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NUM_PREC_RADIX);
-        String defaultValue = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_DEF);
-        String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-        long charLength = JDBCUtils.safeGetLong(dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
-        int ordinalPos = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-        boolean autoIncrement = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.IS_AUTOINCREMENT));
+        int radix = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NUM_PREC_RADIX);
+        String defaultValue = GenericUtils.safeGetString(columnObject, dbResult, JDBCConstants.COLUMN_DEF);
+        String remarks = GenericUtils.safeGetString(columnObject, dbResult, JDBCConstants.REMARKS);
+        long charLength = GenericUtils.safeGetLong(columnObject, dbResult, JDBCConstants.CHAR_OCTET_LENGTH);
+        int ordinalPos = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.ORDINAL_POSITION);
+        boolean autoIncrement = "YES".equals(GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.IS_AUTOINCREMENT));
         // Check for identity modifier [DBSPEC: MS SQL]
         if (typeName.toUpperCase().endsWith(GenericConstants.TYPE_MODIFIER_IDENTITY)) {
             autoIncrement = true;
