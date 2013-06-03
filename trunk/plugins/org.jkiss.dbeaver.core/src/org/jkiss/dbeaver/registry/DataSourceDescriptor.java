@@ -83,19 +83,6 @@ public class DataSourceDescriptor
 {
     static final Log log = LogFactory.getLog(DataSourceDescriptor.class);
 
-    void copyFrom(DataSourceDescriptor descriptor) {
-        filterMap.clear();
-        for (FilterMapping mapping : descriptor.getObjectFilters()) {
-            filterMap.put(mapping.type, new FilterMapping(mapping));
-        }
-        virtualModel.copyFrom(descriptor.getVirtualModel());
-
-        setDescription(descriptor.getDescription());
-        setSavePassword(descriptor.isSavePassword());
-        setShowSystemObjects(descriptor.isShowSystemObjects());
-        setConnectionReadOnly(descriptor.isConnectionReadOnly());
-    }
-
     public static class FilterMapping {
         public final Class<?> type;
         public DBSObjectFilter defaultFilter;
@@ -354,6 +341,35 @@ public class DataSourceDescriptor
             }
         }
         return false;
+    }
+
+    @Override
+    public DBPTransactionIsolation getDefaultTransactionsIsolation()
+    {
+        return null;
+/*
+        if (getPreferenceStore().contains(PrefConstants.DEFAULT_ISOLATION)) {
+            return getPreferenceStore().getInt(PrefConstants.DEFAULT_ISOLATION);
+        } else if (isConnected()) {
+            // We read this one synchronously because this function invoked many times per second by UI
+            DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE,
+                DBCExecutionPurpose.UTIL, "Get '" + getName() + "' auto-commit mode");
+            try {
+                return context.getTransactionManager().getTransactionIsolation();
+            } catch (DBCException e) {
+                log.debug("Can't check auto-commit flag", e);
+                return false;
+            } finally {
+                context.close();
+            }
+        }
+*/
+    }
+
+    @Override
+    public void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel)
+    {
+
     }
 
     public Collection<FilterMapping> getObjectFilters()
@@ -1023,5 +1039,18 @@ public class DataSourceDescriptor
                 getName());
         }
     }
-    
+
+    void copyFrom(DataSourceDescriptor descriptor) {
+        filterMap.clear();
+        for (FilterMapping mapping : descriptor.getObjectFilters()) {
+            filterMap.put(mapping.type, new FilterMapping(mapping));
+        }
+        virtualModel.copyFrom(descriptor.getVirtualModel());
+
+        setDescription(descriptor.getDescription());
+        setSavePassword(descriptor.isSavePassword());
+        setShowSystemObjects(descriptor.isShowSystemObjects());
+        setConnectionReadOnly(descriptor.isConnectionReadOnly());
+    }
+
 }
