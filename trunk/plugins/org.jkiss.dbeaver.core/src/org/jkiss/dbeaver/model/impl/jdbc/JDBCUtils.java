@@ -41,6 +41,7 @@ import java.util.List;
  */
 public class JDBCUtils {
     static final Log log = LogFactory.getLog(JDBCUtils.class);
+    public static final int CONNECTION_VALIDATION_TIMEOUT = 5000;
 
     public static String safeGetString(ResultSet dbResult, String columnName)
     {
@@ -338,11 +339,24 @@ public class JDBCUtils {
             if (connection.isClosed()) {
                 return false;
             }
-            connection.getMetaData().getTables(null, null, "UN_EXIST_DBEAVER_TBL_NAME1978", null);
-            return true;
         } catch (SQLException e) {
             log.debug(e);
             return false;
+        }
+        try {
+            return connection.isValid(CONNECTION_VALIDATION_TIMEOUT);
+        } catch (Throwable e) {
+            // If anything fails - use dummy check (search for non-existing tables.
+            // If connection is alive it will return some result set without an error
+            // Otherwise it will fail with SQLException
+            log.debug("Can't validate connection", e);
+            try {
+                connection.getMetaData().getTables(null, null, "UN_EXIST_DBEAVER_TBL_NAME1978", null);
+                return true;
+            } catch (Throwable e1) {
+                log.debug("Connection seems to be broken", e1);
+                return false;
+            }
         }
     }
 
