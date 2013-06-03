@@ -49,7 +49,7 @@ public abstract class JDBCStructCache<
 {
     static final Log log = LogFactory.getLog(JDBCStructCache.class);
 
-    private final String objectNameColumn;
+    private final Object objectNameColumn;
     private volatile boolean childrenCached = false;
     private final Map<OBJECT, SimpleObjectCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<OBJECT, SimpleObjectCache<OBJECT, CHILD>>();
 
@@ -59,7 +59,7 @@ public abstract class JDBCStructCache<
     abstract protected CHILD fetchChild(JDBCExecutionContext context, OWNER owner, OBJECT parent, ResultSet dbResult)
         throws SQLException, DBException;
 
-    protected JDBCStructCache(String objectNameColumn)
+    protected JDBCStructCache(Object objectNameColumn)
     {
         this.objectNameColumn = objectNameColumn;
     }
@@ -98,7 +98,12 @@ public abstract class JDBCStructCache<
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        String objectName = JDBCUtils.safeGetString(dbResult, objectNameColumn);
+                        String objectName;
+                        if (objectNameColumn instanceof Number) {
+                            objectName = JDBCUtils.safeGetString(dbResult, ((Number)objectNameColumn).intValue());
+                        } else {
+                            objectName = JDBCUtils.safeGetString(dbResult, objectNameColumn.toString());
+                        }
 
                         OBJECT object = forObject;
                         if (object == null) {

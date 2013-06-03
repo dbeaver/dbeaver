@@ -55,7 +55,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     protected GenericObjectContainer(GenericDataSource dataSource)
     {
         this.dataSource = dataSource;
-        this.tableCache = new TableCache();
+        this.tableCache = new TableCache(dataSource);
         this.indexCache = new IndexCache(tableCache);
         this.primaryKeysCache = new PrimaryKeysCache(tableCache);
         this.foreignKeysCache = new ForeignKeysCache(tableCache);

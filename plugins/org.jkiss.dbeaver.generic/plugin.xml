@@ -571,8 +571,20 @@
                 <column id="TABLE_SCHEM" index="1"/>
                 <column id="TABLE_CATALOG" index="2"/>
             </object>
+            <object type="table-type">
+                <column id="TABLE_TYPE" index="1"/>
+            </object>
             <object type="table">
-                <column id="TABLE_NAME" index="1"/>
+                <column id="TABLE_CAT" index="1"/>
+                <column id="TABLE_SCHEM" index="2"/>
+                <column id="TABLE_NAME" index="3"/>
+                <column id="TABLE_TYPE" index="4"/>
+                <column id="REMARKS" index="5"/>
+                <column id="TYPE_CAT" index="6"/>
+                <column id="TYPE_SCHEM" index="7"/>
+                <column id="TYPE_NAME" index="8"/>
+                <column id="SELF_REFERENCING_COL_NAME" index="9"/>
+                <column id="REF_GENERATION" index="10"/>
             </object>
             <object type="table-column">
                 <column id="TABLE_NAME" index="1"/>
