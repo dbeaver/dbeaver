@@ -74,6 +74,10 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
 
     boolean isConnectionAutoCommit();
 
+    DBPTransactionIsolation getDefaultTransactionsIsolation();
+
+    void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
+
     /**
      * Search for object filter which corresponds specified object type and parent object.
      * Search filter which match any super class or interface implemented by specified type.
