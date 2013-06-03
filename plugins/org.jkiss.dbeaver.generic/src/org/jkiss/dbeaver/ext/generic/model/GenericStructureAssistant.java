@@ -19,13 +19,14 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructureAssistant;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -84,8 +85,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     private void findTablesByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String tableNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
-        DBRProgressMonitor monitor = context.getProgressMonitor();
-        JDBCResultSet dbResult = context.getMetaData().getTables(
+        final GenericMetaObject tableObject = getDataSource().getMetaObject(GenericConstants.OBJECT_TABLE);
+        final DBRProgressMonitor monitor = context.getProgressMonitor();
+        final JDBCResultSet dbResult = context.getMetaData().getTables(
             catalog == null ? null : catalog.getName(),
             schema == null ? null : schema.getName(),
             tableNameMask,
@@ -95,16 +97,16 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 if (monitor.isCanceled()) {
                     break;
                 }
-                String catalogName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_CAT);
-                String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_SCHEM);
-                String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_NAME);
+                String catalogName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_CAT);
+                String schemaName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_SCHEM);
+                String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
                 if (CommonUtils.isEmpty(tableName)) {
                     continue;
                 }
                 objects.add(new TableReference(
                     findContainer(context.getProgressMonitor(), catalog, schema, catalogName, schemaName),
                     tableName,
-                    JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS)));
+                    GenericUtils.safeGetString(tableObject, dbResult, JDBCConstants.REMARKS)));
                 if (objects.size() >= maxResults) {
                     break;
                 }
@@ -118,6 +120,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     private void findProceduresByMask(JDBCExecutionContext context, GenericCatalog catalog, GenericSchema schema, String procNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
+        final GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         DBRProgressMonitor monitor = context.getProgressMonitor();
         JDBCResultSet dbResult = context.getMetaData().getProcedures(
             catalog == null ? null : catalog.getName(),
@@ -128,10 +131,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 if (monitor.isCanceled()) {
                     break;
                 }
-                String catalogName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_CAT);
-                String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_SCHEM);
-                String procName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_NAME);
-                String uniqueName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.SPECIFIC_NAME);
+                String catalogName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
+                String schemaName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_SCHEM);
+                String procName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                String uniqueName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
                 if (CommonUtils.isEmpty(procName)) {
                     continue;
                 }
