@@ -43,6 +43,8 @@ public interface DBPDriver extends DBPObject
 
     String getDescription();
 
+    String getNote();
+
     Image getIcon();
 
     String getDriverClassName();
