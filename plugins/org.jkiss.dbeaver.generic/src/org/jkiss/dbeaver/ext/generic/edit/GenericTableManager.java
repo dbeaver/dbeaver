@@ -67,6 +67,7 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
     {
         GenericTableColumnManager tcm = new GenericTableColumnManager();
         GenericPrimaryKeyManager pkm = new GenericPrimaryKeyManager();
+        GenericForeignKeyManager fkm = new GenericForeignKeyManager();
         GenericIndexManager im = new GenericIndexManager();
 
         StructCreateCommand command = makeCreateCommand(table);
@@ -77,6 +78,14 @@ public class GenericTableManager extends JDBCTableManager<GenericTable, GenericS
         try {
             for (GenericPrimaryKey primaryKey : CommonUtils.safeCollection(table.getConstraints(monitor))) {
                 command.aggregateCommand(pkm.makeCreateCommand(primaryKey));
+            }
+        } catch (DBException e) {
+            // Ignore primary keys
+            log.debug(e);
+        }
+        try {
+            for (GenericTableForeignKey foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
+                command.aggregateCommand(fkm.makeCreateCommand(foreignKey));
             }
         } catch (DBException e) {
             // Ignore primary keys
