@@ -57,16 +57,16 @@ public abstract class JDBCCompositeCache<
 
     private final JDBCStructCache<OWNER,?,?> parentCache;
     private final Class<PARENT> parentType;
-    private final String parentColumnName;
-    private final String objectColumnName;
+    private final Object parentColumnName;
+    private final Object objectColumnName;
 
     private final Map<PARENT, List<OBJECT>> objectCache = new IdentityHashMap<PARENT, List<OBJECT>>();
 
     protected JDBCCompositeCache(
         JDBCStructCache<OWNER,?,?> parentCache,
         Class<PARENT> parentType,
-        String parentColumnName,
-        String objectColumnName)
+        Object parentColumnName,
+        Object objectColumnName)
     {
         this.parentCache = parentCache;
         this.parentType = parentType;
@@ -208,8 +208,12 @@ public abstract class JDBCCompositeCache<
                         if (monitor.isCanceled()) {
                             break;
                         }
-                        String parentName = JDBCUtils.safeGetString(dbResult, parentColumnName);
-                        String objectName = JDBCUtils.safeGetString(dbResult, objectColumnName);
+                        String parentName = parentColumnName instanceof Number ?
+                            JDBCUtils.safeGetString(dbResult, ((Number)parentColumnName).intValue()) :
+                            JDBCUtils.safeGetString(dbResult, parentColumnName.toString());
+                        String objectName = objectColumnName instanceof Number ?
+                            JDBCUtils.safeGetString(dbResult, ((Number)objectColumnName).intValue()) :
+                            JDBCUtils.safeGetString(dbResult, objectColumnName.toString());
 
                         if (CommonUtils.isEmpty(objectName) || CommonUtils.isEmpty(parentName)) {
                             // Bad object - can't evaluate it
