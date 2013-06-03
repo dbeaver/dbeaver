@@ -21,13 +21,14 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -280,6 +281,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private synchronized void loadProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
+        GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load procedures");
         try {
             JDBCResultSet dbResult = context.getMetaData().getProcedures(
@@ -288,11 +290,11 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                 null);
             try {
                 while (dbResult.next()) {
-                    String procedureCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_CAT);
-                    String procedureName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PROCEDURE_NAME);
-                    String specificName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.SPECIFIC_NAME);
-                    int procTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PROCEDURE_TYPE);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
+                    String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
+                    String procedureName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                    String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
+                    int procTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.PROCEDURE_TYPE);
+                    String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
                     DBSProcedureType procedureType;
                     switch (procTypeNum) {
                         case DatabaseMetaData.procedureNoResult: procedureType = DBSProcedureType.PROCEDURE; break;

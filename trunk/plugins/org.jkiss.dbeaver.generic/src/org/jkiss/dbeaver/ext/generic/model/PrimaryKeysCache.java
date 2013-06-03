@@ -19,10 +19,11 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
@@ -36,9 +37,16 @@ import java.util.List;
  */
 class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericPrimaryKey, GenericTableConstraintColumn> {
 
+    private final GenericMetaObject pkObject;
+
     PrimaryKeysCache(TableCache tableCache)
     {
-        super(tableCache, GenericTable.class, JDBCConstants.TABLE_NAME, JDBCConstants.PK_NAME);
+        super(
+            tableCache,
+            GenericTable.class,
+            GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_PRIMARY_KEY, JDBCConstants.TABLE_NAME),
+            GenericUtils.getColumn(tableCache.getDataSource(), GenericConstants.OBJECT_PRIMARY_KEY, JDBCConstants.PK_NAME));
+        pkObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_PRIMARY_KEY);
     }
 
     @Override
@@ -80,11 +88,11 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         GenericTable parent, GenericPrimaryKey object, ResultSet dbResult)
         throws SQLException, DBException
     {
-        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.COLUMN_NAME);
+        String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
         if (CommonUtils.isEmpty(columnName)) {
             return null;
         }
-        int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
+        int keySeq = GenericUtils.safeGetInt(pkObject, dbResult, JDBCConstants.KEY_SEQ);
 
         GenericTableColumn tableColumn = parent.getAttribute(context.getProgressMonitor(), columnName);
         if (tableColumn == null) {
