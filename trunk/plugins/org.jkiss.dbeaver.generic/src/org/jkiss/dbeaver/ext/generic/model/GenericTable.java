@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetadataReader;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -48,7 +47,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
- * GenericTable
+ * Generic table
  */
 public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject
 {
@@ -63,21 +62,25 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public GenericTable(
         GenericStructContainer container)
     {
-        this(container, new GenericMetadataReader.TableInfo(), false);
+        this(container, null, null, null, false);
     }
 
     public GenericTable(
         GenericStructContainer container,
-        GenericMetadataReader.TableInfo tableInfo,
+        String tableName,
+        String tableType,
+        String remarks,
         boolean persisted)
     {
-        super(container, tableInfo.tableName, persisted);
-        this.tableType = tableInfo.tableType;
-        this.description = tableInfo.remarks;
+        super(container, tableName, persisted);
+        this.tableType = tableType;
+        this.description = remarks;
         if (!CommonUtils.isEmpty(this.getTableType())) {
             String type = this.getTableType().toUpperCase();
             this.isView = (type.contains("VIEW"));
-            this.isSystem = tableInfo.systemTable;
+            this.isSystem =
+                (type.contains("SYSTEM")) || // general rule
+                tableName.contains("RDB$");    // [JDBC: Firebird]
         }
     }
 
@@ -278,6 +281,20 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return null;
     }
 
+    private static class ForeignKeyInfo {
+        String pkColumnName;
+        String fkTableCatalog;
+        String fkTableSchema;
+        String fkTableName;
+        String fkColumnName;
+        int keySeq;
+        int updateRuleNum;
+        int deleteRuleNum;
+        String fkName;
+        String pkName;
+        int defferabilityNum;
+    }
+
     private synchronized List<GenericTableForeignKey> loadReferences(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -289,7 +306,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             // Read foreign keys in two passes
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it
-            List<GenericMetadataReader.ForeignKeyInfo> fkInfos = new ArrayList<GenericMetadataReader.ForeignKeyInfo>();
+            List<ForeignKeyInfo> fkInfos = new ArrayList<ForeignKeyInfo>();
             JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult = metaData.getExportedKeys(
@@ -298,7 +315,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     getName());
             try {
                 while (dbResult.next()) {
-                    GenericMetadataReader.ForeignKeyInfo fkInfo = new GenericMetadataReader.ForeignKeyInfo();
+                    ForeignKeyInfo fkInfo = new ForeignKeyInfo();
                     fkInfo.pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
                     fkInfo.fkTableCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKTABLE_CAT);
                     fkInfo.fkTableSchema = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKTABLE_SCHEM);
@@ -319,7 +336,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
             List<GenericTableForeignKey> fkList = new ArrayList<GenericTableForeignKey>();
             Map<String, GenericTableForeignKey> fkMap = new HashMap<String, GenericTableForeignKey>();
-            for (GenericMetadataReader.ForeignKeyInfo info : fkInfos) {
+            for (ForeignKeyInfo info : fkInfos) {
                 DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(info.deleteRuleNum);
                 DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);
                 DBSForeignKeyDefferability defferability;

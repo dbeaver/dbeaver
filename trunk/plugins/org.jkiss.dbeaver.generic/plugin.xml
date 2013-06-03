@@ -151,6 +151,24 @@
                 </driver>
 
                 <driver
+                    id="db2_zos"
+                    label="DB2 z/OS"
+                    class="com.ibm.db2.jcc.DB2Driver"
+                    sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    defaultPort="50000"
+                    description="DB2 z/OS driver">
+                    <file type="jar" path="drivers/db2/db2jcc.jar" url="*"/>
+                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="*"/>
+                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
+                    <property name="fullyMaterializeLobData" value="true"/>
+                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <property name="progressiveStreaming" value="2"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                    <parameter name="meta-model" value="db2_zos"/>
+                </driver>
+
+                <driver
                     id="mssql"
                     label="jTDS driver"
                     category="MS SQL Server"
@@ -539,6 +557,23 @@
         <manager
             class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"
             objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="db2_zos">
+            <object type="catalog">
+                <column id="TABLE_CAT" index="1"/>
+            </object>
+            <object type="schema">
+                <column id="TABLE_SCHEM" index="1"/>
+            </object>
+            <object type="table">
+                <column id="TABLE_NAME" index="1"/>
+            </object>
+            <object type="table-column">
+                <column id="TABLE_NAME" index="1"/>
+            </object>
+        </meta>
     </extension>
 
 </plugin>
