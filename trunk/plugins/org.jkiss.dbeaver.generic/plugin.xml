@@ -20,6 +20,8 @@
   -->
 
 <plugin>
+    <extension-point id="org.jkiss.dbeaver.generic.meta" name="Generic meta model retrieval" schema="schema/org.jkiss.dbeaver.generic.meta.exsd"/>
+
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
@@ -290,6 +292,7 @@
                     <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
+                    <parameter name="meta-model" value="db2_zos"/>
                 </driver>
                 <driver
                     id="derby_server"
