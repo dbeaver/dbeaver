@@ -50,6 +50,8 @@ public class GenericConstants {
     public static final String OBJECT_TABLE_TYPE = "table-type";
     public static final String OBJECT_TABLE = "table";
     public static final String OBJECT_TABLE_COLUMN = "table-column";
+    public static final String OBJECT_FOREIGN_KEY = "foreign-key";
+    public static final String OBJECT_PRIMARY_KEY = "primary-key";
     public static final String OBJECT_INDEX = "index";
     public static final String OBJECT_INDEX_COLUMN = "index-column";
 

@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -306,7 +307,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             // Read foreign keys in two passes
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it
-            List<ForeignKeyInfo> fkInfos = new ArrayList<ForeignKeyInfo>();
+            final GenericMetaObject fkObject = getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
+            final List<ForeignKeyInfo> fkInfos = new ArrayList<ForeignKeyInfo>();
             JDBCDatabaseMetaData metaData = context.getMetaData();
             // Load indexes
             JDBCResultSet dbResult = metaData.getExportedKeys(
@@ -316,17 +318,17 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             try {
                 while (dbResult.next()) {
                     ForeignKeyInfo fkInfo = new ForeignKeyInfo();
-                    fkInfo.pkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PKCOLUMN_NAME);
-                    fkInfo.fkTableCatalog = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKTABLE_CAT);
-                    fkInfo.fkTableSchema = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKTABLE_SCHEM);
-                    fkInfo.fkTableName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKTABLE_NAME);
-                    fkInfo.fkColumnName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FKCOLUMN_NAME);
-                    fkInfo.keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-                    fkInfo.updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
-                    fkInfo.deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
-                    fkInfo.fkName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.FK_NAME);
-                    fkInfo.pkName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.PK_NAME);
-                    fkInfo.defferabilityNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DEFERRABILITY);
+                    fkInfo.pkColumnName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
+                    fkInfo.fkTableCatalog = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_CAT);
+                    fkInfo.fkTableSchema = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_SCHEM);
+                    fkInfo.fkTableName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKTABLE_NAME);
+                    fkInfo.fkColumnName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FKCOLUMN_NAME);
+                    fkInfo.keySeq = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.KEY_SEQ);
+                    fkInfo.updateRuleNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.UPDATE_RULE);
+                    fkInfo.deleteRuleNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DELETE_RULE);
+                    fkInfo.fkName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.FK_NAME);
+                    fkInfo.pkName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PK_NAME);
+                    fkInfo.defferabilityNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DEFERRABILITY);
                     fkInfos.add(fkInfo);
                 }
             }

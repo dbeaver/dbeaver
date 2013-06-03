@@ -45,7 +45,7 @@ public class GenericUtils {
 
     public static Object getColumn(GenericMetaObject object, String columnId)
     {
-        GenericMetaColumn column = object.getColumn(columnId);
+        GenericMetaColumn column = object == null ? null : object.getColumn(columnId);
         if (column == null || !column.isSupported()) {
             return columnId;
         }

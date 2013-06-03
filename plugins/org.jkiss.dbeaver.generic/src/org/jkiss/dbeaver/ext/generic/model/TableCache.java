@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.utils.CommonUtils;
 
@@ -70,6 +69,11 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         this.tableObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE);
         this.columnObject = dataSource.getMetaObject(GenericConstants.OBJECT_TABLE_COLUMN);
         setListOrderComparator(DBUtils.<GenericTable>nameComparator());
+    }
+
+    public GenericDataSource getDataSource()
+    {
+        return dataSource;
     }
 
     @Override
@@ -178,4 +182,5 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
             remarks, defaultValue, autoIncrement
         );
     }
+
 }
