@@ -19,12 +19,13 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -117,7 +118,8 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         Iterator<GenericProcedure> procIter = procedures.iterator();
         GenericProcedure procedure = null;
 
-        JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load procedure columns");
+        final GenericMetaObject pcObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE_COLUMN);
+        final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load procedure columns");
         try {
             final JDBCResultSet dbResult = context.getMetaData().getProcedureColumns(
                 getCatalog() == null ? this.getPackage() == null || !this.getPackage().isNameFromCatalog() ? null : this.getPackage().getName() : getCatalog().getName(),
@@ -127,17 +129,17 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
             try {
                 int previousPosition = -1;
                 while (dbResult.next()) {
-                    String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-                    int columnTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_TYPE);
-                    int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-                    String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-                    int columnSize = JDBCUtils.safeGetInt(dbResult, JDBCConstants.LENGTH);
-                    boolean notNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.procedureNoNulls;
-                    int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
-                    int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
-                    //int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
-                    String remarks = JDBCUtils.safeGetString(dbResult, JDBCConstants.REMARKS);
-                    int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
+                    String columnName = GenericUtils.safeGetString(pcObject, dbResult, JDBCConstants.COLUMN_NAME);
+                    int columnTypeNum = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.COLUMN_TYPE);
+                    int valueType = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.DATA_TYPE);
+                    String typeName = GenericUtils.safeGetString(pcObject, dbResult, JDBCConstants.TYPE_NAME);
+                    int columnSize = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.LENGTH);
+                    boolean notNull = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.procedureNoNulls;
+                    int scale = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.SCALE);
+                    int precision = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.PRECISION);
+                    //int radix = GenericUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
+                    String remarks = GenericUtils.safeGetString(pcObject, dbResult, JDBCConstants.REMARKS);
+                    int position = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.ORDINAL_POSITION);
                     //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
                     DBSProcedureParameterType parameterType;
                     switch (columnTypeNum) {
