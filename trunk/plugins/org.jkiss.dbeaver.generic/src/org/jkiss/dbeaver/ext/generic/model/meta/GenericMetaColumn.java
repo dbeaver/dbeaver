@@ -38,7 +38,7 @@ public class GenericMetaColumn {
         this.columnName = cfg.getAttribute(RegistryConstants.ATTR_NAME);
         String indexStr = cfg.getAttribute("index");
         if (!CommonUtils.isEmpty(indexStr)) {
-            this.columnIndex = Integer.parseInt(indexStr);
+            this.columnIndex = Integer.valueOf(indexStr);
         } else {
             this.columnIndex = null;
         }

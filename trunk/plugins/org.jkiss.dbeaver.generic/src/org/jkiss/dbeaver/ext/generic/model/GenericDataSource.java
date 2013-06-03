@@ -756,7 +756,10 @@ public class GenericDataSource extends JDBCDataSource
         {
             return new GenericTableType(
                 GenericDataSource.this,
-                JDBCUtils.safeGetString(resultSet, JDBCConstants.TABLE_TYPE));
+                GenericUtils.safeGetString(
+                    getMetaObject(GenericConstants.OBJECT_TABLE_TYPE),
+                    resultSet,
+                    JDBCConstants.TABLE_TYPE));
         }
     }
 

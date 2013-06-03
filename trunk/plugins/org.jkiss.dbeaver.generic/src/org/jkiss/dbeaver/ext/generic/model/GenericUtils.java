@@ -30,7 +30,20 @@ import java.sql.ResultSet;
  */
 public class GenericUtils {
 
-    private static Object getColumn(GenericMetaObject object, String columnId)
+    public static Object getColumn(GenericDataSource dataSource, String objectType, String columnId)
+    {
+        GenericMetaObject object = dataSource.getMetaObject(objectType);
+        if (object == null) {
+            return columnId;
+        }
+        GenericMetaColumn column = object.getColumn(columnId);
+        if (column == null || !column.isSupported()) {
+            return columnId;
+        }
+        return column.getColumnIdentifier();
+    }
+
+    public static Object getColumn(GenericMetaObject object, String columnId)
     {
         GenericMetaColumn column = object.getColumn(columnId);
         if (column == null || !column.isSupported()) {
