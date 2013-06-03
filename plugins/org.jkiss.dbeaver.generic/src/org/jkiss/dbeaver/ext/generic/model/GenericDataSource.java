@@ -24,14 +24,13 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetadataReader;
-import org.jkiss.dbeaver.ext.generic.model.meta.StandardMetadataReader;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
@@ -69,7 +68,6 @@ public class GenericDataSource extends JDBCDataSource
     private String selectedEntityType;
     private String selectedEntityName;
     private boolean selectedEntityFromAPI;
-    private final GenericMetadataReader metadataReader;
 
     public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
         throws DBException
@@ -84,17 +82,6 @@ public class GenericDataSource extends JDBCDataSource
         if (CommonUtils.isEmpty(this.selectedEntityType)) {
             this.selectedEntityType = null;
         }
-        String metadataType = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_METADATA_TYPE));
-        if (CommonUtils.isEmpty(metadataType)) {
-            metadataReader = new StandardMetadataReader();
-        } else {
-            metadataReader = GenericConstants.MetadataType.valueOf(metadataType.toLowerCase()).createReader();
-        }
-    }
-
-    GenericMetadataReader getMetadataReader()
-    {
-        return metadataReader;
     }
 
     @Override
@@ -284,10 +271,13 @@ public class GenericDataSource extends JDBCDataSource
                     JDBCResultSet dbResult = metaData.getCatalogs();
                     try {
                         while (dbResult.next()) {
-                            String catalogName = getMetadataReader().fetchCatalogName(dbResult);
+                            String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
                             if (CommonUtils.isEmpty(catalogName)) {
-                                log.debug("Catalog name is empty");
-                                continue;
+                                // Some drivers uses TABLE_QUALIFIER instead of catalog
+                                catalogName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_QUALIFIER);
+                                if (CommonUtils.isEmpty(catalogName)) {
+                                    continue;
+                                }
                             }
                             if (catalogFilters == null || catalogFilters.matches(catalogName)) {
                                 catalogNames.add(catalogName);
@@ -369,14 +359,31 @@ public class GenericDataSource extends JDBCDataSource
                     if (context.getProgressMonitor().isCanceled()) {
                         break;
                     }
-                    String schemaName = getMetadataReader().fetchSchemaName(dbResult, catalog == null ? null : catalog.getName());
+                    String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
                     if (CommonUtils.isEmpty(schemaName)) {
-                        log.debug("Schema name is empty");
+                        // some drivers uses TABLE_OWNER column instead of TABLE_SCHEM
+                        schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_OWNER);
+                    }
+                    if (CommonUtils.isEmpty(schemaName)) {
                         continue;
                     }
                     if (schemaFilters != null && !schemaFilters.matches(schemaName)) {
                         // Doesn't match filter
                         continue;
+                    }
+                    String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
+
+                    if (!CommonUtils.isEmpty(catalogName)) {
+                        if (catalog == null) {
+                            // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
+                            log.warn("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while schema doesn't have parent catalog");
+                        } else if (!catalog.getName().equals(catalogName)) {
+                            if (!catalogSchemas) {
+                                // Just skip it - we have list of all existing schemas and this one belongs to another catalog
+                                continue;
+                            }
+                            log.warn("Catalog name '" + catalogName + "' differs from schema's catalog '" + catalog.getName() + "'");
+                        }
                     }
 
                     context.getProgressMonitor().subTask("Schema " + schemaName);
@@ -732,13 +739,9 @@ public class GenericDataSource extends JDBCDataSource
         @Override
         protected GenericTableType fetchObject(JDBCExecutionContext context, GenericDataSource owner, ResultSet resultSet) throws SQLException, DBException
         {
-            String tableType = getMetadataReader().fetchTableType(resultSet);
-            if (CommonUtils.isEmpty(tableType)) {
-                return null;
-            }
             return new GenericTableType(
                 GenericDataSource.this,
-                tableType);
+                JDBCUtils.safeGetString(resultSet, JDBCConstants.TABLE_TYPE));
         }
     }
 
