@@ -102,6 +102,16 @@ public class JDBCUtils {
         }
     }
 
+    public static int safeGetInt(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getInt(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return 0;
+        }
+    }
+
     public static Integer safeGetInteger(ResultSet dbResult, String columnName)
     {
         try {
@@ -117,12 +127,37 @@ public class JDBCUtils {
         }
     }
 
+    public static Integer safeGetInteger(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            final int result = dbResult.getInt(columnIndex);
+            if (dbResult.wasNull()) {
+                return null;
+            } else {
+                return result;
+            }
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return null;
+        }
+    }
+
     public static long safeGetLong(ResultSet dbResult, String columnName)
     {
         try {
             return dbResult.getLong(columnName);
         } catch (SQLException e) {
             debugColumnRead(columnName, e);
+            return 0;
+        }
+    }
+
+    public static long safeGetLong(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getLong(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
             return 0;
         }
     }
@@ -148,6 +183,16 @@ public class JDBCUtils {
         }
     }
 
+    public static double safeGetDouble(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getDouble(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return 0.0;
+        }
+    }
+
     public static BigDecimal safeGetBigDecimal(ResultSet dbResult, String columnName)
     {
         try {
@@ -158,12 +203,32 @@ public class JDBCUtils {
         }
     }
 
+    public static BigDecimal safeGetBigDecimal(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getBigDecimal(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return null;
+        }
+    }
+
     public static boolean safeGetBoolean(ResultSet dbResult, String columnName)
     {
         try {
             return dbResult.getBoolean(columnName);
         } catch (SQLException e) {
             debugColumnRead(columnName, e);
+            return false;
+        }
+    }
+
+    public static boolean safeGetBoolean(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getBoolean(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
             return false;
         }
     }
@@ -215,6 +280,16 @@ public class JDBCUtils {
             return dbResult.getObject(columnName);
         } catch (SQLException e) {
             debugColumnRead(columnName, e);
+            return null;
+        }
+    }
+
+    public static Object safeGetObject(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getObject(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
             return null;
         }
     }

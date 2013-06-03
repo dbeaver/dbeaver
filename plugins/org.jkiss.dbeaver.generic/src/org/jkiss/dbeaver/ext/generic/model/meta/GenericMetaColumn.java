@@ -29,7 +29,7 @@ public class GenericMetaColumn {
 
     private final String id;
     private final String columnName;
-    private final int columnIndex;
+    private final Integer columnIndex;
     private final boolean supported;
 
     public GenericMetaColumn(IConfigurationElement cfg)
@@ -40,7 +40,7 @@ public class GenericMetaColumn {
         if (!CommonUtils.isEmpty(indexStr)) {
             this.columnIndex = Integer.parseInt(indexStr);
         } else {
-            this.columnIndex = -1;
+            this.columnIndex = null;
         }
         String supportedStr = cfg.getAttribute("supported");
         this.supported = !"false".equals(supportedStr);
@@ -66,4 +66,8 @@ public class GenericMetaColumn {
         return supported;
     }
 
+    public Object getColumnIdentifier()
+    {
+        return columnIndex == null ? columnName : columnIndex;
+    }
 }

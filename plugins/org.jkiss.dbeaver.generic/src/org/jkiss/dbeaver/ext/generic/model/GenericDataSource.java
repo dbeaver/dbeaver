@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabaseTermProvider;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -89,6 +90,11 @@ public class GenericDataSource extends JDBCDataSource
     public GenericMetaModel getMetaModel()
     {
         return metaModel;
+    }
+
+    public GenericMetaObject getMetaObject(String id)
+    {
+        return metaModel == null ? null : metaModel.getObject(id);
     }
 
     @Override
@@ -272,16 +278,17 @@ public class GenericDataSource extends JDBCDataSource
                 // Read catalogs
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
-                DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null);
-                List<String> catalogNames = new ArrayList<String>();
+                final GenericMetaObject catalogObject = getMetaObject(GenericConstants.OBJECT_CATALOG);
+                final DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null);
+                final List<String> catalogNames = new ArrayList<String>();
                 try {
                     JDBCResultSet dbResult = metaData.getCatalogs();
                     try {
                         while (dbResult.next()) {
-                            String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CAT);
+                            String catalogName = GenericUtils.safeGetString(catalogObject, dbResult, JDBCConstants.TABLE_CAT);
                             if (CommonUtils.isEmpty(catalogName)) {
                                 // Some drivers uses TABLE_QUALIFIER instead of catalog
-                                catalogName = JDBCUtils.safeGetStringTrimmed(dbResult, JDBCConstants.TABLE_QUALIFIER);
+                                catalogName = GenericUtils.safeGetStringTrimmed(catalogObject, dbResult, JDBCConstants.TABLE_QUALIFIER);
                                 if (CommonUtils.isEmpty(catalogName)) {
                                     continue;
                                 }
@@ -344,9 +351,10 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         try {
-            DBSObjectFilter schemaFilters = getContainer().getObjectFilter(GenericSchema.class, null);
+            final GenericMetaObject schemaObject = getMetaObject(GenericConstants.OBJECT_SCHEMA);
+            final DBSObjectFilter schemaFilters = getContainer().getObjectFilter(GenericSchema.class, null);
 
-            List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
+            final List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
             JDBCResultSet dbResult;
             boolean catalogSchemas;
             try {
@@ -366,10 +374,10 @@ public class GenericDataSource extends JDBCDataSource
                     if (context.getProgressMonitor().isCanceled()) {
                         break;
                     }
-                    String schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_SCHEM);
+                    String schemaName = GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.TABLE_SCHEM);
                     if (CommonUtils.isEmpty(schemaName)) {
                         // some drivers uses TABLE_OWNER column instead of TABLE_SCHEM
-                        schemaName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_OWNER);
+                        schemaName = GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.TABLE_OWNER);
                     }
                     if (CommonUtils.isEmpty(schemaName)) {
                         continue;
@@ -378,7 +386,7 @@ public class GenericDataSource extends JDBCDataSource
                         // Doesn't match filter
                         continue;
                     }
-                    String catalogName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TABLE_CATALOG);
+                    String catalogName = GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.TABLE_CATALOG);
 
                     if (!CommonUtils.isEmpty(catalogName)) {
                         if (catalog == null) {
