@@ -20,6 +20,7 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -66,8 +67,8 @@ public class DefaultValueViewDialog extends ValueViewDialog {
             log.error(e);
             return dialogGroup;
         }
-        if (super.isForeignKey() && panelEditor.getControl() instanceof Text) {
-            super.createEditorSelector(dialogGroup, (Text)panelEditor.getControl());
+        if (super.isForeignKey() && panelEditor.getControl() instanceof StyledText) {
+            super.createEditorSelector(dialogGroup, (StyledText)panelEditor.getControl());
         }
 
         return dialogGroup;

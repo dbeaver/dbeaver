@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -124,11 +124,11 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     {
         switch (controller.getEditType()) {
             case PANEL:
-                return new ValueEditor<Text>(controller) {
+                return new ValueEditor<StyledText>(controller) {
                     @Override
-                    protected Text createControl(Composite editPlaceholder)
+                    protected StyledText createControl(Composite editPlaceholder)
                     {
-                        return new Text(valueController.getEditPlaceholder(),
+                        return new StyledText(valueController.getEditPlaceholder(),
                             SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
                     }
                     @Override
