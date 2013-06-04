@@ -28,6 +28,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -81,7 +82,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
 
     private DBDValueController valueController;
     private DBSEntityReferrer refConstraint;
-    private Text editor;
+    private StyledText editor;
     private Table editorSelector;
     private boolean handleEditorChange;
     private SelectorLoaderJob loaderJob = null;
@@ -421,7 +422,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         return null;
     }
 
-    protected void createEditorSelector(Composite parent, Text control)
+    protected void createEditorSelector(Composite parent, StyledText control)
     {
         if (!(valueController instanceof DBDAttributeController) || valueController.isReadOnly()) {
             return;

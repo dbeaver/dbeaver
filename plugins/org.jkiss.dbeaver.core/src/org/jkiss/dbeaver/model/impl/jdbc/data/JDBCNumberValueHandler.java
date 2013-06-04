@@ -19,9 +19,9 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.*;
@@ -241,11 +241,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                         }
                     };
                 } else {
-                    return new ValueEditor<Text>(controller) {
+                    return new ValueEditor<StyledText>(controller) {
                         @Override
-                        protected Text createControl(Composite editPlaceholder)
+                        protected StyledText createControl(Composite editPlaceholder)
                         {
-                            final Text editor = new Text(valueController.getEditPlaceholder(), SWT.BORDER);
+                            final StyledText editor = new StyledText(valueController.getEditPlaceholder(), SWT.BORDER);
                             editor.setEditable(!valueController.isReadOnly());
                             editor.setTextLimit(MAX_NUMBER_LENGTH);
                             switch (valueController.getValueType().getTypeID()) {
