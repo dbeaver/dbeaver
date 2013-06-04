@@ -346,30 +346,54 @@ public class DataSourceDescriptor
     @Override
     public DBPTransactionIsolation getDefaultTransactionsIsolation()
     {
-        return null;
-/*
-        if (getPreferenceStore().contains(PrefConstants.DEFAULT_ISOLATION)) {
-            return getPreferenceStore().getInt(PrefConstants.DEFAULT_ISOLATION);
-        } else if (isConnected()) {
+        if (isConnected()) {
             // We read this one synchronously because this function invoked many times per second by UI
             DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE,
-                DBCExecutionPurpose.UTIL, "Get '" + getName() + "' auto-commit mode");
+                DBCExecutionPurpose.UTIL, "Get '" + getName() + "' transactions isolation level");
             try {
                 return context.getTransactionManager().getTransactionIsolation();
             } catch (DBCException e) {
-                log.debug("Can't check auto-commit flag", e);
-                return false;
+                log.debug("Can't determine isolation level", e);
+                return null;
             } finally {
                 context.close();
             }
+        } else {
+            return null;
         }
-*/
     }
 
     @Override
-    public void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel)
+    public void setDefaultTransactionsIsolation(final DBPTransactionIsolation isolationLevel)
     {
-
+        try {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                {
+                    DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Check connection's auto-commit state");
+                    final DBCTransactionManager txnManager = context.getTransactionManager();
+                    try {
+                        if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
+                            txnManager.setTransactionIsolation(isolationLevel);
+                            getPreferenceStore().setValue(PrefConstants.DEFAULT_ISOLATION, isolationLevel.getCode());
+                        }
+                    } catch (DBCException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        context.close();
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(
+                null,
+                "Transactions Isolation",
+                "Can't set transaction isolation level to '" + isolationLevel.getName() + "'",
+                e.getTargetException());
+        } catch (InterruptedException e) {
+            // ok
+        }
     }
 
     public Collection<FilterMapping> getObjectFilters()
@@ -526,6 +550,7 @@ public class DataSourceDescriptor
         return keywordManager;
     }
 
+    @Override
     public void persistConfiguration()
     {
         registry.saveDataSources();
@@ -591,9 +616,21 @@ public class DataSourceDescriptor
                     // Change auto-commit state
                     txnManager.setAutoCommit(newAutoCommit);
                 }
+                if (store.contains(PrefConstants.DEFAULT_ISOLATION)) {
+                    int isolationCode = store.getInt(PrefConstants.DEFAULT_ISOLATION);
+                    Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
+                    if (!CommonUtils.isEmpty(supportedLevels)) {
+                        for (DBPTransactionIsolation level : supportedLevels) {
+                            if (level.getCode() == isolationCode) {
+                                txnManager.setTransactionIsolation(level);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
             catch (DBCException e) {
-                log.error("Can't set session auto-commit state", e);
+                log.error("Can't set session transactions state", e);
             }
             finally {
                 context.close();

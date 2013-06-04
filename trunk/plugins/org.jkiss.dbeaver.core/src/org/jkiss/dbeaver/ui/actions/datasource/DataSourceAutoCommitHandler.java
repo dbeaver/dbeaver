@@ -49,6 +49,7 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                 newAutocommit = !dataSourceContainer.isConnectionAutoCommit();
             }
             dataSourceContainer.setDefaultAutoCommit(newAutocommit, true);
+            dataSourceContainer.persistConfiguration();
         }
         return null;
     }

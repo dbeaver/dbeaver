@@ -485,7 +485,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     }
 
     @Override
-    public Collection<DBPTransactionIsolation> getSupportedTransactionIsolations()
+    public Collection<DBPTransactionIsolation> getSupportedTransactionsIsolation()
     {
         return supportedIsolations;
     }

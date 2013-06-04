@@ -78,7 +78,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             } catch (DBCException ex) {
                 log.warn("Can't determine current transaction isolation level", ex);
             }
-            for (DBPTransactionIsolation txi : CommonUtils.safeCollection(dsInfo.getSupportedTransactionIsolations())) {
+            for (DBPTransactionIsolation txi : CommonUtils.safeCollection(dsInfo.getSupportedTransactionsIsolation())) {
                 if (!txi.isEnabled()) {
                     continue;
                 }
@@ -126,33 +126,8 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         @Override
         public void run()
         {
-            try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Check connection's auto-commit state");
-                        final DBCTransactionManager txnManager = context.getTransactionManager();
-                        try {
-                            if (!txnManager.getTransactionIsolation().equals(level)) {
-                                txnManager.setTransactionIsolation(level);
-                            }
-                        } catch (DBCException ex) {
-                            log.warn("Can't change current transaction isolation level", ex);
-                        } finally {
-                            context.close();
-                        }
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(
-                    null,
-                    "Transaction mode change",
-                    "Can't set transaction isolation",
-                    e.getTargetException());
-            } catch (InterruptedException e) {
-                // ok
-            }
+            dataSource.getContainer().setDefaultTransactionsIsolation(level);
+            dataSource.getContainer().persistConfiguration();
         }
     }
 
