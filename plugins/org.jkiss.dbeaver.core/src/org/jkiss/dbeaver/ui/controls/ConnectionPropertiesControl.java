@@ -136,11 +136,11 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     private void loadDriverProperties(IRunnableContext runnableContext, DBPDriver driver, DBPConnectionInfo connectionInfo)
     {
         try {
-            final Collection<IPropertyDescriptor> connectionsProps =
+            final IPropertyDescriptor[] connectionsProps =
                 driver.getDataSourceProvider().getConnectionProperties(runnableContext, driver, connectionInfo);
             driverProvidedProperties = new ArrayList<IPropertyDescriptor>();
             if (connectionsProps != null) {
-                driverProvidedProperties.addAll(connectionsProps);
+                Collections.addAll(driverProvidedProperties, connectionsProps);
             }
         } catch (DBException e) {
             log.warn("Can't load driver properties", e); //$NON-NLS-1$

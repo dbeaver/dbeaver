@@ -55,7 +55,7 @@ public interface DBPDataSourceProvider
      * @return property group which contains all supported properties
      * @throws DBException on any error
      */
-    Collection<IPropertyDescriptor> getConnectionProperties(
+    IPropertyDescriptor[] getConnectionProperties(
         IRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)

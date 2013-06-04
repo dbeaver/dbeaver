@@ -179,6 +179,9 @@ class ConnectionPageFinal extends ActiveWizardPage {
             readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
             activated = true;
         }
+        if (savePasswordCheck != null) {
+            //savePasswordCheck.setEnabled();
+        }
         long features = 0;
         try {
             features = wizard.getPageSettings().getDriver().getDataSourceProvider().getFeatures();

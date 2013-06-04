@@ -44,6 +44,7 @@ public enum JDBCTransactionIsolation implements DBPTransactionIsolation
         this.name = name;
     }
 
+    @Override
     public int getCode()
     {
         return code;
