@@ -34,10 +34,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPConnectionEventType;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPConnectionType;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -52,6 +49,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 /**
@@ -69,6 +67,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private CImageCombo connectionTypeCombo;
     private Button savePasswordCheck;
     private Button autocommit;
+    private Combo isolationLevel;
     private Button showSystemObjects;
     private Button readOnlyConnection;
     private Font boldFont;
@@ -79,6 +78,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     private java.util.List<FilterInfo> filters = new ArrayList<FilterInfo>();
     private Group filtersGroup;
     private boolean activated = false;
+    private java.util.List<DBPTransactionIsolation> supportedLevels = new ArrayList<DBPTransactionIsolation>();
 
     private static class FilterInfo {
         final Class<?> type;
@@ -177,6 +177,22 @@ class ConnectionPageFinal extends ActiveWizardPage {
             autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
             showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
             readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
+            isolationLevel.add("");
+            if (dataSourceDescriptor.isConnected()) {
+                isolationLevel.setEnabled(!autocommit.getSelection());
+                supportedLevels.clear();
+                DBPTransactionIsolation defaultLevel = dataSourceDescriptor.getDefaultTransactionsIsolation();
+                for (DBPTransactionIsolation level : dataSourceDescriptor.getDataSource().getInfo().getSupportedTransactionsIsolation()) {
+                    if (!level.isEnabled()) continue;
+                    isolationLevel.add(level.getName());
+                    supportedLevels.add(level);
+                    if (level.equals(defaultLevel)) {
+                        isolationLevel.select(isolationLevel.getItemCount() - 1);
+                    }
+                }
+            } else {
+                isolationLevel.setEnabled(false);
+            }
             activated = true;
         }
         if (savePasswordCheck != null) {
@@ -283,19 +299,6 @@ class ConnectionPageFinal extends ActiveWizardPage {
         }
 
         {
-            Group securityGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.FILL_HORIZONTAL, 0);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            gd.widthHint = 400;
-            securityGroup.setLayoutData(gd);
-
-            savePasswordCheck = UIUtils.createCheckbox(securityGroup, CoreMessages.dialog_connection_wizard_final_checkbox_save_password_locally, dataSourceDescriptor == null || dataSourceDescriptor.isSavePassword());
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            //gd.horizontalSpan = 2;
-            savePasswordCheck.setLayoutData(gd);
-        }
-
-        {
             Composite optionsGroup = new Composite(group, SWT.NONE);
             gl = new GridLayout(2, true);
             gl.verticalSpacing = 0;
@@ -308,16 +311,39 @@ class ConnectionPageFinal extends ActiveWizardPage {
             optionsGroup.setLayoutData(gd);
 
             {
+                Group securityGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+                savePasswordCheck = UIUtils.createCheckbox(securityGroup, CoreMessages.dialog_connection_wizard_final_checkbox_save_password_locally, dataSourceDescriptor == null || dataSourceDescriptor.isSavePassword());
+                savePasswordCheck.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            }
+
+            {
+                Group txnGroup = UIUtils.createControlGroup(optionsGroup, "Transactions", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+                autocommit = UIUtils.createCheckbox(
+                    txnGroup,
+                    CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
+                    dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.horizontalSpan = 2;
+                autocommit.setLayoutData(gd);
+                autocommit.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        if (dataSourceDescriptor != null && dataSourceDescriptor.isConnected()) {
+                            isolationLevel.setEnabled(!autocommit.getSelection());
+                        }
+                    }
+                });
+
+                isolationLevel = UIUtils.createLabelCombo(txnGroup, "Isolation level", SWT.DROP_DOWN | SWT.READ_ONLY);
+            }
+
+            {
                 Group miscGroup = UIUtils.createControlGroup(
                     optionsGroup,
                     CoreMessages.dialog_connection_wizard_final_group_misc,
                     1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-
-                autocommit = UIUtils.createCheckbox(
-                    miscGroup,
-                    CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
-                    dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
-                autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 showSystemObjects = UIUtils.createCheckbox(
                     miscGroup,
@@ -438,6 +464,14 @@ class ConnectionPageFinal extends ActiveWizardPage {
         dataSource.setName(connectionNameText.getText());
         dataSource.setSavePassword(savePasswordCheck.getSelection());
         dataSource.setDefaultAutoCommit(autocommit.getSelection(), true);
+        if (dataSource.isConnected()) {
+            int levelIndex = isolationLevel.getSelectionIndex();
+            if (levelIndex <= 0) {
+                dataSource.setDefaultTransactionsIsolation(null);
+            } else {
+                dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex - 1));
+            }
+        }
         dataSource.setShowSystemObjects(showSystemObjects.getSelection());
         dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
         if (!dataSource.isSavePassword()) {

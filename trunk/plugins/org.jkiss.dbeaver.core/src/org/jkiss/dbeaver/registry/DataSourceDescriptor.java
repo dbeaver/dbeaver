@@ -367,24 +367,28 @@ public class DataSourceDescriptor
     public void setDefaultTransactionsIsolation(final DBPTransactionIsolation isolationLevel)
     {
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Check connection's auto-commit state");
-                    final DBCTransactionManager txnManager = context.getTransactionManager();
-                    try {
-                        if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
-                            txnManager.setTransactionIsolation(isolationLevel);
-                            getPreferenceStore().setValue(PrefConstants.DEFAULT_ISOLATION, isolationLevel.getCode());
+            if (isolationLevel == null) {
+                getPreferenceStore().setToDefault(PrefConstants.DEFAULT_ISOLATION);
+            } else {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                    {
+                        DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Check connection's auto-commit state");
+                        final DBCTransactionManager txnManager = context.getTransactionManager();
+                        try {
+                            if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
+                                txnManager.setTransactionIsolation(isolationLevel);
+                                getPreferenceStore().setValue(PrefConstants.DEFAULT_ISOLATION, isolationLevel.getCode());
+                            }
+                        } catch (DBCException e) {
+                            throw new InvocationTargetException(e);
+                        } finally {
+                            context.close();
                         }
-                    } catch (DBCException e) {
-                        throw new InvocationTargetException(e);
-                    } finally {
-                        context.close();
                     }
-                }
-            });
+                });
+            }
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(
                 null,
