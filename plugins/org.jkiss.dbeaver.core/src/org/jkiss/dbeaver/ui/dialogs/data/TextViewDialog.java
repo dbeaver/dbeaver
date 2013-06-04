@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -30,7 +31,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -52,7 +52,7 @@ public class TextViewDialog extends ValueViewDialog {
     //private static final int DEFAULT_MAX_SIZE = 100000;
     private static final String VALUE_TYPE_SELECTOR = "string.value.type";
 
-    private Text textEdit;
+    private StyledText textEdit;
     private Label lengthLabel;
     private HexEditControl hexEditControl;
     private CTabFolder editorContainer;
@@ -99,7 +99,7 @@ public class TextViewDialog extends ValueViewDialog {
             if (readOnly) {
                 style |= SWT.READ_ONLY;
             }
-            textEdit = new Text(useHex ? editorContainer : dialogGroup, style);
+            textEdit = new StyledText(useHex ? editorContainer : dialogGroup, style);
 
             textEdit.setText(stringValue);
             if (maxSize > 0) {
