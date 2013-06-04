@@ -51,7 +51,7 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
     }
 
     @Override
-    public Collection<IPropertyDescriptor> getConnectionProperties(
+    public IPropertyDescriptor[] getConnectionProperties(
         IRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo)
@@ -63,9 +63,9 @@ public abstract class JDBCDataSourceProvider implements DBPDataSourceProvider
             props = readDriverProperties(connectionInfo, (Driver) driverInstance);
         }
         if (props == null) {
-            props = Collections.emptyList();
+            return null;
         }
-        return props;
+        return props.toArray(new IPropertyDescriptor[props.size()]);
     }
 
     private Collection<IPropertyDescriptor> readDriverProperties(

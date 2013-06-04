@@ -24,6 +24,8 @@ package org.jkiss.dbeaver.model;
  */
 public interface DBPTransactionIsolation
 {
+    int getCode();
+
     boolean isEnabled();
 
     String getName();

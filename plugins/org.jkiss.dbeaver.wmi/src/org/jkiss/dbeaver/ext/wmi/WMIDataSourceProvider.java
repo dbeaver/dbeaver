@@ -28,8 +28,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.wmi.service.WMIService;
 
-import java.util.Collection;
-
 public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
 
@@ -47,7 +45,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     }
 
     @Override
-    public Collection<IPropertyDescriptor> getConnectionProperties(
+    public IPropertyDescriptor[] getConnectionProperties(
         IRunnableContext runnableContext,
         DBPDriver driver,
         DBPConnectionInfo connectionInfo) throws DBException

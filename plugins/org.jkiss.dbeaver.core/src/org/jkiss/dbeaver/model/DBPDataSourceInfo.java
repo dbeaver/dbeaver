@@ -247,7 +247,7 @@ public interface DBPDataSourceInfo
      * Retrieves list of supported transaction isolation levels
      * @return list of supported transaction isolation levels
      */
-    Collection<DBPTransactionIsolation> getSupportedTransactionIsolations();
+    Collection<DBPTransactionIsolation> getSupportedTransactionsIsolation();
 
     /**
      * Script delimiter character
