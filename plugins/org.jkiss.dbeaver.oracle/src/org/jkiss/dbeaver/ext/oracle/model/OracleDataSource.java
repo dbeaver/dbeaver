@@ -252,7 +252,7 @@ public class OracleDataSource extends JDBCDataSource
                         "ALTER SESSION SET NLS_TERRITORY='" + sessionTerritory + "'");
                 }
 
-                // Check ВИФ role
+                // Check DBA role
                 this.isAdmin = "YES".equals(
                     JDBCUtils.queryString(
                     context,
