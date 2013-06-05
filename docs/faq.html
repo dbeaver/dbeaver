@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
   -->
 
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <title>DBeaver FAQ</title>
     <style type="text/css">
@@ -37,55 +37,50 @@
 </head>
 <body>
 
-<h1>Frequently Asked Questions about DBeaver</h1>
 <p>This is draft version of "Frequently Asked Questions", more information will be added soon</p>
 
 <h2>General</h2>
-<h3>Why "DBeaver"</h3>
-<p>DBeaver named in contrast to SQuirreL, popular java-based database client.
-It's something like "database beaver versus SQL squirrel".
-DBeaver is pronounced as <code>dee-beaver</code>.
-<!--We hope that beaver will be much stronger, faster and smarter than squirrel :)-->
+<h3>Why "DBeaver"?</h3>
+<p>DBeaver is named in contrast to SQuirreL, the popular java-based database client.
+    It's something like "database beaver versus SQL squirrel".
+    DBeaver is pronounced as <code>dee-beaver</code>.
+    <!--We hope that beaver will be much stronger, faster and smarter than squirrel :)-->
 </p>
 
-<h3>What is "JKISS"</h3>
+<h3>What is "JKISS"?</h3>
 <p>It's our company name. It's an acronym ("Just Keep It Straight and Simple" or "Just Keep It Simple, Stupid").
-JKISS is pronounced as <code>jey-kiss</code>.
+    JKISS is pronounced as <code>jey-kiss</code>.
 </p>
 
-<h3>Who makes it and for what reason</h3>
+<h3>Who makes it and for what reason?</h3>
 <p>Check <a href="/about/team">Team</a> page to see who we are.</p>
 <p>For now there is no any certain goal of this project. We just want to make a good (better than ony other) universal tool to work with databases.</p>
-<p>This is a completely non-commercial project, nobody pays us for the job, there are no donations or any other kind of funding. This project is powered by our pleasure for 100%.</p>
+<p>This is a completely non-commercial project, nobody pays us for the job, there are no donations or any kind of funding. This project is powered by our pleasure, 100%.</p>
 <p>So far.</p>
 
 <h3>May I access DBeaver source code?</h3>
-<p>Not yet. At the moment DBeaver is completely freeware but it is not opensource. It may become so in the future.
-Actually we have plans to open sources this year but first we want to make really fully functional and stable version.</p>
+<p>You can checkout DBeaver sources using SVN anonymous read-only access.</p>
+<p>Trunk lives here: <code>https://svn.jkiss.org/dev/dbeaver/trunk/</code></p>
 
 <h2>Installing and running</h2>
 <h3>DBeaver doesn't start</h3>
-<p>A1: You have old Java or not Java VM installed. DBeaver require Java 1.6.
-    You may get newest Java from <a href="http://java.com">http://java.com</a> or you may use automatic installer (Windows version) which will check and install Java 1.6 on demand.
-    If you have different versions of JVM on your computer then you may specify particular one in command line (check readme file for command line arguments description).</p>
+<p>A1: You have old Java or no Java VM installed. DBeaver requires Java 1.6. You may get the newest Java from <a href="http://java.com">http://java.com</a> or you may use the automatic installer (Windows version) which will check and install Java 1.6 on demand.
 
-<p>A2: You use wrong DBeaver version (e.g. 64bit on 32bit OS)</p>
+    If you have different versions of JVM on your computer then you may specify particular one in the command line (check readme file for command line arguments description).</p>
 
-<p>A3: You have extracted archive with newer version of DBeaver in the folder where older version has been installed.
-    Sometimes it may cause file versions' conflicts. You may fix it by removing all contents of folder "configuration" excepting the file "config.ini".</p>
+<p>A2: You chose the wrong DBeaver version (e.g. 64bit on 32bit OS)</p>
 
-<h3>Where DBeaver stores it's configuration and how can I change it</h3>
-<p>By default DBeaver stores all its data in user's home ".dbeaver" folder.
+<p>A3: You have extracted an archive with a newer version of DBeaver in the folder where an older version has been installed. Sometimes it may cause file versions' conflicts. You may fix it by removing all contents of folder "configuration" except the file "config.ini".</p>
+
+<h3>Where does DBeaver store its configuration and how can I change it?</h3>
+<p>By default DBeaver stores all of its data in user's home ".dbeaver" folder.
     E.g. <code>"C:\Users\&lt;UserName&gt;\.dbeaver"</code> or <code>"/home/&lt;UserName&gt;/.dbeaver"</code>.
-    This folder won't be deleted upon uninstall or reinstall so new version of DBeaver will use existing configuration/data.
-    You may freely replace this folder - DBeaver will just start with default settings.</p>
-<p>You may change default configuration location using command line parameter "-data".
-    Check <code>readme.txt</code> file for command line parameters description.</p>
+    This folder won't be deleted upon uninstall or reinstall so the new version of DBeaver will use existing configuration/data. You may freely replace this folder - DBeaver will just start with default settings.</p>
+<p>You may change default configuration location using the command line parameter "-data".
+    Check <code>readme.txt</code> file for command line parameter information and description.</p>
 
 <h3>Database driver not found</h3>
-<p>If you use custom driver then check driver's properties in driver manager. Make sure that all driver's libraries (jars)
-    are valid and that driver's class could be found by DBeaver (use "Find Class" button). If DBeaver can't locate any driver class in specified libraries
-    then likely you have invalid or broken libraries.</p>
+<p>If you use a custom driver then check the driver's properties in driver manager. Make sure that all driver's libraries (jars) are valid and that driver's class could be found by DBeaver (use "Find Class" button). If DBeaver can't locate any driver class in specified libraries then it's likely you have invalid or broken libraries.</p>
 
 <h2>Browse metadata</h2>
 <p>...</p>
