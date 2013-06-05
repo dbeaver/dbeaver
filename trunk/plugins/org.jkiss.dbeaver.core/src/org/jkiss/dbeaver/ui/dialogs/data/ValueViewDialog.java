@@ -393,8 +393,6 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         }
     }
 
-    protected abstract void setEditorValue(Object text);
-
     private DBSEntityReferrer getEnumerableConstraint()
     {
         if (valueController instanceof DBDAttributeController) {
@@ -486,7 +484,11 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                     handleEditorChange = false;
                     Object value = selection[0].getData();
                     //editorControl.setText(selection[0].getText());
-                    setEditorValue(value);
+                    try {
+                        primeEditorValue(value);
+                    } catch (DBException e1) {
+                        log.error(e1);
+                    }
                     handleEditorChange = true;
                 }
             }

@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCDateTimeValueHandler;
@@ -78,9 +79,28 @@ public class DateTimeViewDialog extends ValueViewDialog {
             gd.horizontalAlignment = GridData.CENTER;
             timeEditor.setLayoutData(gd);
         }
-        setEditorValue(value);
+        try {
+            primeEditorValue(value);
+        } catch (DBException e) {
+            log.error(e);
+        }
 
         return dialogGroup;
+    }
+
+    @Override
+    public void primeEditorValue(Object value) throws DBException
+    {
+        if (value instanceof Date) {
+            Calendar cl = Calendar.getInstance();
+            cl.setTime((Date)value);
+            if (dateEditor != null) {
+                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
+            }
+            if (timeEditor != null) {
+                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+            }
+        }
     }
 
     @Override
@@ -90,40 +110,9 @@ public class DateTimeViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected void setEditorValue(Object value)
-    {
-        if (value instanceof Date) {
-            Calendar cl = Calendar.getInstance();
-            cl.setTime((Date)value);
-            if (dateEditor != null) {
-                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
-            }
-            if (timeEditor != null) {
-                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
-            }
-        }
-    }
-
-    @Override
     public Control getControl()
     {
         return null;
-    }
-
-    @Override
-    public void refreshValue()
-    {
-        Object value = getValueController().getValue();
-        if (value instanceof Date) {
-            Calendar cl = Calendar.getInstance();
-            cl.setTime((Date)value);
-            if (dateEditor != null) {
-                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
-            }
-            if (timeEditor != null) {
-                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
-            }
-        }
     }
 
 }

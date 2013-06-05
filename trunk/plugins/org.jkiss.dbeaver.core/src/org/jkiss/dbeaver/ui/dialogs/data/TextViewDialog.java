@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueController;
@@ -95,9 +96,15 @@ public class TextViewDialog extends ValueViewDialog {
             selectedType = getDialogSettings().getInt(VALUE_TYPE_SELECTOR);
         }
         {
-            int style = SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
+            int style = SWT.NONE;
             if (readOnly) {
                 style |= SWT.READ_ONLY;
+            }
+            if (useHex) {
+                style |= SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
+            } else {
+                // Use border only for plain text editor, otherwie tab folder's border will be used
+                style |= SWT.BORDER;
             }
             textEdit = new Text(useHex ? editorContainer : dialogGroup, style);
 
@@ -233,16 +240,6 @@ public class TextViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected void setEditorValue(Object text)
-    {
-        if (editorContainer == null || editorContainer.getSelectionIndex() == 0) {
-            textEdit.setText(CommonUtils.toString(text));
-        } else {
-            setBinaryContent(CommonUtils.toString(text));
-        }
-    }
-
-    @Override
     public Control getControl()
     {
         if (editorContainer == null || editorContainer.getSelectionIndex() == 0) {
@@ -262,12 +259,12 @@ public class TextViewDialog extends ValueViewDialog {
     }
 
     @Override
-    public void refreshValue()
+    public void primeEditorValue(Object value) throws DBException
     {
-        String value = CommonUtils.toString(getValueController().getValue());
-        textEdit.setText(value);
+        String strValue = CommonUtils.toString(value);
+        textEdit.setText(strValue);
         if (hexEditControl != null) {
-            setBinaryContent(value);
+            setBinaryContent(strValue);
         }
     }
 

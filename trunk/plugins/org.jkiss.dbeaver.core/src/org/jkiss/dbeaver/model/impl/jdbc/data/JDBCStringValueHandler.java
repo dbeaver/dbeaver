@@ -86,9 +86,9 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
                         return editor;
                     }
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(Object value) throws DBException
                     {
-                        control.setText(CommonUtils.toString(valueController.getValue()));
+                        control.setText(CommonUtils.toString(value));
                         if (valueController.getEditType() == DBDValueController.EditType.INLINE) {
                             control.selectAll();
                         }

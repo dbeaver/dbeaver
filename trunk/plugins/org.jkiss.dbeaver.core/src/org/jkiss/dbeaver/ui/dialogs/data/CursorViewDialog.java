@@ -106,19 +106,13 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
     }
 
     @Override
-    protected void setEditorValue(Object text)
-    {
-        // cannot be done
-    }
-
-    @Override
     public Control getControl()
     {
         return resultSetViewer.getControl();
     }
 
     @Override
-    public void refreshValue()
+    public void primeEditorValue(Object value) throws DBException
     {
         resultSetViewer.refresh();
     }
