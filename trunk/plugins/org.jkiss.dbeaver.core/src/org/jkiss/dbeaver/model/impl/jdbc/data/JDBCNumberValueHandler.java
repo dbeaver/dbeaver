@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
@@ -228,7 +227,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             control.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
                         }
                         @Override
-                        public Object extractValue(DBRProgressMonitor monitor)
+                        public Object extractEditorValue()
                         {
                             switch (control.getSelectionIndex()) {
                                 case 0:
@@ -274,7 +273,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             }
                         }
                         @Override
-                        public Object extractValue(DBRProgressMonitor monitor)
+                        public Object extractEditorValue()
                         {
                             String text = control.getText();
                             if (CommonUtils.isEmpty(text)) {

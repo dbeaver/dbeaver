@@ -31,9 +31,18 @@ public interface DBDValueEditor
 {
     Control getControl();
 
-    Object extractValue(DBRProgressMonitor monitor)
+    Object extractEditorValue()
         throws DBException;
 
     void refreshValue();
 
+    /*
+
+    Object getEditorValue()
+        throws DBException;
+
+    void setEditorValue(Object value)
+        throws DBException;
+
+     */
 }

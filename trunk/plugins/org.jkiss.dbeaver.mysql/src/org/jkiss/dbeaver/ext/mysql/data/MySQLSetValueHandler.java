@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -56,7 +55,7 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
                         fillSetList(control, value);
                     }
                     @Override
-                    public Object extractValue(DBRProgressMonitor monitor)
+                    public Object extractEditorValue()
                     {
                         String[] selection = control.getSelection();
                         StringBuilder resultString = new StringBuilder();
