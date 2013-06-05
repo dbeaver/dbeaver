@@ -472,7 +472,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     }
 
     @Override
-    public void refreshValue()
+    public void primeEditorValue(Object value) throws DBException
     {
         DBDValueController valueController = getEditorInput().getValueController();
         LOBInitializer initializer = new LOBInitializer(valueController, getEditorInput().getEditors(), getEditorInput());

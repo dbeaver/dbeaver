@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.data;
 
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DBD Value Editor.
@@ -29,20 +28,26 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBDValueEditor
 {
+    /**
+     * Gets control which actually performs edit
+     * @return control reference
+     */
     Control getControl();
 
+    /**
+     * Extracts value from value editor.
+     * @return value. Possibly NULL
+     * @throws DBException on any error
+     */
     Object extractEditorValue()
         throws DBException;
 
-    void refreshValue();
-
-    /*
-
-    Object getEditorValue()
-        throws DBException;
-
-    void setEditorValue(Object value)
-        throws DBException;
-
+    /**
+     * Fills current editor with specified value. Do not updates value in controller.
+     * @param value new value for editor
+     * @throws DBException on any error
      */
+    void primeEditorValue(Object value)
+        throws DBException;
+
 }

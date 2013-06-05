@@ -59,7 +59,7 @@ public class DefaultValueViewDialog extends ValueViewDialog {
 
         try {
             panelEditor = createPanelEditor(editorPlaceholder);
-            panelEditor.refreshValue();
+            panelEditor.primeEditorValue(getValueController().getValue());
         } catch (DBException e) {
             log.error(e);
             return dialogGroup;
@@ -79,18 +79,9 @@ public class DefaultValueViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected void setEditorValue(Object text)
+    public void primeEditorValue(Object value) throws DBException
     {
-        Control control = panelEditor.getControl();
-        if (control instanceof Text) {
-            ((Text)control).setText(CommonUtils.toString(text));
-        } else if (control instanceof StyledText) {
-            ((StyledText)control).setText(CommonUtils.toString(text));
-        } else if (control instanceof Spinner) {
-            ((Spinner)control).setSelection(CommonUtils.toInt(text));
-        } else if (control instanceof Combo) {
-            ((Combo)control).setText(CommonUtils.toString(text));
-        }
+        panelEditor.primeEditorValue(value);
     }
 
     @Override
@@ -99,9 +90,4 @@ public class DefaultValueViewDialog extends ValueViewDialog {
         return panelEditor.getControl();
     }
 
-    @Override
-    public void refreshValue()
-    {
-        panelEditor.refreshValue();
-    }
 }

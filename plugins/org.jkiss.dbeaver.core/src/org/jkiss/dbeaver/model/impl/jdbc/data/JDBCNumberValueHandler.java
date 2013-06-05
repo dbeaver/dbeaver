@@ -221,9 +221,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             return editor;
                         }
                         @Override
-                        public void refreshValue()
+                        public void primeEditorValue(Object value) throws DBException
                         {
-                            Object value = valueController.getValue();
                             control.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
                         }
                         @Override
@@ -262,9 +261,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                             return editor;
                         }
                         @Override
-                        public void refreshValue()
+                        public void primeEditorValue(Object value) throws DBException
                         {
-                            Object value = valueController.getValue();
                             if (value != null) {
                                 control.setText(getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.UI));
                             }

@@ -1,5 +1,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
@@ -21,6 +23,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
  * RSV value view panel
  */
 abstract class ViewValuePanel extends Composite {
+
+    static final Log log = LogFactory.getLog(ViewValuePanel.class);
 
     private final Label columnImageLabel;
     private final Label columnNameLabel;
@@ -106,7 +110,11 @@ abstract class ViewValuePanel extends Composite {
             viewPlaceholder.layout();
         }
         if (valueViewer != null) {
-            valueViewer.refreshValue();
+            try {
+                valueViewer.primeEditorValue(previewController.getValue());
+            } catch (DBException e) {
+                log.error(e);
+            }
         }
     }
 

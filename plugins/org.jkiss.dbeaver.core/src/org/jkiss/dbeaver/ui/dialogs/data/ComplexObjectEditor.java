@@ -206,7 +206,7 @@ public class ComplexObjectEditor extends TreeViewer {
                     treeEditor.setEditor(curCellEditor.getControl(), item, 1);
                 }
                 if (!advanced) {
-                    curCellEditor.refreshValue();
+                    curCellEditor.primeEditorValue(valueController.getValue());
                 }
             }
         } catch (DBException e) {

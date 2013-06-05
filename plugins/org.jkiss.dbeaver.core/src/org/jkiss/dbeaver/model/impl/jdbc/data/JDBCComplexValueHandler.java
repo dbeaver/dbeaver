@@ -110,9 +110,9 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
                     ComplexObjectEditor editor;
 
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(Object value) throws DBException
                     {
-                        editor.setModel(controller.getDataSource(), (DBDComplexType) controller.getValue());
+                        editor.setModel(controller.getDataSource(), (DBDComplexType) value);
                     }
 
                     @Override

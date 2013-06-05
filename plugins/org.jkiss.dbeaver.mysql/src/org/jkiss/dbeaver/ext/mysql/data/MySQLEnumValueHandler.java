@@ -133,10 +133,10 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             {
                 return new ValueEditor<Combo>(controller) {
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(Object value) throws DBException
                     {
-                        MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
-                        control.setText(value.isNull() ? "" : value.getValue());
+                        MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
+                        control.setText(enumValue.isNull() ? "" : enumValue.getValue());
                     }
                     @Override
                     public Object extractEditorValue()
@@ -174,15 +174,15 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             {
                 return new ValueEditor<List>(controller) {
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(Object value) throws DBException
                     {
-                        MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
-                        if (value.isNull()) {
+                        MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
+                        if (enumValue.isNull()) {
                             control.setSelection(-1);
                         }
                         int itemCount = control.getItemCount();
                         for (int i = 0 ; i < itemCount; i++) {
-                            if (control.getItem(i).equals(value.getValue())) {
+                            if (control.getItem(i).equals(enumValue.getValue())) {
                                 control.setSelection(i);
                                 break;
                             }
