@@ -301,7 +301,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                             return editor;
                         }
                         @Override
-                        public Object extractValue(DBRProgressMonitor monitor)
+                        public Object extractEditorValue()
                         {
                             String newValue = control.getText();
                             if (isText) {
@@ -393,31 +393,37 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     }
 
                     @Override
-                    public Object extractValue(DBRProgressMonitor monitor) throws DBException
+                    public Object extractEditorValue() throws DBException
                     {
-                        DBDContent content = (DBDContent) valueController.getValue();
-                        try {
-                            if (control instanceof Text) {
-                                Text styledText = (Text) control;
-                                content.updateContents(
-                                    monitor,
-                                    new StringContentStorage(styledText.getText()));
-                            } else if (control instanceof HexEditControl) {
-                                HexEditControl hexEditControl = (HexEditControl)control;
-                                BinaryContent binaryContent = hexEditControl.getContent();
-                                ByteBuffer buffer = ByteBuffer.allocate((int) binaryContent.length());
+                        final DBDContent content = (DBDContent) valueController.getValue();
+                        DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+                            @Override
+                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                            {
                                 try {
-                                    binaryContent.get(buffer, 0);
-                                } catch (IOException e) {
-                                    log.error(e);
+                                    if (control instanceof Text) {
+                                        Text styledText = (Text) control;
+                                        content.updateContents(
+                                            monitor,
+                                            new StringContentStorage(styledText.getText()));
+                                    } else if (control instanceof HexEditControl) {
+                                        HexEditControl hexEditControl = (HexEditControl) control;
+                                        BinaryContent binaryContent = hexEditControl.getContent();
+                                        ByteBuffer buffer = ByteBuffer.allocate((int) binaryContent.length());
+                                        try {
+                                            binaryContent.get(buffer, 0);
+                                        } catch (IOException e) {
+                                            log.error(e);
+                                        }
+                                        content.updateContents(
+                                            monitor,
+                                            new BytesContentStorage(buffer.array(), ContentUtils.getDefaultFileEncoding()));
+                                    }
+                                } catch (Exception e) {
+                                    throw new InvocationTargetException(e);
                                 }
-                                content.updateContents(
-                                    monitor,
-                                    new BytesContentStorage(buffer.array(), ContentUtils.getDefaultFileEncoding()));
                             }
-                        } catch (Exception e) {
-                            log.error(e);
-                        }
+                        });
                         return content;
                     }
 

@@ -223,7 +223,7 @@ public class TextViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected Object getEditorValue()
+    public Object extractEditorValue()
     {
         if (editorContainer == null || editorContainer.getSelectionIndex() == 0) {
             return textEdit.getText();

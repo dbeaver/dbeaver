@@ -358,7 +358,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
     protected void okPressed()
     {
         try {
-            editedValue = getEditorValue();
+            editedValue = extractEditorValue();
 
             super.okPressed();
         }
@@ -393,15 +393,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         }
     }
 
-    protected abstract Object getEditorValue();
-
     protected abstract void setEditorValue(Object text);
-
-    @Override
-    public Object extractValue(DBRProgressMonitor monitor) throws DBException
-    {
-        return getEditorValue();
-    }
 
     private DBSEntityReferrer getEnumerableConstraint()
     {
@@ -511,10 +503,12 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                         loaderJob.cancel();
                         loaderJob = new SelectorLoaderJob();
                     }
-                    if (loaderJob.getState() == Job.WAITING) {
-                        loaderJob.setPattern(getEditorValue());
-                    } else {
-                        loaderJob.setPattern(getEditorValue());
+                    try {
+                        loaderJob.setPattern(extractEditorValue());
+                    } catch (DBException e1) {
+                        log.error(e1);
+                    }
+                    if (loaderJob.getState() != Job.WAITING) {
                         loaderJob.schedule(500);
                     }
                 }
@@ -633,23 +627,26 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
 
                                     Control editorControl = getControl();
                                     if (editorControl != null && !editorControl.isDisposed()) {
-                                        Object curValue = getEditorValue();
-                                        TableItem curItem = null;
-                                        for (TableItem item : editorSelector.getItems()) {
-                                            if (item.getData() == curValue || (item.getData() != null && curValue != null && item.getData().equals(curValue))) {
-                                                curItem = item;
-                                                break;
+                                        try {
+                                            Object curValue = extractEditorValue();
+                                            TableItem curItem = null;
+                                            for (TableItem item : editorSelector.getItems()) {
+                                                if (item.getData() == curValue || (item.getData() != null && curValue != null && item.getData().equals(curValue))) {
+                                                    curItem = item;
+                                                    break;
+                                                }
                                             }
-                                        }
-                                        if (curItem != null) {
-                                            editorSelector.select(editorSelector.indexOf(curItem));
-                                            editorSelector.showSelection();
+                                            if (curItem != null) {
+                                                editorSelector.select(editorSelector.indexOf(curItem));
+                                                editorSelector.showSelection();
+                                            }
+                                        } catch (DBException e) {
+                                            log.error(e);
                                         }
                                     }
 
                                     UIUtils.maxTableColumnsWidth(editorSelector);
-                                }
-                                finally {
+                                } finally {
                                     editorSelector.setRedraw(true);
                                 }
                             }

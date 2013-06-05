@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -73,15 +72,10 @@ public class DefaultValueViewDialog extends ValueViewDialog {
     }
 
     @Override
-    protected Object getEditorValue()
+    public Object extractEditorValue()
+        throws DBException
     {
-        try {
-            return panelEditor.extractValue(VoidProgressMonitor.INSTANCE);
-        } catch (DBException e) {
-            // NEver be here
-            log.error(e);
-            return null;
-        }
+        return panelEditor.extractEditorValue();
     }
 
     @Override

@@ -2118,7 +2118,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         private ResultSetValueController(GridPos pos, EditType editType, Composite inlinePlaceholder) {
             this.curRow = model.getRowData(pos.row);
-            this.pos = pos;
+            this.pos = new GridPos(pos);
             this.editType = editType;
             this.inlinePlaceholder = inlinePlaceholder;
             this.column = model.getVisibleColumn(pos.col);
