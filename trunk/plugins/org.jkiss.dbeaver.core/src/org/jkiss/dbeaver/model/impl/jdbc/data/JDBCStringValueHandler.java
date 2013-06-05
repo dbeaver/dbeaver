@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
@@ -75,12 +75,12 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new ValueEditor<StyledText>(controller) {
+                return new ValueEditor<Text>(controller) {
                     @Override
-                    protected StyledText createControl(Composite editPlaceholder)
+                    protected Text createControl(Composite editPlaceholder)
                     {
                         final boolean inline = valueController.getEditType() == DBDValueController.EditType.INLINE;
-                        final StyledText editor = new StyledText(valueController.getEditPlaceholder(),
+                        final Text editor = new Text(valueController.getEditPlaceholder(),
                             SWT.BORDER | (inline ? SWT.NONE : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
                         editor.setTextLimit(MAX_STRING_LENGTH);
                         editor.setEditable(!valueController.isReadOnly());

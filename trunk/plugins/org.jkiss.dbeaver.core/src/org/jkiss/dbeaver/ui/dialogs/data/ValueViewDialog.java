@@ -82,7 +82,6 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
 
     private DBDValueController valueController;
     private DBSEntityReferrer refConstraint;
-    private StyledText editor;
     private Table editorSelector;
     private boolean handleEditorChange;
     private SelectorLoaderJob loaderJob = null;
@@ -396,11 +395,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
 
     protected abstract Object getEditorValue();
 
-    @Override
-    public Control getControl()
-    {
-        return editor;
-    }
+    protected abstract void setEditorValue(Object text);
 
     @Override
     public Object extractValue(DBRProgressMonitor monitor) throws DBException
@@ -422,7 +417,7 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         return null;
     }
 
-    protected void createEditorSelector(Composite parent, StyledText control)
+    protected void createEditorSelector(Composite parent)
     {
         if (!(valueController instanceof DBDAttributeController) || valueController.isReadOnly()) {
             return;
@@ -431,8 +426,6 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
         if (refConstraint == null) {
             return;
         }
-
-        this.editor = control;
 
         if (refConstraint instanceof DBSEntityAssociation) {
             final DBSEntityAssociation association = (DBSEntityAssociation)refConstraint;
@@ -500,13 +493,15 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                 if (selection != null && selection.length > 0) {
                     handleEditorChange = false;
                     Object value = selection[0].getData();
-                    editor.setText(selection[0].getText());
+                    //editorControl.setText(selection[0].getText());
+                    setEditorValue(value);
                     handleEditorChange = true;
                 }
             }
         });
 
-        editor.addModifyListener(new ModifyListener() {
+        Control control = getControl();
+        ModifyListener modifyListener = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)
             {
@@ -524,7 +519,12 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                     }
                 }
             }
-        });
+        };
+        if (control instanceof Text) {
+            ((Text)control).addModifyListener(modifyListener);
+        } else if (control instanceof StyledText) {
+            ((StyledText)control).addModifyListener(modifyListener);
+        }
         handleEditorChange = true;
 
         loaderJob = new SelectorLoaderJob();
@@ -631,7 +631,8 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
                                         discItem.setData(entry.getKey());
                                     }
 
-                                    if (editor != null && !editor.isDisposed()) {
+                                    Control editorControl = getControl();
+                                    if (editorControl != null && !editorControl.isDisposed()) {
                                         Object curValue = getEditorValue();
                                         TableItem curItem = null;
                                         for (TableItem item : editorSelector.getItems()) {
