@@ -518,6 +518,40 @@
     </target>
 
     <!-- ===================================================================== -->
+    <!-- Javadocs -->
+    <!-- ===================================================================== -->
+
+
+    <target name="javadoc" depends="init">
+        <javadoc
+                destdir="build/docs/api"
+                author="true"
+                version="true"
+                use="true"
+                windowtitle="DBEaver Core API"
+                useexternalfile="yes">
+            <sourcepath>
+                <pathelement path="../modules/org.jkiss.utils/src"/>
+                <pathelement path="../plugins/org.jkiss.dbeaver.core/src"/>
+<!--
+                <pathelement path="../plugins/org.jkiss.dbeaver.erd/src"/>
+                <pathelement path="../plugins/org.jkiss.dbeaver.generic/src"/>
+                <pathelement path="../plugins/org.jkiss.dbeaver.mysql/src"/>
+                <pathelement path="../plugins/org.jkiss.dbeaver.oracle/src"/>
+-->
+            </sourcepath>
+            <classpath>
+                <fileset dir="${baseLocation}/plugins">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+
+            <doctitle><![CDATA[<h1>DBeaver Core API</h1>]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2013 Serge Rieder and others.</i>]]></bottom>
+        </javadoc>
+    </target>
+
+    <!-- ===================================================================== -->
     <!-- Default build -->
     <!-- ===================================================================== -->
 
