@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.utils.CommonUtils;
@@ -95,7 +94,7 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
                         }
                     }
                     @Override
-                    public Object extractValue(DBRProgressMonitor monitor)
+                    public Object extractEditorValue()
                     {
                         return control.getText();
                     }

@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCAbstractValueHandler;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
@@ -140,7 +139,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
                         control.setText(value.isNull() ? "" : value.getValue());
                     }
                     @Override
-                    public Object extractValue(DBRProgressMonitor monitor)
+                    public Object extractEditorValue()
                     {
                         int selIndex = control.getSelectionIndex();
                         if (selIndex < 0) {
@@ -191,7 +190,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
                     }
 
                     @Override
-                    public Object extractValue(DBRProgressMonitor monitor)
+                    public Object extractEditorValue()
                     {
                         int selIndex = control.getSelectionIndex();
                         if (selIndex < 0) {

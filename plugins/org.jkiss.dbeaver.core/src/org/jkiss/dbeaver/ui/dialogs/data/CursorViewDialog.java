@@ -100,7 +100,7 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
     }
 
     @Override
-    protected Object getEditorValue()
+    public Object extractEditorValue()
     {
         return null;
     }

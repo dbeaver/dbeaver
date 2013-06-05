@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolBar;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -41,15 +40,12 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
 /**
@@ -163,9 +159,6 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             return control;
         }
 
-        @Override
-        public abstract Object extractValue(DBRProgressMonitor monitor) throws DBException;
-
         protected abstract T createControl(Composite editPlaceholder);
 
         protected void initInlineControl(final Control inlineControl)
@@ -273,19 +266,13 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
 
         private void saveValue()
         {
-            DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        Object newValue = extractValue(monitor);
-                        valueController.closeInlineEditor();
-                        valueController.updateValue(newValue);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
+            try {
+                Object newValue = extractEditorValue();
+                valueController.closeInlineEditor();
+                valueController.updateValue(newValue);
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(getControl().getShell(), "Value save", "Can't save edited value", e);
+            }
         }
     }
 

@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditorStandalone;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -452,9 +454,20 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     }
 
     @Override
-    public Object extractValue(DBRProgressMonitor monitor) throws DBException
+    public Object extractEditorValue() throws DBException
     {
-        getEditorInput().updateContentFromFile(monitor.getNestedMonitor());
+        DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                try {
+                    getEditorInput().updateContentFromFile(monitor.getNestedMonitor());
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            }
+        });
+
         return getEditorInput().getContent();
     }
 
@@ -485,7 +498,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         if (workbenchPage != null) {
             workbenchPage.closeEditor(this, false);
         } else {
-            // Special case - occured when entire workbench is closed
+            // Special case - occurred when entire workbench is closed
             // We need to unregister editor and release all resource here
             if (valueEditorRegistered) {
                 getValueController().unregisterEditor(this);
