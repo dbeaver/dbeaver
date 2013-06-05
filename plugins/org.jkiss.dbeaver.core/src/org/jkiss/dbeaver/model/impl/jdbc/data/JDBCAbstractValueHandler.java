@@ -163,6 +163,7 @@ public abstract class JDBCAbstractValueHandler implements DBDValueHandler {
             return control;
         }
 
+        @Override
         public abstract Object extractValue(DBRProgressMonitor monitor) throws DBException;
 
         protected abstract T createControl(Composite editPlaceholder);

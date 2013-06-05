@@ -72,22 +72,13 @@ public class DateTimeViewDialog extends ValueViewDialog {
             GridData gd = new GridData();
             gd.horizontalAlignment = GridData.CENTER;
             dateEditor.setLayoutData(gd);
-            if (value instanceof Date) {
-                Calendar cl = Calendar.getInstance();
-                cl.setTime((Date)value);
-                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
-            }
         }
         if (timeEditor != null) {
             GridData gd = new GridData();
             gd.horizontalAlignment = GridData.CENTER;
             timeEditor.setLayoutData(gd);
-            if (value instanceof Date) {
-                Calendar cl = Calendar.getInstance();
-                cl.setTime((Date)value);
-                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
-            }
         }
+        setEditorValue(value);
 
         return dialogGroup;
     }
@@ -96,6 +87,27 @@ public class DateTimeViewDialog extends ValueViewDialog {
     protected Object getEditorValue()
     {
         return JDBCDateTimeValueHandler.getDate(dateEditor, timeEditor);
+    }
+
+    @Override
+    protected void setEditorValue(Object value)
+    {
+        if (value instanceof Date) {
+            Calendar cl = Calendar.getInstance();
+            cl.setTime((Date)value);
+            if (dateEditor != null) {
+                dateEditor.setDate(cl.get(Calendar.YEAR), cl.get(Calendar.MONTH), cl.get(Calendar.DAY_OF_MONTH));
+            }
+            if (timeEditor != null) {
+                timeEditor.setTime(cl.get(Calendar.HOUR_OF_DAY), cl.get(Calendar.MINUTE), cl.get(Calendar.SECOND));
+            }
+        }
+    }
+
+    @Override
+    public Control getControl()
+    {
+        return null;
     }
 
     @Override
