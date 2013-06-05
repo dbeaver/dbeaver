@@ -49,10 +49,10 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
 
                 return new ValueEditor<org.eclipse.swt.widgets.List>(controller) {
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(Object value) throws DBException
                     {
-                        final MySQLTypeEnum value = (MySQLTypeEnum) controller.getValue();
-                        fillSetList(control, value);
+                        MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
+                        fillSetList(control, enumValue);
                     }
                     @Override
                     public Object extractEditorValue()

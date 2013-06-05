@@ -131,9 +131,9 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
                             SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.READ_ONLY);
                     }
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(Object value) throws DBException
                     {
-                        control.setText(CommonUtils.toString(valueController.getValue()));
+                        control.setText(CommonUtils.toString(value));
                     }
                     @Override
                     public Object extractEditorValue()

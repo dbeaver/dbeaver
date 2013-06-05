@@ -125,9 +125,8 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                         }
                     }
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(Object value) throws DBException
                     {
-                        Object value = valueController.getValue();
                         control.setText(value == null ? "FALSE" : value.toString().toUpperCase());
                     }
                 };
@@ -141,9 +140,8 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
                         return control.getSelectionIndex() == 1;
                     }
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(Object value) throws DBException
                     {
-                        Object value = valueController.getValue();
                         control.setSelection(Boolean.TRUE.equals(value) ? 1 : 0);
                     }
 

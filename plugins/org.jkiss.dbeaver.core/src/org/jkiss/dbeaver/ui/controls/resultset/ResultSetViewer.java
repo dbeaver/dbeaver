@@ -1260,7 +1260,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         } else {
             // Set editable value
             if (editor != null) {
-                editor.refreshValue();
+                try {
+                    editor.primeEditorValue(valueController.getValue());
+                } catch (DBException e) {
+                    log.error(e);
+                }
             }
         }
         if (inline) {

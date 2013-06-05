@@ -271,20 +271,22 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     // String editor
                     return new ValueEditor<Text>(controller) {
                         @Override
-                        public void refreshValue()
+                        public void primeEditorValue(Object value) throws DBException
                         {
-                            DBDContentCached newValue = (DBDContentCached) valueController.getValue();
-                            Object cachedValue = newValue.getCachedValue();
-                            String stringValue;
-                            if (cachedValue == null) {
-                                stringValue = "";  //$NON-NLS-1$
-                            } else if (cachedValue instanceof byte[]) {
-                                stringValue = ContentUtils.convertToString((byte[])cachedValue, controller.getDataSource());
-                            } else {
-                                stringValue = cachedValue.toString();
+                            if (value instanceof DBDContentCached) {
+                                DBDContentCached newValue = (DBDContentCached)value;
+                                Object cachedValue = newValue.getCachedValue();
+                                String stringValue;
+                                if (cachedValue == null) {
+                                    stringValue = "";  //$NON-NLS-1$
+                                } else if (cachedValue instanceof byte[]) {
+                                    stringValue = ContentUtils.convertToString((byte[])cachedValue, controller.getDataSource());
+                                } else {
+                                    stringValue = cachedValue.toString();
+                                }
+                                control.setText(stringValue);
+                                control.selectAll();
                             }
-                            control.setText(stringValue);
-                            control.selectAll();
                         }
                         @Override
                         protected Text createControl(Composite editPlaceholder)
@@ -357,14 +359,14 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     }
 
                     @Override
-                    public void refreshValue()
+                    public void primeEditorValue(final Object value) throws DBException
                     {
                         DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
                             @Override
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 try {
-                                    DBDContent content = (DBDContent) valueController.getValue();
+                                    DBDContent content = (DBDContent) value;
                                     DBDContentStorage data = content.getContents(monitor);
                                     if (control instanceof Text) {
                                         Text text = (Text) control;
