@@ -23,11 +23,11 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -269,7 +269,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     final boolean isText = ContentUtils.isTextContent(((DBDContent)controller.getValue()));
                     final String encoding = ContentUtils.getDefaultBinaryFileEncoding(controller.getDataSource());
                     // String editor
-                    return new ValueEditor<StyledText>(controller) {
+                    return new ValueEditor<Text>(controller) {
                         @Override
                         public void refreshValue()
                         {
@@ -287,9 +287,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                             control.selectAll();
                         }
                         @Override
-                        protected StyledText createControl(Composite editPlaceholder)
+                        protected Text createControl(Composite editPlaceholder)
                         {
-                            final StyledText editor = new StyledText(editPlaceholder, SWT.BORDER);
+                            final Text editor = new Text(editPlaceholder, SWT.BORDER);
                             editor.setEditable(!valueController.isReadOnly());
                             long maxLength = valueController.getValueType().getMaxLength();
                             if (maxLength <= 0) {
@@ -366,8 +366,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                 try {
                                     DBDContent content = (DBDContent) valueController.getValue();
                                     DBDContentStorage data = content.getContents(monitor);
-                                    if (control instanceof StyledText) {
-                                        StyledText text = (StyledText) control;
+                                    if (control instanceof Text) {
+                                        Text text = (Text) control;
                                         StringWriter buffer = new StringWriter();
                                         if (data != null) {
                                             ContentUtils.copyStreams(data.getContentReader(), -1, buffer, monitor);
@@ -397,8 +397,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     {
                         DBDContent content = (DBDContent) valueController.getValue();
                         try {
-                            if (control instanceof StyledText) {
-                                StyledText styledText = (StyledText) control;
+                            if (control instanceof Text) {
+                                Text styledText = (Text) control;
                                 content.updateContents(
                                     monitor,
                                     new StringContentStorage(styledText.getText()));
@@ -426,7 +426,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     {
                         DBDContent content = (DBDContent) valueController.getValue();
                         if (ContentUtils.isTextContent(content)) {
-                            StyledText text = new StyledText(editPlaceholder, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+                            Text text = new Text(editPlaceholder, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
                             text.setEditable(!valueController.isReadOnly());
                             return text;
                         } else {

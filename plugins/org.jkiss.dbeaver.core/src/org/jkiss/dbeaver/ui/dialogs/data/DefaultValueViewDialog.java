@@ -23,16 +23,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.data.DBDValueEditor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Default value view dialog.
@@ -67,8 +65,8 @@ public class DefaultValueViewDialog extends ValueViewDialog {
             log.error(e);
             return dialogGroup;
         }
-        if (super.isForeignKey() && panelEditor.getControl() instanceof StyledText) {
-            super.createEditorSelector(dialogGroup, (StyledText)panelEditor.getControl());
+        if (super.isForeignKey()) {
+            super.createEditorSelector(dialogGroup);
         }
 
         return dialogGroup;
@@ -84,6 +82,27 @@ public class DefaultValueViewDialog extends ValueViewDialog {
             log.error(e);
             return null;
         }
+    }
+
+    @Override
+    protected void setEditorValue(Object text)
+    {
+        Control control = panelEditor.getControl();
+        if (control instanceof Text) {
+            ((Text)control).setText(CommonUtils.toString(text));
+        } else if (control instanceof StyledText) {
+            ((StyledText)control).setText(CommonUtils.toString(text));
+        } else if (control instanceof Spinner) {
+            ((Spinner)control).setSelection(CommonUtils.toInt(text));
+        } else if (control instanceof Combo) {
+            ((Combo)control).setText(CommonUtils.toString(text));
+        }
+    }
+
+    @Override
+    public Control getControl()
+    {
+        return panelEditor.getControl();
     }
 
     @Override
