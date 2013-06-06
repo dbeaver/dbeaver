@@ -268,7 +268,7 @@ public class ContentUtils {
             }
         }
         finally {
-            contentStream.close();
+            close(contentStream);
         }
     }
 
