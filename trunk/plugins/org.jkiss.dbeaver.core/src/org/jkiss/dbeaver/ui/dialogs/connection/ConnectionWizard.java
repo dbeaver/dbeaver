@@ -154,4 +154,8 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         }
     }
 
+    public boolean isNew()
+    {
+        return getDataSourceDescriptor() == null;
+    }
 }
