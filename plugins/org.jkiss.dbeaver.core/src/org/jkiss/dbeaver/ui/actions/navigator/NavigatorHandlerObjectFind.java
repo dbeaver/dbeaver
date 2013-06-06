@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.WorkbenchPage;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.ui.search.SearchObjectsDialog;
+import org.jkiss.dbeaver.ui.search.database.SearchDatabaseObjectsDialog;
 
 @SuppressWarnings("restriction")
 public class NavigatorHandlerObjectFind extends DataSourceHandler {
@@ -37,9 +37,9 @@ public class NavigatorHandlerObjectFind extends DataSourceHandler {
         }
 
         final Shell activeShell = HandlerUtil.getActiveShell(event);
-        SearchObjectsDialog.open(
-                activeShell,
-                getDataSourceContainer(event, false));
+        SearchDatabaseObjectsDialog.open(
+            activeShell,
+            getDataSourceContainer(event, false));
 
         return null;
     }

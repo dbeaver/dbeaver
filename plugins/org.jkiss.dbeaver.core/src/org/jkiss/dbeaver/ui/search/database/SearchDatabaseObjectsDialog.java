@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search;
+package org.jkiss.dbeaver.ui.search.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,9 +56,9 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-public class SearchObjectsDialog extends HelpEnabledDialog {
+public class SearchDatabaseObjectsDialog extends HelpEnabledDialog {
 
-    static final Log log = LogFactory.getLog(SearchObjectsDialog.class);
+    static final Log log = LogFactory.getLog(SearchDatabaseObjectsDialog.class);
 
     private static final String PROP_MASK = "search-view.mask"; //$NON-NLS-1$
     private static final String PROP_CASE_SENSITIVE = "search-view.case-sensitive"; //$NON-NLS-1$ 
@@ -67,7 +67,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
     private static final String PROP_HISTORY = "search-view.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search-view.object-type"; //$NON-NLS-1$
 
-    private volatile static SearchObjectsDialog instance;
+    private volatile static SearchDatabaseObjectsDialog instance;
 
     private DBSDataSourceContainer currentDataSource;
     private Composite searchGroup;
@@ -85,7 +85,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private Set<String> savedTypeNames = new HashSet<String>();
 
-    private SearchObjectsDialog(Shell shell, DBSDataSourceContainer currentDataSource)
+    private SearchDatabaseObjectsDialog(Shell shell, DBSDataSourceContainer currentDataSource)
     {
         super(shell, IHelpContextIds.CTX_SQL_EDITOR);
         setShellStyle(SWT.DIALOG_TRIM | SWT.MAX | SWT.RESIZE | getDefaultOrientation());
@@ -209,9 +209,9 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
 
                 UIUtils.createControlLabel(optionsGroup2, CoreMessages.dialog_search_objects_label_name_match);
                 final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-                matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchConstants.MATCH_INDEX_STARTS_WITH);
-                matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchConstants.MATCH_INDEX_CONTAINS);
-                matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchConstants.MATCH_INDEX_LIKE);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchDatabaseConstants.MATCH_INDEX_CONTAINS);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchDatabaseConstants.MATCH_INDEX_LIKE);
                 matchCombo.select(0);
                 matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 if (matchTypeIndex >= 0) {
@@ -387,7 +387,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             instance.getShell().setActive();
             return;
         }
-        SearchObjectsDialog dialog = new SearchObjectsDialog(shell, currentDataSource);
+        SearchDatabaseObjectsDialog dialog = new SearchDatabaseObjectsDialog(shell, currentDataSource);
         instance = dialog;
         try {
             dialog.open();
@@ -493,7 +493,7 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
             toolbarManager.add(new Action(CoreMessages.dialog_search_objects_button_close, Action.AS_PUSH_BUTTON) {
                 @Override
                 public void run() {
-                    SearchObjectsDialog.this.close();
+                    SearchDatabaseObjectsDialog.this.close();
                 }
             });
         }
@@ -547,11 +547,11 @@ public class SearchObjectsDialog extends HelpEnabledDialog {
                 searchText.add(objectNameMask);
             }
 
-            if (matchTypeIndex == SearchConstants.MATCH_INDEX_STARTS_WITH) {
+            if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH) {
                 if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
                     objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
                 }
-            } else if (matchTypeIndex == SearchConstants.MATCH_INDEX_CONTAINS) {
+            } else if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_CONTAINS) {
                 if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
                     objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
                 }

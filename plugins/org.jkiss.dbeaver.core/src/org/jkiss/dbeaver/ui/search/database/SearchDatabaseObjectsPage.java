@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search;
+package org.jkiss.dbeaver.ui.search.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,9 +46,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class SearchObjectsPage extends DialogPage {
+public class SearchDatabaseObjectsPage extends DialogPage {
 
-    static final Log log = LogFactory.getLog(SearchObjectsDialog.class);
+    static final Log log = LogFactory.getLog(SearchDatabaseObjectsDialog.class);
 
     private static final String PROP_MASK = "search-view.mask"; //$NON-NLS-1$
     private static final String PROP_CASE_SENSITIVE = "search-view.case-sensitive"; //$NON-NLS-1$
@@ -71,7 +71,7 @@ public class SearchObjectsPage extends DialogPage {
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private Set<String> savedTypeNames = new HashSet<String>();
 
-	public SearchObjectsPage() {
+	public SearchDatabaseObjectsPage() {
 		super("Database objects search");
 
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
@@ -131,9 +131,9 @@ public class SearchObjectsPage extends DialogPage {
 
             UIUtils.createControlLabel(optionsGroup2, CoreMessages.dialog_search_objects_label_name_match);
             final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchConstants.MATCH_INDEX_STARTS_WITH);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchConstants.MATCH_INDEX_CONTAINS);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchConstants.MATCH_INDEX_LIKE);
+            matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH);
+            matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchDatabaseConstants.MATCH_INDEX_CONTAINS);
+            matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchDatabaseConstants.MATCH_INDEX_LIKE);
             matchCombo.select(0);
             matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (matchTypeIndex >= 0) {

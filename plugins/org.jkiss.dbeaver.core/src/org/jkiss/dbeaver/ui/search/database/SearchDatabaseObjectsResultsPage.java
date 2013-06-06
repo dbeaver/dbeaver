@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search;
+package org.jkiss.dbeaver.ui.search.database;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,9 +46,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class SearchObjectsResultsPage extends Page {
+public class SearchDatabaseObjectsResultsPage extends Page {
 
-    static final Log log = LogFactory.getLog(SearchObjectsResultsPage.class);
+    static final Log log = LogFactory.getLog(SearchDatabaseObjectsResultsPage.class);
     private IPageSite pageSite;
     private SearchResultsControl itemList;
     private IActionBars actionBars;
@@ -145,11 +145,11 @@ public class SearchObjectsResultsPage extends Page {
                     searchText.add(objectNameMask);
                 }
 
-                if (matchTypeIndex == SearchConstants.MATCH_INDEX_STARTS_WITH) {
+                if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH) {
                     if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
                         objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
                     }
-                } else if (matchTypeIndex == SearchConstants.MATCH_INDEX_CONTAINS) {
+                } else if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_CONTAINS) {
                     if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
                         objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
                     }
