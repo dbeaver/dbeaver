@@ -212,7 +212,9 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 5;
         gd.horizontalSpan = 2;
+        gd.grabExcessHorizontalSpace = true;
         monitorPart.setLayoutData(gd);
+        monitorPart.setVisible(false);
         //monitorPart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         return group;
@@ -346,17 +348,22 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
     {
         // Code copied from WizardDialog
-
+        if (monitorPart != null) {
+            monitorPart.setVisible(true);
+            monitorPart.layout();
+            monitorPart.attachToCancelComponent(null);
+        }
         // The operation can only be canceled if it is executed in a separate
         // thread.
         // Otherwise the UI is blocked anyway.
         try {
-            ModalContext.run(runnable, false, monitorPart, getShell().getDisplay());
+            ModalContext.run(runnable, true, monitorPart, getShell().getDisplay());
         } finally {
             // explicitly invoke done() on our progress monitor so that its
             // label does not spill over to the next invocation, see bug 271530
             if (monitorPart != null) {
                 monitorPart.done();
+                monitorPart.setVisible(false);
             }
         }
     }
