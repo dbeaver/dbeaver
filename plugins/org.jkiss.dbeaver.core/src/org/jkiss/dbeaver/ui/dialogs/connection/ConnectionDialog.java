@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 /**
- * NewConnectionDialog
+ * ConnectionDialog
  */
 public class ConnectionDialog extends ActiveWizardDialog
 {
@@ -38,18 +38,6 @@ public class ConnectionDialog extends ActiveWizardDialog
     public ConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
     {
         super(window, wizard);
-    }
-
-    @Override
-    protected Control createDialogArea(Composite parent)
-    {
-//        DataSourceDescriptor ds = ((ConnectionWizard)getWizard()).getDataSourceDescriptor();
-//        if (ds != null) {
-//            getShell().setImage(ds.getDriver().getIcon());
-//        } else {
-//            getShell().setImage(DBIcon.GEN_DATABASE.getImage());
-//        }
-        return super.createDialogArea(parent);
     }
 
     @Override
