@@ -32,6 +32,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -346,6 +347,56 @@ public class SearchDatabaseObjectsPage extends DialogPage {
         if (!enabled) {
             UIUtils.showErrorDialog(getShell(), "Database search", "Can't perform database objects search. Please specify criteria");
         }
+    }
+
+    public SearchDatabaseObjectsQuery createQuery() throws DBException
+    {
+        DBNNode selectedNode = getSelectedNode();
+        DBSObjectContainer parentObject = null;
+        if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
+            parentObject = (DBSObjectContainer) ((DBSWrapper)selectedNode).getObject();
+        }
+
+        DBPDataSource dataSource = getSelectedDataSource();
+        DBSStructureAssistant assistant = getSelectedStructureAssistant();
+        if (dataSource == null || assistant == null) {
+            throw new IllegalStateException("No active datasource");
+        }
+        java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
+        for (TableItem item : typesTable.getItems()) {
+            if (item.getChecked()) {
+                objectTypes.add((DBSObjectType) item.getData());
+            }
+        }
+        String objectNameMask = nameMask;
+
+        // Save search query
+        if (!searchHistory.contains(objectNameMask)) {
+            searchHistory.add(objectNameMask);
+            searchText.add(objectNameMask);
+        }
+
+        if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH) {
+            if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
+                objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
+            }
+        } else if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_CONTAINS) {
+            if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
+                objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
+            }
+            if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
+                objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
+            }
+        }
+
+        SearchDatabaseObjectsParams params = new SearchDatabaseObjectsParams();
+        params.setParentObject(parentObject);
+        params.setObjectTypes(objectTypes);
+        params.setObjectNameMask(objectNameMask);
+        params.setCaseSensitive(caseSensitive);
+        params.setMaxResults(maxResults);
+        return SearchDatabaseObjectsQuery.createQuery(dataSource, params);
+
     }
 
 }
