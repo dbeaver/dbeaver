@@ -2,7 +2,6 @@ Major:
 
 Search refactoring (scripts search)
 Localizations
-JDBC driver versions update
 DB2 & PostgreSQL & MS SQL plugins
 
 Minor:
@@ -21,5 +20,4 @@ Disconnect detection (by error code)
 Cancel/disconnect improvement
 Connection "dirty" flag handle
 Formatting profiles to connection association
-RSV segments fetch UI
 Structs in record mode
