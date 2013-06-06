@@ -228,6 +228,11 @@ public class Spreadsheet extends LightGrid implements Listener {
         return super.getFocusItem();
     }
 
+    /**
+     * Returns current cursor position
+     * Note: returned object is not immutable and will be changed if user will change focus cell
+     * @return cursor position.
+     */
     public GridPos getCursorPosition()
     {
         if (super.isDisposed()) {
