@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -104,7 +104,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
                 @Override
                 public void run() {
                     IWorkbenchWindow window = getWindowConfigurer().getWindow();
-                    ConnectionDialog dialog = new ConnectionDialog(window
+                    CreateConnectionDialog dialog = new CreateConnectionDialog(window
                         , new NewConnectionWizard(projectRegistry.getActiveDataSourceRegistry()));
                     dialog.open();
                 }

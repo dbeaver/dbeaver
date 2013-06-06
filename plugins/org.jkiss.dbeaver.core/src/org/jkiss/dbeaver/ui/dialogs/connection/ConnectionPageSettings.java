@@ -69,7 +69,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
         this.wizard = wizard;
         this.viewDescriptor = viewDescriptor;
 
-        setTitle(viewDescriptor.getLabel());
+        setTitle(wizard.isNew() ? viewDescriptor.getLabel() : "Connection settings");
         setDescription(CoreMessages.dialog_connection_description);
     }
 
