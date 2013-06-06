@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.JDBCObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 
 import java.util.Map;
@@ -79,7 +79,7 @@ public class DataSourceDescriptorManager extends JDBCObjectManager<DataSourceDes
             } else {
                 registry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
             }
-            ConnectionDialog dialog = new ConnectionDialog(workbenchWindow,
+            CreateConnectionDialog dialog = new CreateConnectionDialog(workbenchWindow,
                 new NewConnectionWizard(registry));
             dialog.open();
         }

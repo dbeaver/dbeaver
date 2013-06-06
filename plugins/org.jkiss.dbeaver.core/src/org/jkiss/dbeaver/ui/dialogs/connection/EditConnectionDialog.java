@@ -19,25 +19,43 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 
 /**
- * ConnectionDialog
+ * CreateConnectionDialog
  */
-public class ConnectionDialog extends ActiveWizardDialog
+public class EditConnectionDialog extends MultiPageWizardDialog
 {
 
     public static final int TEST_BUTTON_ID = 2000;
     private Button testButton;
 
-    public ConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
+    public EditConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
     {
         super(window, wizard);
+    }
+
+    @Override
+    public ConnectionWizard getWizard()
+    {
+        return (ConnectionWizard)super.getWizard();
+    }
+
+    @Override
+    protected Control createContents(Composite parent)
+    {
+        getShell().setText("Connection '" + getWizard().getDataSourceDescriptor().getName() + "' configuration");
+        getShell().setImage(getWizard().getDataSourceDescriptor().getObjectImage());
+        Control contents = super.createContents(parent);
+        updateButtons();
+        return contents;
     }
 
     @Override
@@ -46,7 +64,7 @@ public class ConnectionDialog extends ActiveWizardDialog
         super.createButtonsForButtonBar(parent);
         testButton = createButton(parent, TEST_BUTTON_ID, CoreMessages.dialog_connection_button_test, false);
         testButton.setEnabled(false);
-        testButton.moveAbove(getButton(IDialogConstants.BACK_ID));
+        //testButton.moveAbove(getButton(IDialogConstants.CANCEL_ID));
     }
 
     @Override
@@ -62,9 +80,11 @@ public class ConnectionDialog extends ActiveWizardDialog
     @Override
     public void updateButtons()
     {
-        ConnectionWizard wizard = (ConnectionWizard) getWizard();
-        ConnectionPageSettings settings = wizard.getPageSettings();
-        testButton.setEnabled(settings != null && settings.isPageComplete());
+        if (testButton != null) {
+            ConnectionWizard wizard = (ConnectionWizard) getWizard();
+            ConnectionPageSettings settings = wizard.getPageSettings();
+            testButton.setEnabled(settings != null && settings.isPageComplete());
+        }
         super.updateButtons();
     }
 

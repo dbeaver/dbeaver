@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.StringTokenizer;
 
 /**
@@ -97,7 +96,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
     {
         super("newConnectionFinal"); //$NON-NLS-1$
         this.wizard = wizard;
-        setTitle(CoreMessages.dialog_connection_wizard_final_header);
+        setTitle(wizard.isNew() ? CoreMessages.dialog_connection_wizard_final_header : "Additional");
         setDescription(CoreMessages.dialog_connection_wizard_final_description);
 
         filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));

@@ -58,7 +58,8 @@ import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
@@ -1054,9 +1055,10 @@ public class DataSourceDescriptor
     @Override
     public void editObject(IWorkbenchWindow workbenchWindow)
     {
-        ConnectionDialog dialog = new ConnectionDialog(
-            workbenchWindow,
-            new EditConnectionWizard(this));
+//        CreateConnectionDialog dialog = new CreateConnectionDialog(
+//            workbenchWindow,
+//            new EditConnectionWizard(this));
+        EditConnectionDialog dialog = new EditConnectionDialog(workbenchWindow, new EditConnectionWizard(this));
         dialog.open();
         //workbenchWindow.
     }
