@@ -58,10 +58,7 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 import java.sql.Blob;
@@ -372,19 +369,34 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                         Text text = (Text) control;
                                         StringWriter buffer = new StringWriter();
                                         if (data != null) {
-                                            ContentUtils.copyStreams(data.getContentReader(), -1, buffer, monitor);
+                                            Reader contentReader = data.getContentReader();
+                                            try {
+                                                ContentUtils.copyStreams(contentReader, -1, buffer, monitor);
+                                            } finally {
+                                                ContentUtils.close(contentReader);
+                                            }
                                         }
                                         text.setText(buffer.toString());
                                     } else if (control instanceof HexEditControl) {
                                         HexEditControl hexEditControl = (HexEditControl) control;
                                         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
                                         if (data != null) {
-                                            ContentUtils.copyStreams(data.getContentStream(), -1, buffer, monitor);
+                                            InputStream contentStream = data.getContentStream();
+                                            try {
+                                                ContentUtils.copyStreams(contentStream, -1, buffer, monitor);
+                                            } catch (IOException e) {
+                                                ContentUtils.close(contentStream);
+                                            }
                                         }
                                         hexEditControl.setContent(buffer.toByteArray());
                                     } else if (control instanceof ImageViewer) {
                                         ImageViewer imageViewControl = (ImageViewer)control;
-                                        imageViewControl.loadImage(data.getContentStream());
+                                        InputStream contentStream = data.getContentStream();
+                                        try {
+                                            imageViewControl.loadImage(contentStream);
+                                        } finally {
+                                            ContentUtils.close(contentStream);
+                                        }
                                     }
                                 } catch (Exception e) {
                                     log.error(e);
@@ -580,8 +592,12 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         {
             if (!content.isNull()) {
                 try {
-                    new ImageData(
-                        content.getContents(monitor).getContentStream());
+                    InputStream contentStream = content.getContents(monitor).getContentStream();
+                    try {
+                        new ImageData(contentStream);
+                    } finally {
+                        ContentUtils.close(contentStream);
+                    }
                     isImage = true;
                 }
                 catch (Exception e) {
