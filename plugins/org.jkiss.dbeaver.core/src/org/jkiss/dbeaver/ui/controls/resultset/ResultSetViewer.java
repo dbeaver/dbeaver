@@ -587,7 +587,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (curRowNum >= model.getRowCount()) {
                 curRowNum = model.getRowCount() - 1;
             }
-            GridPos curPos = spreadsheet.getCursorPosition();
+            GridPos curPos = new GridPos(spreadsheet.getCursorPosition());
             if (mode == ResultSetMode.GRID) {
                 if (curPos.row >= model.getRowCount()) {
                     curPos.row = model.getRowCount() - 1;
