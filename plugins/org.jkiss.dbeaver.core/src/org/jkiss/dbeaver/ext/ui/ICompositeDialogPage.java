@@ -20,24 +20,12 @@
 package org.jkiss.dbeaver.ext.ui;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPDriver;
 
 /**
- * IDataSourceConnectionEditorSite
+ * ICompositeDialogPage
  */
-public interface IDataSourceConnectionEditorSite
+public interface ICompositeDialogPage extends IDialogPage
 {
-    IRunnableContext getRunnableContext();
+    IDialogPage[] getSubPages();
 
-    DBPDriver getDriver();
-
-    DBPConnectionInfo getConnectionInfo();
-
-    void updateButtons();
-
-    void updateMessage();
-
-    boolean openDriverEditor();
 }

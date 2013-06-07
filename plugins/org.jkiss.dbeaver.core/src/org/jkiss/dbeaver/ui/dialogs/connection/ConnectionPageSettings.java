@@ -191,15 +191,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
-    public void testConnection()
-    {
-        if (this.connectionEditor != null) {
-            this.connectionEditor.saveSettings();
-            this.wizard.testConnection();
-        }
-    }
-
-    @Override
     public boolean openDriverEditor()
     {
         DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), this.getDriver());
