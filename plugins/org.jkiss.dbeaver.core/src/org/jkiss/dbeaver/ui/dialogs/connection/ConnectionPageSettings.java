@@ -110,6 +110,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
             connectionEditor.saveSettings();
         }
     }
+
     @Override
     public void createControl(Composite parent)
     {
