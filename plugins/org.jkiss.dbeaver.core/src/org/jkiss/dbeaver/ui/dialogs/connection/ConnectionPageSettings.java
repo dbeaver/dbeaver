@@ -48,7 +48,7 @@ import java.util.Map;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConnectionEditorSite
+class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite
 {
     static final Log log = LogFactory.getLog(DriverDescriptor.class);
 

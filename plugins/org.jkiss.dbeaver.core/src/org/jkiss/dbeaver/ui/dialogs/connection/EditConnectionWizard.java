@@ -39,7 +39,8 @@ public class EditConnectionWizard extends ConnectionWizard
     private DBPConnectionInfo oldData;
     private ConnectionPageSettings pageSettings;
     private ConnectionPageFinal pageFinal;
-    private EditTunnelDialogPage pageTunels;
+    private EditTunnelDialogPage pageTunnels;
+    private EditEventsDialogPage pageEvents;
 
     /**
      * Constructor for SampleNewWizard.
@@ -83,9 +84,12 @@ public class EditConnectionWizard extends ConnectionWizard
         }
 
         pageFinal = new ConnectionPageFinal(this, dataSource);
+        pageTunnels = new EditTunnelDialogPage(dataSource.getDriver(), dataSource.getConnectionInfo());
+        pageEvents = new EditEventsDialogPage(dataSource.getConnectionInfo());
+
         addPage(pageFinal);
-        pageTunels = new EditTunnelDialogPage(dataSource.getDriver(), dataSource.getConnectionInfo());
-        addPage(pageTunels);
+        addPage(pageTunnels);
+        addPage(pageEvents);
     }
 
     /**
@@ -99,7 +103,8 @@ public class EditConnectionWizard extends ConnectionWizard
         super.performFinish();
         dataSource.setUpdateDate(new Date());
         pageFinal.saveSettings(dataSource);
-        pageTunels.saveConfigurations();
+        pageTunnels.saveConfigurations();
+        pageEvents.saveConfigurations();
         dataSource.getRegistry().updateDataSource(dataSource);
         return true;
     }
@@ -124,7 +129,8 @@ public class EditConnectionWizard extends ConnectionWizard
     protected void saveSettings()
     {
         super.saveSettings();
-        pageTunels.saveConfigurations();
+        pageTunnels.saveConfigurations();
+        pageEvents.saveConfigurations();
     }
 
 }
