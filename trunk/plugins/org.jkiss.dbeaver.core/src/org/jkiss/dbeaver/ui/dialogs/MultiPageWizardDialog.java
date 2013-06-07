@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -203,6 +204,17 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         } finally {
             pageArea.setRedraw(true);
         }
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId)
+    {
+        if (buttonId == IDialogConstants.CANCEL_ID) {
+            getWizard().performCancel();
+        } else if (buttonId == IDialogConstants.OK_ID) {
+            getWizard().performFinish();
+        }
+        super.buttonPressed(buttonId);
     }
 
     @Override

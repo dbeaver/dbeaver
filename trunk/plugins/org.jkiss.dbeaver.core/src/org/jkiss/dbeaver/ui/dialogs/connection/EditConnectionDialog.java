@@ -81,8 +81,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     public void updateButtons()
     {
         if (testButton != null) {
-            ConnectionWizard wizard = (ConnectionWizard) getWizard();
-            ConnectionPageSettings settings = wizard.getPageSettings();
+            ConnectionPageSettings settings = getWizard().getPageSettings();
             testButton.setEnabled(settings != null && settings.isPageComplete());
         }
         super.updateButtons();
@@ -90,9 +89,8 @@ public class EditConnectionDialog extends MultiPageWizardDialog
 
     private void testConnection()
     {
-        ConnectionWizard wizard = (ConnectionWizard) getWizard();
-        wizard.getPageSettings().saveSettings();
-        wizard.testConnection(wizard.getPageSettings().getConnectionInfo());
+        getWizard().getPageSettings().saveSettings();
+        getWizard().testConnection(getWizard().getPageSettings().getConnectionInfo());
     }
 
 }
