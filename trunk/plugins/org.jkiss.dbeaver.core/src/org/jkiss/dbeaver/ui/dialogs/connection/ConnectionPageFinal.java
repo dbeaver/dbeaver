@@ -57,7 +57,7 @@ import java.util.StringTokenizer;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageFinal extends ActiveWizardPage {
+class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
     static final Log log = LogFactory.getLog(ConnectionPageFinal.class);
 
     private ConnectionWizard wizard;
