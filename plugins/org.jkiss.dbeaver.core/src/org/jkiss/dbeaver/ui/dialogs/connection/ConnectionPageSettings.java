@@ -195,7 +195,7 @@ class ConnectionPageSettings extends ActiveWizardPage implements IDataSourceConn
     {
         if (this.connectionEditor != null) {
             this.connectionEditor.saveSettings();
-            this.wizard.testConnection(getConnectionInfo());
+            this.wizard.testConnection();
         }
     }
 
