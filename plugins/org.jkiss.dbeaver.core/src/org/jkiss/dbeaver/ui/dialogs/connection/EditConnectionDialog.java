@@ -89,8 +89,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
 
     private void testConnection()
     {
-        getWizard().getPageSettings().saveSettings();
-        getWizard().testConnection(getWizard().getPageSettings().getConnectionInfo());
+        getWizard().testConnection();
     }
 
 }
