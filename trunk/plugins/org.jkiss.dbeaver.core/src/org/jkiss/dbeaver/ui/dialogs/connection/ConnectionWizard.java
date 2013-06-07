@@ -73,8 +73,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
 
     public abstract ConnectionPageSettings getPageSettings();
 
-    public void testConnection(final DBPConnectionInfo connectionInfo)
+    public void testConnection()
     {
+        saveSettings();
+        final DBPConnectionInfo connectionInfo = getPageSettings().getConnectionInfo();
+
         DBRRunnableWithProgress op = new DBRRunnableWithProgress()
         {
             @Override
@@ -152,6 +155,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 CoreMessages.dialog_connection_wizard_start_dialog_error_message,
                 ex.getTargetException());
         }
+    }
+
+    protected void saveSettings()
+    {
+        getPageSettings().saveSettings();
     }
 
     public boolean isNew()

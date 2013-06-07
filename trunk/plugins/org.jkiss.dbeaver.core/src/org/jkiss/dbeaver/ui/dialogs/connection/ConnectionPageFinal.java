@@ -154,18 +154,20 @@ class ConnectionPageFinal extends ActiveWizardPage {
                 connectionNameText.setText(newName);
                 connectionNameChanged = false;
 
-                tunnelButton.setFont(getFont());
-                for (DBWHandlerConfiguration config : connectionInfo.getDeclaredHandlers()) {
-                    if (config.isEnabled()) {
-                        tunnelButton.setFont(boldFont);
-                        break;
+                if (dataSourceDescriptor == null) {
+                    tunnelButton.setFont(getFont());
+                    for (DBWHandlerConfiguration config : connectionInfo.getDeclaredHandlers()) {
+                        if (config.isEnabled()) {
+                            tunnelButton.setFont(boldFont);
+                            break;
+                        }
                     }
-                }
-                eventsButton.setFont(getFont());
-                for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
-                    if (connectionInfo.getEvent(eventType).isEnabled()) {
-                        eventsButton.setFont(boldFont);
-                        break;
+                    eventsButton.setFont(getFont());
+                    for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
+                        if (connectionInfo.getEvent(eventType).isEnabled()) {
+                            eventsButton.setFont(boldFont);
+                            break;
+                        }
                     }
                 }
             }
@@ -407,7 +409,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
             gd.horizontalSpan = 2;
             buttonsGroup.setLayoutData(gd);
 
-            {
+            if (dataSourceDescriptor == null) {
                 tunnelButton = new Button(buttonsGroup, SWT.PUSH);
                 tunnelButton.setText(CoreMessages.dialog_connection_wizard_final_button_tunneling);
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -420,9 +422,7 @@ class ConnectionPageFinal extends ActiveWizardPage {
                         configureTunnels();
                     }
                 });
-            }
 
-            {
                 eventsButton = new Button(buttonsGroup, SWT.PUSH);
                 eventsButton.setText(CoreMessages.dialog_connection_wizard_final_button_events);
                 gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
