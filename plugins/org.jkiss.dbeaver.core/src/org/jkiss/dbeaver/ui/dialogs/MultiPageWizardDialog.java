@@ -38,7 +38,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -113,27 +115,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         Point maxSize = new Point(0, 0);
         IWizardPage[] pages = wizard.getPages();
-        for (int i = 0, pagesLength = pages.length; i < pagesLength; i++) {
-            IDialogPage page = pages[i];
-            page.createControl(pageArea);
-            if (i == 0 && page instanceof ActiveWizardPage) {
-                ((ActiveWizardPage) page).activatePage();
-            }
-            Control control = page.getControl();
-            Point pageSize = control.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-            if (pageSize.x > maxSize.x) maxSize.x = pageSize.x;
-            if (pageSize.y > maxSize.y) maxSize.y = pageSize.y;
-            GridData gd = (GridData) control.getLayoutData();
-            if (gd == null) {
-                gd = new GridData(GridData.FILL_BOTH);
-                control.setLayoutData(gd);
-            }
-            gd.exclude = i > 0;
-            control.setVisible(i == 0);
-
-            TreeItem item = new TreeItem(pagesTree, SWT.NONE);
-            item.setText(page.getTitle());
-            item.setData(page);
+        for (IWizardPage page : pages) {
+            addPage(null, page, maxSize);
         }
         prevPage = (IDialogPage) pagesTree.getItem(0).getData();
         GridData gd = (GridData) pageArea.getLayoutData();
@@ -169,6 +152,42 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         monitorPart.setVisible(false);
 
         return composite;
+    }
+
+    private TreeItem addPage(TreeItem parentItem, IDialogPage page, Point maxSize)
+    {
+        boolean hasPages = pagesTree.getItemCount() != 0;
+        page.createControl(pageArea);
+        if (!hasPages && page instanceof ActiveWizardPage) {
+            ((ActiveWizardPage) page).activatePage();
+        }
+        Control control = page.getControl();
+        Point pageSize = control.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        if (pageSize.x > maxSize.x) maxSize.x = pageSize.x;
+        if (pageSize.y > maxSize.y) maxSize.y = pageSize.y;
+        GridData gd = (GridData) control.getLayoutData();
+        if (gd == null) {
+            gd = new GridData(GridData.FILL_BOTH);
+            control.setLayoutData(gd);
+        }
+        gd.exclude = hasPages;
+        control.setVisible(!gd.exclude);
+
+        TreeItem item = parentItem == null ?
+            new TreeItem(pagesTree, SWT.NONE) :
+            new TreeItem(parentItem, SWT.NONE);
+        item.setText(page.getTitle());
+        item.setData(page);
+
+        // Ad sub pages
+        if (page instanceof ICompositeDialogPage) {
+            IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages();
+            for (IDialogPage subPage : subPages) {
+                addPage(item, subPage, maxSize);
+            }
+        }
+
+        return item;
     }
 
     private void changePage()
@@ -220,20 +239,23 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     @Override
     public IWizardPage getCurrentPage()
     {
-        return null;
+        TreeItem[] selection = pagesTree.getSelection();
+        if (CommonUtils.isEmpty(selection)) {
+            return null;
+        }
+        IDialogPage page = (IDialogPage)selection[0].getData();
+        return page instanceof IWizardPage ? (IWizardPage) page : null;
     }
 
     @Override
     public void showPage(IWizardPage page)
     {
-/*
-        for (CTabItem item : pagesFolder.getItems()) {
+        for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() == page) {
-                pagesFolder.setSelection(item);
+                pagesTree.setSelection(item);
                 break;
             }
         }
-*/
     }
 
     @Override
