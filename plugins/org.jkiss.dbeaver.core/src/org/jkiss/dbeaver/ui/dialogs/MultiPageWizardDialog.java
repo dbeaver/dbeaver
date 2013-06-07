@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -34,10 +34,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -47,7 +44,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * MultiPageWizardDialog
  */
-public class MultiPageWizardDialog extends TrayDialog implements IWizardContainer {
+public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardContainer {
 
     private IWizard wizard;
     private Composite pageArea;
@@ -99,9 +96,14 @@ public class MultiPageWizardDialog extends TrayDialog implements IWizardContaine
         SashForm sash = new SashForm(composite, SWT.HORIZONTAL);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        pagesTree = new Tree(sash, SWT.BORDER | SWT.SINGLE);
+        pagesTree = new Tree(sash, SWT.SINGLE);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Composite pageContainer = UIUtils.createPlaceholder(sash, 1);
+        Composite pageContainer = UIUtils.createPlaceholder(sash, 2);
+
+        // Vertical separator
+        new Label(pageContainer, SWT.SEPARATOR | SWT.VERTICAL)
+            .setLayoutData(new GridData(SWT.LEFT, SWT.FILL, false, true));
+
         pageArea = UIUtils.createPlaceholder(pageContainer, 1);
         pageArea.setLayoutData(new GridData(GridData.FILL_BOTH));
         pageArea.setLayout(new GridLayout(1, true));
@@ -147,9 +149,20 @@ public class MultiPageWizardDialog extends TrayDialog implements IWizardContaine
             }
         });
 
+        // Set title and image from first page
+        setTitle(prevPage.getTitle());
+        setTitleImage(prevPage.getImage());
+        setMessage(prevPage.getMessage());
+
+        // Horizontal separator
+        new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR)
+            .setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        // Progress monitor
         monitorPart = new ProgressMonitorPart(composite, null, true);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalIndent = 20;
         gd.verticalIndent = 0;
         monitorPart.setLayoutData(gd);
         monitorPart.setVisible(false);
@@ -191,44 +204,6 @@ public class MultiPageWizardDialog extends TrayDialog implements IWizardContaine
             pageArea.setRedraw(true);
         }
     }
-
-/*
-    @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
-        super.createButtonsForButtonBar(parent);
-        testButton = createButton(parent, TEST_BUTTON_ID, CoreMessages.dialog_connection_button_test, false);
-        testButton.setEnabled(false);
-        testButton.moveAbove(getButton(IDialogConstants.BACK_ID));
-    }
-
-    @Override
-    protected void buttonPressed(int buttonId)
-    {
-        if (buttonId == TEST_BUTTON_ID) {
-            testConnection();
-            return;
-        }
-        super.buttonPressed(buttonId);
-    }
-
-    @Override
-    public void updateButtons()
-    {
-        ConnectionWizard wizard = (ConnectionWizard) getWizard();
-        ConnectionPageSettings settings = wizard.getPageSettings();
-        testButton.setEnabled(settings != null && settings.isPageComplete());
-        super.updateButtons();
-    }
-
-    private void testConnection()
-    {
-        ConnectionWizard wizard = (ConnectionWizard) getWizard();
-        wizard.getPageSettings().saveSettings();
-        wizard.testConnection(wizard.getPageSettings().getConnectionInfo());
-    }
-*/
-
 
     @Override
     public IWizardPage getCurrentPage()
