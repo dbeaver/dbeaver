@@ -30,13 +30,15 @@ import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 public class DriverPropertiesDialogPage extends ConnectionPageAbstract
 {
 
+    private ConnectionPageAbstract hostPage;
     private ConnectionPropertiesControl propsControl;
     private PropertySourceCustom propertySource;
 
     private DBPConnectionInfo prevConnectionInfo = null;
 
-    public DriverPropertiesDialogPage()
+    public DriverPropertiesDialogPage(ConnectionPageAbstract hostPage)
     {
+        this.hostPage = hostPage;
         setTitle("Driver properties");
     }
 
@@ -61,8 +63,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             return;
         }
         DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
-        saveSettings(tmpConnectionInfo);
-        tmpConnectionInfo.setProperties(site.getConnectionInfo().getProperties());
+        hostPage.saveSettings(tmpConnectionInfo);
         propertySource = propsControl.makeProperties(
             site.getRunnableContext(),
             site.getDriver(),
