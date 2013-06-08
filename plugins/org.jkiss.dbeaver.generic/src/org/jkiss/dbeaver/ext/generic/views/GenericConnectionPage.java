@@ -505,7 +505,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     public IDialogPage[] getSubPages()
     {
         return new IDialogPage[] {
-            new DriverPropertiesDialogPage()
+            new DriverPropertiesDialogPage(this)
         };
     }
 

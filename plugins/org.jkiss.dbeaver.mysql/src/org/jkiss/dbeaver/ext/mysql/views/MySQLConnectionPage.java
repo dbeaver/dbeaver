@@ -78,10 +78,8 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             }
         };
 
-        Composite addrGroup = new Composite(composite, SWT.NONE);
+        Composite addrGroup = UIUtils.createPlaceholder(composite, 4);
         GridLayout gl = new GridLayout(4, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
         addrGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
         addrGroup.setLayoutData(gd);
@@ -221,7 +219,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     public IDialogPage[] getSubPages()
     {
         return new IDialogPage[] {
-            new DriverPropertiesDialogPage()
+            new DriverPropertiesDialogPage(this)
         };
     }
 
