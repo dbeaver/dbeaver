@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
@@ -28,6 +29,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -38,6 +40,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +51,7 @@ import java.util.Map;
  * OR with the extension that matches the expected one (mpe).
  */
 
-class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite
+class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage
 {
     static final Log log = LogFactory.getLog(DriverDescriptor.class);
 
@@ -57,6 +60,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private IDataSourceConnectionEditor connectionEditor;
     private DataSourceDescriptor dataSource;
     private Map<DriverDescriptor, DBPConnectionInfo> infoMap = new HashMap<DriverDescriptor, DBPConnectionInfo>();
+    private IDialogPage[] subPages;
 
     /**
      * Constructor for ConnectionPageSettings
@@ -93,21 +97,33 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (this.connectionEditor != null) {
             this.connectionEditor.loadSettings();
         }
-        //this.editor.loadSettings();
+        if (subPages != null) {
+            for (IDialogPage page : subPages) {
+                if (page instanceof IDataSourceConnectionEditor) {
+                    ((IDataSourceConnectionEditor) page).loadSettings();
+                }
+            }
+        }
     }
 
     @Override
     public void deactivatePage()
     {
-        if (this.connectionEditor != null) {
-            this.connectionEditor.saveSettings();
-        }
+        saveSettings();
     }
 
     void saveSettings()
     {
         if (connectionEditor != null) {
             connectionEditor.saveSettings();
+        }
+
+        if (subPages != null) {
+            for (IDialogPage page : subPages) {
+                if (page instanceof IDataSourceConnectionEditor) {
+                    ((IDataSourceConnectionEditor) page).saveSettings();
+                }
+            }
         }
     }
 
@@ -118,6 +134,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
             this.connectionEditor.setSite(this);
             this.connectionEditor.createControl(parent);
+            // init sub pages (if any)
+            getSubPages();
 
             setControl(this.connectionEditor.getControl());
             final Image editorImage = this.connectionEditor.getImage();
@@ -205,6 +223,27 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             connectionEditor = null;
         }
         super.dispose();
+    }
+
+    @Override
+    public IDialogPage[] getSubPages()
+    {
+        if (subPages != null) {
+            return subPages;
+        }
+        if (connectionEditor instanceof ICompositeDialogPage) {
+            subPages = ((ICompositeDialogPage) connectionEditor).getSubPages();
+            if (!CommonUtils.isEmpty(subPages)) {
+                for (IDialogPage page : subPages) {
+                    if (page instanceof IDataSourceConnectionEditor) {
+                        ((IDataSourceConnectionEditor) page).setSite(this);
+                    }
+                }
+            }
+            return subPages;
+        } else {
+            return null;
+        }
     }
 
 }

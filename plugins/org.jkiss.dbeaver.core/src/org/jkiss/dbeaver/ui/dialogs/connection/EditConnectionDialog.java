@@ -53,9 +53,7 @@ public class EditConnectionDialog extends MultiPageWizardDialog
     {
         getShell().setText("Connection '" + getWizard().getDataSourceDescriptor().getName() + "' configuration");
         getShell().setImage(getWizard().getDataSourceDescriptor().getObjectImage());
-        Control contents = super.createContents(parent);
-        updateButtons();
-        return contents;
+        return super.createContents(parent);
     }
 
     @Override

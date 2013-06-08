@@ -30,13 +30,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.nosql.cassandra.Activator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * CassandraConnectionPage
  */
-public class CassandraConnectionPage extends ConnectionPageAdvanced
+public class CassandraConnectionPage extends ConnectionPageAbstract
 {
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/cassandra_logo.png");
 
