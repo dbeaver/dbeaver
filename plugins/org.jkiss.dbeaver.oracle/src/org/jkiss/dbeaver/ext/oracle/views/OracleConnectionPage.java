@@ -459,7 +459,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     {
         return new IDialogPage[] {
             new OracleConnectionExtraPage(),
-            new DriverPropertiesDialogPage(),
+            new DriverPropertiesDialogPage(this),
         };
     }
 
