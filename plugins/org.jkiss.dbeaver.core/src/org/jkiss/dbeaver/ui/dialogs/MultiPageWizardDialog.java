@@ -90,6 +90,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
+    protected Control createContents(Composite parent)
+    {
+        Control contents = super.createContents(parent);
+        updateButtons();
+        return contents;
+    }
+
+    @Override
     protected Control createDialogArea(Composite parent)
     {
         Composite composite = (Composite)super.createDialogArea(parent);
@@ -118,7 +126,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         for (IWizardPage page : pages) {
             addPage(null, page, maxSize);
         }
-        prevPage = (IDialogPage) pagesTree.getItem(0).getData();
         GridData gd = (GridData) pageArea.getLayoutData();
         //gd.minimumWidth = 200;
         //gd.minimumHeight = 200;
@@ -132,11 +139,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 changePage();
             }
         });
+        // Select first page
+        pagesTree.select(pagesTree.getItem(0));
+        changePage();
 
         // Set title and image from first page
-        setTitle(prevPage.getTitle());
-        setTitleImage(prevPage.getImage());
-        setMessage(prevPage.getMessage());
+        IDialogPage firstPage = (IDialogPage) pagesTree.getItem(0).getData();
+        setTitle(firstPage.getTitle());
+        setTitleImage(firstPage.getImage());
+        setMessage(firstPage.getMessage());
 
         // Horizontal separator
         new Label(composite, SWT.HORIZONTAL | SWT.SEPARATOR)
@@ -158,9 +169,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     {
         boolean hasPages = pagesTree.getItemCount() != 0;
         page.createControl(pageArea);
-        if (!hasPages && page instanceof ActiveWizardPage) {
-            ((ActiveWizardPage) page).activatePage();
-        }
         Control control = page.getControl();
         Point pageSize = control.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         if (pageSize.x > maxSize.x) maxSize.x = pageSize.x;
@@ -182,8 +190,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         // Ad sub pages
         if (page instanceof ICompositeDialogPage) {
             IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages();
-            for (IDialogPage subPage : subPages) {
-                addPage(item, subPage, maxSize);
+            if (!CommonUtils.isEmpty(subPages)) {
+                for (IDialogPage subPage : subPages) {
+                    addPage(item, subPage, maxSize);
+                }
+                item.setExpanded(true);
             }
         }
 
@@ -203,17 +214,14 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 return;
             }
 
-            GridData gd = (GridData) prevPage.getControl().getLayoutData();
-            gd.exclude = true;
-            prevPage.setVisible(false);
-            if (prevPage instanceof ActiveWizardPage) {
-                ((ActiveWizardPage) prevPage).deactivatePage();
+            GridData gd;
+            if (prevPage != null) {
+                gd = (GridData) prevPage.getControl().getLayoutData();
+                gd.exclude = true;
+                prevPage.setVisible(false);
             }
 
             IDialogPage page = (IDialogPage) newItem.getData();
-            if (page instanceof ActiveWizardPage) {
-                ((ActiveWizardPage) page).activatePage();
-            }
             gd = (GridData) page.getControl().getLayoutData();
             gd.exclude = false;
             page.setVisible(true);
@@ -261,7 +269,20 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     @Override
     public void updateButtons()
     {
-
+        boolean complete = true;
+        for (TreeItem item : pagesTree.getItems()) {
+            if (item.getData() instanceof IWizardPage) {
+                IWizardPage page = (IWizardPage) item.getData();
+                if (!page.isPageComplete()) {
+                    complete = false;
+                    break;
+                }
+            }
+        }
+        Button button = getButton(IDialogConstants.OK_ID);
+        if (button != null && !button.isDisposed()) {
+            button.setEnabled(complete);
+        }
     }
 
     @Override

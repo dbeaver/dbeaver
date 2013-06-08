@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.views;
 
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
@@ -35,10 +36,12 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
+import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPropertiesDialogPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,7 +53,7 @@ import java.util.Map;
 /**
  * OracleConnectionPage
  */
-public class OracleConnectionPage extends ConnectionPageAdvanced
+public class OracleConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
     //static final Log log = LogFactory.getLog(OracleConnectionPage.class);
 
@@ -94,48 +97,7 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
 
         controlModifyListener = new ControlsListener();
 
-        TabFolder optionsFolder = new TabFolder(composite, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        optionsFolder.setLayoutData(gd);
-
-        TabItem addrTab = new TabItem(optionsFolder, SWT.NONE);
-        addrTab.setText(OracleMessages.dialog_connection_general_tab);
-        addrTab.setToolTipText(OracleMessages.dialog_connection_general_tab_tooltip);
-        addrTab.setControl(createGeneralTab(optionsFolder));
-
-        final TabItem cfgTab = new TabItem(optionsFolder, SWT.NONE);
-        cfgTab.setText("Settings");
-        cfgTab.setToolTipText("Additional connection settings");
-        cfgTab.setControl(createConfigurationTab(optionsFolder));
-
-        final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
-        propsTab.setText(OracleMessages.dialog_connection_advanced_tab);
-        propsTab.setToolTipText(OracleMessages.dialog_connection_advanced_tab_tooltip);
-        propsTab.setControl(super.createPropertiesTab(optionsFolder));
-
-/*
-        optionsFolder.addSelectionListener(
-            new SelectionListener()
-            {
-                public void widgetSelected(SelectionEvent e)
-                {
-                    if (e.item == propsTab) {
-                        //refreshDriverProperties();
-                    }
-                }
-
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
-            }
-        );
-*/
-        setControl(optionsFolder);
-    }
-
-    private Composite createGeneralTab(Composite parent)
-    {
-        Composite addrGroup = new Composite(parent, SWT.NONE);
+        Composite addrGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.marginHeight = 10;
         gl.marginWidth = 10;
@@ -168,7 +130,8 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         createBottomGroup(bottomControls);
-        return addrGroup;
+
+        setControl(addrGroup);
     }
 
     private void createBasicConnectionControls(CTabFolder protocolFolder)
@@ -619,6 +582,14 @@ public class OracleConnectionPage extends ConnectionPageAdvanced
         public void widgetDefaultSelected(SelectionEvent e) {
             updateUI();
         }
+    }
+
+    @Override
+    public IDialogPage[] getSubPages()
+    {
+        return new IDialogPage[] {
+            new ConnectionPropertiesDialogPage()
+        };
     }
 
 }

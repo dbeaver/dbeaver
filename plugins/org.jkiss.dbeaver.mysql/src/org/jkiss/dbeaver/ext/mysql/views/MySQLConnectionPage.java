@@ -18,22 +18,25 @@
  */
 package org.jkiss.dbeaver.ext.mysql.views;
 
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
+import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -41,7 +44,7 @@ import java.util.Locale;
 /**
  * MySQLConnectionPage
  */
-public class MySQLConnectionPage extends ConnectionPageAdvanced
+public class MySQLConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
     private Text hostText;
     private Text portText;
@@ -66,42 +69,6 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         //group.setLayout(new GridLayout(1, true));
         setImageDescriptor(logoImage);
 
-        TabFolder optionsFolder = new TabFolder(composite, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        optionsFolder.setLayoutData(gd);
-
-        TabItem addrTab = new TabItem(optionsFolder, SWT.NONE);
-        addrTab.setText(MySQLMessages.dialog_connection_general_tab);
-        addrTab.setToolTipText(MySQLMessages.dialog_connection_general_tab_tooltip);
-        addrTab.setControl(createGeneralTab(optionsFolder));
-
-        final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
-        propsTab.setText(MySQLMessages.dialog_connection_advanced_tab);
-        propsTab.setToolTipText(MySQLMessages.dialog_connection_advanced_tab_tooltip);
-        propsTab.setControl(createPropertiesTab(optionsFolder));
-
-        optionsFolder.addSelectionListener(
-            new SelectionListener()
-            {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    if (e.item == propsTab) {
-                        //refreshDriverProperties();
-                    }
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
-            }
-        );
-        setControl(optionsFolder);
-    }
-
-    private Composite createGeneralTab(Composite parent)
-    {
         ModifyListener textListener = new ModifyListener()
         {
             @Override
@@ -111,7 +78,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
             }
         };
 
-        Composite addrGroup = new Composite(parent, SWT.NONE);
+        Composite addrGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 10;
         gl.marginWidth = 10;
@@ -173,7 +140,7 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
         //gd.minimumWidth = 300;
         homesSelector.setLayoutData(gd);
 
-        return addrGroup;
+        setControl(addrGroup);
     }
 
     @Override
@@ -248,6 +215,14 @@ public class MySQLConnectionPage extends ConnectionPageAdvanced
     private void evaluateURL()
     {
         site.updateButtons();
+    }
+
+    @Override
+    public IDialogPage[] getSubPages()
+    {
+        return new IDialogPage[] {
+            new ConnectionPropertiesDialogPage()
+        };
     }
 
 }
