@@ -77,7 +77,8 @@ public class EditTunnelDialogPage extends ActiveWizardPage {
         super(CoreMessages.dialog_tunnel_title);
         this.driver = driver;
         this.connectionInfo = connectionInfo;
-        setTitle(CoreMessages.dialog_tunnel_title);
+        setTitle("Tunnelling (SSH)");
+        setDescription(CoreMessages.dialog_tunnel_title);
     }
 
     @Override

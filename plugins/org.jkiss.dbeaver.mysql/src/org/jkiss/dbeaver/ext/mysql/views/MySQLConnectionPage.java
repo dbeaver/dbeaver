@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPropertiesDialogPage;
+import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -221,7 +221,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     public IDialogPage[] getSubPages()
     {
         return new IDialogPage[] {
-            new ConnectionPropertiesDialogPage()
+            new DriverPropertiesDialogPage()
         };
     }
 

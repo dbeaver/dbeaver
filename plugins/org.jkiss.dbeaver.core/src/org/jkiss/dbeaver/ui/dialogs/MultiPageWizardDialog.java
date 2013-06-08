@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
@@ -55,6 +56,8 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     private IDialogPage prevPage;
 
     private ProgressMonitorPart monitorPart;
+    private SashForm wizardSash;
+    private volatile int runningOperations = 0;
 
     public MultiPageWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
@@ -90,6 +93,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
+    protected int getShellStyle()
+    {
+        return SWT.TITLE | SWT.MAX | SWT.RESIZE;
+    }
+
+    @Override
     protected Control createContents(Composite parent)
     {
         Control contents = super.createContents(parent);
@@ -104,12 +113,12 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         wizard.addPages();
 
-        SashForm sash = new SashForm(composite, SWT.HORIZONTAL);
-        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+        wizardSash = new SashForm(composite, SWT.HORIZONTAL);
+        wizardSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        pagesTree = new Tree(sash, SWT.SINGLE);
+        pagesTree = new Tree(wizardSash, SWT.SINGLE);
         pagesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
-        Composite pageContainer = UIUtils.createPlaceholder(sash, 2);
+        Composite pageContainer = UIUtils.createPlaceholder(wizardSash, 2);
 
         // Vertical separator
         new Label(pageContainer, SWT.SEPARATOR | SWT.VERTICAL)
@@ -119,7 +128,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         pageArea.setLayoutData(new GridData(GridData.FILL_BOTH));
         pageArea.setLayout(new GridLayout(1, true));
 
-        sash.setWeights(new int[] {300 ,700});
+        wizardSash.setWeights(new int[]{300, 700});
 
         Point maxSize = new Point(0, 0);
         IWizardPage[] pages = wizard.getPages();
@@ -303,6 +312,13 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
     }
 
+    public boolean close() {
+        if (runningOperations > 0) {
+            return false;
+        }
+        return super.close();
+    }
+
     @Override
     public void run(boolean fork, boolean cancelable, IRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
     {
@@ -312,9 +328,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             monitorPart.layout();
             monitorPart.attachToCancelComponent(null);
         }
+        ControlEnableState pageEnableState = ControlEnableState.disable(wizardSash);
+        ControlEnableState buttonsEnableState = ControlEnableState.disable(getButtonBar());
         try {
+            runningOperations++;
             ModalContext.run(runnable, true, monitorPart, getShell().getDisplay());
         } finally {
+            runningOperations--;
+            buttonsEnableState.restore();
+            pageEnableState.restore();
             if (monitorPart != null) {
                 monitorPart.done();
                 monitorPart.setVisible(false);

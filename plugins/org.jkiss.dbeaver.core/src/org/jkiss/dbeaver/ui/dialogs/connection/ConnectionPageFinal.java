@@ -96,7 +96,7 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
     {
         super("newConnectionFinal"); //$NON-NLS-1$
         this.wizard = wizard;
-        setTitle(wizard.isNew() ? CoreMessages.dialog_connection_wizard_final_header : "Additional");
+        setTitle(wizard.isNew() ? CoreMessages.dialog_connection_wizard_final_header : "General");
         setDescription(CoreMessages.dialog_connection_wizard_final_description);
 
         filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));

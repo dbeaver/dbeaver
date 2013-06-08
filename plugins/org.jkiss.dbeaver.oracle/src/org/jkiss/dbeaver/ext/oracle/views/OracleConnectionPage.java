@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.ext.oracle.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -32,8 +30,6 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionRole;
 import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
-import org.jkiss.dbeaver.ext.oracle.model.dict.OracleLanguage;
-import org.jkiss.dbeaver.ext.oracle.model.dict.OracleTerritory;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
@@ -41,8 +37,7 @@ import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPropertiesDialogPage;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -65,22 +60,15 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private Combo userRoleCombo;
     private Text passwordText;
     private Combo tnsNameCombo;
-	private CTabFolder connectionTypeFolder;
-    private Composite bottomControls;
+	private TabFolder connectionTypeFolder;
     private ClientHomesSelector oraHomeSelector;
-    //private Button ociDriverCheck;
     private Text connectionUrlText;
     private Button osAuthCheck;
 
     private ControlsListener controlModifyListener;
     private OracleConstants.ConnectionType connectionType = OracleConstants.ConnectionType.BASIC;
-    //private boolean isOCI;
 
     private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/oracle_logo.png"); //$NON-NLS-1$
-    private Combo languageCombo;
-    private Combo territoryCombo;
-    private Button hideEmptySchemasCheckbox;
-    private Button showDBAAlwaysCheckbox;
 
     @Override
     public void dispose()
@@ -91,23 +79,16 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     @Override
     public void createControl(Composite composite)
     {
-        //Composite group = new Composite(composite, SWT.NONE);
-        //group.setLayout(new GridLayout(1, true));
         super.setImageDescriptor(logoImage);
 
         controlModifyListener = new ControlsListener();
 
-        Composite addrGroup = new Composite(composite, SWT.NONE);
-        GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
-        addrGroup.setLayout(gl);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        addrGroup.setLayoutData(gd);
+        Composite addrGroup = UIUtils.createPlaceholder(composite, 1);
+        addrGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         final Group protocolGroup = UIUtils.createControlGroup(addrGroup, OracleMessages.dialog_connection_connection_type_group, 1, GridData.FILL_HORIZONTAL, 0);
 
-        connectionTypeFolder = new CTabFolder(protocolGroup, SWT.TOP | SWT.MULTI);
+        connectionTypeFolder = new TabFolder(protocolGroup, SWT.TOP | SWT.MULTI);
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         createBasicConnectionControls(connectionTypeFolder);
@@ -119,7 +100,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection().getData();
+                connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection()[0].getData();
                 updateUI();
             }
         });
@@ -127,16 +108,16 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         final Group securityGroup = UIUtils.createControlGroup(addrGroup, OracleMessages.dialog_connection_security_group, 4, GridData.FILL_HORIZONTAL, 0);
         createSecurityGroup(securityGroup);
 
-        bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
+        Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
         bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        createBottomGroup(bottomControls);
+        createClientHomeGroup(bottomControls);
 
         setControl(addrGroup);
     }
 
-    private void createBasicConnectionControls(CTabFolder protocolFolder)
+    private void createBasicConnectionControls(TabFolder protocolFolder)
     {
-        CTabItem protocolTabBasic = new CTabItem(protocolFolder, SWT.NONE);
+        TabItem protocolTabBasic = new TabItem(protocolFolder, SWT.NONE);
         protocolTabBasic.setText(OracleMessages.dialog_connection_basic_tab);
         protocolTabBasic.setData(OracleConstants.ConnectionType.BASIC);
 
@@ -179,9 +160,9 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
     }
 
-    private void createTNSConnectionControls(CTabFolder protocolFolder)
+    private void createTNSConnectionControls(TabFolder protocolFolder)
     {
-        CTabItem protocolTabTNS = new CTabItem(protocolFolder, SWT.NONE);
+        TabItem protocolTabTNS = new TabItem(protocolFolder, SWT.NONE);
         protocolTabTNS.setText(OracleMessages.dialog_connection_tns_tab);
         protocolTabTNS.setData(OracleConstants.ConnectionType.TNS);
 
@@ -217,9 +198,9 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         }
     }
 
-    private void createCustomConnectionControls(CTabFolder protocolFolder)
+    private void createCustomConnectionControls(TabFolder protocolFolder)
     {
-        CTabItem protocolTabCustom = new CTabItem(protocolFolder, SWT.NONE);
+        TabItem protocolTabCustom = new TabItem(protocolFolder, SWT.NONE);
         protocolTabCustom.setText(OracleMessages.dialog_connection_custom_tab);
         protocolTabCustom.setData(OracleConstants.ConnectionType.CUSTOM);
 
@@ -281,31 +262,11 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             }
         });
 
-        parent.setTabList(new Control[] {userNameText, passwordText, userRoleCombo, osAuthCheck});
+        parent.setTabList(new Control[]{userNameText, passwordText, userRoleCombo, osAuthCheck});
     }
 
-    private void createBottomGroup(Composite bottomControls)
+    private void createClientHomeGroup(Composite bottomControls)
     {
-//        {
-//            UIUtils.createControlLabel(bottomControls, "Oracle Home");
-//            final Combo oraHomeCombo = new Combo(bottomControls, SWT.DROP_DOWN | SWT.READ_ONLY);
-//            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-//            gd.widthHint = 100;
-//            oraHomeCombo.setLayoutData(gd);
-//            Button oraHomeButton = new Button(bottomControls, SWT.PUSH);
-//            oraHomeButton.setText("...");
-//            oraHomeButton.addSelectionListener(new SelectionAdapter() {
-//                @Override
-//                public void widgetSelected(SelectionEvent e)
-//                {
-//                    OracleHomesDialog homesDialog = new OracleHomesDialog(getShell(), site.getDriver());
-//                    homesDialog.open();
-//                }
-//            });
-//            Label phLabel = new Label(bottomControls, SWT.NONE);
-//            phLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-//        }
-
         oraHomeSelector = new ClientHomesSelector(bottomControls, SWT.NONE, OracleMessages.dialog_connection_ora_home) {
             @Override
             protected void handleHomeChange()
@@ -319,52 +280,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
         Label ph = new Label(bottomControls, SWT.NONE);
         ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-    }
-
-    private Composite createConfigurationTab(Composite parent)
-    {
-        Composite cfgGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(1, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
-        cfgGroup.setLayout(gl);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        cfgGroup.setLayoutData(gd);
-
-        {
-            final Group sessionGroup = UIUtils.createControlGroup(cfgGroup, "Session settings", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-
-            languageCombo = UIUtils.createLabelCombo(sessionGroup, "Language", SWT.DROP_DOWN);
-            languageCombo.setToolTipText("Session language");
-            languageCombo.add(OracleConstants.NLS_DEFAULT_VALUE);
-            for (OracleLanguage language : OracleLanguage.values()) {
-                languageCombo.add(language.getLanguage());
-            }
-            languageCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
-
-            territoryCombo = UIUtils.createLabelCombo(sessionGroup, "Territory", SWT.DROP_DOWN);
-            territoryCombo.setToolTipText("Session territory");
-            territoryCombo.add(OracleConstants.NLS_DEFAULT_VALUE);
-            for (OracleTerritory territory : OracleTerritory.values()) {
-                territoryCombo.add(territory.getTerritory());
-            }
-            territoryCombo.setText(OracleConstants.NLS_DEFAULT_VALUE);
-        }
-
-        {
-            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, "Content", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
-
-            hideEmptySchemasCheckbox = UIUtils.createCheckbox(contentGroup, "Hide empty schemas", true);
-            hideEmptySchemasCheckbox.setToolTipText(
-                "Check existence of objects within schema and do not show empty schemas in tree. " + ContentUtils.getDefaultLineSeparator() +
-                "Enabled by default but it may cause performance problems on databases with very big number of objects.");
-
-            showDBAAlwaysCheckbox = UIUtils.createCheckbox(contentGroup, "Always show DBA objects", false);
-            showDBAAlwaysCheckbox.setToolTipText(
-                "Always shows DBA-related metadata objects in tree even if user do not has DBA role.");
-        }
-
-        return cfgGroup;
     }
 
     @Override
@@ -461,29 +376,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             if (roleName != null) {
                 userRoleCombo.setText(roleName.toString().toUpperCase());
             }
-
-            {
-                // Settings
-                final Object nlsLanguage = connectionProperties.get(OracleConstants.PROP_SESSION_LANGUAGE);
-                if (nlsLanguage != null) {
-                    languageCombo.setText(nlsLanguage.toString());
-                }
-
-                final Object nlsTerritory = connectionProperties.get(OracleConstants.PROP_SESSION_TERRITORY);
-                if (nlsTerritory != null) {
-                    territoryCombo.setText(nlsTerritory.toString());
-                }
-
-                final Object checkSchemaContent = connectionProperties.get(OracleConstants.PROP_CHECK_SCHEMA_CONTENT);
-                if (checkSchemaContent != null) {
-                    hideEmptySchemasCheckbox.setSelection(CommonUtils.getBoolean(checkSchemaContent, false));
-                }
-
-                final Object showDBAObjects = connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA);
-                if (showDBAObjects != null) {
-                    showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(showDBAObjects, false));
-                }
-            }
         } else {
             if (portText != null) {
                 portText.setText(String.valueOf(OracleConstants.DEFAULT_PORT));
@@ -539,28 +431,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             connectionProperties.remove(OracleConstants.PROP_INTERNAL_LOGON);
         }
 
-        {
-            // Settings
-            if (!OracleConstants.NLS_DEFAULT_VALUE.equals(languageCombo.getText())) {
-                connectionProperties.put(OracleConstants.PROP_SESSION_LANGUAGE, languageCombo.getText());
-            } else {
-                connectionProperties.remove(OracleConstants.PROP_SESSION_LANGUAGE);
-            }
-
-            if (!OracleConstants.NLS_DEFAULT_VALUE.equals(territoryCombo.getText())) {
-                connectionProperties.put(OracleConstants.PROP_SESSION_TERRITORY, territoryCombo.getText());
-            } else {
-                connectionProperties.remove(OracleConstants.PROP_SESSION_TERRITORY);
-            }
-
-            connectionProperties.put(
-                OracleConstants.PROP_CHECK_SCHEMA_CONTENT,
-                String.valueOf(hideEmptySchemasCheckbox.getSelection()));
-
-            connectionProperties.put(
-                OracleConstants.PROP_ALWAYS_SHOW_DBA,
-                String.valueOf(showDBAAlwaysCheckbox.getSelection()));
-        }
         saveConnectionURL(connectionInfo);
     }
 
@@ -588,7 +458,8 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     public IDialogPage[] getSubPages()
     {
         return new IDialogPage[] {
-            new ConnectionPropertiesDialogPage()
+            new OracleConnectionExtraPage(),
+            new DriverPropertiesDialogPage(),
         };
     }
 

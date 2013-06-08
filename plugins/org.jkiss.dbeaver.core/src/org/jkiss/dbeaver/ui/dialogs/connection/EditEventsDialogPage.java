@@ -55,7 +55,8 @@ public class EditEventsDialogPage extends ActiveWizardPage<ConnectionWizard> {
     protected EditEventsDialogPage(DBPConnectionInfo connectionInfo)
     {
         super(CoreMessages.dialog_connection_events_title);
-        setTitle(CoreMessages.dialog_connection_events_title);
+        setTitle("Events");
+        setDescription(CoreMessages.dialog_connection_events_title);
         setImageDescriptor(DBIcon.EVENT.getImageDescriptor());
         this.connectionInfo = connectionInfo;
         for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
