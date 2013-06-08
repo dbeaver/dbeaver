@@ -26,8 +26,14 @@ import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ext.ui.IDataSourceConnectionEditor;
@@ -42,8 +48,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The "New" wizard page allows setting the container for the new file as well
@@ -133,11 +138,34 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         try {
             this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
             this.connectionEditor.setSite(this);
-            this.connectionEditor.createControl(parent);
             // init sub pages (if any)
             getSubPages();
 
-            setControl(this.connectionEditor.getControl());
+            if (wizard.isNew() && !CommonUtils.isEmpty(subPages)) {
+                // Create tab folder
+                List<IDialogPage> allPages = new ArrayList<IDialogPage>();
+                allPages.add(connectionEditor);
+                Collections.addAll(allPages, subPages);
+
+                TabFolder tabFolder = new TabFolder(parent, SWT.TOP);
+                tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+                for (IDialogPage page : allPages) {
+                    TabItem item = new TabItem(tabFolder, SWT.NONE);
+                    page.createControl(tabFolder);
+                    Control pageControl = page.getControl();
+                    item.setControl(pageControl);
+                    item.setText(CommonUtils.isEmpty(page.getTitle()) ? "General" : page.getTitle());
+                    item.setToolTipText(page.getDescription());
+                }
+                tabFolder.setSelection(0);
+                setControl(tabFolder);
+            } else {
+                // Create single editor control
+                this.connectionEditor.createControl(parent);
+                setControl(this.connectionEditor.getControl());
+            }
+
             final Image editorImage = this.connectionEditor.getImage();
             if (editorImage != null) {
                 setImageDescriptor(ImageDescriptor.createFromImage(editorImage));
