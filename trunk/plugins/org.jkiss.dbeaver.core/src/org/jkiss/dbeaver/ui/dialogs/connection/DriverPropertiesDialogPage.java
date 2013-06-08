@@ -25,9 +25,9 @@ import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 
 /**
- * ConnectionPropertiesDialogPage
+ * DriverPropertiesDialogPage
  */
-public class ConnectionPropertiesDialogPage extends ConnectionPageAbstract
+public class DriverPropertiesDialogPage extends ConnectionPageAbstract
 {
 
     private ConnectionPropertiesControl propsControl;
@@ -35,9 +35,9 @@ public class ConnectionPropertiesDialogPage extends ConnectionPageAbstract
 
     private DBPConnectionInfo prevConnectionInfo = null;
 
-    public ConnectionPropertiesDialogPage()
+    public DriverPropertiesDialogPage()
     {
-        setTitle("Advanced properties");
+        setTitle("Driver properties");
     }
 
     @Override
