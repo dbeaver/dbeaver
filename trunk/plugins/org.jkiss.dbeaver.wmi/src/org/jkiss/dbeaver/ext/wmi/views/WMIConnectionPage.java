@@ -22,21 +22,22 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAdvanced;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * WMIConnectionPage
  */
-public class WMIConnectionPage extends ConnectionPageAdvanced
+public class WMIConnectionPage extends ConnectionPageAbstract
 {
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_NAMESPACE = "root/cimv2";
@@ -67,42 +68,6 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
         //group.setLayout(new GridLayout(1, true));
         setImageDescriptor(logoImage);
 
-        TabFolder optionsFolder = new TabFolder(composite, SWT.NONE);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        optionsFolder.setLayoutData(gd);
-
-        TabItem addrTab = new TabItem(optionsFolder, SWT.NONE);
-        addrTab.setText("Settings");
-        addrTab.setToolTipText("Connection settings");
-        addrTab.setControl(createGeneralTab(optionsFolder));
-
-        final TabItem propsTab = new TabItem(optionsFolder, SWT.NONE);
-        propsTab.setText("Advanced");
-        propsTab.setToolTipText("WMI context attributes");
-        propsTab.setControl(createPropertiesTab(optionsFolder));
-
-        optionsFolder.addSelectionListener(
-            new SelectionListener()
-            {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    if (e.item == propsTab) {
-                        //refreshDriverProperties();
-                    }
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
-            }
-        );
-        setControl(optionsFolder);
-    }
-
-    private Composite createGeneralTab(Composite parent)
-    {
         ModifyListener textListener = new ModifyListener()
         {
             @Override
@@ -112,7 +77,7 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
             }
         };
 
-        Composite addrGroup = new Composite(parent, SWT.NONE);
+        Composite addrGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 10;
         gl.marginWidth = 10;
@@ -174,7 +139,8 @@ public class WMIConnectionPage extends ConnectionPageAdvanced
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
         }
-        return addrGroup;
+
+        setControl(addrGroup);
     }
 
     @Override
