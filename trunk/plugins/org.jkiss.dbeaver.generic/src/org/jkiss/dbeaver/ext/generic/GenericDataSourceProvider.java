@@ -104,7 +104,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     {
         GenericMetaModel metaModel = null;
         Object metaModelId = container.getDriver().getDriverParameter(GenericConstants.PARAM_META_MODEL);
-        if (metaModelId != null) {
+        if (metaModelId != null && !GenericConstants.META_MODEL_STANDARD.equals(metaModelId)) {
             metaModel = metaModels.get(metaModelId.toString());
             if (metaModel == null) {
                 log.warn("Meta model '" + metaModelId + "' not recognized. Default one will be used");
