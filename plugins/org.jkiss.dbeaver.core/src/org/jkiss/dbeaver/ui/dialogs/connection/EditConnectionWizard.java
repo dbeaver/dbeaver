@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
+import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 
 import java.util.Date;
 
@@ -41,6 +43,7 @@ public class EditConnectionWizard extends ConnectionWizard
     private ConnectionPageFinal pageFinal;
     private EditTunnelDialogPage pageTunnels;
     private EditEventsDialogPage pageEvents;
+//    private WizardPrefPage pageDataFormats;
 
     /**
      * Constructor for SampleNewWizard.
@@ -86,10 +89,12 @@ public class EditConnectionWizard extends ConnectionWizard
         pageFinal = new ConnectionPageFinal(this, dataSource);
         pageTunnels = new EditTunnelDialogPage(dataSource.getDriver(), dataSource.getConnectionInfo());
         pageEvents = new EditEventsDialogPage(dataSource.getConnectionInfo());
+//        pageDataFormats = new WizardPrefPage(new PrefPageDataFormat(dataSource), "Data Formatting", "Data formatting preferences");
 
         addPage(pageFinal);
         addPage(pageTunnels);
         addPage(pageEvents);
+//        addPage(pageDataFormats);
     }
 
     /**

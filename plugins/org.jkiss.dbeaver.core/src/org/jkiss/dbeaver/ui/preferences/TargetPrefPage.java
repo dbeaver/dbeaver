@@ -44,6 +44,8 @@ import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -123,6 +125,8 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                 if (dataSource != null) {
                     containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(dataSource.getContainer());
                 }
+            } else if (element instanceof DBSDataSourceContainer) {
+                containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBSDataSourceContainer) element);
             }
         }
     }

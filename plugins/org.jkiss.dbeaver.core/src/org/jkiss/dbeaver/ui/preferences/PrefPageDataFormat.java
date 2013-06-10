@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -75,6 +76,12 @@ public class PrefPageDataFormat extends TargetPrefPage
     {
         super();
         setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
+    }
+
+    public PrefPageDataFormat(IAdaptable element)
+    {
+        this();
+        setElement(element);
     }
 
     @Override
