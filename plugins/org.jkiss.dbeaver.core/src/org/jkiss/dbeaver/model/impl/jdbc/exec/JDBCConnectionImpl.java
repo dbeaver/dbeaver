@@ -79,7 +79,11 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     private Connection getConnection()
         throws SQLException
     {
-        return getConnectionHolder().getConnection();
+        JDBCConnectionHolder connectionHolder = getConnectionHolder();
+        if (connectionHolder == null) {
+            throw new SQLException("Connection closed");
+        }
+        return connectionHolder.getConnection();
     }
 
     private JDBCConnectionHolder getConnectionHolder()

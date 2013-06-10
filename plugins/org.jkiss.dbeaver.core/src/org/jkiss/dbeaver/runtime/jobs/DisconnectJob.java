@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.runtime.jobs;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
@@ -34,7 +32,6 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
  */
 public class DisconnectJob extends EventProcessorJob
 {
-    static final Log log = LogFactory.getLog(DisconnectJob.class);
 
     public DisconnectJob(
         DataSourceDescriptor container)
