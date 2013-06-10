@@ -66,13 +66,13 @@ public class DBeaverApplication implements IApplication
                 if (!instanceLoc.set(defaultHomeURL, true)) {
                     // Can't lock specified path
                     if (shell == null) {
-                        shell = new Shell(display);
+                        shell = new Shell(display, SWT.ON_TOP);
                     }
                     MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
                     messageBox.setText("Can't lock workspace");
                     messageBox.setMessage("Can't lock workspace [" + defaultHomeURL + "]. " +
                         "It seems that you have another DBeaver instance running. " +
-                        "You may ignore it and work without lock but it is recommended to shutdown previous instance other wise you may corrupt workspace data.");
+                        "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.");
                     switch (messageBox.open()) {
                         case SWT.ABORT:
                             return IApplication.EXIT_OK;
