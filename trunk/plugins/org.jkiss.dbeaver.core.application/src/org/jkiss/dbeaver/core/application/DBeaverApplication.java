@@ -22,10 +22,16 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
 import java.net.URL;
@@ -49,11 +55,42 @@ public class DBeaverApplication implements IApplication
         Location instanceLoc = Platform.getInstanceLocation();
         String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
         try {
+
             URL defaultHomeURL = new URL(
                 "file",  //$NON-NLS-1$
                 null,
                 defaultHomePath);
-            instanceLoc.set(defaultHomeURL, true);
+            boolean keepTrying = true;
+            Shell shell = null;
+            while (keepTrying) {
+                if (!instanceLoc.set(defaultHomeURL, true)) {
+                    // Can't lock specified path
+                    if (shell == null) {
+                        shell = new Shell(display);
+                    }
+                    MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
+                    messageBox.setText("Can't lock workspace");
+                    messageBox.setMessage("Can't lock workspace [" + defaultHomeURL + "]. " +
+                        "It seems that you have another DBeaver instance running. " +
+                        "You may ignore it and work without lock but it is recommended to shutdown previous instance other wise you may corrupt workspace data.");
+                    switch (messageBox.open()) {
+                        case SWT.ABORT:
+                            return IApplication.EXIT_OK;
+                        case SWT.IGNORE:
+                            instanceLoc.set(defaultHomeURL, false);
+                            keepTrying = false;
+                            break;
+                        case SWT.RETRY:
+                            break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            if (shell != null) {
+                shell.dispose();
+            }
+
         } catch (Throwable e) {
             // Just skip it
             // Error may occur if -data parameter was specified at startup
