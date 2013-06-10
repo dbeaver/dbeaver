@@ -294,7 +294,6 @@
                     <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
-                    <parameter name="meta-model" value="indexed"/>
                 </driver>
                 <driver
                     id="derby_server"

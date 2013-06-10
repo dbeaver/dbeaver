@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
@@ -247,8 +248,10 @@ public class DataFormatterRegistry
             throws XMLException
         {
             if (localName.equals(RegistryConstants.TAG_PROFILE)) {
-                DataFormatterProfile profile = new DataFormatterProfile(profileName, curStore);
-                customProfiles.add(profile);
+                if (!CommonUtils.isEmpty(profileName)) {
+                    DataFormatterProfile profile = new DataFormatterProfile(profileName, curStore);
+                    customProfiles.add(profile);
+                }
             }
         }
     }
