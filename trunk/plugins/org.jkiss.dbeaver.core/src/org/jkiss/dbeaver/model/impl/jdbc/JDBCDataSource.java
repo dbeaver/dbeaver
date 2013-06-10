@@ -269,6 +269,11 @@ public abstract class JDBCDataSource
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
+//            try {
+//                Thread.sleep(10000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//            }
             if (connection != null) {
                 try {
                     if (!connection.getConnection().isClosed()) {
