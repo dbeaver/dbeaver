@@ -18,17 +18,26 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.utils.CommonUtils;
+
 /**
  * Entity attribute visibility
  */
 public enum ERDAttributeVisibility
 {
+
     ALL("All"),
     KEYS("Any keys"),
     PRIMARY("Primary key"),
     NONE("None");
 
     private final String title;
+
+    static final Log log = LogFactory.getLog(ERDAttributeVisibility.class);
 
     ERDAttributeVisibility(String title)
     {
@@ -39,4 +48,25 @@ public enum ERDAttributeVisibility
     {
         return title;
     }
+
+    public static ERDAttributeVisibility getDefaultVisibility(IPreferenceStore store)
+    {
+        String attrVisibilityString = store.getString(ERDConstants.PREF_ATTR_VISIBILITY);
+        if (!CommonUtils.isEmpty(attrVisibilityString)) {
+            try {
+                return ERDAttributeVisibility.valueOf(attrVisibilityString);
+            } catch (IllegalArgumentException e) {
+                log.warn(e);
+            }
+        }
+        return PRIMARY;
+    }
+
+    public static void setDefaultVisibility(IPreferenceStore store, ERDAttributeVisibility visibility)
+    {
+        store.setValue(
+            ERDConstants.PREF_ATTR_VISIBILITY,
+            visibility.name());
+    }
+
 }
