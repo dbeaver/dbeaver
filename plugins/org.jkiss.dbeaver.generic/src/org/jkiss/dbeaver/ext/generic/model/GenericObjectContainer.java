@@ -138,11 +138,22 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                     // Failed
                     if (readFromTables) {
                         // Load indexes for all tables and return copy of them
-                        List<GenericTableIndex> tmpIndexMap = new ArrayList<GenericTableIndex>();
-                        for (GenericTable table : getTables(monitor)) {
-                            tmpIndexMap.addAll(table.getIndexes(monitor));
+                        Collection<GenericTable> tables = getTables(monitor);
+                        monitor.beginTask("Cache indexes from tables", tables.size());
+                        try {
+                            List<GenericTableIndex> tmpIndexMap = new ArrayList<GenericTableIndex>();
+                            for (GenericTable table : tables) {
+                                if (monitor.isCanceled()) {
+                                    return;
+                                }
+                                monitor.subTask("Read indexes for '" + table.getFullQualifiedName() + "'");
+                                tmpIndexMap.addAll(table.getIndexes(monitor));
+                                monitor.worked(1);
+                            }
+                            indexCache.setCache(tmpIndexMap);
+                        } finally {
+                            monitor.done();
                         }
-                        indexCache.setCache(tmpIndexMap);
                     }
                 }
             }
