@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.ArrayList;
+
 /**
  * ERDPreferencePage
  */
@@ -50,6 +52,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private Button snapCheck;
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
+    private java.util.List<Button> visibilityButtons = new ArrayList<Button>();
 
     @Override
     protected Control createContents(Composite parent)
@@ -60,6 +63,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
 
         createGridGroup(store, composite);
         createPrintGroup(store, composite);
+        createElementsGroup(store, composite);
 
         return composite;
     }
@@ -94,6 +98,23 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
         spinnerMarginBottom = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_bottom, store.getInt(ERDConstants.PREF_PRINT_MARGIN_BOTTOM), 0, Short.MAX_VALUE);
         spinnerMarginLeft = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_left, store.getInt(ERDConstants.PREF_PRINT_MARGIN_LEFT), 0, Short.MAX_VALUE);
         spinnerMarginRight = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_right, store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT), 0, Short.MAX_VALUE);
+    }
+
+    private void createElementsGroup(IPreferenceStore store, Composite composite)
+    {
+        ERDAttributeVisibility defaultVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
+
+        Group elemsGroup = UIUtils.createControlGroup(composite, "Attributes visibility", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        elemsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        for (ERDAttributeVisibility visibility : ERDAttributeVisibility.values()) {
+            Button radio = new Button(elemsGroup, SWT.RADIO);
+            radio.setData(visibility);
+            radio.setText(visibility.getTitle());
+            if (visibility == defaultVisibility) {
+                radio.setSelection(true);
+            }
+            visibilityButtons.add(radio);
+        }
     }
 
 
@@ -136,6 +157,12 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
         store.setValue(ERDConstants.PREF_PRINT_MARGIN_LEFT, spinnerMarginLeft.getSelection());
         store.setValue(ERDConstants.PREF_PRINT_MARGIN_RIGHT, spinnerMarginRight.getSelection());
 
+        for (Button radio : visibilityButtons) {
+            if (radio.getSelection()) {
+                ERDAttributeVisibility.setDefaultVisibility(store, (ERDAttributeVisibility) radio.getData());
+            }
+        }
+
         RuntimeUtils.savePreferenceStore(store);
 
         return true;
@@ -152,4 +179,5 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     {
         this.element = element;
     }
+
 }
