@@ -126,21 +126,6 @@ public class ContentUtils {
         return System.getProperty("line.separator", "\n");
     }
 
-    public static String getDefaultBinaryFileEncoding(DBPDataSource dataSource)
-    {
-        IPreferenceStore preferenceStore;
-        if (dataSource == null) {
-            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
-        } else {
-            preferenceStore = dataSource.getContainer().getPreferenceStore();
-        }
-        String fileEncoding = preferenceStore.getString(PrefConstants.CONTENT_HEX_ENCODING);
-        if (CommonUtils.isEmpty(fileEncoding)) {
-            fileEncoding = getDefaultFileEncoding();
-        }
-        return fileEncoding;
-    }
-
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)
         throws IOException
     {
@@ -550,21 +535,53 @@ public class ContentUtils {
         return wFile == null ? null : wFile.getFullPath();
     }
 
-    public static String convertToString(byte[] bytes, DBPDataSource dataSource)
+    public static String getDefaultBinaryFileEncoding(DBPDataSource dataSource)
     {
-        try {
-            return new String(bytes, getDefaultBinaryFileEncoding(dataSource));
-        } catch (UnsupportedEncodingException e) {
-            return new String(bytes);
+        IPreferenceStore preferenceStore;
+        if (dataSource == null) {
+            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
+        } else {
+            preferenceStore = dataSource.getContainer().getPreferenceStore();
         }
+        String fileEncoding = preferenceStore.getString(PrefConstants.CONTENT_HEX_ENCODING);
+        if (CommonUtils.isEmpty(fileEncoding)) {
+            fileEncoding = getDefaultFileEncoding();
+        }
+        return fileEncoding;
     }
 
-    public static byte[] convertToBytes(String strValue, DBPDataSource dataSource)
+    public static String convertToString(byte[] bytes)
     {
-        try {
-            return strValue.getBytes(getDefaultBinaryFileEncoding(dataSource));
-        } catch (UnsupportedEncodingException e) {
-            return strValue.getBytes();
+        char[] chars = new char[bytes.length];
+        for (int i = 0; i < bytes.length; i++) {
+            int b = bytes[i];
+            if (b < 0) {
+                b = -b + 127;
+            }
+            chars[i] = (char) b;
         }
+        return new String(chars);
     }
+
+    /**
+     * Converts string to byte array.
+     * This is loosy algorithm because it gets only first byte from each char.
+     *
+     * @param strValue
+     * @return
+     */
+    public static byte[] convertToBytes(String strValue)
+    {
+        int length = strValue.length();
+        byte[] bytes = new byte[length];
+        for (int i = 0; i < length; i++) {
+            int c = strValue.charAt(i) & 255;
+            if (c > 127) {
+                c = -(c - 127);
+            }
+            bytes[i] = (byte)c;
+        }
+        return bytes;
+    }
+
 }
