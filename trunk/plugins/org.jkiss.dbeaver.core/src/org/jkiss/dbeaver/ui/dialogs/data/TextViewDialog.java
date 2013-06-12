@@ -31,11 +31,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDValueController;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -67,13 +72,6 @@ public class TextViewDialog extends ValueViewDialog {
     {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
-        Object value = getValueController().getValue();
-        if (value == null) {
-            value = "";
-        } else {
-            value = DBUtils.getDefaultValueDisplayString(value);
-        }
-        String stringValue = CommonUtils.toString(value);
         boolean isForeignKey = super.isForeignKey();
 
         Label label = new Label(dialogGroup, SWT.NONE);
@@ -108,7 +106,6 @@ public class TextViewDialog extends ValueViewDialog {
             }
             textEdit = new Text(useHex ? editorContainer : dialogGroup, style);
 
-            textEdit.setText(stringValue);
             if (maxSize > 0) {
                 textEdit.setTextLimit((int) maxSize);
             }
@@ -143,7 +140,6 @@ public class TextViewDialog extends ValueViewDialog {
             gd.heightHint = 200;
             gd.minimumWidth = hexEditControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
             hexEditControl.setLayoutData(gd);
-            setBinaryContent(stringValue);
             minSize = hexEditControl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
             minSize.x += 50;
             minSize.y += 50;
@@ -164,7 +160,7 @@ public class TextViewDialog extends ValueViewDialog {
 /*
                 switch (editorContainer.getSelectionIndex()) {
                     case 0: {
-                        textEdit.setText(getBinaryContent());
+                        textEdit.setText(getBinaryString());
                         break;
                     }
                     case 1:
@@ -177,6 +173,7 @@ public class TextViewDialog extends ValueViewDialog {
             updateValueLength();
         }
 
+        primeEditorValue(getValueController().getValue());
         if (isForeignKey) {
             super.createEditorSelector(dialogGroup);
         }
@@ -188,7 +185,7 @@ public class TextViewDialog extends ValueViewDialog {
         return dialogGroup;
     }
 
-    private String getBinaryContent()
+    private byte[] getBinaryContent()
     {
         BinaryContent content = hexEditControl.getContent();
         ByteBuffer buffer = ByteBuffer.allocate((int) content.length());
@@ -197,23 +194,12 @@ public class TextViewDialog extends ValueViewDialog {
         } catch (IOException e) {
             log.error(e);
         }
-        byte[] bytes = buffer.array();
-        int length = bytes.length;
-//        for (length = 0; length < bytes.length; length++) {
-//            if (bytes[length] == 0) {
-//                break;
-//            }
-//        }
-        String stringValue;
-        try {
-            stringValue = new String(
-                bytes, 0, length,
-                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getDataSource()));
-        } catch (UnsupportedEncodingException e) {
-            log.error(e);
-            stringValue = new String(buffer.array());
-        }
-        return stringValue;
+        return buffer.array();
+    }
+
+    private String getBinaryString()
+    {
+        return ContentUtils.convertToString(getBinaryContent());
     }
 
     private void setBinaryContent(String stringValue)
@@ -232,21 +218,51 @@ public class TextViewDialog extends ValueViewDialog {
     @Override
     public Object extractEditorValue()
     {
-        if (editorContainer == null || editorContainer.getSelectionIndex() == 0) {
+        Object prevValue = getValueController().getValue();
+        if (prevValue instanceof DBDContent) {
+            DBCExecutionContext context = getValueController().getDataSource().openContext(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor");
+            try {
+                if (ContentUtils.isTextContent((DBDContent) prevValue)) {
+                    String strValue = isTextEditorActive() ? textEdit.getText() : getBinaryString();
+                    return getValueController().getValueHandler().getValueFromObject(
+                        context,
+                        getValueController().getValueType(),
+                        strValue,
+                        false);
+                } else {
+                    byte[] bytesValue = isTextEditorActive() ? ContentUtils.convertToBytes(textEdit.getText()) : getBinaryContent();
+                    return getValueController().getValueHandler().getValueFromObject(
+                        context,
+                        getValueController().getValueType(),
+                        bytesValue,
+                        false);
+                }
+            } catch (Exception e) {
+                UIUtils.showErrorDialog(getShell(), "Extract editor value", "Can't extract editor value", e);
+                return null;
+            } finally {
+                context.close();
+            }
+        } else if (isTextEditorActive()) {
             return textEdit.getText();
         } else {
-            return getBinaryContent();
+            return getBinaryString();
         }
     }
 
     @Override
     public Control getControl()
     {
-        if (editorContainer == null || editorContainer.getSelectionIndex() == 0) {
+        if (isTextEditorActive()) {
             return textEdit;
         } else {
             return hexEditControl;
         }
+    }
+
+    private boolean isTextEditorActive()
+    {
+        return editorContainer == null || editorContainer.getSelectionIndex() == 0;
     }
 
     private void updateValueLength()
@@ -259,12 +275,29 @@ public class TextViewDialog extends ValueViewDialog {
     }
 
     @Override
-    public void primeEditorValue(Object value) throws DBException
+    public void primeEditorValue(Object value)
     {
-        String strValue = CommonUtils.toString(value);
-        textEdit.setText(strValue);
-        if (hexEditControl != null) {
-            setBinaryContent(strValue);
+        if (value instanceof DBDContentCached) {
+            value = ((DBDContentCached) value).getCachedValue();
+        }
+        if (value instanceof byte[]) {
+            // Binary
+            textEdit.setText(ContentUtils.convertToString((byte[]) value));
+            if (hexEditControl != null) {
+                hexEditControl.setContent((byte[]) value);
+            }
+        } else {
+            // Should be string
+            if (value == null) {
+                value = "";
+            } else {
+                value = DBUtils.getDefaultValueDisplayString(value);
+            }
+            String strValue = CommonUtils.toString(value);
+            textEdit.setText(strValue);
+            if (hexEditControl != null) {
+                setBinaryContent(strValue);
+            }
         }
     }
 

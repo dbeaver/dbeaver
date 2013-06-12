@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
@@ -167,19 +168,29 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 case java.sql.Types.BINARY:
                 case java.sql.Types.VARBINARY:
                 case java.sql.Types.LONGVARBINARY:
-                    return new JDBCContentBytes(context.getDataSource(), null);
+                    return new JDBCContentBytes(context.getDataSource());
                 case java.sql.Types.BLOB:
                     return new JDBCContentBLOB(context.getDataSource(), null);
                 case java.sql.Types.SQLXML:
                     return new JDBCContentXML(context.getDataSource(), null);
                 default:
                     log.error(CoreMessages.model_jdbc_unsupported_column_type_ + type.getTypeName());
-                    return new JDBCContentBytes(context.getDataSource(), null);
+                    return new JDBCContentBytes(context.getDataSource());
             }
         } else if (object instanceof byte[]) {
             return new JDBCContentBytes(context.getDataSource(), (byte[]) object);
         } else if (object instanceof String) {
-            return new JDBCContentChars(context.getDataSource(), (String) object);
+            // String is a default format in many cases (like clipboard transfer)
+            // So it is possible that real object type isn't string
+            switch (type.getTypeID()) {
+                case java.sql.Types.BINARY:
+                case java.sql.Types.VARBINARY:
+                case java.sql.Types.LONGVARBINARY:
+                    return new JDBCContentBytes(context.getDataSource(), ContentUtils.convertToBytes((String) object));
+                default:
+                    // String by default
+                    return new JDBCContentChars(context.getDataSource(), (String) object);
+            }
         } else if (object instanceof Blob) {
             return new JDBCContentBLOB(context.getDataSource(), (Blob) object);
         } else if (object instanceof Clob) {
@@ -263,8 +274,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             {
                 // Open inline/panel editor
                 if (controller.getValue() instanceof DBDContentCached) {
-                    final boolean isText = ContentUtils.isTextContent(((DBDContent)controller.getValue()));
-                    final String encoding = ContentUtils.getDefaultBinaryFileEncoding(controller.getDataSource());
+                    final boolean isText = ContentUtils.isTextContent(((DBDContent) controller.getValue()));
                     // String editor
                     return new ValueEditor<Text>(controller) {
                         @Override
@@ -277,7 +287,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                 if (cachedValue == null) {
                                     stringValue = "";  //$NON-NLS-1$
                                 } else if (cachedValue instanceof byte[]) {
-                                    stringValue = ContentUtils.convertToString((byte[])cachedValue, controller.getDataSource());
+                                    stringValue = ContentUtils.convertToString((byte[])cachedValue);
                                 } else {
                                     stringValue = cachedValue.toString();
                                 }
@@ -308,7 +318,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                             } else {
                                 return new JDBCContentBytes(
                                     valueController.getDataSource(),
-                                    ContentUtils.convertToBytes(newValue, controller.getDataSource()));
+                                    ContentUtils.convertToBytes(newValue));
                             }
                         }
                     };
@@ -320,7 +330,10 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             {
                 // Open LOB editor
                 Object value = controller.getValue();
-                if (value instanceof DBDContent) {
+                if (value instanceof DBDContentCached) {
+                    // Use string editor for cached content
+                    return new TextViewDialog(controller);
+                } else if (value instanceof DBDContent) {
                     DBDContent content = (DBDContent)value;
                     boolean isText = ContentUtils.isTextContent(content);
                     List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();

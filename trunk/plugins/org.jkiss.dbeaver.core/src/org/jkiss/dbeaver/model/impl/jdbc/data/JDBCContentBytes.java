@@ -50,6 +50,11 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     private byte[] originalData;
     private byte[] data;
 
+    public JDBCContentBytes(DBPDataSource dataSource) {
+        super(dataSource);
+        this.data = this.originalData = null;
+    }
+
     public JDBCContentBytes(DBPDataSource dataSource, byte[] data) {
         super(dataSource);
         this.data = this.originalData = data;
