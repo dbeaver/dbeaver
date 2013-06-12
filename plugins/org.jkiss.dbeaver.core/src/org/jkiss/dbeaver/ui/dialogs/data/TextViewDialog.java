@@ -199,7 +199,18 @@ public class TextViewDialog extends ValueViewDialog {
 
     private String getBinaryString()
     {
-        return ContentUtils.convertToString(getBinaryContent());
+        byte[] bytes = getBinaryContent();
+        int length = bytes.length;
+        String stringValue;
+        try {
+            stringValue = new String(
+                bytes, 0, length,
+                ContentUtils.getDefaultBinaryFileEncoding(getValueController().getDataSource()));
+        } catch (UnsupportedEncodingException e) {
+            log.error(e);
+            stringValue = new String(bytes);
+        }
+        return stringValue;
     }
 
     private void setBinaryContent(String stringValue)
