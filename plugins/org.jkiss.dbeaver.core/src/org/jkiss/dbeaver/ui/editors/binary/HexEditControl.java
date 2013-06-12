@@ -938,7 +938,7 @@ public class HexEditControl extends Composite {
                 previewText.replaceTextRange(
                     offset,
                     1,
-                    Character.toString(byteToChar[tmpRawBuffer[0]]));
+                    Character.toString(byteToChar[tmpRawBuffer[0] & 0x0ff]));
                 previewText.setStyleRange(new StyleRange(offset, 1, COLOR_BLUE, null));
             }
         }
