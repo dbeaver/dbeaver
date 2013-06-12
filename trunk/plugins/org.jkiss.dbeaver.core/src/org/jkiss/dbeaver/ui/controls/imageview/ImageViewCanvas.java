@@ -107,8 +107,7 @@ class ImageViewCanvas extends Canvas {
 
 			if (screenImage != null)
 				screenImage.dispose();
-			screenImage =
-				new Image(getDisplay(), clientRect.width, clientRect.height);
+			screenImage = new Image(getDisplay(), clientRect.width, clientRect.height);
 			GC newGC = new GC(screenImage);
 			newGC.setClipping(clientRect);
 			newGC.drawImage(
@@ -309,12 +308,17 @@ class ImageViewCanvas extends Canvas {
 	 * Show the image with the original size
 	 */
 	public void showOriginal() {
-		if (sourceImage == null)
-			return;
-		transform = new AffineTransform();
+		if (sourceImage != null) {
+    		transform = new AffineTransform();
+        }
 		syncScrollBars();
 	}
 
+    public void reset()
+    {
+        sourceImage = null;
+        redraw();
+    }
 	/**
 	 * Perform a zooming operation centered on the given point
 	 * (dx, dy) and using the given scale factor.

@@ -105,11 +105,7 @@ public class ImageEditor extends ImageViewer {
                 messageLabel.setForeground(redColor);
                 return false;
             } else {
-                ImageData imageData = getCanvas().getImageData();
-
-                messageLabel.setText(
-                    getImageType(imageData.type) + " " + imageData.width + "x" + imageData.height + "x" + imageData.depth + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                    "  "/* + imageData.data.length + " bytes"*/); //$NON-NLS-1$
+                messageLabel.setText(getImageDescription());
                 messageLabel.setForeground(blackColor);
                 return true;
             }

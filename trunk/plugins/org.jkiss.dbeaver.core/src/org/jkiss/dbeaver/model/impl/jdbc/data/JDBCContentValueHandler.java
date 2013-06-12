@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -208,7 +209,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
     public String getValueDisplayString(DBSTypedObject column, Object value, DBDDisplayFormat format)
     {
         if (value instanceof DBDContent) {
-            String result = value.toString();
+            String result = ((DBDContent) value).getDisplayString(format);
             if (result == null) {
                 return super.getValueDisplayString(column, null, format);
             } else {
@@ -406,7 +407,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                         ImageViewer imageViewControl = (ImageViewer)control;
                                         InputStream contentStream = data.getContentStream();
                                         try {
-                                            imageViewControl.loadImage(contentStream);
+                                            if (!imageViewControl.loadImage(contentStream)) {
+                                                controller.showMessage("Can't load image: " + imageViewControl.getLastError().getMessage(), true);
+                                            } else {
+                                                controller.showMessage("Image: " + imageViewControl.getImageDescription(), false);
+                                            }
                                         } finally {
                                             ContentUtils.close(contentStream);
                                         }
@@ -500,37 +505,25 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return;
         }
         final DBDContent value = (DBDContent)controller.getValue();
-        try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        DBDContentStorage storage;
-                        if (ContentUtils.isTextContent(value)) {
-                            storage = new ExternalContentStorage(openFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
-                        } else {
-                            storage = new ExternalContentStorage(openFile);
-                        }
-                        value.updateContents(monitor, storage);
-                        controller.updateValue(value);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
+        DBeaverUI.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException
+            {
+                try {
+                    DBDContentStorage storage;
+                    if (ContentUtils.isTextContent(value)) {
+                        storage = new ExternalContentStorage(openFile, ContentUtils.DEFAULT_FILE_CHARSET_NAME);
+                    } else {
+                        storage = new ExternalContentStorage(openFile);
                     }
+                    value.updateContents(monitor, storage);
+                    controller.updateValue(value);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
-            });
-        }
-        catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(
-                shell,
-                CoreMessages.model_jdbc_could_not_load_content,
-                CoreMessages.model_jdbc_could_not_load_content_from_file + openFile.getAbsolutePath() + "'", //$NON-NLS-2$
-                e.getTargetException());
-        }
-        catch (InterruptedException e) {
-            // do nothing
-        }
+            }
+        });
     }
 
     private void saveToFile(DBDValueController controller)

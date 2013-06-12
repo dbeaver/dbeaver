@@ -34,6 +34,8 @@ public interface DBDContent extends DBDValue {
 
     String getContentType();
 
+    String getDisplayString(DBDDisplayFormat format);
+
     DBDContentStorage getContents(DBRProgressMonitor monitor) throws DBCException;
 
     /**
