@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.imageview;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -88,6 +89,15 @@ public class ImageViewer extends Composite {
     public SWTException getLastError()
     {
         return canvas.getError();
+    }
+
+    public String getImageDescription()
+    {
+        ImageData imageData = getCanvas().getImageData();
+
+        return getImageType(imageData.type) + " " +
+            imageData.width + "x" + imageData.height + "x" + imageData.depth + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                "  "; //$NON-NLS-1$
     }
 
     public static String getImageType(int type)

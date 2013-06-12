@@ -18,8 +18,10 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -47,5 +49,12 @@ public abstract class JDBCContentAbstract implements DBDContent, DBDValueCloneab
     public void resetContents()
     {
         // do nothing
+    }
+
+    @Override
+    public String toString()
+    {
+        String displayString = getDisplayString(DBDDisplayFormat.UI);
+        return displayString == null ? DBConstants.NULL_VALUE_LABEL : displayString;
     }
 }

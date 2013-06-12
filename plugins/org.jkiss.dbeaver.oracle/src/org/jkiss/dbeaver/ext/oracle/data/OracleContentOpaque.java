@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -117,7 +118,8 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
     }
 
     @Override
-    public String toString() {
+    public String getDisplayString(DBDDisplayFormat format)
+    {
         return opaque == null && storage == null ? null : "[" + getOpaqueType() + "]";
     }
 

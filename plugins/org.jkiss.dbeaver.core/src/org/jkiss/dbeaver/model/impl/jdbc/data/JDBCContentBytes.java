@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -184,7 +185,8 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     }
 
     @Override
-    public String toString() {
+    public String getDisplayString(DBDDisplayFormat format)
+    {
         if (data == null) {
             return null;
         }
