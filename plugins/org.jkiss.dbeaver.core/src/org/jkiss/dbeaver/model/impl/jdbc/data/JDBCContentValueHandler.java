@@ -331,10 +331,13 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             {
                 // Open LOB editor
                 Object value = controller.getValue();
-                if (value instanceof DBDContentCached) {
+                /*if (value instanceof DBDContentCached) {
                     // Use string editor for cached content
                     return new TextViewDialog(controller);
-                } else if (value instanceof DBDContent) {
+                } else */
+                // Always use separate editor
+                // content could be an image or something huge so it is not an option to open text editor
+                if (value instanceof DBDContent) {
                     DBDContent content = (DBDContent)value;
                     boolean isText = ContentUtils.isTextContent(content);
                     List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
