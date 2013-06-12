@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -217,7 +218,8 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     }
 
     @Override
-    public String toString() {
+    public String getDisplayString(DBDDisplayFormat format)
+    {
         return blob == null && storage == null ? null : "[BLOB]";
     }
 

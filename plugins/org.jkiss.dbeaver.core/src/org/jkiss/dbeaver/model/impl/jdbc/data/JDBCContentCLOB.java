@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -200,7 +201,8 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     }
 
     @Override
-    public String toString() {
+    public String getDisplayString(DBDDisplayFormat format)
+    {
         return clob == null && storage == null ? null : "[CLOB]";
     }
 }
