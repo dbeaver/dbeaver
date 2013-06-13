@@ -16,25 +16,36 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.model.impl.data;
+
+import org.jkiss.dbeaver.model.data.DBDBinaryPresentation;
 
 /**
- * Binary content presentation
+ * String presentation
  */
-public enum DBDContentPresentation {
-    STRING("String"),
-    HEX("Hex"),
-    BASE64("Base64");
+public class BinaryPresentationString implements DBDBinaryPresentation {
 
-    private final String title;
-
-    private DBDContentPresentation(String title)
+    @Override
+    public String getId()
     {
-        this.title = title;
+        return "string";
     }
 
+    @Override
     public String getTitle()
     {
-        return title;
+        return "String";
+    }
+
+    @Override
+    public String toString(byte[] bytes, int offset, int length)
+    {
+        return null;
+    }
+
+    @Override
+    public byte[] toBytes(String string)
+    {
+        return new byte[0];
     }
 }
