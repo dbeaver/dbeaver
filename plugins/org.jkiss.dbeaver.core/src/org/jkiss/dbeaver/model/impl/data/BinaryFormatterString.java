@@ -18,13 +18,13 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.model.data.DBDBinaryPresentation;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
- * String presentation
+ * String formatter
  */
-public class BinaryPresentationString implements DBDBinaryPresentation {
+public class BinaryFormatterString implements DBDBinaryFormatter {
 
     @Override
     public String getId()
