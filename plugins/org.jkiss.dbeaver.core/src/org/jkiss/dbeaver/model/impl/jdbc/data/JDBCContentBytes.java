@@ -198,27 +198,18 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
             return null;
         }
         DBDBinaryPresentation presentation = DBUtils.getBinaryPresentation(dataSource);
-
         int maxLength = dataSource.getContainer().getPreferenceStore().getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
         // Convert bytes to string
         int length = data.length;
-        if (length > maxLength) {
+        if (format == DBDDisplayFormat.UI && length > maxLength) {
             length = maxLength;
         }
-        char[] chars = new char[length];
-        for (int i = 0; i < length; i++) {
-            int b = data[i];
-            if (b < 0) {
-                b = -b + 127;
-            }
-            chars[i] = (char) b;
+        String string = presentation.toString(data, 0, length);
+        if (length == data.length) {
+            return string;
         }
         StringBuilder strValue = new StringBuilder(length + 10);
-        strValue.append(chars);
-        if (data.length > length) {
-            strValue.append("...");
-            strValue.append(" [").append(data.length).append("]");
-        }
+        strValue.append(string).append("...").append(" [").append(data.length).append("]");
         return strValue.toString();
     }
 

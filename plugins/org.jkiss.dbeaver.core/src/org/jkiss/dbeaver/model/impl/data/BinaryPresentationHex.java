@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDBinaryPresentation;
+import org.jkiss.dbeaver.ui.editors.binary.HexUtils;
 
 /**
  * Hex presentation
@@ -40,12 +41,28 @@ public class BinaryPresentationHex implements DBDBinaryPresentation {
     @Override
     public String toString(byte[] bytes, int offset, int length)
     {
-        return null;
+        char[] chars = new char[length * 2];
+        for (int i = offset; i < offset + length; i++) {
+            String hex = HexUtils.byteToHex[bytes[i] & 0x0ff];
+            chars[i * 2] = hex.charAt(0);
+            chars[i * 2 + 1] = hex.charAt(1);
+        }
+        return new String(chars);
     }
 
     @Override
     public byte[] toBytes(String string)
     {
-        return new byte[0];
+        int length = string.length();
+        if (length > 0 && length % 2 != 0) {
+            length--;
+        }
+        byte bytes[] = new byte[length / 2];
+        for (int i = 0; i < length; i += 2) {
+            bytes[i / 2] = (byte) ((Character.digit(string.charAt(i), 16) << 4)
+                + Character.digit(string.charAt(i + 1), 16));
+        }
+        return bytes;
     }
+
 }
