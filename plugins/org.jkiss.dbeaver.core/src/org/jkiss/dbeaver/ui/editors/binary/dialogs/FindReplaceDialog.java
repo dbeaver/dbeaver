@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryTextFinder;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.binary.HexManager;
+import org.jkiss.dbeaver.ui.editors.binary.HexUtils;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -352,7 +353,7 @@ public class FindReplaceDialog extends Dialog {
                 throw new RuntimeException(e);
             }
             for (int i = 0; i < selectionLength; ++i) {
-                selectedText.append(HexEditControl.byteToHex[selection[i] & 0x0ff]);
+                selectedText.append(HexUtils.byteToHex[selection[i] & 0x0ff]);
             }
             findGroup.textCombo.setText(selectedText.toString());
             findGroup.selectText();
