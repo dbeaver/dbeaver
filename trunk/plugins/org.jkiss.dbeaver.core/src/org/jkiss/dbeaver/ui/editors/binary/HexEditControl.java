@@ -66,27 +66,21 @@ public class HexEditControl extends Composite {
      * There are differences on which chars can correctly be displayed in each operating system,
      * charset encoding, or font system.
      */
-    public static final String[] byteToHex = new String[256];
     static String headerRow = null;
     static final byte[] hexToNibble = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1,
-                                       10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                                       -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 10, 11, 12, 13, 14, 15};
+        10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+        -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 10, 11, 12, 13, 14, 15};
     static final int maxScreenResolution = 1920;
     static final int minCharSize = 5;
-    static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     static final int SET_TEXT = 0;
     static final int SHIFT_FORWARD = 1;  // frame
     static final int SHIFT_BACKWARD = 2;
 
     static {
-        // Compose byte to hex map
-        for (int i = 0; i < 256; ++i) {
-            byteToHex[i] = Character.toString(nibbleToHex[i >>> 4]) + nibbleToHex[i & 0x0f];
-        }
         // Compose header row
         StringBuilder rowChars = new StringBuilder();
         for (int i = 0; i < maxScreenResolution / minCharSize / 3; ++i)
-            rowChars.append(byteToHex[i & 0x0ff]).append(' ');
+            rowChars.append(HexUtils.byteToHex[i & 0x0ff]).append(' ');
         headerRow = rowChars.toString().toUpperCase();
     }
 
@@ -160,7 +154,7 @@ public class HexEditControl extends Composite {
     public static long[] getLongSelection(SelectionEvent event)
     {
         return new long[]{((long) event.width) << 32 | (event.x & 0x0ffffffffL),
-                          ((long) event.height) << 32 | (event.y & 0x0ffffffffL)};
+            ((long) event.height) << 32 | (event.y & 0x0ffffffffL)};
     }
 
     /**
@@ -280,8 +274,7 @@ public class HexEditControl extends Composite {
             int textOffset;
             try {
                 textOffset = ((StyledText) e.widget).getOffsetAtLocation(new Point(e.x, e.y));
-            }
-            catch (IllegalArgumentException ex) {
+            } catch (IllegalArgumentException ex) {
                 textOffset = ((StyledText) e.widget).getCharCount();
             }
             int byteOffset = textOffset / charLen;
@@ -429,11 +422,11 @@ public class HexEditControl extends Composite {
     }
 
     /**
-    * Create a binary text editor
-    *
-    * @param parent parent in the widget hierarchy
-    * @param style  not used for the moment
-    */
+     * Create a binary text editor
+     *
+     * @param parent parent in the widget hierarchy
+     * @param style  not used for the moment
+     */
     public HexEditControl(final Composite parent, int style, int charsForAddress, int bytesPerLine)
     {
         super(parent, style | SWT.V_SCROLL);
@@ -457,8 +450,7 @@ public class HexEditControl extends Composite {
                     fontDefault.dispose();
                 try {
                     myClipboard.dispose();
-                }
-                catch (IOException ex) {
+                } catch (IOException ex) {
                     log.warn("Could not cleanup clipboard temporary data");
                 }
             }
@@ -488,7 +480,7 @@ public class HexEditControl extends Composite {
         CharBuffer cb = CharBuffer.allocate(1);
         for (int i = 0; i < 256; ++i) {
             if (i < 0x20 || i == 0x7f) {
-                byteToChar[i] = (char)(160 + i);
+                byteToChar[i] = (char) (160 + i);
             } else {
                 bb.clear();
                 bb.put((byte) i);
@@ -842,10 +834,10 @@ public class HexEditControl extends Composite {
                     else
                         theText.append('0');
                 } else {
-                    theText.append(nibbleToHex[nibble]);
+                    theText.append(HexUtils.nibbleToHex[nibble]);
                 }
             }
-            theText.append(nibbleToHex[((int) address) & 0x0f]).append(':');
+            theText.append(HexUtils.nibbleToHex[((int) address) & 0x0f]).append(':');
         }
 
         return theText;
@@ -860,7 +852,7 @@ public class HexEditControl extends Composite {
         if (isHexOutput) {
             result = new StringBuilder(length * 3);
             for (int i = 0; i < length; ++i) {
-                result.append(byteToHex[tmpRawBuffer[i] & 0x0ff]).append(' ');
+                result.append(HexUtils.byteToHex[tmpRawBuffer[i] & 0x0ff]).append(' ');
             }
         } else {
             result = new StringBuilder(length);
@@ -933,7 +925,7 @@ public class HexEditControl extends Composite {
                 }
                 content.get(ByteBuffer.wrap(tmpRawBuffer, 0, 1), null, getCaretPos());
                 int offset = (int) (getCaretPos() - textAreasStart);
-                hexText.replaceTextRange(offset * 3, 2, byteToHex[tmpRawBuffer[0] & 0x0ff]);
+                hexText.replaceTextRange(offset * 3, 2, HexUtils.byteToHex[tmpRawBuffer[0] & 0x0ff]);
                 hexText.setStyleRange(new StyleRange(offset * 3, 2, COLOR_BLUE, null));
                 previewText.replaceTextRange(
                     offset,
@@ -941,8 +933,7 @@ public class HexEditControl extends Composite {
                     Character.toString(byteToChar[tmpRawBuffer[0] & 0x0ff]));
                 previewText.setStyleRange(new StyleRange(offset, 1, COLOR_BLUE, null));
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.warn(e);
         }
         startPosition = endPosition = incrementPosWithinLimits(getCaretPos(), event.widget == hexText);
@@ -1058,7 +1049,7 @@ public class HexEditControl extends Composite {
             Rectangle unfocused = unfocusedCaret.getBounds();
             unfocusedGC.setForeground(visible ? COLOR_NORMAL_SHADOW : colorCaretLine);
             unfocusedGC.drawRectangle(unfocused.x + shift * unfocused.width, unfocused.y,
-                                      unfocused.width << chars, unfocused.height - 1);
+                unfocused.width << chars, unfocused.height - 1);
         }
     }
 
@@ -1129,8 +1120,7 @@ public class HexEditControl extends Composite {
             {
                 try {
                     result[0] = finder.getNextMatch();
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     result[1] = e;
                 }
             }
@@ -1178,8 +1168,7 @@ public class HexEditControl extends Composite {
     {
         try {
             content.get(ByteBuffer.wrap(tmpRawBuffer, 0, 1), null, pos);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.warn(e);
         }
         return tmpRawBuffer[0];
@@ -1314,7 +1303,7 @@ public class HexEditControl extends Composite {
         while (mergerNext()) {
             if (blue || highlight) {
                 result.add(new StyleRange(start, mergeRangesPosition - start, blue ? COLOR_BLUE : null,
-                                          highlight ? colorHighlight : null));
+                    highlight ? colorHighlight : null));
             }
             start = mergeRangesPosition;
             blue = mergeRangesIsBlue;
@@ -1410,7 +1399,7 @@ public class HexEditControl extends Composite {
                 textAreasStart);
             if ((mergeIndexChange & 1) == 1) {
                 result = (int) Math.min(bytesPerLine * numberOfLines,
-                                        result + mergeChangeRanges.get(mergeIndexChange));
+                    result + mergeChangeRanges.get(mergeIndexChange));
             }
         } else {
             result = mergeHighlightRanges.get(mergeIndexHighlight & 0xfffffffe);
@@ -1540,9 +1529,8 @@ public class HexEditControl extends Composite {
         int actuallyRead;
         try {
             actuallyRead = content.get(ByteBuffer.wrap(tmpRawBuffer, 0, linesShifted * bytesPerLine),
-                                         changeRanges, newLinesStart);
-        }
-        catch (IOException e) {
+                changeRanges, newLinesStart);
+        } catch (IOException e) {
             actuallyRead = 0;
         }
         StringBuilder resultHex = cookTexts(true, actuallyRead);
