@@ -28,7 +28,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.model.DBPApplication;
-import org.jkiss.dbeaver.model.data.DBDContentPresentation;
+import org.jkiss.dbeaver.model.data.DBDBinaryPresentation;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.net.DBWGlobalAuthenticator;
@@ -502,7 +502,7 @@ public class DBeaverCore implements DBPApplication {
 
         // ResultSet
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_MAX_ROWS, 200);
-        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_PRESENTATION, DBDContentPresentation.STRING);
+        RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_PRESENTATION, DBDBinaryPresentation.VALUES[0].getId());
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, true);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE, DBDValueController.EditType.EDITOR);
         RuntimeUtils.setDefaultPreferenceValue(store, PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, 32);

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -964,6 +965,28 @@ public final class DBUtils {
             default:
                 return DBIcon.TYPE_UNKNOWN;
         }
+    }
+
+    public static DBDBinaryPresentation getBinaryPresentation(DBPDataSource dataSource)
+    {
+        String id = dataSource.getContainer().getPreferenceStore().getString(PrefConstants.RESULT_SET_BINARY_PRESENTATION);
+        if (id != null) {
+            DBDBinaryPresentation presentation = getBinaryPresentation(id);
+            if (presentation != null) {
+                return presentation;
+            }
+        }
+        return DBDBinaryPresentation.VALUES[0];
+    }
+
+    public static DBDBinaryPresentation getBinaryPresentation(String id)
+    {
+        for (DBDBinaryPresentation presentation : DBDBinaryPresentation.VALUES) {
+            if (presentation.getId().equals(id)) {
+                return presentation;
+            }
+        }
+        return null;
     }
 
     private static class RefColumnFinder implements DBRRunnableWithProgress {
