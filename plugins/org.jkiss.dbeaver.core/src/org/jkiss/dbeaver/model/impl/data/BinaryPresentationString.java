@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.dbeaver.model.data.DBDBinaryPresentation;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
  * String presentation
@@ -40,12 +41,13 @@ public class BinaryPresentationString implements DBDBinaryPresentation {
     @Override
     public String toString(byte[] bytes, int offset, int length)
     {
-        return null;
+        return ContentUtils.convertToString(bytes, offset, length);
     }
 
     @Override
     public byte[] toBytes(String string)
     {
-        return new byte[0];
+        return ContentUtils.convertToBytes(string);
     }
+
 }
