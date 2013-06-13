@@ -23,7 +23,9 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
+import org.jkiss.dbeaver.model.data.DBDBinaryPresentation;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -190,10 +192,8 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         if (data == null) {
             return null;
         }
-        boolean showStrings = dataSource.getContainer().getPreferenceStore().getBoolean(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS);
-        if (!showStrings) {
-            return "binary [" + data.length + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-        }
+        DBDBinaryPresentation presentation = DBUtils.getBinaryPresentation(dataSource);
+
         int maxLength = dataSource.getContainer().getPreferenceStore().getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN);
         // Convert bytes to string
         int length = data.length;
