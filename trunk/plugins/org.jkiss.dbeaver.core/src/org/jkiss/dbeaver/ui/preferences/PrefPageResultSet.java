@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDBinaryPresentation;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -127,8 +127,8 @@ public class PrefPageResultSet extends TargetPrefPage
             //binaryShowStrings = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_use_strings, false);
 
             binaryPresentationCombo = UIUtils.createLabelCombo(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_presentation, SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DBDBinaryPresentation presentation : DBDBinaryPresentation.VALUES) {
-                binaryPresentationCombo.add(presentation.getTitle());
+            for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
+                binaryPresentationCombo.add(formatter.getTitle());
             }
 
             UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_strings_max_length);
@@ -159,9 +159,9 @@ public class PrefPageResultSet extends TargetPrefPage
             readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
             binaryStringMaxLength.setSelection(store.getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN));
 
-            DBDBinaryPresentation presentation = DBUtils.getBinaryPresentation(store.getString(PrefConstants.RESULT_SET_BINARY_PRESENTATION));
+            DBDBinaryFormatter formatter = DBUtils.getBinaryPresentation(store.getString(PrefConstants.RESULT_SET_BINARY_PRESENTATION));
             for (int i = 0; i < binaryPresentationCombo.getItemCount(); i++) {
-                if (binaryPresentationCombo.getItem(i).equals(presentation.getTitle())) {
+                if (binaryPresentationCombo.getItem(i).equals(formatter.getTitle())) {
                     binaryPresentationCombo.select(i);
                     break;
                 }
@@ -189,9 +189,9 @@ public class PrefPageResultSet extends TargetPrefPage
             store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
 
             String presentationTitle = binaryPresentationCombo.getItem(binaryPresentationCombo.getSelectionIndex());
-            for (DBDBinaryPresentation presentation : DBDBinaryPresentation.VALUES) {
-                if (presentation.getTitle().equals(presentationTitle)) {
-                    store.setValue(PrefConstants.RESULT_SET_BINARY_PRESENTATION, presentation.getId());
+            for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
+                if (formatter.getTitle().equals(presentationTitle)) {
+                    store.setValue(PrefConstants.RESULT_SET_BINARY_PRESENTATION, formatter.getId());
                     break;
                 }
             }
