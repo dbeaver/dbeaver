@@ -36,12 +36,12 @@ public enum JDBCTransactionIsolation implements DBPTransactionIsolation
     ;
 
     private final int code;
-    private final String name;
+    private final String title;
 
-    JDBCTransactionIsolation(int code, String name)
+    JDBCTransactionIsolation(int code, String title)
     {
         this.code = code;
-        this.name = name;
+        this.title = title;
     }
 
     @Override
@@ -57,9 +57,9 @@ public enum JDBCTransactionIsolation implements DBPTransactionIsolation
     }
 
     @Override
-    public String getName()
+    public String getTitle()
     {
-        return name;
+        return title;
     }
 
     public static JDBCTransactionIsolation getByCode(int code)

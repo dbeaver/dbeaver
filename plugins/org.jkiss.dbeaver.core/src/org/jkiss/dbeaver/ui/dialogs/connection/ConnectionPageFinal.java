@@ -185,7 +185,7 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
                 DBPTransactionIsolation defaultLevel = dataSourceDescriptor.getDefaultTransactionsIsolation();
                 for (DBPTransactionIsolation level : dataSourceDescriptor.getDataSource().getInfo().getSupportedTransactionsIsolation()) {
                     if (!level.isEnabled()) continue;
-                    isolationLevel.add(level.getName());
+                    isolationLevel.add(level.getTitle());
                     supportedLevels.add(level);
                     if (level.equals(defaultLevel)) {
                         isolationLevel.select(isolationLevel.getItemCount() - 1);

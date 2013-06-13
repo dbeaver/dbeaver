@@ -24,6 +24,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.data.DBDContentPresentation;
+import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -37,7 +39,9 @@ public class PrefPageResultSet extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset"; //$NON-NLS-1$
 
     private Spinner resultSetSize;
-    private Button binaryShowStrings;
+    //private Button binaryShowStrings;
+    private Combo binaryPresentationCombo;
+    private Combo binaryEditorType;
     private Spinner binaryStringMaxLength;
 
     private Button keepStatementOpenCheck;
@@ -115,18 +119,27 @@ public class PrefPageResultSet extends TargetPrefPage
         }
 
         {
-            Group performanceGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
+            Group binaryGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_binary, 2, SWT.NONE, 0);
 
-            binaryShowStrings = UIUtils.createLabelCheckbox(performanceGroup, CoreMessages.pref_page_database_resultsets_label_binary_use_strings, false);
+            //binaryShowStrings = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_use_strings, false);
 
-            UIUtils.createControlLabel(performanceGroup, CoreMessages.pref_page_database_resultsets_label_binary_strings_max_length);
+            binaryPresentationCombo = UIUtils.createLabelCombo(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_presentation, SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (DBDContentPresentation presentation : DBDContentPresentation.values()) {
+                binaryPresentationCombo.add(presentation.getTitle());
+            }
 
-            binaryStringMaxLength = new Spinner(performanceGroup, SWT.BORDER);
+            UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_strings_max_length);
+
+            binaryStringMaxLength = new Spinner(binaryGroup, SWT.BORDER);
             binaryStringMaxLength.setSelection(0);
             binaryStringMaxLength.setDigits(0);
             binaryStringMaxLength.setIncrement(1);
             binaryStringMaxLength.setMinimum(0);
             binaryStringMaxLength.setMaximum(10000);
+
+            binaryEditorType = UIUtils.createLabelCombo(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_editor_type, SWT.DROP_DOWN | SWT.READ_ONLY);
+            binaryEditorType.add("Editor");
+            binaryEditorType.add("Dialog");
         }
 
         return composite;
@@ -141,8 +154,15 @@ public class PrefPageResultSet extends TargetPrefPage
             rollbackOnErrorCheck.setSelection(store.getBoolean(PrefConstants.QUERY_ROLLBACK_ON_ERROR));
             memoryContentSize.setSelection(store.getInt(PrefConstants.MEMORY_CONTENT_MAX_SIZE));
             readExpensiveCheck.setSelection(store.getBoolean(PrefConstants.READ_EXPENSIVE_PROPERTIES));
-            binaryShowStrings.setSelection(store.getBoolean(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS));
             binaryStringMaxLength.setSelection(store.getInt(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN));
+
+            binaryPresentationCombo.select(DBDContentPresentation.valueOf(store.getString(PrefConstants.RESULT_SET_BINARY_PRESENTATION)).ordinal());
+            DBDValueController.EditType editorType = DBDValueController.EditType.valueOf(store.getString(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE));
+            if (editorType == DBDValueController.EditType.EDITOR) {
+                binaryEditorType.select(0);
+            } else {
+                binaryEditorType.select(1);
+            }
         } catch (Exception e) {
             log.warn(e);
         }
@@ -157,8 +177,18 @@ public class PrefPageResultSet extends TargetPrefPage
             store.setValue(PrefConstants.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(PrefConstants.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
             store.setValue(PrefConstants.READ_EXPENSIVE_PROPERTIES, readExpensiveCheck.getSelection());
-            store.setValue(PrefConstants.RESULT_SET_BINARY_SHOW_STRINGS, binaryShowStrings.getSelection());
+
+            int presentationIndex = binaryPresentationCombo.getSelectionIndex();
+            for (DBDContentPresentation presentation : DBDContentPresentation.values()) {
+                if (presentation.ordinal() == presentationIndex) {
+                    store.setValue(PrefConstants.RESULT_SET_BINARY_PRESENTATION, presentation.name());
+                }
+            }
             store.setValue(PrefConstants.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
+            store.setValue(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE,
+                binaryEditorType.getSelectionIndex() == 0 ?
+                    DBDValueController.EditType.EDITOR.name() :
+                    DBDValueController.EditType.PANEL.name());
         } catch (Exception e) {
             log.warn(e);
         }

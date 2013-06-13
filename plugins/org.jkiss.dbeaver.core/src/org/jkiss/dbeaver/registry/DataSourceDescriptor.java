@@ -58,7 +58,6 @@ import org.jkiss.dbeaver.runtime.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
@@ -394,7 +393,7 @@ public class DataSourceDescriptor
             UIUtils.showErrorDialog(
                 null,
                 "Transactions Isolation",
-                "Can't set transaction isolation level to '" + isolationLevel.getName() + "'",
+                "Can't set transaction isolation level to '" + isolationLevel.getTitle() + "'",
                 e.getTargetException());
         } catch (InterruptedException e) {
             // ok
