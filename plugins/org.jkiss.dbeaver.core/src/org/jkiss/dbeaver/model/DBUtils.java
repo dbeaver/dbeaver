@@ -967,23 +967,23 @@ public final class DBUtils {
         }
     }
 
-    public static DBDBinaryPresentation getBinaryPresentation(DBPDataSource dataSource)
+    public static DBDBinaryFormatter getBinaryPresentation(DBPDataSource dataSource)
     {
         String id = dataSource.getContainer().getPreferenceStore().getString(PrefConstants.RESULT_SET_BINARY_PRESENTATION);
         if (id != null) {
-            DBDBinaryPresentation presentation = getBinaryPresentation(id);
-            if (presentation != null) {
-                return presentation;
+            DBDBinaryFormatter formatter = getBinaryPresentation(id);
+            if (formatter != null) {
+                return formatter;
             }
         }
-        return DBDBinaryPresentation.VALUES[0];
+        return DBDBinaryFormatter.FORMATS[0];
     }
 
-    public static DBDBinaryPresentation getBinaryPresentation(String id)
+    public static DBDBinaryFormatter getBinaryPresentation(String id)
     {
-        for (DBDBinaryPresentation presentation : DBDBinaryPresentation.VALUES) {
-            if (presentation.getId().equals(id)) {
-                return presentation;
+        for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
+            if (formatter.getId().equals(id)) {
+                return formatter;
             }
         }
         return null;

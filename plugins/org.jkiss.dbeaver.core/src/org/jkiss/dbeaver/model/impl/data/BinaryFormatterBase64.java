@@ -16,27 +16,38 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.model.impl.data.BinaryPresentationHex;
-import org.jkiss.dbeaver.model.impl.data.BinaryPresentationString;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
+import org.jkiss.utils.Base64;
 
 /**
- * Binary content presentation
+ * Base64 formatter
  */
-public interface DBDBinaryPresentation {
+public class BinaryFormatterBase64 implements DBDBinaryFormatter {
 
-    static DBDBinaryPresentation VALUES[] = {
-        new BinaryPresentationString(),
-        new BinaryPresentationHex(),
-    };
+    @Override
+    public String getId()
+    {
+        return "base64";
+    }
 
-    String getId();
+    @Override
+    public String getTitle()
+    {
+        return "Base64";
+    }
 
-    String getTitle();
+    @Override
+    public String toString(byte[] bytes, int offset, int length)
+    {
+        return Base64.encode(bytes, offset, length);
+    }
 
-    String toString(byte[] bytes, int offset, int length);
-
-    byte[] toBytes(String string);
+    @Override
+    public byte[] toBytes(String string)
+    {
+        return Base64.decode(string);
+    }
 
 }
