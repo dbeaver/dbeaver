@@ -16,17 +16,25 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.data;
 
 /**
- * DBPTransactionIsolation
+ * Binary content presentation
  */
-public interface DBPTransactionIsolation
-{
-    int getCode();
+public enum DBDContentPresentation {
+    STRING("String"),
+    HEX("Hex"),
+    BASE64("Base64");
 
-    boolean isEnabled();
+    private final String title;
 
-    String getTitle();
+    private DBDContentPresentation(String title)
+    {
+        this.title = title;
+    }
+
+    public String getTitle()
+    {
+        return title;
+    }
 }
