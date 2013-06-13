@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IContentEditorPart;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -56,6 +57,7 @@ import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
 import org.jkiss.dbeaver.ui.editors.content.parts.ContentXMLEditorPart;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.ui.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
@@ -187,7 +189,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 case java.sql.Types.BINARY:
                 case java.sql.Types.VARBINARY:
                 case java.sql.Types.LONGVARBINARY:
-                    return new JDBCContentBytes(context.getDataSource(), ContentUtils.convertToBytes((String) object));
+                    return new JDBCContentBytes(context.getDataSource(), (String) object);
                 default:
                     // String by default
                     return new JDBCContentChars(context.getDataSource(), (String) object);
@@ -288,7 +290,8 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                                 if (cachedValue == null) {
                                     stringValue = "";  //$NON-NLS-1$
                                 } else if (cachedValue instanceof byte[]) {
-                                    stringValue = ContentUtils.convertToString((byte[])cachedValue);
+                                    byte[] bytes = (byte[]) cachedValue;
+                                    stringValue = DBUtils.getBinaryPresentation(controller.getDataSource()).toString(bytes, 0, bytes.length);
                                 } else {
                                     stringValue = cachedValue.toString();
                                 }
@@ -319,7 +322,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                             } else {
                                 return new JDBCContentBytes(
                                     valueController.getDataSource(),
-                                    ContentUtils.convertToBytes(newValue));
+                                    newValue);
                             }
                         }
                     };
@@ -331,13 +334,12 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             {
                 // Open LOB editor
                 Object value = controller.getValue();
-                /*if (value instanceof DBDContentCached) {
+                DBDValueController.EditType binaryEditType = DBDValueController.EditType.valueOf(
+                    controller.getDataSource().getContainer().getPreferenceStore().getString(PrefConstants.RESULT_SET_BINARY_EDITOR_TYPE));
+                if (binaryEditType != DBDValueController.EditType.EDITOR && value instanceof DBDContentCached) {
                     // Use string editor for cached content
                     return new TextViewDialog(controller);
-                } else */
-                // Always use separate editor
-                // content could be an image or something huge so it is not an option to open text editor
-                if (value instanceof DBDContent) {
+                } else if (value instanceof DBDContent) {
                     DBDContent content = (DBDContent)value;
                     boolean isText = ContentUtils.isTextContent(content);
                     List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();

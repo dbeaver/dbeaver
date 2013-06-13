@@ -63,6 +63,11 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         this.data = this.originalData = data;
     }
 
+    public JDBCContentBytes(DBPDataSource dataSource, String data) {
+        super(dataSource);
+        this.data = this.originalData = DBUtils.getBinaryPresentation(dataSource).toBytes(data);
+    }
+
     @Override
     public InputStream getContentStream()
         throws IOException

@@ -550,10 +550,10 @@ public class ContentUtils {
         return fileEncoding;
     }
 
-    public static String convertToString(byte[] bytes)
+    public static String convertToString(byte[] bytes, int offset, int length)
     {
-        char[] chars = new char[bytes.length];
-        for (int i = 0; i < bytes.length; i++) {
+        char[] chars = new char[length];
+        for (int i = offset; i < offset + length; i++) {
             int b = bytes[i];
             if (b < 0) {
                 b = -b + 127;
