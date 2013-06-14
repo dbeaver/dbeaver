@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -114,7 +115,9 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
             {
                 mappingType = DatabaseMappingType.unspecified;
                 if (parent.getTarget() instanceof DBSEntity) {
-                    target = ((DBSEntity) parent.getTarget()).getAttribute(monitor, source.getName());
+                    String targetAttrName = DBObjectNameCaseTransformer.transformName(parent.getTarget().getDataSource(), source.getName());
+
+                    target = ((DBSEntity) parent.getTarget()).getAttribute(monitor, targetAttrName);
                     if (target != null) {
                         mappingType = DatabaseMappingType.existing;
                     } else {
