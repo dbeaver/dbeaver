@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.Collection;
@@ -113,7 +114,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return body;
     }
 
-    //@Property(hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getClientBody(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -122,7 +123,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
             cb.append(procedureType).append(' ').append(getFullQualifiedName()).append(" (");
 
             int colIndex = 0;
-            for (MySQLProcedureParameter column : getParameters(monitor)) {
+            for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
                 if (column.getParameterType() == DBSProcedureParameterType.RETURN) {
                     continue;
                 }
@@ -137,7 +138,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                 colIndex++;
             }
             cb.append(")").append(ContentUtils.getDefaultLineSeparator());
-            for (MySQLProcedureParameter column : getParameters(monitor)) {
+            for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
                 if (column.getParameterType() == DBSProcedureParameterType.RETURN) {
                     cb.append("RETURNS ");
                     appendParameterType(cb, column);
@@ -204,7 +205,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     }
 
     @Override
-    //@Property(hidden = true, editable = true, updatable = true, order = -1)
+    @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getClientBody(monitor);
