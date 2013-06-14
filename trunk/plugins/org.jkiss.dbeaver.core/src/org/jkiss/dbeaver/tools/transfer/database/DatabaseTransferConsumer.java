@@ -117,6 +117,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                             break;
                         case IGNORE_ALL:
                             ignoreErrors = true;
+                            retryInsert = false;
                             break;
                     }
                 }
@@ -221,6 +222,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                             for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
                                 if (attr.getMappingType() == DatabaseMappingType.create) {
                                     attr.updateMappingType(monitor);
+                                    if (attr.getTarget() == null) {
+                                        throw new DBCException("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
+
+                                    }
                                 }
                             }
                             break;
