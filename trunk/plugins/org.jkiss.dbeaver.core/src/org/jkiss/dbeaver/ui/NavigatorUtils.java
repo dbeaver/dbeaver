@@ -59,6 +59,9 @@ import java.util.*;
  * Navigator utils
  */
 public class NavigatorUtils {
+
+    public static final String MB_NAVIGATOR_ADDITIONS = "navigator_additions";
+
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
         if (selectionProvider == null) {
@@ -167,6 +170,7 @@ public class NavigatorUtils {
                 }
 
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                manager.add(new GroupMarker(MB_NAVIGATOR_ADDITIONS));
 
                 if (workbenchPart != null) {
                     // Add "Set active object" menu
