@@ -294,7 +294,7 @@ public class TextViewDialog extends ValueViewDialog {
         if (value instanceof byte[]) {
             // Binary
             byte[] bytes = (byte[]) value;
-            textEdit.setText(DBUtils.getBinaryPresentation(getValueController().getDataSource()).toString(bytes, 0, bytes.length));
+            textEdit.setText(ContentUtils.convertToString(bytes, 0 , bytes.length));
             if (hexEditControl != null) {
                 hexEditControl.setContent(bytes);
             }
@@ -308,8 +308,7 @@ public class TextViewDialog extends ValueViewDialog {
             String strValue = CommonUtils.toString(value);
             textEdit.setText(strValue);
             if (hexEditControl != null) {
-                byte[] bytes = DBUtils.getBinaryPresentation(getValueController().getDataSource()).toBytes(strValue);
-                hexEditControl.setContent(bytes);
+                setBinaryContent(strValue);
             }
         }
     }

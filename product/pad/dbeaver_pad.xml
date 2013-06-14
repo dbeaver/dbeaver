@@ -38,7 +38,7 @@
   </Company_Info>
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
-    <Program_Version>2.2.1</Program_Version>
+    <Program_Version>2.2.2</Program_Version>
     <Program_Release_Month>05</Program_Release_Month>
     <Program_Release_Day>27</Program_Release_Day>
     <Program_Release_Year>2013</Program_Release_Year>
@@ -76,8 +76,8 @@
       <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
     </Application_URLs>
     <Download_URLs>
-      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.2.1-x86-setup.exe</Primary_Download_URL>
-      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.2.1-x86_64-setup.exe</Secondary_Download_URL>
+      <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.2.2-x86-setup.exe</Primary_Download_URL>
+      <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-2.2.2-x86_64-setup.exe</Secondary_Download_URL>
       <Additional_Download_URL_1></Additional_Download_URL_1>
       <Additional_Download_URL_2></Additional_Download_URL_2>
     </Download_URLs>
