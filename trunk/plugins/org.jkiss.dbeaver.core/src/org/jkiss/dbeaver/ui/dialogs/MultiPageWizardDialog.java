@@ -95,7 +95,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     @Override
     protected int getShellStyle()
     {
-        return SWT.TITLE | SWT.MAX | SWT.RESIZE;
+        return SWT.TITLE | SWT.MAX | SWT.RESIZE | SWT.APPLICATION_MODAL;
     }
 
     @Override
@@ -234,6 +234,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             gd = (GridData) page.getControl().getLayoutData();
             gd.exclude = false;
             page.setVisible(true);
+            setTitle(page.getTitle());
             setMessage(page.getDescription());
 
             prevPage = page;
