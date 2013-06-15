@@ -78,12 +78,6 @@ public class PrefPageDataFormat extends TargetPrefPage
         setPreferenceStore(DBeaverCore.getGlobalPreferenceStore());
     }
 
-    public PrefPageDataFormat(IAdaptable element)
-    {
-        this();
-        setElement(element);
-    }
-
     @Override
     protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
     {
