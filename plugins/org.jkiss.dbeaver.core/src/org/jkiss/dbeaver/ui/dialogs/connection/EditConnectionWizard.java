@@ -18,18 +18,21 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
-import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
+import org.jkiss.dbeaver.ui.preferences.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * This is a sample new wizard.
@@ -43,7 +46,7 @@ public class EditConnectionWizard extends ConnectionWizard
     private ConnectionPageFinal pageFinal;
     private EditTunnelDialogPage pageTunnels;
     private EditEventsDialogPage pageEvents;
-//    private WizardPrefPage pageDataFormats;
+    private List<WizardPrefPage> prefPages = new ArrayList<WizardPrefPage>();
 
     /**
      * Constructor for SampleNewWizard.
@@ -89,12 +92,25 @@ public class EditConnectionWizard extends ConnectionWizard
         pageFinal = new ConnectionPageFinal(this, dataSource);
         pageTunnels = new EditTunnelDialogPage(dataSource.getDriver(), dataSource.getConnectionInfo());
         pageEvents = new EditEventsDialogPage(dataSource.getConnectionInfo());
-//        pageDataFormats = new WizardPrefPage(new PrefPageDataFormat(dataSource), "Data Formatting", "Data formatting preferences");
 
         addPage(pageFinal);
         addPage(pageTunnels);
         addPage(pageEvents);
-//        addPage(pageDataFormats);
+
+        addPreferencePage(new PrefPageDataFormat(), "Data Formatting", "Data formatting preferences");
+        addPreferencePage(new PrefPageResultSet(), "Result Sets", "Result Set preferences");
+        addPreferencePage(new PrefPageSQLEditor(), "SQL Editor", "SQL editor settings");
+        addPreferencePage(new PrefPageContentEditor(), "LOB Editor", "LOB editor settings");
+    }
+
+    private void addPreferencePage(PreferencePage prefPage, String title, String description)
+    {
+        WizardPrefPage wizardPage = new WizardPrefPage(prefPage, title, description);
+        prefPages.add(wizardPage);
+        if (prefPage instanceof IWorkbenchPropertyPage) {
+            ((IWorkbenchPropertyPage) prefPage).setElement(dataSource);
+        }
+        addPage(wizardPage);
     }
 
     /**
@@ -110,6 +126,9 @@ public class EditConnectionWizard extends ConnectionWizard
         pageFinal.saveSettings(dataSource);
         pageTunnels.saveConfigurations();
         pageEvents.saveConfigurations();
+        for (WizardPrefPage prefPage : prefPages) {
+            prefPage.performFinish();
+        }
         dataSource.getRegistry().updateDataSource(dataSource);
         return true;
     }
@@ -118,6 +137,9 @@ public class EditConnectionWizard extends ConnectionWizard
     public boolean performCancel()
     {
         dataSource.setConnectionInfo(oldData);
+        for (WizardPrefPage prefPage : prefPages) {
+            prefPage.performCancel();
+        }
         return true;
     }
 
