@@ -50,6 +50,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     public OracleConnectionExtraPage()
     {
         setTitle("Extra properties");
+        setDescription("Regional settings and performance");
     }
 
     @Override
