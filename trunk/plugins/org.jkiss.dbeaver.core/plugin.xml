@@ -1732,7 +1732,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" id="org.jkiss.dbeaver.preferences.main.contenteditor" name="Content Editor">
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" id="org.jkiss.dbeaver.preferences.main.contenteditor" name="LOB Editor">
            <enabledWhen>
               <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
            </enabledWhen>

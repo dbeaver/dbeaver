@@ -94,4 +94,15 @@ public class WizardPrefPage extends WizardPage {
     {
         preferencePage.setVisible(visible);
     }
+
+    public void performFinish()
+    {
+        preferencePage.performOk();
+    }
+
+    public void performCancel()
+    {
+        preferencePage.performCancel();
+    }
+
 }
