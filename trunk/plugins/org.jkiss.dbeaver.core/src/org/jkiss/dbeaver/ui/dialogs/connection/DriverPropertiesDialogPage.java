@@ -40,6 +40,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     {
         this.hostPage = hostPage;
         setTitle("Driver properties");
+        setDescription("JDBC driver properties");
     }
 
     @Override
