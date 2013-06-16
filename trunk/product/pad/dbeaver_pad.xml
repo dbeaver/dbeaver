@@ -49,12 +49,17 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Oracle, MySQL and Cassandra drivers included in standard DBeaver distribution.
-        - Oracle OCI driver is now obsolete
-        - Data export from query/SQL script fixed
-        - SSH keep-alive support
-        - Windows installer fixed
-        - Minor UI fixes
+        - Connection properties UI completely rewritten and improved
+        - DB2 for z/OS driver added
+        - Binary (LOB) editor improved, Hex and Base64 formats added
+        - Autocommit and transaction isolation per-connection configuration added
+        - Cross-database data export fixed
+        - Results viewer fixed (additional segments fetch)
+        - Checking of multiple running DBeaver instances added
+        - Context menu fixed in Eclipse plugin mode
+        - Foreign keys added in generic DDL
+        - UI freeze on disconnect with socket timeout fixed
+        - Many minor UI fixes
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
