@@ -34,7 +34,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -65,7 +64,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         return (ContentEditorInput)super.getEditorInput();
     }
 
-    public static ContentEditor openEditor(DBDValueController valueController, IContentEditorPart[] editorParts)
+    public static ContentEditor openEditor(DBDValueController valueController, ContentEditorPart[] editorParts)
     {
         ContentEditorInput editorInput;
         // Save data to file
@@ -103,21 +102,21 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
     }
 
     static class ContentPartInfo {
-        IContentEditorPart editorPart;
+        ContentEditorPart editorPart;
         boolean activated;
         public int index = -1;
 
-        private ContentPartInfo(IContentEditorPart editorPart) {
+        private ContentPartInfo(ContentEditorPart editorPart) {
             this.editorPart = editorPart;
         }
     }
 
     private static class LOBInitializer implements IRunnableWithProgress {
         DBDValueController valueController;
-        IContentEditorPart[] editorParts;
+        ContentEditorPart[] editorParts;
         ContentEditorInput editorInput;
 
-        private LOBInitializer(DBDValueController valueController, IContentEditorPart[] editorParts, ContentEditorInput editorInput)
+        private LOBInitializer(DBDValueController valueController, ContentEditorPart[] editorParts, ContentEditorInput editorInput)
         {
             this.valueController = valueController;
             this.editorParts = editorParts;
@@ -180,14 +179,14 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
             {
                 try {
                     // Check for dirty parts
-                    final List<IContentEditorPart> dirtyParts = new ArrayList<IContentEditorPart>();
+                    final List<ContentEditorPart> dirtyParts = new ArrayList<ContentEditorPart>();
                     for (ContentPartInfo partInfo : contentParts) {
                         if (partInfo.activated && partInfo.editorPart.isDirty()) {
                             dirtyParts.add(partInfo.editorPart);
                         }
                     }
 
-                    IContentEditorPart dirtyPart = null;
+                    ContentEditorPart dirtyPart = null;
                     if (dirtyParts.isEmpty()) {
                         // No modified parts - no additional save required
                     } else if (dirtyParts.size() == 1) {
@@ -252,8 +251,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         MimeType mimeType = ContentUtils.getMimeType(content.getContentType());
 
         // Fill nested editorParts info
-        IContentEditorPart[] editorParts = getEditorInput().getEditors();
-        for (IContentEditorPart editorPart : editorParts) {
+        ContentEditorPart[] editorParts = getEditorInput().getEditors();
+        for (ContentEditorPart editorPart : editorParts) {
             contentParts.add(new ContentPartInfo(editorPart));
             editorPart.initPart(this, mimeType);
         }
@@ -332,7 +331,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         MimeType mimeType = ContentUtils.getMimeType(contentType);
         IEditorPart defaultPage = null, preferredPage = null;
         for (ContentPartInfo contentPart : contentParts) {
-            IContentEditorPart editorPart = contentPart.editorPart;
+            ContentEditorPart editorPart = contentPart.editorPart;
             if (contentLength > editorPart.getMaxContentLength()) {
                 continue;
             }

@@ -32,7 +32,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
-import org.jkiss.dbeaver.ext.IContentEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -45,7 +45,7 @@ import java.io.InputStream;
 /**
  * LOB text editor
  */
-public class ContentImageEditorPart extends EditorPart implements IContentEditorPart, IResourceChangeListener {
+public class ContentImageEditorPart extends EditorPart implements ContentEditorPart, IResourceChangeListener {
 
     static final Log log = LogFactory.getLog(ContentImageEditorPart.class);
 

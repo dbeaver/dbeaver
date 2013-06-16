@@ -32,7 +32,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.IContentEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -342,7 +342,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                 } else if (value instanceof DBDContent) {
                     DBDContent content = (DBDContent)value;
                     boolean isText = ContentUtils.isTextContent(content);
-                    List<IContentEditorPart> parts = new ArrayList<IContentEditorPart>();
+                    List<ContentEditorPart> parts = new ArrayList<ContentEditorPart>();
                     if (isText) {
                         parts.add(new ContentTextEditorPart());
                         if (isXML(content)) {
@@ -355,7 +355,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     }
                     return ContentEditor.openEditor(
                         controller,
-                        parts.toArray(new IContentEditorPart[parts.size()]) );
+                        parts.toArray(new ContentEditorPart[parts.size()]) );
                 } else {
                     controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
                     return null;
