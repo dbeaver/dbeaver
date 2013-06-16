@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ext;
+package org.jkiss.dbeaver.ui.editors.content;
 
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
@@ -29,7 +29,7 @@ import javax.activation.MimeType;
 /**
  * Database content editor
  */
-public interface IContentEditorPart extends IEditorPart {
+public interface ContentEditorPart extends IEditorPart {
 
     void initPart(IEditorPart contentEditor, MimeType mimeType);
 

@@ -30,7 +30,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.IContentEditorPart;
 import org.jkiss.dbeaver.ext.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -55,13 +54,13 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     static final Log log = LogFactory.getLog(ContentEditorInput.class);
 
     private DBDValueController valueController;
-    private IContentEditorPart[] editorParts;
+    private ContentEditorPart[] editorParts;
     private IFile contentFile;
     private boolean contentDetached = false;
 
     public ContentEditorInput(
         DBDValueController valueController,
-        IContentEditorPart[] editorParts,
+        ContentEditorPart[] editorParts,
         DBRProgressMonitor monitor)
         throws DBException
     {
@@ -81,7 +80,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
         this.prepareContent(monitor);
     }
 
-    IContentEditorPart[] getEditors()
+    ContentEditorPart[] getEditors()
     {
         return editorParts;
     }

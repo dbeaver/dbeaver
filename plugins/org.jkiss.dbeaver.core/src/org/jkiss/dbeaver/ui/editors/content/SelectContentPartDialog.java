@@ -25,7 +25,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.IContentEditorPart;
 
 import java.util.List;
 
@@ -36,10 +35,10 @@ import java.util.List;
  */
 class SelectContentPartDialog extends Dialog {
 
-    private List<IContentEditorPart> dirtyParts;
-    private IContentEditorPart selectedPart;
+    private List<ContentEditorPart> dirtyParts;
+    private ContentEditorPart selectedPart;
 
-    private SelectContentPartDialog(Shell parentShell, List<IContentEditorPart> dirtyParts)
+    private SelectContentPartDialog(Shell parentShell, List<ContentEditorPart> dirtyParts)
     {
         super(parentShell);
         this.dirtyParts = dirtyParts;
@@ -69,7 +68,7 @@ class SelectContentPartDialog extends Dialog {
         gd = new GridData(GridData.FILL_HORIZONTAL);
         combo.setLayoutData(gd);
         combo.add("");
-        for (IContentEditorPart part : dirtyParts) {
+        for (ContentEditorPart part : dirtyParts) {
             combo.add(part.getContentTypeTitle());
         }
         combo.addSelectionListener(new SelectionAdapter() {
@@ -95,7 +94,7 @@ class SelectContentPartDialog extends Dialog {
 
         TableColumn tableColumn = new TableColumn(table, SWT.NONE);
         tableColumn.setText("Editor");
-        for (IContentEditorPart part : dirtyParts) {
+        for (ContentEditorPart part : dirtyParts) {
             TableItem item = new TableItem(table, SWT.NONE);
             item.setText(part.getContentTypeTitle());
             Image image = part.getContentTypeImage();
@@ -112,7 +111,7 @@ class SelectContentPartDialog extends Dialog {
             public void widgetSelected(SelectionEvent e)
             {
                 TableItem item = (TableItem) e.item;
-                selectedPart = (IContentEditorPart) item.getData();
+                selectedPart = (ContentEditorPart) item.getData();
                 getButton(IDialogConstants.OK_ID).setEnabled(true);
             }
         });
@@ -129,12 +128,12 @@ class SelectContentPartDialog extends Dialog {
         return ctl;
     }
 
-    public IContentEditorPart getSelectedPart()
+    public ContentEditorPart getSelectedPart()
     {
         return selectedPart;
     }
 
-    public static IContentEditorPart selectContentPart(Shell parentShell, List<IContentEditorPart> dirtyParts)
+    public static ContentEditorPart selectContentPart(Shell parentShell, List<ContentEditorPart> dirtyParts)
     {
         SelectContentPartDialog scDialog = new SelectContentPartDialog(parentShell, dirtyParts);
         if (scDialog.open() == IDialogConstants.OK_ID) {
