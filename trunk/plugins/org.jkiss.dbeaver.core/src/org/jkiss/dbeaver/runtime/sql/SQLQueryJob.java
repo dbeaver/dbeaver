@@ -338,6 +338,8 @@ public class SQLQueryJob extends DataSourceJob
                 }
                 if (!CommonUtils.isEmpty(unresolvedParams)) {
                     hasParameters = bindStatementParameters(unresolvedParams);
+                } else {
+                    hasParameters = true;
                 }
             }
 
