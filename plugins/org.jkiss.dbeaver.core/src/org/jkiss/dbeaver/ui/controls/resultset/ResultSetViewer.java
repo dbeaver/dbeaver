@@ -322,7 +322,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         //UIUtils.createControlLabel(filtersPanel, " Filter");
 
-        this.filtersText = new Combo(filtersPanel, SWT.BORDER | SWT.DROP_DOWN | SWT.NO_FOCUS);
+        this.filtersText = new Combo(filtersPanel, SWT.BORDER | SWT.DROP_DOWN);
         this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         this.filtersText.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -331,6 +331,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 setCustomDataFilter();
             }
         });
+
+        {
+            // Register filters text in focus service
+            UIUtils.addFocusTracker(site, UIUtils.INLINE_WIDGET_EDITOR_ID, this.filtersText);
+
+            this.filtersText.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e)
+                {
+                    // Unregister from focus service
+                    UIUtils.removeFocusTracker(ResultSetViewer.this.site, filtersText);
+                    dispose();
+                }
+            });
+        }
 
         // Handle all shortcuts by filters editor, not by host editor
         this.filtersText.addFocusListener(new FocusListener() {
