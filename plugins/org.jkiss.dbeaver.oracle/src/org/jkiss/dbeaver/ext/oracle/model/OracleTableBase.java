@@ -231,10 +231,10 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return null;
     }
 
-    public String getDDL(DBRProgressMonitor monitor)
+    public String getDDL(DBRProgressMonitor monitor, OracleDDLFormat ddlFormat)
         throws DBException
     {
-        return OracleUtils.getDDL(monitor, getTableTypeName(), this);
+        return OracleUtils.getDDL(monitor, getTableTypeName(), this, ddlFormat);
     }
 
     @Override

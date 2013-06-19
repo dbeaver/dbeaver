@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -55,7 +56,8 @@ public class OracleUtils {
     public static String getDDL(
         DBRProgressMonitor monitor,
         String objectType,
-        DBSEntity object) throws DBCException
+        DBSEntity object,
+        OracleDDLFormat ddlFormat) throws DBCException
     {
         String objectFullName = DBUtils.getObjectFullName(object);
         OracleSchema schema = null;
@@ -71,6 +73,15 @@ public class OracleUtils {
             DBCExecutionPurpose.META,
             "Load source code for " + objectType + " '" + objectFullName + "'");
         try {
+            JDBCUtils.executeProcedure(
+                context,
+                "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
+            JDBCUtils.executeProcedure(
+                context,
+                "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");  end;");
+            JDBCUtils.executeProcedure(
+                context,
+                "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
             final JDBCPreparedStatement dbStat = context.prepareStatement(
                 "SELECT DBMS_METADATA.GET_DDL(?,?" +
                 (schema == null ? "": ",?") +
