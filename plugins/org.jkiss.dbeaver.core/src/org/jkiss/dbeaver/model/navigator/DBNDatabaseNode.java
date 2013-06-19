@@ -553,6 +553,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements IActionFilter, 
         }
     }
 
+    @Override
     public boolean isFiltered()
     {
         return filtered;
