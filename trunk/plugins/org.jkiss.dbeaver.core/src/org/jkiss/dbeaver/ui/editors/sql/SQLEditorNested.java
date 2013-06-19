@@ -269,6 +269,18 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     protected abstract void setSourceText(String sourceText);
 
+    protected void contributeEditorCommands(ToolBarManager toolBarManager)
+    {
+        toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
+        toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
+        String compileCommandId = getCompileCommandId();
+        if (compileCommandId != null) {
+            toolBarManager.add(new Separator());
+            toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
+            toolBarManager.add(new ViewLogAction());
+        }
+    }
+
     private class EditorPageControl extends ProgressPageControl {
 
         public EditorPageControl(Composite parent, int style)
@@ -278,14 +290,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         @Override
         protected void fillCustomToolbar(ToolBarManager toolBarManager) {
-            toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
-            toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
-            String compileCommandId = getCompileCommandId();
-            if (compileCommandId != null) {
-                toolBarManager.add(new Separator());
-                toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
-                toolBarManager.add(new ViewLogAction());
-            }
+            contributeEditorCommands(toolBarManager);
         }
     }
 

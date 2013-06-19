@@ -19,6 +19,14 @@
 
 package org.jkiss.dbeaver.ext.oracle.editors;
 
+import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -44,4 +52,23 @@ public class OracleObjectDDLEditor extends SQLEditorNested<OracleTable> {
     protected void setSourceText(String sourceText) {
     }
 
+    @Override
+    protected void contributeEditorCommands(ToolBarManager toolBarManager)
+    {
+        super.contributeEditorCommands(toolBarManager);
+        toolBarManager.add(new Separator());
+        toolBarManager.add(new ControlContribution("DDLFormat")
+        {
+            @Override
+            protected Control createControl(Composite parent)
+            {
+                CCombo ddlFormatCombo = new CCombo(parent, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+                ddlFormatCombo.setToolTipText("DDL Format");
+                ddlFormatCombo.add("Full DDL");
+                ddlFormatCombo.add("No storage information");
+                ddlFormatCombo.add("Compact form");
+                return ddlFormatCombo;
+            }
+        });
+    }
 }
