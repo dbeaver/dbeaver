@@ -438,6 +438,16 @@ public class JDBCUtils {
         }
     }
 
+    public static void executeProcedure(JDBCExecutionContext context, String sql) throws SQLException
+    {
+        final JDBCPreparedStatement dbStat = context.prepareCall(sql);
+        try {
+            dbStat.execute();
+        } finally {
+            dbStat.close();
+        }
+    }
+
     public static String queryString(JDBCExecutionContext context, String sql, Object ... args) throws SQLException
     {
         final JDBCPreparedStatement dbStat = context.prepareStatement(sql);
