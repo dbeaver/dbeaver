@@ -118,7 +118,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";
 
-    public enum ResultSetMode {
+    public enum GridMode {
         GRID,
         RECORD
     }
@@ -150,7 +150,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private int curRowNum = -1;
     private int curColNum = -1;
     // Mode
-    private ResultSetMode mode;
+    private GridMode gridMode;
 
     private final Map<ResultSetValueController, DBDValueEditorStandalone> openEditors = new HashMap<ResultSetValueController, DBDValueEditorStandalone>();
     private final List<ResultSetListener> listeners = new ArrayList<ResultSetListener>();
@@ -183,7 +183,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 */
 
         this.site = site;
-        this.mode = ResultSetMode.GRID;
+        this.gridMode = GridMode.GRID;
         this.resultSetProvider = resultSetProvider;
         this.dataReceiver = new ResultSetDataReceiver(this);
 
@@ -252,7 +252,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
 
         createStatusBar(viewerPanel);
-        changeMode(ResultSetMode.GRID);
+        changeMode(GridMode.GRID);
 
         this.themeManager = site.getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeManager.addPropertyChangeListener(this);
@@ -545,7 +545,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void updateGridCursor(int col, int row)
     {
         boolean changed;
-        if (mode == ResultSetMode.GRID) {
+        if (gridMode == GridMode.GRID) {
             changed = curRowNum != row || curColNum != col;
             curRowNum = row;
             curColNum = col;
@@ -603,7 +603,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 curRowNum = model.getRowCount() - 1;
             }
             GridPos curPos = new GridPos(spreadsheet.getCursorPosition());
-            if (mode == ResultSetMode.GRID) {
+            if (gridMode == GridMode.GRID) {
                 if (curPos.row >= model.getRowCount()) {
                     curPos.row = model.getRowCount() - 1;
                 }
@@ -612,7 +612,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             this.spreadsheet.reinitState();
 
             // Set cursor on new row
-            if (mode == ResultSetMode.GRID) {
+            if (gridMode == GridMode.GRID) {
                 spreadsheet.setCursor(curPos, false);
             } else {
                 updateRecordMode();
@@ -707,7 +707,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     // Update all columns ordering
     private void resetColumnOrdering()
     {
-        if (!spreadsheet.isDisposed() && mode == ResultSetMode.GRID) {
+        if (!spreadsheet.isDisposed() && gridMode == GridMode.GRID) {
             List<DBDAttributeBinding> visibleColumns = model.getVisibleColumns();
             for (int i = 0, metaColumnsLength = visibleColumns.size(); i < metaColumnsLength; i++) {
                 DBDAttributeBinding column = visibleColumns.get(i);
@@ -726,14 +726,14 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     ////////////////////////////////////////////////////////////
     // Grid/Record mode
 
-    public ResultSetMode getMode()
+    public GridMode getGridMode()
     {
-        return mode;
+        return gridMode;
     }
 
     public void toggleMode()
     {
-        changeMode(mode == ResultSetMode.GRID ? ResultSetMode.RECORD : ResultSetMode.GRID);
+        changeMode(gridMode == GridMode.GRID ? GridMode.RECORD : GridMode.GRID);
         // Refresh elements
         ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
         if (commandService != null) {
@@ -741,7 +741,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private void changeMode(ResultSetMode resultSetMode)
+    private void changeMode(GridMode gridMode)
     {
         int oldRowNum = this.curRowNum, oldColNum = this.curColNum;
         int rowCount = model.getRowCount();
@@ -753,8 +753,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 oldRowNum = this.curRowNum = rowCount - 1;
             }
         }
-        this.mode = resultSetMode;
-        if (this.mode == ResultSetMode.GRID) {
+        this.gridMode = gridMode;
+        if (this.gridMode == GridMode.GRID) {
             this.spreadsheet.setRowHeaderWidth(DEFAULT_ROW_HEADER_WIDTH);
             this.initResultSet();
         } else {
@@ -763,7 +763,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
         this.curRowNum = oldRowNum;
         this.curColNum = oldColNum;
-        if (mode == ResultSetMode.GRID) {
+        if (gridMode == GridMode.GRID) {
             if (this.curRowNum >= 0 && this.curRowNum < spreadsheet.getItemCount()) {
                 spreadsheet.setCursor(new GridPos(this.curColNum, this.curRowNum), false);
             }
@@ -902,7 +902,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         switch (position) {
             case FIRST:
-                if (mode == ResultSetMode.RECORD) {
+                if (gridMode == GridMode.RECORD) {
                     curRowNum = 0;
                     updateRecordMode();
                 } else {
@@ -910,7 +910,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
                 break;
             case PREVIOUS:
-                if (mode == ResultSetMode.RECORD && curRowNum > 0) {
+                if (gridMode == GridMode.RECORD && curRowNum > 0) {
                     curRowNum--;
                     updateRecordMode();
                 } else {
@@ -918,7 +918,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
                 break;
             case NEXT:
-                if (mode == ResultSetMode.RECORD && curRowNum < model.getRowCount() - 1) {
+                if (gridMode == GridMode.RECORD && curRowNum < model.getRowCount() - 1) {
                     curRowNum++;
                     updateRecordMode();
                 } else {
@@ -926,7 +926,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
                 break;
             case LAST:
-                if (mode == ResultSetMode.RECORD && model.getRowCount() > 0) {
+                if (gridMode == GridMode.RECORD && model.getRowCount() > 0) {
                     curRowNum = model.getRowCount() - 1;
                     updateRecordMode();
                 } else {
@@ -939,7 +939,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     boolean isColumnReadOnly(GridPos pos)
     {
         int column;
-        if (mode == ResultSetMode.GRID) {
+        if (gridMode == GridMode.GRID) {
             column = pos.col;
         } else {
             column = pos.row;
@@ -954,7 +954,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     public int getCurrentRow()
     {
-        return mode == ResultSetMode.GRID ? spreadsheet.getCurrentRow() : curRowNum;
+        return gridMode == GridMode.GRID ? spreadsheet.getCurrentRow() : curRowNum;
     }
 
     public GridPos getCurrentPosition()
@@ -992,7 +992,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 setStatus(CoreMessages.controls_resultset_viewer_status_no_data + getExecutionTimeMessage());
             }
         } else {
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 this.resetRecordHeaderWidth();
                 setStatus(CoreMessages.controls_resultset_viewer_status_row + (curRowNum + 1) + "/" + model.getRowCount() + getExecutionTimeMessage());
             } else {
@@ -1068,7 +1068,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         spreadsheet.setRedraw(false);
         spreadsheet.clearGrid();
-        if (mode == ResultSetMode.RECORD) {
+        if (gridMode == GridMode.RECORD) {
             this.resetRecordHeaderWidth();
         }
 
@@ -1157,7 +1157,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (pos == null) {
             return false;
         }
-        if (mode == ResultSetMode.GRID) {
+        if (gridMode == GridMode.GRID) {
             return pos.row >= 0 && pos.row < model.getRowCount() && pos.col >= 0 && pos.col < model.getVisibleColumnCount();
         } else {
             return curRowNum >= 0 && curRowNum < model.getRowCount() && pos.row >= 0;
@@ -1166,7 +1166,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     GridPos translateGridPos(GridPos pos)
     {
-        if (mode == ResultSetMode.GRID) {
+        if (gridMode == GridMode.GRID) {
             return pos;
         } else {
             return new GridPos(pos.row, curRowNum);
@@ -1398,6 +1398,48 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     dialog.open();
                 }
             });
+            final List<GridColumn> selectedColumns = getSpreadsheet().getSelectedColumns();
+            if (!selectedColumns.isEmpty()) {
+                MenuManager columnsMenu = new MenuManager(
+                    "Columns",
+                    DBIcon.TREE_COLUMNS.getImageDescriptor(),
+                    "columns"); //$NON-NLS-1$
+                manager.add(columnsMenu);
+
+                String hideTitle;
+                if (selectedColumns.size() == 1) {
+                    DBDAttributeBinding column = model.getVisibleColumn(translateGridPos(
+                        new GridPos(selectedColumns.get(0).getIndex(), -1)).col);
+                    hideTitle = "Hide column '" + column.getAttributeName() + "'";
+                } else {
+                    hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
+                }
+                columnsMenu.add(new Action(hideTitle) {
+                    @Override
+                    public void run()
+                    {
+                        if (selectedColumns.size() >= getModel().getVisibleColumnCount()) {
+                            UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
+                        } else {
+                            int[] columnIndexes = new int[selectedColumns.size()];
+                            for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
+                                columnIndexes[i] = selectedColumns.get(i).getIndex();
+                            }
+                            Arrays.sort(columnIndexes);
+                            for (int i = columnIndexes.length; i > 0; i--) {
+                                getModel().hideColumn(columnIndexes[i - 1]);
+                            }
+                            refreshSpreadsheet(true);
+                        }
+                    }
+                });
+                columnsMenu.add(new Action("Configure columns order/visibility ...") {
+                    @Override
+                    public void run()
+                    {
+                    }
+                });
+            }
         }
         manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
     }
@@ -1695,7 +1737,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 // Restore original position
                                 ResultSetViewer.this.curRowNum = Math.min(oldPos.row, model.getRowCount() - 1);
                                 ResultSetViewer.this.curColNum = Math.min(oldPos.col, model.getVisibleColumnCount() - 1);
-                                if (mode == ResultSetMode.GRID) {
+                                if (gridMode == GridMode.GRID) {
                                     spreadsheet.setCursor(new GridPos(curColNum, curRowNum), false);
                                 } else {
                                     spreadsheet.setCursor(new GridPos(0, curColNum), false);
@@ -1917,7 +1959,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         GridPos curPos = spreadsheet.getCursorPosition();
         int rowNum;
-        if (mode == ResultSetMode.RECORD) {
+        if (gridMode == GridMode.RECORD) {
             rowNum = this.curRowNum;
         } else {
             rowNum = curPos.row;
@@ -1991,7 +2033,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         GridPos curPos = spreadsheet.getCursorPosition();
         TreeSet<Integer> rowNumbers = new TreeSet<Integer>();
-        if (mode == ResultSetMode.RECORD) {
+        if (gridMode == GridMode.RECORD) {
             rowNumbers.add(this.curRowNum);
         } else {
             for (GridPos pos : spreadsheet.getSelection()) {
@@ -2020,7 +2062,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
         // Move one row down (if we are in grid mode)
-        if (mode == ResultSetMode.GRID && lastRowNum < spreadsheet.getItemCount() - 1) {
+        if (gridMode == GridMode.GRID && lastRowNum < spreadsheet.getItemCount() - 1) {
             curPos.row = lastRowNum - rowsRemoved + 1;
             spreadsheet.setCursor(curPos, false);
         }
@@ -2371,21 +2413,21 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public int getRowCount()
         {
-            return (mode == ResultSetMode.RECORD) ?
+            return (gridMode == GridMode.RECORD) ?
                     model.getVisibleColumnCount() : model.getRowCount();
         }
 
         @Override
         public int getColumnCount()
         {
-            return (mode == ResultSetMode.RECORD) ?
+            return (gridMode == GridMode.RECORD) ?
                     1: model.getVisibleColumnCount();
         }
 
         @Override
         public Object getElement(GridPos pos)
         {
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 return model.getRowData(curRowNum)[pos.row];
             } else {
                 return model.getRowData(pos.row)[pos.col];
@@ -2403,7 +2445,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public void updateColumn(GridColumn column)
         {
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 column.setSort(SWT.NONE);
             } else {
                 column.setSort(SWT.DEFAULT);
@@ -2421,7 +2463,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Object[] getElements(Object inputElement)
         {
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 return model.getRowData(curRowNum);
             } else {
                 int rowNum = ((Number) inputElement).intValue();
@@ -2447,7 +2489,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             DBDValueHandler valueHandler;
             int rowNum;
             int rowCount = model.getRowCount();
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 // Fill record
                 rowNum = curRowNum;
                 if (curRowNum >= rowCount || curRowNum < 0) {
@@ -2475,7 +2517,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 valueHandler = model.getVisibleColumn(col).getValueHandler();
             }
 
-            if (rowNum == rowCount - 1 && (mode == ResultSetMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
+            if (rowNum == rowCount - 1 && (gridMode == GridMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
                 readNextSegment();
             }
 
@@ -2493,7 +2535,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public Image getImage(int col, int row)
         {
             DBDAttributeBinding attr;
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 if (row >= model.getVisibleColumnCount()) {
                     return null;
                 }
@@ -2531,7 +2573,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Color getBackground(int col, int row)
         {
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 col = row;
                 row = curRowNum;
             }
@@ -2553,7 +2595,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Image getImage(Object element)
         {
-            if (mode == ResultSetMode.GRID) {
+            if (gridMode == GridMode.GRID) {
                 int colNumber = ((Number)element).intValue();
                 return getTypeImage(model.getVisibleColumn(colNumber).getMetaAttribute());
             }
@@ -2564,7 +2606,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public String getText(Object element)
         {
             int colNumber = ((Number)element).intValue();
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 if (colNumber == 0) {
                     return CoreMessages.controls_resultset_viewer_value;
                 } else {
@@ -2591,7 +2633,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public Font getFont(Object element)
         {
             int colNumber = ((Number)element).intValue();
-            if (mode == ResultSetMode.GRID) {
+            if (gridMode == GridMode.GRID) {
                 if (model.getDataFilter().getFilterColumn(model.getVisibleColumn(colNumber).getAttributeName()) != null) {
                     return boldFont;
                 }
@@ -2604,7 +2646,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Image getImage(Object element)
         {
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 int rowNumber = ((Number) element).intValue();
                 return getTypeImage(model.getVisibleColumn(rowNumber).getMetaAttribute());
             }
@@ -2615,7 +2657,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public String getText(Object element)
         {
             int rowNumber = ((Number) element).intValue();
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 return model.getVisibleColumn(rowNumber).getAttributeName();
             } else {
                 return String.valueOf(rowNumber + 1);
@@ -2925,7 +2967,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public Collection<ResultSetRow> getSelectedRows()
         {
             List<ResultSetRow> rows = new ArrayList<ResultSetRow>();
-            if (mode == ResultSetMode.RECORD) {
+            if (gridMode == GridMode.RECORD) {
                 if (curRowNum < 0 || curRowNum >= model.getRowCount()) {
                     return Collections.emptyList();
                 }

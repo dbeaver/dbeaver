@@ -96,6 +96,11 @@ public class ResultSetModel {
         return visibleColumns.get(index);
     }
 
+    public void hideColumn(int index)
+    {
+        visibleColumns.remove(index);
+    }
+
     public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)
     {
         for (DBDAttributeBinding binding : columns) {
@@ -522,4 +527,5 @@ public class ResultSetModel {
     {
         this.executionTime = executionTime;
     }
+
 }
