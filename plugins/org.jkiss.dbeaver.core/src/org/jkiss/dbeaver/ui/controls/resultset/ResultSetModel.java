@@ -22,7 +22,7 @@ import java.util.*;
 public class ResultSetModel {
     // Columns
     private DBDAttributeBinding[] columns = new DBDAttributeBinding[0];
-    private DBDAttributeBinding[] visibleColumns = new DBDAttributeBinding[0];
+    private List<DBDAttributeBinding> visibleColumns = new ArrayList<DBDAttributeBinding>();
     private DBDDataFilter dataFilter = new DBDDataFilter();
     private boolean singleSourceCells;
 
@@ -58,7 +58,7 @@ public class ResultSetModel {
         if (!singleSourceCells) {
             return null;
         }
-        return visibleColumns[0].getRowIdentifier().getEntity();
+        return columns[0].getRowIdentifier().getEntity();
     }
 
     public boolean isCellModified(GridPos pos)
@@ -83,17 +83,17 @@ public class ResultSetModel {
 
     public int getVisibleColumnCount()
     {
-        return visibleColumns.length;
+        return visibleColumns.size();
     }
 
-    public DBDAttributeBinding[] getVisibleColumns()
+    public List<DBDAttributeBinding> getVisibleColumns()
     {
         return visibleColumns;
     }
 
     public DBDAttributeBinding getVisibleColumn(int index)
     {
-        return visibleColumns[index];
+        return visibleColumns.get(index);
     }
 
     public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)
@@ -108,8 +108,8 @@ public class ResultSetModel {
 
     int getMetaColumnIndex(DBCAttributeMetaData attribute)
     {
-        for (int i = 0; i < visibleColumns.length; i++) {
-            if (attribute == visibleColumns[i].getMetaAttribute()) {
+        for (int i = 0; i < visibleColumns.size(); i++) {
+            if (attribute == visibleColumns.get(i).getMetaAttribute()) {
                 return i;
             }
         }
@@ -118,8 +118,8 @@ public class ResultSetModel {
 
     int getMetaColumnIndex(DBSEntityAttribute column)
     {
-        for (int i = 0; i < visibleColumns.length; i++) {
-            if (column == visibleColumns[i].getEntityAttribute()) {
+        for (int i = 0; i < visibleColumns.size(); i++) {
+            if (column == visibleColumns.get(i).getEntityAttribute()) {
                 return i;
             }
         }
@@ -135,8 +135,8 @@ public class ResultSetModel {
 
     int getMetaColumnIndex(DBSEntity table, String columnName)
     {
-        for (int i = 0; i < visibleColumns.length; i++) {
-            DBDAttributeBinding column = visibleColumns[i];
+        for (int i = 0; i < visibleColumns.size(); i++) {
+            DBDAttributeBinding column = visibleColumns.get(i);
             if ((table == null || column.getRowIdentifier().getEntity() == table) &&
                 column.getAttributeName().equals(columnName))
             {
@@ -148,7 +148,7 @@ public class ResultSetModel {
 
     public boolean isEmpty()
     {
-        return getRowCount() <= 0 || visibleColumns.length <= 0;
+        return getRowCount() <= 0 || visibleColumns.size() <= 0;
     }
 
     public int getRowCount()
@@ -219,7 +219,7 @@ public class ResultSetModel {
     public boolean setMetaData(DBDAttributeBinding[] columns)
     {
         boolean update = false;
-        if (this.visibleColumns == null || this.visibleColumns.length != columns.length) {
+        if (this.columns == null || this.columns.length != columns.length) {
             update = true;
         } else {
             if (dataFilter != null && dataFilter.hasConditions()) {
@@ -231,8 +231,8 @@ public class ResultSetModel {
                 return false;
             }
 
-            for (int i = 0; i < this.visibleColumns.length; i++) {
-                if (!this.visibleColumns[i].getMetaAttribute().equals(columns[i].getMetaAttribute())) {
+            for (int i = 0; i < this.columns.length; i++) {
+                if (!this.columns[i].getMetaAttribute().equals(columns[i].getMetaAttribute())) {
                     update = true;
                     break;
                 }
@@ -240,7 +240,9 @@ public class ResultSetModel {
         }
         if (update) {
             this.clearData();
-            this.columns = this.visibleColumns = columns;
+            this.columns = columns;
+            this.visibleColumns.clear();
+            Collections.addAll(this.visibleColumns, this.columns);
             this.dataFilter = new DBDDataFilter();
         }
         return update;
@@ -309,7 +311,7 @@ public class ResultSetModel {
 
     boolean isColumnReadOnly(int column)
     {
-        return column < 0 || column >= visibleColumns.length || isColumnReadOnly(visibleColumns[column]);
+        return column < 0 || column >= visibleColumns.size() || isColumnReadOnly(visibleColumns.get(column));
     }
 
     boolean isColumnReadOnly(DBDAttributeBinding column)

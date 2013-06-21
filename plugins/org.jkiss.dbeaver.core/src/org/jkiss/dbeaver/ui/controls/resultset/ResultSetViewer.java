@@ -708,9 +708,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void resetColumnOrdering()
     {
         if (!spreadsheet.isDisposed() && mode == ResultSetMode.GRID) {
-            DBDAttributeBinding[] visibleColumns = model.getVisibleColumns();
-            for (int i = 0, metaColumnsLength = visibleColumns.length; i < metaColumnsLength; i++) {
-                DBDAttributeBinding column = visibleColumns[i];
+            List<DBDAttributeBinding> visibleColumns = model.getVisibleColumns();
+            for (int i = 0, metaColumnsLength = visibleColumns.size(); i < metaColumnsLength; i++) {
+                DBDAttributeBinding column = visibleColumns.get(i);
                 DBQOrderColumn columnOrder = model.getDataFilter().getOrderColumn(column.getAttributeName());
                 GridColumn gridColumn = spreadsheet.getColumn(i);
                 if (columnOrder == null) {
