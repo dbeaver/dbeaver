@@ -303,8 +303,6 @@ public class Spreadsheet extends LightGrid implements Listener {
             super.deselectAll();
         }
         super.selectCell(newPos);
-        //spreadsheet.s
-        super.redraw();
 
         // Change selection event
         selectionEvent.data = new GridPos(newPos.col, newPos.row);
