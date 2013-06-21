@@ -17,8 +17,7 @@ generate sql
 
 Disconnect detection (by error code)
 
-Cancel/disconnect improvement
 Connection "dirty" flag handle
-Formatting profiles to connection association
 Structs in record mode
-Multiple instances check
+
+Office formats support (xls, doc) for export/import. Possibly office extension.
