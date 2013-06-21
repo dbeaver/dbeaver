@@ -27,7 +27,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.utils.CommonUtils;
@@ -152,7 +151,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
             return -1;
         }
         int rowCount = model.getRowCount();
-        int columnCount = model.getVisibleColumns().length;
+        int columnCount = model.getVisibleColumnCount();
         GridPos startPosition = resultSet.getSelection().getFirstElement();
         if (startPosition == null) {
             // From the beginning
