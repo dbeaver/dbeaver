@@ -28,12 +28,23 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 public class DBDAttributeBinding {
     private final DBCAttributeMetaData metaAttribute;
     private final DBDValueHandler valueHandler;
+    private final int attributeIndex;
     private DBSEntityAttribute entityAttribute;
     private DBDRowIdentifier rowIdentifier;
 
-    public DBDAttributeBinding(DBCAttributeMetaData metaAttribute, DBDValueHandler valueHandler) {
+    public DBDAttributeBinding(DBCAttributeMetaData metaAttribute, DBDValueHandler valueHandler, int attributeIndex) {
         this.metaAttribute = metaAttribute;
         this.valueHandler = valueHandler;
+        this.attributeIndex = attributeIndex;
+    }
+
+    /**
+     * Attribute index in result set
+     * @return attribute index (zero based)
+     */
+    public int getAttributeIndex()
+    {
+        return attributeIndex;
     }
 
     /**

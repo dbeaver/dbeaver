@@ -84,7 +84,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             // Extract column info
             metaColumns = new DBDAttributeBinding[columnsCount];
             for (int i = 0; i < columnsCount; i++) {
-                metaColumns[i] = DBUtils.getColumnBinding(context, rsAttributes.get(i));
+                metaColumns[i] = DBUtils.getColumnBinding(context, rsAttributes.get(i), i);
             }
 
             updateMetaData = resultSetViewer.setMetaData(metaColumns);
@@ -104,7 +104,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                     context,
                     resultSet,
                     metaColumns[i].getMetaAttribute(),
-                    i);
+                    metaColumns[i].getAttributeIndex());
             }
             catch (DBCException e) {
                 // Do not reports the same error multiple times

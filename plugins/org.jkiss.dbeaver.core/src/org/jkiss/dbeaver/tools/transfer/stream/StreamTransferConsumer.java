@@ -66,8 +66,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         // Prepare columns
         metaColumns = new ArrayList<DBDAttributeBinding>();
         List<DBCAttributeMetaData> attributes = resultSet.getResultSetMetaData().getAttributes();
-        for (DBCAttributeMetaData attribute : attributes) {
-            DBDAttributeBinding columnBinding = DBUtils.getColumnBinding(context, attribute);
+        for (int i = 0, attributesSize = attributes.size(); i < attributesSize; i++) {
+            DBCAttributeMetaData attribute = attributes.get(i);
+            DBDAttributeBinding columnBinding = DBUtils.getColumnBinding(context, attribute, i);
             metaColumns.add(columnBinding);
         }
         row = new Object[metaColumns.size()];
@@ -88,7 +89,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             // Get values
             for (int i = 0; i < metaColumns.size(); i++) {
                 DBDAttributeBinding column = metaColumns.get(i);
-                Object value = column.getValueHandler().fetchValueObject(context, resultSet, column.getMetaAttribute(), i);
+                Object value = column.getValueHandler().fetchValueObject(context, resultSet, column.getMetaAttribute(), column.getAttributeIndex());
                 if (value instanceof DBDContent) {
                     // Check for binary type export
                     if (!ContentUtils.isTextContent((DBDContent)value)) {
