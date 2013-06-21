@@ -761,15 +761,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             this.resetRecordHeaderWidth();
             this.updateRecordMode();
         }
-        this.curRowNum = oldRowNum;
-        this.curColNum = oldColNum;
         if (gridMode == GridMode.GRID) {
-            if (this.curRowNum >= 0 && this.curRowNum < spreadsheet.getItemCount()) {
-                spreadsheet.setCursor(new GridPos(this.curColNum, this.curRowNum), false);
+            if (oldRowNum >= 0 && oldRowNum < spreadsheet.getItemCount()) {
+                spreadsheet.setCursor(new GridPos(oldColNum, oldRowNum), false);
             }
         } else {
-            if (this.curColNum >= 0) {
-                spreadsheet.setCursor(new GridPos(0, this.curColNum), false);
+            if (oldColNum >= 0) {
+                spreadsheet.setCursor(new GridPos(0, oldColNum), false);
             }
         }
         spreadsheet.layout(true, true);
