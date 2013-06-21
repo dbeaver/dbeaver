@@ -410,7 +410,7 @@ public final class DBUtils {
         return runnable.getResult();
     }
 
-    public static DBDAttributeBinding getColumnBinding(DBCExecutionContext context, DBCAttributeMetaData attributeMeta)
+    public static DBDAttributeBinding getColumnBinding(DBCExecutionContext context, DBCAttributeMetaData attributeMeta, int attributeIndex)
     {
         DBSTypedObject columnMeta = attributeMeta;
         // We won't query for real column because we don't want make (possibly) another
@@ -428,7 +428,8 @@ public final class DBUtils {
 */
         return new DBDAttributeBinding(
             attributeMeta,
-            findValueHandler(context, columnMeta));
+            findValueHandler(context, columnMeta),
+            attributeIndex);
     }
 
     public static DBDValueHandler findValueHandler(DBCExecutionContext context, DBSTypedObject column)
