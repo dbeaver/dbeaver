@@ -4335,9 +4335,14 @@ public abstract class LightGrid extends Canvas {
         return Collections.unmodifiableCollection(selectedCells);
     }
 
+    public List<GridColumn> getSelectedColumns()
+    {
+        return selectedColumns;
+    }
+
     /**
      * Returns selected rows indexes
-     * @return
+     * @return indexes of selected rows
      */
     public Collection<Integer> getRowSelection()
     {
