@@ -65,6 +65,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         }
         DBPConnectionInfo tmpConnectionInfo = new DBPConnectionInfo();
         hostPage.saveSettings(tmpConnectionInfo);
+        tmpConnectionInfo.getProperties().putAll(site.getConnectionInfo().getProperties());
         propertySource = propsControl.makeProperties(
             site.getRunnableContext(),
             site.getDriver(),
@@ -78,7 +79,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     {
         if (connectionInfo != null) {
             if (propertySource != null) {
-                connectionInfo.setProperties(propertySource.getProperties());
+                connectionInfo.getProperties().putAll(propertySource.getProperties());
             }
         }
     }
