@@ -465,7 +465,7 @@
                     defaultPort="5433"
                     webURL="http://www.vertica.com/"
                     description="Driver for Vertica Database">
-                    <file type="jar" path="drivers/vertica/vertica-jdk5-6.0.1-0.jar" url="*"/>
+                    <file type="jar" path="drivers/vertica/vertica-jdk5-6.1.2-0.jar" url="*"/>
                 </driver>
                 <driver
                     id="cassandra_jkiss"
