@@ -94,6 +94,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
         treeControl.addControlListener(new ControlAdapter() {
             private boolean packing = false;
+
             @Override
             public void controlResized(ControlEvent e)
             {
@@ -150,6 +151,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
                 return getPropertyValue(node);
             }
+
             @Override
             public boolean isHyperlink(Object cellValue)
             {
@@ -201,10 +203,11 @@ public class PropertyTreeViewer extends TreeViewer {
         super.expandAll();
 
         disposeOldEditor();
-        UIUtils.packColumns(getTree(), true, new float[] {0.5f, 0.5f});
+        UIUtils.packColumns(getTree(), true, new float[]{0.5f, 0.5f});
     }
 
-    private Map<String, TreeNode> loadTreeNodes(TreeNode parent, IPropertySource propertySource) {
+    private Map<String, TreeNode> loadTreeNodes(TreeNode parent, IPropertySource propertySource)
+    {
         Map<String, TreeNode> categories = new LinkedHashMap<String, TreeNode>();
         final IPropertyDescriptor[] props = propertySource.getPropertyDescriptors();
         for (IPropertyDescriptor prop : props) {
@@ -235,9 +238,9 @@ public class PropertyTreeViewer extends TreeViewer {
                         if (propertyValue != null) {
                             Collection<?> collection;
                             if (BeanUtils.isArrayType(propType)) {
-                                collection = Arrays.asList((Object[])propertyValue);
+                                collection = Arrays.asList((Object[]) propertyValue);
                             } else {
-                                collection = (Collection<?>)propertyValue;
+                                collection = (Collection<?>) propertyValue;
                             }
                             PropertySourceCollection psc = new PropertySourceCollection(collection);
                             for (IPropertyDescriptor pd : psc.getPropertyDescriptors()) {
@@ -259,7 +262,7 @@ public class PropertyTreeViewer extends TreeViewer {
     protected void addProperty(Object node, IPropertyDescriptor property)
     {
         if (node instanceof TreeNode) {
-            TreeNode treeNode = (TreeNode)node;
+            TreeNode treeNode = (TreeNode) node;
             while (treeNode.property != null) {
                 treeNode = treeNode.parent;
             }
@@ -271,7 +274,7 @@ public class PropertyTreeViewer extends TreeViewer {
     protected void removeProperty(Object node)
     {
         if (node instanceof TreeNode) {
-            TreeNode treeNode = (TreeNode)node;
+            TreeNode treeNode = (TreeNode) node;
             if (treeNode.propertySource instanceof IPropertySourceEx) {
                 ((IPropertySourceEx) treeNode.propertySource).resetPropertyValueToDefault(treeNode.property.getId());
             } else {
@@ -306,7 +309,8 @@ public class PropertyTreeViewer extends TreeViewer {
         if (oldEditor != null) oldEditor.dispose();
     }
 
-    private void registerEditor() {
+    private void registerEditor()
+    {
         // Make an editor
         final Tree treeControl = super.getTree();
         treeEditor = new TreeEditor(treeControl);
@@ -318,12 +322,14 @@ public class PropertyTreeViewer extends TreeViewer {
         treeControl.addSelectionListener(new SelectionListener() {
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
                 showEditor((TreeItem) e.item, true);
             }
 
             @Override
-            public void widgetSelected(SelectionEvent e) {
+            public void widgetSelected(SelectionEvent e)
+            {
                 showEditor((TreeItem) e.item, selectedColumn == 1 && (e.stateMask & SWT.BUTTON_MASK) != 0);
             }
         });
@@ -361,7 +367,8 @@ public class PropertyTreeViewer extends TreeViewer {
         });
     }
 
-    private void showEditor(final TreeItem item, boolean isDef) {
+    private void showEditor(final TreeItem item, boolean isDef)
+    {
         // Clean up any previous editor control
         disposeOldEditor();
         if (item == null) {
@@ -371,7 +378,7 @@ public class PropertyTreeViewer extends TreeViewer {
         // Identify the selected row
         if (item.getData() instanceof TreeNode) {
             final Tree treeControl = super.getTree();
-            final TreeNode prop = (TreeNode)item.getData();
+            final TreeNode prop = (TreeNode) item.getData();
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
@@ -444,41 +451,44 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
-    private void registerContextMenu() {
+    private void registerContextMenu()
+    {
         // Register context menu
         {
             MenuManager menuMgr = new MenuManager();
-            menuMgr.addMenuListener(new IMenuListener()
-            {
+            menuMgr.addMenuListener(new IMenuListener() {
                 @Override
                 public void menuAboutToShow(final IMenuManager manager)
                 {
-                    final IStructuredSelection selection = (IStructuredSelection)PropertyTreeViewer.this.getSelection();
+                    final IStructuredSelection selection = (IStructuredSelection) PropertyTreeViewer.this.getSelection();
 
                     if (selection.isEmpty()) {
                         return;
                     }
                     final Object object = selection.getFirstElement();
                     if (object instanceof TreeNode) {
-                        final TreeNode prop = (TreeNode)object;
+                        final TreeNode prop = (TreeNode) object;
                         if (prop.property != null) {
-                            manager.add(new Action(CoreMessages.ui_properties_tree_viewer_action_copy_value) {
-                                @Override
-                                public void run() {
-                                    UIUtils.setClipboardContents(
-                                        Display.getDefault(),
-                                        TextTransfer.getInstance(),
-                                        CommonUtils.toString(getPropertyValue(prop)));
-                                }
-                            });
+                            final String stringValue = CommonUtils.toString(getPropertyValue(prop));
+                            if (!CommonUtils.isEmpty(stringValue)) {
+                                manager.add(new Action(CoreMessages.ui_properties_tree_viewer_action_copy_value) {
+                                    @Override
+                                    public void run()
+                                    {
+                                        UIUtils.setClipboardContents(
+                                            Display.getDefault(),
+                                            TextTransfer.getInstance(),
+                                            stringValue);
+                                    }
+                                });
+                            }
                             if (isPropertyChanged(prop) && prop.isEditable()) {
                                 if (prop.propertySource instanceof IPropertySource2 && !((IPropertySource2) prop.propertySource).isPropertyResettable(prop.property.getId())) {
                                     // it is not resettable
                                 } else {
                                     manager.add(new ActionResetProperty(prop, false));
                                     if (!isCustomProperty(prop.property) &&
-                                        prop.propertySource instanceof IPropertySourceEx)
-                                    {
+                                        prop.propertySource instanceof IPropertySourceEx) {
                                         manager.add(new ActionResetProperty(prop, true));
                                     }
                                 }
@@ -544,7 +554,8 @@ public class PropertyTreeViewer extends TreeViewer {
         getTree().notifyListeners(SWT.Modify, event);
     }
 
-    protected void handlePropertyCreate(TreeNode prop) {
+    protected void handlePropertyCreate(TreeNode prop)
+    {
         handlePropertyChange(prop);
         super.refresh(prop.parent);
         super.expandToLevel(prop.parent, 1);
@@ -552,7 +563,8 @@ public class PropertyTreeViewer extends TreeViewer {
         super.setSelection(new StructuredSelection(prop));
     }
 
-    protected void handlePropertyRemove(TreeNode prop) {
+    protected void handlePropertyRemove(TreeNode prop)
+    {
         handlePropertyChange(prop);
         super.refresh(prop.parent);
     }
@@ -598,15 +610,14 @@ public class PropertyTreeViewer extends TreeViewer {
         boolean isEditable()
         {
             if (property instanceof IPropertyDescriptorEx) {
-                return ((IPropertyDescriptorEx)property).isEditable(propertySource.getEditableValue());
+                return ((IPropertyDescriptorEx) property).isEditable(propertySource.getEditableValue());
             } else {
                 return property != null;
             }
         }
     }
 
-    class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider
-    {
+    class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider {
         @Override
         public void inputChanged(Viewer v, Object oldInput, Object newInput)
         {
@@ -653,9 +664,9 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
-    private class PropsLabelProvider extends CellLabelProvider
-    {
+    private class PropsLabelProvider extends CellLabelProvider {
         private final boolean isName;
+
         public PropsLabelProvider(boolean isName)
         {
             this.isName = isName;
@@ -666,7 +677,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (!(obj instanceof TreeNode)) {
                 return ""; //$NON-NLS-1$
             }
-            TreeNode node = (TreeNode)obj;
+            TreeNode node = (TreeNode) obj;
             if (columnIndex == 0) {
                 if (node.category != null) {
                     return node.category;
@@ -692,7 +703,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (!(obj instanceof TreeNode)) {
                 return ""; //$NON-NLS-1$
             }
-            TreeNode node = (TreeNode)obj;
+            TreeNode node = (TreeNode) obj;
             if (node.category != null) {
                 return node.category;
             } else {
@@ -736,17 +747,17 @@ public class PropertyTreeViewer extends TreeViewer {
 
     }
 
-    private class SortListener implements Listener
-    {
+    private class SortListener implements Listener {
         int sortDirection = SWT.DOWN;
         TreeColumn prevColumn = null;
 
         @Override
-        public void handleEvent(Event e) {
+        public void handleEvent(Event e)
+        {
             disposeOldEditor();
 
             Collator collator = Collator.getInstance(Locale.getDefault());
-            TreeColumn column = (TreeColumn)e.widget;
+            TreeColumn column = (TreeColumn) e.widget;
             Tree tree = getTree();
             if (prevColumn == column) {
                 // Set reverse order
@@ -788,9 +799,10 @@ public class PropertyTreeViewer extends TreeViewer {
         }
 
         @Override
-        public void run() {
+        public void run()
+        {
             if (toDefault && prop.propertySource instanceof IPropertySourceEx) {
-                ((IPropertySourceEx)prop.propertySource).resetPropertyValueToDefault(prop.property.getId());
+                ((IPropertySourceEx) prop.propertySource).resetPropertyValueToDefault(prop.property.getId());
             } else {
                 prop.propertySource.resetPropertyValue(prop.property.getId());
             }
@@ -803,14 +815,15 @@ public class PropertyTreeViewer extends TreeViewer {
     class PaintListener implements Listener {
 
         @Override
-        public void handleEvent(Event event) {
+        public void handleEvent(Event event)
+        {
             if (getTree().isDisposed()) {
                 return;
             }
-            switch(event.type) {
+            switch (event.type) {
                 case SWT.PaintItem: {
                     if (event.index == 1) {
-                        final TreeNode node = (TreeNode)event.item.getData();
+                        final TreeNode node = (TreeNode) event.item.getData();
                         if (node != null && node.property != null) {
                             renderer.paintCell(event, node, event.index, node.isEditable());
                         }
