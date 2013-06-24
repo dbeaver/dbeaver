@@ -117,9 +117,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     void saveSettings()
     {
-        // Save main page settings in the beginning and in the end
-        // Because some pages may use main page's settings
-        // Also some sub page may clear any properties
+        getConnectionInfo().getProperties().clear();
         if (connectionEditor != null) {
             connectionEditor.saveSettings();
         }
@@ -129,9 +127,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     ((IDataSourceConnectionEditor) page).saveSettings();
                 }
             }
-        }
-        if (connectionEditor != null) {
-            connectionEditor.saveSettings();
         }
     }
 
