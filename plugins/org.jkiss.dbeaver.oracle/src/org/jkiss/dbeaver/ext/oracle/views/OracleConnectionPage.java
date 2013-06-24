@@ -101,6 +101,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             public void widgetSelected(SelectionEvent e)
             {
                 connectionType = (OracleConstants.ConnectionType) connectionTypeFolder.getSelection()[0].getData();
+                site.getConnectionInfo().getProperties().put(OracleConstants.PROP_CONNECTION_TYPE, connectionType.name());
                 updateUI();
             }
         });
