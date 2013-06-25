@@ -206,6 +206,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.save.file" name="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.save.file.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.single" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.single.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.comment.multi" name="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.comment.multi.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.word.wrap" name="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.export.data" name="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="%command.org.jkiss.dbeaver.core.export.data.name" description="%command.org.jkiss.dbeaver.core.export.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.import.data" name="%command.org.jkiss.dbeaver.core.import.data.name" description="%command.org.jkiss.dbeaver.core.import.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -797,6 +798,13 @@
             <enabledWhen>
                 <with variable="activeEditor">
                     <test property="org.jkiss.dbeaver.ui.editors.text.canComment" value="single"/>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleWordWrapHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.eclipse.ui.texteditor.ITextEditor"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -1618,6 +1626,11 @@
               contextId="org.jkiss.dbeaver.ui.editors.sql"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="CTRL+SHIFT+/"/>
+        <key
+                commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap"
+                contextId="org.jkiss.dbeaver.ui.editors.sql"
+                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+                sequence="CTRL+ALT+E"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.text.content.format" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F"/>
     </extension>
