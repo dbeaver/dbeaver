@@ -68,6 +68,7 @@
             <menu id="edit" label="%menu.edit">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single"><visibleWhen checkEnabled="true"/></command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi"><visibleWhen checkEnabled="true"/></command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap"><visibleWhen checkEnabled="true"/></command>
                 <command commandId="org.eclipse.ui.edit.text.upperCase"><visibleWhen checkEnabled="true"/></command>
                 <command commandId="org.eclipse.ui.edit.text.lowerCase"><visibleWhen checkEnabled="true"/></command>
             </menu>
