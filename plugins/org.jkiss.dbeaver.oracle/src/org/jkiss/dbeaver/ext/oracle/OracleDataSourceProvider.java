@@ -75,7 +75,9 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         } else {
             connectionType = OracleConstants.ConnectionType.BASIC;
         }
-
+        if (connectionType == OracleConstants.ConnectionType.CUSTOM) {
+            return connectionInfo.getUrl();
+        }
         StringBuilder url = new StringBuilder(100);
         url.append("jdbc:oracle:"); //$NON-NLS-1$
 //        if (isOCI) {
@@ -84,9 +86,9 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             url.append("thin"); //$NON-NLS-1$
 //        }
         url.append(":@"); //$NON-NLS-1$
-        if ((connectionType == OracleConstants.ConnectionType.TNS || CommonUtils.isEmpty(connectionInfo.getHostName())) && !CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+        if (connectionType == OracleConstants.ConnectionType.TNS) {
             // TNS name specified
-            url.append('/').append(connectionInfo.getDatabaseName());
+            url.append(connectionInfo.getDatabaseName());
         } else {
             // Basic connection info specified
             boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProperties().get(OracleConstants.PROP_SID_SERVICE));

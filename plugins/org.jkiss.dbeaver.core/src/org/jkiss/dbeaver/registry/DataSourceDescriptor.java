@@ -162,13 +162,18 @@ public class DataSourceDescriptor
         this.driver = driver;
         this.connectionInfo = connectionInfo;
         this.createDate = new Date();
-        if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
-            this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
-        }
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
 
         this.driver.addUser(this);
+        refreshConnectionInfo();
+    }
+
+    void refreshConnectionInfo()
+    {
+        if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
+            this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
+        }
     }
 
     public boolean isDisposed()
