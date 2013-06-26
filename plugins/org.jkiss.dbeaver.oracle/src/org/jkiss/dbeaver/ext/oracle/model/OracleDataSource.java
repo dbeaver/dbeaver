@@ -25,17 +25,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
-import org.jkiss.dbeaver.model.DBPConnectionInfo;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -50,6 +45,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -84,6 +80,18 @@ public class OracleDataSource extends JDBCDataSource
         throws DBException
     {
         super(monitor, container);
+    }
+
+    @Override
+    protected JDBCConnectionHolder openConnection(DBRProgressMonitor monitor) throws DBException
+    {
+        // Set tns admin directory
+        DBPClientHome clientHome = getContainer().getClientHome();
+        if (clientHome != null) {
+            System.setProperty("oracle.net.tns_admin", new File(clientHome.getHomePath(), OCIUtils.TNSNAMES_FILE_PATH).getAbsolutePath());
+        }
+
+        return super.openConnection(monitor);
     }
 
     @Override
