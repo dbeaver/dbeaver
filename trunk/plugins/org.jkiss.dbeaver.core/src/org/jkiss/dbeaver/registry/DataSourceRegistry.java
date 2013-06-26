@@ -645,6 +645,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             DBeaverUI.getSharedTextColors().getColor(
                                 StringConverter.asRGB(colorValue)));
                     }
+                    curDataSource.refreshConnectionInfo();
                 }
             } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
                 if (curNetworkHandler != null) {
