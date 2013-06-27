@@ -158,8 +158,21 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
     public boolean isOverridesParent()
     {
         if (store instanceof AbstractPreferenceStore) {
-            AbstractPreferenceStore abstractPreferenceStore = (AbstractPreferenceStore) store;
-            return !abstractPreferenceStore.getProperties().isEmpty();
+            AbstractPreferenceStore prefStore = (AbstractPreferenceStore) store;
+
+            if (prefStore.isSet(PROP_LANGUAGE) || prefStore.isSet(PROP_COUNTRY) || prefStore.isSet(PROP_VARIANT)) {
+                return true;
+            }
+
+            for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+                for (PropertyDescriptorEx prop : formatter.getProperties()) {
+                    if (prefStore.isSet(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId())) {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
         }
         return true;
     }
@@ -168,7 +181,16 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
     public void reset()
     {
         if (store instanceof AbstractPreferenceStore) {
-            ((AbstractPreferenceStore)store).clear();
+            // Set all formatter properties to default
+            store.setToDefault(PROP_LANGUAGE);
+            store.setToDefault(PROP_COUNTRY);
+            store.setToDefault(PROP_VARIANT);
+
+            for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+                for (PropertyDescriptorEx prop : formatter.getProperties()) {
+                    store.setToDefault(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId());
+                }
+            }
         }
         loadProfile();
     }
