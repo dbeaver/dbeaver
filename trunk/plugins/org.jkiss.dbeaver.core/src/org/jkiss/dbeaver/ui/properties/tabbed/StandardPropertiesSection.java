@@ -18,6 +18,9 @@
  */
 package org.jkiss.dbeaver.ui.properties.tabbed;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -25,8 +28,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.eclipse.ui.views.properties.IPropertySource;
 import org.eclipse.ui.views.properties.tabbed.AbstractPropertySection;
@@ -49,6 +52,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
 	protected PropertyTreeViewer propertyTree;
     private IPropertySource curPropertySource;
     private Font boldFont;
+    private UIJob refreshJob = null;
 
     @Override
     public void createControls(Composite parent, final TabbedPropertySheetPage tabbedPropertySheetPage)
@@ -123,11 +127,17 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     public void handlePropertyLoad(Object object, IPropertyDescriptor property, Object propertyValue, boolean completed)
     {
         if (curPropertySource.getEditableValue() == object && !propertyTree.getControl().isDisposed()) {
-            //propertyTree.get
-            propertyTree.refresh();
-            // Force control redraw (to repaint hyperlinks and other stuff)
-            propertyTree.getControl().redraw();
-            //propertyTree.update();
+            refreshProperties();
+        }
+    }
+
+    private void refreshProperties()
+    {
+        synchronized (this) {
+            if (refreshJob == null) {
+                refreshJob = new RefreshJob();
+                refreshJob.schedule(100);
+            }
         }
     }
 
@@ -135,15 +145,7 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
     public void handleDataSourceEvent(DBPEvent event)
     {
         if (curPropertySource.getEditableValue() == event.getObject() && !Boolean.FALSE.equals(event.getEnabled()) && !propertyTree.getControl().isDisposed()) {
-            //propertyTree.get
-            Display.getDefault().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (propertyTree != null && !propertyTree.getControl().isDisposed()) {
-                        propertyTree.refresh();
-                    }
-                }
-            });
+            refreshProperties();
         }
     }
 
@@ -155,6 +157,26 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
                 return boldFont;
             }
             return null;
+        }
+    }
+
+    private class RefreshJob extends UIJob {
+        public RefreshJob()
+        {
+            super("Refresh properties");
+        }
+
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor)
+        {
+            propertyTree.refresh();
+            // Force control redraw (to repaint hyperlinks and other stuff)
+            propertyTree.getControl().redraw();
+
+            synchronized (StandardPropertiesSection.this) {
+                refreshJob = null;
+            }
+            return Status.OK_STATUS;
         }
     }
 
