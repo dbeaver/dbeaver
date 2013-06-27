@@ -105,6 +105,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                 value = resultSet.getShort(index);
                 break;
             case java.sql.Types.TINYINT:
+                value = resultSet.getShort(index);
+                break;
             case java.sql.Types.BIT:
                 value = resultSet.getByte(index);
                 break;
@@ -169,6 +171,8 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     statement.setShort(paramIndex, number.shortValue());
                     break;
                 case java.sql.Types.TINYINT:
+                    statement.setShort(paramIndex, number.shortValue());
+                    break;
                 case java.sql.Types.BIT:
                     statement.setByte(paramIndex, number.byteValue());
                     break;
@@ -358,7 +362,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     case java.sql.Types.SMALLINT:
                         return Short.valueOf(text);
                     case java.sql.Types.TINYINT:
-                        return Byte.valueOf(text);
+                        return Short.valueOf(text);
                     case java.sql.Types.NUMERIC:
                         return new BigDecimal(text);
                     default:
