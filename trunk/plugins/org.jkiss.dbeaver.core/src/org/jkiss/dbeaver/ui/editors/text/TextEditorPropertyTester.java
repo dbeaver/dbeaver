@@ -31,6 +31,7 @@ import org.jkiss.utils.CommonUtils;
 public class TextEditorPropertyTester extends PropertyTester
 {
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.text";
+    public static final String PROP_AVAILABLE = "available";
     public static final String PROP_CAN_LOAD = "canLoad";
     public static final String PROP_CAN_SAVE = "canSave";
     public static final String PROP_CAN_COMMENT = "canComment";
@@ -45,7 +46,7 @@ public class TextEditorPropertyTester extends PropertyTester
         if (editor == null) {
             return false;
         }
-        if (property.equals(PROP_CAN_SAVE)) {
+        if (property.equals(PROP_AVAILABLE) || property.equals(PROP_CAN_SAVE)) {
             return true;
         } else if (property.equals(PROP_CAN_LOAD)) {
             return !editor.isReadOnly();
