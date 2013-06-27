@@ -118,7 +118,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             }
         }
 
-        this.propName = getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId());
+        this.propName = propInfo.hidden() ? getId() : getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_NAME, getId());
         this.propDescription = CommonUtils.isEmpty(propInfo.description()) ?
                 propName :
                 getLocalizedString(propInfo.name(), Property.RESOURCE_TYPE_DESCRIPTION, propName);
