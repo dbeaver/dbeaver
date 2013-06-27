@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
  */
 public abstract class AbstractTextHandler extends AbstractHandler {
 
-    public static BaseTextEditor getEditor(ExecutionEvent event) throws ExecutionException {
+    public static BaseTextEditor getEditor(ExecutionEvent event) {
         IEditorPart editor = HandlerUtil.getActiveEditor(event);
         return getTextEditor(editor);
     }
