@@ -83,7 +83,7 @@
                 class="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.text.TextEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.text"
-                properties="canComment,canLoad,canSave"
+                properties="available,canComment,canLoad,canSave"
                 type="org.eclipse.ui.IEditorPart"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
@@ -804,7 +804,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap" class="org.jkiss.dbeaver.ui.editors.text.handlers.ToggleWordWrapHandler">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <adapt type="org.eclipse.ui.texteditor.ITextEditor"/>
+                    <test property="org.jkiss.dbeaver.ui.editors.text.available"/>
                 </with>
             </enabledWhen>
         </handler>

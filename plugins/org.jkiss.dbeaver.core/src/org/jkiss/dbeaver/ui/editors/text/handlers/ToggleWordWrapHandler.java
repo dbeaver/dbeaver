@@ -6,18 +6,18 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
 public class ToggleWordWrapHandler extends AbstractTextHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) {
         // get active editor where word wrap will be toggled
-        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+        BaseTextEditor textEditor = getEditor(event);
 
-        if (activePart instanceof ITextEditor) {
-            ITextEditor editor = (ITextEditor) activePart;
-
+        if (textEditor != null) {
             // editor (ITextEditor) adapter returns StyledText
-            Object text = editor.getAdapter(Control.class);
+            Object text = textEditor.getAdapter(Control.class);
             if (text instanceof StyledText) {
                 StyledText styledText = (StyledText) text;
 
