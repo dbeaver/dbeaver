@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * Copyright (C) 2010-2012 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<artifacts>
+
+    <products>
+        <product id="dbeaver-standalone"/>
+        <product id="dbeaver-eclipse"/>
+    </products>
+
+    <features>
+        <feature id="features/org.jkiss.dbeaver.core" type="primary"/>
+        <feature id="features/org.jkiss.dbeaver.ext.cassandra" type="general"/>
+        <feature id="features/org.jkiss.dbeaver.ext.generic" type="general"/>
+        <feature id="features/org.jkiss.dbeaver.ext.mysql" type="general"/>
+        <feature id="features/org.jkiss.dbeaver.ext.oracle" type="general"/>
+        <feature id="features/org.jkiss.dbeaver.ext.wmi" type="general"/>
+        <feature id="features/org.jkiss.dbeaver.rcp" type="static"/>
+        <feature id="features/org.jkiss.dbeaver.runtime" type="primary"/>
+        <feature id="features/org.jkiss.dbeaver.standalone" type="primary"/>
+    </features>
+
+    <plugins>
+        <plugin id="modules/org.jkiss.utils" type="general"/>
+        <plugin id="modules/org.jkiss.wmi" type="general"/>
+        <plugin id="plugins/org.jkiss.dbeaver.core" type="primary"/>
+        <plugin id="plugins/org.jkiss.dbeaver.core.application" type="primary"/>
+        <plugin id="plugins/org.jkiss.dbeaver.core.eclipse" type="primary"/>
+        <plugin id="plugins/org.jkiss.dbeaver.erd" type="general"/>
+        <plugin id="plugins/org.jkiss.dbeaver.generic" type="general"/>
+        <plugin id="plugins/org.jkiss.dbeaver.import-config" type="general"/>
+        <plugin id="plugins/org.jkiss.dbeaver.intro" type="general"/>
+        <plugin id="plugins/org.jkiss.dbeaver.mysql" type="general"/>
+        <plugin id="plugins/org.jkiss.dbeaver.nosql.cassandra" type="general"/>
+        <plugin id="plugins/org.jkiss.dbeaver.oracle" type="general"/>
+        <plugin id="plugins/org.jkiss.dbeaver.wmi" type="general"/>
+    </plugins>
+
+</artifacts>
