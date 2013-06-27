@@ -29,12 +29,14 @@ import java.util.Map;
 
 public class TimeFormatSample implements DBDDataFormatterSample {
 
+    public static final String DEFAULT_TIME_PATTERN = "HH:mm:ss";
+
     @Override
     public Map<Object, Object> getDefaultProperties(Locale locale)
     {
-        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.LONG, locale);
-        String pattern = tmp.toPattern();
-        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)pattern);
+//        SimpleDateFormat tmp = (SimpleDateFormat)DateFormat.getTimeInstance(DateFormat.MEDIUM, locale);
+//        String pattern = tmp.toPattern();
+        return Collections.singletonMap((Object)DateTimeDataFormatter.PROP_PATTERN, (Object)DEFAULT_TIME_PATTERN);
     }
 
     @Override
