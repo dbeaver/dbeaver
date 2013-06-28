@@ -52,7 +52,15 @@
             <date>28.06.2013</date>
 
             <release-notes>
-                -
+                - Word wrap mode support in text editors
+                - Connection properties editor fixed
+                - Default date/time format changed
+                - Oracle DDL format is now configurable
+                - Oracle TNS connections fixed
+                - TINYINT data type handle fixed
+                - Results context menu fixed
+                - Grid column hide support added
+                - Vertica driver updated
             </release-notes>
         </version>
 
