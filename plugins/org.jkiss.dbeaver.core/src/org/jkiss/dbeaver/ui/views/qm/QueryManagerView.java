@@ -43,7 +43,7 @@ public class QueryManagerView extends ViewPart
     {
         Composite group = UIUtils.createPlaceholder(parent, 1);
 
-        queryLogViewer = new QueryLogViewer(group, getSite(), null);
+        queryLogViewer = new QueryLogViewer(group, getSite(), null, true);
         UIUtils.setHelp(group, IHelpContextIds.CTX_QUERY_MANAGER);
     }
 
