@@ -37,6 +37,7 @@ public interface IHelpContextIds
     public static final String CTX_PROJECT_EXPLORER = "view-project-explorer"; //$NON-NLS-1$
     public static final String CTX_QUERY_MANAGER = "view-query-manager"; //$NON-NLS-1$
     public static final String CTX_SHELL_PROCESS = "view-shell-process"; //$NON-NLS-1$
+    public static final String CTX_SEARCH_RESULTS = "view-search-results"; //$NON-NLS-1$
 
     public static final String CTX_CON_WIZARD_DRIVER = "con-wizard-driver"; //$NON-NLS-1$
     public static final String CTX_CON_WIZARD_SETTINGS = "con-wizard-settings"; //$NON-NLS-1$

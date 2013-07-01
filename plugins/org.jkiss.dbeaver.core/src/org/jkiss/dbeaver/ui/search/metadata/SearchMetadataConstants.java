@@ -16,13 +16,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search.database;
+package org.jkiss.dbeaver.ui.search.metadata;
 
 /**
  * Database search constants
  */
-public class SearchDatabaseConstants {
-    static final int MATCH_INDEX_STARTS_WITH = 0;
-    static final int MATCH_INDEX_CONTAINS = 1;
-    static final int MATCH_INDEX_LIKE = 2;
+public class SearchMetadataConstants {
+    public static final int MATCH_INDEX_STARTS_WITH = 0;
+    public static final int MATCH_INDEX_CONTAINS = 1;
+    public static final int MATCH_INDEX_LIKE = 2;
 }

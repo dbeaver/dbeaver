@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search.database;
+package org.jkiss.dbeaver.ui.search.metadata;
 
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Search parameters
  */
-public class SearchDatabaseObjectsParams {
+public class SearchMetadataParams {
 
     private DBSObject parentObject;
     private List<DBSObjectType> objectTypes;
@@ -35,7 +35,7 @@ public class SearchDatabaseObjectsParams {
     private int maxResults;
     private int matchType;
 
-    public SearchDatabaseObjectsParams()
+    public SearchMetadataParams()
     {
     }
 
