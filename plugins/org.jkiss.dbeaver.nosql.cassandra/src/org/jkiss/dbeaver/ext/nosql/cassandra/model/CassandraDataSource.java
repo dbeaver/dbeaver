@@ -243,9 +243,6 @@ public class CassandraDataSource extends JDBCDataSource
         throws DBException
     {
         final DBSObject oldSelectedEntity = getSelectedObject();
-        if (object == oldSelectedEntity) {
-            return;
-        }
         if (!isChild(object)) {
             throw new DBException("Bad child object specified as active: " + object);
         }

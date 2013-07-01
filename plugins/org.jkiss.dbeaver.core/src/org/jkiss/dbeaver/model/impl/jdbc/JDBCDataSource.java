@@ -237,14 +237,30 @@ public abstract class JDBCDataSource
     public void invalidateConnection(DBRProgressMonitor monitor)
         throws DBException
     {
-        if (connection == null) {
-            connection = openConnection(monitor);
+        if (this.connection == null) {
+            this.connection = openConnection(monitor);
             return;
         }
 
-        if (!JDBCUtils.isConnectionAlive(connection.getConnection())) {
+        if (!JDBCUtils.isConnectionAlive(this.connection.getConnection())) {
             close();
-            connection = openConnection(monitor);
+            this.connection = openConnection(monitor);
+            invalidateState(monitor);
+        }
+    }
+
+    protected void invalidateState(DBRProgressMonitor monitor)
+    {
+        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, this);
+        if (objectSelector != null && objectSelector.supportsObjectSelect()) {
+            DBSObject selectedObject = objectSelector.getSelectedObject();
+            if (selectedObject != null) {
+                try {
+                    objectSelector.selectObject(monitor, selectedObject);
+                } catch (DBException e) {
+                    log.warn("Can't select object '" + selectedObject.getName() + "'", e);
+                }
+            }
         }
     }
 

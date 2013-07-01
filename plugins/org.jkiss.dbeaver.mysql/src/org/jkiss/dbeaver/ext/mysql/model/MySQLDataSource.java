@@ -322,9 +322,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         throws DBException
     {
         final MySQLCatalog oldSelectedEntity = getSelectedObject();
-        if (object == oldSelectedEntity) {
-            return;
-        }
         if (!(object instanceof MySQLCatalog)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
