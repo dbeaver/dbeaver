@@ -222,6 +222,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
             return ""; //$NON-NLS-1$
         }
     };
+    private static LogColumn COLUMN_CONNECTION = new LogColumn(CoreMessages.controls_querylog_column_connection_name, CoreMessages.controls_querylog_column_connection_tooltip, 150) {
+        @Override
+        String getText(QMMObject object)
+        {
+            DBSDataSourceContainer container = null;
+            if (object instanceof QMMSessionInfo) {
+                container = ((QMMSessionInfo) object).getContainer();
+            } else if (object instanceof QMMTransactionInfo) {
+                container = ((QMMTransactionInfo) object).getSession().getContainer();
+            } else if (object instanceof QMMTransactionSavepointInfo) {
+                container = ((QMMTransactionSavepointInfo) object).getTransaction().getSession().getContainer();
+            } else if (object instanceof QMMStatementInfo) {
+                container = ((QMMStatementInfo) object).getSession().getContainer();
+            } else if (object instanceof QMMStatementExecuteInfo) {
+                container = ((QMMStatementExecuteInfo) object).getStatement().getSession().getContainer();
+            }
+            return container == null ? "?" : container.getName();
+        }
+    };
     private static LogColumn[] ALL_COLUMNS = new LogColumn[] {
         COLUMN_TIME,
         COLUMN_TYPE,
@@ -229,6 +248,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         COLUMN_DURATION,
         COLUMN_ROWS,
         COLUMN_RESULT,
+        COLUMN_CONNECTION,
     };
 
     private final IWorkbenchPartSite site;
@@ -248,7 +268,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
     private int entriesPerPage = 0;
 
-    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter)
+    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter, boolean showConnection)
     {
         super();
 
@@ -275,7 +295,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 
         new TableToolTip(logTable);
 
-        createColumns();
+        createColumns(showConnection);
 
         {
             // Register control in focus service (to provide handlers binding)
@@ -328,7 +348,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
 */
     }
 
-    private void createColumns()
+    private void createColumns(boolean showConnection)
     {
         for (TableColumn tableColumn : logTable.getColumns()) {
             tableColumn.dispose();
@@ -336,6 +356,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         columns.clear();
 
         for (LogColumn logColumn : ALL_COLUMNS) {
+            if (!showConnection && logColumn == COLUMN_CONNECTION) {
+                continue;
+            }
             TableColumn tableColumn = UIUtils.createTableColumn(logTable, SWT.NONE, logColumn.title);
             tableColumn.setToolTipText(logColumn.toolTip);
             tableColumn.setWidth(logColumn.widthHint);
@@ -398,7 +421,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, IPropertyC
         if (object instanceof QMMSessionInfo) {
             return CoreMessages.model_navigator_Connection;
         } else if (object instanceof QMMStatementInfo || object instanceof QMMStatementExecuteInfo) {
-            return "SQL"; //$NON-NLS-1$
+            QMMStatementInfo statement;
+            if (object instanceof QMMStatementInfo) {
+                statement = (QMMStatementInfo) object;
+            } else {
+                statement = ((QMMStatementExecuteInfo)object).getStatement();
+            }
+            return "SQL" + (statement == null ? "" : " / " + statement.getPurpose().name()); //$NON-NLS-1$
 //        } else if (object instanceof QMMStatementScripInfo) {
 //            return CoreMessages.controls_querylog_script;
         } else if (object instanceof QMMTransactionInfo) {

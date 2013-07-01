@@ -125,7 +125,6 @@ public class QMMTransactionSavepointInfo extends QMMObject {
                 case USER:
                 case USER_SCRIPT:
                 case UTIL:
-                case DDL:
                     return true;
                 default:
                     break;
