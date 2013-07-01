@@ -587,9 +587,10 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         final DBSObject oldSelectedEntity = getSelectedObject();
-        if (object == oldSelectedEntity) {
-            return;
-        }
+        // Check removed because we can select the same object on invalidate
+//        if (object == oldSelectedEntity) {
+//            return;
+//        }
         if (!isChild(object)) {
             throw new DBException("Bad child object specified as active: " + object);
         }

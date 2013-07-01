@@ -174,9 +174,10 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException
     {
         final GenericSchema oldSelectedEntity = getSelectedObject();
-        if (object == oldSelectedEntity) {
-            return;
-        }
+        // Check removed because we can select the same object on invalidate
+//        if (object == oldSelectedEntity) {
+//            return;
+//        }
         if (!(object instanceof GenericSchema)) {
             throw new DBException("Bad child type: " + object);
         }
