@@ -125,7 +125,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                 getCatalog() == null ? this.getPackage() == null || !this.getPackage().isNameFromCatalog() ? null : this.getPackage().getName() : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
                 getName(),
-                null);
+                getDataSource().getAllObjectsPattern());
             try {
                 int previousPosition = -1;
                 while (dbResult.next()) {
