@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search.database;
+package org.jkiss.dbeaver.ui.search.metadata;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -36,21 +35,20 @@ import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-public class SearchDatabaseObjectsQuery implements IObjectSearchQuery {
+public class SearchMetadataQuery implements IObjectSearchQuery {
 
-    static final Log log = LogFactory.getLog(SearchDatabaseObjectsDialog.class);
+    static final Log log = LogFactory.getLog(SearchMetadataQuery.class);
 
     private final DBSStructureAssistant structureAssistant;
-    private final SearchDatabaseObjectsParams params;
+    private final SearchMetadataParams params;
 
-    private SearchDatabaseObjectsQuery(
+    private SearchMetadataQuery(
         DBSStructureAssistant structureAssistant,
-        SearchDatabaseObjectsParams params)
+        SearchMetadataParams params)
     {
         this.structureAssistant = structureAssistant;
         this.params = params;
@@ -64,11 +62,11 @@ public class SearchDatabaseObjectsQuery implements IObjectSearchQuery {
             List<DBSObjectType> objectTypes = params.getObjectTypes();
             String objectNameMask = params.getObjectNameMask();
 
-            if (params.getMatchType() == SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH) {
+            if (params.getMatchType() == SearchMetadataConstants.MATCH_INDEX_STARTS_WITH) {
                 if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
                     objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
                 }
-            } else if (params.getMatchType() == SearchDatabaseConstants.MATCH_INDEX_CONTAINS) {
+            } else if (params.getMatchType() == SearchMetadataConstants.MATCH_INDEX_CONTAINS) {
                 if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
                     objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
                 }
@@ -107,16 +105,16 @@ public class SearchDatabaseObjectsQuery implements IObjectSearchQuery {
         }
     }
 
-    public static SearchDatabaseObjectsQuery createQuery(
+    public static SearchMetadataQuery createQuery(
         DBPDataSource dataSource,
-        SearchDatabaseObjectsParams params)
+        SearchMetadataParams params)
         throws DBException
     {
         DBSStructureAssistant assistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
         if (dataSource == null || assistant == null) {
             throw new DBException("Can't obtain database structure assistance from [" + dataSource + "]");
         }
-        return new SearchDatabaseObjectsQuery(assistant, params);
+        return new SearchMetadataQuery(assistant, params);
     }
 
 
