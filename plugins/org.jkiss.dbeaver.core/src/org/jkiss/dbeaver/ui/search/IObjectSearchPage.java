@@ -18,15 +18,16 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.eclipse.ui.part.IPage;
+import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.dbeaver.DBException;
 
 /**
  * Search page
  */
-public interface IObjectSearchPage extends IPage {
+public interface IObjectSearchPage extends IDialogPage {
 
     void setSearchContainer(IObjectSearchContainer container);
 
-    IObjectSearchQuery createQuery();
+    IObjectSearchQuery createQuery() throws DBException;
 
 }
