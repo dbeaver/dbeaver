@@ -352,9 +352,6 @@ public class OracleDataSource extends JDBCDataSource
         throws DBException
     {
         final OracleSchema oldSelectedEntity = getSelectedObject();
-        if (object == oldSelectedEntity) {
-            return;
-        }
         if (!(object instanceof OracleSchema)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
