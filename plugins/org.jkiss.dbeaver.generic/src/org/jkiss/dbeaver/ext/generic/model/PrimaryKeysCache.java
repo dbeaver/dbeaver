@@ -57,7 +57,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return context.getMetaData().getPrimaryKeys(
                     owner.getCatalog() == null ? null : owner.getCatalog().getName(),
                     owner.getSchema() == null ? null : owner.getSchema().getName(),
-                    forParent == null ? null : forParent.getName())
+                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName())
                 .getSource();
         } catch (SQLException e) {
             throw e;

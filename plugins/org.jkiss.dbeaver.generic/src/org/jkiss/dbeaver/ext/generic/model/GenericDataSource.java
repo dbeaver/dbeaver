@@ -70,6 +70,7 @@ public class GenericDataSource extends JDBCDataSource
     private String selectedEntityType;
     private String selectedEntityName;
     private boolean selectedEntityFromAPI;
+    private String allObjectsPattern;
 
     public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
@@ -85,11 +86,15 @@ public class GenericDataSource extends JDBCDataSource
         if (CommonUtils.isEmpty(this.selectedEntityType)) {
             this.selectedEntityType = null;
         }
+        this.allObjectsPattern = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_ALL_OBJECTS_PATTERN));
+        if (CommonUtils.isEmpty(this.allObjectsPattern) || "null".equalsIgnoreCase(this.allObjectsPattern)) {
+            this.allObjectsPattern = null;
+        }
     }
 
-    public GenericMetaModel getMetaModel()
+    public String getAllObjectsPattern()
     {
-        return metaModel;
+        return allObjectsPattern;
     }
 
     public GenericMetaObject getMetaObject(String id)
@@ -360,7 +365,7 @@ public class GenericDataSource extends JDBCDataSource
             try {
                 dbResult = context.getMetaData().getSchemas(
                     catalog == null ? null : catalog.getName(),
-                    schemaFilters != null && schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : null);
+                    schemaFilters != null && schemaFilters.hasSingleMask() ? schemaFilters.getSingleMask() : getAllObjectsPattern());
                 catalogSchemas = true;
             } catch (Throwable e) {
                 // This method not supported (may be old driver version)
