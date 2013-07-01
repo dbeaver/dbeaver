@@ -83,7 +83,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         return context.getMetaData().getTables(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : owner.getSchema().getName(),
-            null,
+            owner.getDataSource().getAllObjectsPattern(),
             null).getSource();
     }
 
@@ -145,8 +145,8 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         return context.getMetaData().getColumns(
             owner.getCatalog() == null ? null : owner.getCatalog().getName(),
             owner.getSchema() == null ? null : owner.getSchema().getName(),
-            forTable == null ? null : forTable.getName(),
-            null).getSource();
+            forTable == null ? owner.getDataSource().getAllObjectsPattern() : forTable.getName(),
+            owner.getDataSource().getAllObjectsPattern()).getSource();
     }
 
     @Override

@@ -298,7 +298,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             JDBCResultSet dbResult = context.getMetaData().getProcedures(
                 getCatalog() == null ? null : getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
-                null);
+                getDataSource().getAllObjectsPattern());
             try {
                 while (dbResult.next()) {
                     String procedureCatalog = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_CAT);
