@@ -122,7 +122,11 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         final JDBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.META, "Load procedure columns");
         try {
             final JDBCResultSet dbResult = context.getMetaData().getProcedureColumns(
-                getCatalog() == null ? this.getPackage() == null || !this.getPackage().isNameFromCatalog() ? null : this.getPackage().getName() : getCatalog().getName(),
+                getCatalog() == null ?
+                    this.getPackage() == null || !this.getPackage().isNameFromCatalog() ?
+                        null :
+                        this.getPackage().getName() :
+                    getCatalog().getName(),
                 getSchema() == null ? null : getSchema().getName(),
                 getName(),
                 getDataSource().getAllObjectsPattern());
