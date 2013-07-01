@@ -41,13 +41,15 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.search.IObjectSearchContainer;
+import org.jkiss.dbeaver.ui.search.IObjectSearchPage;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class SearchDatabaseObjectsPage extends DialogPage {
+public class SearchDatabaseObjectsPage extends DialogPage implements IObjectSearchPage {
 
     static final Log log = LogFactory.getLog(SearchDatabaseObjectsDialog.class);
 
@@ -58,8 +60,7 @@ public class SearchDatabaseObjectsPage extends DialogPage {
     private static final String PROP_HISTORY = "search-view.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search-view.object-type"; //$NON-NLS-1$
 
-    private DBSDataSourceContainer currentDataSource;
-    private Composite searchGroup;
+    private IObjectSearchContainer container;
     private Table typesTable;
     private Combo searchText;
     private DatabaseNavigatorTree dataSourceTree;
@@ -72,7 +73,7 @@ public class SearchDatabaseObjectsPage extends DialogPage {
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private Set<String> savedTypeNames = new HashSet<String>();
 
-	public SearchDatabaseObjectsPage() {
+    public SearchDatabaseObjectsPage() {
 		super("Database objects search");
 
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
@@ -102,7 +103,7 @@ public class SearchDatabaseObjectsPage extends DialogPage {
 	public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
-        searchGroup = new Composite(parent, SWT.NONE);
+        Composite searchGroup = new Composite(parent, SWT.NONE);
         searchGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         searchGroup.setLayout(new GridLayout(3, false));
         UIUtils.createControlLabel(searchGroup, CoreMessages.dialog_search_objects_label_object_name);
@@ -119,7 +120,7 @@ public class SearchDatabaseObjectsPage extends DialogPage {
             public void modifyText(ModifyEvent e)
             {
                 nameMask = searchText.getText();
-                checkSearchEnabled();
+                updateEnablement();
             }
         });
 
@@ -264,7 +265,7 @@ public class SearchDatabaseObjectsPage extends DialogPage {
                             checkedTypes.remove(objectType);
                         }
                     }
-                    checkSearchEnabled();
+                    updateEnablement();
                 }
             });
             typesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -272,6 +273,8 @@ public class SearchDatabaseObjectsPage extends DialogPage {
             UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_type);
             UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_description);
         }
+
+        updateEnablement();
     }
 
     private DBNNode getSelectedNode()
@@ -329,10 +332,10 @@ public class SearchDatabaseObjectsPage extends DialogPage {
         for (TableColumn column : typesTable.getColumns()) {
             column.pack();
         }
-        checkSearchEnabled();
+        updateEnablement();
     }
 
-    private void checkSearchEnabled()
+    private void updateEnablement()
     {
         boolean enabled = false;
         for (TableItem item : typesTable.getItems()) {
@@ -344,11 +347,16 @@ public class SearchDatabaseObjectsPage extends DialogPage {
             enabled = false;
         }
 
-        if (!enabled) {
-            UIUtils.showErrorDialog(getShell(), "Database search", "Can't perform database objects search. Please specify criteria");
-        }
+        container.setSearchEnabled(enabled);
     }
 
+    @Override
+    public void setSearchContainer(IObjectSearchContainer container)
+    {
+        this.container = container;
+    }
+
+    @Override
     public SearchDatabaseObjectsQuery createQuery() throws DBException
     {
         DBNNode selectedNode = getSelectedNode();
