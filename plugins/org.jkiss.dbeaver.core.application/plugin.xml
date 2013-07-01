@@ -42,22 +42,27 @@
 
     <extension point="org.eclipse.ui.views">
         <view id="org.eclipse.ui.views.ProgressView"
-                icon="icons/progress_view.png"
-                category="org.eclipse.ui"
-                class="org.eclipse.ui.ExtensionFactory:progressView"
-                name="%view.progress.title"/>
+            icon="icons/progress_view.png"
+            category="org.eclipse.ui"
+            class="org.eclipse.ui.ExtensionFactory:progressView"
+            name="%view.progress.title"/>
         <view id="org.eclipse.ui.texteditor.TemplatesView"
-              name="%view.templates.title"
-              icon="icons/templates_view.png"
-              category="org.eclipse.ui"
-              class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
+            name="%view.templates.title"
+            icon="icons/templates_view.png"
+            category="org.eclipse.ui"
+            class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
         <view
-                id="org.eclipse.help.ui.HelpView"
-                category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.help.LightweightHelpView"
-                allowMultiple="false"
-                icon="icons/help.png"
-                name="Help"/>
+            id="org.eclipse.help.ui.HelpView"
+            category="org.jkiss.dbeaver.core.category"
+            class="org.jkiss.dbeaver.ui.help.LightweightHelpView"
+            allowMultiple="false"
+            icon="icons/help.png"
+            name="Help"/>
+        <view id="org.jkiss.dbeaver.ui.search.SearchDatabaseObjectsView"
+            name="%view.search.title"
+            icon="platform:/plugin/org.jkiss.dbeaver.core/icons/misc/find.png"
+            category="org.eclipse.ui"
+            class="org.jkiss.dbeaver.ui.search.SearchDatabaseObjectsView"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
