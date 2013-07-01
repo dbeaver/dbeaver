@@ -55,8 +55,6 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
     private Button checkQueryTypeScript;
     private Button checkQueryTypeUtil;
     private Button checkQueryTypeMeta;
-    private Button checkQueryTypeDDL;
-    private Button checkQueryTypeOther;
     private Text textHistoryDays;
     private Text textEntriesPerPage;
     private Button checkStoreLog;
@@ -87,8 +85,6 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         checkQueryTypeScript = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_scripts, false);
         checkQueryTypeUtil = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_utility_functions, false);
         checkQueryTypeMeta = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_metadata_read, false);
-        checkQueryTypeDDL = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_ddl_executions, false);
-        checkQueryTypeOther = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_other, false);
 
         {
             Group viewSettings = UIUtils.createControlGroup(composite, CoreMessages.pref_page_query_manager_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
@@ -132,8 +128,6 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         checkQueryTypeScript.setSelection(queryTypes.contains(DBCExecutionPurpose.USER_SCRIPT.name()));
         checkQueryTypeUtil.setSelection(queryTypes.contains(DBCExecutionPurpose.UTIL.name()));
         checkQueryTypeMeta.setSelection(queryTypes.contains(DBCExecutionPurpose.META.name()));
-        checkQueryTypeDDL.setSelection(queryTypes.contains(DBCExecutionPurpose.DDL.name()));
-        checkQueryTypeOther.setSelection(queryTypes.contains(DBCExecutionPurpose.OTHER.name()));
 
         textHistoryDays.setText(store.getString(QMConstants.PROP_HISTORY_DAYS));
         textEntriesPerPage.setText(store.getString(QMConstants.PROP_ENTRIES_PER_PAGE));
@@ -158,8 +152,6 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         if (checkQueryTypeScript.getSelection()) queryTypes.add(DBCExecutionPurpose.USER_SCRIPT.name());
         if (checkQueryTypeUtil.getSelection()) queryTypes.add(DBCExecutionPurpose.UTIL.name());
         if (checkQueryTypeMeta.getSelection()) queryTypes.add(DBCExecutionPurpose.META.name());
-        if (checkQueryTypeDDL.getSelection()) queryTypes.add(DBCExecutionPurpose.DDL.name());
-        if (checkQueryTypeOther.getSelection()) queryTypes.add(DBCExecutionPurpose.OTHER.name());
 
         Integer historyDays = UIUtils.getTextInteger(textHistoryDays);
         Integer entriesPerPage = UIUtils.getTextInteger(textEntriesPerPage);
