@@ -87,7 +87,9 @@ public class GenericDataSource extends JDBCDataSource
             this.selectedEntityType = null;
         }
         this.allObjectsPattern = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_ALL_OBJECTS_PATTERN));
-        if (CommonUtils.isEmpty(this.allObjectsPattern) || "null".equalsIgnoreCase(this.allObjectsPattern)) {
+        if (CommonUtils.isEmpty(this.allObjectsPattern)) {
+            this.allObjectsPattern = "%";
+        } else if ("null".equalsIgnoreCase(this.allObjectsPattern)) {
             this.allObjectsPattern = null;
         }
     }
