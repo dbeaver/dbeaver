@@ -32,18 +32,44 @@
         </application>
     </extension>
 
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.core.object.find" name="%command.org.jkiss.dbeaver.core.object.find.name" description="%command.org.jkiss.dbeaver.core.object.find.description" categoryId="org.jkiss.dbeaver.core.database"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.object.find" icon="platform:/plugin/org.jkiss.dbeaver.core/icons/misc/find.png"/>
+    </extension>
+
     <extension point="org.eclipse.ui.views">
         <view id="org.eclipse.ui.views.ProgressView"
                 icon="icons/progress_view.png"
                 category="org.eclipse.ui"
                 class="org.eclipse.ui.ExtensionFactory:progressView"
                 name="%view.progress.title"/>
-
         <view id="org.eclipse.ui.texteditor.TemplatesView"
               name="%view.templates.title"
               icon="icons/templates_view.png"
               category="org.eclipse.ui"
               class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
+        <view
+                id="org.eclipse.help.ui.HelpView"
+                category="org.jkiss.dbeaver.core.category"
+                class="org.jkiss.dbeaver.ui.help.LightweightHelpView"
+                allowMultiple="false"
+                icon="icons/help.png"
+                name="Help"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+
+        <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.search.NavigatorHandlerObjectFind">
+            <enabledWhen>
+                <with variable="activePart">
+                    <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
+                </with>
+            </enabledWhen>
+        </handler>
+
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -64,6 +90,7 @@
         </menuContribution>
 
         <!-- Edit menu -->
+
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="edit" label="%menu.edit">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.comment.single"><visibleWhen checkEnabled="true"/></command>
@@ -75,6 +102,7 @@
         </menuContribution>
 
         <!-- File menu-->
+
         <menuContribution allPopups="false" locationURI="menu:file?before=additions">
             <command commandId="org.eclipse.ui.newWizard"/>
             <command commandId="org.eclipse.ui.file.save"/>
@@ -92,6 +120,14 @@
 
             <separator name="exit" visible="true"/>
             <command commandId="org.eclipse.ui.file.exit"/>
+        </menuContribution>
+
+        <!-- Navigation menu -->
+
+        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+            <menu id="navigate" label="%menu.navigate">
+                <command commandId="org.jkiss.dbeaver.core.object.find"/>
+            </menu>
         </menuContribution>
 
         <!-- Window menu -->
@@ -115,6 +151,11 @@
             <command commandId="org.eclipse.ui.window.preferences"/>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="toolbar:database?after=additions">
+            <command commandId="org.jkiss.dbeaver.core.object.find">
+                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+            </command>
+        </menuContribution>
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
@@ -128,7 +169,8 @@
         <key commandId="org.eclipse.ui.edit.text.contentAssist.proposals" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SPACE"/>
         <key commandId="org.eclipse.ui.edit.text.hippieCompletion" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+SPACE"/>
         <key commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+SPACE"/>
-<!--
+        <key commandId="org.jkiss.dbeaver.core.object.find" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+F"/>
+        <!--
         <key commandId="org.eclipse.ui.file.refresh" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F5"/>
 
         <key commandId="org.eclipse.ui.newWizard" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+N"/>
@@ -254,16 +296,6 @@
     <extension point="org.eclipse.ui.helpSupport">
         <config class="org.jkiss.dbeaver.ui.help.LightweightHelpUI">
         </config>
-    </extension>
-
-    <extension point="org.eclipse.ui.views">
-        <view
-                id="org.eclipse.help.ui.HelpView"
-                category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.help.LightweightHelpView"
-                allowMultiple="false"
-                icon="icons/help.png"
-                name="Help"/>
     </extension>
 
 </plugin>
