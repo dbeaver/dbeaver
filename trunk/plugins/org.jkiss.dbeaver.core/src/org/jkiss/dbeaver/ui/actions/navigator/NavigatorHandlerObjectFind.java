@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.WorkbenchPage;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.ui.search.database.SearchDatabaseObjectsDialog;
+import org.jkiss.dbeaver.ui.search.SearchDatabaseObjectsDialog;
 
 @SuppressWarnings("restriction")
 public class NavigatorHandlerObjectFind extends DataSourceHandler {

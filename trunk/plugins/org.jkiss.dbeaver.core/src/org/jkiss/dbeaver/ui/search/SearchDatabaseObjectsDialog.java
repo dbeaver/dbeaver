@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search.database;
+package org.jkiss.dbeaver.ui.search;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.ui.search.metadata.SearchMetadataConstants;
 import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.utils.CommonUtils;
@@ -209,9 +210,9 @@ public class SearchDatabaseObjectsDialog extends HelpEnabledDialog {
 
                 UIUtils.createControlLabel(optionsGroup2, CoreMessages.dialog_search_objects_label_name_match);
                 final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-                matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH);
-                matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchDatabaseConstants.MATCH_INDEX_CONTAINS);
-                matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchDatabaseConstants.MATCH_INDEX_LIKE);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchMetadataConstants.MATCH_INDEX_STARTS_WITH);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchMetadataConstants.MATCH_INDEX_CONTAINS);
+                matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchMetadataConstants.MATCH_INDEX_LIKE);
                 matchCombo.select(0);
                 matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 if (matchTypeIndex >= 0) {
@@ -547,11 +548,11 @@ public class SearchDatabaseObjectsDialog extends HelpEnabledDialog {
                 searchText.add(objectNameMask);
             }
 
-            if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH) {
+            if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_STARTS_WITH) {
                 if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
                     objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
                 }
-            } else if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_CONTAINS) {
+            } else if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_CONTAINS) {
                 if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
                     objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
                 }

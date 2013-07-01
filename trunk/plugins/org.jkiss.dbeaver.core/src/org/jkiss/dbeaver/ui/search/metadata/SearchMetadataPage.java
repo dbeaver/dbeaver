@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ui.search.database;
+package org.jkiss.dbeaver.ui.search.metadata;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,9 +49,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class SearchDatabaseObjectsPage extends DialogPage implements IObjectSearchPage {
+public class SearchMetadataPage extends DialogPage implements IObjectSearchPage {
 
-    static final Log log = LogFactory.getLog(SearchDatabaseObjectsDialog.class);
+    static final Log log = LogFactory.getLog(SearchMetadataPage.class);
 
     private static final String PROP_MASK = "search-view.mask"; //$NON-NLS-1$
     private static final String PROP_CASE_SENSITIVE = "search-view.case-sensitive"; //$NON-NLS-1$
@@ -73,7 +73,7 @@ public class SearchDatabaseObjectsPage extends DialogPage implements IObjectSear
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private Set<String> savedTypeNames = new HashSet<String>();
 
-    public SearchDatabaseObjectsPage() {
+    public SearchMetadataPage() {
 		super("Database objects search");
 
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
@@ -133,9 +133,9 @@ public class SearchDatabaseObjectsPage extends DialogPage implements IObjectSear
 
             UIUtils.createControlLabel(optionsGroup2, CoreMessages.dialog_search_objects_label_name_match);
             final Combo matchCombo = new Combo(optionsGroup2, SWT.DROP_DOWN | SWT.READ_ONLY);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchDatabaseConstants.MATCH_INDEX_CONTAINS);
-            matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchDatabaseConstants.MATCH_INDEX_LIKE);
+            matchCombo.add(CoreMessages.dialog_search_objects_combo_starts_with, SearchMetadataConstants.MATCH_INDEX_STARTS_WITH);
+            matchCombo.add(CoreMessages.dialog_search_objects_combo_contains, SearchMetadataConstants.MATCH_INDEX_CONTAINS);
+            matchCombo.add(CoreMessages.dialog_search_objects_combo_like, SearchMetadataConstants.MATCH_INDEX_LIKE);
             matchCombo.select(0);
             matchCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             if (matchTypeIndex >= 0) {
@@ -357,7 +357,7 @@ public class SearchDatabaseObjectsPage extends DialogPage implements IObjectSear
     }
 
     @Override
-    public SearchDatabaseObjectsQuery createQuery() throws DBException
+    public SearchMetadataQuery createQuery() throws DBException
     {
         DBNNode selectedNode = getSelectedNode();
         DBSObjectContainer parentObject = null;
@@ -384,11 +384,11 @@ public class SearchDatabaseObjectsPage extends DialogPage implements IObjectSear
             searchText.add(objectNameMask);
         }
 
-        if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_STARTS_WITH) {
+        if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_STARTS_WITH) {
             if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
                 objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
             }
-        } else if (matchTypeIndex == SearchDatabaseConstants.MATCH_INDEX_CONTAINS) {
+        } else if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_CONTAINS) {
             if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
                 objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
             }
@@ -397,13 +397,13 @@ public class SearchDatabaseObjectsPage extends DialogPage implements IObjectSear
             }
         }
 
-        SearchDatabaseObjectsParams params = new SearchDatabaseObjectsParams();
+        SearchMetadataParams params = new SearchMetadataParams();
         params.setParentObject(parentObject);
         params.setObjectTypes(objectTypes);
         params.setObjectNameMask(objectNameMask);
         params.setCaseSensitive(caseSensitive);
         params.setMaxResults(maxResults);
-        return SearchDatabaseObjectsQuery.createQuery(dataSource, params);
+        return SearchMetadataQuery.createQuery(dataSource, params);
 
     }
 
