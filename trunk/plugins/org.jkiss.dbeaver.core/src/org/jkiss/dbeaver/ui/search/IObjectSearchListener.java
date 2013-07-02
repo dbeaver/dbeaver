@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.util.Collection;
 
 /**
@@ -27,7 +29,7 @@ public interface IObjectSearchListener {
 
     void searchStarted();
 
-    void objectsFound(Collection<?> objects);
+    boolean objectsFound(DBRProgressMonitor monitor, Collection<?> objects);
 
     void searchFinished();
 

@@ -58,6 +58,7 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
     public void runQuery(DBRProgressMonitor monitor, IObjectSearchListener listener)
         throws InvocationTargetException, InterruptedException
     {
+        listener.searchStarted();
         try {
             List<DBSObjectType> objectTypes = params.getObjectTypes();
             String objectNameMask = params.getObjectNameMask();
@@ -84,12 +85,17 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
                 params.isCaseSensitive(),
                 params.getMaxResults());
             for (DBSObjectReference reference : objects) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
                 try {
                     DBSObject object = reference.resolveObject(monitor);
                     if (object != null) {
                         DBNNode node = navigatorModel.getNodeByObject(monitor, object, true);
                         if (node != null) {
-                            listener.objectsFound(Collections.singleton(node));
+                            if (!listener.objectsFound(monitor, Collections.singleton(node))) {
+                                break;
+                            }
                         }
                     }
                 } catch (DBException e) {
@@ -102,6 +108,8 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
             } else {
                 throw new InvocationTargetException(ex);
             }
+        } finally {
+            listener.searchFinished();
         }
     }
 

@@ -306,7 +306,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
     }
 
-    private void setListData(Collection<OBJECT_TYPE> items)
+    private void setListData(Collection<OBJECT_TYPE> items, boolean append)
     {
         final Control itemsControl = itemsViewer.getControl();
         if (itemsControl.isDisposed()) {
@@ -314,11 +314,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
         itemsControl.setRedraw(false);
         try {
-            final boolean reload = (objectList == null) || (columns.isEmpty());
+            final boolean reload = !append && (objectList == null) || (columns.isEmpty());
 
             if (reload) {
                 clearListData();
             }
+
             {
                 // Collect list of items' classes
                 final List<Class<?>> classList = new ArrayList<Class<?>>();
@@ -386,26 +387,34 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     // Set real content
                     itemsViewer.setInput(objectList);
                 } else if (items != null) {
-                    // Update object list and refresh
-                    if (!objectList.equals(items)) {
-                        int newListSize = items.size();
-                        int itemIndex = 0;
-                        for (Iterator<OBJECT_TYPE> iter = items.iterator(); iter.hasNext(); ) {
-                            OBJECT_TYPE newObject = iter.next();
-                            if (itemIndex >= objectList.size()) {
-                                // Add to tail
-                                objectList.add(itemIndex, newObject);
-                            } else {
-                                OBJECT_TYPE oldObject = objectList.get(itemIndex);
-                                if (!CommonUtils.equalObjects(oldObject, newObject)) {
-                                    // Replace old object
-                                    objectList.set(itemIndex, newObject);
-                                }
+                    if (append) {
+                        // Simply append new list to the tail
+                        for (OBJECT_TYPE newObject : items) {
+                            if (!objectList.contains(newObject)) {
+                                objectList.add(newObject);
                             }
-                            itemIndex++;
                         }
-                        while (objectList.size() > newListSize) {
-                            objectList.remove(objectList.size() - 1);
+                    } else {
+                        // Update object list
+                        if (!objectList.equals(items)) {
+                            int newListSize = items.size();
+                            int itemIndex = 0;
+                            for (OBJECT_TYPE newObject : items) {
+                                if (itemIndex >= objectList.size()) {
+                                    // Add to tail
+                                    objectList.add(itemIndex, newObject);
+                                } else {
+                                    OBJECT_TYPE oldObject = objectList.get(itemIndex);
+                                    if (!CommonUtils.equalObjects(oldObject, newObject)) {
+                                        // Replace old object
+                                        objectList.set(itemIndex, newObject);
+                                    }
+                                }
+                                itemIndex++;
+                            }
+                            while (objectList.size() > newListSize) {
+                                objectList.remove(objectList.size() - 1);
+                            }
                         }
                     }
 
@@ -416,6 +425,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             itemsControl.setRedraw(true);
         }
         setInfo(getItemsLoadMessage(objectList.size()));
+    }
+
+    public void appendListData(Collection<OBJECT_TYPE> items)
+    {
+        setListData(items, true);
     }
 
     public void clearListData()
@@ -838,7 +852,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public void completeLoading(Collection<OBJECT_TYPE> items)
         {
             super.completeLoading(items);
-            setListData(items);
+            setListData(items, false);
         }
 
     }
