@@ -75,29 +75,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
 
     public SearchMetadataPage() {
 		super("Database objects search");
-
-        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-
-        nameMask = store.getString(PROP_MASK);
-        caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
-        maxResults = store.getInt(PROP_MAX_RESULT);
-        matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
-        for (int i = 0; ;i++) {
-            String history = store.getString(PROP_HISTORY + "." + i); //$NON-NLS-1$
-            if (CommonUtils.isEmpty(history)) {
-                break;
-            }
-            searchHistory.add(history);
-        }
-        {
-            String type = store.getString(PROP_OBJECT_TYPE);
-            if (!CommonUtils.isEmpty(type)) {
-                StringTokenizer st = new StringTokenizer(type, "|"); //$NON-NLS-1$
-                while (st.hasMoreTokens()) {
-                    savedTypeNames.add(st.nextToken());
-                }
-            }
-        }	}
+    }
 
 	@Override
 	public void createControl(Composite parent) {
@@ -406,6 +384,60 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
         params.setMaxResults(maxResults);
         return SearchMetadataQuery.createQuery(dataSource, params);
 
+    }
+
+    @Override
+    public void loadState(IPreferenceStore store)
+    {
+        nameMask = store.getString(PROP_MASK);
+        caseSensitive = store.getBoolean(PROP_CASE_SENSITIVE);
+        maxResults = store.getInt(PROP_MAX_RESULT);
+        matchTypeIndex = store.getInt(PROP_MATCH_INDEX);
+        for (int i = 0; ;i++) {
+            String history = store.getString(PROP_HISTORY + "." + i); //$NON-NLS-1$
+            if (CommonUtils.isEmpty(history)) {
+                break;
+            }
+            searchHistory.add(history);
+        }
+        {
+            String type = store.getString(PROP_OBJECT_TYPE);
+            if (!CommonUtils.isEmpty(type)) {
+                StringTokenizer st = new StringTokenizer(type, "|"); //$NON-NLS-1$
+                while (st.hasMoreTokens()) {
+                    savedTypeNames.add(st.nextToken());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void saveState(IPreferenceStore store)
+    {
+        store.setValue(PROP_MASK, nameMask);
+        store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
+        store.setValue(PROP_MAX_RESULT, maxResults);
+        store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
+        {
+            int historyIndex = 0;
+            for (String history : searchHistory) {
+                if (historyIndex >= 20) {
+                    break;
+                }
+                store.setValue(PROP_HISTORY + "." + historyIndex, history); //$NON-NLS-1$
+                historyIndex++;
+            }
+        }
+        {
+            StringBuilder typesString = new StringBuilder();
+            for (DBSObjectType type : checkedTypes) {
+                if (typesString.length() > 0) {
+                    typesString.append("|"); //$NON-NLS-1$
+                }
+                typesString.append(type.getTypeClass().getName());
+            }
+            store.setValue(PROP_OBJECT_TYPE, typesString.toString());
+        }
     }
 
 }
