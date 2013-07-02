@@ -30,6 +30,7 @@
     <extension-point id="org.jkiss.dbeaver.resourceHandler" name="Resource Handlers" schema="schema/org.jkiss.dbeaver.resourceHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.networkHandler" name="Network Handlers" schema="schema/org.jkiss.dbeaver.networkHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resources" name="Resources" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.search" name="Search providers" schema="schema/org.jkiss.dbeaver.search.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -1841,10 +1842,105 @@
 
 
 
+    <extension point="org.eclipse.ui.exportWizards">
+        <category id="org.jkiss.dbeaver.core.export.resources" name="DBeaver"/>
+        <wizard
+             category="org.jkiss.dbeaver.core.export.resources"
+             class="org.jkiss.dbeaver.tools.project.ProjectExportWizard"
+             icon="icons/project.png"
+             id="org.jkiss.dbeaver.core.wizard.export.project"
+             name="Project">
+           <description>
+               DBeaver Project
+           </description>
+        </wizard>
+        <wizard
+             category="org.jkiss.dbeaver.core.export.resources"
+             class="org.jkiss.dbeaver.tools.scripts.ScriptsExportWizard"
+             icon="icons/sql/sql_script.png"
+             id="org.jkiss.dbeaver.core.wizard.export.scripts"
+             name="Scripts">
+           <description>
+               SQL Scripts
+           </description>
+        </wizard>
+    </extension>
+
+    <extension point="org.eclipse.ui.importWizards">
+        <category id="org.jkiss.dbeaver.core.import.resources" name="DBeaver"/>
+        <wizard
+            category="org.jkiss.dbeaver.core.import.resources"
+            class="org.jkiss.dbeaver.tools.project.ProjectImportWizard"
+            icon="icons/project.png"
+            id="org.jkiss.dbeaver.core.wizard.import.project"
+            name="Project">
+            <description>
+                DBeaver Project
+            </description>
+        </wizard>
+        <wizard
+            category="org.jkiss.dbeaver.core.import.resources"
+            class="org.jkiss.dbeaver.tools.scripts.ScriptsImportWizard"
+            icon="icons/sql/sql_script.png"
+            id="org.jkiss.dbeaver.core.wizard.import.scripts"
+            name="Scripts">
+            <description>
+                SQL Scripts
+            </description>
+        </wizard>
+    </extension>
+
+    <extension point="org.eclipse.ui.newWizards">
+        <category id="org.jkiss.dbeaver.core.new.general" name="DBeaver"/>
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.tools.project.ProjectCreateWizard"
+             icon="icons/project.png"
+             id="org.jkiss.dbeaver.core.wizard.new.project"
+             name="Project">
+           <description>
+               DBeaver Project
+           </description>
+        </wizard>
+        <wizard
+             category="org.jkiss.dbeaver.core.new.general"
+             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
+             icon="icons/database.png"
+             id="org.jkiss.dbeaver.core.wizard.new.connection"
+             name="Connection">
+           <description>
+               Database connection
+           </description>
+        </wizard>
+    </extension>
+
+    <extension point="org.eclipse.help.toc">
+       <toc file="docs/help/toc.xml" primary="true">
+       </toc>
+    </extension>
+
+    <extension point="org.eclipse.help.contexts">
+       <contexts plugin="org.jkiss.dbeaver.core" file="docs/help/contexts.xml">
+       </contexts>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="auto commit cursor rollback resultset lob script"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="format date number string locale language"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="query log statement ddl"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.binary" label="binary hex blob"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.content" label="lob blob clob"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.erd" label="erd diagram"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="sql script commit fetch timeout"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="update http proxy"/>
+    </extension>
+
+    <!-- DBeaver extensions -->
+
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
-            class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager"
-            objectType="org.jkiss.dbeaver.registry.DataSourceDescriptor">
+                class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager"
+                objectType="org.jkiss.dbeaver.registry.DataSourceDescriptor">
         </manager>
         <editor
                 id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
@@ -1941,23 +2037,23 @@
 
     <extension point="org.jkiss.dbeaver.dataTransfer">
         <node type="producer"
-                id="database_producer"
-                class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
-                icon="icons/tree/table.png"
-                label="%dataTransfer.producer.database.name"
-                description="%dataTransfer.producer.database.description"
-                settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
+              id="database_producer"
+              class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
+              icon="icons/tree/table.png"
+              label="%dataTransfer.producer.database.name"
+              description="%dataTransfer.producer.database.description"
+              settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerPageExtractSettings"/>
         </node>
 
         <node type="consumer"
-                id="stream_consumer"
-                class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
-                icon="icons/tree/file.png"
-                label="%dataTransfer.consumer.stream.name"
-                description="%dataTransfer.consumer.stream.description"
-                settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
+              id="stream_consumer"
+              class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
+              icon="icons/tree/file.png"
+              label="%dataTransfer.consumer.stream.name"
+              description="%dataTransfer.consumer.stream.description"
+              settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
             <page class="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageSettings"/>
             <page class="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageOutput"/>
 
@@ -2041,106 +2137,23 @@
 
     <extension point="org.jkiss.dbeaver.networkHandler">
         <handler
-            type="tunnel"
-            id="ssh_tunnel"
-            label="SSH"
-            description="SSH tunnel"
-            secured="true"
-            uiClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelConfiguratorUI"
-            handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl"/>
+                type="tunnel"
+                id="ssh_tunnel"
+                label="SSH"
+                description="SSH tunnel"
+                secured="true"
+                uiClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelConfiguratorUI"
+                handlerClass="org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl"/>
     </extension>
 
-    <extension point="org.eclipse.ui.exportWizards">
-        <category id="org.jkiss.dbeaver.core.export.resources" name="DBeaver"/>
-        <wizard
-             category="org.jkiss.dbeaver.core.export.resources"
-             class="org.jkiss.dbeaver.tools.project.ProjectExportWizard"
-             icon="icons/project.png"
-             id="org.jkiss.dbeaver.core.wizard.export.project"
-             name="Project">
-           <description>
-               DBeaver Project
-           </description>
-        </wizard>
-        <wizard
-             category="org.jkiss.dbeaver.core.export.resources"
-             class="org.jkiss.dbeaver.tools.scripts.ScriptsExportWizard"
-             icon="icons/sql/sql_script.png"
-             id="org.jkiss.dbeaver.core.wizard.export.scripts"
-             name="Scripts">
-           <description>
-               SQL Scripts
-           </description>
-        </wizard>
-    </extension>
-
-    <extension point="org.eclipse.ui.importWizards">
-        <category id="org.jkiss.dbeaver.core.import.resources" name="DBeaver"/>
-        <wizard
-            category="org.jkiss.dbeaver.core.import.resources"
-            class="org.jkiss.dbeaver.tools.project.ProjectImportWizard"
-            icon="icons/project.png"
-            id="org.jkiss.dbeaver.core.wizard.import.project"
-            name="Project">
-            <description>
-                DBeaver Project
-            </description>
-        </wizard>
-        <wizard
-            category="org.jkiss.dbeaver.core.import.resources"
-            class="org.jkiss.dbeaver.tools.scripts.ScriptsImportWizard"
-            icon="icons/sql/sql_script.png"
-            id="org.jkiss.dbeaver.core.wizard.import.scripts"
-            name="Scripts">
-            <description>
-                SQL Scripts
-            </description>
-        </wizard>
-    </extension>
-
-    <extension point="org.eclipse.ui.newWizards">
-        <category id="org.jkiss.dbeaver.core.new.general" name="DBeaver"/>
-        <wizard
-             category="org.jkiss.dbeaver.core.new.general"
-             class="org.jkiss.dbeaver.tools.project.ProjectCreateWizard"
-             icon="icons/project.png"
-             id="org.jkiss.dbeaver.core.wizard.new.project"
-             name="Project">
-           <description>
-               DBeaver Project
-           </description>
-        </wizard>
-        <wizard
-             category="org.jkiss.dbeaver.core.new.general"
-             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
-             icon="icons/database.png"
-             id="org.jkiss.dbeaver.core.wizard.new.connection"
-             name="Connection">
-           <description>
-               Database connection
-           </description>
-        </wizard>
-    </extension>
-
-    <extension point="org.eclipse.help.toc">
-       <toc file="docs/help/toc.xml" primary="true">
-       </toc>
-    </extension>
-
-    <extension point="org.eclipse.help.contexts">
-       <contexts plugin="org.jkiss.dbeaver.core" file="docs/help/contexts.xml">
-       </contexts>
-    </extension>
-
-    <extension point="org.eclipse.ui.keywords">
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="auto commit cursor rollback resultset lob script"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="format date number string locale language"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="query log statement ddl"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.binary" label="binary hex blob"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.content" label="lob blob clob"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.erd" label="erd diagram"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.editor.sql" label="sql script commit fetch timeout"/>
-        <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="update http proxy"/>
+    <extension point="org.jkiss.dbeaver.search">
+        <searchProvider
+                type="metadata"
+                id="database_metadata"
+                label="Database Metadata"
+                description="Search database metadata objects (tables, columns, etc)"
+                pageClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
+                resultsClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"/>
     </extension>
 
 </plugin>
