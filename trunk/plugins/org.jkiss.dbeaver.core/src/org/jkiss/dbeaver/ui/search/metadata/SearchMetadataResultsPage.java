@@ -62,8 +62,8 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
         itemList = new SearchResultsControl(parent);
         itemList.createProgressPanel();
         itemList.setInfo(CoreMessages.dialog_search_objects_item_list_info);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        itemList.setLayoutData(gd);
+        itemList.setFitWidth(true);
+        itemList.setLayoutData(new GridData(GridData.FILL_BOTH));
         //itemList.addFocusListener(new ItemsFocusListener());
     }
 
@@ -88,13 +88,17 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
     @Override
     public void setFocus()
     {
-        itemList.setFocus();
+        if (itemList != null && !itemList.isDisposed()) {
+            itemList.setFocus();
+        }
     }
 
     @Override
     public void populateObjects(DBRProgressMonitor monitor, Collection<DBNNode> objects)
     {
-        itemList.appendListData(objects);
+        if (itemList != null && !itemList.isDisposed()) {
+            itemList.appendListData(objects);
+        }
     }
 
     @Override
@@ -106,7 +110,7 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
     private class SearchResultsControl extends ItemListControl {
         public SearchResultsControl(Composite resultsGroup)
         {
-            super(resultsGroup, SWT.BORDER, null, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
+            super(resultsGroup, SWT.SHEET, null, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
         }
 
         @Override

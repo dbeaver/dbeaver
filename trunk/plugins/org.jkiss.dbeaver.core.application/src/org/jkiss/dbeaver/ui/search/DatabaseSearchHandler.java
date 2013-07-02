@@ -24,10 +24,9 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.internal.WorkbenchPage;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
-import org.jkiss.dbeaver.ui.search.SearchDatabaseObjectsDialog;
 
 @SuppressWarnings("restriction")
-public class NavigatorHandlerObjectFind extends DataSourceHandler {
+public class DatabaseSearchHandler extends DataSourceHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -37,7 +36,7 @@ public class NavigatorHandlerObjectFind extends DataSourceHandler {
         }
 
         final Shell activeShell = HandlerUtil.getActiveShell(event);
-        SearchDatabaseObjectsDialog.open(
+        DatabaseSearchDialog.open(
             activeShell,
             getDataSourceContainer(event, false));
 
