@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverIcons;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.search.IObjectSearchPage;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -110,6 +111,25 @@ public abstract class AbstractDescriptor {
                 return Boolean.TRUE.equals(result);
             }
             return true;
+        }
+
+        public <T> T createInstance(Class<T> type)
+            throws DBException
+        {
+            if (implName == null) {
+                throw new DBException("No implementation class name set for '" + type.getName() + "'");
+            }
+            Class<? extends T> objectClass = getObjectClass(type);
+            if (objectClass == null) {
+                throw new DBException("Can't load class '" + getImplName() + "'");
+            }
+            try {
+                return objectClass.newInstance();
+            } catch (InstantiationException e) {
+                throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
+            } catch (IllegalAccessException e) {
+                throw new DBException("Can't instantiate class '" + getImplName() + "'", e);
+            }
         }
 
         public boolean matchesType(Class<?> clazz)
