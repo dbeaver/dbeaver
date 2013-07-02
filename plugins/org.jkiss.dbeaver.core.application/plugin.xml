@@ -58,16 +58,17 @@
             allowMultiple="false"
             icon="icons/help.png"
             name="Help"/>
-        <view id="org.jkiss.dbeaver.ui.search.SearchDatabaseObjectsView"
+        <view id="org.jkiss.dbeaver.ui.search.DatabaseSearchView"
             name="%view.search.title"
             icon="platform:/plugin/org.jkiss.dbeaver.core/icons/misc/find.png"
             category="org.eclipse.ui"
-            class="org.jkiss.dbeaver.ui.search.SearchDatabaseObjectsView"/>
+            class="org.jkiss.dbeaver.ui.search.DatabaseSearchView"/>
+        <stickyView id="org.jkiss.dbeaver.ui.search.DatabaseSearchView" location="BOTTOM"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
 
-        <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.search.NavigatorHandlerObjectFind">
+        <handler commandId="org.jkiss.dbeaver.core.object.find" class="org.jkiss.dbeaver.ui.search.DatabaseSearchHandler">
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>

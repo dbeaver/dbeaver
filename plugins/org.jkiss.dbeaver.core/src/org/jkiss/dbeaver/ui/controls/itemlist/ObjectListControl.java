@@ -172,8 +172,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return renderer;
     }
 
-    public IPropertySourceMulti getListPropertySource()
+    public PropertySourceAbstract getListPropertySource()
     {
+        if (this.listPropertySource == null) {
+            this.listPropertySource = createListPropertySource();
+        }
         return listPropertySource;
     }
 
@@ -279,9 +282,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
             return;
         }
-        if (this.listPropertySource == null) {
-            this.listPropertySource = createListPropertySource();
-        }
+        getListPropertySource();
 
         clearLazyCache();
         this.lazyLoadCanceled = false;
@@ -346,13 +347,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 // Create columns from classes' annotations
                 for (Class<?> objectClass : classList) {
-                    List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(listPropertySource, objectClass, propertyFilter);
+                    List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(getListPropertySource(), objectClass, propertyFilter);
                     for (ObjectPropertyDescriptor prop : props) {
                         if (!prop.isViewable() || prop.isHidden()) {
                             continue;
                         }
-                        if (!listPropertySource.hasProperty(prop)) {
-                            listPropertySource.addProperty(prop);
+                        if (!getListPropertySource().hasProperty(prop)) {
+                            getListPropertySource().addProperty(prop);
                             createColumn(prop);
                         }
                     }
@@ -379,7 +380,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             ((TreeViewer)itemsViewer).expandAll();
                             UIUtils.packColumns(getTree(), isFitWidth, null);
                         } else {
-                            UIUtils.packColumns(getTable());
+                            UIUtils.packColumns(getTable(), isFitWidth);
                         }
                     } finally {
                         sampleItems = false;
@@ -580,14 +581,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
             if (prop.supportsPreview()) {
-                final Object previewValue = listPropertySource.getPropertyValue(objectValue, prop);
+                final Object previewValue = getListPropertySource().getPropertyValue(objectValue, prop);
                 if (previewValue != null) {
                     return new LazyValue(previewValue);
                 }
             }
             return DEF_LAZY_VALUE;
         }
-        return listPropertySource.getPropertyValue(objectValue, prop);
+        return getListPropertySource().getPropertyValue(objectValue, prop);
     }
 
     private static ObjectPropertyDescriptor getPropertyByObject(ObjectColumn column, Object objectValue)

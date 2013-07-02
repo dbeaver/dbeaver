@@ -2151,6 +2151,7 @@
                 id="database_metadata"
                 label="Database Metadata"
                 description="Search database metadata objects (tables, columns, etc)"
+                icon="icons/tree/table.png"
                 pageClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
                 resultsClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"/>
     </extension>
