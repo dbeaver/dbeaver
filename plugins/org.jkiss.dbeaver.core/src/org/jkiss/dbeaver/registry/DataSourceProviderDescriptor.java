@@ -168,22 +168,14 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         if (instance == null) {
             initProviderBundle(driver);
             // locate class
-            implType.checkObjectClass(DBPDataSourceProvider.class);
-            Class<? extends DBPDataSourceProvider> implClass = implType.getObjectClass(DBPDataSourceProvider.class);
-            // Create instance
-            try {
-                this.instance = implClass.newInstance();
-            }
-            catch (Throwable ex) {
-                throw new DBException("Can't instantiate data source provider '" + implClass.getName() + "'", ex);
-            }
+            this.instance = implType.createInstance(DBPDataSourceProvider.class);
             // Initialize it
             try {
                 this.instance.init(DBeaverCore.getInstance());
             }
             catch (Throwable ex) {
                 this.instance = null;
-                throw new DBException("Can't initialize data source provider '" + implClass.getName() + "'", ex);
+                throw new DBException("Can't initialize data source provider '" + implType.getImplName() + "'", ex);
             }
         }
         return instance;
