@@ -31,7 +31,6 @@ import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -85,6 +84,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             }
         });
         //shell.setDefaultButton(searchButton);
+        IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         providersFolder = new TabFolder(group, SWT.TOP);
         providersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -98,6 +98,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
                 continue;
             }
             searchPage.setSearchContainer(this);
+            searchPage.loadState(store);
             searchPage.createControl(providersFolder);
 
             TabItem item = new TabItem(providersFolder, SWT.NONE);
@@ -144,6 +145,10 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
+        for (TabItem item : providersFolder.getItems()) {
+            IObjectSearchPage page = (IObjectSearchPage) item.getData("page");
+            page.saveState(store);
+        }
     }
 
     @Override
@@ -184,6 +189,8 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             UIUtils.showErrorDialog(getShell(), "Search", "Can't create search query", e);
             return;
         }
+
+        saveState();
 
         // Run search job
         setSearchEnabled(false);

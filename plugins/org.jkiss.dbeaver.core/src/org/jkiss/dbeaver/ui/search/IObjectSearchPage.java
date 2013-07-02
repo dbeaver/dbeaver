@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.search;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 
 /**
@@ -30,4 +31,7 @@ public interface IObjectSearchPage extends IDialogPage {
 
     IObjectSearchQuery createQuery() throws DBException;
 
+    void loadState(IPreferenceStore store);
+
+    void saveState(IPreferenceStore store);
 }
