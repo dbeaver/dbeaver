@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
+/*
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
@@ -56,9 +57,11 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+*/
 
-public class SearchDatabaseObjectsDialogOld extends HelpEnabledDialog {
+public class SearchDatabaseObjectsDialogOld /*extends HelpEnabledDialog*/ {
 
+/*
     static final Log log = LogFactory.getLog(SearchDatabaseObjectsDialogOld.class);
 
     private static final String PROP_MASK = "search-view.mask"; //$NON-NLS-1$
@@ -647,5 +650,6 @@ public class SearchDatabaseObjectsDialogOld extends HelpEnabledDialog {
         {
         }
     }
+*/
 
 }

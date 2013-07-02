@@ -34,10 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 public class SearchMetadataQuery implements IObjectSearchQuery {
@@ -56,8 +54,14 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
     }
 
     @Override
+    public String getLabel()
+    {
+        return params.getObjectNameMask();
+    }
+
+    @Override
     public void runQuery(DBRProgressMonitor monitor, IObjectSearchListener listener)
-        throws InvocationTargetException, InterruptedException
+        throws DBException
     {
         listener.searchStarted();
         try {
@@ -105,12 +109,8 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
             if (!nodes.isEmpty()) {
                 listener.objectsFound(monitor, nodes);
             }
-        } catch (Throwable ex) {
-            if (ex instanceof InvocationTargetException) {
-                throw (InvocationTargetException) ex;
-            } else {
-                throw new InvocationTargetException(ex);
-            }
+        } catch (Exception ex) {
+            throw new DBException(ex);
         } finally {
             listener.searchFinished();
         }

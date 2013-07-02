@@ -18,37 +18,17 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ShellAdapter;
-import org.eclipse.swt.events.ShellEvent;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.ui.DBIcon;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
-import java.util.List;
 
 public class DatabaseSearchJob extends AbstractJob implements IObjectSearchListener {
-
-    static final Log log = LogFactory.getLog(DatabaseSearchJob.class);
 
     private  IObjectSearchQuery query;
     private  IObjectSearchResultPage resultsPage;
@@ -67,10 +47,8 @@ public class DatabaseSearchJob extends AbstractJob implements IObjectSearchListe
     {
         try {
             query.runQuery(monitor, this);
-        } catch (InvocationTargetException e) {
-            return RuntimeUtils.makeExceptionStatus(e.getTargetException());
-        } catch (InterruptedException e) {
-            // ok
+        } catch (DBException e) {
+            return RuntimeUtils.makeExceptionStatus(e);
         }
         return Status.OK_STATUS;
     }

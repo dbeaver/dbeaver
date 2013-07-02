@@ -167,8 +167,9 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             final DBeaverCore core = DBeaverCore.getInstance();
 
             Group sourceGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_objects_source, 1, GridData.FILL_BOTH, 0);
-            final DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
-            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode.getDatabases(), SWT.SINGLE | SWT.BORDER);
+            final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
+            DBNNode rootNode = projectNode == null ? core.getNavigatorModel().getRoot() : projectNode.getDatabases();
+            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE | SWT.BORDER);
             gd = new GridData(GridData.FILL_BOTH);
             //gd.heightHint = 100;
             dataSourceTree.setLayoutData(gd);

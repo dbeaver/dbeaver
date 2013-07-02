@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ui.search;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.DBException;
@@ -29,7 +30,7 @@ public class DatabaseSearchView extends ViewPart
         resultsFolder.setFocus();
     }
 
-    public void addResults(IObjectSearchResultPage resultPage, String title, String toolTip)
+    public void addResults(IObjectSearchResultPage resultPage, String title, String toolTip, Image icon)
     {
         resultPage.createControl(resultsFolder);
 
@@ -37,6 +38,7 @@ public class DatabaseSearchView extends ViewPart
         tabItem.setData(resultPage);
         tabItem.setControl(resultPage.getControl());
         tabItem.setText(title);
+        tabItem.setImage(icon);
         tabItem.setToolTipText(toolTip);
         resultsFolder.setSelection(tabItem);
     }
@@ -47,7 +49,7 @@ public class DatabaseSearchView extends ViewPart
             item.dispose();
         }
         IObjectSearchResultPage resultsPage = provider.createResultsPage();
-        addResults(resultsPage, provider.getLabel(), provider.getDescription());
+        addResults(resultsPage, provider.getLabel(), provider.getDescription(), provider.getIcon());
         return resultsPage;
     }
 }

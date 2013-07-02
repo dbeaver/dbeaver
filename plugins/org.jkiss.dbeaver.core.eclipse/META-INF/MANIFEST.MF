@@ -14,4 +14,5 @@ Require-Bundle: org.jkiss.dbeaver.core;bundle-version="2.0.0",
  org.eclipse.ui.workbench,
  org.eclipse.swt,
  org.eclipse.jface,
- org.eclipse.ui.workbench.texteditor
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.search

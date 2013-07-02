@@ -18,16 +18,17 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Search query
  */
 public interface IObjectSearchQuery {
 
-    public void runQuery(DBRProgressMonitor monitor, IObjectSearchListener listener)
-        throws InvocationTargetException, InterruptedException;
+    String getLabel();
+
+    void runQuery(DBRProgressMonitor monitor, IObjectSearchListener listener)
+        throws DBException;
 
 }
