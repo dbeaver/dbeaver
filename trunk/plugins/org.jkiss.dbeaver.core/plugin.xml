@@ -2148,7 +2148,6 @@
 
     <extension point="org.jkiss.dbeaver.search">
         <searchProvider
-                type="metadata"
                 id="database_metadata"
                 label="Database Metadata"
                 description="Search database metadata objects (tables, columns, etc)"

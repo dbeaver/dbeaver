@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -49,19 +50,30 @@ public class ObjectSearchRegistry
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.search"; //$NON-NLS-1$
 
+    private static ObjectSearchRegistry instance = null;
+    private final List<ObjectSearchProvider> providers = new ArrayList<ObjectSearchProvider>();
+
     public ObjectSearchRegistry(IExtensionRegistry registry)
     {
-        // Load data formatters from external plugins
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
-
+                providers.add(new ObjectSearchProvider(ext));
             }
         }
     }
 
-    ////////////////////////////////////////////////////
-    // Data formatters
+    public List<ObjectSearchProvider> getProviders()
+    {
+        return providers;
+    }
 
+    public synchronized static ObjectSearchRegistry getInstance()
+    {
+        if (instance == null) {
+            instance = new ObjectSearchRegistry(Platform.getExtensionRegistry());
+        }
+        return instance;
+    }
 
 }
