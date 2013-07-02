@@ -22,8 +22,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.registry.AbstractDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 public class ObjectSearchProvider extends AbstractDescriptor
 {
@@ -32,6 +34,7 @@ public class ObjectSearchProvider extends AbstractDescriptor
     private String id;
     private String label;
     private String description;
+    private Image icon;
     private ObjectType pageClass;
     private ObjectType resultsClass;
 
@@ -39,9 +42,10 @@ public class ObjectSearchProvider extends AbstractDescriptor
     {
         super(contributorConfig);
 
-        this.id = contributorConfig.getAttribute("id");
-        this.label = contributorConfig.getAttribute("label");
-        this.description = contributorConfig.getAttribute("description");
+        this.id = contributorConfig.getAttribute(RegistryConstants.ATTR_ID);
+        this.label = contributorConfig.getAttribute(RegistryConstants.ATTR_LABEL);
+        this.description = contributorConfig.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.icon = iconToImage(contributorConfig.getAttribute(RegistryConstants.ATTR_ICON));
         this.pageClass = new ObjectType(contributorConfig.getAttribute("pageClass"));
         this.resultsClass = new ObjectType(contributorConfig.getAttribute("resultsClass"));
     }
@@ -59,6 +63,11 @@ public class ObjectSearchProvider extends AbstractDescriptor
     public String getDescription()
     {
         return description;
+    }
+
+    public Image getIcon()
+    {
+        return icon;
     }
 
     public IObjectSearchPage createSearchPage() throws DBException
