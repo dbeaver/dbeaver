@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -84,6 +85,7 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
                 objectNameMask,
                 params.isCaseSensitive(),
                 params.getMaxResults());
+            List<DBNNode> nodes = new ArrayList<DBNNode>();
             for (DBSObjectReference reference : objects) {
                 if (monitor.isCanceled()) {
                     break;
@@ -93,14 +95,15 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
                     if (object != null) {
                         DBNNode node = navigatorModel.getNodeByObject(monitor, object, true);
                         if (node != null) {
-                            if (!listener.objectsFound(monitor, Collections.singleton(node))) {
-                                break;
-                            }
+                            nodes.add(node);
                         }
                     }
                 } catch (DBException e) {
                     log.error(e);
                 }
+            }
+            if (!nodes.isEmpty()) {
+                listener.objectsFound(monitor, nodes);
             }
         } catch (Throwable ex) {
             if (ex instanceof InvocationTargetException) {

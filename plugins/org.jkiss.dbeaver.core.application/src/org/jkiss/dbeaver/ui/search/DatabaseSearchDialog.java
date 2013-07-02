@@ -20,6 +20,9 @@ package org.jkiss.dbeaver.ui.search;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
@@ -28,6 +31,10 @@ import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -39,20 +46,20 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 
 import java.util.List;
 
-public class SearchDatabaseObjectsDialog extends HelpEnabledDialog implements IObjectSearchContainer {
+public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSearchContainer {
 
-    static final Log log = LogFactory.getLog(SearchDatabaseObjectsDialog.class);
+    static final Log log = LogFactory.getLog(DatabaseSearchDialog.class);
 
     private static final int SEARCH_ID = 1000;
 
-    private volatile static SearchDatabaseObjectsDialog instance;
+    private volatile static DatabaseSearchDialog instance;
 
     private boolean searchEnabled = true;
     private Button searchButton;
     private TabFolder providersFolder;
 
 
-    private SearchDatabaseObjectsDialog(Shell shell, DBSDataSourceContainer currentDataSource)
+    private DatabaseSearchDialog(Shell shell, DBSDataSourceContainer currentDataSource)
     {
         super(shell, IHelpContextIds.CTX_SQL_EDITOR);
         setShellStyle(SWT.DIALOG_TRIM | SWT.MAX | SWT.RESIZE | getDefaultOrientation());
@@ -154,11 +161,53 @@ public class SearchDatabaseObjectsDialog extends HelpEnabledDialog implements IO
         ObjectSearchProvider provider = (ObjectSearchProvider) selectedItem.getData("provider");
         IObjectSearchPage page = (IObjectSearchPage) selectedItem.getData("page");
 
+        IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        DatabaseSearchView resultsView;
         try {
-            IObjectSearchQuery query = page.createQuery();
-        } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), "Search", "Search error", e);
+            resultsView = (DatabaseSearchView)activePage.showView(DatabaseSearchView.VIEW_ID);
+            activePage.bringToTop(resultsView);
+        } catch (PartInitException e) {
+            UIUtils.showErrorDialog(getShell(), "Search", "Can't open search view", e);
+            return;
         }
+        IObjectSearchResultPage resultsPage;
+        try {
+            resultsPage = resultsView.openResultPage(provider, false);
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getShell(), "Search", "Can't open search results page", e);
+            return;
+        }
+        IObjectSearchQuery query;
+        try {
+            query = page.createQuery();
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getShell(), "Search", "Can't create search query", e);
+            return;
+        }
+
+        // Run search job
+        setSearchEnabled(false);
+        final ControlEnableState disableState = ControlEnableState.disable(providersFolder);
+        DatabaseSearchJob job = new DatabaseSearchJob(query, resultsPage);
+
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event)
+            {
+                UIUtils.runInUI(getShell(), new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        if (!providersFolder.isDisposed()) {
+                            setSearchEnabled(true);
+                            disableState.restore();
+                        }
+                    }
+                });
+            }
+        });
+
+        job.schedule();
     }
 
     public static void open(Shell shell, DBSDataSourceContainer currentDataSource)
@@ -171,7 +220,7 @@ public class SearchDatabaseObjectsDialog extends HelpEnabledDialog implements IO
             instance.getShell().setActive();
             return;
         }
-        SearchDatabaseObjectsDialog dialog = new SearchDatabaseObjectsDialog(shell, currentDataSource);
+        DatabaseSearchDialog dialog = new DatabaseSearchDialog(shell, currentDataSource);
         instance = dialog;
         try {
             dialog.open();

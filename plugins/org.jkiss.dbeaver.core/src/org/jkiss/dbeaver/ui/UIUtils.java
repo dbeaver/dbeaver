@@ -217,7 +217,11 @@ public class UIUtils {
                 }
             }
             if (fit && totalWidth < clientArea.width) {
-                float extraSpace = (clientArea.width - totalWidth) / columns.length;
+                int sbWidth = 0;
+                if (table.getVerticalBar() != null) {
+                    sbWidth = table.getVerticalBar().getSize().x;
+                }
+                float extraSpace = (clientArea.width - totalWidth - sbWidth) / columns.length;
                 for (TableColumn tc : columns) {
                     tc.setWidth((int) (tc.getWidth() + extraSpace));
                 }
