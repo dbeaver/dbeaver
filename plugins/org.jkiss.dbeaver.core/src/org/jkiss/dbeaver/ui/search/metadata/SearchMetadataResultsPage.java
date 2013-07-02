@@ -41,12 +41,13 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
+import org.jkiss.dbeaver.ui.search.IObjectSearchResultPage;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class SearchMetadataResultsPage extends Page {
+public class SearchMetadataResultsPage extends Page implements IObjectSearchResultPage {
 
     static final Log log = LogFactory.getLog(SearchMetadataResultsPage.class);
     private IPageSite pageSite;
@@ -54,116 +55,123 @@ public class SearchMetadataResultsPage extends Page {
     private IActionBars actionBars;
 
     @Override
-	public IPageSite getSite() {
-		return pageSite;
-	}
-
-	@Override
-	public void init(IPageSite site) {
-        this.pageSite = pageSite;
-	}
-
-	@Override
-	public void createControl(Composite parent) {
-        {
-            itemList = new SearchResultsControl(parent);
-            itemList.createProgressPanel();
-            itemList.setInfo(CoreMessages.dialog_search_objects_item_list_info);
-            GridData gd = new GridData(GridData.FILL_BOTH);
-            itemList.setLayoutData(gd);
-            //itemList.addFocusListener(new ItemsFocusListener());
-        }
+    public IPageSite getSite()
+    {
+        return pageSite;
     }
 
-	@Override
-	public void dispose() {
+    @Override
+    public void init(IPageSite site)
+    {
+        this.pageSite = site;
+    }
 
-	}
+    @Override
+    public void createControl(Composite parent)
+    {
+        itemList = new SearchResultsControl(parent);
+        itemList.createProgressPanel();
+        itemList.setInfo(CoreMessages.dialog_search_objects_item_list_info);
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        itemList.setLayoutData(gd);
+        //itemList.addFocusListener(new ItemsFocusListener());
+    }
 
-	@Override
-	public Control getControl() {
-		return itemList;
-	}
+    @Override
+    public void dispose()
+    {
 
-	@Override
-	public void setActionBars(IActionBars actionBars) {
+    }
+
+    @Override
+    public Control getControl()
+    {
+        return itemList;
+    }
+
+    @Override
+    public void setActionBars(IActionBars actionBars)
+    {
         this.actionBars = actionBars;
-	}
+    }
 
-	@Override
-	public void setFocus() {
+    @Override
+    public void setFocus()
+    {
         itemList.setFocus();
-	}
-        private class SearchResultsControl extends NodeListControl {
-            public SearchResultsControl(Composite resultsGroup)
-            {
-                super(resultsGroup, SWT.BORDER, null, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
-            }
+    }
 
-            @Override
-            protected void fillCustomToolbar(ToolBarManager toolbarManager) {
-            }
-
-            public ObjectsLoadVisualizer createVisualizer()
-            {
-                return new ObjectsLoadVisualizer() {
-                    @Override
-                    public void completeLoading(Collection<DBNNode> items)
-                    {
-                        super.completeLoading(items);
-                    }
-                };
-            }
-
-            @Override
-            protected LoadingJob<Collection<DBNNode>> createLoadService()
-            {
-                throw new UnsupportedOperationException();
-/*
-                DBNNode selectedNode = getSelectedNode();
-                DBSObjectContainer parentObject = null;
-                if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
-                    parentObject = (DBSObjectContainer) ((DBSWrapper)selectedNode).getObject();
-                }
-
-                DBPDataSource dataSource = getSelectedDataSource();
-                DBSStructureAssistant assistant = getSelectedStructureAssistant();
-                if (dataSource == null || assistant == null) {
-                    throw new IllegalStateException("No active datasource");
-                }
-                java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
-                for (TableItem item : typesTable.getItems()) {
-                    if (item.getChecked()) {
-                        objectTypes.add((DBSObjectType) item.getData());
-                    }
-                }
-                String objectNameMask = nameMask;
-
-                // Save search query
-                if (!searchHistory.contains(objectNameMask)) {
-                    searchHistory.add(objectNameMask);
-                    searchText.add(objectNameMask);
-                }
-
-                if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_STARTS_WITH) {
-                    if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
-                        objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
-                    }
-                } else if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_CONTAINS) {
-                    if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
-                        objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
-                    }
-                    if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
-                        objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
-                    }
-                }
-
-                return LoadingUtils.createService(
-                    new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, caseSensitive, maxResults),
-                    itemList.createVisualizer());
-*/
-            }
+    private class SearchResultsControl extends NodeListControl {
+        public SearchResultsControl(Composite resultsGroup)
+        {
+            super(resultsGroup, SWT.BORDER, null, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
         }
+
+        @Override
+        protected void fillCustomToolbar(ToolBarManager toolbarManager)
+        {
+        }
+
+        public ObjectsLoadVisualizer createVisualizer()
+        {
+            return new ObjectsLoadVisualizer() {
+                @Override
+                public void completeLoading(Collection<DBNNode> items)
+                {
+                    super.completeLoading(items);
+                }
+            };
+        }
+
+        @Override
+        protected LoadingJob<Collection<DBNNode>> createLoadService()
+        {
+            throw new UnsupportedOperationException();
+/*
+            DBNNode selectedNode = getSelectedNode();
+            DBSObjectContainer parentObject = null;
+            if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
+                parentObject = (DBSObjectContainer) ((DBSWrapper)selectedNode).getObject();
+            }
+
+            DBPDataSource dataSource = getSelectedDataSource();
+            DBSStructureAssistant assistant = getSelectedStructureAssistant();
+            if (dataSource == null || assistant == null) {
+                throw new IllegalStateException("No active datasource");
+            }
+            java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
+            for (TableItem item : typesTable.getItems()) {
+                if (item.getChecked()) {
+                    objectTypes.add((DBSObjectType) item.getData());
+                }
+            }
+            String objectNameMask = nameMask;
+
+            // Save search query
+            if (!searchHistory.contains(objectNameMask)) {
+                searchHistory.add(objectNameMask);
+                searchText.add(objectNameMask);
+            }
+
+            if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_STARTS_WITH) {
+                if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
+                    objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
+                }
+            } else if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_CONTAINS) {
+                if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
+                    objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
+                }
+                if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
+                    objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
+                }
+            }
+
+            return LoadingUtils.createService(
+                new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, caseSensitive, maxResults),
+                itemList.createVisualizer());
+*/
+        }
+    }
 
     private class ObjectSearchService extends DatabaseLoadService<Collection<DBNNode>> {
 
@@ -222,7 +230,7 @@ public class SearchMetadataResultsPage extends Page {
                 return nodes;
             } catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {
-                    throw (InvocationTargetException)ex;
+                    throw (InvocationTargetException) ex;
                 } else {
                     throw new InvocationTargetException(ex);
                 }
