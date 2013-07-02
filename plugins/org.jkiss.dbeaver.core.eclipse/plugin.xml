@@ -82,5 +82,25 @@
           <newWizardShortcut id="org.jkiss.dbeaver.core.wizard.new.project"/>
        </perspectiveExtension>
     </extension>
+    <extension
+          point="org.eclipse.search.searchPages">
+       <page
+             class="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataPageAdapter"
+             enabled="true"
+             icon="icons/metadata.png"
+             id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataPageAdapter"
+             label="Database Metadata">
+       </page>
+    </extension>
+    <extension
+          point="org.eclipse.search.searchResultViewPages">
+       <viewPage
+             class="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
+             icon="icons/metadata.png"
+             id="org.jkiss.dbeaver.core.eclipse.search.impl.metadata.SearchMetadataResultPageAdapter"
+             label="Database Metadata Search Result"
+             searchResultClass="org.jkiss.dbeaver.core.eclipse.search.SearchResultAdapter">
+       </viewPage>
+    </extension>
 
 </plugin>

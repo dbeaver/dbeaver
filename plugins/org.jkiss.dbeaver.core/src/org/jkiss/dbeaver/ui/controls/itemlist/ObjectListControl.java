@@ -803,7 +803,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         public ObjectPropertyDescriptor getProperty(Object element)
         {
-            return getPropertyByObject(this, element);
+            return element == null ? null : getPropertyByObject(this, element);
         }
     }
 
