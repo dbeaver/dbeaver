@@ -28,26 +28,16 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.part.Page;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.model.struct.DBSObjectType;
-import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
-import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.search.IObjectSearchResultPage;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 
-public class SearchMetadataResultsPage extends Page implements IObjectSearchResultPage {
+public class SearchMetadataResultsPage extends Page implements IObjectSearchResultPage<DBNNode> {
 
     static final Log log = LogFactory.getLog(SearchMetadataResultsPage.class);
     private IPageSite pageSite;
@@ -101,7 +91,19 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
         itemList.setFocus();
     }
 
-    private class SearchResultsControl extends NodeListControl {
+    @Override
+    public void populateObjects(DBRProgressMonitor monitor, Collection<DBNNode> objects)
+    {
+        itemList.appendListData(objects);
+    }
+
+    @Override
+    public void clearObjects()
+    {
+        itemList.clearListData();
+    }
+
+    private class SearchResultsControl extends ItemListControl {
         public SearchResultsControl(Composite resultsGroup)
         {
             super(resultsGroup, SWT.BORDER, null, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
@@ -110,131 +112,6 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
         @Override
         protected void fillCustomToolbar(ToolBarManager toolbarManager)
         {
-        }
-
-        public ObjectsLoadVisualizer createVisualizer()
-        {
-            return new ObjectsLoadVisualizer() {
-                @Override
-                public void completeLoading(Collection<DBNNode> items)
-                {
-                    super.completeLoading(items);
-                }
-            };
-        }
-
-        @Override
-        protected LoadingJob<Collection<DBNNode>> createLoadService()
-        {
-            throw new UnsupportedOperationException();
-/*
-            DBNNode selectedNode = getSelectedNode();
-            DBSObjectContainer parentObject = null;
-            if (selectedNode instanceof DBSWrapper && ((DBSWrapper)selectedNode).getObject() instanceof DBSObjectContainer) {
-                parentObject = (DBSObjectContainer) ((DBSWrapper)selectedNode).getObject();
-            }
-
-            DBPDataSource dataSource = getSelectedDataSource();
-            DBSStructureAssistant assistant = getSelectedStructureAssistant();
-            if (dataSource == null || assistant == null) {
-                throw new IllegalStateException("No active datasource");
-            }
-            java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
-            for (TableItem item : typesTable.getItems()) {
-                if (item.getChecked()) {
-                    objectTypes.add((DBSObjectType) item.getData());
-                }
-            }
-            String objectNameMask = nameMask;
-
-            // Save search query
-            if (!searchHistory.contains(objectNameMask)) {
-                searchHistory.add(objectNameMask);
-                searchText.add(objectNameMask);
-            }
-
-            if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_STARTS_WITH) {
-                if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
-                    objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
-                }
-            } else if (matchTypeIndex == SearchMetadataConstants.MATCH_INDEX_CONTAINS) {
-                if (!objectNameMask.startsWith("%")) { //$NON-NLS-1$
-                    objectNameMask = "%" + objectNameMask; //$NON-NLS-1$
-                }
-                if (!objectNameMask.endsWith("%")) { //$NON-NLS-1$
-                    objectNameMask = objectNameMask + "%"; //$NON-NLS-1$
-                }
-            }
-
-            return LoadingUtils.createService(
-                new ObjectSearchService(dataSource, assistant, parentObject, objectTypes, objectNameMask, caseSensitive, maxResults),
-                itemList.createVisualizer());
-*/
-        }
-    }
-
-    private class ObjectSearchService extends DatabaseLoadService<Collection<DBNNode>> {
-
-        private final DBSStructureAssistant structureAssistant;
-        private final DBSObject parentObject;
-        private final java.util.List<DBSObjectType> objectTypes;
-        private final String objectNameMask;
-        private final boolean caseSensitive;
-        private final int maxResults;
-
-        private ObjectSearchService(
-            DBPDataSource dataSource,
-            DBSStructureAssistant structureAssistant,
-            DBSObject parentObject,
-            java.util.List<DBSObjectType> objectTypes,
-            String objectNameMask,
-            boolean caseSensitive,
-            int maxResults)
-        {
-            super("Find objects", dataSource);
-            this.structureAssistant = structureAssistant;
-            this.parentObject = parentObject;
-            this.objectTypes = objectTypes;
-            this.objectNameMask = objectNameMask;
-            this.caseSensitive = caseSensitive;
-            this.maxResults = maxResults;
-        }
-
-        @Override
-        public Collection<DBNNode> evaluate()
-            throws InvocationTargetException, InterruptedException
-        {
-            try {
-                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                java.util.List<DBNNode> nodes = new ArrayList<DBNNode>();
-                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
-                    getProgressMonitor(),
-                    parentObject,
-                    objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
-                    objectNameMask,
-                    caseSensitive,
-                    maxResults);
-                for (DBSObjectReference reference : objects) {
-                    try {
-                        DBSObject object = reference.resolveObject(getProgressMonitor());
-                        if (object != null) {
-                            DBNNode node = navigatorModel.getNodeByObject(getProgressMonitor(), object, true);
-                            if (node != null) {
-                                nodes.add(node);
-                            }
-                        }
-                    } catch (DBException e) {
-                        log.error(e);
-                    }
-                }
-                return nodes;
-            } catch (Throwable ex) {
-                if (ex instanceof InvocationTargetException) {
-                    throw (InvocationTargetException) ex;
-                } else {
-                    throw new InvocationTargetException(ex);
-                }
-            }
         }
     }
 

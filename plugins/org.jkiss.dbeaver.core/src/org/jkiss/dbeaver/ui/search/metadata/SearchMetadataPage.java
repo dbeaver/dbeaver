@@ -106,6 +106,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
         Composite searchGroup = new Composite(parent, SWT.NONE);
         searchGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         searchGroup.setLayout(new GridLayout(3, false));
+        setControl(searchGroup);
         UIUtils.createControlLabel(searchGroup, CoreMessages.dialog_search_objects_label_object_name);
         searchText = new Combo(searchGroup, SWT.DROP_DOWN);
         searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
