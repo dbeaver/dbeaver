@@ -172,29 +172,40 @@ class ConnectionPageFinal extends ActiveWizardPage<ConnectionWizard> {
                 }
             }
         }
-        if (dataSourceDescriptor != null && !activated) {
-            connectionTypeCombo.select(dataSourceDescriptor.getConnectionInfo().getConnectionType());
-            savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
-            autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
-            showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
-            readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
-            isolationLevel.add("");
-            if (dataSourceDescriptor.isConnected()) {
-                isolationLevel.setEnabled(!autocommit.getSelection());
-                supportedLevels.clear();
-                DBPTransactionIsolation defaultLevel = dataSourceDescriptor.getDefaultTransactionsIsolation();
-                for (DBPTransactionIsolation level : dataSourceDescriptor.getDataSource().getInfo().getSupportedTransactionsIsolation()) {
-                    if (!level.isEnabled()) continue;
-                    isolationLevel.add(level.getTitle());
-                    supportedLevels.add(level);
-                    if (level.equals(defaultLevel)) {
-                        isolationLevel.select(isolationLevel.getItemCount() - 1);
+        if (dataSourceDescriptor != null) {
+            if (!activated) {
+                // Get settings from data source descriptor
+                connectionTypeCombo.select(dataSourceDescriptor.getConnectionInfo().getConnectionType());
+                savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
+                autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
+                showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
+                readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
+                isolationLevel.add("");
+                if (dataSourceDescriptor.isConnected()) {
+                    isolationLevel.setEnabled(!autocommit.getSelection());
+                    supportedLevels.clear();
+                    DBPTransactionIsolation defaultLevel = dataSourceDescriptor.getDefaultTransactionsIsolation();
+                    for (DBPTransactionIsolation level : dataSourceDescriptor.getDataSource().getInfo().getSupportedTransactionsIsolation()) {
+                        if (!level.isEnabled()) continue;
+                        isolationLevel.add(level.getTitle());
+                        supportedLevels.add(level);
+                        if (level.equals(defaultLevel)) {
+                            isolationLevel.select(isolationLevel.getItemCount() - 1);
+                        }
                     }
+                } else {
+                    isolationLevel.setEnabled(false);
                 }
-            } else {
-                isolationLevel.setEnabled(false);
+                activated = true;
             }
-            activated = true;
+        } else {
+            // Default settings
+            savePasswordCheck.setSelection(true);
+            connectionTypeCombo.select(0);
+            autocommit.setSelection(((DBPConnectionType)connectionTypeCombo.getData(0)).isAutocommit());
+            showSystemObjects.setSelection(true);
+            readOnlyConnection.setSelection(false);
+            isolationLevel.setEnabled(false);
         }
         if (savePasswordCheck != null) {
             //savePasswordCheck.setEnabled();
