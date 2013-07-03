@@ -24,7 +24,8 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.views.properties.IPropertyDescriptor;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -63,7 +64,7 @@ import java.util.Set;
 public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceProvider, INavigatorModelView, IDBNListener, IMenuListener {
     //static final Log log = LogFactory.getLog(NodeListControl.class);
 
-    private IWorkbenchPart workbenchPart;
+    private IWorkbenchSite workbenchSite;
     private DBNNode rootNode;
     private DBXTreeNode nodeMeta;
     private NodeSelectionProvider selectionProvider;
@@ -71,18 +72,18 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     public NodeListControl(
         Composite parent,
         int style,
-        final IWorkbenchPart workbenchPart,
+        final IWorkbenchSite workbenchSite,
         DBNNode rootNode,
         DBXTreeNode nodeMeta)
     {
         super(parent, style, createContentProvider(rootNode, nodeMeta));
-        this.workbenchPart = workbenchPart;
+        this.workbenchSite = workbenchSite;
         this.rootNode = rootNode;
         this.nodeMeta = nodeMeta;
         this.selectionProvider = new NodeSelectionProvider(super.getSelectionProvider());
 
         // Add context menu
-        NavigatorUtils.addContextMenu(workbenchPart, getSelectionProvider(), getItemsViewer().getControl(), this);
+        NavigatorUtils.addContextMenu(workbenchSite, getSelectionProvider(), getItemsViewer().getControl(), this);
 
         setDoubleClickHandler(new IDoubleClickListener() {
             @Override
@@ -96,8 +97,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 NavigatorHandlerObjectOpen.openEntityEditor(
                     (DBNDatabaseNode)dbmNode,
                     null,
-                    workbenchPart != null ?
-                        workbenchPart.getSite().getWorkbenchWindow() :
+                    workbenchSite != null ?
+                        workbenchSite.getWorkbenchWindow() :
                         DBeaverUI.getActiveWorkbenchWindow());
             }
         });
@@ -257,8 +258,8 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     @Override
     protected PropertySourceAbstract createListPropertySource()
     {
-        if (workbenchPart instanceof IDatabaseEditor) {
-            return new NodeListPropertySource(((IDatabaseEditor) workbenchPart).getEditorInput().getCommandContext());
+        if (workbenchSite instanceof IWorkbenchPartSite && ((IWorkbenchPartSite) workbenchSite).getPart() instanceof IDatabaseEditor) {
+            return new NodeListPropertySource(((IDatabaseEditor) ((IWorkbenchPartSite) workbenchSite).getPart()).getEditorInput().getCommandContext());
         } else {
             return super.createListPropertySource();
         }

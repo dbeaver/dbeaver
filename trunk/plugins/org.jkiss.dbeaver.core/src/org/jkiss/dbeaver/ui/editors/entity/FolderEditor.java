@@ -40,7 +40,7 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
     @Override
     public void createPartControl(Composite parent)
     {
-        itemControl = new ItemListControl(parent, SWT.NONE, this, getEditorInput().getTreeNode(), null);
+        itemControl = new ItemListControl(parent, SWT.NONE, this.getSite(), getEditorInput().getTreeNode(), null);
         itemControl.createProgressPanel();
         itemControl.loadData();
         getSite().setSelectionProvider(itemControl.getSelectionProvider());

@@ -36,13 +36,13 @@ public class CompositeSelectionProvider implements ISelectionProvider {
     private ISelectionProvider provider;
     private ISelection selection = StructuredSelection.EMPTY;
 
-    public void trackViewer(final Control control, final Viewer viewer)
+    public void trackProvider(final Control control, final ISelectionProvider selectionProvider)
     {
         control.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e)
             {
-                setProvider(viewer);
+                setProvider(selectionProvider);
             }
         });
     }

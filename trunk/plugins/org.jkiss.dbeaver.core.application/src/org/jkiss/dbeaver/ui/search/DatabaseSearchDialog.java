@@ -175,18 +175,18 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             UIUtils.showErrorDialog(getShell(), "Search", "Can't open search view", e);
             return;
         }
-        IObjectSearchResultPage resultsPage;
-        try {
-            resultsPage = resultsView.openResultPage(provider, false);
-        } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), "Search", "Can't open search results page", e);
-            return;
-        }
         IObjectSearchQuery query;
         try {
             query = page.createQuery();
         } catch (DBException e) {
             UIUtils.showErrorDialog(getShell(), "Search", "Can't create search query", e);
+            return;
+        }
+        IObjectSearchResultPage resultsPage;
+        try {
+            resultsPage = resultsView.openResultPage(provider, query, false);
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getShell(), "Search", "Can't open search results page", e);
             return;
         }
 

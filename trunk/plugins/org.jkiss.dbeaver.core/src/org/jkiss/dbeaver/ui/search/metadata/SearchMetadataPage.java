@@ -195,16 +195,15 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
                 }
             });
             dataSourceTree.getViewer().addSelectionChangedListener(
-                new ISelectionChangedListener()
-                {
+                new ISelectionChangedListener() {
                     @Override
                     public void selectionChanged(SelectionChangedEvent event)
                     {
-                        IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
+                        IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
                         for (Iterator<?> iter = structSel.iterator(); iter.hasNext(); ) {
                             Object object = iter.next();
                             if (object instanceof DBNDataSource) {
-                                DBNDataSource dsNode = (DBNDataSource)object;
+                                DBNDataSource dsNode = (DBNDataSource) object;
                                 dsNode.initializeNode(null, new DBRProcessListener() {
                                     @Override
                                     public void onProcessFinish(IStatus status)
@@ -334,6 +333,15 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
     public void setSearchContainer(IObjectSearchContainer container)
     {
         this.container = container;
+    }
+
+    @Override
+    public void setVisible(boolean visible)
+    {
+        super.setVisible(visible);
+        if (visible) {
+            updateEnablement();
+        }
     }
 
     @Override

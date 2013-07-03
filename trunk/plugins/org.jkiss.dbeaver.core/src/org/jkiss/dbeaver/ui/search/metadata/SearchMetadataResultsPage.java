@@ -21,15 +21,15 @@ package org.jkiss.dbeaver.ui.search.metadata;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.part.Page;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.ui.INavigatorModelView;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
@@ -37,24 +37,11 @@ import org.jkiss.dbeaver.ui.search.IObjectSearchResultPage;
 
 import java.util.Collection;
 
-public class SearchMetadataResultsPage extends Page implements IObjectSearchResultPage<DBNNode> {
+public class SearchMetadataResultsPage extends Page implements IObjectSearchResultPage<DBNNode>, INavigatorModelView {
 
     static final Log log = LogFactory.getLog(SearchMetadataResultsPage.class);
-    private IPageSite pageSite;
+
     private SearchResultsControl itemList;
-    private IActionBars actionBars;
-
-    @Override
-    public IPageSite getSite()
-    {
-        return pageSite;
-    }
-
-    @Override
-    public void init(IPageSite site)
-    {
-        this.pageSite = site;
-    }
 
     @Override
     public void createControl(Composite parent)
@@ -64,7 +51,8 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
         itemList.setInfo(CoreMessages.dialog_search_objects_item_list_info);
         itemList.setFitWidth(true);
         itemList.setLayoutData(new GridData(GridData.FILL_BOTH));
-        //itemList.addFocusListener(new ItemsFocusListener());
+
+        getSite().setSelectionProvider(itemList.getSelectionProvider());
     }
 
     @Override
@@ -77,12 +65,6 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
     public Control getControl()
     {
         return itemList;
-    }
-
-    @Override
-    public void setActionBars(IActionBars actionBars)
-    {
-        this.actionBars = actionBars;
     }
 
     @Override
@@ -107,10 +89,22 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
         itemList.clearListData();
     }
 
+    @Override
+    public DBNNode getRootNode()
+    {
+        return itemList.getRootNode();
+    }
+
+    @Override
+    public Viewer getNavigatorViewer()
+    {
+        return itemList.getNavigatorViewer();
+    }
+
     private class SearchResultsControl extends ItemListControl {
         public SearchResultsControl(Composite resultsGroup)
         {
-            super(resultsGroup, SWT.SHEET, null, DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
+            super(resultsGroup, SWT.SHEET, getSite(), DBeaverCore.getInstance().getNavigatorModel().getRoot(), null);
         }
 
         @Override
@@ -118,5 +112,4 @@ public class SearchMetadataResultsPage extends Page implements IObjectSearchResu
         {
         }
     }
-
 }
