@@ -240,13 +240,13 @@ public class DBeaverCore implements DBPApplication {
                 description.setName(TEMP_PROJECT_NAME);
                 description.setComment("Project for DBeaver temporary content");
                 try {
-                    tempProject.create(description, monitor);
+                    tempProject.create(description, IProject.HIDDEN, monitor);
                 } catch (CoreException e) {
                     log.error("Can't create temp project", e);
                 }
 
                 tempProject.open(monitor);
-                tempProject.setHidden(true);
+                //tempProject.setHidden(true);
             } catch (CoreException e) {
                 log.error("Cannot open temp project", e); //$NON-NLS-1$
             }
