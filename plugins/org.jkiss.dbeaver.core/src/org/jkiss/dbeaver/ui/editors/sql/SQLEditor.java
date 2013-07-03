@@ -352,8 +352,8 @@ public class SQLEditor extends SQLEditorBase
         item.setImage(imgLog);
         item.setData(logViewer);
 
-        selectionProvider.trackViewer(getTextViewer().getTextWidget(), getTextViewer());
-        selectionProvider.trackViewer(planView.getViewer().getControl(), planView.getViewer());
+        selectionProvider.trackProvider(getTextViewer().getTextWidget(), getTextViewer());
+        selectionProvider.trackProvider(planView.getViewer().getControl(), planView.getViewer());
     }
 
     private void toggleEditorMaximize()
@@ -375,7 +375,7 @@ public class SQLEditor extends SQLEditorBase
 
         final ResultSetViewer resultsView = new ResultSetViewer(resultTabs, getSite(), dataContainer);
 
-        selectionProvider.trackViewer(resultsView.getSpreadsheet(), resultsView);
+        selectionProvider.trackProvider(resultsView.getSpreadsheet(), resultsView);
 
         // Find/replace target activation
         resultsView.getSpreadsheet().addFocusListener(new FocusAdapter() {

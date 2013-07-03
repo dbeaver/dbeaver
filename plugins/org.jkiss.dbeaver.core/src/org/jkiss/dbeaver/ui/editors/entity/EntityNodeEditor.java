@@ -89,11 +89,11 @@ class EntityNodeEditor extends EditorPart implements IRefreshablePart, INavigato
     @Override
     public void createPartControl(Composite parent)
     {
-        itemControl = new ItemListControl(parent, SWT.NONE, this, node, metaNode);
+        itemControl = new ItemListControl(parent, SWT.NONE, this.getSite(), node, metaNode);
         itemControl.createProgressPanel();
 
         // Hook context menu
-        NavigatorUtils.addContextMenu(this, itemControl.getSelectionProvider(), itemControl);
+        NavigatorUtils.addContextMenu(this.getSite(), itemControl.getSelectionProvider(), itemControl);
         // Add drag and drop support
         NavigatorUtils.addDragAndDropSupport(itemControl.getNavigatorViewer());
         //ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
