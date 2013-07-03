@@ -1397,7 +1397,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             });
             final List<GridColumn> selectedColumns = getSpreadsheet().getSelectedColumns();
-            if (!selectedColumns.isEmpty()) {
+            if (getGridMode() == GridMode.GRID && !selectedColumns.isEmpty()) {
                 MenuManager columnsMenu = new MenuManager(
                     "Columns",
                     DBIcon.TREE_COLUMNS.getImageDescriptor(),
