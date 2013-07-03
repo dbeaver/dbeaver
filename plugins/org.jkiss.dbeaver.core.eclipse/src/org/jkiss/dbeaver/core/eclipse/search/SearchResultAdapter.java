@@ -1,9 +1,9 @@
 package org.jkiss.dbeaver.core.eclipse.search;
 
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.ISearchResultListener;
+import org.eclipse.search.ui.SearchResultEvent;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +15,7 @@ import java.util.List;
 public class SearchResultAdapter implements ISearchResult {
 
     private final SearchQueryAdapter queryAdapter;
+    private final List<ISearchResultListener> listeners = new ArrayList<ISearchResultListener>();
     private final List<Object> objects = new ArrayList<Object>();
 
     public SearchResultAdapter(SearchQueryAdapter queryAdapter)
@@ -25,13 +26,13 @@ public class SearchResultAdapter implements ISearchResult {
     @Override
     public void addListener(ISearchResultListener l)
     {
-
+        listeners.add(l);
     }
 
     @Override
     public void removeListener(ISearchResultListener l)
     {
-
+        listeners.remove(l);
     }
 
     @Override
@@ -66,6 +67,18 @@ public class SearchResultAdapter implements ISearchResult {
     public void addObjects(Collection<?> objects)
     {
         this.objects.addAll(objects);
+
+        // Fire changes event
+        SearchResultEvent event = new DatabaseSearchResultEvent();
+        for (ISearchResultListener listener : listeners) {
+            listener.searchResultChanged(event);
+        }
     }
 
+    private class DatabaseSearchResultEvent extends SearchResultEvent {
+        public DatabaseSearchResultEvent()
+        {
+            super(SearchResultAdapter.this);
+        }
+    }
 }
