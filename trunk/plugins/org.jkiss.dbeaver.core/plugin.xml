@@ -90,7 +90,7 @@
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorPropertyTester"
                 namespace="org.jkiss.dbeaver.ui.editors.sql"
-                properties="active,canExecute,canExplain,canNavigate,canValidate,canExport,canGenerate"
+                properties="active,canExecute,canExplain,canNavigate,canValidate,canExport"
                 type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
