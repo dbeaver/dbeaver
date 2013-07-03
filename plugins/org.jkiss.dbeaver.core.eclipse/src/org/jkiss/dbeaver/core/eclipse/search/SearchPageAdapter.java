@@ -7,6 +7,7 @@ import org.eclipse.search.ui.NewSearchUI;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.search.IObjectSearchContainer;
 import org.jkiss.dbeaver.ui.search.IObjectSearchPage;
@@ -28,6 +29,8 @@ public class SearchPageAdapter implements ISearchPage {
     public boolean performAction()
     {
         try {
+            source.saveState(DBeaverCore.getGlobalPreferenceStore());
+
             NewSearchUI.runQueryInBackground(new SearchQueryAdapter(source.createQuery()));
         } catch (Exception e) {
             UIUtils.showErrorDialog(getControl().getShell(),
@@ -54,6 +57,7 @@ public class SearchPageAdapter implements ISearchPage {
     @Override
     public void createControl(Composite parent)
     {
+        source.loadState(DBeaverCore.getGlobalPreferenceStore());
         source.createControl(parent);
     }
 

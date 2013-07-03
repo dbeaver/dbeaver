@@ -82,7 +82,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
         initializeDialogUnits(parent);
 
         Composite searchGroup = new Composite(parent, SWT.NONE);
-        searchGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        searchGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         searchGroup.setLayout(new GridLayout(3, false));
         setControl(searchGroup);
         UIUtils.createControlLabel(searchGroup, CoreMessages.dialog_search_objects_label_object_name);
@@ -170,7 +170,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             sourceGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             final DBNProject projectNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
             DBNNode rootNode = projectNode == null ? core.getNavigatorModel().getRoot() : projectNode.getDatabases();
-            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE | SWT.BORDER);
+            dataSourceTree = new DatabaseNavigatorTree(sourceGroup, rootNode, SWT.SINGLE);
             dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             dataSourceTree.getViewer().addFilter(new ViewerFilter() {
@@ -230,7 +230,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
         {
             Group typesGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_search_objects_group_object_types, 1, GridData.FILL_BOTH, 0);
             typesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            typesTable = new Table(typesGroup, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
+            typesTable = new Table(typesGroup, SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
             typesTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
