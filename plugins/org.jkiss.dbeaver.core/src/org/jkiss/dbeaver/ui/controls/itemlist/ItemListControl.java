@@ -25,6 +25,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.ext.ui.ISearchExecutor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -60,11 +61,11 @@ public class ItemListControl extends NodeListControl
     public ItemListControl(
         Composite parent,
         int style,
-        final IWorkbenchPart workbenchPart,
+        final IWorkbenchSite workbenchSite,
         DBNNode node,
         DBXTreeNode metaNode)
     {
-        super(parent, style, workbenchPart, node, metaNode);
+        super(parent, style, workbenchSite, node, metaNode);
 
         this.searcher = new Searcher();
         this.searchHighlightColor = new Color(parent.getDisplay(), 170, 255, 170);

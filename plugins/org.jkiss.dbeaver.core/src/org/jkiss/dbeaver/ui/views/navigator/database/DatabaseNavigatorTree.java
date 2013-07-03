@@ -115,6 +115,12 @@ public class DatabaseNavigatorTree extends Composite implements IDBNListener
         initEditor();
     }
 
+    public DBNNode getModel()
+    {
+        DatabaseNavigatorContent content = (DatabaseNavigatorContent) this.viewer.getInput();
+        return content.getRootNode();
+    }
+
     private void initEditor()
     {
         Tree treeControl = this.viewer.getTree();

@@ -30,11 +30,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -114,12 +113,22 @@ public class NavigatorUtils {
         }
     }
 
-    public static void addContextMenu(final IWorkbenchPart workbenchPart, final ISelectionProvider selectionProvider, final Control control)
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control)
     {
-        addContextMenu(workbenchPart, selectionProvider, control, null);
+        addContextMenu(workbenchSite, selectionProvider, control, null);
     }
 
-    public static void addContextMenu(final IWorkbenchPart workbenchPart, final ISelectionProvider selectionProvider, final Control control, final IMenuListener menuListener)
+    public static void addContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control, final IMenuListener menuListener)
+    {
+        MenuManager menuMgr = createContextMenu(workbenchSite, selectionProvider, control, menuListener);
+        if (workbenchSite instanceof IWorkbenchPartSite) {
+            ((IWorkbenchPartSite)workbenchSite).registerContextMenu(menuMgr, selectionProvider);
+        } else if (workbenchSite instanceof IPageSite) {
+            ((IPageSite)workbenchSite).registerContextMenu("navigatorMenu", menuMgr, selectionProvider);
+        }
+    }
+
+    public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control, IMenuListener menuListener)
     {
         MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
@@ -172,11 +181,11 @@ public class NavigatorUtils {
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
                 manager.add(new GroupMarker(MB_NAVIGATOR_ADDITIONS));
 
-                if (workbenchPart != null) {
+                if (workbenchSite != null) {
                     // Add "Set active object" menu
                     if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
                         final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                                DBSObjectSelector.class, ((DBNDatabaseNode) selectedNode).getObject());
+                            DBSObjectSelector.class, ((DBNDatabaseNode) selectedNode).getObject());
                         if (activeContainer != null && activeContainer.supportsObjectSelect()) {
                             DBSObject activeChild;
                             activeChild = activeContainer.getSelectedObject();
@@ -184,7 +193,7 @@ public class NavigatorUtils {
                                 DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                                 if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
                                     String text = "Set Active ";// + databaseNode.getNodeType();
-                                    IAction action = ActionUtils.makeAction(new NavigatorActionSetActiveObject(), workbenchPart, selection, text, null, null);
+                                    IAction action = ActionUtils.makeAction(new NavigatorActionSetActiveObject(), workbenchSite, selection, text, null, null);
 
                                     manager.add(action);
                                 }
@@ -197,8 +206,8 @@ public class NavigatorUtils {
                 manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 
                 IServiceLocator serviceLocator;
-                if (workbenchPart != null) {
-                    serviceLocator = workbenchPart.getSite();
+                if (workbenchSite != null) {
+                    serviceLocator = workbenchSite;
                 } else {
                     serviceLocator = DBeaverUI.getActiveWorkbenchWindow();
                 }
@@ -223,9 +232,7 @@ public class NavigatorUtils {
 
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
-        if (workbenchPart != null) {
-            workbenchPart.getSite().registerContextMenu(menuMgr, selectionProvider);
-        }
+        return menuMgr;
     }
 
     public static void addDragAndDropSupport(final Viewer viewer)

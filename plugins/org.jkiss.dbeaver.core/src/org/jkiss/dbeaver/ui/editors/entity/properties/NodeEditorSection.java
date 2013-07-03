@@ -130,7 +130,7 @@ class NodeEditorSection implements ISection, ISearchContextProvider, IRefreshabl
             return;
         }
 
-        itemControl = new ItemListControl(parent, SWT.SHEET, editor, node, metaNode);
+        itemControl = new ItemListControl(parent, SWT.SHEET, editor.getSite(), node, metaNode);
         //itemControl.getLayout().marginHeight = 0;
         //itemControl.getLayout().marginWidth = 0;
         ProgressPageControl progressControl = null;

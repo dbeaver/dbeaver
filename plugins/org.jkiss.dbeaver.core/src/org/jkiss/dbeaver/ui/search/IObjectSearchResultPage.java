@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.eclipse.ui.part.IPage;
+import org.eclipse.ui.part.IPageBookViewPage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
@@ -26,7 +26,7 @@ import java.util.Collection;
 /**
  * Search results page
  */
-public interface IObjectSearchResultPage<RESULT_TYPE> extends IPage {
+public interface IObjectSearchResultPage<RESULT_TYPE> extends IPageBookViewPage {
 
     void populateObjects(DBRProgressMonitor monitor, Collection<RESULT_TYPE> objects);
 

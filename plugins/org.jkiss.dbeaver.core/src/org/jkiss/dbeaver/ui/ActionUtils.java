@@ -148,7 +148,7 @@ public class ActionUtils
         }
     }
 
-    public static IAction makeAction(final IActionDelegate actionDelegate, IWorkbenchPart part, ISelection selection, String text, ImageDescriptor image, String toolTip)
+    public static IAction makeAction(final IActionDelegate actionDelegate, IWorkbenchSite site, ISelection selection, String text, ImageDescriptor image, String toolTip)
     {
         Action actionImpl = new Action() {
             @Override
@@ -168,11 +168,11 @@ public class ActionUtils
 
         actionDelegate.selectionChanged(actionImpl, selection);
 
-        if (part != null) {
-            if (actionDelegate instanceof IObjectActionDelegate) {
-                ((IObjectActionDelegate)actionDelegate).setActivePart(actionImpl, part);
+        if (site != null) {
+            if (actionDelegate instanceof IObjectActionDelegate && site instanceof IWorkbenchPartSite) {
+                ((IObjectActionDelegate)actionDelegate).setActivePart(actionImpl, ((IWorkbenchPartSite) site).getPart());
             } else if (actionDelegate instanceof IWorkbenchWindowActionDelegate) {
-                ((IWorkbenchWindowActionDelegate)actionDelegate).init(part.getSite().getWorkbenchWindow());
+                ((IWorkbenchWindowActionDelegate)actionDelegate).init(site.getWorkbenchWindow());
             }
         }
 

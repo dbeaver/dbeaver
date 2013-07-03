@@ -75,7 +75,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                     for (DataSourceToolDescriptor tool : tools) {
                         IAction action = ActionUtils.makeAction(
                             new NavigatorActionExecuteTool(workbenchWindow, tool),
-                            activePart,
+                            activePart.getSite(),
                             selection,
                             tool.getLabel(),
                             tool.getIcon() == null ? null : ImageDescriptor.createFromImage(tool.getIcon()),
