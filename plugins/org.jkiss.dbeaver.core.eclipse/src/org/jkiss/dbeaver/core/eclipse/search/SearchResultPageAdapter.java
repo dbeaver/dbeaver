@@ -62,6 +62,9 @@ public class SearchResultPageAdapter implements ISearchResultPage {
         if (this.searchResult != null) {
             this.searchResult.addListener(this.resultListener);
         }
+        if (this.searchResult == null) {
+            source.clearObjects();
+        }
     }
 
     @Override
@@ -97,7 +100,7 @@ public class SearchResultPageAdapter implements ISearchResultPage {
     @Override
     public String getLabel()
     {
-        return searchResult.getLabel();
+        return searchResult == null ? "" : searchResult.getLabel();
     }
 
     @Override
