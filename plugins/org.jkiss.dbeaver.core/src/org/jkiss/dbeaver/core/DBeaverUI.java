@@ -1,5 +1,7 @@
 package org.jkiss.dbeaver.core;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -29,15 +31,20 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class DBeaverUI {
 
+    static final Log log = LogFactory.getLog(DBeaverUI.class);
+
     private static DBeaverUI instance;
 
     private SharedTextColors sharedTextColors;
     private TrayIconHandler trayItem;
 
-    static void initializeUI()
+    public static DBeaverUI getInstance()
     {
-        instance = new DBeaverUI();
-        instance.initialize();
+        if (instance == null) {
+            instance = new DBeaverUI();
+            instance.initialize();
+        }
+        return instance;
     }
 
     static void disposeUI()
@@ -49,7 +56,7 @@ public class DBeaverUI {
 
     public static ISharedTextColors getSharedTextColors()
     {
-        return instance.sharedTextColors;
+        return getInstance().sharedTextColors;
     }
 
     private void dispose()
@@ -188,7 +195,7 @@ public class DBeaverUI {
                 }
             }, DBeaverActivator.getWorkspace().getRoot());
         } catch (InvocationTargetException e) {
-            DBeaverCore.log.error(e.getTargetException());
+            log.error(e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
@@ -200,7 +207,7 @@ public class DBeaverUI {
             // Notifications disabled
             return;
         }
-        instance.trayItem.notify(message, status);
+        getInstance().trayItem.notify(message, status);
     }
 
 }
