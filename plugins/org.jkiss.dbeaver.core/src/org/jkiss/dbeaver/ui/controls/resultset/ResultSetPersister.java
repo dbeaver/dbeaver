@@ -273,43 +273,45 @@ class ResultSetPersister {
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
+            final Throwable error;
             model.setUpdateInProgress(true);
             try {
-                final Throwable error = executeStatements(monitor);
-
-                UIUtils.runInUI(viewer.getSite().getShell(), new Runnable() {
-                    @Override
-                    public void run()
-                    {
-                        boolean rowsChanged = false;
-                        if (DataUpdaterJob.this.autocommit || error == null) {
-                            rowsChanged = reflectChanges();
-                        }
-                        if (!viewer.getControl().isDisposed()) {
-                            //releaseStatements();
-                            viewer.refreshSpreadsheet(rowsChanged);
-                            viewer.updateEditControls();
-                            if (error == null) {
-                                viewer.setStatus(
-                                    NLS.bind(
-                                        CoreMessages.controls_resultset_viewer_status_inserted_,
-                                        new Object[]{DataUpdaterJob.this.insertCount, DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}));
-                            } else {
-                                UIUtils.showErrorDialog(viewer.getSite().getShell(), "Data error", "Error synchronizing data with database", error);
-                                viewer.setStatus(error.getMessage(), true);
-                            }
-                        }
-                        viewer.fireResultSetChange();
-                    }
-                });
-                if (this.listener != null) {
-                    this.listener.onUpdate(error == null);
-                }
-
+                error = executeStatements(monitor);
             }
             finally {
                 model.setUpdateInProgress(false);
             }
+
+            // Reflect changes
+            UIUtils.runInUI(viewer.getSite().getShell(), new Runnable() {
+                @Override
+                public void run()
+                {
+                    boolean rowsChanged = false;
+                    if (DataUpdaterJob.this.autocommit || error == null) {
+                        rowsChanged = reflectChanges();
+                    }
+                    if (!viewer.getControl().isDisposed()) {
+                        //releaseStatements();
+                        viewer.refreshSpreadsheet(rowsChanged);
+                        viewer.updateEditControls();
+                        if (error == null) {
+                            viewer.setStatus(
+                                NLS.bind(
+                                    CoreMessages.controls_resultset_viewer_status_inserted_,
+                                    new Object[]{DataUpdaterJob.this.insertCount, DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}));
+                        } else {
+                            UIUtils.showErrorDialog(viewer.getSite().getShell(), "Data error", "Error synchronizing data with database", error);
+                            viewer.setStatus(error.getMessage(), true);
+                        }
+                    }
+                    viewer.fireResultSetChange();
+                }
+            });
+            if (this.listener != null) {
+                this.listener.onUpdate(error == null);
+            }
+
             return Status.OK_STATUS;
         }
 
