@@ -178,7 +178,7 @@ public class DBeaverCore implements DBPApplication {
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
 
-        DBeaverUI.initializeUI();
+        DBeaverUI.getInstance();
 
         IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
