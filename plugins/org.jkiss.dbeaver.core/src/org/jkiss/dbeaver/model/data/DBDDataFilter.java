@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.query.DBQCondition;
-import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
+import org.jkiss.dbeaver.model.data.query.DBQOrder;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -34,36 +34,37 @@ import java.util.List;
  */
 public class DBDDataFilter {
 
-    private List<DBQOrderColumn> orderColumns = new ArrayList<DBQOrderColumn>();
-    private List<DBQCondition> filters = new ArrayList<DBQCondition>();
+    private final List<DBQAttributeConstraint> constraints;
     private String order;
     private String where;
 
-    public DBDDataFilter()
+    public DBDDataFilter(DBDAttributeBinding[] attributes)
     {
+        constraints = new ArrayList<DBQAttributeConstraint>(attributes.length);
+        for (DBDAttributeBinding binding : attributes) {
+            constraints.add(new DBQAttributeConstraint(binding));
+        }
     }
 
     public DBDDataFilter(DBDDataFilter source)
     {
-        for (DBQOrderColumn column : source.orderColumns) {
-            orderColumns.add(new DBQOrderColumn(column));
-        }
-        for (DBQCondition column : source.filters) {
-            filters.add(new DBQCondition(column));
+        constraints = new ArrayList<DBQAttributeConstraint>(source.constraints.size());
+        for (DBQAttributeConstraint column : source.constraints) {
+            constraints.add(new DBQAttributeConstraint(column));
         }
         this.order = source.order;
         this.where = source.where;
     }
 
-    public Collection<DBQOrderColumn> getOrderColumns()
+    public Collection<DBQAttributeConstraint> getConstraints()
     {
-        return orderColumns;
+        return constraints;
     }
 
-    public DBQOrderColumn getOrderColumn(String columnName)
+    public DBQAttributeConstraint getConstraint(DBDAttributeBinding binding)
     {
-        for (DBQOrderColumn co : orderColumns) {
-            if (co.getColumnName().equals(columnName)) {
+        for (DBQAttributeConstraint co : constraints) {
+            if (co.getAttribute() == binding) {
                 return co;
             }
         }
@@ -72,58 +73,13 @@ public class DBDDataFilter {
 
     public int getOrderColumnIndex(String columnName)
     {
-        for (int i = 0, orderColumnsSize = orderColumns.size(); i < orderColumnsSize; i++) {
-            DBQOrderColumn co = orderColumns.get(i);
-            if (co.getColumnName().equals(columnName)) {
+        for (int i = 0, orderColumnsSize = constraints.size(); i < orderColumnsSize; i++) {
+            DBQAttributeConstraint co = constraints.get(i);
+            if (co.getAttribute().getAttributeName().equals(columnName)) {
                 return i;
             }
         }
         return -1;
-    }
-
-    public void addOrderColumn(DBQOrderColumn columnOrder)
-    {
-        orderColumns.add(columnOrder);
-    }
-
-    public boolean removeOrderColumn(DBQOrderColumn columnOrder)
-    {
-        return orderColumns.remove(columnOrder);
-    }
-
-    public void clearOrderColumns()
-    {
-        orderColumns.clear();
-    }
-
-    public List<DBQCondition> getFilters()
-    {
-        return filters;
-    }
-
-    public DBQCondition getFilterColumn(String columnName)
-    {
-        for (DBQCondition co : filters) {
-            if (co.getColumnName().equals(columnName)) {
-                return co;
-            }
-        }
-        return null;
-    }
-
-    public void addFilterColumn(DBQCondition columnFilter)
-    {
-        filters.add(columnFilter);
-    }
-
-    public boolean removeFilterColumn(DBQCondition columnFilter)
-    {
-        return filters.remove(columnFilter);
-    }
-
-    public void clearFilterColumns()
-    {
-        filters.clear();
     }
 
     public String getOrder()
@@ -146,14 +102,43 @@ public class DBDDataFilter {
         this.where = where;
     }
 
-    public boolean hasCustomFilters()
+    public boolean hasFilters()
     {
-        return !filters.isEmpty() || !CommonUtils.isEmpty(this.order) || !CommonUtils.isEmpty(this.where);
+        if (!CommonUtils.isEmpty(this.order) || !CommonUtils.isEmpty(this.where)) {
+            return true;
+        }
+        for (DBQAttributeConstraint constraint : constraints) {
+            if (constraint.hasFilter()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean hasConditions()
     {
-        return !CommonUtils.isEmpty(getFilters()) || !CommonUtils.isEmpty(where);
+        if (!CommonUtils.isEmpty(where)) {
+            return true;
+        }
+        for (DBQAttributeConstraint constraint : constraints) {
+            if (!CommonUtils.isEmpty(constraint.getCriteria())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasOrdering()
+    {
+        if (!CommonUtils.isEmpty(order)) {
+            return true;
+        }
+        for (DBQAttributeConstraint constraint : constraints) {
+            if (constraint.getOrderBy() != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void appendConditionString(DBPDataSource dataSource, StringBuilder query)
@@ -164,27 +149,69 @@ public class DBDDataFilter {
     public void appendConditionString(DBPDataSource dataSource, String conditionTable, StringBuilder query)
     {
         boolean hasWhere = false;
-        if (!CommonUtils.isEmpty(getFilters())) {
-            for (DBQCondition filter : getFilters()) {
-                if (hasWhere) query.append(" AND "); //$NON-NLS-1$
-                hasWhere = true;
+        for (DBQAttributeConstraint constraint : constraints) {
+            String criteria = constraint.getCriteria();
+            if (CommonUtils.isEmpty(criteria)) {
+                continue;
+            }
+            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
+            hasWhere = true;
+            if (conditionTable != null) {
+                query.append(conditionTable).append('.');
+            }
+            query.append(DBUtils.getQuotedIdentifier(dataSource, constraint.getAttribute().getAttributeName()));
+            final char firstChar = criteria.trim().charAt(0);
+            if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
+                query.append('=').append(criteria);
+            } else {
+                query.append(' ').append(criteria);
+            }
+        }
+
+        if (!CommonUtils.isEmpty(where)) {
+            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
+            query.append(where);
+        }
+    }
+
+    public void appendOrderString(DBPDataSource dataSource, String conditionTable, StringBuilder query)
+    {
+            // Construct ORDER BY
+        boolean hasOrder = false;
+        for (DBQAttributeConstraint co : getConstraints()) {
+            if (co.getOrderBy() != null) {
+                if (hasOrder) query.append(',');
                 if (conditionTable != null) {
                     query.append(conditionTable).append('.');
                 }
-                query.append(DBUtils.getQuotedIdentifier(dataSource, filter.getColumnName()));
-                final String condition = filter.getCondition();
-                final char firstChar = condition.trim().charAt(0);
-                if (!Character.isLetter(firstChar) && firstChar != '=' && firstChar != '>' && firstChar != '<' && firstChar != '!') {
-                    query.append('=').append(condition);
-                } else {
-                    query.append(' ').append(condition);
+                query.append(DBUtils.getQuotedIdentifier(dataSource, co.getAttribute().getAttributeName()));
+                if (co.getOrderBy() == DBQOrder.DESCENDING) {
+                    query.append(" DESC"); //$NON-NLS-1$
                 }
+                hasOrder = true;
             }
         }
-        if (!CommonUtils.isEmpty(getWhere())) {
-            if (hasWhere) query.append(" AND "); //$NON-NLS-1$
-            query.append(getWhere());
+        if (!CommonUtils.isEmpty(order)) {
+            if (hasOrder) query.append(',');
+            query.append(order);
         }
+    }
+
+    public void resetOrderBy()
+    {
+        this.order = null;
+        for (DBQAttributeConstraint constraint : constraints) {
+            constraint.setOrderBy(null);
+        }
+    }
+
+    public void reset()
+    {
+        for (DBQAttributeConstraint constraint : constraints) {
+            constraint.reset();
+        }
+        this.order = null;
+        this.where = null;
     }
 
     @Override
@@ -197,16 +224,11 @@ public class DBDDataFilter {
             return false;
         }
         DBDDataFilter source = (DBDDataFilter)obj;
-        if (orderColumns.size() != source.orderColumns.size() || filters.size() != source.filters.size()) {
+        if (constraints.size() != source.constraints.size()) {
             return false;
         }
-        for (int i = 0, orderColumnsSize = source.orderColumns.size(); i < orderColumnsSize; i++) {
-            if (!orderColumns.get(i).equals(source.orderColumns.get(i))) {
-                return false;
-            }
-        }
-        for (int i = 0, filtersSize = source.filters.size(); i < filtersSize; i++) {
-            if (!filters.get(i).equals(source.filters.get(i))) {
+        for (int i = 0, orderColumnsSize = source.constraints.size(); i < orderColumnsSize; i++) {
+            if (!constraints.get(i).equals(source.constraints.get(i))) {
                 return false;
             }
         }

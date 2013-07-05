@@ -38,8 +38,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.query.DBQCondition;
-import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
+import org.jkiss.dbeaver.model.data.query.DBQOrder;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -52,7 +52,6 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     private final ResultSetViewer resultSetViewer;
 
     private TableViewer columnsViewer;
-    //private TableViewer filterViewer;
     private DBDDataFilter dataFilter;
     private Text whereText;
     private Text orderText;
@@ -181,10 +180,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     protected void buttonPressed(int buttonId)
     {
         if (buttonId == IDialogConstants.ABORT_ID) {
-            dataFilter.clearOrderColumns();
-            dataFilter.clearFilterColumns();
-            dataFilter.setOrder(null);
-            dataFilter.setWhere(null);
+            dataFilter.reset();
 
             columnsViewer.setInput(resultSetViewer.getModel().getColumns());
             orderText.setText(""); //$NON-NLS-1$
@@ -221,9 +217,9 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                 return ((IObjectImageProvider)column.getMetaAttribute()).getObjectImage();
             }
             if (columnIndex == 1) {
-                DBQOrderColumn orderColumn = dataFilter.getOrderColumn(column.getAttributeName());
-                if (orderColumn != null) {
-                    return orderColumn.isDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
+                DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
+                if (constraint != null && constraint.getOrderBy() != null) {
+                    return constraint.getOrderBy() == DBQOrder.DESCENDING ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
                 }
             }
             return null;
@@ -244,9 +240,9 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                     }
                 }
                 case 2: {
-                    DBQCondition filterColumn = dataFilter.getFilterColumn(column.getAttributeName());
-                    if (filterColumn != null) {
-                        return filterColumn.getCondition();
+                    DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
+                    if (constraint != null && !CommonUtils.isEmpty(constraint.getCriteria())) {
+                        return constraint.getCriteria();
                     } else {
                         return ""; //$NON-NLS-1$
                     }
@@ -293,13 +289,13 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         private void toggleColumnOrder(TableItem item)
         {
             DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
-            DBQOrderColumn columnOrder = dataFilter.getOrderColumn(column.getAttributeName());
-            if (columnOrder == null) {
-                dataFilter.addOrderColumn(new DBQOrderColumn(column.getAttributeName(), false));
-            } else if (!columnOrder.isDescending()) {
-                columnOrder.setDescending(true);
+            DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
+            if (constraint.getOrderBy() == null) {
+                constraint.setOrderBy(DBQOrder.ASCENDING);
+            } else if (constraint.getOrderBy() == DBQOrder.ASCENDING) {
+                constraint.setOrderBy(DBQOrder.DESCENDING);
             } else {
-                dataFilter.removeOrderColumn(columnOrder);
+                constraint.setOrderBy(null);
             }
             columnsViewer.refresh();
         }
@@ -315,17 +311,11 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                     Text text = (Text) tableEditor.getEditor();
                     String criteria = text.getText().trim();
                     DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
-                    DBQCondition filterColumn = dataFilter.getFilterColumn(column.getAttributeName());
+                    DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
                     if (CommonUtils.isEmpty(criteria)) {
-                        if (filterColumn != null) {
-                            dataFilter.removeFilterColumn(filterColumn);
-                        }
+                        constraint.setCriteria(null);
                     } else {
-                        if (filterColumn != null) {
-                            filterColumn.setCondition(criteria);
-                        } else {
-                            dataFilter.addFilterColumn(new DBQCondition(column.getAttributeName(), criteria));
-                        }
+                        constraint.setCriteria(criteria);
                     }
                     tableEditor.getItem().setText(2, criteria);
                 }

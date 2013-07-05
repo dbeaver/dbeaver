@@ -300,13 +300,20 @@ public class SQLQueryJob extends DataSourceJob
 
         long startTime = System.currentTimeMillis();
         String sqlQuery = sqlStatement.getQuery();
-        if (dataFilter != null && dataFilter.hasConditions()) {
+        if (dataFilter != null && dataFilter.hasFilters()) {
             // Append filter conditions to query
             StringBuilder modifiedQuery = new StringBuilder(sqlQuery.length() + 100);
             modifiedQuery.append("SELECT * FROM (\n");
             modifiedQuery.append(sqlQuery);
-            modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS).append(" WHERE ");
-            dataFilter.appendConditionString(getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
+            modifiedQuery.append("\n) ").append(NESTED_QUERY_AlIAS);
+            if (dataFilter.hasConditions()) {
+                modifiedQuery.append(" WHERE ");
+                dataFilter.appendConditionString(getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
+            }
+            if (dataFilter.hasOrdering()) {
+                modifiedQuery.append(" ORDER BY "); //$NON-NLS-1$
+                dataFilter.appendOrderString(getDataSource(), NESTED_QUERY_AlIAS, modifiedQuery);
+            }
             sqlQuery = modifiedQuery.toString();
         }
         curResult = new SQLQueryResult(sqlStatement);
