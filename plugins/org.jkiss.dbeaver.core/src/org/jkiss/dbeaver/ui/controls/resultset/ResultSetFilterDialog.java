@@ -47,6 +47,8 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
+
 class ResultSetFilterDialog extends HelpEnabledDialog {
 
     private final ResultSetViewer resultSetViewer;
@@ -232,12 +234,21 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             switch (columnIndex) {
                 case 0: return column.getAttributeName();
                 case 1: {
-                    int orderColumnIndex = dataFilter.getOrderColumnIndex(column.getAttributeName());
-                    if (orderColumnIndex >= 0) {
-                        return String.valueOf(orderColumnIndex + 1);
-                    } else {
-                        return ""; //$NON-NLS-1$
+                    if (dataFilter.getConstraint(column).getOrderBy() != null) {
+                        int index = 0;
+                        for (DBQAttributeConstraint constraint : dataFilter.getConstraints()) {
+                            if (constraint.getOrderBy() != null) {
+                                index++;
+                            }
+                            if (constraint.getAttribute() == column) {
+                                break;
+                            }
+                        }
+                        if (index > 0) {
+                            return String.valueOf(index);
+                        }
                     }
+                    return ""; //$NON-NLS-1$
                 }
                 case 2: {
                     DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
