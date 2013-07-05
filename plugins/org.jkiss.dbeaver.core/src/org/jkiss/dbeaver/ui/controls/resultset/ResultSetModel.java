@@ -5,7 +5,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
+import org.jkiss.dbeaver.model.data.query.DBQOrder;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -21,7 +22,7 @@ public class ResultSetModel {
     // Columns
     private DBDAttributeBinding[] columns = new DBDAttributeBinding[0];
     private List<DBDAttributeBinding> visibleColumns = new ArrayList<DBDAttributeBinding>();
-    private DBDDataFilter dataFilter = new DBDDataFilter();
+    private DBDDataFilter dataFilter = new DBDDataFilter(columns);
     private boolean singleSourceCells;
 
     // Data
@@ -232,7 +233,7 @@ public class ResultSetModel {
             this.columns = columns;
             this.visibleColumns.clear();
             Collections.addAll(this.visibleColumns, this.columns);
-            this.dataFilter = new DBDDataFilter();
+            this.dataFilter = new DBDDataFilter(columns);
         }
         return update;
     }
@@ -462,7 +463,7 @@ public class ResultSetModel {
     {
         // Sort locally
         curRows = new ArrayList<Object[]>(this.origRows);
-        if (dataFilter.getOrderColumns().isEmpty()) {
+        if (!dataFilter.hasOrdering()) {
             return;
         }
         Collections.sort(curRows, new Comparator<Object[]>() {
@@ -470,8 +471,8 @@ public class ResultSetModel {
             public int compare(Object[] row1, Object[] row2)
             {
                 int result = 0;
-                for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
-                    final DBDAttributeBinding binding = getAttributeBinding(null, co.getColumnName());
+                for (DBQAttributeConstraint co : dataFilter.getConstraints()) {
+                    final DBDAttributeBinding binding = co.getAttribute();
                     if (binding == null) {
                         continue;
                     }
@@ -490,7 +491,7 @@ public class ResultSetModel {
                         String str2 = cell2.toString();
                         result = str1.compareTo(str2);
                     }
-                    if (co.isDescending()) {
+                    if (co.getOrderBy() == DBQOrder.DESCENDING) {
                         result = -result;
                     }
                     if (result != 0) {

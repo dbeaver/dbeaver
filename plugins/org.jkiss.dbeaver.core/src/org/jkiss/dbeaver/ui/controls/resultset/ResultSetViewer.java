@@ -67,8 +67,8 @@ import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.query.DBQCondition;
-import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
+import org.jkiss.dbeaver.model.data.query.DBQOrder;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -403,6 +403,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         filtersEnableState = ControlEnableState.disable(filtersPanel);
     }
 
+    public void resetDataFilter(boolean refresh)
+    {
+        setDataFilter(new DBDDataFilter(model.getColumns()), refresh);
+    }
+
     private void setCustomDataFilter()
     {
         String condition = filtersText.getText();
@@ -412,7 +417,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // The same
             return;
         }
-        DBDDataFilter newFilter = new DBDDataFilter();
+        DBDDataFilter newFilter = new DBDDataFilter(model.getColumns());
         newFilter.setWhere(condition);
         setDataFilter(newFilter, true);
         spreadsheet.setFocus();
@@ -711,12 +716,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             List<DBDAttributeBinding> visibleColumns = model.getVisibleColumns();
             for (int i = 0, metaColumnsLength = visibleColumns.size(); i < metaColumnsLength; i++) {
                 DBDAttributeBinding column = visibleColumns.get(i);
-                DBQOrderColumn columnOrder = model.getDataFilter().getOrderColumn(column.getAttributeName());
+                DBQAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
                 GridColumn gridColumn = spreadsheet.getColumn(i);
-                if (columnOrder == null) {
+                if (constraint == null || constraint.getOrderBy() == null) {
                     gridColumn.setSort(SWT.DEFAULT);
                 } else {
-                    gridColumn.setSort(columnOrder.isDescending() ? SWT.UP : SWT.DOWN);
+                    gridColumn.setSort(constraint.getOrderBy() == DBQOrder.DESCENDING ? SWT.UP : SWT.DOWN);
                 }
             }
             spreadsheet.redrawGrid();
@@ -1506,7 +1511,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
             filtersMenu.add(new Separator());
-            if (model.getDataFilter().getFilterColumn(column.getAttributeName()) != null) {
+            if (!CommonUtils.isEmpty(model.getDataFilter().getConstraint(column).getCriteria())) {
                 filtersMenu.add(new FilterResetColumnAction(column));
             }
         }
@@ -1525,12 +1530,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
         boolean altPressed = (state & SWT.ALT) == SWT.ALT;
         if (ctrlPressed) {
-            dataFilter.clearOrderColumns();
+            dataFilter.resetOrderBy();
         }
         DBDAttributeBinding metaColumn = model.getVisibleColumn(column.getIndex());
-        DBQOrderColumn columnOrder = dataFilter.getOrderColumn(metaColumn.getAttributeName());
+        DBQAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
         //int newSort;
-        if (columnOrder == null) {
+        if (constraint.getOrderBy() == null) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
                 if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
@@ -1540,21 +1545,17 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return;
                 }
             }
-            columnOrder = new DBQOrderColumn(metaColumn.getAttributeName(), altPressed);
-            dataFilter.addOrderColumn(columnOrder);
-            //newSort = SWT.DOWN;
-
+            constraint.setOrderBy(altPressed ? DBQOrder.DESCENDING : DBQOrder.ASCENDING);
         } else {
-            if (!columnOrder.isDescending()) {
-                columnOrder.setDescending(!altPressed);
-                //newSort = SWT.UP;
+            if (constraint.getOrderBy() == DBQOrder.ASCENDING) {
+                constraint.setOrderBy(DBQOrder.DESCENDING);
             } else {
-                //newSort = SWT.DEFAULT;
-                dataFilter.removeOrderColumn(columnOrder);
+                constraint.setOrderBy(null);
             }
         }
-        //final int sort = newSort;
-        reorderResultSet(false, new Runnable() {
+        // Reorder
+        // Use forced reorder if we just removed ordering on some column
+        reorderResultSet(constraint.getOrderBy() == null, new Runnable() {
             @Override
             public void run()
             {
@@ -1665,7 +1666,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 @Override
                 public void run()
                 {
-                    if (!supportsDataFilter() && !model.getDataFilter().getOrderColumns().isEmpty()) {
+                    if (!supportsDataFilter() && !model.getDataFilter().hasOrdering()) {
                         reorderLocally();
                     }
                 }
@@ -1675,7 +1676,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private boolean isServerSideFiltering()
     {
-        return dataReceiver.isHasMoreData() || model.getDataFilter().hasCustomFilters();
+        return dataReceiver.isHasMoreData() || model.getDataFilter().hasFilters();
     }
 
     private void reorderResultSet(boolean force, Runnable onSuccess)
@@ -2475,11 +2476,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             } else {
                 column.setSort(SWT.DEFAULT);
                 int index = column.getIndex();
-                for (DBQOrderColumn co : model.getDataFilter().getOrderColumns()) {
-                    DBDAttributeBinding binding = model.getAttributeBinding(null, co.getColumnName());
-                    if (binding != null && binding.getAttributeIndex() == index) {
-                        column.setSort(co.isDescending() ? SWT.UP : SWT.DOWN);
-                        break;
+                for (DBQAttributeConstraint co : model.getDataFilter().getConstraints()) {
+                    if (co.getOrderBy() != null) {
+                        DBDAttributeBinding binding = co.getAttribute();
+                        if (binding != null && model.getVisibleColumns().indexOf(binding) == index) {
+                            column.setSort(co.getOrderBy() == DBQOrder.DESCENDING ? SWT.UP : SWT.DOWN);
+                            break;
+                        }
                     }
                 }
                 column.setSortRenderer(new SortRenderer(column));
@@ -2649,7 +2652,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             int colNumber = ((Number)element).intValue();
             if (gridMode == GridMode.GRID) {
-                if (model.getDataFilter().getFilterColumn(model.getVisibleColumn(colNumber).getAttributeName()) != null) {
+                if (model.getDataFilter().getConstraint(model.getVisibleColumn(colNumber)).hasFilter()) {
                     return boldFont;
                 }
             }
@@ -2845,13 +2848,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
             String stringValue = pattern.replace("?", value);
             DBDDataFilter filter = model.getDataFilter();
-            DBQCondition filterColumn = filter.getFilterColumn(column.getAttributeName());
-            if (filterColumn == null) {
-                filterColumn = new DBQCondition(column.getAttributeName(), stringValue);
-                filter.addFilterColumn(filterColumn);
-            } else {
-                filterColumn.setCondition(stringValue);
-            }
+            filter.getConstraint(column).setCriteria(stringValue);
             updateFiltersText();
             refresh();
         }
@@ -2868,12 +2865,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public void run()
         {
-            DBDDataFilter filter = model.getDataFilter();
-            DBQCondition filterColumn = filter.getFilterColumn(column.getAttributeName());
-            if (filterColumn != null) {
-                filter.removeFilterColumn(filterColumn);
-                updateFiltersText();
-            }
+            model.getDataFilter().getConstraint(column).setCriteria(null);
+            updateFiltersText();
             refresh();
         }
     }

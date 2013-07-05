@@ -1106,7 +1106,7 @@ public class SQLEditor extends SQLEditorBase
                 } else if (isSingleQuery) {
                     closeJob();
                     curJob = job;
-                    viewer.setDataFilter(new DBDDataFilter(), false);
+                    viewer.resetDataFilter(false);
                     viewer.refresh();
                 } else {
                     if (fetchResults) {
