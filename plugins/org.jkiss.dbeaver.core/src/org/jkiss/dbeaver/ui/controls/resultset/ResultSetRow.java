@@ -19,6 +19,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 /**
@@ -47,8 +48,8 @@ public class ResultSetRow {
 
     public Object getValue(DBSAttributeBase attribute)
     {
-        int index = viewer.getModel().getMetaColumnIndex(attribute);
-        return index < 0 ? null : values[index];
+        DBDAttributeBinding binding = viewer.getModel().getAttributeBinding(attribute);
+        return binding == null ? null : values[binding.getAttributeIndex()];
     }
 
 }
