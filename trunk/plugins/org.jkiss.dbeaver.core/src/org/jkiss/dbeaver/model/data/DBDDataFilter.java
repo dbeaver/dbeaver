@@ -71,17 +71,6 @@ public class DBDDataFilter {
         return null;
     }
 
-    public int getOrderColumnIndex(String columnName)
-    {
-        for (int i = 0, orderColumnsSize = constraints.size(); i < orderColumnsSize; i++) {
-            DBQAttributeConstraint co = constraints.get(i);
-            if (co.getAttribute().getAttributeName().equals(columnName)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public String getOrder()
     {
         return order;
