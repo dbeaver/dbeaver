@@ -6,11 +6,9 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.utils.CommonUtils;
 
@@ -81,6 +79,11 @@ public class ResultSetModel {
         return columns;
     }
 
+    public DBDAttributeBinding getColumn(int index)
+    {
+        return columns[index];
+    }
+
     public int getVisibleColumnCount()
     {
         return visibleColumns.size();
@@ -111,44 +114,15 @@ public class ResultSetModel {
         return null;
     }
 
-    int getMetaColumnIndex(DBCAttributeMetaData attribute)
+    DBDAttributeBinding getAttributeBinding(DBSEntity table, String columnName)
     {
-        for (int i = 0; i < visibleColumns.size(); i++) {
-            if (attribute == visibleColumns.get(i).getMetaAttribute()) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    int getMetaColumnIndex(DBSEntityAttribute column)
-    {
-        for (int i = 0; i < visibleColumns.size(); i++) {
-            if (column == visibleColumns.get(i).getEntityAttribute()) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    int getMetaColumnIndex(DBSAttributeBase attribute)
-    {
-        return attribute instanceof DBCAttributeMetaData ?
-            getMetaColumnIndex((DBCAttributeMetaData) attribute) :
-            getMetaColumnIndex((DBSEntityAttribute) attribute);
-    }
-
-    int getMetaColumnIndex(DBSEntity table, String columnName)
-    {
-        for (int i = 0; i < visibleColumns.size(); i++) {
-            DBDAttributeBinding column = visibleColumns.get(i);
+        for (DBDAttributeBinding column : visibleColumns) {
             if ((table == null || column.getRowIdentifier().getEntity() == table) &&
-                column.getAttributeName().equals(columnName))
-            {
-                return i;
+                column.getAttributeName().equals(columnName)) {
+                return column;
             }
         }
-        return -1;
+        return null;
     }
 
     public boolean isEmpty()
@@ -487,12 +461,12 @@ public class ResultSetModel {
             {
                 int result = 0;
                 for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
-                    final int colIndex = getMetaColumnIndex(null, co.getColumnName());
-                    if (colIndex < 0) {
+                    final DBDAttributeBinding binding = getAttributeBinding(null, co.getColumnName());
+                    if (binding == null) {
                         continue;
                     }
-                    Object cell1 = row1[colIndex];
-                    Object cell2 = row2[colIndex];
+                    Object cell1 = row1[binding.getAttributeIndex()];
+                    Object cell2 = row2[binding.getAttributeIndex()];
                     if (cell1 == cell2) {
                         result = 0;
                     } else if (DBUtils.isNullValue(cell1)) {

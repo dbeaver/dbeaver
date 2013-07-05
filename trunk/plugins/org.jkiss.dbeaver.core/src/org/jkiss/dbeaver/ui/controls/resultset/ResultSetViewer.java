@@ -506,7 +506,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 public IPropertySource getPropertySource(Object object)
                 {
                     if (object instanceof GridPos) {
-                        final GridPos cell = translateGridPos((GridPos)object);
+                        final GridPos cell = translateVisualPos((GridPos) object);
                         if (isValidCell(cell)) {
                             final ResultSetValueController valueController = new ResultSetValueController(
                                 cell,
@@ -826,7 +826,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             previewPane.clearValue();
             return;
         }
-        cell = translateGridPos(getCurrentPosition());
+        cell = translateVisualPos(getCurrentPosition());
         if (panelValueController == null || panelValueController.pos.col != cell.col) {
             panelValueController = new ResultSetValueController(
                 cell,
@@ -1150,6 +1150,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             dataSource.getInfo().isReadOnlyData();
     }
 
+    /**
+     * Checks that specified visual position is valid
+     * @param pos visual grid position
+     * @return true if position is valid
+     */
     @Override
     public boolean isValidCell(GridPos pos) {
         if (pos == null) {
@@ -1162,15 +1167,31 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    GridPos translateGridPos(GridPos pos)
+    /**
+     * Translated visual grid position into model cell position.
+     * Check for grid mode (grid/record) and columns reordering/hiding
+     * @param pos visual position
+     * @return model position
+     */
+    GridPos translateVisualPos(GridPos pos)
     {
         if (gridMode == GridMode.GRID) {
-            return pos;
+            DBDAttributeBinding column = model.getVisibleColumn(pos.col);
+            if (column.getAttributeIndex() == pos.col) {
+                return pos;
+            } else {
+                return new GridPos(column.getAttributeIndex(), pos.row);
+            }
         } else {
-            return new GridPos(pos.row, curRowNum);
+            DBDAttributeBinding column = model.getVisibleColumn(pos.row);
+            return new GridPos(column.getAttributeIndex(), curRowNum);
         }
     }
 
+    /**
+     * Checks that current state of result set allows to insert new rows
+     * @return true if new rows insert is allowed
+     */
     @Override
     public boolean isInsertable()
     {
@@ -1196,7 +1217,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             return false;
         }
 
-        GridPos cell = translateGridPos(focusCell);
+        GridPos cell = translateVisualPos(focusCell);
         if (!inline) {
             for (ResultSetValueController valueController : openEditors.keySet()) {
                 GridPos cellPos = valueController.getCellPos();
@@ -1303,7 +1324,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public void resetCellValue(GridPos cell, boolean delete)
     {
-        cell = translateGridPos(cell);
+        cell = translateVisualPos(cell);
         model.resetCellValue(cell, delete);
         spreadsheet.redrawGrid();
         updateEditControls();
@@ -1315,7 +1336,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         // Custom oldValue items
         if (isValidCell(curCell)) {
-            final GridPos cell = translateGridPos(curCell);
+            final GridPos cell = translateVisualPos(curCell);
             final ResultSetValueController valueController = new ResultSetValueController(
                 cell,
                 DBDValueController.EditType.NONE,
@@ -1358,7 +1379,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // Menus from value handler
             try {
                 manager.add(new Separator());
-                model.getVisibleColumn(cell.col).getValueHandler().fillContextMenu(manager, valueController);
+                model.getColumn(cell.col).getValueHandler().fillContextMenu(manager, valueController);
             }
             catch (Exception e) {
                 log.error(e);
@@ -1396,7 +1417,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     dialog.open();
                 }
             });
-            //fillColumnsMenu(manager);
+            fillColumnsMenu(manager);
         }
         manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
     }
@@ -1413,7 +1434,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
             String hideTitle;
             if (selectedColumns.size() == 1) {
-                DBDAttributeBinding column = model.getVisibleColumn(translateGridPos(
+                DBDAttributeBinding column = model.getColumn(translateVisualPos(
                     new GridPos(selectedColumns.get(0).getIndex(), -1)).col);
                 hideTitle = "Hide column '" + column.getAttributeName() + "'";
             } else {
@@ -1450,9 +1471,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void fillFiltersMenu(IMenuManager filtersMenu)
     {
         GridPos currentPosition = getCurrentPosition();
-        int columnIndex = translateGridPos(currentPosition).col;
+        int columnIndex = translateVisualPos(currentPosition).col;
         if (supportsDataFilter() && columnIndex >= 0) {
-            DBDAttributeBinding column = model.getVisibleColumn(columnIndex);
+            DBDAttributeBinding column = model.getColumn(columnIndex);
             DBSDataKind dataKind = column.getMetaAttribute().getDataKind();
             if (!column.getMetaAttribute().isRequired()) {
                 filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.NONE, column));
@@ -1890,10 +1911,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
                 prevCol = pos.col;
             }
-            GridPos cellPos = translateGridPos(pos);
+            GridPos cellPos = translateVisualPos(pos);
             Object[] curRow = model.getRowData(cellPos.row);
             Object value = curRow[cellPos.col];
-            DBDAttributeBinding column = model.getVisibleColumn(cellPos.col);
+            DBDAttributeBinding column = model.getColumn(cellPos.col);
             String cellText = column.getValueHandler().getValueDisplayString(
                 column.getMetaAttribute(),
                 value,
@@ -1923,8 +1944,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (cell == null) {
             return;
         }
-        cell = translateGridPos(cell);
-        DBDAttributeBinding metaColumn = model.getVisibleColumn(cell.col);
+        cell = translateVisualPos(cell);
+        DBDAttributeBinding metaColumn = model.getColumn(cell.col);
         if (isColumnReadOnly(metaColumn)) {
             // No inline editors for readonly columns
             return;
@@ -2191,7 +2212,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             this.pos = new GridPos(pos);
             this.editType = editType;
             this.inlinePlaceholder = inlinePlaceholder;
-            this.column = model.getVisibleColumn(pos.col);
+            this.column = model.getColumn(pos.col);
         }
 
         void setCurRow(Object[] curRow)
@@ -2430,6 +2451,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         @Override
         public Object getElement(GridPos pos)
         {
+            pos = translateVisualPos(pos);
             if (gridMode == GridMode.RECORD) {
                 return model.getRowData(curRowNum)[pos.row];
             } else {
@@ -2441,7 +2463,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         public String getElementText(GridPos pos)
         {
             Object value = getElement(pos);
-            DBDAttributeBinding column = model.getVisibleColumn(translateGridPos(pos).col);
+            DBDAttributeBinding column = model.getColumn(translateVisualPos(pos).col);
             return column.getValueHandler().getValueDisplayString(column.getAttribute(), value, DBDDisplayFormat.EDIT);
         }
 
@@ -2454,23 +2476,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 column.setSort(SWT.DEFAULT);
                 int index = column.getIndex();
                 for (DBQOrderColumn co : model.getDataFilter().getOrderColumns()) {
-                    if (model.getMetaColumnIndex(null, co.getColumnName()) == index) {
+                    DBDAttributeBinding binding = model.getAttributeBinding(null, co.getColumnName());
+                    if (binding != null && binding.getAttributeIndex() == index) {
                         column.setSort(co.isDescending() ? SWT.UP : SWT.DOWN);
                         break;
                     }
                 }
                 column.setSortRenderer(new SortRenderer(column));
-            }
-        }
-
-        @Override
-        public Object[] getElements(Object inputElement)
-        {
-            if (gridMode == GridMode.RECORD) {
-                return model.getRowData(curRowNum);
-            } else {
-                int rowNum = ((Number) inputElement).intValue();
-                return model.getRowData(rowNum);
             }
         }
 
@@ -2489,7 +2501,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private Object getValue(int col, int row, boolean formatString)
         {
             Object value;
-            DBDValueHandler valueHandler;
+            DBDAttributeBinding column;
             int rowNum;
             int rowCount = model.getRowCount();
             if (gridMode == GridMode.RECORD) {
@@ -2499,13 +2511,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     //log.warn("Bad current row number: " + curRowNum);
                     return "";
                 }
+                column = model.getVisibleColumn(row);
                 Object[] values = model.getRowData(curRowNum);
-                if (row >= values.length) {
+                if (column.getAttributeIndex() >= values.length) {
                     log.warn("Bad record row number: " + row);
                     return null;
                 }
-                value = values[row];
-                valueHandler = model.getVisibleColumn(row).getValueHandler();
+                value = values[column.getAttributeIndex()];
             } else {
                 rowNum = row;
                 if (row >= rowCount) {
@@ -2516,8 +2528,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     log.warn("Bad grid column number: " + col);
                     return null;
                 }
-                value = model.getCellValue(row, col);
-                valueHandler = model.getVisibleColumn(col).getValueHandler();
+                column = model.getVisibleColumn(col);
+                value = model.getCellValue(row, column.getAttributeIndex());
             }
 
             if (rowNum == rowCount - 1 && (gridMode == GridMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
@@ -2525,8 +2537,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
 
             if (formatString) {
-                return valueHandler.getValueDisplayString(
-                    model.getVisibleColumn(col).getMetaAttribute(),
+                return column.getValueHandler().getValueDisplayString(
+                    column.getMetaAttribute(),
                     value,
                     DBDDisplayFormat.UI);
             } else {
@@ -2753,7 +2765,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             {
                 Object value = viewer.model.getCellValue(
                     viewer.getCurrentRow(),
-                    viewer.model.getMetaColumnIndex(column.getMetaAttribute()));
+                    column.getAttributeIndex());
                 return column.getValueHandler().getValueDisplayString(column.getMetaAttribute(), value, format);
             }
         },
