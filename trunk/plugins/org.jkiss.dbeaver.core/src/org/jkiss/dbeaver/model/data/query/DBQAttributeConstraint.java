@@ -19,34 +19,35 @@
 
 package org.jkiss.dbeaver.model.data.query;
 
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * Attribute constraint
  */
-public class DBQConstraint {
+public class DBQAttributeConstraint {
 
-    private final String attributeName;
+    private final DBDAttributeBinding attribute;
     private DBQOrder orderBy;
     private String criteria;
     private boolean visible;
 
-    public DBQConstraint(String attributeName)
+    public DBQAttributeConstraint(DBDAttributeBinding attribute)
     {
-        this.attributeName = attributeName;
+        this.attribute = attribute;
     }
 
-    public DBQConstraint(DBQConstraint source)
+    public DBQAttributeConstraint(DBQAttributeConstraint source)
     {
-        this.attributeName = source.attributeName;
+        this.attribute = source.attribute;
         this.orderBy = source.orderBy;
         this.criteria = source.criteria;
         this.visible = source.visible;
     }
 
-    public String getAttributeName()
+    public DBDAttributeBinding getAttribute()
     {
-        return attributeName;
+        return attribute;
     }
 
     public DBQOrder getOrderBy()
@@ -69,9 +70,9 @@ public class DBQConstraint {
         this.criteria = criteria;
     }
 
-    public boolean hasCriteria()
+    public boolean hasFilter()
     {
-        return !CommonUtils.isEmpty(criteria);
+        return !CommonUtils.isEmpty(criteria) || orderBy != null;
     }
 
     public boolean isVisible()
@@ -84,10 +85,17 @@ public class DBQConstraint {
         this.visible = visible;
     }
 
+    public void reset()
+    {
+        this.orderBy = null;
+        this.criteria = null;
+        this.visible = true;
+    }
+
     @Override
     public int hashCode()
     {
-        return this.attributeName.hashCode() +
+        return this.attribute.hashCode() +
             (this.orderBy == null ? 0 : this.orderBy.hashCode()) +
             (this.criteria == null ? 0 : this.criteria.hashCode()) +
             (this.visible ? 1 : 0);
@@ -96,13 +104,14 @@ public class DBQConstraint {
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof DBQConstraint)) {
+        if (!(obj instanceof DBQAttributeConstraint)) {
             return false;
         }
-        DBQConstraint source = (DBQConstraint)obj;
-        return CommonUtils.equalObjects(this.attributeName, source.attributeName) &&
+        DBQAttributeConstraint source = (DBQAttributeConstraint)obj;
+        return CommonUtils.equalObjects(this.attribute, source.attribute) &&
             CommonUtils.equalObjects(this.orderBy, source.orderBy) &&
             CommonUtils.equalObjects(this.criteria, source.criteria) &&
             this.visible == source.visible;
     }
+
 }

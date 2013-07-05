@@ -29,7 +29,8 @@ import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.query.DBQOrderColumn;
+import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
+import org.jkiss.dbeaver.model.data.query.DBQOrder;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -378,21 +379,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     {
         if (dataFilter != null) {
             // Construct ORDER BY
-            if (!CommonUtils.isEmpty(dataFilter.getOrderColumns()) || !CommonUtils.isEmpty(dataFilter.getOrder())) {
+            if (dataFilter.hasOrdering()) {
                 query.append(" ORDER BY "); //$NON-NLS-1$
-                boolean hasOrder = false;
-                for (DBQOrderColumn co : dataFilter.getOrderColumns()) {
-                    if (hasOrder) query.append(',');
-                    query.append(DBUtils.getQuotedIdentifier(getDataSource(), co.getColumnName()));
-                    if (co.isDescending()) {
-                        query.append(" DESC"); //$NON-NLS-1$
-                    }
-                    hasOrder = true;
-                }
-                if (!CommonUtils.isEmpty(dataFilter.getOrder())) {
-                    if (hasOrder) query.append(',');
-                    query.append(dataFilter.getOrder());
-                }
+                dataFilter.appendOrderString(getDataSource(), null, query);
             }
         }
     }
