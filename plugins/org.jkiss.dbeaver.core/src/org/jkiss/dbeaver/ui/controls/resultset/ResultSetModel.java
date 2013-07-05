@@ -79,19 +79,24 @@ public class ResultSetModel {
         return columns;
     }
 
+    public int getColumnCount()
+    {
+        return columns.length;
+    }
+
     public DBDAttributeBinding getColumn(int index)
     {
         return columns[index];
     }
 
-    public int getVisibleColumnCount()
-    {
-        return visibleColumns.size();
-    }
-
     public List<DBDAttributeBinding> getVisibleColumns()
     {
         return visibleColumns;
+    }
+
+    public int getVisibleColumnCount()
+    {
+        return visibleColumns.size();
     }
 
     public DBDAttributeBinding getVisibleColumn(int index)
@@ -102,6 +107,11 @@ public class ResultSetModel {
     public void hideColumn(int index)
     {
         visibleColumns.remove(index);
+    }
+
+    public void showColumn(DBDAttributeBinding attribute)
+    {
+        visibleColumns.add(attribute);
     }
 
     public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)

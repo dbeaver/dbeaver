@@ -187,11 +187,6 @@ public class DBDDataFilter {
         }
     }
 
-    public int setConditionParameters(DBPDataSource dataSource, int paramIndex)
-    {
-        return paramIndex;
-    }
-
     @Override
     public boolean equals(Object obj)
     {
