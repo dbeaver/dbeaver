@@ -79,7 +79,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         {
             Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
 
-            columnsViewer = new TableViewer(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION);
+            columnsViewer = new TableViewer(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
             columnsViewer.setContentProvider(new ListContentProvider());
             columnsViewer.setLabelProvider(new ColumnLabelProvider());
             final Table columnsTable = columnsViewer.getTable();
@@ -143,7 +143,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         }
 
         // Fill columns
-        columnsViewer.setInput(resultSetViewer.getModel().getVisibleColumns());
+        columnsViewer.setInput(resultSetViewer.getModel().getColumns());
 
         // Pack UI
         UIUtils.packColumns(columnsViewer.getTable());
@@ -186,7 +186,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             dataFilter.setOrder(null);
             dataFilter.setWhere(null);
 
-            columnsViewer.setInput(resultSetViewer.getModel().getVisibleColumns());
+            columnsViewer.setInput(resultSetViewer.getModel().getColumns());
             orderText.setText(""); //$NON-NLS-1$
             whereText.setText(""); //$NON-NLS-1$
         } else {
