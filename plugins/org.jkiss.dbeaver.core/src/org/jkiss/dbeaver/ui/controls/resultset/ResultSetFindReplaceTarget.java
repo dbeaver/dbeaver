@@ -239,7 +239,7 @@ class ResultSetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTarg
         }
 */
 
-        selection = resultSet.translateGridPos(selection);
+        selection = resultSet.translateVisualPos(selection);
         resultSet.getModel().getCellValue(selection.row, selection.col);
         resultSet.getModel().updateCellValue(selection.row, selection.col, newValue);
 

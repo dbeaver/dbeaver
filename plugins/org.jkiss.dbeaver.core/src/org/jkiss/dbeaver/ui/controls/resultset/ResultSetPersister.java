@@ -92,11 +92,14 @@ class ResultSetPersister {
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.DELETE, rowNum, table);
             Collection<? extends DBSEntityAttribute> keyColumns = columns[0].getRowIdentifier().getEntityIdentifier().getAttributes();
             for (DBSEntityAttribute column : keyColumns) {
-                int colIndex = model.getMetaColumnIndex(column);
-                if (colIndex < 0) {
+                DBDAttributeBinding binding = model.getAttributeBinding(column);
+                if (binding == null) {
                     throw new DBCException("Can't find meta column for ID column " + column.getName());
                 }
-                statement.keyAttributes.add(new DBDAttributeValue(column, model.getRowData(rowNum.row)[colIndex]));
+                statement.keyAttributes.add(
+                    new DBDAttributeValue(
+                        column,
+                        model.getRowData(rowNum.row)[binding.getAttributeIndex()]));
             }
             deleteStatements.add(statement);
         }
@@ -143,15 +146,14 @@ class ResultSetPersister {
                 Collection<? extends DBCAttributeMetaData> idColumns = rowInfo.id.getResultSetColumns();
                 for (DBCAttributeMetaData idAttribute : idColumns) {
                     // Find meta column and add statement parameter
-                    int columnIndex = model.getMetaColumnIndex(idAttribute);
-                    if (columnIndex < 0) {
+                    DBDAttributeBinding metaColumn = model.getAttributeBinding(idAttribute);
+                    if (metaColumn == null) {
                         throw new DBCException("Can't find meta column for ID column " + idAttribute.getName());
                     }
-                    DBDAttributeBinding metaColumn = columns[columnIndex];
-                    Object keyValue = model.getCellValue(rowNum, columnIndex);
+                    Object keyValue = model.getCellValue(rowNum, metaColumn.getAttributeIndex());
                     // Try to find old key oldValue
                     for (Map.Entry<GridPos, Object> cell : model.getEditedValues().entrySet()) {
-                        if (cell.getKey().equals(columnIndex, rowNum)) {
+                        if (cell.getKey().equals(metaColumn.getAttributeIndex(), rowNum)) {
                             keyValue = cell.getValue();
                         }
                     }
@@ -468,10 +470,10 @@ class ResultSetPersister {
                 }
                 boolean updated = false;
                 if (!CommonUtils.isEmpty(keyAttribute.getName())) {
-                    int colIndex = model.getMetaColumnIndex(statement.table, keyAttribute.getName());
-                    if (colIndex >= 0) {
+                    DBDAttributeBinding binding = model.getAttributeBinding(statement.table, keyAttribute.getName());
+                    if (binding != null) {
                         // Got it. Just update column oldValue
-                        statement.updatedCells.put(colIndex, keyValue);
+                        statement.updatedCells.put(binding.getAttributeIndex(), keyValue);
                         //curRows.get(statement.row.row)[colIndex] = keyValue;
                         updated = true;
                     }

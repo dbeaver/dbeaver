@@ -19,9 +19,9 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IContentProvider;
 
-public interface IGridContentProvider extends IStructuredContentProvider {
+public interface IGridContentProvider extends IContentProvider {
 
     public int getRowCount();
 
