@@ -1767,6 +1767,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 if (gridMode == GridMode.GRID) {
                                     spreadsheet.setCursor(new GridPos(curColNum, curRowNum), false);
                                 } else {
+                                    if (ResultSetViewer.this.curRowNum < 0 && model.getRowCount() > 0) {
+                                        ResultSetViewer.this.curRowNum = 0;
+                                    }
                                     spreadsheet.setCursor(new GridPos(0, curColNum), false);
                                 }
                                 spreadsheet.setSelection(-1, -1);
