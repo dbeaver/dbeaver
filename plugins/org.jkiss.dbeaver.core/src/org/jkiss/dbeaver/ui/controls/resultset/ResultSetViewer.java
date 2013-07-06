@@ -405,7 +405,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     public void resetDataFilter(boolean refresh)
     {
-        setDataFilter(new DBDDataFilter(model.getColumns()), refresh);
+        setDataFilter(model.createDataFilter(), refresh);
     }
 
     private void setCustomDataFilter()
@@ -417,7 +417,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // The same
             return;
         }
-        DBDDataFilter newFilter = new DBDDataFilter(model.getColumns());
+        DBDDataFilter newFilter = model.createDataFilter();
         newFilter.setWhere(condition);
         setDataFilter(newFilter, true);
         spreadsheet.setFocus();
@@ -464,7 +464,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
         if (!CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
-            model.setDataFilter(dataFilter);
+            if (model.setDataFilter(dataFilter)) {
+                refreshSpreadsheet(true);
+            }
             if (refreshData) {
                 reorderResultSet(true, new Runnable() {
                     @Override
