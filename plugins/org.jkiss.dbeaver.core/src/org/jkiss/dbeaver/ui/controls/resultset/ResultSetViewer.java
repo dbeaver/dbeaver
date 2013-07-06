@@ -1424,55 +1424,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     dialog.open();
                 }
             });
-            fillColumnsMenu(manager);
         }
         manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
-    }
-
-    private void fillColumnsMenu(IMenuManager manager)
-    {
-        final List<GridColumn> selectedColumns = getSpreadsheet().getSelectedColumns();
-        if (getGridMode() == GridMode.GRID && !selectedColumns.isEmpty()) {
-            MenuManager columnsMenu = new MenuManager(
-                "Columns",
-                DBIcon.TREE_COLUMNS.getImageDescriptor(),
-                "columns"); //$NON-NLS-1$
-            manager.add(columnsMenu);
-
-            String hideTitle;
-            if (selectedColumns.size() == 1) {
-                DBDAttributeBinding column = model.getColumn(translateVisualPos(
-                    new GridPos(selectedColumns.get(0).getIndex(), -1)).col);
-                hideTitle = "Hide column '" + column.getAttributeName() + "'";
-            } else {
-                hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
-            }
-            columnsMenu.add(new Action(hideTitle) {
-                @Override
-                public void run()
-                {
-                    if (selectedColumns.size() >= getModel().getVisibleColumnCount()) {
-                        UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
-                    } else {
-                        int[] columnIndexes = new int[selectedColumns.size()];
-                        for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
-                            columnIndexes[i] = selectedColumns.get(i).getIndex();
-                        }
-                        Arrays.sort(columnIndexes);
-                        for (int i = columnIndexes.length; i > 0; i--) {
-                            getModel().setColumnVisibility(getModel().getVisibleColumn(columnIndexes[i - 1]), false);
-                        }
-                        refreshSpreadsheet(true);
-                    }
-                }
-            });
-            columnsMenu.add(new Action("Configure columns order/visibility ...") {
-                @Override
-                public void run()
-                {
-                }
-            });
-        }
     }
 
     private void fillFiltersMenu(IMenuManager filtersMenu)
@@ -1515,6 +1468,38 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             filtersMenu.add(new Separator());
             if (!CommonUtils.isEmpty(model.getDataFilter().getConstraint(column).getCriteria())) {
                 filtersMenu.add(new FilterResetColumnAction(column));
+            }
+        }
+        {
+            final List<GridColumn> selectedColumns = getSpreadsheet().getSelectedColumns();
+            if (getGridMode() == GridMode.GRID && !selectedColumns.isEmpty()) {
+                String hideTitle;
+                if (selectedColumns.size() == 1) {
+                    DBDAttributeBinding columnToHide = model.getColumn(translateVisualPos(
+                        new GridPos(selectedColumns.get(0).getIndex(), -1)).col);
+                    hideTitle = "Hide column '" + columnToHide.getAttributeName() + "'";
+                } else {
+                    hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
+                }
+                filtersMenu.add(new Action(hideTitle) {
+                    @Override
+                    public void run()
+                    {
+                        if (selectedColumns.size() >= getModel().getVisibleColumnCount()) {
+                            UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
+                        } else {
+                            int[] columnIndexes = new int[selectedColumns.size()];
+                            for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
+                                columnIndexes[i] = selectedColumns.get(i).getIndex();
+                            }
+                            Arrays.sort(columnIndexes);
+                            for (int i = columnIndexes.length; i > 0; i--) {
+                                getModel().setColumnVisibility(getModel().getVisibleColumn(columnIndexes[i - 1]), false);
+                            }
+                            refreshSpreadsheet(true);
+                        }
+                    }
+                });
             }
         }
         filtersMenu.add(new ShowFiltersAction());
@@ -2863,7 +2848,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         private final DBDAttributeBinding column;
         public FilterResetColumnAction(DBDAttributeBinding column)
         {
-            super("Remove filter", DBIcon.REVERT.getImageDescriptor());
+            super("Remove filter for '" + column.getAttributeName() + "'", DBIcon.REVERT.getImageDescriptor());
             this.column = column;
         }
 
