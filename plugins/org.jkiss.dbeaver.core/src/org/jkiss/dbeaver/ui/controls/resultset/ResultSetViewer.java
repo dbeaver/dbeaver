@@ -1460,7 +1460,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                         }
                         Arrays.sort(columnIndexes);
                         for (int i = columnIndexes.length; i > 0; i--) {
-                            getModel().hideColumn(columnIndexes[i - 1]);
+                            getModel().setColumnVisibility(getModel().getVisibleColumn(columnIndexes[i - 1]), false);
                         }
                         refreshSpreadsheet(true);
                     }

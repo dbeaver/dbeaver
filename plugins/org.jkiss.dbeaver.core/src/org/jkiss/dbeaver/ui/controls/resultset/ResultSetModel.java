@@ -121,14 +121,17 @@ public class ResultSetModel {
         return visibleColumns.get(index);
     }
 
-    public void hideColumn(int index)
+    public void setColumnVisibility(DBDAttributeBinding attribute, boolean visible)
     {
-        visibleColumns.remove(index);
-    }
-
-    public void showColumn(DBDAttributeBinding attribute)
-    {
-        visibleColumns.add(attribute);
+        DBQAttributeConstraint constraint = dataFilter.getConstraint(attribute);
+        if (constraint.isVisible() != visible) {
+            constraint.setVisible(visible);
+            if (visible) {
+                visibleColumns.add(attribute);
+            } else {
+                visibleColumns.remove(attribute);
+            }
+        }
     }
 
     public DBDAttributeBinding getAttributeBinding(DBSAttributeBase attribute)
