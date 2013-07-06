@@ -22,7 +22,7 @@ public class ResultSetModel {
     // Columns
     private DBDAttributeBinding[] columns = new DBDAttributeBinding[0];
     private List<DBDAttributeBinding> visibleColumns = new ArrayList<DBDAttributeBinding>();
-    private DBDDataFilter dataFilter = new DBDDataFilter(columns);
+    private DBDDataFilter dataFilter;
     private boolean singleSourceCells;
 
     // Data
@@ -39,6 +39,22 @@ public class ResultSetModel {
     private final Set<RowInfo> removedRows = new TreeSet<RowInfo>();
     private final Map<GridPos, Object> editedValues = new HashMap<GridPos, Object>();
     private long executionTime;
+
+    public ResultSetModel()
+    {
+        dataFilter = createDataFilter();
+    }
+
+    public DBDDataFilter createDataFilter()
+    {
+        List<DBQAttributeConstraint> constraints = new ArrayList<DBQAttributeConstraint>(columns.length);
+        for (DBDAttributeBinding binding : columns) {
+            DBQAttributeConstraint constraint = new DBQAttributeConstraint(binding);
+            constraint.setVisible(visibleColumns.contains(binding));
+            constraints.add(constraint);
+        }
+        return new DBDDataFilter(constraints);
+    }
 
     public boolean isSingleSource()
     {
@@ -233,7 +249,7 @@ public class ResultSetModel {
             this.columns = columns;
             this.visibleColumns.clear();
             Collections.addAll(this.visibleColumns, this.columns);
-            this.dataFilter = new DBDDataFilter(columns);
+            this.dataFilter = createDataFilter();
         }
         return update;
     }
@@ -454,9 +470,26 @@ public class ResultSetModel {
         return dataFilter;
     }
 
-    void setDataFilter(DBDDataFilter dataFilter)
+    /**
+     * Sets new data filter
+     * @param dataFilter data filter
+     * @return true if visible columns were changed. Spreadsheet has to be refreshed
+     */
+    boolean setDataFilter(DBDDataFilter dataFilter)
     {
         this.dataFilter = dataFilter;
+        List<DBDAttributeBinding> newColumns = new ArrayList<DBDAttributeBinding>();
+        // Reset visible columns from filter
+        for (DBQAttributeConstraint constraint : dataFilter.getConstraints()) {
+            if (constraint.isVisible()) {
+                newColumns.add(constraint.getAttribute());
+            }
+        }
+        if (!newColumns.equals(visibleColumns)) {
+            visibleColumns = newColumns;
+            return true;
+        }
+        return false;
     }
 
     void resetOrdering()
