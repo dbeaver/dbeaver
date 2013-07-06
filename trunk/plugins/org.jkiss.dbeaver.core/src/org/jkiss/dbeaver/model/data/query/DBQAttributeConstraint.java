@@ -92,6 +92,13 @@ public class DBQAttributeConstraint {
         this.visible = true;
     }
 
+    public boolean equalFilters(DBQAttributeConstraint source)
+    {
+        return CommonUtils.equalObjects(this.attribute, source.attribute) &&
+            CommonUtils.equalObjects(this.orderBy, source.orderBy) &&
+            CommonUtils.equalObjects(this.criteria, source.criteria);
+    }
+
     @Override
     public int hashCode()
     {
@@ -108,9 +115,7 @@ public class DBQAttributeConstraint {
             return false;
         }
         DBQAttributeConstraint source = (DBQAttributeConstraint)obj;
-        return CommonUtils.equalObjects(this.attribute, source.attribute) &&
-            CommonUtils.equalObjects(this.orderBy, source.orderBy) &&
-            CommonUtils.equalObjects(this.criteria, source.criteria) &&
+        return equalFilters(source) &&
             this.visible == source.visible;
     }
 

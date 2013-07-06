@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
 import org.jkiss.dbeaver.model.data.query.DBQOrder;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -38,12 +39,9 @@ public class DBDDataFilter {
     private String order;
     private String where;
 
-    public DBDDataFilter(DBDAttributeBinding[] attributes)
+    public DBDDataFilter(List<DBQAttributeConstraint> constraints)
     {
-        constraints = new ArrayList<DBQAttributeConstraint>(attributes.length);
-        for (DBDAttributeBinding binding : attributes) {
-            constraints.add(new DBQAttributeConstraint(binding));
-        }
+        this.constraints = constraints;
     }
 
     public DBDDataFilter(DBDDataFilter source)
@@ -225,4 +223,22 @@ public class DBDDataFilter {
             CommonUtils.equalObjects(this.where, source.where);
     }
 
+    /**
+     * compares only filers (criteria and ordering)
+     * @param source object to compare to
+     * @return true if filters equals
+     */
+    public boolean equalFilters(DBDDataFilter source)
+    {
+        if (constraints.size() != source.constraints.size()) {
+            return false;
+        }
+        for (int i = 0, orderColumnsSize = source.constraints.size(); i < orderColumnsSize; i++) {
+            if (!constraints.get(i).equalFilters(source.constraints.get(i))) {
+                return false;
+            }
+        }
+        return CommonUtils.equalObjects(this.order, source.order) &&
+            CommonUtils.equalObjects(this.where, source.where);
+    }
 }

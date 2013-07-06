@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ITableLabelProvider;
-import org.eclipse.jface.viewers.LabelProvider;
-import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.ModifyEvent;
@@ -47,13 +45,11 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-
 class ResultSetFilterDialog extends HelpEnabledDialog {
 
     private final ResultSetViewer resultSetViewer;
 
-    private TableViewer columnsViewer;
+    private CheckboxTableViewer columnsViewer;
     private DBDDataFilter dataFilter;
     private Text whereText;
     private Text orderText;
@@ -80,9 +76,10 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         {
             Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
 
-            columnsViewer = new TableViewer(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
+            columnsViewer = CheckboxTableViewer.newCheckList(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
             columnsViewer.setContentProvider(new ListContentProvider());
             columnsViewer.setLabelProvider(new ColumnLabelProvider());
+            columnsViewer.setCheckStateProvider(new CheckStateProvider());
             final Table columnsTable = columnsViewer.getTable();
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
@@ -100,6 +97,14 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             tableEditor.verticalAlignment = SWT.TOP;
             tableEditor.grabHorizontal = true;
             tableEditor.minimumWidth = 50;
+
+            columnsViewer.addCheckStateListener(new ICheckStateListener() {
+                @Override
+                public void checkStateChanged(CheckStateChangedEvent event)
+                {
+                    dataFilter.getConstraint((DBDAttributeBinding)event.getElement()).setVisible(event.getChecked());
+                }
+            });
 
             ColumnsMouseListener mouseListener = new ColumnsMouseListener(tableEditor, columnsTable);
             columnsTable.addMouseListener(mouseListener);
@@ -195,6 +200,17 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     @Override
     protected void okPressed()
     {
+        boolean hasVisibleColumns = false;
+        for (DBQAttributeConstraint constraint : dataFilter.getConstraints()) {
+            if (constraint.isVisible()) {
+                hasVisibleColumns = true;
+                break;
+            }
+        }
+        if (!hasVisibleColumns) {
+            UIUtils.showMessageBox(getShell(), "Bad filter", "You have to set at least one column visible", SWT.ICON_WARNING);
+            return;
+        }
         if (!CommonUtils.isEmpty(orderText.getText())) {
             dataFilter.setOrder(orderText.getText());
         } else {
@@ -205,7 +221,9 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         } else {
             dataFilter.setWhere(null);
         }
-        resultSetViewer.setDataFilter(dataFilter, true);
+        resultSetViewer.setDataFilter(
+            dataFilter,
+            !dataFilter.equalFilters(resultSetViewer.getModel().getDataFilter()));
         super.okPressed();
     }
 
@@ -347,4 +365,21 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         }
 
     }
+
+    class CheckStateProvider implements ICheckStateProvider {
+
+        @Override
+        public boolean isChecked(Object element)
+        {
+            return dataFilter.getConstraint((DBDAttributeBinding) element).isVisible();
+        }
+
+        @Override
+        public boolean isGrayed(Object element)
+        {
+            return false;
+        }
+
+    }
+
 }
