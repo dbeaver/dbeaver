@@ -87,7 +87,8 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             columnsTable.setLayoutData(gd);
             columnsTable.setHeaderVisible(true);
             columnsTable.setLinesVisible(true);
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_column);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_name);
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "№");
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_order);
             criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_criteria);
 
@@ -109,7 +110,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             ColumnsMouseListener mouseListener = new ColumnsMouseListener(tableEditor, columnsTable);
             columnsTable.addMouseListener(mouseListener);
             columnsTable.addTraverseListener(
-                new UIUtils.ColumnTextEditorTraverseListener(columnsTable, tableEditor, 2, mouseListener));
+                new UIUtils.ColumnTextEditorTraverseListener(columnsTable, tableEditor, 3, mouseListener));
 
 
             TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
@@ -236,7 +237,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             if (columnIndex == 0 && column.getMetaAttribute() instanceof IObjectImageProvider) {
                 return ((IObjectImageProvider)column.getMetaAttribute()).getObjectImage();
             }
-            if (columnIndex == 1) {
+            if (columnIndex == 2) {
                 DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
                 if (constraint != null && constraint.getOrderBy() != null) {
                     return constraint.getOrderBy() == DBQOrder.DESCENDING ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
@@ -251,7 +252,8 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             DBDAttributeBinding column = (DBDAttributeBinding) element;
             switch (columnIndex) {
                 case 0: return column.getAttributeName();
-                case 1: {
+                case 1: return String.valueOf(column.getAttributeIndex() + 1);
+                case 2: {
                     if (dataFilter.getConstraint(column).getOrderBy() != null) {
                         int index = 0;
                         for (DBQAttributeConstraint constraint : dataFilter.getConstraints()) {
@@ -268,7 +270,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                     }
                     return ""; //$NON-NLS-1$
                 }
-                case 2: {
+                case 3: {
                     DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
                     if (constraint != null && !CommonUtils.isEmpty(constraint.getCriteria())) {
                         return constraint.getCriteria();
@@ -306,11 +308,11 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             if (columnIndex <= 0) {
                 return;
             }
-            if (columnIndex == 1) {
+            if (columnIndex == 2) {
                 //if (isDef) {
                     toggleColumnOrder(item);
                 //}
-            } else if (columnIndex == 2 && resultSetViewer.supportsDataFilter()) {
+            } else if (columnIndex == 3 && resultSetViewer.supportsDataFilter()) {
                 showEditor(item);
             }
         }
@@ -333,7 +335,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         public void showEditor(final TableItem item) {
             // Identify the selected row
             Text text = new Text(columnsTable, SWT.BORDER);
-            text.setText(item.getText(2));
+            text.setText(item.getText(3));
             text.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
@@ -346,7 +348,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                     } else {
                         constraint.setCriteria(criteria);
                     }
-                    tableEditor.getItem().setText(2, criteria);
+                    tableEditor.getItem().setText(3, criteria);
                 }
             });
             text.selectAll();
@@ -354,7 +356,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             // Selected by mouse
             text.setFocus();
 
-            tableEditor.setEditor(text, item, 2);
+            tableEditor.setEditor(text, item, 3);
         }
 
         @Override
