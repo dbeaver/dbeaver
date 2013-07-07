@@ -2128,14 +2128,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     public void run()
                     {
                         // It is safe to use void monitor cos' it is virtual constraint
-                        if (editEntityIdentifier()) {
-                            try {
-                                identifier.reloadAttributes(
-                                    VoidProgressMonitor.INSTANCE,
-                                    model.getVisibleColumn(0).getMetaAttribute().getEntity());
-                            } catch (DBException e) {
-                                log.error(e);
-                            }
+                        try {
+                            editEntityIdentifier(VoidProgressMonitor.INSTANCE);
+                        } catch (DBException e) {
+                            log.error(e);
                         }
                     }
                 });
@@ -2145,7 +2141,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         return true;
     }
 
-    boolean editEntityIdentifier()
+    boolean editEntityIdentifier(DBRProgressMonitor monitor) throws DBException
     {
         DBVEntityConstraint constraint = (DBVEntityConstraint)getVirtualEntityIdentifier().getReferrer();
 
@@ -2159,7 +2155,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         Collection<DBSEntityAttribute> uniqueColumns = dialog.getSelectedColumns();
         constraint.setAttributes(uniqueColumns);
-
+        getVirtualEntityIdentifier().reloadAttributes(monitor, model.getVisibleColumn(0).getMetaAttribute().getEntity());
         getDataSource().getContainer().persistConfiguration();
 
         return true;
@@ -2886,7 +2882,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 {
                     try {
                         if (define) {
-                            editEntityIdentifier();
+                            editEntityIdentifier(monitor);
                         } else {
                             clearEntityIdentifier(monitor);
                         }

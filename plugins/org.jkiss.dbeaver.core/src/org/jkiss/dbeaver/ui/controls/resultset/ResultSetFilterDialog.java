@@ -23,12 +23,10 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -112,42 +110,50 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             columnsTable.addTraverseListener(
                 new UIUtils.ColumnTextEditorTraverseListener(columnsTable, tableEditor, 3, mouseListener));
 
+            {
+                Composite controlGroup = new Composite(columnsGroup, SWT.NONE);
+                controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                controlGroup.setLayout(new FillLayout());
+                final Button moveUpButton = UIUtils.createPushButton(controlGroup, "Move Up", null);
+                moveUpButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
 
+                    }
+                });
+                moveUpButton.setEnabled(false);
+                final Button moveDownButton = UIUtils.createPushButton(controlGroup, "Move Down", null);
+                moveDownButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+
+                    }
+                });
+                moveDownButton.setEnabled(false);
+                Button showAllButton = UIUtils.createPushButton(controlGroup, "Show All", null);
+                Button showNoneButton = UIUtils.createPushButton(controlGroup, "Show None", null);
+                Button resetButton = UIUtils.createPushButton(controlGroup, "Reset", null);
+
+                columnsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+                    @Override
+                    public void selectionChanged(SelectionChangedEvent event)
+                    {
+                        int selectionIndex = columnsViewer.getTable().getSelectionIndex();
+                        moveUpButton.setEnabled(selectionIndex > 0);
+                        moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < columnsViewer.getTable().getItemCount() - 1);
+                    }
+                });
+
+            }
             TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
             libsTab.setText(CoreMessages.controls_resultset_filter_group_columns);
             libsTab.setToolTipText("Set criteria and order for individual column(s)");
             libsTab.setControl(columnsGroup);
         }
 
-        {
-            Composite filterGroup = new Composite(tabFolder, SWT.NONE);
-            filterGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            filterGroup.setLayout(new GridLayout(1, false));
-
-            UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_where);
-            whereText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-            whereText.setLayoutData(new GridData(GridData.FILL_BOTH));
-            if (dataFilter.getWhere() != null) {
-                whereText.setText(dataFilter.getWhere());
-            }
-
-            UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_orderby);
-            orderText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-            orderText.setLayoutData(new GridData(GridData.FILL_BOTH));
-            if (dataFilter.getOrder() != null) {
-                orderText.setText(dataFilter.getOrder());
-            }
-
-            if (!resultSetViewer.supportsDataFilter()) {
-                filterGroup.setEnabled(false);
-                ControlEnableState.disable(filterGroup);
-            }
-
-            TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
-            libsTab.setText(CoreMessages.controls_resultset_filter_group_custom);
-            libsTab.setToolTipText("Set custom criteria and order for whole query");
-            libsTab.setControl(filterGroup);
-        }
+        createCustomFilters(tabFolder);
 
         // Fill columns
         columnsViewer.setInput(resultSetViewer.getModel().getColumns());
@@ -168,6 +174,37 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
 
 
         return parent;
+    }
+
+    private void createCustomFilters(TabFolder tabFolder)
+    {
+        Composite filterGroup = new Composite(tabFolder, SWT.NONE);
+        filterGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        filterGroup.setLayout(new GridLayout(1, false));
+
+        UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_where);
+        whereText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        whereText.setLayoutData(new GridData(GridData.FILL_BOTH));
+        if (dataFilter.getWhere() != null) {
+            whereText.setText(dataFilter.getWhere());
+        }
+
+        UIUtils.createControlLabel(filterGroup, CoreMessages.controls_resultset_filter_label_orderby);
+        orderText = new Text(filterGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        orderText.setLayoutData(new GridData(GridData.FILL_BOTH));
+        if (dataFilter.getOrder() != null) {
+            orderText.setText(dataFilter.getOrder());
+        }
+
+        if (!resultSetViewer.supportsDataFilter()) {
+            filterGroup.setEnabled(false);
+            ControlEnableState.disable(filterGroup);
+        }
+
+        TabItem libsTab = new TabItem(tabFolder, SWT.NONE);
+        libsTab.setText(CoreMessages.controls_resultset_filter_group_custom);
+        libsTab.setToolTipText("Set custom criteria and order for whole query");
+        libsTab.setControl(filterGroup);
     }
 
     @Override
