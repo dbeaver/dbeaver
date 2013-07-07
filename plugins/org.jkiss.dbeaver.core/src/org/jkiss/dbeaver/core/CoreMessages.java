@@ -291,7 +291,7 @@ public class CoreMessages extends NLS {
 
 	public static String controls_resultset_filter_button_reset;
 
-	public static String controls_resultset_filter_column_column;
+	public static String controls_resultset_filter_column_name;
 
 	public static String controls_resultset_filter_column_criteria;
 
