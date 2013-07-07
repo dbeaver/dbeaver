@@ -114,7 +114,7 @@ public class ActionUtils
 
     public static boolean isCommandEnabled(String commandId, IWorkbenchPart part)
     {
-        if (commandId != null) {
+        if (commandId != null && part != null) {
             try {
                 //Command cmd = new Command();
                 ICommandService commandService = (ICommandService)part.getSite().getService(ICommandService.class);

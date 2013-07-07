@@ -31,10 +31,12 @@ public class DBQAttributeConstraint {
     private DBQOrder orderBy;
     private String criteria;
     private boolean visible;
+    private int ordinal;
 
     public DBQAttributeConstraint(DBDAttributeBinding attribute)
     {
         this.attribute = attribute;
+        this.ordinal = attribute.getAttributeIndex();
     }
 
     public DBQAttributeConstraint(DBQAttributeConstraint source)
@@ -43,6 +45,7 @@ public class DBQAttributeConstraint {
         this.orderBy = source.orderBy;
         this.criteria = source.criteria;
         this.visible = source.visible;
+        this.ordinal = source.ordinal;
     }
 
     public DBDAttributeBinding getAttribute()
@@ -85,11 +88,17 @@ public class DBQAttributeConstraint {
         this.visible = visible;
     }
 
+    public int getOrdinal()
+    {
+        return ordinal;
+    }
+
     public void reset()
     {
         this.orderBy = null;
         this.criteria = null;
         this.visible = true;
+        this.ordinal = attribute.getAttributeIndex();
     }
 
     public boolean equalFilters(DBQAttributeConstraint source)
@@ -105,7 +114,8 @@ public class DBQAttributeConstraint {
         return this.attribute.hashCode() +
             (this.orderBy == null ? 0 : this.orderBy.hashCode()) +
             (this.criteria == null ? 0 : this.criteria.hashCode()) +
-            (this.visible ? 1 : 0);
+            (this.visible ? 1 : 0) +
+            (this.ordinal);
     }
 
     @Override
@@ -116,7 +126,8 @@ public class DBQAttributeConstraint {
         }
         DBQAttributeConstraint source = (DBQAttributeConstraint)obj;
         return equalFilters(source) &&
-            this.visible == source.visible;
+            this.visible == source.visible &&
+            this.ordinal == source.ordinal;
     }
 
 }

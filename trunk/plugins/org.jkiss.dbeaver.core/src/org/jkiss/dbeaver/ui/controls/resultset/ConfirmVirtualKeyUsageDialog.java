@@ -3,8 +3,11 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -51,8 +54,10 @@ class ConfirmVirtualKeyUsageDialog extends MessageDialogWithToggle {
                 super.buttonPressed(buttonId);
                 break;
             default:
-                if (viewer.editEntityIdentifier()) {
-                    // Update message?
+                try {
+                    viewer.editEntityIdentifier(VoidProgressMonitor.INSTANCE);
+                } catch (DBException e) {
+                    UIUtils.showErrorDialog(getShell(), "Virtual key edit", "Error editing virtual key", e);
                 }
                 break;
         }
