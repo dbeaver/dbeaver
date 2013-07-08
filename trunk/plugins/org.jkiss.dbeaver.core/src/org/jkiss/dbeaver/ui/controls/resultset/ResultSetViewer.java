@@ -304,7 +304,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         filtersPanel = new Composite(viewerPanel, SWT.NONE);
         filtersPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        GridLayout gl = new GridLayout(3, false);
+        GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 3;
         gl.marginWidth = 3;
         filtersPanel.setLayout(gl);
@@ -371,6 +371,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         final Button applyButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
         applyButton.setText("Apply");
+        applyButton.setToolTipText("Apply filter criteria");
         applyButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -379,12 +380,27 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         });
         applyButton.setEnabled(false);
+        final Button clearButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
+        clearButton.setText("X");
+        clearButton.setToolTipText("Remove all filters");
+        clearButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                resetDataFilter(true);
+            }
+        });
+        clearButton.setEnabled(false);
 
         this.filtersText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)
             {
-                applyButton.setEnabled(true);
+                if (filtersEnableState == null) {
+                    String filterText = filtersText.getText();
+                    applyButton.setEnabled(true);
+                    clearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+                }
             }
         });
 
