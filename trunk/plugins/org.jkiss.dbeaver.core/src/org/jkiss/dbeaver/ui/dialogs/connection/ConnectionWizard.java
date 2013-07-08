@@ -108,18 +108,13 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                     } else {
                         monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
                         try {
-                            // test connection
-                            dataSource.initialize(monitor);
+                            monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
+                            container.disconnect(monitor, false);
+                        } catch (DBException e) {
+                            // ignore it
+                            log.error(e);
+                        } finally {
                             monitor.done();
-                        }
-                        finally {
-                            try {
-                                monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
-                                container.disconnect(monitor, false);
-                            } catch (DBException e) {
-                                // ignore it
-                                log.error(e);
-                            }
                         }
                     }
                     monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
