@@ -25,3 +25,5 @@ Office formats support (xls, doc) for export/import. Possibly office extension.
 Search in multiple data sources
 Search open in new tab
 Search results reflect on disconnect
+
+Use separate connection for metadata and editors (configurable + on request)

@@ -1588,6 +1588,10 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public void setSelection(ISelection selection, boolean reveal)
     {
+        if (selection instanceof ResultSetSelectionImpl && ((ResultSetSelectionImpl) selection).getResultSetViewer() == this) {
+            // It may occur on simple focus change so we won't do anything
+            return;
+        }
         spreadsheet.deselectAllCells();
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
             List<GridPos> cellSelection = new ArrayList<GridPos>();
@@ -2973,6 +2977,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
             return rows;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (!(obj instanceof ResultSetSelectionImpl)) {
+                return false;
+            }
+            ResultSetSelectionImpl sel = (ResultSetSelectionImpl)obj;
+            return super.equals(obj);
         }
     }
 
