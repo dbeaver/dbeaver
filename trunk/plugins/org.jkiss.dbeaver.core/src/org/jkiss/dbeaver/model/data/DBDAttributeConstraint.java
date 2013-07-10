@@ -17,35 +17,36 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.data.query;
+package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * Attribute constraint
  */
-public class DBQAttributeConstraint {
+public class DBDAttributeConstraint {
 
     private final DBDAttributeBinding attribute;
-    private DBQOrder orderBy;
+    private int orderPosition;
+    private boolean orderDescending;
     private String criteria;
     private boolean visible;
-    private int ordinal;
+    private int visualPosition;
 
-    public DBQAttributeConstraint(DBDAttributeBinding attribute)
+    public DBDAttributeConstraint(DBDAttributeBinding attribute)
     {
         this.attribute = attribute;
-        this.ordinal = attribute.getAttributeIndex();
+        this.visualPosition = attribute.getAttributeIndex();
     }
 
-    public DBQAttributeConstraint(DBQAttributeConstraint source)
+    public DBDAttributeConstraint(DBDAttributeConstraint source)
     {
         this.attribute = source.attribute;
-        this.orderBy = source.orderBy;
+        this.orderPosition = source.orderPosition;
+        this.orderDescending = source.orderDescending;
         this.criteria = source.criteria;
         this.visible = source.visible;
-        this.ordinal = source.ordinal;
+        this.visualPosition = source.visualPosition;
     }
 
     public DBDAttributeBinding getAttribute()
@@ -53,14 +54,24 @@ public class DBQAttributeConstraint {
         return attribute;
     }
 
-    public DBQOrder getOrderBy()
+    public int getOrderPosition()
     {
-        return orderBy;
+        return orderPosition;
     }
 
-    public void setOrderBy(DBQOrder orderBy)
+    public void setOrderPosition(int orderPosition)
     {
-        this.orderBy = orderBy;
+        this.orderPosition = orderPosition;
+    }
+
+    public boolean isOrderDescending()
+    {
+        return orderDescending;
+    }
+
+    public void setOrderDescending(boolean orderDescending)
+    {
+        this.orderDescending = orderDescending;
     }
 
     public String getCriteria()
@@ -75,7 +86,7 @@ public class DBQAttributeConstraint {
 
     public boolean hasFilter()
     {
-        return !CommonUtils.isEmpty(criteria) || orderBy != null;
+        return !CommonUtils.isEmpty(criteria) || orderPosition > 0;
     }
 
     public boolean isVisible()
@@ -88,23 +99,30 @@ public class DBQAttributeConstraint {
         this.visible = visible;
     }
 
-    public int getOrdinal()
+    public int getVisualPosition()
     {
-        return ordinal;
+        return visualPosition;
+    }
+
+    public void setVisualPosition(int visualPosition)
+    {
+        this.visualPosition = visualPosition;
     }
 
     public void reset()
     {
-        this.orderBy = null;
+        this.orderPosition = 0;
+        this.orderDescending = false;
         this.criteria = null;
         this.visible = true;
-        this.ordinal = attribute.getAttributeIndex();
+        this.visualPosition = attribute.getAttributeIndex();
     }
 
-    public boolean equalFilters(DBQAttributeConstraint source)
+    public boolean equalFilters(DBDAttributeConstraint source)
     {
         return CommonUtils.equalObjects(this.attribute, source.attribute) &&
-            CommonUtils.equalObjects(this.orderBy, source.orderBy) &&
+            this.orderPosition == source.orderPosition &&
+            this.orderDescending == source.orderDescending &&
             CommonUtils.equalObjects(this.criteria, source.criteria);
     }
 
@@ -112,22 +130,23 @@ public class DBQAttributeConstraint {
     public int hashCode()
     {
         return this.attribute.hashCode() +
-            (this.orderBy == null ? 0 : this.orderBy.hashCode()) +
+            (this.orderPosition) +
+            (this.orderDescending ? 1 : 0) +
             (this.criteria == null ? 0 : this.criteria.hashCode()) +
             (this.visible ? 1 : 0) +
-            (this.ordinal);
+            (this.visualPosition);
     }
 
     @Override
     public boolean equals(Object obj)
     {
-        if (!(obj instanceof DBQAttributeConstraint)) {
+        if (!(obj instanceof DBDAttributeConstraint)) {
             return false;
         }
-        DBQAttributeConstraint source = (DBQAttributeConstraint)obj;
+        DBDAttributeConstraint source = (DBDAttributeConstraint)obj;
         return equalFilters(source) &&
             this.visible == source.visible &&
-            this.ordinal == source.ordinal;
+            this.visualPosition == source.visualPosition;
     }
 
 }

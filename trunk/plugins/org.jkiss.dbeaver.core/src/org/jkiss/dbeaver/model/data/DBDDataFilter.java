@@ -21,47 +21,42 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
-import org.jkiss.dbeaver.model.data.query.DBQOrder;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Data filter
  */
 public class DBDDataFilter {
 
-    private final List<DBQAttributeConstraint> constraints;
+    private final List<DBDAttributeConstraint> constraints;
     private String order;
     private String where;
 
-    public DBDDataFilter(List<DBQAttributeConstraint> constraints)
+    public DBDDataFilter(List<DBDAttributeConstraint> constraints)
     {
         this.constraints = constraints;
     }
 
     public DBDDataFilter(DBDDataFilter source)
     {
-        constraints = new ArrayList<DBQAttributeConstraint>(source.constraints.size());
-        for (DBQAttributeConstraint column : source.constraints) {
-            constraints.add(new DBQAttributeConstraint(column));
+        constraints = new ArrayList<DBDAttributeConstraint>(source.constraints.size());
+        for (DBDAttributeConstraint column : source.constraints) {
+            constraints.add(new DBDAttributeConstraint(column));
         }
         this.order = source.order;
         this.where = source.where;
     }
 
-    public Collection<DBQAttributeConstraint> getConstraints()
+    public Collection<DBDAttributeConstraint> getConstraints()
     {
         return constraints;
     }
 
-    public DBQAttributeConstraint getConstraint(DBDAttributeBinding binding)
+    public DBDAttributeConstraint getConstraint(DBDAttributeBinding binding)
     {
-        for (DBQAttributeConstraint co : constraints) {
+        for (DBDAttributeConstraint co : constraints) {
             if (co.getAttribute() == binding) {
                 return co;
             }
@@ -94,7 +89,7 @@ public class DBDDataFilter {
         if (!CommonUtils.isEmpty(this.order) || !CommonUtils.isEmpty(this.where)) {
             return true;
         }
-        for (DBQAttributeConstraint constraint : constraints) {
+        for (DBDAttributeConstraint constraint : constraints) {
             if (constraint.hasFilter()) {
                 return true;
             }
@@ -107,7 +102,7 @@ public class DBDDataFilter {
         if (!CommonUtils.isEmpty(where)) {
             return true;
         }
-        for (DBQAttributeConstraint constraint : constraints) {
+        for (DBDAttributeConstraint constraint : constraints) {
             if (!CommonUtils.isEmpty(constraint.getCriteria())) {
                 return true;
             }
@@ -120,8 +115,8 @@ public class DBDDataFilter {
         if (!CommonUtils.isEmpty(order)) {
             return true;
         }
-        for (DBQAttributeConstraint constraint : constraints) {
-            if (constraint.getOrderBy() != null) {
+        for (DBDAttributeConstraint constraint : constraints) {
+            if (constraint.getOrderPosition() > 0) {
                 return true;
             }
         }
@@ -136,7 +131,7 @@ public class DBDDataFilter {
     public void appendConditionString(DBPDataSource dataSource, String conditionTable, StringBuilder query)
     {
         boolean hasWhere = false;
-        for (DBQAttributeConstraint constraint : constraints) {
+        for (DBDAttributeConstraint constraint : constraints) {
             String criteria = constraint.getCriteria();
             if (CommonUtils.isEmpty(criteria)) {
                 continue;
@@ -165,18 +160,16 @@ public class DBDDataFilter {
     {
             // Construct ORDER BY
         boolean hasOrder = false;
-        for (DBQAttributeConstraint co : getConstraints()) {
-            if (co.getOrderBy() != null) {
-                if (hasOrder) query.append(',');
-                if (conditionTable != null) {
-                    query.append(conditionTable).append('.');
-                }
-                query.append(DBUtils.getQuotedIdentifier(dataSource, co.getAttribute().getAttributeName()));
-                if (co.getOrderBy() == DBQOrder.DESCENDING) {
-                    query.append(" DESC"); //$NON-NLS-1$
-                }
-                hasOrder = true;
+        for (DBDAttributeConstraint co : getOrderConstraints()) {
+            if (hasOrder) query.append(',');
+            if (conditionTable != null) {
+                query.append(conditionTable).append('.');
             }
+            query.append(DBUtils.getQuotedIdentifier(dataSource, co.getAttribute().getAttributeName()));
+            if (co.isOrderDescending()) {
+                query.append(" DESC"); //$NON-NLS-1$
+            }
+            hasOrder = true;
         }
         if (!CommonUtils.isEmpty(order)) {
             if (hasOrder) query.append(',');
@@ -184,17 +177,52 @@ public class DBDDataFilter {
         }
     }
 
+    private List<DBDAttributeConstraint> getOrderConstraints()
+    {
+        List<DBDAttributeConstraint> result = null;
+        for (DBDAttributeConstraint constraint : constraints) {
+            if (constraint.getOrderPosition() > 0) {
+                if (result == null) {
+                    result = new ArrayList<DBDAttributeConstraint>(constraints.size());
+                }
+                result.add(constraint);
+            }
+        }
+        if (result != null && result.size() > 1) {
+            Collections.sort(result, new Comparator<DBDAttributeConstraint>() {
+                @Override
+                public int compare(DBDAttributeConstraint o1, DBDAttributeConstraint o2)
+                {
+                    return o1.getOrderPosition() - o2.getOrderPosition();
+                }
+            });
+        }
+        return result == null ? Collections.<DBDAttributeConstraint>emptyList() : result;
+    }
+
+    public int getMaxOrderingPosition()
+    {
+        int maxPosition = 0;
+        for (DBDAttributeConstraint constraint : constraints) {
+            if (constraint.getOrderPosition() > maxPosition) {
+                maxPosition = constraint.getOrderPosition();
+            }
+        }
+        return maxPosition;
+    }
+
     public void resetOrderBy()
     {
         this.order = null;
-        for (DBQAttributeConstraint constraint : constraints) {
-            constraint.setOrderBy(null);
+        for (DBDAttributeConstraint constraint : constraints) {
+            constraint.setOrderPosition(0);
+            constraint.setOrderDescending(false);
         }
     }
 
     public void reset()
     {
-        for (DBQAttributeConstraint constraint : constraints) {
+        for (DBDAttributeConstraint constraint : constraints) {
             constraint.reset();
         }
         this.order = null;

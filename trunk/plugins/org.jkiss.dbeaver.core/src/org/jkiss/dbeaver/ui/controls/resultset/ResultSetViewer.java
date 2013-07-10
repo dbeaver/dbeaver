@@ -67,8 +67,7 @@ import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
-import org.jkiss.dbeaver.model.data.query.DBQOrder;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -734,12 +733,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             List<DBDAttributeBinding> visibleColumns = model.getVisibleColumns();
             for (int i = 0, metaColumnsLength = visibleColumns.size(); i < metaColumnsLength; i++) {
                 DBDAttributeBinding column = visibleColumns.get(i);
-                DBQAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
+                DBDAttributeConstraint constraint = model.getDataFilter().getConstraint(column);
                 GridColumn gridColumn = spreadsheet.getColumn(i);
-                if (constraint == null || constraint.getOrderBy() == null) {
+                if (constraint == null || constraint.getOrderPosition() == 0) {
                     gridColumn.setSort(SWT.DEFAULT);
                 } else {
-                    gridColumn.setSort(constraint.getOrderBy() == DBQOrder.DESCENDING ? SWT.UP : SWT.DOWN);
+                    gridColumn.setSort(constraint.isOrderDescending() ? SWT.UP : SWT.DOWN);
                 }
             }
             spreadsheet.redrawGrid();
@@ -1536,9 +1535,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             dataFilter.resetOrderBy();
         }
         DBDAttributeBinding metaColumn = model.getVisibleColumn(column.getIndex());
-        DBQAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
+        DBDAttributeConstraint constraint = dataFilter.getConstraint(metaColumn);
         //int newSort;
-        if (constraint.getOrderBy() == null) {
+        if (constraint.getOrderPosition() == 0) {
             if (dataReceiver.isHasMoreData() && supportsDataFilter()) {
                 if (!ConfirmationDialog.confirmActionWithParams(
                     spreadsheet.getShell(),
@@ -1548,17 +1547,23 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                     return;
                 }
             }
-            constraint.setOrderBy(altPressed ? DBQOrder.DESCENDING : DBQOrder.ASCENDING);
+            constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
+            constraint.setOrderDescending(altPressed);
+        } else if (!constraint.isOrderDescending()) {
+            constraint.setOrderDescending(true);
         } else {
-            if (constraint.getOrderBy() == DBQOrder.ASCENDING) {
-                constraint.setOrderBy(DBQOrder.DESCENDING);
-            } else {
-                constraint.setOrderBy(null);
+            for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
+                if (con2.getOrderPosition() > constraint.getOrderPosition()) {
+                    con2.setOrderPosition(con2.getOrderPosition() - 1);
+                }
             }
+            constraint.setOrderPosition(0);
+            constraint.setOrderDescending(false);
         }
+
         // Reorder
         // Use forced reorder if we just removed ordering on some column
-        reorderResultSet(constraint.getOrderBy() == null, new Runnable() {
+        reorderResultSet(constraint.getOrderPosition() == 0, new Runnable() {
             @Override
             public void run()
             {
@@ -2482,13 +2487,11 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             } else {
                 column.setSort(SWT.DEFAULT);
                 int index = column.getIndex();
-                for (DBQAttributeConstraint co : model.getDataFilter().getConstraints()) {
-                    if (co.getOrderBy() != null) {
-                        DBDAttributeBinding binding = co.getAttribute();
-                        if (binding != null && model.getVisibleColumns().indexOf(binding) == index) {
-                            column.setSort(co.getOrderBy() == DBQOrder.DESCENDING ? SWT.UP : SWT.DOWN);
-                            break;
-                        }
+                DBDAttributeConstraint co = model.getDataFilter().getConstraint(model.getVisibleColumn(index));
+                if (co.getOrderPosition() > 0) {
+                    DBDAttributeBinding binding = co.getAttribute();
+                    if (model.getVisibleColumns().indexOf(binding) == index) {
+                        column.setSort(co.isOrderDescending() ? SWT.UP : SWT.DOWN);
                     }
                 }
                 column.setSortRenderer(new SortRenderer(column));

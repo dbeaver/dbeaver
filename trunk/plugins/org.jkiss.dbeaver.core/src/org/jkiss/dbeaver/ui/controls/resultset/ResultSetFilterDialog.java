@@ -33,9 +33,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
-import org.jkiss.dbeaver.model.data.query.DBQOrder;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -101,7 +100,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event)
                 {
-                    dataFilter.getConstraint((DBDAttributeBinding)event.getElement()).setVisible(event.getChecked());
+                    dataFilter.getConstraint((DBDAttributeBinding) event.getElement()).setVisible(event.getChecked());
                 }
             });
 
@@ -239,7 +238,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     protected void okPressed()
     {
         boolean hasVisibleColumns = false;
-        for (DBQAttributeConstraint constraint : dataFilter.getConstraints()) {
+        for (DBDAttributeConstraint constraint : dataFilter.getConstraints()) {
             if (constraint.isVisible()) {
                 hasVisibleColumns = true;
                 break;
@@ -275,9 +274,9 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                 return ((IObjectImageProvider)column.getMetaAttribute()).getObjectImage();
             }
             if (columnIndex == 2) {
-                DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
-                if (constraint != null && constraint.getOrderBy() != null) {
-                    return constraint.getOrderBy() == DBQOrder.DESCENDING ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
+                DBDAttributeConstraint constraint = dataFilter.getConstraint(column);
+                if (constraint != null && constraint.getOrderPosition() > 0) {
+                    return constraint.isOrderDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
                 }
             }
             return null;
@@ -291,24 +290,14 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                 case 0: return column.getAttributeName();
                 case 1: return String.valueOf(column.getAttributeIndex() + 1);
                 case 2: {
-                    if (dataFilter.getConstraint(column).getOrderBy() != null) {
-                        int index = 0;
-                        for (DBQAttributeConstraint constraint : dataFilter.getConstraints()) {
-                            if (constraint.getOrderBy() != null) {
-                                index++;
-                            }
-                            if (constraint.getAttribute() == column) {
-                                break;
-                            }
-                        }
-                        if (index > 0) {
-                            return String.valueOf(index);
-                        }
+                    int orderPosition = dataFilter.getConstraint(column).getOrderPosition();
+                    if (orderPosition > 0) {
+                        return String.valueOf(orderPosition);
                     }
                     return ""; //$NON-NLS-1$
                 }
                 case 3: {
-                    DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
+                    DBDAttributeConstraint constraint = dataFilter.getConstraint(column);
                     if (constraint != null && !CommonUtils.isEmpty(constraint.getCriteria())) {
                         return constraint.getCriteria();
                     } else {
@@ -357,13 +346,22 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         private void toggleColumnOrder(TableItem item)
         {
             DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
-            DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
-            if (constraint.getOrderBy() == null) {
-                constraint.setOrderBy(DBQOrder.ASCENDING);
-            } else if (constraint.getOrderBy() == DBQOrder.ASCENDING) {
-                constraint.setOrderBy(DBQOrder.DESCENDING);
+            DBDAttributeConstraint constraint = dataFilter.getConstraint(column);
+            if (constraint.getOrderPosition() == 0) {
+                // Add new ordered column
+                constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
+                constraint.setOrderDescending(false);
+            } else if (!constraint.isOrderDescending()) {
+                constraint.setOrderDescending(true);
             } else {
-                constraint.setOrderBy(null);
+                // Remove ordered column
+                for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
+                    if (con2.getOrderPosition() > constraint.getOrderPosition()) {
+                        con2.setOrderPosition(con2.getOrderPosition() - 1);
+                    }
+                }
+                constraint.setOrderPosition(0);
+                constraint.setOrderDescending(false);
             }
             columnsViewer.refresh();
         }
@@ -379,7 +377,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                     Text text = (Text) tableEditor.getEditor();
                     String criteria = text.getText().trim();
                     DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
-                    DBQAttributeConstraint constraint = dataFilter.getConstraint(column);
+                    DBDAttributeConstraint constraint = dataFilter.getConstraint(column);
                     if (CommonUtils.isEmpty(criteria)) {
                         constraint.setCriteria(null);
                     } else {
