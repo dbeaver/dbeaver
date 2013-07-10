@@ -476,13 +476,7 @@ public class ResultSetModel {
     boolean setDataFilter(DBDDataFilter dataFilter)
     {
         this.dataFilter = dataFilter;
-        List<DBDAttributeBinding> newColumns = new ArrayList<DBDAttributeBinding>();
-        // Reset visible columns from filter
-        for (DBDAttributeConstraint constraint : dataFilter.getConstraints()) {
-            if (constraint.isVisible()) {
-                newColumns.add(constraint.getAttribute());
-            }
-        }
+        List<DBDAttributeBinding> newColumns = this.dataFilter.getOrderedVisibleAttributes();
         if (!newColumns.equals(visibleColumns)) {
             visibleColumns = newColumns;
             return true;

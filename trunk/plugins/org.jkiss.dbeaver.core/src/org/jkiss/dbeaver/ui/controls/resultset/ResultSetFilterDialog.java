@@ -42,6 +42,10 @@ import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 class ResultSetFilterDialog extends HelpEnabledDialog {
 
     private final ResultSetViewer resultSetViewer;
@@ -50,12 +54,22 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     private DBDDataFilter dataFilter;
     private Text whereText;
     private Text orderText;
+    // Keep constraints in a copy because we use this list as table viewer model
+    private java.util.List<DBDAttributeConstraint> constraints;
 
     public ResultSetFilterDialog(ResultSetViewer resultSetViewer)
     {
         super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
+        this.constraints = new ArrayList<DBDAttributeConstraint>(dataFilter.getConstraints());
+        Collections.sort(this.constraints, new Comparator<DBDAttributeConstraint>() {
+            @Override
+            public int compare(DBDAttributeConstraint o1, DBDAttributeConstraint o2)
+            {
+                return o1.getVisualPosition() - o2.getVisualPosition();
+            }
+        });
     }
 
     @Override
@@ -100,7 +114,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event)
                 {
-                    dataFilter.getConstraint((DBDAttributeBinding) event.getElement()).setVisible(event.getChecked());
+                    ((DBDAttributeConstraint) event.getElement()).setVisible(event.getChecked());
                 }
             });
 
@@ -118,7 +132,8 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-
+                        int selectionIndex = columnsViewer.getTable().getSelectionIndex();
+                        moveColumn(selectionIndex, selectionIndex - 1);
                     }
                 });
                 moveUpButton.setEnabled(false);
@@ -127,7 +142,8 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-
+                        int selectionIndex = columnsViewer.getTable().getSelectionIndex();
+                        moveColumn(selectionIndex, selectionIndex + 1);
                     }
                 });
                 moveDownButton.setEnabled(false);
@@ -155,7 +171,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         createCustomFilters(tabFolder);
 
         // Fill columns
-        columnsViewer.setInput(resultSetViewer.getModel().getColumns());
+        columnsViewer.setInput(constraints);
 
         // Pack UI
         UIUtils.packColumns(columnsViewer.getTable());
@@ -173,6 +189,14 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
 
 
         return parent;
+    }
+
+    private void moveColumn(int curIndex, int newIndex)
+    {
+        DBDAttributeConstraint constraint = constraints.remove(curIndex);
+        constraints.add(newIndex, constraint);
+        columnsViewer.refresh();
+        columnsViewer.setSelection(columnsViewer.getSelection());
     }
 
     private void createCustomFilters(TabFolder tabFolder)
@@ -225,8 +249,8 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     {
         if (buttonId == IDialogConstants.ABORT_ID) {
             dataFilter.reset();
-
-            columnsViewer.setInput(resultSetViewer.getModel().getColumns());
+            constraints = new ArrayList<DBDAttributeConstraint>(dataFilter.getConstraints());
+            columnsViewer.setInput(constraints);
             orderText.setText(""); //$NON-NLS-1$
             whereText.setText(""); //$NON-NLS-1$
         } else {
@@ -239,9 +263,10 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     {
         boolean hasVisibleColumns = false;
         for (DBDAttributeConstraint constraint : dataFilter.getConstraints()) {
+            // Set correct visible position
+            constraint.setVisualPosition(this.constraints.indexOf(constraint));
             if (constraint.isVisible()) {
                 hasVisibleColumns = true;
-                break;
             }
         }
         if (!hasVisibleColumns) {
@@ -269,13 +294,12 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         @Override
         public Image getColumnImage(Object element, int columnIndex)
         {
-            DBDAttributeBinding column = (DBDAttributeBinding) element;
-            if (columnIndex == 0 && column.getMetaAttribute() instanceof IObjectImageProvider) {
-                return ((IObjectImageProvider)column.getMetaAttribute()).getObjectImage();
+            DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
+            if (columnIndex == 0 && constraint.getAttribute().getMetaAttribute() instanceof IObjectImageProvider) {
+                return ((IObjectImageProvider)constraint.getAttribute().getMetaAttribute()).getObjectImage();
             }
             if (columnIndex == 2) {
-                DBDAttributeConstraint constraint = dataFilter.getConstraint(column);
-                if (constraint != null && constraint.getOrderPosition() > 0) {
+                if (constraint.getOrderPosition() > 0) {
                     return constraint.isOrderDescending() ? DBIcon.SORT_DECREASE.getImage() : DBIcon.SORT_INCREASE.getImage();
                 }
             }
@@ -285,19 +309,18 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         @Override
         public String getColumnText(Object element, int columnIndex)
         {
-            DBDAttributeBinding column = (DBDAttributeBinding) element;
+            DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
             switch (columnIndex) {
-                case 0: return column.getAttributeName();
-                case 1: return String.valueOf(column.getAttributeIndex() + 1);
+                case 0: return constraint.getAttribute().getAttributeName();
+                case 1: return String.valueOf(constraint.getAttribute().getAttributeIndex() + 1);
                 case 2: {
-                    int orderPosition = dataFilter.getConstraint(column).getOrderPosition();
+                    int orderPosition = constraint.getOrderPosition();
                     if (orderPosition > 0) {
                         return String.valueOf(orderPosition);
                     }
                     return ""; //$NON-NLS-1$
                 }
                 case 3: {
-                    DBDAttributeConstraint constraint = dataFilter.getConstraint(column);
                     if (constraint != null && !CommonUtils.isEmpty(constraint.getCriteria())) {
                         return constraint.getCriteria();
                     } else {
@@ -345,8 +368,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
 
         private void toggleColumnOrder(TableItem item)
         {
-            DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
-            DBDAttributeConstraint constraint = dataFilter.getConstraint(column);
+            DBDAttributeConstraint constraint = (DBDAttributeConstraint) item.getData();
             if (constraint.getOrderPosition() == 0) {
                 // Add new ordered column
                 constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
@@ -376,8 +398,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                 public void modifyText(ModifyEvent e) {
                     Text text = (Text) tableEditor.getEditor();
                     String criteria = text.getText().trim();
-                    DBDAttributeBinding column = (DBDAttributeBinding) item.getData();
-                    DBDAttributeConstraint constraint = dataFilter.getConstraint(column);
+                    DBDAttributeConstraint constraint = (DBDAttributeConstraint) item.getData();
                     if (CommonUtils.isEmpty(criteria)) {
                         constraint.setCriteria(null);
                     } else {
@@ -408,7 +429,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
         @Override
         public boolean isChecked(Object element)
         {
-            return dataFilter.getConstraint((DBDAttributeBinding) element).isVisible();
+            return ((DBDAttributeConstraint)element).isVisible();
         }
 
         @Override
