@@ -1,12 +1,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.data.DBDValue;
-import org.jkiss.dbeaver.model.data.query.DBQAttributeConstraint;
-import org.jkiss.dbeaver.model.data.query.DBQOrder;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -47,9 +42,9 @@ public class ResultSetModel {
 
     public DBDDataFilter createDataFilter()
     {
-        List<DBQAttributeConstraint> constraints = new ArrayList<DBQAttributeConstraint>(columns.length);
+        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>(columns.length);
         for (DBDAttributeBinding binding : columns) {
-            DBQAttributeConstraint constraint = new DBQAttributeConstraint(binding);
+            DBDAttributeConstraint constraint = new DBDAttributeConstraint(binding);
             constraint.setVisible(visibleColumns.contains(binding));
             constraints.add(constraint);
         }
@@ -123,7 +118,7 @@ public class ResultSetModel {
 
     public void setColumnVisibility(DBDAttributeBinding attribute, boolean visible)
     {
-        DBQAttributeConstraint constraint = dataFilter.getConstraint(attribute);
+        DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
         if (constraint.isVisible() != visible) {
             constraint.setVisible(visible);
             if (visible) {
@@ -231,7 +226,7 @@ public class ResultSetModel {
         if (this.columns == null || this.columns.length != columns.length) {
             update = true;
         } else {
-            if (dataFilter != null && dataFilter.hasConditions()) {
+            if (dataFilter != null && dataFilter.hasFilters()) {
                 // This is a filtered result set so keep old metadata.
                 // Filtering modifies original query (adds subquery)
                 // and it may change metadata (depends on driver)
@@ -483,7 +478,7 @@ public class ResultSetModel {
         this.dataFilter = dataFilter;
         List<DBDAttributeBinding> newColumns = new ArrayList<DBDAttributeBinding>();
         // Reset visible columns from filter
-        for (DBQAttributeConstraint constraint : dataFilter.getConstraints()) {
+        for (DBDAttributeConstraint constraint : dataFilter.getConstraints()) {
             if (constraint.isVisible()) {
                 newColumns.add(constraint.getAttribute());
             }
@@ -507,7 +502,7 @@ public class ResultSetModel {
             public int compare(Object[] row1, Object[] row2)
             {
                 int result = 0;
-                for (DBQAttributeConstraint co : dataFilter.getConstraints()) {
+                for (DBDAttributeConstraint co : dataFilter.getConstraints()) {
                     final DBDAttributeBinding binding = co.getAttribute();
                     if (binding == null) {
                         continue;
@@ -527,7 +522,7 @@ public class ResultSetModel {
                         String str2 = cell2.toString();
                         result = str1.compareTo(str2);
                     }
-                    if (co.getOrderBy() == DBQOrder.DESCENDING) {
+                    if (co.isOrderDescending()) {
                         result = -result;
                     }
                     if (result != 0) {
