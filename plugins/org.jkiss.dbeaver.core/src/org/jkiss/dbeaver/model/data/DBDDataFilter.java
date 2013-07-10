@@ -64,6 +64,28 @@ public class DBDDataFilter {
         return null;
     }
 
+    public List<DBDAttributeBinding> getOrderedVisibleAttributes()
+    {
+        List<DBDAttributeConstraint> visibleConstraints = new ArrayList<DBDAttributeConstraint>();
+        for (DBDAttributeConstraint constraint : constraints) {
+            if (constraint.isVisible()) {
+                visibleConstraints.add(constraint);
+            }
+        }
+        Collections.sort(visibleConstraints, new Comparator<DBDAttributeConstraint>() {
+            @Override
+            public int compare(DBDAttributeConstraint o1, DBDAttributeConstraint o2)
+            {
+                return o1.getVisualPosition() - o2.getVisualPosition();
+            }
+        });
+        List<DBDAttributeBinding> attributes = new ArrayList<DBDAttributeBinding>(visibleConstraints.size());
+        for (DBDAttributeConstraint constraint : visibleConstraints) {
+            attributes.add(constraint.getAttribute());
+        }
+        return attributes;
+    }
+
     public String getOrder()
     {
         return order;
