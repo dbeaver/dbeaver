@@ -1670,7 +1670,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
         if (resultSetProvider != null && resultSetProvider.isReadyToRun() && getDataContainer() != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
-            if (oldRowNum >= segmentSize) {
+            if (oldRowNum >= segmentSize && segmentSize > 0) {
                 segmentSize = (oldRowNum / segmentSize + 1) * segmentSize;
             }
             runDataPump(0, segmentSize, new GridPos(oldColNum, oldRowNum), new Runnable() {
