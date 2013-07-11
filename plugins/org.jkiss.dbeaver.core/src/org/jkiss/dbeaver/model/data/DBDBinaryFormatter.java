@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.impl.data.BinaryFormatterBase64;
-import org.jkiss.dbeaver.model.impl.data.BinaryFormatterString;
 import org.jkiss.dbeaver.model.impl.data.BinaryFormatterHex;
+import org.jkiss.dbeaver.model.impl.data.BinaryFormatterString;
 
 /**
  * Binary content presentation

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -87,7 +87,7 @@
   </Web_Info>
   <Permissions>
     <Distribution_Permissions>DBeaver is freeware. You can use it for any purpose with no limitations.</Distribution_Permissions>
-    <EULA>Copyright (C) 2010-2012 Serge Rieder serge@jkiss.org
+    <EULA>Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
 
         DBeaver is free software; you can redistribute it and/or
         modify it under the terms of the GNU Lesser General Public

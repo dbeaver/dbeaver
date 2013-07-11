@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
-import oracle.jdbc.OracleResultSet;
 import oracle.xdb.XMLType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
