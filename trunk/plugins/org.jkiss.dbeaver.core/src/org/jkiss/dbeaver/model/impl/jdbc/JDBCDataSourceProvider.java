@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -29,7 +29,10 @@ import org.jkiss.dbeaver.ui.properties.PropertyDescriptorEx;
 
 import java.sql.Driver;
 import java.sql.DriverPropertyInfo;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * JDBCDataSourceProvider
