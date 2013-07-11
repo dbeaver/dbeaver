@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;

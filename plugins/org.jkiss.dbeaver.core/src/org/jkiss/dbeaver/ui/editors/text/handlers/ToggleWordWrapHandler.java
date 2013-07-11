@@ -3,9 +3,6 @@ package org.jkiss.dbeaver.ui.editors.text.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
 public class ToggleWordWrapHandler extends AbstractTextHandler {

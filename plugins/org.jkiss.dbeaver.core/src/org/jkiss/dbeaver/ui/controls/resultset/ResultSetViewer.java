@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -67,7 +67,6 @@ import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;

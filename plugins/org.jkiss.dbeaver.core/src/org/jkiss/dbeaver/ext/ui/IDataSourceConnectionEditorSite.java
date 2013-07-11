@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -19,7 +19,6 @@
 
 package org.jkiss.dbeaver.ext.ui;
 
-import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDriver;

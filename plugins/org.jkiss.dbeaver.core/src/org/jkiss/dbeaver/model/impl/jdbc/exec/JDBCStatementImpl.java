@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;

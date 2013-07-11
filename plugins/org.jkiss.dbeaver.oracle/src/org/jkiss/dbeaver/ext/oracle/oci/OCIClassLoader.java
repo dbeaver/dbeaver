@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.net.URLClassLoader;
 
 /**
  * Class loader loads libraries from Oracle home folder.

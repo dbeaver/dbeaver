@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 Serge Rieder
+ * Copyright (C) 2010-2013 Serge Rieder
  * serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
@@ -18,14 +18,11 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 
 /**
