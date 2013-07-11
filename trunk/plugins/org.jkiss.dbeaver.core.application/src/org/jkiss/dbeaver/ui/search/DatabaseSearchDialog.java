@@ -26,10 +26,13 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -50,12 +53,14 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
     static final Log log = LogFactory.getLog(DatabaseSearchDialog.class);
 
     private static final int SEARCH_ID = 1000;
+    private static final String NEW_TAB_PREF_NAME = "search.dialog.results.newTab";
 
     private volatile static DatabaseSearchDialog instance;
 
     private boolean searchEnabled = true;
     private Button searchButton;
     private TabFolder providersFolder;
+    private Button openNewTabCheck;
 
 
     private DatabaseSearchDialog(Shell shell, DBSDataSourceContainer currentDataSource)
@@ -119,6 +124,11 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
+        // New tab check
+        ((GridLayout) parent.getLayout()).numColumns++;
+        openNewTabCheck = UIUtils.createCheckbox(parent, "Open results in new tab", DBeaverCore.getGlobalPreferenceStore().getBoolean(NEW_TAB_PREF_NAME));
+
+        // Buttons
         searchButton = createButton(parent, SEARCH_ID, "Search", true);
         searchButton.setEnabled(searchEnabled);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
@@ -144,7 +154,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
     public void saveState()
     {
         IPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-
+        store.setValue(NEW_TAB_PREF_NAME, openNewTabCheck.getSelection());
         for (TabItem item : providersFolder.getItems()) {
             IObjectSearchPage page = (IObjectSearchPage) item.getData("page");
             page.saveState(store);
@@ -184,7 +194,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
         }
         IObjectSearchResultPage resultsPage;
         try {
-            resultsPage = resultsView.openResultPage(provider, query, false);
+            resultsPage = resultsView.openResultPage(provider, query, openNewTabCheck.getSelection());
         } catch (DBException e) {
             UIUtils.showErrorDialog(getShell(), "Search", "Can't open search results page", e);
             return;
