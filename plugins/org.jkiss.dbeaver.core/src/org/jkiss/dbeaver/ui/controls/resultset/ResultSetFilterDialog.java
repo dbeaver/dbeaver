@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -125,7 +124,9 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
 
             {
                 Composite controlGroup = new Composite(columnsGroup, SWT.NONE);
-                controlGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.verticalIndent = 3;
+                controlGroup.setLayoutData(gd);
                 controlGroup.setLayout(new FillLayout());
                 final Button moveUpButton = UIUtils.createPushButton(controlGroup, "Move Up", null);
                 moveUpButton.addSelectionListener(new SelectionAdapter() {
@@ -148,8 +149,40 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
                 });
                 moveDownButton.setEnabled(false);
                 Button showAllButton = UIUtils.createPushButton(controlGroup, "Show All", null);
+                showAllButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        for (DBDAttributeConstraint constraint : constraints) {
+                            constraint.setVisible(true);
+                        }
+                        columnsViewer.refresh();
+                    }
+                });
                 Button showNoneButton = UIUtils.createPushButton(controlGroup, "Show None", null);
-                Button resetButton = UIUtils.createPushButton(controlGroup, "Reset", null);
+                showNoneButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        for (DBDAttributeConstraint constraint : constraints) {
+                            constraint.setVisible(false);
+                        }
+                        columnsViewer.refresh();
+                    }
+                });
+                Button resetButton = UIUtils.createPushButton(controlGroup, CoreMessages.controls_resultset_filter_button_reset, null);
+                resetButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e)
+                    {
+                        dataFilter.reset();
+                        constraints = new ArrayList<DBDAttributeConstraint>(dataFilter.getConstraints());
+                        columnsViewer.setInput(constraints);
+                        //columnsViewer.refresh();
+                        orderText.setText(""); //$NON-NLS-1$
+                        whereText.setText(""); //$NON-NLS-1$
+                    }
+                });
 
                 columnsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
                     @Override
@@ -241,21 +274,13 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
     {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-        createButton(parent, IDialogConstants.ABORT_ID, CoreMessages.controls_resultset_filter_button_reset, false);
+        //createButton(parent, IDialogConstants.ABORT_ID, CoreMessages.controls_resultset_filter_button_reset, false);
     }
 
     @Override
     protected void buttonPressed(int buttonId)
     {
-        if (buttonId == IDialogConstants.ABORT_ID) {
-            dataFilter.reset();
-            constraints = new ArrayList<DBDAttributeConstraint>(dataFilter.getConstraints());
-            columnsViewer.setInput(constraints);
-            orderText.setText(""); //$NON-NLS-1$
-            whereText.setText(""); //$NON-NLS-1$
-        } else {
-            super.buttonPressed(buttonId);
-        }
+        super.buttonPressed(buttonId);
     }
 
     @Override
