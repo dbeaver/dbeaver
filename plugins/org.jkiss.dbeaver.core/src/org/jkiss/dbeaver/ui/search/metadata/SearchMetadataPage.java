@@ -35,10 +35,13 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.search.IObjectSearchContainer;
@@ -47,7 +50,9 @@ import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.List;
 
 public class SearchMetadataPage extends DialogPage implements IObjectSearchPage {
 
@@ -59,6 +64,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
     private static final String PROP_MATCH_INDEX = "search-view.match-index"; //$NON-NLS-1$
     private static final String PROP_HISTORY = "search-view.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search-view.object-type"; //$NON-NLS-1$
+    private static final String PROP_SOURCES = "search-view.object-source"; //$NON-NLS-1$
 
     private IObjectSearchContainer container;
     private Table typesTable;
@@ -72,6 +78,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
     private Set<DBSObjectType> checkedTypes = new HashSet<DBSObjectType>();
     private Set<String> searchHistory = new LinkedHashSet<String>();
     private Set<String> savedTypeNames = new HashSet<String>();
+    private List<DBNNode> sourceNodes = new ArrayList<DBNNode>();
 
     public SearchMetadataPage() {
 		super("Database objects search");
@@ -203,30 +210,39 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
                         IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
                         for (Iterator<?> iter = structSel.iterator(); iter.hasNext(); ) {
                             Object object = iter.next();
-                            if (object instanceof DBNDataSource) {
-                                DBNDataSource dsNode = (DBNDataSource) object;
-                                dsNode.initializeNode(null, new DBRProcessListener() {
-                                    @Override
-                                    public void onProcessFinish(IStatus status)
-                                    {
-                                        if (status.isOK()) {
-                                            Display.getDefault().asyncExec(new Runnable() {
-                                                @Override
-                                                public void run()
-                                                {
-                                                    if (!dataSourceTree.isDisposed()) {
-                                                        fillObjectTypes();
-                                                    }
+                            if (object instanceof DBNNode) {
+                                for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
+                                    if (node instanceof DBNDataSource) {
+                                        DBNDataSource dsNode = (DBNDataSource) node;
+                                        dsNode.initializeNode(null, new DBRProcessListener() {
+                                            @Override
+                                            public void onProcessFinish(IStatus status)
+                                            {
+                                                if (status.isOK()) {
+                                                    Display.getDefault().asyncExec(new Runnable() {
+                                                        @Override
+                                                        public void run()
+                                                        {
+                                                            if (!dataSourceTree.isDisposed()) {
+                                                                fillObjectTypes();
+                                                            }
+                                                        }
+                                                    });
                                                 }
-                                            });
-                                        }
+                                            }
+                                        });
+                                        break;
                                     }
-                                });
+                                }
                             }
                         }
                     }
                 }
             );
+            if (!sourceNodes.isEmpty()) {
+                dataSourceTree.getViewer().setSelection(
+                    new StructuredSelection(sourceNodes));
+            }
         }
 
         {
@@ -414,6 +430,36 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             searchHistory.add(history);
         }
         {
+            final String sources = store.getString(PROP_SOURCES);
+            if (!CommonUtils.isEmpty(sources)) {
+                try {
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor)
+                        {
+                            StringTokenizer st = new StringTokenizer(sources, "|"); //$NON-NLS-1$
+                            while (st.hasMoreTokens()) {
+                                String nodePath = st.nextToken();
+                                try {
+                                    DBNNode node = DBNModel.getInstance().getNodeByPath(monitor, nodePath);
+                                    if (node != null) {
+                                        sourceNodes.add(node);
+                                    }
+                                } catch (DBException e) {
+                                    log.error(e);
+                                }
+                            }
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    log.error(e.getTargetException());
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            }
+        }
+
+        {
             String type = store.getString(PROP_OBJECT_TYPE);
             if (!CommonUtils.isEmpty(type)) {
                 StringTokenizer st = new StringTokenizer(type, "|"); //$NON-NLS-1$
@@ -432,6 +478,21 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
         {
+            // Object sources
+            StringBuilder sourcesString = new StringBuilder();
+            IStructuredSelection ss = (IStructuredSelection) dataSourceTree.getViewer().getSelection();
+            for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
+                DBNNode node = (DBNNode) iter.next();
+                if (sourcesString.length() > 0) {
+                    sourcesString.append("|"); //$NON-NLS-1$
+                }
+                sourcesString.append(node.getNodeItemPath());
+            }
+            store.setValue(PROP_SOURCES, sourcesString.toString());
+        }
+
+        {
+            // Search history
             int historyIndex = 0;
             for (String history : searchHistory) {
                 if (historyIndex >= 20) {
@@ -442,6 +503,7 @@ public class SearchMetadataPage extends DialogPage implements IObjectSearchPage 
             }
         }
         {
+            // Object types
             StringBuilder typesString = new StringBuilder();
             for (DBSObjectType type : checkedTypes) {
                 if (typesString.length() > 0) {
