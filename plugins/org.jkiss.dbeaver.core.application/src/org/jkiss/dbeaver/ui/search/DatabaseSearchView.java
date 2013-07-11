@@ -72,8 +72,11 @@ public class DatabaseSearchView extends ViewPart implements INavigatorModelView 
 
     public IObjectSearchResultPage openResultPage(ObjectSearchProvider provider, IObjectSearchQuery query, boolean newTab) throws DBException
     {
-        for (CTabItem item : resultsFolder.getItems()) {
-            item.dispose();
+        if (!newTab) {
+            // Remove all existing tabs
+            for (CTabItem item : resultsFolder.getItems()) {
+                item.dispose();
+            }
         }
         IObjectSearchResultPage resultPage = provider.createResultsPage();
         try {
@@ -89,6 +92,7 @@ public class DatabaseSearchView extends ViewPart implements INavigatorModelView 
         tabItem.setText(query.getLabel());
         tabItem.setImage(provider.getIcon());
         tabItem.setToolTipText(provider.getDescription());
+        tabItem.setShowClose(true);
         resultsFolder.setSelection(tabItem);
 
         activateCurrentPage();
