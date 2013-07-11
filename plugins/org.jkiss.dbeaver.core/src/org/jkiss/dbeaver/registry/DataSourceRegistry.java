@@ -769,15 +769,25 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             synchronized (dataSources) {
                 dsSnapshot = CommonUtils.copyList(dataSources);
             }
-            for (DataSourceDescriptor dataSource : dsSnapshot) {
-                if (dataSource.isConnected()) {
-                    try {
-                        // Disconnect
-                        disconnected = dataSource.disconnect(monitor);
-                    } catch (Exception ex) {
-                        log.error("Can't shutdown data source '" + dataSource.getName() + "'", ex);
+            monitor.beginTask("Disconnect all databases", dsSnapshot.size());
+            try {
+                for (DataSourceDescriptor dataSource : dsSnapshot) {
+                    if (monitor.isCanceled()) {
+                        break;
                     }
+                    if (dataSource.isConnected()) {
+                        try {
+                            // Disconnect
+                            monitor.subTask("Disconnect from [" + dataSource.getName() + "]");
+                            disconnected = dataSource.disconnect(monitor);
+                        } catch (Exception ex) {
+                            log.error("Can't shutdown data source '" + dataSource.getName() + "'", ex);
+                        }
+                    }
+                    monitor.worked(1);
                 }
+            } finally {
+                monitor.done();
             }
         }
     }

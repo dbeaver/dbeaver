@@ -154,6 +154,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     return false;
                 }
             }
+/*
             // Wait for all datasource jobs to finish
             DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
@@ -163,8 +164,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     Job.getJobManager().join(DBPDataSource.class, monitor.getNestedMonitor());
                 }
             });
-        } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
+*/
         }
         catch (Throwable e) {
             // do nothing
