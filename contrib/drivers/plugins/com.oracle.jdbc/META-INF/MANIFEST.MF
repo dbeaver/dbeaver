@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Oracle 11g R2 JDBC Driver
 Bundle-SymbolicName: com.oracle.jdbc;singleton:=true
-Bundle-Version: 11.2.0.1
+Bundle-Version: 11.2.0.3
 Bundle-ClassPath: ojdbc6.jar,
- xdb.jar,
+ xdb6.jar,
  xmlparserv2.jar,
  orai18n.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
