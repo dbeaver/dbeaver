@@ -101,13 +101,16 @@ public class TextViewDialog extends ValueViewDialog {
             if (useHex) {
                 style |= SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.WRAP;
             } else {
-                // Use border only for plain text editor, otherwie tab folder's border will be used
+                // Use border only for plain text editor, otherwise tab folder's border will be used
                 style |= SWT.BORDER;
             }
             textEdit = new Text(useHex ? editorContainer : dialogGroup, style);
 
             if (maxSize > 0) {
                 textEdit.setTextLimit((int) maxSize);
+            }
+            if (readOnly) {
+                textEdit.setBackground(getShell().getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
             }
             GridData gd = new GridData(isForeignKey ? GridData.FILL_HORIZONTAL : GridData.FILL_BOTH);
             gd.widthHint = 300;

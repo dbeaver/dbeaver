@@ -243,39 +243,26 @@ public abstract class ValueViewDialog extends Dialog implements DBDValueEditorSt
 
 */
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
-        final Link columnHideLink = new Link(dialogGroup, SWT.NONE);
-        columnHideLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                columnInfoVisible = !columnInfoVisible;
-                dialogSettings.put(getInfoVisiblePrefId(), columnInfoVisible);
-                initColumnInfoVisibility(columnHideLink);
-                getShell().layout();
-                int width = getShell().getSize().x;
-                getShell().setSize(width, getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-            }
-        });
-        columnPanel = new ColumnInfoPanel(dialogGroup, SWT.BORDER, getValueController());
-        columnPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        if (valueController instanceof DBDAttributeController) {
+            final Link columnHideLink = new Link(dialogGroup, SWT.NONE);
+            columnHideLink.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    columnInfoVisible = !columnInfoVisible;
+                    dialogSettings.put(getInfoVisiblePrefId(), columnInfoVisible);
+                    initColumnInfoVisibility(columnHideLink);
+                    getShell().layout();
+                    int width = getShell().getSize().x;
+                    getShell().setSize(width, getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+                }
+            });
 
-        initColumnInfoVisibility(columnHideLink);
+            columnPanel = new ColumnInfoPanel(dialogGroup, SWT.BORDER, valueController);
+            columnPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-/*
-
-        ExpandBar expandBar = new ExpandBar(dialogGroup, SWT.V_SCROLL);
-        expandBar.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        //expandBar.set
-        ColumnInfoPanel columnPanel = new ColumnInfoPanel(expandBar, SWT.BORDER, getValueController());
-
-        ExpandItem columnsItem = new ExpandItem(expandBar, SWT.NONE, 0);
-        columnsItem.setText("Column information");
-        columnsItem.setControl(columnPanel);
-        columnsItem.setHeight(columnPanel.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
-
-        expandBar.setSpacing(8);
-*/
+            initColumnInfoVisibility(columnHideLink);
+        }
 
         return dialogGroup;
     }
