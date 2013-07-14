@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.perspective;
 
+import org.eclipse.search2.internal.ui.SearchView;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
@@ -84,6 +85,9 @@ public class DBeaverPerspective implements IPerspectiveFactory
         bottomRight.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW);
         bottomRight.addPlaceholder(IPageLayout.ID_OUTLINE);
 
-        //layout.getViewLayout(DatabaseNavigatorView.VIEW_ID).setCloseable(false);
+        // Search views
+        bottomRight.addPlaceholder("org.eclipse.search.ui.views.SearchView");
+        bottomRight.addPlaceholder("org.jkiss.dbeaver.ui.search.DatabaseSearchView");
     }
+
 }
