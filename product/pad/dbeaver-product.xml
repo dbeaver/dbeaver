@@ -52,7 +52,15 @@
             <date>15.07.2013</date>
 
             <release-notes>
-                -
+                - Search UI changed
+                - Metadata reading improved (Oracle RDB problem fixed)
+                - Results columns hiding/reordering support added
+                - Results viewer fixed (context menu, record mode, scrolling, etc)
+                - Connection properties save fixed
+                - Project management fixed in Eclipse plugin version
+                - Metadata search integrated into standard Eclipse search UI
+                - Oracle driver updated to 11.2.0.3
+                - Many minor UI fixes
             </release-notes>
         </version>
 
