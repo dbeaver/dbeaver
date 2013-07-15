@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DefaultDataFormatter;
+import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
@@ -213,7 +214,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                if (controller.getValueType().getTypeID() == java.sql.Types.BIT) {
+                if (controller.getValueType().getDataKind() == DBSDataKind.BOOLEAN) {
                     return new ValueEditor<Combo>(controller) {
                         @Override
                         protected Combo createControl(Composite editPlaceholder)

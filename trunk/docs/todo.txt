@@ -27,3 +27,5 @@ Search open in new tab
 Search results reflect on disconnect
 
 Use separate connection for metadata and editors (configurable + on request)
+
+Fix advanced copy in record mode
