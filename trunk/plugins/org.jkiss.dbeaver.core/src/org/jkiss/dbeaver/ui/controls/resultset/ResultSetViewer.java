@@ -1884,11 +1884,15 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 colsSelected.add(pos.col);
             }
         }
-        int rowNumber = 1;
+        int rowNumber = 0;
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
             if (copyRowNumbers) {
-                tdt.append("-");
+                if (gridMode == GridMode.GRID) {
+                    tdt.append("-");
+                } else {
+                    tdt.append("Column");
+                }
             }
             for (int colIndex : colsSelected) {
                 GridColumn column = spreadsheet.getColumn(colIndex);
@@ -1900,7 +1904,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             tdt.append(lineSeparator);
         }
         if (copyRowNumbers) {
-            tdt.append(rowNumber++).append(delimiter);
+            tdt.append(this.spreadsheet.getRowLabelProvider().getText(rowNumber++)).append(delimiter);
         }
 
         int prevRow = firstRow;
@@ -1916,7 +1920,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
                 tdt.append(lineSeparator);
                 if (copyRowNumbers) {
-                    tdt.append(rowNumber++).append(delimiter);
+                    tdt.append(this.spreadsheet.getRowLabelProvider().getText(rowNumber++)).append(delimiter);
                 }
                 prevRow = pos.row;
                 prevCol = firstCol;
