@@ -9,12 +9,6 @@ Minor:
 rename mysql (generic?) table,column
 comment mysql table, column
 
-Plugin:
-Customize resource roots
-
-generate sql
-- exclipse secure store (doesn't work)
-
 Disconnect detection (by error code)
 
 Connection "dirty" flag handle
@@ -29,3 +23,4 @@ Search results reflect on disconnect
 Use separate connection for metadata and editors (configurable + on request)
 
 Query execution time fix (use statistics bean)
+Generic driver config for additional metadata reading (stored procedures, ete).
