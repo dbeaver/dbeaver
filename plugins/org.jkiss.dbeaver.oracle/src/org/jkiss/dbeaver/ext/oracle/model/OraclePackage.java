@@ -211,6 +211,12 @@ public class OraclePackage extends OracleSchemaObject
             Map<String, OracleProcedurePackaged> overloads = new HashMap<String, OracleProcedurePackaged>();
             while (objectIter.hasNext()) {
                 final OracleProcedurePackaged proc = objectIter.next();
+                if (CommonUtils.isEmpty(proc.getName())) {
+                    // Skip procedures with empty names
+                    // Oracle 11+ has dummy procedure with subprogram_id=0 and empty name
+                    objectIter.remove();
+                    continue;
+                }
                 final OracleProcedurePackaged overload = overloads.get(proc.getName());
                 if (overload == null) {
                     overloads.put(proc.getName(), proc);
