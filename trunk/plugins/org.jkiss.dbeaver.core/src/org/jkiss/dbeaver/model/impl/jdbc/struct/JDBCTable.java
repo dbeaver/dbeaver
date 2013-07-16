@@ -92,9 +92,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows)
+    public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows)
         throws DBException
     {
+        DBCStatistics statistics = new DBCStatistics();
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
         DBRProgressMonitor monitor = context.getProgressMonitor();
@@ -118,44 +119,47 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             maxRows);
         try {
             dbStat.setDataContainer(this);
-            if (!dbStat.executeStatement()) {
-                return 0;
-            }
-            DBCResultSet dbResult = dbStat.openResultSet();
-            if (dbResult == null) {
-                return 0;
-            }
-            try {
-                dataReceiver.fetchStart(context, dbResult);
-
-                long rowCount;
-                try {
-                    rowCount = 0;
-                    while (dbResult.nextRow()) {
-                        if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
-                            // Fetch not more than max rows
-                            break;
-                        }
-                        dataReceiver.fetchRow(context, dbResult);
-                        rowCount++;
-                        if (rowCount % 100 == 0) {
-                            monitor.subTask(rowCount + CoreMessages.model_jdbc__rows_fetched);
-                            monitor.worked(100);
-                        }
-
-                    }
-                } finally {
+            long startTime = System.currentTimeMillis();
+            boolean executeResult = dbStat.executeStatement();
+            statistics.setExecuteTime(System.currentTimeMillis() - startTime);
+            if (executeResult) {
+                DBCResultSet dbResult = dbStat.openResultSet();
+                if (dbResult != null) {
                     try {
-                        dataReceiver.fetchEnd(context);
-                    } catch (DBCException e) {
-                        log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                        dataReceiver.fetchStart(context, dbResult);
+
+                        try {
+                            startTime = System.currentTimeMillis();
+                            long rowCount = 0;
+                            while (dbResult.nextRow()) {
+                                if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
+                                    // Fetch not more than max rows
+                                    break;
+                                }
+                                dataReceiver.fetchRow(context, dbResult);
+                                rowCount++;
+                                if (rowCount % 100 == 0) {
+                                    monitor.subTask(rowCount + CoreMessages.model_jdbc__rows_fetched);
+                                    monitor.worked(100);
+                                }
+
+                            }
+                            statistics.setFetchTime(System.currentTimeMillis() - startTime);
+                            statistics.setRowsFetched(rowCount);
+                        } finally {
+                            try {
+                                dataReceiver.fetchEnd(context);
+                            } catch (DBCException e) {
+                                log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                            }
+                        }
+                    }
+                    finally {
+                        dbResult.close();
                     }
                 }
-                return rowCount;
             }
-            finally {
-                dbResult.close();
-            }
+            return statistics;
         }
         finally {
             dbStat.close();

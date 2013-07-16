@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
 /**
  * Data container.
@@ -51,7 +52,7 @@ public interface DBSDataContainer extends DBSObject {
      * @return number of fetched rows
      * @throws DBException on any error
      */
-    long readData(
+    DBCStatistics readData(
         DBCExecutionContext context,
         DBDDataReceiver dataReceiver,
         DBDDataFilter dataFilter,

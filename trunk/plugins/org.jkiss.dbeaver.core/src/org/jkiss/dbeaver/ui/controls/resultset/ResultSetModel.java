@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -51,7 +52,7 @@ public class ResultSetModel {
     private final Set<RowInfo> addedRows = new TreeSet<RowInfo>();
     private final Set<RowInfo> removedRows = new TreeSet<RowInfo>();
     private final Map<GridPos, Object> editedValues = new HashMap<GridPos, Object>();
-    private long executionTime;
+    private DBCStatistics statistics;
 
     public ResultSetModel()
     {
@@ -546,14 +547,13 @@ public class ResultSetModel {
         });
     }
 
-    public long getExecutionTime()
+    public DBCStatistics getStatistics()
     {
-        return executionTime;
+        return statistics;
     }
 
-    public void setExecutionTime(long executionTime)
+    public void setStatistics(DBCStatistics statistics)
     {
-        this.executionTime = executionTime;
+        this.statistics = statistics;
     }
-
 }
