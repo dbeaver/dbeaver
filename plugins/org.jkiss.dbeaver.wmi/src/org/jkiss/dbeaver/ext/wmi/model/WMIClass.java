@@ -241,6 +241,7 @@ public class WMIClass extends WMIContainer
         return constraints;
     }
 
+    @Override
     public WMIClassAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
     {
         return DBUtils.findObject(getAttributes(monitor), attributeName);
