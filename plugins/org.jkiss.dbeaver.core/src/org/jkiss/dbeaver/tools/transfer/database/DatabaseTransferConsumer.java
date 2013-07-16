@@ -85,6 +85,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         for (int i = 0; i < rsAttributes.size(); i++) {
             columnMappings[i] = new ColumnMapping(rsAttributes.get(i));
             columnMappings[i].targetAttr = containerMapping.getAttributeMapping(columnMappings[i].rsAttr);
+            if (columnMappings[i].targetAttr == null) {
+                throw new DBCException("Can't find target attribute [" + columnMappings[i].rsAttr.getName() + "]");
+            }
             columnMappings[i].valueHandler = DBUtils.findValueHandler(context, columnMappings[i].rsAttr);
         }
     }
