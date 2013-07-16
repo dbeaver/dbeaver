@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -96,13 +97,13 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     long offset = 0;
                     int segmentSize = settings.getSegmentSize();
                     for (;;) {
-                        long rowCount = dataContainer.readData(
+                        DBCStatistics statistics = dataContainer.readData(
                             context, consumer, dataFilter, offset, segmentSize);
-                        if (rowCount < segmentSize) {
+                        if (statistics == null || statistics.getRowsFetched() < segmentSize) {
                             // Done
                             break;
                         }
-                        offset += rowCount;
+                        offset += statistics.getRowsFetched();
                     }
                 }
             } finally {
