@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -35,7 +36,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private int offset;
     private int maxRows;
     private Throwable error;
-    private long timeSpent;
+    private DBCStatistics statistics;
 
     protected ResultSetDataPumpJob(ResultSetViewer resultSetViewer) {
         super(CoreMessages.controls_rs_pump_job_name, DBIcon.SQL_EXECUTE.getImageDescriptor(), resultSetViewer.getDataContainer().getDataSource());
@@ -57,22 +58,20 @@ class ResultSetDataPumpJob extends DataSourceJob {
         return error;
     }
 
-    public long getTimeSpent()
+    DBCStatistics getStatistics()
     {
-        return timeSpent;
+        return statistics;
     }
 
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
         error = null;
-        timeSpent = 0;
-        long startTime = System.currentTimeMillis();
         DBCExecutionContext context = getDataSource().openContext(
                 monitor,
                 DBCExecutionPurpose.USER,
                 NLS.bind(CoreMessages.controls_rs_pump_job_context_name, resultSetViewer.getDataContainer().getName()));
         try {
-            resultSetViewer.getDataContainer().readData(
+            statistics = resultSetViewer.getDataContainer().readData(
                 context,
                 resultSetViewer.getDataReceiver(),
                 resultSetViewer.getModel().getDataFilter(),
@@ -84,7 +83,6 @@ class ResultSetDataPumpJob extends DataSourceJob {
         }
         finally {
             context.close();
-            timeSpent = System.currentTimeMillis() - startTime;
         }
 
         return Status.OK_STATUS;

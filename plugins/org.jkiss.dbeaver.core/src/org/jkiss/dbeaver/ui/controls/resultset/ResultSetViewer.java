@@ -1022,10 +1022,17 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
 
     private String getExecutionTimeMessage()
     {
-        if (model.getExecutionTime() <= 0) {
+        DBCStatistics statistics = model.getStatistics();
+        if (statistics == null || statistics.isEmpty()) {
             return "";
         }
-        return " - " + model.getExecutionTime() + CoreMessages.controls_resultset_viewer_ms;
+        StringBuilder message = new StringBuilder(64);
+        message.append(" - ").append(statistics.getTotalTime());
+        if (statistics.getFetchTime() > 0) {
+            message.append("(").append(statistics.getExecuteTime()).append(")");
+        }
+        message.append(CoreMessages.controls_resultset_viewer_ms);
+        return message.toString();
     }
 
     /**
@@ -1751,7 +1758,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 @Override
                 public void done(IJobChangeEvent event) {
                     final Throwable error = dataPumpJob == null ? null : dataPumpJob.getError();
-                    model.setExecutionTime(dataPumpJob == null ? 0 : dataPumpJob.getTimeSpent());
+                    model.setStatistics(dataPumpJob == null ? null : dataPumpJob.getStatistics());
                     dataPumpJob = null;
                     Display.getDefault().asyncExec(new Runnable() {
                         @Override

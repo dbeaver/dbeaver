@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -423,9 +424,11 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
+    public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
     {
+        DBCStatistics statistics = new DBCStatistics();
         try {
+            long startTime = System.currentTimeMillis();
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(
                 context.getProgressMonitor(),
                 getNamespace().getService(),
@@ -434,6 +437,8 @@ public class WMIClass extends WMIContainer
                 getName(),
                 sink,
                 WMIConstants.WBEM_FLAG_SHALLOW);
+            statistics.setExecuteTime(System.currentTimeMillis() - startTime);
+            startTime = System.currentTimeMillis();
             sink.waitForFinish();
             WMIResultSet resultSet = new WMIResultSet(context, this, sink.getObjectList());
             long resultCount = 0;
@@ -452,7 +457,9 @@ public class WMIClass extends WMIContainer
                 resultSet.close();
                 dataReceiver.close();
             }
-            return resultCount;
+            statistics.setFetchTime(System.currentTimeMillis() - startTime);
+            statistics.setRowsFetched(resultCount);
+            return statistics;
         } catch (WMIException e) {
             throw new DBException("Can't enum instances", e);
         }

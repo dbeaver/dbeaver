@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.data.DBDValueController;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -145,11 +146,13 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
         }
 
         @Override
-        public long readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
+        public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
         {
+            DBCStatistics statistics = new DBCStatistics();
             DBRProgressMonitor monitor = context.getProgressMonitor();
             DBCResultSet dbResult = value;
             try {
+                long startTime = System.currentTimeMillis();
                 dataReceiver.fetchStart(context, dbResult);
                 long rowCount;
                 try {
@@ -177,10 +180,12 @@ public class CursorViewDialog extends ValueViewDialog implements ResultSetProvid
                         log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
                     }
                 }
-                return rowCount;
+                statistics.setFetchTime(System.currentTimeMillis() - startTime);
+                statistics.setRowsFetched(rowCount);
+                return statistics;
             }
             finally {
-                //dbResult.close();
+                dataReceiver.close();
             }
         }
 

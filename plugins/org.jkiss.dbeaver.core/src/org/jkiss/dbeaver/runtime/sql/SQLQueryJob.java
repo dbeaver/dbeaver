@@ -83,6 +83,7 @@ public class SQLQueryJob extends DataSourceJob
 
     private List<ISQLQueryListener> queryListeners = new ArrayList<ISQLQueryListener>();
     private static final String NESTED_QUERY_AlIAS = "origdbvr";
+    private DBCStatistics statistics = new DBCStatistics();
 
     public SQLQueryJob(
         String name,
@@ -404,6 +405,7 @@ public class SQLQueryJob extends DataSourceJob
                 //monitor.subTask("Execute query");
                 boolean hasResultSet = curStatement.executeStatement();
                 curResult.setHasResultSet(hasResultSet);
+                statistics.setExecuteTime(System.currentTimeMillis() - startTime);
                 // Show results only if we are not in the script execution
                 // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
                 // return messy results here
@@ -416,6 +418,7 @@ public class SQLQueryJob extends DataSourceJob
                         updateCount = curStatement.getUpdateRowCount();
                         if (updateCount >= 0) {
                             curResult.setUpdateCount(updateCount);
+                            statistics.setRowsUpdated(updateCount);
                         }
                     } catch (DBCException e) {
                         // In some cases we can't read update count
@@ -529,6 +532,8 @@ public class SQLQueryJob extends DataSourceJob
                     curResult.setSourceEntity(sourceName);
                 }
             }
+            long fetchStartTime = System.currentTimeMillis();
+
             // Fetch all rows
             while ((!hasLimits() || rowCount < rsMaxRows) && curResultSet.nextRow()) {
                 if (monitor.isCanceled()) {
@@ -543,6 +548,8 @@ public class SQLQueryJob extends DataSourceJob
 
                 dataReceiver.fetchRow(context, curResultSet);
             }
+
+            statistics.setFetchTime(System.currentTimeMillis() - fetchStartTime);
         }
         finally {
             if (!keepStatementOpen()) {
@@ -558,6 +565,7 @@ public class SQLQueryJob extends DataSourceJob
         }
 
         curResult.setRowCount(rowCount);
+        statistics.setRowsFetched(rowCount);
         monitor.subTask(rowCount + " rows fetched");
     }
 
@@ -607,9 +615,10 @@ public class SQLQueryJob extends DataSourceJob
     }
 */
 
-    public long extractData(DBCExecutionContext context)
+    public void extractData(DBCExecutionContext context)
         throws DBException
     {
+        statistics = new DBCStatistics();
         if (queries.size() != 1) {
             throw new DBException("Invalid state of SQL Query job");
         }
@@ -621,7 +630,6 @@ public class SQLQueryJob extends DataSourceJob
                 throw new DBException(lastError);
             }
         }
-        return rowCount;
     }
 
     public void setDataFilter(DBDDataFilter dataFilter)
@@ -632,5 +640,10 @@ public class SQLQueryJob extends DataSourceJob
     public void setDataReceiver(DBDDataReceiver dataReceiver)
     {
         this.dataReceiver = dataReceiver;
+    }
+
+    public DBCStatistics getStatistics()
+    {
+        return statistics;
     }
 }
