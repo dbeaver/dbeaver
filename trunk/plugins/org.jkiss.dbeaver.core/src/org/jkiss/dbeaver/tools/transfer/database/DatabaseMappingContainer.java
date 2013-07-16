@@ -153,7 +153,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     public DatabaseMappingAttribute getAttributeMapping(DBSAttributeBase sourceAttr)
     {
         for (DatabaseMappingAttribute attr : attributeMappings) {
-            if (attr.getSource().getName().equals(sourceAttr.getName())) {
+            if (attr.getSource().getName().equalsIgnoreCase(sourceAttr.getName())) {
                 return attr;
             }
         }

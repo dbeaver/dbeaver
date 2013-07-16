@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -79,8 +80,10 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                 element.setChecked(autoCommit);
                 // Update command image
                 element.setIcon(autoCommit ? DBIcon.TXN_COMMIT_AUTO.getImageDescriptor() : DBIcon.TXN_COMMIT_MANUAL.getImageDescriptor());
-                element.setText(autoCommit ? "Switch to manual commit (" + txnManager.getTransactionIsolation().getTitle() + ")" : "Switch to auto-commit");
-                element.setTooltip(autoCommit ? "Auto-commit" : "Manual commit (" + txnManager.getTransactionIsolation().getTitle() + ")");
+                DBPTransactionIsolation isolation = txnManager.getTransactionIsolation();
+                String isolationName = isolation == null ? "?" : isolation.getTitle();
+                element.setText(autoCommit ? "Switch to manual commit (" + isolationName + ")" : "Switch to auto-commit");
+                element.setTooltip(autoCommit ? "Auto-commit" : "Manual commit (" + isolationName + ")");
             } catch (DBCException e) {
                 log.warn(e);
             } finally {
