@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * Copyright (C) 2010-2013 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<plugin>
+
+    <extension
+        point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+              class="org.jkiss.dbeaver.ext.mssql.MSSQLDataSourceProvider"
+              description="MSSQL connector"
+              icon="icons/mssql_icon.png"
+              id="mssql"
+              label="MSSQL">
+            <tree
+                  icon="icons/mssql_icon.png"
+                  label="MSSQL data source"
+                  path="mssql">
+                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLCatalog" label="%tree.databases.node.name" icon="#folder_database" description="Server databases">
+                    <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLTableConstraint" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                        <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                    <items label="%tree.reference_key.node.name" path="referenceKey" property="references" icon="#reference" virtual="true">
+                                        <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLPartition" label="%tree.partitions.node.name" icon="#partitions" description="Table partitions" visibleIf="object.dataSource.info.databaseProductVersion>='5.1.6'">
+                                    <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition">
+                                        <items label="%tree.subpartitions.node.name" itemLabel="%tree.subpartition.node.name" path="subpartition" property="subPartitions" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLView" label="%tree.views.node.name" icon="#folder_view" description="Views">
+                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                                <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" virtual="true">
+                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index" virtual="true">
+                                <items label="Index columns" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                            <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="Procedure columns" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                            </items>
+                        </folder>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
+                    <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
+                </folder>
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings">
+                    <object type="org.jkiss.dbeaver.ext.mssql.editors.MSSQLSessionEditor" label="%tree.sessions.node.name" icon="#admin" description="Server session manager" editor="org.jkiss.dbeaver.ext.mssql.editors.MSSQLSessionEditor"/>
+                </folder>
+
+                <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLInformation" label="%tree.system_info.node.name" icon="#folder_info" description="Database system information">
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLParameter" label="%tree.session_status.node.name" icon="#info" description="Session status">
+                        <items label="%tree.variable.node.name" path="sessionStatus" property="sessionStatus" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLParameter" label="%tree.global_status.node.name" icon="#info" description="Global status">
+                        <items label="%tree.variable.node.name" path="globalStatus" property="globalStatus" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLParameter" label="%tree.session_variables.node.name" icon="#info" description="Session variables">
+                        <items label="%tree.variable.node.name" path="sessionVariables" property="sessionVariables" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLParameter" label="%tree.global_variables.node.name" icon="#info" description="Global variables">
+                        <items label="%tree.variable.node.name" path="globalVariables" property="globalVariables" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLEngine" label="%tree.engines.node.name" icon="#info" description="Database engines">
+                        <items label="%tree.engine.node.name" path="engines" property="engines" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.mssql.model.MSSQLCharset" label="%tree.charsets.node.name" icon="#info" description="Database charsets">
+                        <items label="%tree.charset.node.name" path="charsets" property="charsets" icon="#info">
+                            <items label="%tree.collation.node.name" path="collations" property="collations" icon="#info" navigable="false"/>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.model.access.DBAPrivilege" label="%tree.user_privileges.node.name" icon="#info" description="User privileges">
+                        <items label="%tree.privilege.node.name" path="privileges" property="privileges" icon="#info" navigable="false" virtual="true"/>
+                    </folder>
+                </folder>
+
+            </tree>
+            <drivers managable="false">
+                <driver
+                    id="mssql5"
+                    label="MSSQL"
+                    icon="icons/mssql_icon.png"
+                    class="com.mssql.jdbc.Driver"
+                    sampleURL="jdbc:mssql://{host}[:{port}]/[{database}]"
+                    defaultPort="3306"
+                    webURL="http://www.mssql.com/products/connector/"
+                    description="MSSQL standard driver">
+                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.mssql/LICENSE.txt"/>
+                </driver>
+            </drivers>
+            <views>
+                <view
+                    id="org.jkiss.dbeaver.ext.mssql.dataSourceWizardView"
+                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                    label="%dialog.connection.header"
+                    class="org.jkiss.dbeaver.ext.mssql.views.MSSQLConnectionPage"
+                    icon="icons/mssql_icon.png">
+                </view>
+                <view
+                    id="org.jkiss.dbeaver.ext.mssql.dataSourceEditorView"
+                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                    label="%dialog.connection.header"
+                    class="org.jkiss.dbeaver.ext.mssql.views.MSSQLConnectionPage">
+                </view>
+            </views>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLUserManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLUser"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLCatalogManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLCatalog"
+            label="%manager.catalog.name"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLTableManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLTable"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLTableColumnManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLTableColumn"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLConstraintManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLTableConstraint"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLForeignKeyManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLTableForeignKey"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLIndexManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLTableIndex"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLViewManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLView"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLTriggerManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLTrigger"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.mssql.edit.MSSQLProcedureManager"
+            objectType="org.jkiss.dbeaver.ext.mssql.model.MSSQLProcedure"/>
+
+        <editor id="source.view" class="org.jkiss.dbeaver.ext.mssql.editors.MSSQLSourceViewEditor"
+            label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.MSSQLSourceObject"/>
+        </editor>
+        <editor id="source.ddl" class="org.jkiss.dbeaver.ext.mssql.editors.MSSQLDDLViewEditor"
+            label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            <objectType name="org.jkiss.dbeaver.ext.mssql.model.MSSQLTable"/>
+        </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.ext.mssql.data.MSSQLValueHandlerProvider"
+            description="MSSQL data types provider"
+            id="org.jkiss.dbeaver.ext.mssql.data.MSSQLValueHandlerProvider"
+            label="MSSQL data types provider">
+
+            <datasource id="mssql"/>
+
+            <type name="ENUM"/>
+            <type name="SET"/>
+            <type name="DATE"/>
+            <type name="DATETIME"/>
+            <type name="TIMESTAMP"/>
+
+        </provider>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+            name="%editor.session_manager.name"
+            icon="icons/sessions.png"
+            class="org.jkiss.dbeaver.ext.mssql.editors.MSSQLSessionEditor"
+            id="org.jkiss.dbeaver.ext.mssql.editors.MSSQLSessionEditor">
+        </editor>
+    </extension>
+
+</plugin>
