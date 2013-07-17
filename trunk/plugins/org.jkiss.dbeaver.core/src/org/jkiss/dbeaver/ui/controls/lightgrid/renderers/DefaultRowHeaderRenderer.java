@@ -35,9 +35,15 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 public class DefaultRowHeaderRenderer extends AbstractRenderer {
     private static final int leftMargin = 6;
     private static final int rightMargin = 8;
+    private final Color DEFAULT_BACKGROUND;
+    private final Color DEFAULT_FOREGROUND;
+    private final Color DEFAULT_FOREGROUND_TEXT;
 
     public DefaultRowHeaderRenderer(LightGrid grid) {
         super(grid);
+        DEFAULT_BACKGROUND = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+        DEFAULT_FOREGROUND = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+        DEFAULT_FOREGROUND_TEXT = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
     }
 
     /**
@@ -51,7 +57,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
 
         Color background = getHeaderBackground();
         if (background == null) {
-            background = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+            background = DEFAULT_BACKGROUND;
         }
         gc.setBackground(background);
 
@@ -63,7 +69,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
 
 
         {
-            gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            gc.setForeground(DEFAULT_FOREGROUND);
 
             gc.drawLine(
                 bounds.x + bounds.width - 1,
@@ -92,7 +98,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
 
         Color foreground = getHeaderForeground();
         if (foreground == null) {
-            foreground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
+            foreground = DEFAULT_FOREGROUND_TEXT;
         }
 
         gc.setForeground(foreground);
@@ -109,7 +115,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
         return grid.getRowLabelProvider() == null ? null : grid.getRowLabelProvider().getImage(getRow());
     }
 
-    private String getHeaderText() {
+    protected String getHeaderText() {
         String text = grid.getRowLabelProvider() == null ? null : grid.getRowLabelProvider().getText(getRow());
         if (text == null) {
             text = String.valueOf(getRow());
@@ -117,7 +123,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
         return text;
     }
 
-    private Color getHeaderBackground() {
+    protected Color getHeaderBackground() {
         if (grid.getRowLabelProvider() instanceof IColorProvider) {
             return ((IColorProvider) grid.getRowLabelProvider()).getBackground(getRow());
         } else {
@@ -125,7 +131,7 @@ public class DefaultRowHeaderRenderer extends AbstractRenderer {
         }
     }
 
-    private Color getHeaderForeground() {
+    protected Color getHeaderForeground() {
         if (grid.getRowLabelProvider() instanceof IColorProvider) {
             return ((IColorProvider) grid.getRowLabelProvider()).getForeground(getRow());
         } else {

@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
  * @since 2.0.0
  */
 public class DefaultTopLeftRenderer extends AbstractRenderer {
-    private Button cfgButton;
+    //private Button cfgButton;
 
     public DefaultTopLeftRenderer(LightGrid grid) {
         super(grid);
