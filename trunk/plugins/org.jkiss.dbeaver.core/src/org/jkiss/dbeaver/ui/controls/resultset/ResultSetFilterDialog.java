@@ -98,7 +98,7 @@ class ResultSetFilterDialog extends HelpEnabledDialog {
             columnsTable.setHeaderVisible(true);
             columnsTable.setLinesVisible(true);
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_name);
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "№");
+            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "#");
             UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_order);
             criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_criteria);
 

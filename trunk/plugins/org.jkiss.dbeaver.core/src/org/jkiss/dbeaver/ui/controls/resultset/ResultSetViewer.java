@@ -1255,7 +1255,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
         }
-        DBDAttributeBinding metaColumn = model.getVisibleColumn(cell.col);
+        DBDAttributeBinding metaColumn = model.getColumn(cell.col);
         final int handlerFeatures = metaColumn.getValueHandler().getFeatures();
         if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
             return false;
@@ -2624,7 +2624,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (model.isRowDeleted(row)) {
                 return backgroundDeleted;
             }
-            if (model.isDirty() && model.isCellModified(new GridPos(col, row))) {
+            if (model.isDirty() && model.isCellModified(
+                new GridPos(model.getVisibleColumn(col).getAttributeIndex(), row)))
+            {
                 return backgroundModified;
             }
             return null;
