@@ -22,5 +22,5 @@ Search results reflect on disconnect
 
 Use separate connection for metadata and editors (configurable + on request)
 
-Query execution time fix (use statistics bean)
 Generic driver config for additional metadata reading (stored procedures, ete).
+Columns ordering/search (record mode)

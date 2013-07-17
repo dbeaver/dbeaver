@@ -3195,7 +3195,12 @@ public abstract class LightGrid extends Canvas {
             redraw();
         } else {
             // Change focus column anyway
-            focusColumn = getColumn(new Point(e.x, e.y));
+            GridColumn column = getColumn(new Point(e.x, e.y));
+            if (column == null) {
+                // Clicked on top-left cell or outside of grid
+                return;
+            }
+            focusColumn = column;
         }
 
         if (selectionEvent != null) {
