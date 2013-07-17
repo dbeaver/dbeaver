@@ -83,7 +83,6 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultRowHeaderRenderer;
-import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultTopLeftRenderer;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
