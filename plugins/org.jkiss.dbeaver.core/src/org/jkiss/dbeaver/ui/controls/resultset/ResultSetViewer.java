@@ -80,11 +80,10 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridColumn;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.AbstractRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultRowHeaderRenderer;
+import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.DefaultTopLeftRenderer;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.ISpreadsheetController;
 import org.jkiss.dbeaver.ui.controls.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -213,6 +212,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 new ContentLabelProvider(),
                 new ColumnLabelProvider(),
                 new RowLabelProvider());
+            this.spreadsheet.setTopLeftRenderer(new TopLeftRenderer(this.spreadsheet));
             this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             this.previewPane = new ViewValuePanel(resultsSash) {
@@ -1414,7 +1414,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             }
         }
 
-        if (model.getVisibleColumnCount() > 0) {
+        if (curCell.col >= 0 && model.getVisibleColumnCount() > 0) {
             // Export and other utility methods
             manager.add(new Separator());
             MenuManager filtersMenu = new MenuManager(
@@ -1891,15 +1891,12 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 colsSelected.add(pos.col);
             }
         }
+        ILabelProvider rowLabelProvider = this.spreadsheet.getRowLabelProvider();
         int rowNumber = 0;
         StringBuilder tdt = new StringBuilder();
         if (copyHeader) {
             if (copyRowNumbers) {
-                if (gridMode == GridMode.GRID) {
-                    tdt.append("-");
-                } else {
-                    tdt.append("Column");
-                }
+                tdt.append(rowLabelProvider.getText(-1));
             }
             for (int colIndex : colsSelected) {
                 GridColumn column = spreadsheet.getColumn(colIndex);
@@ -1911,7 +1908,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             tdt.append(lineSeparator);
         }
         if (copyRowNumbers) {
-            tdt.append(this.spreadsheet.getRowLabelProvider().getText(rowNumber++)).append(delimiter);
+            tdt.append(rowLabelProvider.getText(rowNumber++)).append(delimiter);
         }
 
         int prevRow = firstRow;
@@ -1927,7 +1924,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
                 tdt.append(lineSeparator);
                 if (copyRowNumbers) {
-                    tdt.append(this.spreadsheet.getRowLabelProvider().getText(rowNumber++)).append(delimiter);
+                    tdt.append(rowLabelProvider.getText(rowNumber++)).append(delimiter);
                 }
                 prevRow = pos.row;
                 prevCol = firstCol;
@@ -2690,6 +2687,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             if (gridMode == GridMode.RECORD) {
                 int rowNumber = ((Number) element).intValue();
+                if (rowNumber < 0) return null;
                 return getTypeImage(model.getVisibleColumn(rowNumber).getMetaAttribute());
             }
             return null;
@@ -2700,10 +2698,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         {
             int rowNumber = ((Number) element).intValue();
             if (gridMode == GridMode.RECORD) {
+                if (rowNumber < 0) return "Name";
                 return model.getVisibleColumn(rowNumber).getAttributeName();
             } else {
+                if (rowNumber < 0) return "#";
                 return String.valueOf(rowNumber + 1);
             }
+        }
+    }
+
+    private class TopLeftRenderer extends DefaultRowHeaderRenderer {
+
+        public TopLeftRenderer(LightGrid grid)
+        {
+            super(grid);
         }
     }
 
