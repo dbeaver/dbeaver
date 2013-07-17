@@ -97,7 +97,7 @@ public class ResultSetModel {
 
     public void resetCellValue(GridPos cell, boolean delete)
     {
-        if (editedValues != null && editedValues.containsKey(cell)) {
+        if (editedValues.containsKey(cell)) {
             Object[] row = this.curRows.get(cell.row);
             resetValue(row[cell.col]);
             row[cell.col] = this.editedValues.get(cell);
@@ -247,7 +247,7 @@ public class ResultSetModel {
         } else {
             if (dataFilter != null && dataFilter.hasFilters()) {
                 // This is a filtered result set so keep old metadata.
-                // Filtering modifies original query (adds subquery)
+                // Filtering modifies original query (adds sub-query)
                 // and it may change metadata (depends on driver)
                 // but actually it doesn't change any column or table names/types
                 // so let's keep old info
