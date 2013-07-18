@@ -24,3 +24,4 @@ Use separate connection for metadata and editors (configurable + on request)
 
 Generic driver config for additional metadata reading (stored procedures, ete).
 Columns ordering/search (record mode)
+DB toolbar visibility config in Eclipse mode
