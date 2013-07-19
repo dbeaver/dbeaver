@@ -133,7 +133,11 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
                 try {
                     // Try to load all indexes with one query
-                    indexCache.getObjects(monitor, this, null);
+                    Collection<GenericTableIndex> indexes = indexCache.getObjects(monitor, this, null);
+                    if (CommonUtils.isEmpty(indexes)) {
+                        // Nothing was read, Maybe driver doesn't support mass indexes reading
+                        indexCache.clearCache();
+                    }
                 } catch (Exception e) {
                     // Failed
                     if (readFromTables) {
@@ -188,7 +192,11 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             // Try to read all FKs
             try {
                 monitor.subTask("Cache primary keys");
-                primaryKeysCache.getObjects(monitor, this, null);
+                Collection<GenericPrimaryKey> objects = primaryKeysCache.getObjects(monitor, this, null);
+                if (CommonUtils.isEmpty(objects)) {
+                    // Nothing was read, Maybe driver doesn't support mass keys reading
+                    primaryKeysCache.clearCache();
+                }
             } catch (Exception e) {
                 // Failed - seems to be unsupported feature
                 log.debug(e);
@@ -204,7 +212,11 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                 // Try to read all FKs
                 try {
                     monitor.subTask("Cache foreign keys");
-                    foreignKeysCache.getObjects(monitor, this, null);
+                    Collection<GenericTableForeignKey> foreignKeys = foreignKeysCache.getObjects(monitor, this, null);
+                    if (CommonUtils.isEmpty(foreignKeys)) {
+                        // Nothing was read, Maybe driver doesn't support mass keys reading
+                        foreignKeysCache.clearCache();
+                    }
                 } catch (Exception e) {
                     // Failed - seems to be unsupported feature
                     log.debug(e);
