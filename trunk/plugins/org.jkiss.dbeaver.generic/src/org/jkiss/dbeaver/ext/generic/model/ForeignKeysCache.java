@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -168,6 +169,10 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);
 
         String fkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.FKCOLUMN_NAME);
+        if (CommonUtils.isEmpty(fkColumnName)) {
+            log.warn("Empty FK column for table " + foreignKey.getTable().getFullQualifiedName() + " PK column " + pkColumnName);
+            return null;
+        }
         GenericTableColumn fkColumn = foreignKey.getTable().getAttribute(context.getProgressMonitor(), fkColumnName);
         if (fkColumn == null) {
             log.warn("Can't find FK table " + foreignKey.getTable().getFullQualifiedName() + " column " + fkColumnName);

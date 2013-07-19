@@ -165,6 +165,15 @@ public abstract class JDBCCompositeCache<
         }
     }
 
+    @Override
+    public void clearCache()
+    {
+        synchronized (objectCache) {
+            this.objectCache.clear();
+            super.clearCache();
+        }
+    }
+
     private class ObjectInfo {
         final OBJECT object;
         final List<ROW_REF> rows = new ArrayList<ROW_REF>();
