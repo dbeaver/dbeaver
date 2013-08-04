@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
 import java.util.List;
 
@@ -35,6 +36,19 @@ public interface DBSDataManipulator extends DBSDataContainer {
     public static final int DATA_INSERT         = 4;
     public static final int DATA_UPDATE         = 8;
     public static final int DATA_DELETE         = 16;
+
+    interface Executor {
+        DBCStatistics execute(Object[] attributeValues)
+            throws DBException;
+    }
+
+/*
+    Executor insertData2(
+        DBCExecutionContext context,
+        List<DBDAttributeValue> attributes,
+        DBDDataReceiver keysReceiver)
+        throws DBException;
+*/
 
     long insertData(
         DBCExecutionContext context,

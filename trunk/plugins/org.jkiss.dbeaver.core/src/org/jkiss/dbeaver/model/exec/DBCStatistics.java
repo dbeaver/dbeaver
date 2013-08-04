@@ -1,5 +1,7 @@
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.utils.CommonUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,4 +78,18 @@ public class DBCStatistics {
     {
         return executeTime <= 0 && fetchTime <= 0;
     }
+
+    public void accumulate(DBCStatistics stat)
+    {
+        rowsUpdated += stat.rowsUpdated;
+        rowsFetched += stat.rowsFetched;
+        executeTime += stat.executeTime;
+        fetchTime += stat.fetchTime;
+        if (!CommonUtils.isEmpty(stat.messages)) {
+            for (String message : stat.messages) {
+                addMessage(message);
+            }
+        }
+    }
+
 }

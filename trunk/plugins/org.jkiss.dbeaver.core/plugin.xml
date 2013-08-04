@@ -1173,7 +1173,7 @@
         </menuContribution>
 
         <!-- Database toolbar -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar">
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="database" label="Database Toolbar">
                 <command commandId="org.jkiss.dbeaver.core.connect">
                     <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
