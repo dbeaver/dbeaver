@@ -339,6 +339,10 @@ class ResultSetPersister {
         {
             DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_execute_statement_context_name);
             try {
+                monitor.beginTask(
+                    CoreMessages.controls_resultset_viewer_monitor_aply_changes,
+                    ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size());
+
                 try {
                     this.autocommit = context.getTransactionManager().isAutoCommit();
                 }
@@ -356,8 +360,6 @@ class ResultSetPersister {
                     }
                 }
                 try {
-                    monitor.beginTask(CoreMessages.controls_resultset_viewer_monitor_aply_changes, ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size());
-
                     for (DataStatementInfo statement : ResultSetPersister.this.deleteStatements) {
                         if (monitor.isCanceled()) break;
                         try {
