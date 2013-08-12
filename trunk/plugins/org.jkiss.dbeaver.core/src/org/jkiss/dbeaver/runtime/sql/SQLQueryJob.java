@@ -616,18 +616,18 @@ public class SQLQueryJob extends DataSourceJob
 */
 
     public void extractData(DBCExecutionContext context)
-        throws DBException
+        throws DBCException
     {
         statistics = new DBCStatistics();
         if (queries.size() != 1) {
-            throw new DBException("Invalid state of SQL Query job");
+            throw new DBCException("Invalid state of SQL Query job");
         }
         boolean result = executeSingleQuery(context, queries.get(0), true);
         if (!result && lastError != null) {
-            if (lastError instanceof DBException) {
-                throw (DBException) lastError;
+            if (lastError instanceof DBCException) {
+                throw (DBCException) lastError;
             } else {
-                throw new DBException(lastError);
+                throw new DBCException(lastError);
             }
         }
     }

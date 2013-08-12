@@ -901,7 +901,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBException
+        public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows) throws DBCException
         {
             final SQLQueryJob job = curJob;
             if (job != null) {
@@ -919,7 +919,7 @@ public class SQLEditor extends SQLEditorBase
         }
 
         @Override
-        public long countData(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
+        public long countData(DBCExecutionContext context, DBDDataFilter dataFilter)
         {
             return -1;
         }

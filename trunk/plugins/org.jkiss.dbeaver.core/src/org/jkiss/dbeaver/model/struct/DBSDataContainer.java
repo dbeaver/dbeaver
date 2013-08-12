@@ -19,9 +19,9 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
@@ -50,7 +50,7 @@ public interface DBSDataContainer extends DBSObject {
      * @param firstRow first row number (<= 0 means do not use it)
      * @param maxRows total rows to fetch (<= 0 means fetch everything)
      * @return number of fetched rows
-     * @throws DBException on any error
+     * @throws DBCException on any error
      */
     DBCStatistics readData(
         DBCExecutionContext context,
@@ -58,18 +58,18 @@ public interface DBSDataContainer extends DBSObject {
         DBDDataFilter dataFilter,
         long firstRow,
         long maxRows)
-        throws DBException;
+        throws DBCException;
 
     /**
      * Counts data rows in container.
      * @param context execution context
      * @param dataFilter data filter (may be null)
      * @return number of rows in container. May return negative values if count feature is not available
-     * @throws DBException on any error
+     * @throws DBCException on any error
      */
     long countData(
         DBCExecutionContext context,
         DBDDataFilter dataFilter)
-        throws DBException;
+        throws DBCException;
 
 }
