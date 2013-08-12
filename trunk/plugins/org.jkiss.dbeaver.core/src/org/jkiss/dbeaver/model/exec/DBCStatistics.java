@@ -92,4 +92,13 @@ public class DBCStatistics {
         }
     }
 
+    public void reset()
+    {
+        rowsUpdated = 0;
+        rowsFetched = 0;
+        executeTime = 0;
+        fetchTime = 0;
+        messages = null;
+    }
+
 }
