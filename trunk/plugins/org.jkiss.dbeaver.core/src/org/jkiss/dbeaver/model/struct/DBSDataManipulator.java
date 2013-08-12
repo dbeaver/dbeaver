@@ -37,15 +37,16 @@ public interface DBSDataManipulator extends DBSDataContainer {
     public static final int DATA_UPDATE         = 8;
     public static final int DATA_DELETE         = 16;
 
-    interface Executor {
-        DBCStatistics execute(Object[] attributeValues)
-            throws DBException;
+    interface ExecuteBatch {
+        void add(Object[] attributeValues) throws DBException;
+
+        DBCStatistics execute() throws DBException;
     }
 
 /*
-    Executor insertData2(
+    ExecuteBatch insertData2(
         DBCExecutionContext context,
-        List<DBDAttributeValue> attributes,
+        List<DBSEntityAttribute> attributes,
         DBDDataReceiver keysReceiver)
         throws DBException;
 */
