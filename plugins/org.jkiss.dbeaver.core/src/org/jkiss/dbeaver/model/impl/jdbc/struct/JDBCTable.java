@@ -36,9 +36,12 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -432,6 +435,49 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         catch (DBException e) {
             throw new DBException("Could not cache table columns", e);
         }
+    }
+
+    private class BatchImpl implements ExecuteBatch {
+
+        final DBCStatement statement;
+        final DBSEntityAttribute[] attributes;
+        final List<Object[]> values = new ArrayList<Object[]>();
+
+        private BatchImpl(DBCStatement statement, List<DBSEntityAttribute> attributes)
+        {
+            this.statement = statement;
+            this.attributes = attributes.toArray(new DBSEntityAttribute[attributes.size()]);
+        }
+
+        @Override
+        public void add(Object[] attributeValues) throws DBException
+        {
+            if (!CommonUtils.isEmpty(attributes) && CommonUtils.isEmpty(attributeValues)) {
+                throw new DBException("Bad attribute values: " + Arrays.toString(attributeValues));
+            }
+            values.add(attributeValues);
+        }
+
+        @Override
+        public DBCStatistics execute() throws DBException
+        {
+            DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
+            for (int i = 0; i < attributes.length; i++) {
+                handlers[i] = DBUtils.findValueHandler(statement.getContext(), attributes[i]);
+            }
+
+            DBCStatistics statistics = new DBCStatistics();
+            for (Object[] rowValues : values) {
+                for (int k = 0; k < handlers.length; k++) {
+                    DBDValueHandler handler = handlers[k];
+                    handler.bindValueObject(statement.getContext(), statement, attributes[k], k, rowValues[k]);
+                }
+                statement.executeStatement();
+            }
+
+            return statistics;
+        }
+
     }
 
 }
