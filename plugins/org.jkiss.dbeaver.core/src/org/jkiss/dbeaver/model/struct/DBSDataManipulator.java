@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
@@ -41,32 +42,26 @@ public interface DBSDataManipulator extends DBSDataContainer {
         void add(Object[] attributeValues) throws DBException;
 
         DBCStatistics execute() throws DBException;
+
+        void close();
     }
 
-/*
-    ExecuteBatch insertData2(
+    ExecuteBatch insertData(
         DBCExecutionContext context,
-        List<DBSEntityAttribute> attributes,
+        DBSEntityAttribute[] attributes,
         DBDDataReceiver keysReceiver)
-        throws DBException;
-*/
-
-    long insertData(
-        DBCExecutionContext context,
-        List<DBDAttributeValue> attributes,
-        DBDDataReceiver keysReceiver)
-        throws DBException;
+        throws DBCException;
 
     long updateData(
         DBCExecutionContext context,
         List<DBDAttributeValue> keyAttributes,
         List<DBDAttributeValue> updateAttributes,
         DBDDataReceiver keysReceiver)
-        throws DBException;
+        throws DBCException;
 
     long deleteData(
         DBCExecutionContext context,
         List<DBDAttributeValue> keyAttributes)
-        throws DBException;
+        throws DBCException;
 
 }

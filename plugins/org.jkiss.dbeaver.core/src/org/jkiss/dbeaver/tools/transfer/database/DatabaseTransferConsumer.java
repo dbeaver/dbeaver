@@ -52,6 +52,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private DatabaseMappingContainer containerMapping;
     private ColumnMapping[] columnMappings;
     private DBCExecutionContext targetContext;
+    private DBSDataManipulator.ExecuteBatch executeBatch;
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
 
@@ -82,6 +83,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBCResultSetMetaData metaData = resultSet.getResultSetMetaData();
         List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
         columnMappings = new ColumnMapping[rsAttributes.size()];
+        DBSEntityAttribute[] attributes = new DBSEntityAttribute[columnMappings.length];
         for (int i = 0; i < rsAttributes.size(); i++) {
             columnMappings[i] = new ColumnMapping(rsAttributes.get(i));
             columnMappings[i].targetAttr = containerMapping.getAttributeMapping(columnMappings[i].rsAttr);
@@ -89,26 +91,27 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 throw new DBCException("Can't find target attribute [" + columnMappings[i].rsAttr.getName() + "]");
             }
             columnMappings[i].valueHandler = DBUtils.findValueHandler(context, columnMappings[i].rsAttr);
+            attributes[i] = columnMappings[i].targetAttr.getTarget();
         }
+
+        executeBatch = containerMapping.getTarget().insertData(targetContext, attributes, null);
     }
 
     @Override
     public void fetchRow(DBCExecutionContext context, DBCResultSet resultSet) throws DBCException
     {
-        List<DBDAttributeValue> attrValues = new ArrayList<DBDAttributeValue>();
+        Object[] rowValues = new Object[columnMappings.length];
         for (int i = 0; i < columnMappings.length; i++) {
             ColumnMapping column = columnMappings[i];
-            attrValues.add(new DBDAttributeValue(
-                column.targetAttr.getTarget(),
-                column.valueHandler.fetchValueObject(context, resultSet, column.rsAttr, i)));
-
+            rowValues[i] = column.valueHandler.fetchValueObject(context, resultSet, column.rsAttr, i);
         }
         DBSDataManipulator target = containerMapping.getTarget();
 
         boolean retryInsert = false;
         do {
             try {
-                target.insertData(targetContext, attrValues, null);
+                executeBatch.add(rowValues);
+                executeBatch.execute();
             } catch (Throwable e) {
                 log.error("Error inserting row", e);
                 if (!ignoreErrors) {
@@ -154,6 +157,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public void fetchEnd(DBCExecutionContext context) throws DBCException
     {
+        executeBatch.close();
+        executeBatch = null;
+
         if (settings.isUseTransactions()) {
             targetContext.getTransactionManager().commit();
         }
