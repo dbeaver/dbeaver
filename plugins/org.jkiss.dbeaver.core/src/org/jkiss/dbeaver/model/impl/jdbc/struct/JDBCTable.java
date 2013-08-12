@@ -96,7 +96,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @Override
     public DBCStatistics readData(DBCExecutionContext context, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows)
-        throws DBException
+        throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
         boolean hasLimits = firstRow >= 0 && maxRows > 0;
@@ -171,7 +171,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long countData(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBException
+    public long countData(DBCExecutionContext context, DBDDataFilter dataFilter) throws DBCException
     {
         DBRProgressMonitor monitor = context.getProgressMonitor();
 
@@ -216,8 +216,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long insertData(DBCExecutionContext context, List<DBDAttributeValue> attributes, DBDDataReceiver keysReceiver)
-        throws DBException
+    public ExecuteBatch insertData(DBCExecutionContext context, DBSEntityAttribute[] attributes, DBDDataReceiver keysReceiver)
+        throws DBCException
     {
         readRequiredMeta(context.getProgressMonitor());
 
@@ -226,21 +226,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append("INSERT INTO ").append(getFullQualifiedName()).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
-        for (DBDAttributeValue attribute : attributes) {
-            if (DBUtils.isNullValue(attribute.getValue())) {
-                // do not use null values
-                continue;
-            }
+        for (int i = 0; i < attributes.length; i++) {
+            DBSEntityAttribute attribute = attributes[i];
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getAttribute().getName()));
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName()));
         }
         query.append(") VALUES ("); //$NON-NLS-1$
         hasKey = false;
-        for (DBDAttributeValue attribute1 : attributes) {
-            if (DBUtils.isNullValue(attribute1.getValue())) {
-                continue;
-            }
+        for (int i = 0; i < attributes.length; i++) {
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
             query.append("?"); //$NON-NLS-1$
@@ -249,32 +243,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         // Execute
         DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
-        try {
-            dbStat.setDataContainer(this);
+        dbStat.setDataContainer(this);
 
-            // Set parameters
-            int paramNum = 0;
-            for (DBDAttributeValue attribute : attributes) {
-                if (DBUtils.isNullValue(attribute.getValue())) {
-                    continue;
-                }
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attribute.getAttribute());
-                Object realValue = valueHandler.getValueFromObject(context, attribute.getAttribute(), attribute.getValue(), false);
-                valueHandler.bindValueObject(context, dbStat, attribute.getAttribute(), paramNum++, realValue);
-            }
-
-            // Execute statement
-            dbStat.executeStatement();
-            long rowCount = dbStat.getUpdateRowCount();
-            if (keysReceiver != null) {
-                readKeys(context, dbStat, keysReceiver);
-            }
-            return rowCount;
-        }
-        finally {
-            dbStat.close();
-        }
-
+        return new BatchImpl(dbStat, attributes, keysReceiver);
     }
 
     @Override
@@ -283,7 +254,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         List<DBDAttributeValue> keyAttributes,
         List<DBDAttributeValue> updateAttributes,
         DBDDataReceiver keysReceiver)
-        throws DBException
+        throws DBCException
     {
         readRequiredMeta(context.getProgressMonitor());
 
@@ -335,7 +306,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @Override
     public long deleteData(DBCExecutionContext context, List<DBDAttributeValue> keyAttributes)
-        throws DBException
+        throws DBCException
     {
         readRequiredMeta(context.getProgressMonitor());
 
@@ -427,26 +398,28 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
      * @throws DBException on error
      */
     private void readRequiredMeta(DBRProgressMonitor monitor)
-        throws DBException
+        throws DBCException
     {
         try {
             getAttributes(monitor);
         }
         catch (DBException e) {
-            throw new DBException("Could not cache table columns", e);
+            throw new DBCException("Could not cache table columns", e);
         }
     }
 
     private class BatchImpl implements ExecuteBatch {
 
-        final DBCStatement statement;
-        final DBSEntityAttribute[] attributes;
-        final List<Object[]> values = new ArrayList<Object[]>();
+        private DBCStatement statement;
+        private final DBSEntityAttribute[] attributes;
+        private final List<Object[]> values = new ArrayList<Object[]>();
+        private final DBDDataReceiver keysReceiver;
 
-        private BatchImpl(DBCStatement statement, List<DBSEntityAttribute> attributes)
+        private BatchImpl(DBCStatement statement, DBSEntityAttribute[] attributes, DBDDataReceiver keysReceiver)
         {
             this.statement = statement;
-            this.attributes = attributes.toArray(new DBSEntityAttribute[attributes.size()]);
+            this.attributes = attributes;
+            this.keysReceiver = keysReceiver;
         }
 
         @Override
@@ -461,6 +434,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @Override
         public DBCStatistics execute() throws DBException
         {
+            if (statement == null) {
+                throw new DBException("Execute batch closed");
+            }
             DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
             for (int i = 0; i < attributes.length; i++) {
                 handlers[i] = DBUtils.findValueHandler(statement.getContext(), attributes[i]);
@@ -472,10 +448,31 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     DBDValueHandler handler = handlers[k];
                     handler.bindValueObject(statement.getContext(), statement, attributes[k], k, rowValues[k]);
                 }
+                long startTime = System.currentTimeMillis();
                 statement.executeStatement();
+                statistics.setExecuteTime(statistics.getExecuteTime() + (System.currentTimeMillis() - startTime));
+
+                long rowCount = statement.getUpdateRowCount();
+                if (rowCount > 0) {
+                    statistics.setRowsUpdated(statistics.getRowsUpdated() + rowCount);
+                }
+
+                // Read keys
+                if (keysReceiver != null) {
+                    readKeys(statement.getContext(), statement, keysReceiver);
+                }
             }
 
+            values.clear();
+
             return statistics;
+        }
+
+        @Override
+        public void close()
+        {
+            statement.close();
+            statement = null;
         }
 
     }

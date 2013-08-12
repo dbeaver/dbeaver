@@ -281,7 +281,8 @@ class ResultSetPersister {
     private class DataUpdaterJob extends DataSourceJob {
         private final DataUpdateListener listener;
         private boolean autocommit;
-        private int updateCount = 0, insertCount = 0, deleteCount = 0;
+        private int updateCount = 0, deleteCount = 0;
+        private DBCStatistics updateStats = new DBCStatistics(), insertStats = new DBCStatistics(), deleteStats = new DBCStatistics();
         private DBCSavepoint savepoint;
 
         protected DataUpdaterJob(DataUpdateListener listener)
@@ -319,7 +320,7 @@ class ResultSetPersister {
                             viewer.setStatus(
                                 NLS.bind(
                                     CoreMessages.controls_resultset_viewer_status_inserted_,
-                                    new Object[]{DataUpdaterJob.this.insertCount, DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}));
+                                    new Object[]{DataUpdaterJob.this.insertStats.getRowsUpdated(), DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}));
                         } else {
                             UIUtils.showErrorDialog(viewer.getSite().getShell(), "Data error", "Error synchronizing data with database", error);
                             viewer.setStatus(error.getMessage(), true);
@@ -377,10 +378,16 @@ class ResultSetPersister {
                         if (monitor.isCanceled()) break;
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.table);
-                            insertCount += dataContainer.insertData(
+                            DBSDataManipulator.ExecuteBatch batch = dataContainer.insertData(
                                 context,
-                                statement.keyAttributes,
+                                DBDAttributeValue.getAttributes(statement.keyAttributes),
                                 statement.needKeys() ? new KeyDataReceiver(statement) : null);
+                            try {
+                                batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
+                                insertStats.accumulate(batch.execute());
+                            } finally {
+                                batch.close();
+                            }
                             processStatementChanges(statement);
                         }
                         catch (DBException e) {

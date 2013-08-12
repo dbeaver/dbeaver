@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.util.List;
+
 /**
  * Column value
  */
@@ -46,4 +48,23 @@ public class DBDAttributeValue {
     {
         return attribute.getName() + "=" + value;
     }
+
+    public static DBSEntityAttribute[] getAttributes(List<DBDAttributeValue> attrValues)
+    {
+        DBSEntityAttribute[] attributes = new DBSEntityAttribute[attrValues.size()];
+        for (int i = 0; i < attributes.length; i++) {
+            attributes[i] = attrValues.get(i).attribute;
+        }
+        return attributes;
+    }
+
+    public static Object[] getValues(List<DBDAttributeValue> attrValues)
+    {
+        Object[] values = new Object[attrValues.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = attrValues.get(i).value;
+        }
+        return values;
+    }
+
 }
