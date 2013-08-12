@@ -281,8 +281,7 @@ class ResultSetPersister {
     private class DataUpdaterJob extends DataSourceJob {
         private final DataUpdateListener listener;
         private boolean autocommit;
-        private int updateCount = 0, deleteCount = 0;
-        private DBCStatistics updateStats = new DBCStatistics(), insertStats = new DBCStatistics(), deleteStats = new DBCStatistics();
+        private DBCStatistics updateStats, insertStats, deleteStats;
         private DBCSavepoint savepoint;
 
         protected DataUpdaterJob(DataUpdateListener listener)
@@ -296,6 +295,9 @@ class ResultSetPersister {
         {
             final Throwable error;
             model.setUpdateInProgress(true);
+            updateStats = new DBCStatistics();
+            insertStats = new DBCStatistics();
+            deleteStats = new DBCStatistics();
             try {
                 error = executeStatements(monitor);
             }
@@ -320,7 +322,10 @@ class ResultSetPersister {
                             viewer.setStatus(
                                 NLS.bind(
                                     CoreMessages.controls_resultset_viewer_status_inserted_,
-                                    new Object[]{DataUpdaterJob.this.insertStats.getRowsUpdated(), DataUpdaterJob.this.deleteCount, DataUpdaterJob.this.updateCount}));
+                                    new Object[]{
+                                        DataUpdaterJob.this.insertStats.getRowsUpdated(),
+                                        DataUpdaterJob.this.deleteStats.getRowsUpdated(),
+                                        DataUpdaterJob.this.updateStats.getRowsUpdated()}));
                         } else {
                             UIUtils.showErrorDialog(viewer.getSite().getShell(), "Data error", "Error synchronizing data with database", error);
                             viewer.setStatus(error.getMessage(), true);
@@ -364,8 +369,16 @@ class ResultSetPersister {
                     for (DataStatementInfo statement : ResultSetPersister.this.deleteStatements) {
                         if (monitor.isCanceled()) break;
                         try {
-                            DBSDataManipulator dataContainer = getDataManipulator(statement.table);
-                            deleteCount += dataContainer.deleteData(context, statement.keyAttributes);
+                            DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
+                            DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
+                                context,
+                                DBDAttributeValue.getAttributes(statement.keyAttributes));
+                            try {
+                                batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
+                                deleteStats.accumulate(batch.execute());
+                            } finally {
+                                batch.close();
+                            }
                             processStatementChanges(statement);
                         }
                         catch (DBException e) {
@@ -377,7 +390,7 @@ class ResultSetPersister {
                     for (DataStatementInfo statement : ResultSetPersister.this.insertStatements) {
                         if (monitor.isCanceled()) break;
                         try {
-                            DBSDataManipulator dataContainer = getDataManipulator(statement.table);
+                            DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
                             DBSDataManipulator.ExecuteBatch batch = dataContainer.insertData(
                                 context,
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
@@ -399,12 +412,27 @@ class ResultSetPersister {
                     for (DataStatementInfo statement : ResultSetPersister.this.updateStatements) {
                         if (monitor.isCanceled()) break;
                         try {
-                            DBSDataManipulator dataContainer = getDataManipulator(statement.table);
-                            this.updateCount += dataContainer.updateData(
+                            DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
+                            DBSDataManipulator.ExecuteBatch batch = dataContainer.updateData(
                                 context,
-                                statement.keyAttributes,
-                                statement.updateAttributes,
+                                DBDAttributeValue.getAttributes(statement.updateAttributes),
+                                DBDAttributeValue.getAttributes(statement.keyAttributes),
                                 null);
+                            try {
+                                // Make single array of values
+                                Object[] attributes = new Object[statement.updateAttributes.size() + statement.keyAttributes.size()];
+                                for (int i = 0; i < statement.updateAttributes.size(); i++) {
+                                    attributes[i] = statement.updateAttributes.get(i).getValue();
+                                }
+                                for (int i = 0; i < statement.keyAttributes.size(); i++) {
+                                    attributes[statement.updateAttributes.size() + i] = statement.keyAttributes.get(i).getValue();
+                                }
+                                // Execute
+                                batch.add(attributes);
+                                updateStats.accumulate(batch.execute());
+                            } finally {
+                                batch.close();
+                            }
                             processStatementChanges(statement);
                         }
                         catch (DBException e) {
@@ -422,7 +450,7 @@ class ResultSetPersister {
                             context.getTransactionManager().releaseSavepoint(this.savepoint);
                         }
                         catch (Throwable e) {
-                            // May be savepoints not supported
+                            // Maybe savepoints not supported
                             ResultSetViewer.log.debug("Could not release savepoint", e);
                         }
                     }
@@ -497,7 +525,7 @@ class ResultSetPersister {
                 }
                 boolean updated = false;
                 if (!CommonUtils.isEmpty(keyAttribute.getName())) {
-                    DBDAttributeBinding binding = model.getAttributeBinding(statement.table, keyAttribute.getName());
+                    DBDAttributeBinding binding = model.getAttributeBinding(statement.entity, keyAttribute.getName());
                     if (binding != null) {
                         // Got it. Just update column oldValue
                         statement.updatedCells.put(binding.getAttributeIndex(), keyValue);
@@ -547,17 +575,17 @@ class ResultSetPersister {
     static class DataStatementInfo {
         DBSManipulationType type;
         RowInfo row;
-        DBSEntity table;
+        DBSEntity entity;
         List<DBDAttributeValue> keyAttributes = new ArrayList<DBDAttributeValue>();
         List<DBDAttributeValue> updateAttributes = new ArrayList<DBDAttributeValue>();
         boolean executed = false;
         Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
 
-        DataStatementInfo(DBSManipulationType type, RowInfo row, DBSEntity table)
+        DataStatementInfo(DBSManipulationType type, RowInfo row, DBSEntity entity)
         {
             this.type = type;
             this.row = row;
-            this.table = table;
+            this.entity = entity;
         }
         boolean needKeys()
         {

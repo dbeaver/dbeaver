@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -249,10 +248,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long updateData(
+    public ExecuteBatch updateData(
         DBCExecutionContext context,
-        List<DBDAttributeValue> keyAttributes,
-        List<DBDAttributeValue> updateAttributes,
+        DBSEntityAttribute[] updateAttributes,
+        DBSEntityAttribute[] keyAttributes,
         DBDDataReceiver keysReceiver)
         throws DBCException
     {
@@ -263,49 +262,34 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append("UPDATE ").append(getFullQualifiedName()).append(" SET "); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
-        for (DBDAttributeValue attribute : updateAttributes) {
+        for (DBSEntityAttribute attribute : updateAttributes) {
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getAttribute().getName())).append("=?"); //$NON-NLS-1$
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
         }
         query.append(" WHERE "); //$NON-NLS-1$
         hasKey = false;
-        for (DBDAttributeValue attribute : keyAttributes) {
+        for (DBSEntityAttribute attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getAttribute().getName())).append("=?"); //$NON-NLS-1$
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
         DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
-        try {
-            dbStat.setDataContainer(this);
 
-            // Set parameters
-            List<DBDAttributeValue> allAttribute = new ArrayList<DBDAttributeValue>(updateAttributes.size() + keyAttributes.size());
-            allAttribute.addAll(updateAttributes);
-            allAttribute.addAll(keyAttributes);
-            for (int i = 0; i < allAttribute.size(); i++) {
-                DBDAttributeValue attribute = allAttribute.get(i);
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attribute.getAttribute());
-                valueHandler.bindValueObject(context, dbStat, attribute.getAttribute(), i, attribute.getValue());
-            }
+        dbStat.setDataContainer(this);
 
-            // Execute statement
-            dbStat.executeStatement();
-            long rowCount = dbStat.getUpdateRowCount();
-            if (keysReceiver != null) {
-                readKeys(context, dbStat, keysReceiver);
-            }
-            return rowCount;
-        }
-        finally {
-            dbStat.close();
-        }
+        // Make single array for keys and values
+        DBSEntityAttribute[] attributes = new DBSEntityAttribute[keyAttributes.length + updateAttributes.length];
+        System.arraycopy(updateAttributes, 0, attributes, 0, updateAttributes.length);
+        System.arraycopy(keyAttributes, 0, attributes, updateAttributes.length, keyAttributes.length);
+
+        return new BatchImpl(dbStat, attributes, keysReceiver);
     }
 
     @Override
-    public long deleteData(DBCExecutionContext context, List<DBDAttributeValue> keyAttributes)
+    public ExecuteBatch deleteData(DBCExecutionContext context, DBSEntityAttribute[] keyAttributes)
         throws DBCException
     {
         readRequiredMeta(context.getProgressMonitor());
@@ -315,31 +299,16 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append("DELETE FROM ").append(getFullQualifiedName()).append(" WHERE "); //$NON-NLS-1$ //$NON-NLS-2$
 
         boolean hasKey = false;
-        for (DBDAttributeValue attribute : keyAttributes) {
+        for (DBSEntityAttribute attribute : keyAttributes) {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
-            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getAttribute().getName())).append("=?"); //$NON-NLS-1$
+            query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName())).append("=?"); //$NON-NLS-1$
         }
 
         // Execute
         DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
-        try {
-            dbStat.setDataContainer(this);
-
-            // Set parameters
-            for (int i = 0; i < keyAttributes.size(); i++) {
-                DBDAttributeValue attribute = keyAttributes.get(i);
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(context, attribute.getAttribute());
-                valueHandler.bindValueObject(context, dbStat, attribute.getAttribute(), i, attribute.getValue());
-            }
-
-            // Execute statement
-            dbStat.executeStatement();
-            return dbStat.getUpdateRowCount();
-        }
-        finally {
-            dbStat.close();
-        }
+        dbStat.setDataContainer(this);
+        return new BatchImpl(dbStat, keyAttributes, null);
     }
 
     private void appendQueryConditions(StringBuilder query, DBDDataFilter dataFilter)

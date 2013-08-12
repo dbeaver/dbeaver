@@ -52,16 +52,16 @@ public interface DBSDataManipulator extends DBSDataContainer {
         DBDDataReceiver keysReceiver)
         throws DBCException;
 
-    long updateData(
+    ExecuteBatch updateData(
         DBCExecutionContext context,
-        List<DBDAttributeValue> keyAttributes,
-        List<DBDAttributeValue> updateAttributes,
+        DBSEntityAttribute[] updateAttributes,
+        DBSEntityAttribute[] keyAttributes,
         DBDDataReceiver keysReceiver)
         throws DBCException;
 
-    long deleteData(
+    ExecuteBatch deleteData(
         DBCExecutionContext context,
-        List<DBDAttributeValue> keyAttributes)
+        DBSEntityAttribute[] keyAttributes)
         throws DBCException;
 
 }
