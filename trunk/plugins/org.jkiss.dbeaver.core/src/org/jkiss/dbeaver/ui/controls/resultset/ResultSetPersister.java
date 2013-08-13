@@ -206,7 +206,7 @@ class ResultSetPersister {
         // Remove deleted rows
         model.getRemovedRows().clear();
 
-        viewer.refreshSpreadsheet(rowsChanged);
+        viewer.refreshSpreadsheet(false, rowsChanged);
         viewer.fireResultSetChange();
         viewer.updateEditControls();
         viewer.previewValue();
@@ -316,7 +316,7 @@ class ResultSetPersister {
                     }
                     if (!viewer.getControl().isDisposed()) {
                         //releaseStatements();
-                        viewer.refreshSpreadsheet(rowsChanged);
+                        viewer.refreshSpreadsheet(false, rowsChanged);
                         viewer.updateEditControls();
                         if (error == null) {
                             viewer.setStatus(
