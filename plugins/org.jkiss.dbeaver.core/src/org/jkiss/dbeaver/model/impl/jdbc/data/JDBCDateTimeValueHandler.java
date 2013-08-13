@@ -56,10 +56,12 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
 
     private DBDDataFormatterProfile formatterProfile;
     private DBDDataFormatter formatter;
+    private Calendar calendar;
 
     public JDBCDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
     {
         this.formatterProfile = formatterProfile;
+        this.calendar = Calendar.getInstance(formatterProfile.getLocale());
     }
 
     private DBDDataFormatter getFormatter(String typeId)
@@ -82,11 +84,11 @@ public class JDBCDateTimeValueHandler extends JDBCAbstractValueHandler {
     {
         switch (type.getTypeID()) {
             case java.sql.Types.TIME:
-                return resultSet.getTime(index);
+                return resultSet.getTime(index, this.calendar);
             case java.sql.Types.DATE:
-                return resultSet.getDate(index);
+                return resultSet.getDate(index, this.calendar);
             default:
-                return resultSet.getTimestamp(index);
+                return resultSet.getTimestamp(index, this.calendar);
         }
     }
 
