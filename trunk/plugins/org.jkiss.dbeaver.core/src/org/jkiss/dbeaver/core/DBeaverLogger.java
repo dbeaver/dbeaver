@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -42,7 +41,6 @@ public class DBeaverLogger implements Log, Serializable
     private static String corePluginID;
 
     private String name;
-    private SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
     public DBeaverLogger()
     {
@@ -128,7 +126,7 @@ public class DBeaverLogger implements Log, Serializable
         }
         if (debugWriter != null) {
             synchronized (DBeaverLogger.class) {
-                debugWriter.print(sdf.format(new Date()));
+                debugWriter.print(new Date().toString());
                 debugWriter.print(" - "); //$NON-NLS-1$
                 if (t == null) {
                     debugWriter.println(message);

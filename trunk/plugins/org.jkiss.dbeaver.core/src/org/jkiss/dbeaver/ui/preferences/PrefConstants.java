@@ -65,6 +65,8 @@ public final class PrefConstants
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$
     public static final String CONFIRM_KEEP_STATEMENT_OPEN = "keep_statement_open"; //$NON-NLS-1$
 
+    private static final String PROPERTY_USE_ALL_COLUMNS_QUIET = "virtual-key-quiet";
+
     // Hex editor font identifiers
     public static final String HEX_FONT_NAME = "hex.font.name"; //$NON-NLS-1$
     public static final String HEX_FONT_SIZE = "hex.font.size"; //$NON-NLS-1$
@@ -90,6 +92,7 @@ public final class PrefConstants
     // ResultSet
     public static final String RS_EDIT_MAX_TEXT_SIZE = "resultset.edit.maxtextsize"; //$NON-NLS-1$
     public static final String RS_EDIT_LONG_AS_LOB = "resultset.edit.longaslob"; //$NON-NLS-1$
+    public static final String RS_EDIT_USE_ALL_COLUMNS = "resultset.edit.key.use_all_columns";
     public static final String RS_COMMIT_ON_EDIT_APPLY = "resultset.commit.oneditapply"; //$NON-NLS-1$
     public static final String RS_COMMIT_ON_CONTENT_APPLY = "resultset.commit.oncontentapply"; //$NON-NLS-1$
 
