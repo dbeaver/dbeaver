@@ -414,11 +414,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     }
 */
 
-    public void reinitState()
+    public void reinitState(boolean clearData)
     {
         cancelInlineEditor();
         // Repack columns
-        super.refreshData(true);
+        super.refreshData(clearData);
 
         //setCursor(new GridPos(-1, -1), false);
     }

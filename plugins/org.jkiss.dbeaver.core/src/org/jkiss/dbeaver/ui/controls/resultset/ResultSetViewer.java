@@ -478,7 +478,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         if (!CommonUtils.equalObjects(model.getDataFilter(), dataFilter)) {
             if (model.setDataFilter(dataFilter)) {
-                refreshSpreadsheet(true);
+                refreshSpreadsheet(true, true);
             }
             if (refreshData) {
                 reorderResultSet(true, new Runnable() {
@@ -613,7 +613,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    void refreshSpreadsheet(boolean rowsChanged)
+    void refreshSpreadsheet(boolean columnsChanged, boolean rowsChanged)
     {
         if (spreadsheet.isDisposed()) {
             return;
@@ -629,7 +629,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 }
             }
 
-            this.spreadsheet.reinitState();
+            this.spreadsheet.reinitState(columnsChanged);
 
             // Set cursor on new row
             if (gridMode == GridMode.GRID) {
@@ -1065,7 +1065,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         if (updateMetaData) {
             this.initResultSet();
         } else {
-            this.refreshSpreadsheet(true);
+            this.refreshSpreadsheet(updateMetaData, true);
         }
         updateEditControls();
     }
@@ -1099,7 +1099,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 this.resetRecordHeaderWidth();
             }
 
-            spreadsheet.reinitState();
+            spreadsheet.reinitState(true);
         } finally {
             spreadsheet.setRedraw(true);
         }
@@ -1519,7 +1519,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                             for (int i = columnIndexes.length; i > 0; i--) {
                                 getModel().setColumnVisibility(getModel().getVisibleColumn(columnIndexes[i - 1]), false);
                             }
-                            refreshSpreadsheet(true);
+                            refreshSpreadsheet(true, true);
                         }
                     }
                 });
@@ -2063,7 +2063,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             // interrupted - do nothing
         }
         model.addNewRow(rowNum, cells);
-        refreshSpreadsheet(true);
+        refreshSpreadsheet(false, true);
         updateEditControls();
         fireResultSetChange();
     }
@@ -2106,7 +2106,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             spreadsheet.setCursor(curPos, false);
         }
         if (rowsRemoved > 0) {
-            refreshSpreadsheet(true);
+            refreshSpreadsheet(false, true);
         } else {
             spreadsheet.redrawGrid();
         }
