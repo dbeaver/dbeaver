@@ -42,6 +42,8 @@ import java.util.List;
  */
 class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
 
+    private static final String PROPERTY_USE_ALL_COLUMNS_QUIET = "virtual-key-quiet";
+
     private ResultSetViewer viewer;
 
     protected ValidateUniqueKeyUsageDialog(ResultSetViewer viewer)
@@ -68,17 +70,16 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     @Override
     protected void buttonPressed(int buttonId)
     {
+        viewer.getDataSource().getContainer().getPreferenceStore().setValue(PROPERTY_USE_ALL_COLUMNS_QUIET, getToggleState());
         switch (buttonId)
         {
             case IDialogConstants.CANCEL_ID:
-                // Save toggle state
-//                DBVEntity entity = (DBVEntity) viewer.getVirtualEntityIdentifier().getReferrer().getParentObject();
-//                entity.setProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET, String.valueOf(getToggleState()));
-
                 super.buttonPressed(buttonId);
                 break;
             case IDialogConstants.INTERNAL_ID:
-                useAllColumns();
+                if (useAllColumns(getShell(), viewer)) {
+                    super.buttonPressed(IDialogConstants.OK_ID);
+                }
 
                 break;
             case IDialogConstants.INTERNAL_ID + 1:
@@ -87,33 +88,6 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
                 break;
         }
         viewer.getDataSource().getContainer().persistConfiguration();
-    }
-
-    private void useAllColumns()
-    {
-        // Use all columns
-        final DBCEntityIdentifier identifier = viewer.getVirtualEntityIdentifier();
-        DBVEntityConstraint constraint = (DBVEntityConstraint) viewer.getVirtualEntityIdentifier().getReferrer();
-        List<DBSEntityAttribute> uniqueColumns = new ArrayList<DBSEntityAttribute>();
-        for (DBDAttributeBinding binding : viewer.getModel().getColumns()) {
-            if (binding.getEntityAttribute() != null) {
-                uniqueColumns.add(binding.getEntityAttribute());
-            }
-        }
-        if (uniqueColumns.isEmpty()) {
-            UIUtils.showErrorDialog(getShell(), "Use All Columns", "No valid columns found for unique key");
-            return;
-        }
-        constraint.setAttributes(uniqueColumns);
-
-        try {
-            identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, viewer.getModel().getVisibleColumn(0).getMetaAttribute().getEntity());
-        } catch (DBException e) {
-            UIUtils.showErrorDialog(getShell(), "Use All Columns", "Can't reload unique columns", e);
-            return;
-        }
-
-        super.buttonPressed(IDialogConstants.OK_ID);
     }
 
     private void editCustomKey()
@@ -128,6 +102,33 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
         }
     }
 
+    private static boolean useAllColumns(Shell shell, ResultSetViewer viewer)
+    {
+        // Use all columns
+        final DBCEntityIdentifier identifier = viewer.getVirtualEntityIdentifier();
+        DBVEntityConstraint constraint = (DBVEntityConstraint) viewer.getVirtualEntityIdentifier().getReferrer();
+        List<DBSEntityAttribute> uniqueColumns = new ArrayList<DBSEntityAttribute>();
+        for (DBDAttributeBinding binding : viewer.getModel().getColumns()) {
+            if (binding.getEntityAttribute() != null) {
+                uniqueColumns.add(binding.getEntityAttribute());
+            }
+        }
+        if (uniqueColumns.isEmpty()) {
+            UIUtils.showErrorDialog(shell, "Use All Columns", "No valid columns found for unique key");
+            return false;
+        }
+        constraint.setAttributes(uniqueColumns);
+
+        try {
+            identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, viewer.getModel().getVisibleColumn(0).getMetaAttribute().getEntity());
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(shell, "Use All Columns", "Can't reload unique columns", e);
+            return false;
+        }
+
+        return true;
+    }
+
     public static boolean validateUniqueKey(ResultSetViewer viewer)
     {
         final DBCEntityIdentifier identifier = viewer.getVirtualEntityIdentifier();
@@ -140,11 +141,10 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             return true;
         }
 
-        DBSEntity ownerEntity = identifier.getReferrer().getParentObject();
-        if (ownerEntity instanceof DBVEntity) {
-//            if (CommonUtils.getBoolean(((DBVEntity)ownerEntity).getProperty(DBVConstants.PROPERTY_USE_VIRTUAL_KEY_QUIET))) {
-//                return true;
-//            }
+        if (viewer.getDataSource().getContainer().getPreferenceStore().getBoolean(PROPERTY_USE_ALL_COLUMNS_QUIET)) {
+            if (useAllColumns(viewer.getControl().getShell(), viewer)) {
+                return true;
+            }
         }
 
         ValidateUniqueKeyUsageDialog dialog = new ValidateUniqueKeyUsageDialog(viewer);
