@@ -26,6 +26,11 @@ public class DBCStatistics {
         this.rowsUpdated = rowsUpdated;
     }
 
+    public void addRowsUpdated(long rowsUpdated)
+    {
+        this.rowsUpdated += rowsUpdated;
+    }
+
     public long getRowsFetched()
     {
         return rowsFetched;
@@ -44,6 +49,11 @@ public class DBCStatistics {
     public void setExecuteTime(long executeTime)
     {
         this.executeTime = executeTime;
+    }
+
+    public void addExecuteTime(long executeTime)
+    {
+        this.executeTime += executeTime;
     }
 
     public long getFetchTime()

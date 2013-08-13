@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -37,7 +36,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
 * Stream transfer consumer
@@ -105,51 +107,58 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             ColumnMapping column = columnMappings[i];
             rowValues[i] = column.valueHandler.fetchValueObject(context, resultSet, column.rsAttr, i);
         }
-        DBSDataManipulator target = containerMapping.getTarget();
-
-        boolean retryInsert = false;
-        do {
-            try {
-                executeBatch.add(rowValues);
-                executeBatch.execute();
-            } catch (Throwable e) {
-                log.error("Error inserting row", e);
-                if (!ignoreErrors) {
-                    ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(
-                        DBUtils.getObjectFullName(target) + " data load",
-                        e,
-                        true);
-                    errorJob.schedule();
-                    try {
-                        errorJob.join();
-                    }
-                    catch (InterruptedException e1) {
-                        // ignore
-                        throw new DBCException("Transfer interrupted", e);
-                    }
-                    switch (errorJob.getResponse()) {
-                        case STOP:
-                            // just stop execution
-                            throw new DBCException("Can't insert row", e);
-                        case RETRY:
-                            // do it again
-                            retryInsert = true;
-                            break;
-                        case IGNORE:
-                            // Just do nothing and go to the next row
-                            retryInsert = false;
-                            break;
-                        case IGNORE_ALL:
-                            ignoreErrors = true;
-                            retryInsert = false;
-                            break;
-                    }
-                }
-            }
-        } while (retryInsert);
+        executeBatch.add(rowValues);
 
         rowsExported++;
-        if (settings.isUseTransactions() && (rowsExported % settings.getCommitAfterRows()) == 0) {
+
+        insertBatch(false);
+    }
+
+    private void insertBatch(boolean force) throws DBCException
+    {
+        boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
+        if (needCommit) {
+            boolean retryInsert = false;
+            do {
+                try {
+                    executeBatch.execute();
+                } catch (Throwable e) {
+                    log.error("Error inserting row", e);
+                    if (!ignoreErrors) {
+                        ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(
+                            DBUtils.getObjectFullName(containerMapping.getTarget()) + " data load",
+                            e,
+                            true);
+                        errorJob.schedule();
+                        try {
+                            errorJob.join();
+                        }
+                        catch (InterruptedException e1) {
+                            // ignore
+                            throw new DBCException("Transfer interrupted", e);
+                        }
+                        switch (errorJob.getResponse()) {
+                            case STOP:
+                                // just stop execution
+                                throw new DBCException("Can't insert row", e);
+                            case RETRY:
+                                // do it again
+                                retryInsert = true;
+                                break;
+                            case IGNORE:
+                                // Just do nothing and go to the next row
+                                retryInsert = false;
+                                break;
+                            case IGNORE_ALL:
+                                ignoreErrors = true;
+                                retryInsert = false;
+                                break;
+                        }
+                    }
+                }
+            } while (retryInsert);
+        }
+        if (settings.isUseTransactions() && needCommit) {
             targetContext.getTransactionManager().commit();
         }
     }
@@ -157,12 +166,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public void fetchEnd(DBCExecutionContext context) throws DBCException
     {
+        insertBatch(true);
+
         executeBatch.close();
         executeBatch = null;
 
-        if (settings.isUseTransactions()) {
-            targetContext.getTransactionManager().commit();
-        }
         closeExporter();
     }
 
