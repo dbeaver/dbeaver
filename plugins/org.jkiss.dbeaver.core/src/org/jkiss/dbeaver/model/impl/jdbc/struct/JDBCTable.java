@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
@@ -389,23 +390,28 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
 
         @Override
-        public void add(Object[] attributeValues) throws DBException
+        public void add(Object[] attributeValues) throws DBCException
         {
             if (!CommonUtils.isEmpty(attributes) && CommonUtils.isEmpty(attributeValues)) {
-                throw new DBException("Bad attribute values: " + Arrays.toString(attributeValues));
+                throw new DBCException("Bad attribute values: " + Arrays.toString(attributeValues));
             }
             values.add(attributeValues);
         }
 
         @Override
-        public DBCStatistics execute() throws DBException
+        public DBCStatistics execute() throws DBCException
         {
             if (statement == null) {
-                throw new DBException("Execute batch closed");
+                throw new DBCException("Execute batch closed");
             }
             DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
             for (int i = 0; i < attributes.length; i++) {
                 handlers[i] = DBUtils.findValueHandler(statement.getContext(), attributes[i]);
+            }
+
+            boolean useBatch = statement.getContext().getDataSource().getInfo().supportsBatchUpdates();
+            if (values.size() <= 1) {
+                useBatch = false;
             }
 
             DBCStatistics statistics = new DBCStatistics();
@@ -414,22 +420,38 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     DBDValueHandler handler = handlers[k];
                     handler.bindValueObject(statement.getContext(), statement, attributes[k], k, rowValues[k]);
                 }
-                long startTime = System.currentTimeMillis();
-                statement.executeStatement();
-                statistics.setExecuteTime(statistics.getExecuteTime() + (System.currentTimeMillis() - startTime));
+                if (useBatch) {
+                    statement.addToBatch();
+                } else {
+                    // Execute each row separately
+                    long startTime = System.currentTimeMillis();
+                    statement.executeStatement();
+                    statistics.addExecuteTime(System.currentTimeMillis() - startTime);
 
-                long rowCount = statement.getUpdateRowCount();
-                if (rowCount > 0) {
-                    statistics.setRowsUpdated(statistics.getRowsUpdated() + rowCount);
-                }
+                    long rowCount = statement.getUpdateRowCount();
+                    if (rowCount > 0) {
+                        statistics.addRowsUpdated(rowCount);
+                    }
 
-                // Read keys
-                if (keysReceiver != null) {
-                    readKeys(statement.getContext(), statement, keysReceiver);
+                    // Read keys
+                    if (keysReceiver != null) {
+                        readKeys(statement.getContext(), statement, keysReceiver);
+                    }
                 }
             }
-
             values.clear();
+
+            if (useBatch) {
+                // Process batch
+                long startTime = System.currentTimeMillis();
+                int[] updatedRows = statement.executeStatementBatch();
+                statistics.addExecuteTime(System.currentTimeMillis() - startTime);
+                if (!CommonUtils.isEmpty(updatedRows)) {
+                    for (int rows : updatedRows) {
+                        statistics.addRowsUpdated(rows);
+                    }
+                }
+            }
 
             return statistics;
         }

@@ -73,6 +73,17 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         }
     }
 
+    @Override
+    public void addToBatch() throws DBCException
+    {
+        try {
+            addBatch();
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////
     // Statement overrides
     ////////////////////////////////////////////////////////////////////

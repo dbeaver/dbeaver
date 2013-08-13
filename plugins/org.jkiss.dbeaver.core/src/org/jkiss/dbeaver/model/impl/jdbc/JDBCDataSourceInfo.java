@@ -76,6 +76,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsReferences = true;
     private boolean supportsIndexes = true;
     private boolean supportsSubqueries = false;
+    private boolean supportsBatchUpdates = false;
 
     public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
@@ -124,6 +125,12 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
 
         try {
             supportsSubqueries = metaData.supportsCorrelatedSubqueries();
+        } catch (SQLException e) {
+            log.debug(e);
+        }
+
+        try {
+            supportsBatchUpdates = metaData.supportsBatchUpdates();
         } catch (SQLException e) {
             log.debug(e);
         }
@@ -524,6 +531,12 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     public DBPIdentifierCase storesQuotedCase()
     {
         return quotedIdentCase;
+    }
+
+    @Override
+    public boolean supportsBatchUpdates()
+    {
+        return supportsBatchUpdates;
     }
 
     @Override

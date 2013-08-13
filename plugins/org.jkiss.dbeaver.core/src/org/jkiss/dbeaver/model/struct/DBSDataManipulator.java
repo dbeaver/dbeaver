@@ -19,14 +19,10 @@
 
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
-
-import java.util.List;
 
 /**
  * Data manipulator.
@@ -39,9 +35,9 @@ public interface DBSDataManipulator extends DBSDataContainer {
     public static final int DATA_DELETE         = 16;
 
     interface ExecuteBatch {
-        void add(Object[] attributeValues) throws DBException;
+        void add(Object[] attributeValues) throws DBCException;
 
-        DBCStatistics execute() throws DBException;
+        DBCStatistics execute() throws DBCException;
 
         void close();
     }

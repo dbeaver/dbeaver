@@ -89,6 +89,18 @@ public class WMIStatement implements DBCStatement {
     }
 
     @Override
+    public void addToBatch() throws DBCException
+    {
+        throw new DBCException("Batches not supported");
+    }
+
+    @Override
+    public int[] executeStatementBatch() throws DBCException
+    {
+        throw new DBCException("Batches not supported");
+    }
+
+    @Override
     public DBCResultSet openResultSet() throws DBCException
     {
         if (queryResult == null) {

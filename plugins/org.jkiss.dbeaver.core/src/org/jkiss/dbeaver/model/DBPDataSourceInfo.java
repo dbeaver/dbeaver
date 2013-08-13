@@ -268,6 +268,8 @@ public interface DBPDataSourceInfo
 
     boolean supportsSubqueries();
 
+    boolean supportsBatchUpdates();
+
     DBPIdentifierCase storesUnquotedCase();
 
     DBPIdentifierCase storesQuotedCase();
