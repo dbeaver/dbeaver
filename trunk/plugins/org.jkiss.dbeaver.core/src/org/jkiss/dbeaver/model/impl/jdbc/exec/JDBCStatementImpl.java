@@ -140,6 +140,28 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         }
     }
 
+    @Override
+    public void addToBatch() throws DBCException
+    {
+        try {
+            addBatch(query);
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
+    }
+
+    @Override
+    public int[] executeStatementBatch() throws DBCException
+    {
+        try {
+            return executeBatch();
+        }
+        catch (SQLException e) {
+            throw new DBCException(e);
+        }
+    }
+
     protected void setDescription(String description)
     {
         this.description = description;

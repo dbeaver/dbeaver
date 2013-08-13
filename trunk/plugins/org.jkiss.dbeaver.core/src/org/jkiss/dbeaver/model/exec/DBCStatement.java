@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.SQLException;
+
 /**
  * DBCStatement
  */
@@ -53,6 +55,18 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * @throws DBCException on error
      */
     boolean executeStatement() throws DBCException;
+
+    /**
+     * Adds statement to execution batch (if supported)
+     * @throws DBCException on error
+     */
+    void addToBatch() throws DBCException;
+
+    /**
+     * Executes batch of statements
+     * @throws DBCException on error
+     */
+    int[] executeStatementBatch() throws DBCException;
 
     /**
      * Returns result set. Valid only on after {@link #executeStatement} invocation.
