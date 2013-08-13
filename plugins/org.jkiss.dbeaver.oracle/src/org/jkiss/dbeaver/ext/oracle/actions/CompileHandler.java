@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -206,7 +207,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 element.setText("Compile " + objects.size() + " objects");
             } else {
                 final OracleSourceObject sourceObject = objects.get(0);
-                String objectType = CommonUtils.formatWord(sourceObject.getSourceType().name());
+                String objectType = TextUtils.formatWord(sourceObject.getSourceType().name());
                 element.setText("Compile " + objectType/* + " '" + sourceObject.getName() + "'"*/);
             }
         }
