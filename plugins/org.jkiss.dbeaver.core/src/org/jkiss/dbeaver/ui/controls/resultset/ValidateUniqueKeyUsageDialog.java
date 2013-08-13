@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -41,8 +42,6 @@ import java.util.List;
  * Confirm virtual key usage dialog
  */
 class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
-
-    private static final String PROPERTY_USE_ALL_COLUMNS_QUIET = "virtual-key-quiet";
 
     private ResultSetViewer viewer;
 
@@ -70,7 +69,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
     @Override
     protected void buttonPressed(int buttonId)
     {
-        viewer.getDataSource().getContainer().getPreferenceStore().setValue(PROPERTY_USE_ALL_COLUMNS_QUIET, getToggleState());
+        viewer.getDataSource().getContainer().getPreferenceStore().setValue(PrefConstants.RS_EDIT_USE_ALL_COLUMNS, getToggleState());
         switch (buttonId)
         {
             case IDialogConstants.CANCEL_ID:
@@ -120,7 +119,9 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
         constraint.setAttributes(uniqueColumns);
 
         try {
-            identifier.reloadAttributes(VoidProgressMonitor.INSTANCE, viewer.getModel().getVisibleColumn(0).getMetaAttribute().getEntity());
+            identifier.reloadAttributes(
+                VoidProgressMonitor.INSTANCE,
+                viewer.getModel().getVisibleColumn(0).getMetaAttribute().getEntity());
         } catch (DBException e) {
             UIUtils.showErrorDialog(shell, "Use All Columns", "Can't reload unique columns", e);
             return false;
@@ -141,7 +142,7 @@ class ValidateUniqueKeyUsageDialog extends MessageDialogWithToggle {
             return true;
         }
 
-        if (viewer.getDataSource().getContainer().getPreferenceStore().getBoolean(PROPERTY_USE_ALL_COLUMNS_QUIET)) {
+        if (viewer.getDataSource().getContainer().getPreferenceStore().getBoolean(PrefConstants.RS_EDIT_USE_ALL_COLUMNS)) {
             if (useAllColumns(viewer.getControl().getShell(), viewer)) {
                 return true;
             }

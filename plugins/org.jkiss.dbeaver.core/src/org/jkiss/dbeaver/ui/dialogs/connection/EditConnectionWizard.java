@@ -99,8 +99,8 @@ public class EditConnectionWizard extends ConnectionWizard
 
         addPreferencePage(new PrefPageDataFormat(), "Data Formatting", "Data formatting preferences");
         addPreferencePage(new PrefPageResultSet(), "Result Sets", "Result Set preferences");
+        addPreferencePage(new PrefPageDataEditor(), "Data Editor", "Data editor settings");
         addPreferencePage(new PrefPageSQLEditor(), "SQL Editor", "SQL editor settings");
-        addPreferencePage(new PrefPageContentEditor(), "LOB Editor", "LOB editor settings");
     }
 
     private void addPreferencePage(PreferencePage prefPage, String title, String description)
