@@ -709,6 +709,7 @@ public class SQLEditor extends SQLEditorBase
             } else {
                 dataContainer.viewer.setStatus(CoreMessages.editors_sql_staus_connected_to + getDataSource().getContainer().getName() + "'"); //$NON-NLS-2$
             }
+            dataContainer.viewer.updateFiltersText();
         }
         if (planView != null) {
             //resultsView.refresh();
