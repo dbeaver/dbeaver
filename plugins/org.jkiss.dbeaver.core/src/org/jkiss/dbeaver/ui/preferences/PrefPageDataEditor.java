@@ -29,19 +29,20 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
 
 /**
- * PrefPageSQL
+ * PrefPageDataEditor
  */
-public class PrefPageContentEditor extends TargetPrefPage
+public class PrefPageDataEditor extends TargetPrefPage
 {
-    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.contenteditor"; //$NON-NLS-1$
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.dataeditor"; //$NON-NLS-1$
 
+    private Button alwaysUseAllColumns;
     private Spinner maxTextContentSize;
     private Button editLongAsLobCheck;
     private Button commitOnEditApplyCheck;
     private Button commitOnContentApplyCheck;
     private Combo encodingCombo;
 
-    public PrefPageContentEditor()
+    public PrefPageDataEditor()
     {
         super();
     }
@@ -51,6 +52,7 @@ public class PrefPageContentEditor extends TargetPrefPage
     {
         AbstractPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
+                store.contains(PrefConstants.RS_EDIT_USE_ALL_COLUMNS) ||
                 store.contains(PrefConstants.RS_EDIT_MAX_TEXT_SIZE) ||
                 store.contains(PrefConstants.RS_EDIT_LONG_AS_LOB) ||
                 store.contains(PrefConstants.RS_COMMIT_ON_EDIT_APPLY) ||
@@ -68,6 +70,15 @@ public class PrefPageContentEditor extends TargetPrefPage
     protected Control createPreferenceContent(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
+
+        // Keys
+        {
+            Group contentGroup = new Group(composite, SWT.NONE);
+            contentGroup.setText(CoreMessages.pref_page_content_editor_group_keys);
+            contentGroup.setLayout(new GridLayout(2, false));
+
+            alwaysUseAllColumns = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
+        }
 
         // Content
         {
@@ -105,6 +116,7 @@ public class PrefPageContentEditor extends TargetPrefPage
     protected void loadPreferences(IPreferenceStore store)
     {
         try {
+            alwaysUseAllColumns.setSelection(store.getBoolean(PrefConstants.RS_EDIT_USE_ALL_COLUMNS));
             maxTextContentSize.setSelection(store.getInt(PrefConstants.RS_EDIT_MAX_TEXT_SIZE));
             editLongAsLobCheck.setSelection(store.getBoolean(PrefConstants.RS_EDIT_LONG_AS_LOB));
             commitOnEditApplyCheck.setSelection(store.getBoolean(PrefConstants.RS_COMMIT_ON_EDIT_APPLY));
@@ -119,6 +131,7 @@ public class PrefPageContentEditor extends TargetPrefPage
     protected void savePreferences(IPreferenceStore store)
     {
         try {
+            store.setValue(PrefConstants.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
             store.setValue(PrefConstants.RS_EDIT_MAX_TEXT_SIZE, maxTextContentSize.getSelection());
             store.setValue(PrefConstants.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
             store.setValue(PrefConstants.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
@@ -133,6 +146,7 @@ public class PrefPageContentEditor extends TargetPrefPage
     @Override
     protected void clearPreferences(IPreferenceStore store)
     {
+        store.setToDefault(PrefConstants.RS_EDIT_USE_ALL_COLUMNS);
         store.setToDefault(PrefConstants.RS_EDIT_MAX_TEXT_SIZE);
         store.setToDefault(PrefConstants.RS_EDIT_LONG_AS_LOB);
         store.setToDefault(PrefConstants.RS_COMMIT_ON_EDIT_APPLY);

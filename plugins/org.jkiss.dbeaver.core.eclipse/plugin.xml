@@ -67,7 +67,7 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" name="Templates"/>
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.contenteditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageContentEditor" name="%pref.page.name.content.editor">
+        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.dataeditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataEditor" name="%pref.page.name.data.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.content"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
