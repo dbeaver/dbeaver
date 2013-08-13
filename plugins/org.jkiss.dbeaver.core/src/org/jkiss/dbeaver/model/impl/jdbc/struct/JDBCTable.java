@@ -280,10 +280,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         dbStat.setDataContainer(this);
 
-        // Make single array for keys and values
-        DBSEntityAttribute[] attributes = new DBSEntityAttribute[keyAttributes.length + updateAttributes.length];
-        System.arraycopy(updateAttributes, 0, attributes, 0, updateAttributes.length);
-        System.arraycopy(keyAttributes, 0, attributes, updateAttributes.length, keyAttributes.length);
+        DBSEntityAttribute[] attributes = CommonUtils.concatArrays(updateAttributes, keyAttributes);
 
         return new BatchImpl(dbStat, attributes, keysReceiver);
     }
