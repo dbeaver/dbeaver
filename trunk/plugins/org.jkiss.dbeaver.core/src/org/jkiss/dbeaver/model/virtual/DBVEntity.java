@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -33,7 +34,7 @@ import java.util.*;
 /**
  * Dictionary descriptor
  */
-public class DBVEntity extends DBVObject implements DBSEntity {
+public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObject {
 
     private static final String[] DESC_COLUMN_PATTERNS = {
         "title",
@@ -313,5 +314,13 @@ public class DBVEntity extends DBVObject implements DBSEntity {
         if (!CommonUtils.isEmpty(copy.properties)) {
             this.properties = new LinkedHashMap<String, String>(copy.properties);
         }
+    }
+
+    @Override
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            container,
+            this);
     }
 }
