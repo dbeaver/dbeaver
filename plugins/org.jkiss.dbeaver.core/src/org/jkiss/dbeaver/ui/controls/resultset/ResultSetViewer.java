@@ -1073,7 +1073,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     public void appendData(List<Object[]> rows)
     {
         model.appendData(rows);
-        refreshSpreadsheet(true);
+        //refreshSpreadsheet(true);
+        spreadsheet.refreshData(false);
 
         setStatus(NLS.bind(CoreMessages.controls_resultset_viewer_status_rows_size, model.getRowCount(), rows.size()) + getExecutionTimeMessage());
     }
@@ -1092,14 +1093,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     private void initResultSet()
     {
         spreadsheet.setRedraw(false);
-        spreadsheet.clearGrid();
-        if (gridMode == GridMode.RECORD) {
-            this.resetRecordHeaderWidth();
+        try {
+            spreadsheet.clearGrid();
+            if (gridMode == GridMode.RECORD) {
+                this.resetRecordHeaderWidth();
+            }
+
+            spreadsheet.reinitState();
+        } finally {
+            spreadsheet.setRedraw(true);
         }
-
-        spreadsheet.reinitState();
-
-        spreadsheet.setRedraw(true);
 
         this.updateFiltersText();
         this.updateStatusMessage();
@@ -1779,15 +1782,16 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 // Restore original position
                                 ResultSetViewer.this.curRowNum = Math.min(oldPos.row, model.getRowCount() - 1);
                                 ResultSetViewer.this.curColNum = Math.min(oldPos.col, model.getVisibleColumnCount() - 1);
+                                GridPos newPos;
                                 if (gridMode == GridMode.GRID) {
-                                    spreadsheet.setCursor(new GridPos(curColNum, curRowNum), false);
+                                    newPos = new GridPos(curColNum, curRowNum);
                                 } else {
                                     if (ResultSetViewer.this.curRowNum < 0 && model.getRowCount() > 0) {
                                         ResultSetViewer.this.curRowNum = 0;
                                     }
-                                    spreadsheet.setCursor(new GridPos(0, curColNum), false);
+                                    newPos = new GridPos(0, curColNum);
                                 }
-                                spreadsheet.setSelection(-1, -1);
+                                spreadsheet.setCursor(newPos, false);
                                 updateStatusMessage();
                                 previewValue();
                             }

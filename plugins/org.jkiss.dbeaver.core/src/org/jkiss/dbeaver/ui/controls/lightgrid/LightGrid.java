@@ -480,64 +480,69 @@ public abstract class LightGrid extends Canvas {
     /**
      * Refresh grid data
      */
-    public void refreshData()
+    public void refreshData(boolean clearData)
     {
-        this.removeAll();
+        if (clearData) {
+            this.removeAll();
+        }
         IGridContentProvider contentProvider = getContentProvider();
         if (contentProvider == null) {
             return;
         }
         this.currentVisibleItems = contentProvider.getRowCount();
-        this.topIndex = 0;
-        this.bottomIndex = -1;
-        this.startColumnIndex = -1;
-        this.endColumnIndex = -1;
 
-        // Add columns
-        int columnCount = contentProvider.getColumnCount();
-        for (int i = 0; i < columnCount; i++) {
-            GridColumn column = new GridColumn(this, SWT.NONE);
-            column.setText(getColumnLabelProvider().getText(i));
-            column.setImage(getColumnLabelProvider().getImage(i));
-            contentProvider.updateColumn(column);
-        }
+        if (clearData) {
+            this.topIndex = -1;
+            this.bottomIndex = -1;
+            this.startColumnIndex = -1;
+            this.endColumnIndex = -1;
 
-        if (getColumnCount() == 1) {
-            // Here we going to maximize single column to entire grid's width
-            // Sometimes (when new grid created and filled with data very fast our client area size is zero
-            // So let's add a workaround for it and use column's width in this case
-            GridColumn column = getColumn(0);
-            int columnWidth = column.computeHeaderWidth();
-            int gridWidth = getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x;
-            if (gridWidth > columnWidth) {
-                columnWidth = gridWidth;
+            // Add columns
+            int columnCount = contentProvider.getColumnCount();
+            for (int i = 0; i < columnCount; i++) {
+                GridColumn column = new GridColumn(this, SWT.NONE);
+                column.setText(getColumnLabelProvider().getText(i));
+                column.setImage(getColumnLabelProvider().getImage(i));
+                contentProvider.updateColumn(column);
             }
-            column.setWidth(columnWidth);
-        } else {
-            int totalWidth = 0;
-            for (GridColumn curColumn : columns) {
-                curColumn.pack();
-                totalWidth += curColumn.getWidth();
-            }
-            // If grid width more than screen - lets narrow too long columns
-            int clientWidth = getClientArea().width;
-            if (totalWidth > clientWidth) {
-                int normalWidth = 0;
-                List<GridColumn> fatColumns = new ArrayList<GridColumn>();
-                for (GridColumn curColumn : columns) {
-                    if (curColumn.getWidth() > maxColumnDefWidth) {
-                        fatColumns.add(curColumn);
-                    } else {
-                        normalWidth += curColumn.getWidth();
-                    }
+
+            if (getColumnCount() == 1) {
+                // Here we going to maximize single column to entire grid's width
+                // Sometimes (when new grid created and filled with data very fast our client area size is zero
+                // So let's add a workaround for it and use column's width in this case
+                GridColumn column = getColumn(0);
+                int columnWidth = column.computeHeaderWidth();
+                int gridWidth = getSize().x - getRowHeaderWidth() - getHScrollSelectionInPixels() - getVerticalBar().getSize().x;
+                if (gridWidth > columnWidth) {
+                    columnWidth = gridWidth;
                 }
-                if (!fatColumns.isEmpty()) {
-                    // Narrow fat columns on decWidth
-                    int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - (vScroll.getControl() == null ? 0 : vScroll.getControl().getSize().x))
-                        / fatColumns.size();
-                    int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
-                    for (GridColumn curColumn : fatColumns) {
-                        curColumn.setWidth(newFatWidth);
+                column.setWidth(columnWidth);
+            } else {
+                int totalWidth = 0;
+                for (GridColumn curColumn : columns) {
+                    curColumn.pack();
+                    totalWidth += curColumn.getWidth();
+                }
+                // If grid width more than screen - lets narrow too long columns
+                int clientWidth = getClientArea().width;
+                if (totalWidth > clientWidth) {
+                    int normalWidth = 0;
+                    List<GridColumn> fatColumns = new ArrayList<GridColumn>();
+                    for (GridColumn curColumn : columns) {
+                        if (curColumn.getWidth() > maxColumnDefWidth) {
+                            fatColumns.add(curColumn);
+                        } else {
+                            normalWidth += curColumn.getWidth();
+                        }
+                    }
+                    if (!fatColumns.isEmpty()) {
+                        // Narrow fat columns on decWidth
+                        int freeSpace = (clientWidth - normalWidth - getBorderWidth() - rowHeaderWidth - (vScroll.getControl() == null ? 0 : vScroll.getControl().getSize().x))
+                            / fatColumns.size();
+                        int newFatWidth = (freeSpace > maxColumnDefWidth ? freeSpace : maxColumnDefWidth);
+                        for (GridColumn curColumn : fatColumns) {
+                            curColumn.setWidth(newFatWidth);
+                        }
                     }
                 }
             }
@@ -3658,7 +3663,7 @@ public abstract class LightGrid extends Canvas {
                         newSelection = tmpItem;
                 }
 
-                if ((impliedFocusItem >= 0 && impliedFocusItem == bottomIndex - 1) || focusItem == bottomIndex - 1) {
+                if ((impliedFocusItem >= 0 && impliedFocusItem >= bottomIndex - 1) || focusItem == bottomIndex - 1) {
                     RowRange range = getRowRange(getBottomIndex(), getVisibleGridHeight(), true, false);
                     newSelection = range.endIndex;
                 }

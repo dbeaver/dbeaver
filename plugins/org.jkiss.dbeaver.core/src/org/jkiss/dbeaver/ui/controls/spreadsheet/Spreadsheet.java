@@ -418,9 +418,9 @@ public class Spreadsheet extends LightGrid implements Listener {
     {
         cancelInlineEditor();
         // Repack columns
-        super.refreshData();
+        super.refreshData(true);
 
-        setCursor(new GridPos(-1, -1), false);
+        //setCursor(new GridPos(-1, -1), false);
     }
 
     public int getVisibleRowsCount()
@@ -451,7 +451,7 @@ public class Spreadsheet extends LightGrid implements Listener {
             {
                 manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
 
-                // Let controlles to provide it's own menu items
+                // Let controller to provide it's own menu items
                 spreadsheetController.fillContextMenu(getFocusCell(), manager);
             }
         });
