@@ -436,7 +436,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         spreadsheet.setFocus();
     }
 
-    private void updateFiltersText()
+    public void updateFiltersText()
     {
         StringBuilder where = new StringBuilder();
         model.getDataFilter().appendConditionString(getDataSource(), where);
@@ -446,7 +446,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             addFiltersHistory(whereCondition);
         }
 
-        if (getModel().getVisibleColumnCount() > 0 && supportsDataFilter()) {
+        if (getDataSource() != null && getModel().getVisibleColumnCount() > 0 && supportsDataFilter()) {
             if (filtersEnableState != null) {
                 filtersEnableState.restore();
                 filtersEnableState = null;
@@ -1789,9 +1789,9 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                                 }
                                 spreadsheet.setSelection(-1, -1);
                                 updateStatusMessage();
-                                updateFiltersText();
                                 previewValue();
                             }
+                            updateFiltersText();
                             if (finalizer != null) {
                                 finalizer.run();
                             }
