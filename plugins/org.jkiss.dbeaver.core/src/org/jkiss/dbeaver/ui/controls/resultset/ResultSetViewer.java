@@ -1832,22 +1832,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
             if (!model.getRemovedRows().isEmpty() || !model.getEditedValues().isEmpty()) {
                 // If we have deleted or updated rows then check for unique identifier
                 if (!checkVirtualEntityIdentifier()) {
+                    //UIUtils.showErrorDialog(getControl().getShell(), "Can't apply changes", "Can't apply data changes - not unique identifier defined");
                     return;
-                }
-                if (getVirtualEntityIdentifier() != null) {
-                    // Ask user
-                    RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
-                        @Override
-                        public void run()
-                        {
-                            ConfirmVirtualKeyUsageDialog dialog = new ConfirmVirtualKeyUsageDialog(ResultSetViewer.this);
-                            result = (dialog.open() == IDialogConstants.OK_ID);
-                        }
-                    };
-                    UIUtils.runInUI(getControl().getShell(), confirmer);
-                    if (!confirmer.getResult()) {
-                        return;
-                    }
                 }
             }
             new ResultSetPersister(this).applyChanges(monitor, listener);
@@ -2157,20 +2143,17 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         final DBCEntityIdentifier identifier = getVirtualEntityIdentifier();
         if (identifier != null) {
             if (CommonUtils.isEmpty(identifier.getAttributes())) {
-                UIUtils.runInUI(getControl().getShell(), new Runnable() {
+                // Empty identifier. We have to define it
+                RunnableWithResult<Boolean> confirmer = new RunnableWithResult<Boolean>() {
                     @Override
                     public void run()
                     {
-                        // It is safe to use void monitor cos' it is virtual constraint
-                        try {
-                            editEntityIdentifier(VoidProgressMonitor.INSTANCE);
-                        } catch (DBException e) {
-                            log.error(e);
-                        }
+                        result = ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this);
                     }
-                });
+                };
+                UIUtils.runInUI(getControl().getShell(), confirmer);
+                return confirmer.getResult();
             }
-            return !CommonUtils.isEmpty(identifier.getAttributes());
         }
         return true;
     }
