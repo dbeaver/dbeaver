@@ -1043,13 +1043,13 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     {
         if (model.setMetaData(columns)) {
             this.panelValueController = null;
-            UIUtils.runInUI(null, new Runnable() {
-                @Override
-                public void run()
-                {
-                    spreadsheet.clearGrid();
-                }
-            });
+//            UIUtils.runInUI(null, new Runnable() {
+//                @Override
+//                public void run()
+//                {
+//                    spreadsheet.clearGrid();
+//                }
+//            });
             return true;
         }
         return false;
@@ -2540,7 +2540,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 value = model.getCellValue(row, column.getAttributeIndex());
             }
 
-            if (rowNum == rowCount - 1 && (gridMode == GridMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
+            if (rowNum > 0 && rowNum == rowCount - 1 && (gridMode == GridMode.RECORD || spreadsheet.isRowVisible(rowNum)) && dataReceiver.isHasMoreData()) {
                 readNextSegment();
             }
 
