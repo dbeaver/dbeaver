@@ -14,7 +14,12 @@ public class DBCStatistics {
     private long rowsFetched;
     private long executeTime;
     private long fetchTime;
+    private int statementsCount;
     private List<String> messages;
+
+    public DBCStatistics()
+    {
+    }
 
     public long getRowsUpdated()
     {
@@ -71,6 +76,21 @@ public class DBCStatistics {
         return executeTime + fetchTime;
     }
 
+    public int getStatementsCount()
+    {
+        return statementsCount;
+    }
+
+    public void setStatementsCount(int statementsCount)
+    {
+        this.statementsCount = statementsCount;
+    }
+
+    public void addStatementsCount()
+    {
+        this.statementsCount++;
+    }
+
     public List<String> getMessages()
     {
         return messages;
@@ -95,6 +115,7 @@ public class DBCStatistics {
         rowsFetched += stat.rowsFetched;
         executeTime += stat.executeTime;
         fetchTime += stat.fetchTime;
+        statementsCount += stat.statementsCount;
         if (!CommonUtils.isEmpty(stat.messages)) {
             for (String message : stat.messages) {
                 addMessage(message);
@@ -108,6 +129,7 @@ public class DBCStatistics {
         rowsFetched = 0;
         executeTime = 0;
         fetchTime = 0;
+        statementsCount = 0;
         messages = null;
     }
 

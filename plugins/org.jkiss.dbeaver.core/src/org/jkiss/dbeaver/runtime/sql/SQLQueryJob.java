@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -83,7 +82,7 @@ public class SQLQueryJob extends DataSourceJob
 
     private List<ISQLQueryListener> queryListeners = new ArrayList<ISQLQueryListener>();
     private static final String NESTED_QUERY_AlIAS = "origdbvr";
-    private DBCStatistics statistics = new DBCStatistics();
+    private DBCStatistics statistics;
 
     public SQLQueryJob(
         String name,
@@ -150,6 +149,7 @@ public class SQLQueryJob extends DataSourceJob
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
+        statistics = new DBCStatistics();
         try {
             DBCExecutionContext context = getDataSource().openContext(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
             try {
@@ -223,6 +223,9 @@ public class SQLQueryJob extends DataSourceJob
                     queryNum++;
                 }
                 monitor.done();
+
+                // Fetch script execution results
+                fetchExecutionResult(context);
 
                 // Commit data
                 if (!oldAutoCommit && commitType != SQLScriptCommitType.AUTOCOMMIT) {
@@ -405,12 +408,13 @@ public class SQLQueryJob extends DataSourceJob
                 //monitor.subTask("Execute query");
                 boolean hasResultSet = curStatement.executeStatement();
                 curResult.setHasResultSet(hasResultSet);
-                statistics.setExecuteTime(System.currentTimeMillis() - startTime);
+                statistics.addExecuteTime(System.currentTimeMillis() - startTime);
+                statistics.addStatementsCount();
                 // Show results only if we are not in the script execution
                 // Probably it doesn't matter what result executeStatement() return. It seems that some drivers
                 // return messy results here
                 if (hasResultSet && fetchResultSets) {
-                    fetchQueryData(context, curStatement.openResultSet());
+                    fetchQueryData(context, curStatement.openResultSet(), true);
                 }
                 if (!hasResultSet) {
                     long updateCount = -1;
@@ -418,7 +422,7 @@ public class SQLQueryJob extends DataSourceJob
                         updateCount = curStatement.getUpdateRowCount();
                         if (updateCount >= 0) {
                             curResult.setUpdateCount(updateCount);
-                            statistics.setRowsUpdated(updateCount);
+                            statistics.addRowsUpdated(updateCount);
                         }
                     } catch (DBCException e) {
                         // In some cases we can't read update count
@@ -427,15 +431,7 @@ public class SQLQueryJob extends DataSourceJob
                         log.warn("Can't obtain update count", e);
                     }
                     if (fetchResultSets) {
-                        // Fetch fake result set
-                        LocalResultSet fakeResultSet = new LocalResultSet(context, curStatement);
-                        if (updateCount > 0) {
-                            fakeResultSet.addColumn("Updated Rows", DBSDataKind.NUMERIC);
-                            fakeResultSet.addRow(updateCount);
-                        } else {
-                            fakeResultSet.addColumn("Result", DBSDataKind.NUMERIC);
-                        }
-                        fetchQueryData(context, fakeResultSet);
+                        fetchExecutionResult(context);
                     }
                 }
             }
@@ -475,6 +471,36 @@ public class SQLQueryJob extends DataSourceJob
         return true;
     }
 
+    private void fetchExecutionResult(DBCExecutionContext context) throws DBCException
+    {
+        // Fetch fake result set
+        LocalResultSet fakeResultSet = new LocalResultSet(context, curStatement);
+        if (statistics.getStatementsCount() > 1) {
+            // Multiple statements - show script statistics
+            fakeResultSet.addColumn("Queries", DBSDataKind.NUMERIC);
+            fakeResultSet.addColumn("Updated Rows", DBSDataKind.NUMERIC);
+            fakeResultSet.addColumn("Execute time", DBSDataKind.NUMERIC);
+            fakeResultSet.addColumn("Fetch time", DBSDataKind.NUMERIC);
+            fakeResultSet.addColumn("Total time", DBSDataKind.NUMERIC);
+            fakeResultSet.addRow(
+                statistics.getStatementsCount(),
+                statistics.getRowsUpdated(),
+                statistics.getExecuteTime(),
+                statistics.getFetchTime(),
+                statistics.getTotalTime());
+        } else {
+            // Single statement
+            long updateCount = statistics.getRowsUpdated();
+            if (updateCount > 0) {
+                fakeResultSet.addColumn("Updated Rows", DBSDataKind.NUMERIC);
+                fakeResultSet.addRow(updateCount);
+            } else {
+                fakeResultSet.addColumn("Result", DBSDataKind.NUMERIC);
+            }
+        }
+        fetchQueryData(context, fakeResultSet, false);
+    }
+
     private boolean bindStatementParameters(final List<SQLStatementParameter> parameters)
     {
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();
@@ -493,7 +519,7 @@ public class SQLQueryJob extends DataSourceJob
         return binder.getResult();
     }
 
-    private void fetchQueryData(DBCExecutionContext context, DBCResultSet resultSet)
+    private void fetchQueryData(DBCExecutionContext context, DBCResultSet resultSet, boolean updateStatistics)
         throws DBCException
     {
         if (dataReceiver == null) {
@@ -548,8 +574,9 @@ public class SQLQueryJob extends DataSourceJob
 
                 dataReceiver.fetchRow(context, curResultSet);
             }
-
-            statistics.setFetchTime(System.currentTimeMillis() - fetchStartTime);
+            if (updateStatistics) {
+                statistics.setFetchTime(System.currentTimeMillis() - fetchStartTime);
+            }
         }
         finally {
             if (!keepStatementOpen()) {
@@ -565,7 +592,9 @@ public class SQLQueryJob extends DataSourceJob
         }
 
         curResult.setRowCount(rowCount);
-        statistics.setRowsFetched(rowCount);
+        if (updateStatistics) {
+            statistics.setRowsFetched(rowCount);
+        }
         monitor.subTask(rowCount + " rows fetched");
     }
 

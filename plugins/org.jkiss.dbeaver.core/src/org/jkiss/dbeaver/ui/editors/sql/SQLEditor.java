@@ -1098,6 +1098,8 @@ public class SQLEditor extends SQLEditorBase
                                 if (!isSingleQuery) {
                                     sashForm.setMaximizedControl(null);
                                 }
+                                viewer.getModel().setStatistics(job.getStatistics());
+                                viewer.updateStatusMessage();
                             }
                         });
                     }
