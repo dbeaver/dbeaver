@@ -137,15 +137,15 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             @Override
             public void run()
             {
+                // Check for more data
+                int segmentSize = resultSetViewer.getSegmentMaxRows();
+                hasMoreData = segmentSize > 0 && rows.size() >= segmentSize;
+                // Push data into viewer
                 if (!nextSegmentRead) {
                     resultSetViewer.setData(rows, updateMetaData);
                 } else {
                     resultSetViewer.appendData(rows);
                 }
-
-                // Check for more data
-                int segmentSize = resultSetViewer.getSegmentMaxRows();
-                hasMoreData = segmentSize > 0 && rows.size() >= segmentSize;
             }
         });
     }
