@@ -189,11 +189,18 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     makeProposalsFromChildren(monitor, rootObject, null, proposals);
                 }
             } else {
-                // Get root object or objects from active database (if any)
-                makeStructureProposals(monitor, dataSource, proposals);
+                DBSObject rootObject = null;
+                if (queryType == QueryType.COLUMN) {
+                    // Part of column name
+                    rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, null);
+                }
+                if (rootObject != null) {
+                    makeProposalsFromChildren(monitor, rootObject, wordPart, proposals);
+                } else {
+                    // Get root object or objects from active database (if any)
+                    makeStructureProposals(monitor, dataSource, proposals);
+                }
             }
-        //} else if (queryType == QueryType.COLUMN) {
-
         } else {
             // Get list of sub-objects (filtered by wordPart)
             makeStructureProposals(monitor, dataSource, proposals);
