@@ -50,7 +50,8 @@ public class SQLConstants {
         "FROM",
         "UPDATE",
         "INTO",
-        "TABLE"
+        "TABLE",
+        "JOIN"
     }; //$NON-NLS$
     public static final String[] COLUMN_KEYWORDS = {
         "SELECT",
