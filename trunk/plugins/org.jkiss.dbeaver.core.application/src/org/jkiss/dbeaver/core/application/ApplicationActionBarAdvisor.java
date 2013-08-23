@@ -167,6 +167,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         helpMenu.add(showHelpAction);
         //helpMenu.add(searchHelpAction);
         //helpMenu.add(dynamicHelpAction);
+        helpMenu.add(new Separator());
+        helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
         helpMenu.add(ActionUtils.makeAction(checkUpdatesAction, null, null, CoreMessages.actions_menu_check_update, null, null));
     }
 
