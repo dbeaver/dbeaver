@@ -47,6 +47,16 @@
 
     <versions>
         <version>
+            <number>2.2.5</number>
+            <type>stable</type>
+            <date>26.08.2013</date>
+
+            <release-notes>
+                -
+            </release-notes>
+        </version>
+
+        <version>
             <number>2.2.4</number>
             <type>stable</type>
             <date>15.07.2013</date>
