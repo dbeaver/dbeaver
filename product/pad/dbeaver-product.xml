@@ -52,7 +52,13 @@
             <date>26.08.2013</date>
 
             <release-notes>
-                -
+                - Data transfer performance improved
+                - Query/script execution statistics improved
+                - SQL autocomplete improved
+                - Results view copy/advanced copy improved
+                - Results view rendering fixed
+                - Unique keys management simplified
+                - A few minor UI problems fixed
             </release-notes>
         </version>
 

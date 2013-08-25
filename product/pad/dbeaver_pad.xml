@@ -49,15 +49,13 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Search UI changed
-        - Metadata reading improved (Oracle RDB problem fixed)
-        - Results columns hiding/reordering support added
-        - Results viewer fixed (context menu, record mode, scrolling, etc)
-        - Connection properties save fixed
-        - Project management fixed in Eclipse plugin version
-        - Metadata search integrated into standard Eclipse search UI
-        - Oracle driver updated to 11.2.0.3
-        - Many minor UI fixes
+        - Data transfer performance improved
+        - Query/script execution statistics improved
+        - SQL autocomplete improved
+        - Results view copy/advanced copy improved
+        - Results view rendering fixed
+        - Unique keys management simplified
+        - A few minor UI problems fixed
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>
