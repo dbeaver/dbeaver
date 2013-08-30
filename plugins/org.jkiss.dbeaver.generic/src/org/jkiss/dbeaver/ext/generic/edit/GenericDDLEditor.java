@@ -27,7 +27,7 @@ public class GenericDDLEditor extends SQLEditorNested<GenericTable> {
         }
         GenericTableManager tableManager = new GenericTableManager();
         IDatabasePersistAction[] ddlActions = tableManager.getTableDDL(monitor, getSourceObject());
-        return DBUtils.generateScript(getSourceObject().getDataSource(), ddlActions);
+        return DBUtils.generateScript(ddlActions);
     }
 
     @Override

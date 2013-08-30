@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.preferences.PrefConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -925,7 +926,7 @@ public final class DBUtils {
         }
     }
 
-    public static String generateScript(DBPDataSource dataSource, IDatabasePersistAction[] persistActions)
+    public static String generateScript(IDatabasePersistAction[] persistActions)
     {
         String lineSeparator = ContentUtils.getDefaultLineSeparator();
         StringBuilder script = new StringBuilder(512);
@@ -934,7 +935,7 @@ public final class DBUtils {
                 script.append(lineSeparator);
             }
             script.append(action.getScript());
-            script.append(dataSource.getInfo().getScriptDelimiter()).append(lineSeparator);
+            script.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(lineSeparator);
         }
         return script.toString();
     }
