@@ -19,8 +19,11 @@
 
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,9 +44,18 @@ class GenericDataSourceInfo extends JDBCDataSourceInfo {
         //EXEC_KEYWORDS.add("DECLARE");
     }
 
-    public GenericDataSourceInfo(JDBCDatabaseMetaData metaData)
+    private final String scriptDelimiter;
+
+    public GenericDataSourceInfo(DBPDriver driver, JDBCDatabaseMetaData metaData)
     {
         super(metaData);
+        scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+    }
+
+    @Override
+    public String getScriptDelimiter()
+    {
+        return CommonUtils.isEmpty(scriptDelimiter) ? super.getScriptDelimiter() : scriptDelimiter;
     }
 
     @Override

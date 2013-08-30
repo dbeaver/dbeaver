@@ -169,9 +169,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
-            script.append(DBUtils.generateScript(
-                commandContext.getDataSourceContainer().getDataSource(),
-                command.getPersistActions()));
+            script.append(DBUtils.generateScript(command.getPersistActions()));
         }
         DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
         if (view != null) {

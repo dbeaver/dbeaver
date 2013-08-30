@@ -642,7 +642,7 @@ public class SQLEditor extends SQLEditorBase
                 } catch (BadLocationException ex) {
                     log.error("Error extracting script query", ex); //$NON-NLS-1$
                 }
-                statementStart = tokenOffset + 1;
+                statementStart = tokenOffset + syntaxManager.getTokenLength();
             }
             if (token.isEOF()) {
                 break;

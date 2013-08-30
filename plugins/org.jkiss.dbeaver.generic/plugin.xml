@@ -184,6 +184,7 @@
                     description="jTDS SQL Server driver">
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="script-delimiter">go</parameter>
                     <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="*"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="*"/>
@@ -201,6 +202,7 @@
                     description="Microsoft JDBC Driver for SQL Server ">
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="script-delimiter">go</parameter>
                     <file type="jar" path="drivers/mssql/sqljdbc4.jar" url="*"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" url="*"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" url="*"/>
@@ -219,6 +221,7 @@
                     description="Sybase JTDS driver">
                     <!--parameter name="query-get-active-db">select db_name()</query>
                     <parameter name="query-set-active-db">use ?</query-->
+                    <parameter name="script-delimiter">go</parameter>
                     <file type="jar" path="drivers/jtds/jtds-1.2.5.jar" url="*"/>
                     <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
                 </driver>
@@ -291,10 +294,10 @@
                     anonymous="true"
                     description="Derby (Java DB) embedded driver">
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
-                    <file type="jar" path="drivers/derby/derby.jar" url="*"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
+                    <file type="jar" path="drivers/derby/derby.jar" url="*"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
                 </driver>
                 <driver
                     id="derby_server"
