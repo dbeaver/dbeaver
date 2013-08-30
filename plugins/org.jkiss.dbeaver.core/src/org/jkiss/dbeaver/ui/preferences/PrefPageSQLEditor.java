@@ -59,6 +59,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button csAutoInsertCheck;
     private Combo csInsertCase;
     private Map<RulerColumnDescriptor, Button> rulerChecks = new HashMap<RulerColumnDescriptor, Button>();
+    private Button acSingleQuotesCheck;
+    private Button acDoubleQuotesCheck;
+    private Button acBracketsCheck;
 
     public PrefPageSQLEditor()
     {
@@ -76,7 +79,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(PrefConstants.SCRIPT_ERROR_HANDLING) ||
             store.contains(PrefConstants.SCRIPT_COMMIT_LINES) ||
             store.contains(PrefConstants.SCRIPT_FETCH_RESULT_SETS) ||
-            store.contains(PrefConstants.SCRIPT_AUTO_FOLDERS)
+            store.contains(PrefConstants.SCRIPT_AUTO_FOLDERS) ||
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS)
         ;
     }
 
@@ -170,6 +176,17 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csInsertCase.add("Upper case");
             csInsertCase.add("Lower case");
         }
+
+        // Autoclose
+        {
+            Composite acGroup = UIUtils.createControlGroup(composite2, "Auto close", 2, GridData.FILL_BOTH, 0);
+
+            acSingleQuotesCheck = UIUtils.createLabelCheckbox(acGroup, "Single quotes", false);
+            acDoubleQuotesCheck = UIUtils.createLabelCheckbox(acGroup, "Double quotes", false);
+            acBracketsCheck = UIUtils.createLabelCheckbox(acGroup, "Brackets", false);
+        }
+
+        // Reulers
         {
             Composite rulersGroup = UIUtils.createControlGroup(composite2, "Rulers", 2, GridData.FILL_HORIZONTAL, 0);
             rulersGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
@@ -185,7 +202,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         // Scripts
         {
-            Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite scriptsGroup = UIUtils.createControlGroup(composite2, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_BOTH, 0);
 
             autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, false);
         }
@@ -208,6 +225,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
             csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
+            acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
+            acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
+            acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
 
             final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
                 store,
@@ -239,6 +259,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(PrefConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
             store.setValue(PrefConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
 
+            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
+
             final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
                     store,
                     AbstractTextEditor.PREFERENCE_RULER_CONTRIBUTIONS);
@@ -267,6 +291,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(PrefConstants.SCRIPT_ERROR_HANDLING);
         store.setToDefault(PrefConstants.SCRIPT_FETCH_RESULT_SETS);
         store.setToDefault(PrefConstants.SCRIPT_AUTO_FOLDERS);
+
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
     }
 
     @Override
