@@ -175,10 +175,9 @@ public class RuntimeUtils {
 
     public static void setDefaultPreferenceValue(IPreferenceStore store, String name, Object value)
     {
-        if (!store.contains(name)) {
-            store.setValue(name, value.toString());
+        if (CommonUtils.isEmpty(store.getDefaultString(name))) {
+            store.setDefault(name, value.toString());
         }
-        store.setDefault(name, value.toString());
     }
 
     public static Object getPreferenceValue(IPreferenceStore store, String propName, Class<?> valueType)
