@@ -45,8 +45,6 @@ import java.util.*;
  */
 public class SQLSyntaxManager extends RuleBasedScanner {
 
-    public static final String DEFAULT_STATEMENT_DELIMITER = ";";
-
     public static final String CONFIG_COLOR_KEYWORD = "org.jkiss.dbeaver.sql.editor.color.keyword.foreground";
     public static final String CONFIG_COLOR_DATATYPE = "org.jkiss.dbeaver.sql.editor.color.datatype.foreground";
     public static final String CONFIG_COLOR_STRING = "org.jkiss.dbeaver.sql.editor.color.string.foreground";
@@ -75,7 +73,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
     private String quoteSymbol;
     private char structSeparator;
     private String catalogSeparator;
-    private String statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
+    private String statementDelimiter = SQLConstants.DEFAULT_STATEMENT_DELIMITER;
 
     private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<Integer, SQLScriptPosition>();
 
@@ -148,7 +146,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             structSeparator = SQLConstants.STRUCT_SEPARATOR;
             catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             escapeChar = '\\';
-            statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
+            statementDelimiter = null;
         } else {
             keywordManager = dataSource.getContainer().getKeywordManager();
             quoteSymbol = dataSource.getInfo().getIdentifierQuoteString();
@@ -156,10 +154,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             catalogSeparator = dataSource.getInfo().getCatalogSeparator();
             dataSource.getInfo().getSearchStringEscape();
             escapeChar = '\\';
-            statementDelimiter = dataSource.getInfo().getScriptDelimiter();
-            if (statementDelimiter == null) {
-                statementDelimiter = DEFAULT_STATEMENT_DELIMITER;
-            }
+            statementDelimiter = dataSource.getInfo().getScriptDelimiter().toLowerCase();
         }
     }
 
@@ -220,6 +215,30 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         // Add numeric rule
         rules.add(new NumberRule(numberToken));
 
+        {
+            // Delimiter rule
+            WordRule delimRule = new WordRule(new IWordDetector() {
+                @Override
+                public boolean isWordStart(char c)
+                {
+                    return SQLConstants.DEFAULT_STATEMENT_DELIMITER.charAt(0) == c ||
+                        (statementDelimiter != null && statementDelimiter.charAt(0) == Character.toLowerCase(c));
+                }
+
+                @Override
+                public boolean isWordPart(char c)
+                {
+                    return SQLConstants.DEFAULT_STATEMENT_DELIMITER.indexOf(c) != -1 ||
+                        (statementDelimiter != null && statementDelimiter.indexOf(Character.toLowerCase(c)) != -1);
+                }
+            }, Token.UNDEFINED, true);
+            delimRule.addWord(SQLConstants.DEFAULT_STATEMENT_DELIMITER, delimiterToken);
+            if (statementDelimiter != null) {
+                delimRule.addWord(statementDelimiter, delimiterToken);
+            }
+            rules.add(delimRule);
+        }
+
         // Add word rule for keywords, types, and constants.
         WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
         for (String reservedWord : keywordManager.getReservedWords()) {
@@ -234,25 +253,6 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);
         wordRule.addWord(SQLConstants.BLOCK_END, blockEndToken);
         rules.add(wordRule);
-
-        {
-            // Delimiter rule
-            WordRule delimRule = new WordRule(new IWordDetector() {
-                @Override
-                public boolean isWordStart(char c)
-                {
-                    return statementDelimiter.charAt(0) == c;
-                }
-
-                @Override
-                public boolean isWordPart(char c)
-                {
-                    return statementDelimiter.indexOf(c) != -1;
-                }
-            });
-            delimRule.addWord(statementDelimiter, delimiterToken);
-            rules.add(delimRule);
-        }
 
         {
             // Parameter rule

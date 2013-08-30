@@ -158,7 +158,7 @@ public class SQLConstants {
         "FULL",
         "GET",
         "GLOBAL",
-        "GO",
+//        "GO",
         "GOTO",
         "GRANT",
         "GROUP",
@@ -326,4 +326,5 @@ public class SQLConstants {
         ":OLD",
     };
     public static final char STRUCT_SEPARATOR = '.'; //$NON-NLS-1$
+    public static final String DEFAULT_STATEMENT_DELIMITER = ";";
 }
