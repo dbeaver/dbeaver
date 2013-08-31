@@ -332,7 +332,7 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnectionAutoCommit()
     {
-        if (dataSource != null) {
+        if (dataSource != null && dataSource.isConnected()) {
             // We read this one synchronously because this function invoked many times per second by UI
             DBCExecutionContext context = dataSource.openContext(VoidProgressMonitor.INSTANCE,
                 DBCExecutionPurpose.UTIL, "Get '" + getName() + "' auto-commit mode");
