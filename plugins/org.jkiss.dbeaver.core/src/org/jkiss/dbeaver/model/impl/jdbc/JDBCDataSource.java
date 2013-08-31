@@ -199,9 +199,6 @@ public abstract class JDBCDataSource
     @Override
     public JDBCExecutionContext openContext(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
-        if (connection == null) {
-            throw new IllegalStateException(CoreMessages.editors_sql_status_not_connected_to_database);
-        }
         return createConnection(monitor, purpose, taskTitle, false);
     }
 
