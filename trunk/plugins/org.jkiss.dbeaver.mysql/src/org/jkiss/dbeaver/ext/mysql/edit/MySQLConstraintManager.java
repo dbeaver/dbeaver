@@ -80,13 +80,11 @@ public class MySQLConstraintManager extends JDBCConstraintManager<MySQLTableCons
     @Override
     protected String getDropConstraintPattern(MySQLTableConstraint constraint)
     {
-        String clause;
         if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-            clause = "PRIMARY KEY"; //$NON-NLS-1$
+            return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP PRIMARY KEY"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         } else {
-            clause = "KEY"; //$NON-NLS-1$
+            return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
 }
