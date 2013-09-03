@@ -17,16 +17,18 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.format;
+package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
+
+import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * SQLParser
+ * SQLTokensParser
  * TODO: check comment characters from syntax manager, not constants
  */
-public class SQLParser {
+class SQLTokensParser {
 
     private SQLFormatterConfiguration configuration;
     private String fBefore;
@@ -35,7 +37,7 @@ public class SQLParser {
     private char structSeparator;
     private String catalogSeparator;
 
-    public SQLParser(SQLFormatterConfiguration configuration) {
+    public SQLTokensParser(SQLFormatterConfiguration configuration) {
         this.configuration = configuration;
         this.structSeparator = configuration.getSyntaxManager().getStructSeparator();
         this.catalogSeparator = configuration.getSyntaxManager().getCatalogSeparator();
@@ -82,11 +84,11 @@ public class SQLParser {
         }
     }
 
-    SQLFormatterToken nextToken() {
+    FormatterToken nextToken() {
         int start_pos = fPos;
         if (fPos >= fBefore.length()) {
             fPos++;
-            return new SQLFormatterToken(SQLFormatterConstants.END, "", start_pos);
+            return new FormatterToken(FormatterConstants.END, "", start_pos);
         }
 
         char fChar = fBefore.charAt(fPos);
@@ -97,16 +99,16 @@ public class SQLParser {
                 workString.append(fChar);
                 fChar = fBefore.charAt(fPos);
                 if (!isSpace(fChar)) {
-                    return new SQLFormatterToken(SQLFormatterConstants.SPACE, workString.toString(), start_pos);
+                    return new FormatterToken(FormatterConstants.SPACE, workString.toString(), start_pos);
                 }
                 fPos++;
                 if (fPos >= fBefore.length()) {
-                    return new SQLFormatterToken(SQLFormatterConstants.SPACE, workString.toString(), start_pos);
+                    return new FormatterToken(FormatterConstants.SPACE, workString.toString(), start_pos);
                 }
             }
         } else if (fChar == ';') {
             fPos++;
-            return new SQLFormatterToken(SQLFormatterConstants.SYMBOL, ";", start_pos);
+            return new FormatterToken(FormatterConstants.SYMBOL, ";", start_pos);
         } else if (isDigit(fChar)) {
             StringBuilder s = new StringBuilder();
             while (isDigit(fChar) || fChar == '.') {
@@ -120,7 +122,7 @@ public class SQLParser {
 
                 fChar = fBefore.charAt(fPos);
             }
-            return new SQLFormatterToken(SQLFormatterConstants.VALUE, s.toString(), start_pos);
+            return new FormatterToken(FormatterConstants.VALUE, s.toString(), start_pos);
         } else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
             while (isLetter(fChar) || isDigit(fChar) || structSeparator == fChar || catalogSeparator.indexOf(fChar) != -1) {
@@ -134,16 +136,16 @@ public class SQLParser {
             }
             String word = s.toString();
             if (configuration.getSyntaxManager().getKeywordManager().getKeywordType(word) != null) {
-                return new SQLFormatterToken(SQLFormatterConstants.KEYWORD, word, start_pos);
+                return new FormatterToken(FormatterConstants.KEYWORD, word, start_pos);
             }
-            return new SQLFormatterToken(SQLFormatterConstants.NAME, word, start_pos);
+            return new FormatterToken(FormatterConstants.NAME, word, start_pos);
         }
         // single line comment
         else if (fChar == '-') {
             fPos++;
             char ch2 = fBefore.charAt(fPos);
             if (ch2 != '-') {
-                return new SQLFormatterToken(SQLFormatterConstants.SYMBOL, "-", start_pos);
+                return new FormatterToken(FormatterConstants.SYMBOL, "-", start_pos);
             }
             fPos++;
             StringBuilder s = new StringBuilder("--");
@@ -152,7 +154,7 @@ public class SQLParser {
                 s.append(fChar);
                 fPos++;
                 if (fChar == '\n' || fPos >= fBefore.length()) {
-                    return new SQLFormatterToken(SQLFormatterConstants.COMMENT, s.toString(), start_pos);
+                    return new FormatterToken(FormatterConstants.COMMENT, s.toString(), start_pos);
                 }
             }
         }
@@ -160,7 +162,7 @@ public class SQLParser {
             fPos++;
             char ch2 = fBefore.charAt(fPos);
             if (ch2 != '*') {
-                return new SQLFormatterToken(SQLFormatterConstants.SYMBOL, "/", start_pos);
+                return new FormatterToken(FormatterConstants.SYMBOL, "/", start_pos);
             }
 
             StringBuilder s = new StringBuilder("/*");
@@ -171,7 +173,7 @@ public class SQLParser {
                 s.append(fChar);
                 fPos++;
                 if (ch0 == '*' && fChar == '/') {
-                    return new SQLFormatterToken(SQLFormatterConstants.COMMENT, s.toString(), start_pos);
+                    return new FormatterToken(FormatterConstants.COMMENT, s.toString(), start_pos);
                 }
             }
         } else if (fChar == '\'') {
@@ -182,7 +184,7 @@ public class SQLParser {
                 s.append(fChar);
                 fPos++;
                 if (fChar == '\'') {
-                    return new SQLFormatterToken(SQLFormatterConstants.VALUE, s.toString(), start_pos);
+                    return new FormatterToken(FormatterConstants.VALUE, s.toString(), start_pos);
                 }
             }
         } else if (fChar == '\"') {
@@ -193,7 +195,7 @@ public class SQLParser {
                 s.append(fChar);
                 fPos++;
                 if (fChar == '\"') {
-                    return new SQLFormatterToken(SQLFormatterConstants.NAME, s.toString(), start_pos);
+                    return new FormatterToken(FormatterConstants.NAME, s.toString(), start_pos);
                 }
             }
         }
@@ -202,7 +204,7 @@ public class SQLParser {
             String s = String.valueOf(fChar);
             fPos++;
             if (fPos >= fBefore.length()) {
-                return new SQLFormatterToken(SQLFormatterConstants.SYMBOL, s, start_pos);
+                return new FormatterToken(FormatterConstants.SYMBOL, s, start_pos);
             }
             char ch2 = fBefore.charAt(fPos);
             for (int i = 0; i < twoCharacterSymbol.length; i++) {
@@ -212,21 +214,21 @@ public class SQLParser {
                     break;
                 }
             }
-            return new SQLFormatterToken(SQLFormatterConstants.SYMBOL, s, start_pos);
+            return new FormatterToken(FormatterConstants.SYMBOL, s, start_pos);
         } else {
             fPos++;
-            return new SQLFormatterToken(SQLFormatterConstants.UNKNOWN, String.valueOf(fChar), start_pos);
+            return new FormatterToken(FormatterConstants.UNKNOWN, String.valueOf(fChar), start_pos);
         }
     }
 
-    public List<SQLFormatterToken> parse(final String argSql) {
+    public List<FormatterToken> parse(final String argSql) {
         fPos = 0;
         fBefore = argSql;
 
-        final List<SQLFormatterToken> list = new ArrayList<SQLFormatterToken>();
+        final List<FormatterToken> list = new ArrayList<FormatterToken>();
         for (;;) {
-            final SQLFormatterToken token = nextToken();
-            if (token.getType() == SQLFormatterConstants.END) {
+            final FormatterToken token = nextToken();
+            if (token.getType() == FormatterConstants.END) {
                 break;
             }
 
