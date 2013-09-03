@@ -69,6 +69,7 @@ public class OracleIndexManager extends JDBCIndexManager<OracleTableIndex, Oracl
             .append(CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName()))
             .append("_IDX"); //$NON-NLS-1$
         final OracleTableIndex index = new OracleTableIndex(
+            parent.getSchema(),
             parent,
             DBObjectNameCaseTransformer.transformName((DBPDataSource) parent.getDataSource(), idxName.toString()),
             false,

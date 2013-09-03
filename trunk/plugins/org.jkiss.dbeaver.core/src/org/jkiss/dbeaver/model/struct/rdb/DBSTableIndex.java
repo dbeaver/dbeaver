@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
 import java.util.Collection;
 
@@ -30,6 +31,13 @@ import java.util.Collection;
  */
 public interface DBSTableIndex extends DBSEntityConstraint, DBSEntityReferrer, DBPQualifiedObject
 {
+    /**
+     * Index container. In complex databases it is schema or catalog where index defined.
+     * Also the table can be index container.
+     * @return container
+     */
+    DBSObjectContainer getContainer();
+
     DBSTable getTable();
 
     boolean isUnique();

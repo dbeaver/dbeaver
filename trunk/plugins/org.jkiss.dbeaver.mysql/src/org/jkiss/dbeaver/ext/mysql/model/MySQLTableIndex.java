@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * MySQLTableIndex
  */
-public class MySQLTableIndex extends JDBCTableIndex<MySQLTable>
+public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
 {
     private boolean nonUnique;
     private String comment;
@@ -40,7 +40,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLTable>
         MySQLTable table,
         DBSIndexType indexType)
     {
-        super(table, null, indexType, false);
+        super(table.getContainer(), table, null, indexType, false);
     }
 
     public MySQLTableIndex(
@@ -50,7 +50,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLTable>
         DBSIndexType indexType,
         String comment)
     {
-        super(table, indexName, indexType, true);
+        super(table.getContainer(), table, indexName, indexType, true);
         this.nonUnique = nonUnique;
         this.comment = comment;
     }
