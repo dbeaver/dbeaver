@@ -64,7 +64,7 @@ public class SQLFormatterConfiguration {
         this.keywordCase = keyword;
     }
 
-    boolean isFunction(String name) {
+    public boolean isFunction(String name) {
         return syntaxManager.getKeywordManager().getKeywordType(name) == DBPKeywordType.FUNCTION;
     }
 

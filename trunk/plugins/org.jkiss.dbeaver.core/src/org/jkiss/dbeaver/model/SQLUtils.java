@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
 import org.jkiss.utils.CommonUtils;
@@ -203,8 +203,7 @@ public final class SQLUtils {
         syntaxManager.setDataSource(dataSource);
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(syntaxManager);
         configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
-        SQLFormatter formatter = new SQLFormatter(configuration);
-        return formatter.format(query);
+        return new SQLTokenizedFormatter().format(query, configuration);
     }
 
     public static void appendLikeCondition(StringBuilder sql, String value, boolean not)

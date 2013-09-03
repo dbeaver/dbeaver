@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
 
 import java.util.StringTokenizer;
@@ -59,14 +59,8 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
         configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
         //configuration.setIndentString(indentation);
-        return new SQLFormatter(configuration).format(content);
-/*
-    	if (sqlSyntax == null)
-    	{
-    		return allToUpper(content);
-    	}
-        return keyWordsToUpper(content);
-*/
+        return new SQLTokenizedFormatter().format(content, configuration);
+        //return new SQLSimpleFormatter().format(content);
     }
 
     private String allToUpper( String content ) {
