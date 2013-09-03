@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * GenericTable
  */
-public class GenericTableIndex extends JDBCTableIndex<GenericTable>
+public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, GenericTable>
 {
     private boolean nonUnique;
     private String qualifier;
@@ -47,7 +47,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericTable>
         DBSIndexType indexType,
         boolean persisted)
     {
-        super(table, indexName, indexType, persisted);
+        super(table.getContainer(), table, indexName, indexType, persisted);
         this.nonUnique = nonUnique;
         this.qualifier = qualifier;
         this.cardinality = cardinality;

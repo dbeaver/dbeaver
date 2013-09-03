@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * MSSQLTableIndex
  */
-public class MSSQLTableIndex extends JDBCTableIndex<MSSQLTable>
+public class MSSQLTableIndex extends JDBCTableIndex<MSSQLCatalog, MSSQLTable>
 {
     private boolean nonUnique;
     private String comment;
@@ -40,7 +40,7 @@ public class MSSQLTableIndex extends JDBCTableIndex<MSSQLTable>
         MSSQLTable table,
         DBSIndexType indexType)
     {
-        super(table, null, indexType, false);
+        super(table.getContainer(), table, null, indexType, false);
     }
 
     public MSSQLTableIndex(
@@ -50,7 +50,7 @@ public class MSSQLTableIndex extends JDBCTableIndex<MSSQLTable>
         DBSIndexType indexType,
         String comment)
     {
-        super(table, indexName, indexType, true);
+        super(table.getContainer(), table, indexName, indexType, true);
         this.nonUnique = nonUnique;
         this.comment = comment;
     }

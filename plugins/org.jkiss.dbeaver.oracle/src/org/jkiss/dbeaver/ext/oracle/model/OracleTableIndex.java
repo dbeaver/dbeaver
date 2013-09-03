@@ -37,18 +37,20 @@ import java.util.List;
 /**
  * OracleTableIndex
  */
-public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implements DBSObjectLazy
+public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePhysical> implements DBSObjectLazy
 {
+
     private Object tablespace;
     private boolean nonUnique;
     private List<OracleTableIndexColumn> columns;
 
     public OracleTableIndex(
+        OracleSchema schema,
         OracleTablePhysical table,
         String indexName,
         ResultSet dbResult)
     {
-        super(table, indexName, null, true);
+        super(schema, table, indexName, null, true);
         String indexTypeName = JDBCUtils.safeGetString(dbResult, "INDEX_TYPE");
         this.nonUnique = !"UNIQUE".equals(JDBCUtils.safeGetString(dbResult, "UNIQUENESS"));
         if (OracleConstants.INDEX_TYPE_NORMAL.getId().equals(indexTypeName)) {
@@ -67,9 +69,9 @@ public class OracleTableIndex extends JDBCTableIndex<OracleTablePhysical> implem
         this.tablespace = JDBCUtils.safeGetString(dbResult, "TABLESPACE_NAME");
     }
 
-    public OracleTableIndex(OracleTablePhysical parent, String name, boolean unique, DBSIndexType indexType)
+    public OracleTableIndex(OracleSchema schema, OracleTablePhysical parent, String name, boolean unique, DBSIndexType indexType)
     {
-        super(parent, name, indexType, false);
+        super(schema, parent, name, indexType, false);
         this.nonUnique = !unique;
 
     }

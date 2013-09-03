@@ -22,33 +22,43 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
  * JDBC abstract index
  */
-public abstract class JDBCTableIndex<TABLE extends JDBCTable>
+public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE extends JDBCTable>
     extends AbstractTableIndex
     implements DBPSaveableObject
 {
+    private final CONTAINER container;
     private final TABLE table;
     protected String name;
     protected DBSIndexType indexType;
     private boolean persisted;
 
-    protected JDBCTableIndex(TABLE table, String name, DBSIndexType indexType, boolean persisted) {
+    protected JDBCTableIndex(CONTAINER container, TABLE table, String name, DBSIndexType indexType, boolean persisted) {
+        this.container = container;
         this.table = table;
         this.name = name;
         this.indexType = indexType;
         this.persisted = persisted;
     }
 
-    protected JDBCTableIndex(JDBCTableIndex<TABLE> source)
+    protected JDBCTableIndex(JDBCTableIndex<CONTAINER, TABLE> source)
     {
+        this.container = source.container;
         this.table = source.table;
         this.name = source.name;
         this.indexType = source.indexType;
         this.persisted = source.persisted;
+    }
+
+    @Override
+    public DBSObjectContainer getContainer()
+    {
+        return container;
     }
 
     @Override
