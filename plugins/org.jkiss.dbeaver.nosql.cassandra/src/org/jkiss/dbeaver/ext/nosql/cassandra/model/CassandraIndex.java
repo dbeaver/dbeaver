@@ -30,14 +30,14 @@ import java.util.Collections;
 /**
  * CassandraIndex
  */
-public class CassandraIndex extends JDBCTableIndex<CassandraColumnFamily>
+public class CassandraIndex extends JDBCTableIndex<CassandraKeyspace, CassandraColumnFamily>
 {
     private CassandraIndexColumn column;
 
     public CassandraIndex(
         CassandraColumn column)
     {
-        super(column.getTable(), column.getIndexName(), new DBSIndexType(column.getIndexType(), column.getIndexType()), true);
+        super(column.getTable().getContainer(), column.getTable(), column.getIndexName(), new DBSIndexType(column.getIndexType(), column.getIndexType()), true);
         this.column = new CassandraIndexColumn(this, column);
     }
 

@@ -557,21 +557,24 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
+                "SELECT i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
                     "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
                     "FROM SYS.ALL_INDEXES i \n" +
                     "JOIN SYS.ALL_IND_COLUMNS ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME\n" +
-                    "WHERE i.OWNER=? AND i.TABLE_OWNER=?\n");
-            if (forTable != null) {
-                sql.append(" AND i.TABLE_NAME=?");
+                    "WHERE ");
+            if (forTable == null) {
+                sql.append(" i.OWNER=?");
+            } else {
+                sql.append(" i.TABLE_OWNER=? AND i.TABLE_NAME=?");
             }
-            sql.append(" ORDER BY i.INDEX_NAME,ic.COLUMN_POSITION");
+            sql.append("\nORDER BY i.INDEX_NAME,ic.COLUMN_POSITION");
 
             JDBCPreparedStatement dbStat = context.prepareStatement(sql.toString());
-            dbStat.setString(1, OracleSchema.this.getName());
-            dbStat.setString(2, OracleSchema.this.getName());
-            if (forTable != null) {
-                dbStat.setString(3, forTable.getName());
+            if (forTable == null) {
+                dbStat.setString(1, OracleSchema.this.getName());
+            } else {
+                dbStat.setString(1, OracleSchema.this.getName());
+                dbStat.setString(2, forTable.getName());
             }
             return dbStat;
         }
@@ -580,7 +583,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected OracleTableIndex fetchObject(JDBCExecutionContext context, OracleSchema owner, OracleTablePhysical parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new OracleTableIndex(parent, indexName, dbResult);
+            return new OracleTableIndex(owner, parent, indexName, dbResult);
         }
 
         @Override
