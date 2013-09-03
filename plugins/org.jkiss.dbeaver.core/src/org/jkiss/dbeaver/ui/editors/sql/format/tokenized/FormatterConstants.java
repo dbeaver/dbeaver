@@ -17,9 +17,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.format;
+package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
 
-public class SQLFormatterConstants {
+class FormatterConstants {
 
     public static final int SPACE = 0;
     public static final int SYMBOL = 1;

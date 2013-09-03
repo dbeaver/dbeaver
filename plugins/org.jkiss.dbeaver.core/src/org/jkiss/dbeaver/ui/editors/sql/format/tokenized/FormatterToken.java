@@ -18,24 +18,24 @@
  */
 
 /*
- * SQLFormatterToken
+ * FormatterToken
  */
-package org.jkiss.dbeaver.ui.editors.sql.format;
+package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
 
-public class SQLFormatterToken {
+class FormatterToken {
 
     private int fType;
     private String fString;
     private int fPos = -1;
 
-    public SQLFormatterToken(final int argType, final String argString, final int argPos)
+    public FormatterToken(final int argType, final String argString, final int argPos)
     {
         setType(argType);
         setString(argString);
         setPos(argPos);
     }
 
-    public SQLFormatterToken(final int argType, final String argString)
+    public FormatterToken(final int argType, final String argString)
     {
         this(argType, argString, -1);
     }
