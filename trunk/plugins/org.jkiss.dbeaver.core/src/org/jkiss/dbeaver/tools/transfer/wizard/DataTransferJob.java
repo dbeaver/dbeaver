@@ -22,12 +22,16 @@ package org.jkiss.dbeaver.tools.transfer.wizard;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * Data transfer job
@@ -53,19 +57,38 @@ public class DataTransferJob extends AbstractJob {
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
-
+        boolean hasErrors = false;
+        long startTime = System.currentTimeMillis();
         for (; ;) {
             DataTransferPipe transferPipe = settings.acquireDataPipe();
             if (transferPipe == null) {
                 break;
             }
-            transferData(monitor, transferPipe);
+            if (!transferData(monitor, transferPipe)) {
+                hasErrors = true;
+            }
         }
-
+        showResult(System.currentTimeMillis() - startTime, hasErrors);
         return Status.OK_STATUS;
     }
 
-    private void transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe)
+    private void showResult(final long time, final boolean hasErrors)
+    {
+        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
+        shell.getDisplay().asyncExec(new Runnable() {
+            @Override
+            public void run()
+            {
+                UIUtils.showMessageBox(
+                    shell,
+                    "Data transfer",
+                    "Data transfer completed " +  (hasErrors ? "with errors " : "") + "(" + time + "ms)",
+                    hasErrors ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+            }
+        });
+    }
+
+    private boolean transferData(DBRProgressMonitor monitor, DataTransferPipe transferPipe)
     {
         IDataTransferProducer producer = transferPipe.getProducer();
         IDataTransferConsumer consumer = transferPipe.getConsumer();
@@ -84,8 +107,10 @@ public class DataTransferJob extends AbstractJob {
                 consumer,
                 nodeSettings);
             consumer.finishTransfer(false);
+            return true;
         } catch (Exception e) {
             new DataTransferErrorJob(e).schedule();
+            return false;
         }
 
     }
