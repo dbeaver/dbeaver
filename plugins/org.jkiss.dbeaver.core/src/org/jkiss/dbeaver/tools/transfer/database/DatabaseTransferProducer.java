@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -69,10 +70,17 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     {
         String contextTask = CoreMessages.data_transfer_wizard_job_task_export;
         DBPDataSource dataSource = getSourceObject().getDataSource();
-        DBCExecutionContext context = settings.isOpenNewConnections() ?
+        boolean newConnection = settings.isOpenNewConnections();
+        DBCExecutionContext context = newConnection ?
             dataSource.openIsolatedContext(monitor, DBCExecutionPurpose.UTIL, contextTask) :
             dataSource.openContext(monitor, DBCExecutionPurpose.UTIL, contextTask);
         try {
+            if (newConnection) {
+                // Turn off auto-commit in source DB
+                // Auto-commit has to be turned off because some drivers allows to read LOBs and
+                // other complex structures only in transactional mode
+                context.getTransactionManager().setAutoCommit(false);
+            }
             long totalRows = 0;
             if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                 monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_retrieve, 1);
@@ -112,6 +120,13 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
             //dataContainer.readData(context, consumer, dataFilter, -1, -1);
         } finally {
+            if (newConnection) {
+                try {
+                    context.getTransactionManager().commit();
+                } catch (DBCException e) {
+                    log.error("Can't finish transaction in data producer connection", e);
+                }
+            }
             context.close();
         }
     }

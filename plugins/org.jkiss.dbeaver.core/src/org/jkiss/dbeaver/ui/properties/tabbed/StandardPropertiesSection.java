@@ -169,9 +169,11 @@ public class StandardPropertiesSection extends AbstractPropertySection implement
         @Override
         public IStatus runInUIThread(IProgressMonitor monitor)
         {
-            propertyTree.refresh();
-            // Force control redraw (to repaint hyperlinks and other stuff)
-            propertyTree.getControl().redraw();
+            if (!propertyTree.getControl().isDisposed()) {
+                propertyTree.refresh();
+                // Force control redraw (to repaint hyperlinks and other stuff)
+                propertyTree.getControl().redraw();
+            }
 
             synchronized (StandardPropertiesSection.this) {
                 refreshJob = null;
