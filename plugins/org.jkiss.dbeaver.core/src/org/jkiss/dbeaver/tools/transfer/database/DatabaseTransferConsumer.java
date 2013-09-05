@@ -117,7 +117,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void insertBatch(boolean force) throws DBCException
     {
         boolean needCommit = force || ((rowsExported % settings.getCommitAfterRows()) == 0);
-        if (needCommit) {
+        if (needCommit && executeBatch != null) {
             boolean retryInsert = false;
             do {
                 try {
@@ -166,7 +166,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     @Override
     public void fetchEnd(DBCExecutionContext context) throws DBCException
     {
-        insertBatch(true);
+        if (rowsExported > 0) {
+            insertBatch(true);
+        }
 
         executeBatch.close();
         executeBatch = null;
