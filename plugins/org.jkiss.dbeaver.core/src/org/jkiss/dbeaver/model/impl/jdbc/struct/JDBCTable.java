@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
@@ -228,6 +227,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         boolean hasKey = false;
         for (int i = 0; i < attributes.length; i++) {
             DBSEntityAttribute attribute = attributes[i];
+            if (attribute.isSequence()) {
+                continue;
+            }
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
             query.append(DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName()));
@@ -235,6 +237,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append(") VALUES ("); //$NON-NLS-1$
         hasKey = false;
         for (int i = 0; i < attributes.length; i++) {
+            if (attributes[i].isSequence()) {
+                continue;
+            }
             if (hasKey) query.append(","); //$NON-NLS-1$
             hasKey = true;
             query.append("?"); //$NON-NLS-1$
@@ -245,7 +250,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
         dbStat.setDataContainer(this);
 
-        return new BatchImpl(dbStat, attributes, keysReceiver);
+        return new BatchImpl(dbStat, attributes, keysReceiver, true);
     }
 
     @Override
@@ -283,7 +288,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         DBSEntityAttribute[] attributes = CommonUtils.concatArrays(updateAttributes, keyAttributes);
 
-        return new BatchImpl(dbStat, attributes, keysReceiver);
+        return new BatchImpl(dbStat, attributes, keysReceiver, false);
     }
 
     @Override
@@ -306,7 +311,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         // Execute
         DBCStatement dbStat = context.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
         dbStat.setDataContainer(this);
-        return new BatchImpl(dbStat, keyAttributes, null);
+        return new BatchImpl(dbStat, keyAttributes, null, false);
     }
 
     private void appendQueryConditions(StringBuilder query, DBDDataFilter dataFilter)
@@ -381,12 +386,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         private final DBSEntityAttribute[] attributes;
         private final List<Object[]> values = new ArrayList<Object[]>();
         private final DBDDataReceiver keysReceiver;
+        private final boolean skipSequences;
 
-        private BatchImpl(DBCStatement statement, DBSEntityAttribute[] attributes, DBDDataReceiver keysReceiver)
+        private BatchImpl(DBCStatement statement, DBSEntityAttribute[] attributes, DBDDataReceiver keysReceiver, boolean skipSequences)
         {
             this.statement = statement;
             this.attributes = attributes;
             this.keysReceiver = keysReceiver;
+            this.skipSequences = skipSequences;
         }
 
         @Override
@@ -416,9 +423,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
             DBCStatistics statistics = new DBCStatistics();
             for (Object[] rowValues : values) {
+                int paramIndex = 0;
                 for (int k = 0; k < handlers.length; k++) {
                     DBDValueHandler handler = handlers[k];
-                    handler.bindValueObject(statement.getContext(), statement, attributes[k], k, rowValues[k]);
+                    if (skipSequences && attributes[k].isSequence()) {
+                        continue;
+                    }
+                    handler.bindValueObject(statement.getContext(), statement, attributes[k], paramIndex++, rowValues[k]);
                 }
                 if (useBatch) {
                     statement.addToBatch();
