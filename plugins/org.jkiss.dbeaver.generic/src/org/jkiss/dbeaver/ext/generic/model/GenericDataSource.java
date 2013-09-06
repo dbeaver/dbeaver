@@ -264,6 +264,7 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         super.initialize(monitor);
+        Object omitCatalog = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG);
         Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
         if (omitTypeCache == null || !CommonUtils.toBoolean(omitTypeCache)) {
             // Cache data types
@@ -281,7 +282,7 @@ public class GenericDataSource extends JDBCDataSource
             // Read metadata
             JDBCDatabaseMetaData metaData = context.getMetaData();
             boolean catalogsFiltered = false;
-            {
+            if (omitCatalog == null || !CommonUtils.toBoolean(omitCatalog)) {
                 // Read catalogs
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
