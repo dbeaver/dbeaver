@@ -502,7 +502,7 @@
                     <parameter name="supports-select-count" value="false"/>
                     <property name="separator" value=","/>
                     <property name="quotechar" value="&quot;"/>
-                    <property name="fileExtension" value="csv"/>
+                    <property name="fileExtension" value=".csv"/>
                     <property name="suppressHeaders" value="false"/>
                     <file type="license" path="drivers/csvjdbc/LICENSE.txt" url="*"/>
                     <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0.12.jar" url="*"/>
