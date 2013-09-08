@@ -455,11 +455,12 @@ public class CommonUtils {
         if (isEmpty(name)) {
             return null;
         }
+        name = name.trim();
         if (underscoreSpaces) {
             name = name.replace(' ', '_');
         }
         try {
-            return (T) Enum.valueOf(type, name);
+            return Enum.valueOf(type, name);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
