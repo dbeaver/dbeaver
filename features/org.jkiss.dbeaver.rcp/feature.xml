@@ -139,7 +139,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.core.filesystem.hpux.ia64_32"
+         id="org.eclipse.core.filesystem.hpux.ia64"
          os="hpux"
          download-size="0"
          install-size="0"
@@ -549,10 +549,10 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.swt.gtk.hpux.ia64_32"
+         id="org.eclipse.swt.gtk.hpux.ia64"
          os="hpux"
          ws="gtk"
-         arch="ia64_32"
+         arch="ia64"
          download-size="0"
          install-size="0"
          version="0.0.0"
