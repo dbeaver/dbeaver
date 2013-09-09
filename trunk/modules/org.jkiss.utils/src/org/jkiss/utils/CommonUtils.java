@@ -460,7 +460,7 @@ public class CommonUtils {
             name = name.replace(' ', '_');
         }
         try {
-            return Enum.valueOf(type, name);
+            return (T)Enum.valueOf(type, name);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

@@ -45,7 +45,7 @@ public abstract class JDBCTableObject<TABLE extends JDBCTable> implements DBSObj
     }
 
     @Override
-    public DBSObject getParentObject()
+    public TABLE getParentObject()
     {
         return table;
     }
