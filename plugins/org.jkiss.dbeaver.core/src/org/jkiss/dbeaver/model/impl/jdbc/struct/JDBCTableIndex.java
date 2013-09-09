@@ -56,7 +56,7 @@ public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE
     }
 
     @Override
-    public DBSObjectContainer getContainer()
+    public CONTAINER getContainer()
     {
         return container;
     }
