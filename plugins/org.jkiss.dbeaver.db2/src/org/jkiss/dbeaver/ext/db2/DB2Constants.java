@@ -25,6 +25,9 @@ import org.jkiss.dbeaver.model.DBConstants;
  */
 public class DB2Constants {
 
+    // Display Categories
+    public static final int DEFAULT_PORT = 50000;
+
    // Display Categories
    public static final String   CAT_DATETIME            = "Date & Time";
    public static final String   CAT_OWNER               = "Owner";
