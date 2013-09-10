@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.actions;
 
-import org.jkiss.dbeaver.ext.db2.model.DB2ObjectType;
+import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 
 /**
