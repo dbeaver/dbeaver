@@ -58,12 +58,12 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
    // -----------------
 
    public DB2TableReference(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult) throws DBException {
-      super(table, JDBCUtils.safeGetString(dbResult, "REFKEYNAME"), null, DBSEntityConstraintType.FOREIGN_KEY, true);
+      super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.FOREIGN_KEY, true);
 
       String refSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
       String refTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
       String constName = JDBCUtils.safeGetString(dbResult, "CONSTNAME");
-      refTable = DB2Table.findTable(monitor, table.getDataSource(), refSchemaName, refTableName);
+      refTable = DB2Table.findTable(monitor, table.getSchema(), refSchemaName, refTableName);
       referencedKey = refTable.getConstraint(monitor, constName);
 
       deleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));

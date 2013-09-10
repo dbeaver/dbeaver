@@ -275,9 +275,8 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    // --------------
    // Static Helpers
    // --------------
-   public static DB2Table findTable(DBRProgressMonitor monitor, DB2DataSource dataSource, String ownerName, String tableName) throws DBException {
+   public static DB2Table findTable(DBRProgressMonitor monitor, DB2Schema schema, String ownerName, String tableName) throws DBException {
 
-      DB2Schema schema = dataSource.getSchema(monitor, ownerName);
       if (schema == null) {
          log.warn("Referenced schema '" + ownerName + "' not found");
          return null;

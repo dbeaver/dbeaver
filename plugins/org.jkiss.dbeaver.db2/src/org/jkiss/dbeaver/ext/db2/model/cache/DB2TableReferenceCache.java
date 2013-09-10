@@ -42,7 +42,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
  */
 public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableReference, DB2TableKeyColumn> {
 
-   private static String SQL_FK_TAB;
+   private static String SQL_REF_TAB;
+   private static String SQL_REF_ALL;
 
    static {
       StringBuilder sb = new StringBuilder(256);
@@ -59,20 +60,42 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
       sb.append("  ORDER BY R.REFKEYNAME");
       sb.append("         , KCU.COLSEQ");
       sb.append(" WITH UR");
+      SQL_REF_TAB = sb.toString();
 
-      SQL_FK_TAB = sb.toString();
+      sb.setLength(0);
+
+      sb.append(" SELECT R.*");
+      sb.append("      , KCU.COLNAME");
+      sb.append("      , KCU.COLSEQ");
+      sb.append("   FROM SYSCAT.REFERENCES R");
+      sb.append("       ,SYSCAT.KEYCOLUSE KCU");
+      sb.append("  WHERE R.REFTABSCHEMA = ?");
+      sb.append("    AND KCU.CONSTNAME = R.REFKEYNAME");
+      sb.append("    AND KCU.TABSCHEMA = R.REFTABSCHEMA");
+      sb.append("    AND KCU.TABNAME   = R.REFTABNAME");
+      sb.append("  ORDER BY R.REFKEYNAME");
+      sb.append("         , KCU.COLSEQ");
+      sb.append(" WITH UR");
+      SQL_REF_ALL = sb.toString();
    }
 
    public DB2TableReferenceCache(DB2TableCache tableCache) {
-      super(tableCache, DB2Table.class, "TABNAME", "CONSTNAME");
+      super(tableCache, DB2Table.class, "REFTABNAME", "CONSTNAME");
    }
 
    @Override
    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable) throws SQLException {
-
-      JDBCPreparedStatement dbStat = context.prepareStatement(SQL_FK_TAB);
+      String sql;
+      if (forTable != null) {
+         sql = SQL_REF_TAB;
+      } else {
+         sql = SQL_REF_ALL;
+      }
+      JDBCPreparedStatement dbStat = context.prepareStatement(sql);
       dbStat.setString(1, db2Schema.getName());
-      dbStat.setString(2, forTable.getName());
+      if (forTable != null) {
+         dbStat.setString(2, forTable.getName());
+      }
       return dbStat;
    }
 
@@ -91,9 +114,10 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
                                               DB2TableReference db2TableReference,
                                               ResultSet dbResult) throws SQLException, DBException {
 
-      DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table,
-                                                            JDBCUtils.safeGetString(dbResult, "COLNAME"));
+      String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
+      DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
       if (tableColumn == null) {
+         log.error("DB2TableReferenceCache : Column '" + colName + "' not found in table '" + db2Table.getName() + "' ??");
          return null;
       } else {
          return new DB2TableKeyColumn(db2TableReference, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));

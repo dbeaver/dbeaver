@@ -63,7 +63,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
       String refSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "REFTABSCHEMA");
       String refTableName = JDBCUtils.safeGetString(dbResult, "REFTABNAME");
       String constName = JDBCUtils.safeGetString(dbResult, "REFKEYNAME");
-      refTable = DB2Table.findTable(monitor, table.getDataSource(), refSchemaName, refTableName);
+      refTable = DB2Table.findTable(monitor, table.getSchema(), refSchemaName, refTableName);
       referencedKey = refTable.getConstraint(monitor, constName);
 
       deleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));
