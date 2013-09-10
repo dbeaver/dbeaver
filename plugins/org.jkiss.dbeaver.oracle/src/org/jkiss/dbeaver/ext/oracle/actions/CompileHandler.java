@@ -79,10 +79,13 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             if (objects.size() == 1) {
                 final OracleSourceObject unit = objects.get(0);
 
+                DBCSourceHost sourceHost = null;
                 final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
-                DBCSourceHost sourceHost = RuntimeUtils.getObjectAdapter(activePart, DBCSourceHost.class);
-                if (sourceHost == null) {
-                    sourceHost = (DBCSourceHost) activePart.getAdapter(DBCSourceHost.class);
+                if (activePart != null) {
+                    sourceHost = RuntimeUtils.getObjectAdapter(activePart, DBCSourceHost.class);
+                    if (sourceHost == null) {
+                        sourceHost = (DBCSourceHost) activePart.getAdapter(DBCSourceHost.class);
+                    }
                 }
                 if (sourceHost != null && sourceHost.getSourceObject() != unit) {
                     sourceHost = null;
