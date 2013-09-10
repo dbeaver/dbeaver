@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableForeignKey, DB2TableKeyColumn> {
 
    private static String SQL_FK_TAB;
+   private static String SQL_FK_ALL;
 
    static {
       StringBuilder sb = new StringBuilder(512);
@@ -59,8 +60,23 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
       sb.append("  ORDER BY R.CONSTNAME");
       sb.append("         , KCU.COLSEQ");
       sb.append(" WITH UR");
-
       SQL_FK_TAB = sb.toString();
+
+      sb.setLength(0);
+
+      sb.append(" SELECT R.*");
+      sb.append("      , KCU.COLNAME");
+      sb.append("      , KCU.COLSEQ");
+      sb.append("   FROM SYSCAT.REFERENCES R");
+      sb.append("       ,SYSCAT.KEYCOLUSE KCU");
+      sb.append("  WHERE R.TABSCHEMA = ?");
+      sb.append("    AND KCU.CONSTNAME = R.CONSTNAME");
+      sb.append("    AND KCU.TABSCHEMA = R.TABSCHEMA");
+      sb.append("    AND KCU.TABNAME   = R.TABNAME");
+      sb.append("  ORDER BY R.CONSTNAME");
+      sb.append("         , KCU.COLSEQ");
+      sb.append(" WITH UR");
+      SQL_FK_ALL = sb.toString();
    }
 
    public DB2TableForeignKeyCache(DB2TableCache tableCache) {
@@ -70,9 +86,17 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
    @Override
    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable) throws SQLException {
 
-      JDBCPreparedStatement dbStat = context.prepareStatement(SQL_FK_TAB);
+      String sql;
+      if (forTable != null) {
+         sql = SQL_FK_TAB;
+      } else {
+         sql = SQL_FK_ALL;
+      }
+      JDBCPreparedStatement dbStat = context.prepareStatement(sql);
       dbStat.setString(1, db2Schema.getName());
-      dbStat.setString(2, forTable.getName());
+      if (forTable != null) {
+         dbStat.setString(2, forTable.getName());
+      }
       return dbStat;
    }
 
@@ -91,9 +115,11 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
                                               DB2TableForeignKey object,
                                               ResultSet dbResult) throws SQLException, DBException {
 
-      DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table,
-                                                            JDBCUtils.safeGetString(dbResult, "COLNAME"));
+      String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
+      DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
       if (tableColumn == null) {
+         log.error("DB2TableForeignKeyCache : Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName()
+                  + "' ??");
          return null;
       } else {
          return new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));

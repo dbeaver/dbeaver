@@ -44,7 +44,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
  */
 public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableUniqueKey, DB2TableKeyColumn> {
 
-   private static String SQL_FK_TAB;
+   private static String SQL_UK_TAB;
+   private static String SQL_UK_ALL;
 
    static {
       StringBuilder sb = new StringBuilder(512);
@@ -62,8 +63,24 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
       sb.append("  ORDER BY C.CONSTNAME");
       sb.append("         , KCU.COLSEQ");
       sb.append(" WITH UR");
+      SQL_UK_TAB = sb.toString();
 
-      SQL_FK_TAB = sb.toString();
+      sb.setLength(0);
+
+      sb.append(" SELECT C.*");
+      sb.append("      , KCU.COLNAME");
+      sb.append("      , KCU.COLSEQ");
+      sb.append("   FROM SYSCAT.TABCONST C");
+      sb.append("       ,SYSCAT.KEYCOLUSE KCU");
+      sb.append("  WHERE C.TABSCHEMA = ?");
+      sb.append("    AND C.TYPE IN ('P','U')");
+      sb.append("    AND KCU.CONSTNAME = C.CONSTNAME");
+      sb.append("    AND KCU.TABSCHEMA = C.TABSCHEMA");
+      sb.append("    AND KCU.TABNAME   = C.TABNAME");
+      sb.append("  ORDER BY C.CONSTNAME");
+      sb.append("         , KCU.COLSEQ");
+      sb.append(" WITH UR");
+      SQL_UK_ALL = sb.toString();
    }
 
    public DB2TableUniqueKeyCache(DB2TableCache tableCache) {
@@ -72,9 +89,17 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
 
    @Override
    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable) throws SQLException {
-      JDBCPreparedStatement dbStat = context.prepareStatement(SQL_FK_TAB);
+      String sql;
+      if (forTable != null) {
+         sql = SQL_UK_TAB;
+      } else {
+         sql = SQL_UK_ALL;
+      }
+      JDBCPreparedStatement dbStat = context.prepareStatement(sql);
       dbStat.setString(1, db2Schema.getName());
-      dbStat.setString(2, forTable.getName());
+      if (forTable != null) {
+         dbStat.setString(2, forTable.getName());
+      }
       return dbStat;
    }
 
@@ -95,9 +120,10 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
                                               DB2TableUniqueKey object,
                                               ResultSet dbResult) throws SQLException, DBException {
 
-      DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table,
-                                                            JDBCUtils.safeGetString(dbResult, "COLNAME"));
+      String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
+      DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
       if (tableColumn == null) {
+         log.error("v : Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName() + "' ??");
          return null;
       } else {
          return new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));
