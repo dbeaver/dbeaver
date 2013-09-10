@@ -65,14 +65,20 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
             true);
 
         String refName = JDBCUtils.safeGetString(dbResult, "R_CONSTRAINT_NAME");
+        String refOwnerName = JDBCUtils.safeGetString(dbResult, "R_OWNER");
+        String refTableName = JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME");
         OracleTableBase refTable = OracleTableBase.findTable(
             monitor,
             table.getDataSource(),
-            JDBCUtils.safeGetString(dbResult, "R_OWNER"),
-            JDBCUtils.safeGetString(dbResult, "R_TABLE_NAME"));
-        referencedKey = refTable.getConstraint(monitor, refName);
-        if (referencedKey == null) {
-            log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
+            refOwnerName,
+            refTableName);
+        if (refTable == null) {
+            log.warn("Referenced table '" + DBUtils.getSimpleQualifiedName(refOwnerName, refTableName) + "' not found");
+        } else {
+            referencedKey = refTable.getConstraint(monitor, refName);
+            if (referencedKey == null) {
+                log.warn("Referenced constraint '" + refName + "' not found in table '" + refTable.getFullQualifiedName() + "'");
+            }
         }
 
         String deleteRuleName = JDBCUtils.safeGetString(dbResult, "DELETE_RULE");
