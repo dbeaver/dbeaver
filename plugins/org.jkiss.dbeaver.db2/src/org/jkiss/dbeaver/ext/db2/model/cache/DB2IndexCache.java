@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -78,7 +78,8 @@ public final class DB2IndexCache extends JDBCCompositeCache<DB2Schema, DB2Table,
    }
 
    public DB2IndexCache(DB2TableCache tableCache) {
-      // TODO DF: Bad Table "SCHEMA.TABLE" may have 2 indexes with same "INDNAME": SCHEMA.IX1 and OTHERSCHEMA.IX1 ...
+      // TODO DF: Bad Table "SCHEMA.TABLE" may have 2 indexes with same
+      // "INDNAME": SCHEMA.IX1 and OTHERSCHEMA.IX1 ...
       super(tableCache, DB2Table.class, "TABNAME", "INDNAME");
    }
 

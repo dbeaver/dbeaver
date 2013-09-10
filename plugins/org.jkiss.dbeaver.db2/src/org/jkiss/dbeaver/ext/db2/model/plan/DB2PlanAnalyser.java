@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,8 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-package org.jkiss.dbeaver.ext.db2.model.plan;
+ */package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -38,7 +37,7 @@ import org.jkiss.utils.SecurityUtils;
  */
 public class DB2PlanAnalyser implements DBCPlan {
 
-   // TODO DF: most eberything to be done here
+   // TODO DF: most everything to be done here
 
    private DB2DataSource   dataSource;
    private String          query;
