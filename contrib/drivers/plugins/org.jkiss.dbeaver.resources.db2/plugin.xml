@@ -2,6 +2,7 @@
 <plugin>
 	<extension point="org.jkiss.dbeaver.resources">
 		<resource name="drivers/db2/LICENSE.txt"/>
+		<resource name="drivers/db2/db2jcc4.jar"/>
 		<resource name="drivers/db2/db2jcc.jar"/>
 		<resource name="drivers/db2/db2jcc_license_cu.jar"/>
 	</extension>

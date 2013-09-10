@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DB2 Plug-in
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.db2;singleton:=true
+Bundle-Version: 1.0.15
+Bundle-Activator: org.jkiss.dbeaver.ext.db2.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.views,
+ org.eclipse.jface,
+ org.eclipse.jface.text,
+ org.jkiss.dbeaver.core,
+ org.eclipse.ui.workbench.texteditor,
+ org.jkiss.dbeaver.resources.db2
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Vendor: Serge Rieder
+Bundle-ClassPath: .
+Bundle-Localization: plugin

@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<!--
+ * Copyright (C) 2010-2013 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  -->
+
+<plugin>
+
+    <extension point="org.eclipse.ui.commands">
+        <category id="org.jkiss.dbeaver.ext.db2" name="DB2" description="DB2 Commands"/>
+        <command id="org.jkiss.dbeaver.ext.db2.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.db2"/>
+    </extension>
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.ext.db2.code.compile" icon="icons/compile.png"/>
+    </extension>
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.db2.code.compile" class="org.jkiss.dbeaver.ext.db2.actions.CompileHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject"/>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <adapt type="org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject"/>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
+    </extension>
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <command commandId="org.jkiss.dbeaver.ext.db2.code.compile">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+    </extension>
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.db2.actions.DB2ObjectAdapter">
+            <adapter type="org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject"/>
+        </factory>
+    </extension>
+    <extension point="org.eclipse.ui.bindings">
+        <key commandId="org.jkiss.dbeaver.ext.db2.code.compile" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+F10"/>
+    </extension>
+
+    <extension
+        point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+              class="org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider"
+              description="DB2 connector"
+              icon="icons/db2_icon.png"
+              id="db2"
+              label="DB2">
+            <tree
+                  icon="icons/db2_icon.png"
+                  label="DB2 data source"
+                  path="db2">
+                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Schema" label="%tree.schemas.node.name" icon="#folder_schema" description="Database schemas">
+                    <items label="%tree.schema.node.name" path="schema" property="schemas" icon="#schema">
+                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Table" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                            <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey" label="%tree.constraints.node.name" icon="#constraints" description="Table constraints">
+                                    <items label="%tree.constraint.node.name" path="constraint" property="constraints" icon="#unique-key">
+                                        <items label="%tree.constraint_columns.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Index" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" />
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableReference" label="%tree.references.node.name" icon="#references" description="Table references">
+                                    <items label="%tree.reference_key.node.name" path="reference" property="references" icon="#reference">
+                                        <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" >
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Trigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" >
+                                       <items label="%tree.triggerdeps.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2View" label="%tree.views.node.name" icon="#folder_view" description="Views">
+                            <items label="%tree.view.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Index" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
+                            <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                               <items label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" />
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Sequence" label="%tree.sequences.node.name" icon="#folder_sequence" description="Sequences">
+                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence">
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Trigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
+                               <items label="%tree.triggerdep.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>
+                            </items>
+                        </folder>
+                       <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.appobjects.node.name" icon="#appobjects" description="Application Objects">
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="#data_types" description="User Defined Types">
+                             <items label="%tree.type.node.name" path="UDT" property="UDTs" icon="#data_type" />
+                          </folder>
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Package" label="%tree.packages.node.name" icon="#packages" description="Packages">
+                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package"/>
+                          </folder>
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
+                             <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false"/>
+                             </items>
+                          </folder>
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="#procedures" description="Functions">
+                             <items label="%tree.function.node.name" path="UDF" property="UDFs" icon="#procedure">
+                                <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false"/>
+                             </items>
+                          </folder>
+                       </folder>
+                    </items>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="#data_types" description="Types">
+                        <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
+                    </folder>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool" label="%tree.bufferpools.node.name" icon="#bufferpools" description="Bufferpools">
+                        <items label="%tree.bufferpool.node.name" path="bufferpool" property="bufferpools" icon="#bufferpool">
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace" label="%tree.tablespaces.node.name" icon="#folder_tablespace" description="Tablespaces">
+                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablespaceContainer" label="%tree.containers.node.name" icon="#containers" description="Containers">
+                                <items label="%tree.container.node.name" path="container" property="containers" icon="#container"/>
+                            </folder>
+                        </items>
+                    </folder>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="#security" description="Security management" >
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
+                        <items label="%tree.role.node.name" path="role" property="roles" icon="#role">
+                           <items label="%tree.roleauth.node.name" path="roleauth" property="roleAuths" icon="#roleauth"/>
+                        </items>
+                    </folder>
+                    <!--
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Group" label="%tree.profiles.node.name" icon="#folder_profile" description="User profiles">
+                        <items label="%tree.profile.node.name" path="profiles" property="profiles" icon="#profile">
+                            <items label="%tree.resource.node.name" path="resource" property="resources" icon="#resource"/>
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2User" label="%tree.users.node.name" icon="#folder_user" description="Users">
+                        <items label="%tree.user.node.name" path="users" property="users" icon="#user">
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.DB2PrivRole" label="%tree.roles.node.name" icon="#folder_role" description="User roles" navigable="false">
+                                <items label="%tree.role.node.name" path="roles" property="rolePrivs" icon="#role">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.DB2PrivSystem" label="%tree.system_privileges.node.name" icon="#folder_privilege" description="System Privileges" navigable="false">
+                                <items label="%tree.privilege.node.name" path="sysPrivs" property="systemPrivs" icon="#privilege">
+                                </items>
+                            </folder>
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.DB2PrivObject" label="%tree.objects.node.name" icon="#folder_privilege" description="Objects" navigable="false">
+                                <items label="%tree.privilege.node.name" path="objectPriv" property="objectPrivs" icon="#privilege">
+                                </items>
+                            </folder>
+                        </items>
+                    </folder>
+                    -->
+                </folder>
+            </tree>
+
+            <drivers managable="true">
+                <driver
+                    id="db2"
+                    label="DB2"
+                    class="com.ibm.db2.jcc.DB2Driver"
+                    sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    defaultPort="50000"
+                    webURL="http://www-01.ibm.com/support/docview.wss?uid=swg27016878"
+                    description="DB2 JCC driver">
+                    
+					     <file type="jar" path="drivers/db2/db2jcc4.jar" url="*"/>
+                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
+                    
+                    <property name="fullyMaterializeLobData" value="true"/>
+                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <property name="progressiveStreaming" value="2"/>
+                    <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
+                    
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+                </driver>
+            </drivers>
+            <views>
+                <view
+                    id="org.jkiss.dbeaver.ext.db2.dataSourceWizardView"
+                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                    label="%dialog.connection.header"
+                    class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage"
+                    icon="icons/db2_icon.png">
+                </view>
+                <view
+                    id="org.jkiss.dbeaver.ext.db2.dataSourceEditorView"
+                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                    label="%dialog.connection.header"
+                    class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage">
+                </view>
+            </views>
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor id="source.declaration" class="org.jkiss.dbeaver.ext.db2.editors.DB2SourceDeclarationEditor"
+            label="%editor.package.declaration.name" description="%editor.package.declaration.description" icon="#sql_text" position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
+        </editor>
+        <editor id="source.ddl" class="org.jkiss.dbeaver.ext.db2.editors.DB2ObjectDDLEditor"
+            label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
+            <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+        </editor>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2DataTypeManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2SchemaManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2TableManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2TableColumnManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2ForeignKeyManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2ConstraintManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2IndexManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"
+            objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
+    </extension>
+
+<!--
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+            class="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
+            description="DB2 data types provider"
+            id="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
+            label="DB2 data types provider">
+
+            <datasource id="db2"/>
+
+            <type name="XMLTYPE"/>
+            <type name="SYS.XMLTYPE"/>
+            <type name="TIMESTAMP"/>
+            <type name="TIMESTAMP WITH TZ"/>
+            <type name="TIMESTAMP WITH LOCAL TZ"/>
+            <type name="TIMESTAMP WITH TIME ZONE"/>
+            <type name="TIMESTAMP WITH LOCAL TIME ZONE"/>
+
+        </provider>
+    </extension>
+-->    
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+            name="Session Manager"
+            icon="icons/sessions.png"
+            class="org.jkiss.dbeaver.ext.db2.editors.DB2SessionEditor"
+            id="org.jkiss.dbeaver.ext.db2.editors.DB2SessionEditor">
+        </editor>
+    </extension>
+
+</plugin>
