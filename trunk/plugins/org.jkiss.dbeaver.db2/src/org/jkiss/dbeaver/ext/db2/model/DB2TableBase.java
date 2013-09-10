@@ -1,6 +1,6 @@
 /*
-O * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -89,7 +89,8 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
    }
 
    // -----------------
-   // Associations (Imposed from DBSTable). In DB2, Most of objects "derived" from Tables don't have those..
+   // Associations (Imposed from DBSTable). In DB2, Most of objects "derived"
+   // from Tables don't have those..
    // -----------------
 
    @Override

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,7 +46,8 @@ public class DB2TriggerDep extends DB2Object<DB2Trigger> implements DBAPrivilege
       // TODO DF: Bad should be BSCHEMA+BNAME
       super(db2Trigger, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
 
-      // TODO DF: translaste BTYPE+BSCHEMA+BNAME into a real navigable DBSObject
+      // TODO DF: translaste BTYPE+BSCHEMA+BNAME into a real navigable
+      // DBSObject
 
       this.triggerDepType = CommonUtils.valueOf(DB2TriggerDepType.class, JDBCUtils.safeGetString(resultSet, "BTYPE"));
       this.depSchema = JDBCUtils.safeGetStringTrimmed(resultSet, "BSCHEMA");

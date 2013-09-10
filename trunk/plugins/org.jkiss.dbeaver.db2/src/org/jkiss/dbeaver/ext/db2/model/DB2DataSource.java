@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -247,7 +247,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    public DB2Schema schemaLookup(DBRProgressMonitor monitor, DB2Schema parentSchema, String objectSchemaName) throws DBException {
       LOG.trace("schemaLookup");
 
-      // Quick bypass: If it's the same name (99% of the time), return the parentSchema
+      // Quick bypass: If it's the same name (99% of the time), return the
+      // parentSchema
       if (parentSchema.getName().equals(objectSchemaName)) {
          return parentSchema;
       }

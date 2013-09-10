@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -63,7 +63,8 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
       this.uniqueColCount = JDBCUtils.safeGetInteger(dbResult, "UNIQUE_COLCOUNT");
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-      // DF: Could have been done in constructor. More "readable" to do it here
+      // DF: Could have been done in constructor. More "readable" to do it
+      // here
       this.db2IndexType = CommonUtils.valueOf(DB2IndexType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "INDEXTYPE"));
       this.indexType = db2IndexType.getDBSIndexType();
    }
