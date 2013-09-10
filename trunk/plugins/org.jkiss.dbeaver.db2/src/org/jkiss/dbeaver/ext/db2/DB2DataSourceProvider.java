@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -28,81 +26,61 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 /**
  * DB2 DataSource provider
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2DataSourceProvider extends JDBCDataSourceProvider {
 
-   private static Map<String, String> connectionsProps;
+    private static Map<String, String> connectionsProps;
 
-   public static Map<String, String> getConnectionsProps() {
-      return connectionsProps;
-   }
+    public static Map<String, String> getConnectionsProps()
+    {
+        return connectionsProps;
+    }
 
-   public DB2DataSourceProvider() {
-   }
+    public DB2DataSourceProvider()
+    {
+    }
 
-   @Override
-   protected String getConnectionPropertyDefaultValue(String name, String value) {
-      String ovrValue = connectionsProps.get(name);
-      return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
-   }
+    @Override
+    protected String getConnectionPropertyDefaultValue(String name, String value)
+    {
+        String ovrValue = connectionsProps.get(name);
+        return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
+    }
 
-   @Override
-   public long getFeatures() {
-      return FEATURE_SCHEMAS;
-   }
+    @Override
+    public long getFeatures()
+    {
+        return FEATURE_SCHEMAS;
+    }
 
-   @Override
-   public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo) {
-      try {
-         DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(driver.getSampleURL());
-         StringBuilder url = new StringBuilder();
-         for (String component : metaURL.getUrlComponents()) {
-            String newComponent = component;
-            if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-               newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_HOST), connectionInfo.getHostName());
-            }
-            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-               newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_PORT), connectionInfo.getHostPort());
-            }
-            if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
-               newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_SERVER), connectionInfo.getServerName());
-            }
-            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-               newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_DATABASE),
-                                                   connectionInfo.getDatabaseName());
-               newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_FOLDER), connectionInfo.getDatabaseName());
-               newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_FILE), connectionInfo.getDatabaseName());
-            }
-            if (newComponent.startsWith("[")) { //$NON-NLS-1$
-               if (!newComponent.equals(component)) {
-                  url.append(newComponent.substring(1, newComponent.length() - 1));
-               }
-            } else {
-               url.append(newComponent);
-            }
-         }
-         return url.toString();
-      } catch (DBException e) {
-         log.error(e);
-         return null;
-      }
-   }
+    @Override
+    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    {
+        StringBuilder url = new StringBuilder(128);
+        url.append("jdbc:db2://").append(connectionInfo.getHostName());
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            url.append(":").append(connectionInfo.getHostPort());
+        }
+        url.append("/");
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            url.append(connectionInfo.getDatabaseName());
+        }
+        return url.toString();
+    }
 
-   @Override
-   public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException {
-      return new DB2DataSource(monitor, container);
-   }
+    @Override
+    public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
+    {
+        return new DB2DataSource(monitor, container);
+    }
 
-   private static String makePropPattern(String prop) {
-      return "{" + prop + "}"; //$NON-NLS-1$ //$NON-NLS-2$
-   }
 
 }
