@@ -203,7 +203,7 @@
                 </folder>
             </tree>
 
-            <drivers managable="true">
+            <drivers managable="false">
                 <driver
                     id="db2"
                     label="DB2"
@@ -212,19 +212,16 @@
                     defaultPort="50000"
                     webURL="http://www-01.ibm.com/support/docview.wss?uid=swg27016878"
                     description="DB2 JCC driver">
-                    
-					     <file type="jar" path="drivers/db2/db2jcc4.jar" url="*"/>
-                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
+
+                    <!--<replace provider="generic" driver="db2"/>-->
                     
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
                     <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
-                    
-                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
-                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                 </driver>
             </drivers>
+
             <views>
                 <view
                     id="org.jkiss.dbeaver.ext.db2.dataSourceWizardView"
