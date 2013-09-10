@@ -31,101 +31,64 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
- * DB2 Object type
+ * DB2 Object type used by Search and Content Assist
  * 
  * @author Denis Forveille
  * 
  */
 public enum DB2ObjectType implements DBSObjectType {
 
-   // TODO DF: real usage of this class?
+   // See init below
 
-   CONSTRAINT("CONSTRAINT", DBIcon.TREE_CONSTRAINT.getImage(), DB2TableUniqueKey.class, null), // fake object
-
-   FOREIGN_KEY("FOREIGN KEY", DBIcon.TREE_FOREIGN_KEY.getImage(), DB2TableForeignKey.class, null), // fake object
-
-   FUNCTION("FUNCTION", DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
-      @Override
-      public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getProcedureCache().getObject(monitor, schema, objectName);
-      }
-   }),
-
-   INDEX("INDEX", DBIcon.TREE_INDEX.getImage(), DB2Index.class, new ObjectFinder() {
-      @Override
-      public DB2Index findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getIndexCache().getObject(monitor, schema, objectName);
-      }
-   }),
-
-   MATERIALIZED_VIEW("MATERIALIZED VIEW", null, DBSObject.class, null),
-
-   PROCEDURE("PROCEDURE", DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
-      @Override
-      public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getProcedureCache().getObject(monitor, schema, objectName);
-      }
-   }),
-
-   TABLE("TABLE", DBIcon.TREE_TABLE.getImage(), DB2Table.class, new ObjectFinder() {
+   TABLE(DBIcon.TREE_TABLE.getImage(), DB2Table.class, new ObjectFinder() {
       @Override
       public DB2Table findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
          return schema.getTableCache().getObject(monitor, schema, objectName);
       }
    }),
 
-   TRIGGER("TRIGGER", DBIcon.TREE_TRIGGER.getImage(), DB2Trigger.class, new ObjectFinder() {
-      @Override
-      public DB2Trigger findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getTriggerCache().getObject(monitor, schema, objectName);
-      }
-   }),
-
-   VIEW("VIEW", DBIcon.TREE_VIEW.getImage(), DB2View.class, new ObjectFinder() {
+   VIEW(DBIcon.TREE_VIEW.getImage(), DB2View.class, new ObjectFinder() {
       @Override
       public DB2View findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getTableCache().getObject(monitor, schema, objectName, DB2View.class);
+         return schema.getViewCache().getObject(monitor, schema, objectName, DB2View.class);
       }
    });
 
-   static final Log                          log     = LogFactory.getLog(DB2ObjectType.class);
+   private final static Log                 LOG = LogFactory.getLog(DB2ObjectType.class);
 
-   private static Map<String, DB2ObjectType> typeMap = new HashMap<String, DB2ObjectType>();
-
-   static {
-      for (DB2ObjectType type : values()) {
-         typeMap.put(type.getTypeName(), type);
-      }
-   }
-
-   public static DB2ObjectType getByType(String typeName) {
-      return typeMap.get(typeName);
-   }
-
-   private static interface ObjectFinder {
-      DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException;
-   }
-
-   private final String                     objectType;
    private final Image                      image;
    private final Class<? extends DBSObject> typeClass;
    private final ObjectFinder               finder;
 
-   <OBJECT_TYPE extends DBSObject> DB2ObjectType(String objectType, Image image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder) {
-      this.objectType = objectType;
+   // -----------
+   // Constructor
+   // -----------
+   <OBJECT_TYPE extends DBSObject> DB2ObjectType(Image image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder) {
       this.image = image;
       this.typeClass = typeClass;
       this.finder = finder;
+   }
+
+   @Override
+   public String getTypeName() {
+      return this.name();
    }
 
    public boolean isBrowsable() {
       return finder != null;
    }
 
-   @Override
-   public String getTypeName() {
-      return objectType;
+   public DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+      if (finder != null) {
+         return finder.findObject(monitor, schema, objectName);
+      } else {
+         return null;
+      }
    }
+
+   // ----------------
+   // Standard Getters
+   // ----------------
 
    @Override
    public String getDescription() {
@@ -142,12 +105,16 @@ public enum DB2ObjectType implements DBSObjectType {
       return typeClass;
    }
 
-   public DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-      if (finder != null) {
-         return finder.findObject(monitor, schema, objectName);
-      } else {
-         return null;
-      }
+   // ----------------
+   // Helpers
+   // ----------------
+
+   private static interface ObjectFinder {
+      DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException;
+   }
+
+   public static DB2ObjectType getByType(String typeName) {
+      return typeMap.get(typeName);
    }
 
    public static Object resolveObject(DBRProgressMonitor monitor,
@@ -157,29 +124,34 @@ public enum DB2ObjectType implements DBSObjectType {
                                       String objectName) throws DBException {
       DB2ObjectType objectType = DB2ObjectType.getByType(objectTypeName);
       if (objectType == null) {
-         log.debug("Unrecognized object type: " + objectTypeName);
+         LOG.debug("Unrecognized object type: " + objectTypeName);
          return objectName;
       }
       if (!objectType.isBrowsable()) {
-         log.debug("Unsupported object type: " + objectTypeName);
+         LOG.debug("Unsupported object type: " + objectTypeName);
          return objectName;
       }
       final DB2Schema schema = dataSource.getSchema(monitor, objectOwner);
       if (schema == null) {
-         log.debug("Schema '" + objectOwner + "' not found");
+         LOG.debug("Schema '" + objectOwner + "' not found");
          return objectName;
       }
       final DBSObject object = objectType.findObject(monitor, schema, objectName);
       if (object == null) {
-         log.debug(objectTypeName + " '" + objectName + "' not found in '" + schema.getName() + "'");
+         LOG.debug(objectTypeName + " '" + objectName + "' not found in '" + schema.getName() + "'");
          return objectName;
       }
       return object;
    }
 
-   @Override
-   public String toString() {
-      return objectType;
+   // ---
+   // Init
+   // ---
+   private static Map<String, DB2ObjectType> typeMap = new HashMap<String, DB2ObjectType>();
+   static {
+      for (DB2ObjectType type : values()) {
+         typeMap.put(type.getTypeName(), type);
+      }
    }
 
 }
