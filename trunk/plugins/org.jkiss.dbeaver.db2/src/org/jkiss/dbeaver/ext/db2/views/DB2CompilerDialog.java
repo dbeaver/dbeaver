@@ -1,0 +1,241 @@
+/*
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
+ * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jkiss.dbeaver.ext.db2.views;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.viewers.*;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Table;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.actions.CompileHandler;
+import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ViewerColumnController;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
+import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
+/**
+ * DriverEditDialog
+ */
+public class DB2CompilerDialog extends TrayDialog {
+   static final Log                        log            = LogFactory.getLog(DB2CompilerDialog.class);
+
+   private static final int                COMPILE_ID     = 1000;
+   private static final int                COMPILE_ALL_ID = 1001;
+
+   private java.util.List<DB2SourceObject> compileUnits;
+   private TableViewer                     unitTable;
+
+   private ObjectCompilerLogViewer         compileLog;
+
+   public DB2CompilerDialog(Shell shell, java.util.List<DB2SourceObject> compileUnits) {
+      super(shell);
+      this.compileUnits = compileUnits;
+   }
+
+   @Override
+   protected boolean isResizable() {
+      return true;
+   }
+
+   @Override
+   protected Control createDialogArea(Composite parent) {
+      getShell().setText(DB2Messages.views_db2_compiler_dialog_title);
+
+      GridData gd;
+      Composite composite = new Composite(parent, SWT.NONE);
+      composite.setLayout(new GridLayout(2, false));
+      composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+      {
+         Composite unitsGroup = new Composite(composite, SWT.NONE);
+         gd = new GridData(GridData.FILL_BOTH);
+         gd.widthHint = 250;
+         gd.heightHint = 200;
+         gd.verticalIndent = 0;
+         gd.horizontalIndent = 0;
+         unitsGroup.setLayoutData(gd);
+         unitsGroup.setLayout(new GridLayout(1, false));
+
+         unitTable = new TableViewer(unitsGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION);
+
+         {
+            final Table table = unitTable.getTable();
+            table.setLayoutData(new GridData(GridData.FILL_BOTH));
+            table.setLinesVisible(true);
+            table.setHeaderVisible(true);
+         }
+
+         ViewerColumnController columnController = new ViewerColumnController("DB2CompilerDialog", unitTable);
+         columnController.addColumn(DB2Messages.views_db2_compiler_dialog_column_name, null, SWT.NONE, true, true,
+                                    new CellLabelProvider() {
+                                       @Override
+                                       public void update(ViewerCell cell) {
+                                          DBSObject unit = (DBSObject) cell.getElement();
+                                          final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel()
+                                                   .getNodeByObject(unit);
+                                          if (node != null) {
+                                             cell.setText(node.getNodeName());
+                                             cell.setImage(node.getNodeIconDefault());
+                                          } else {
+                                             cell.setText(unit.toString());
+                                          }
+                                       }
+                                    });
+         columnController.addColumn(DB2Messages.views_db2_compiler_dialog_column_type, null, SWT.NONE, true, true,
+                                    new CellLabelProvider() {
+                                       @Override
+                                       public void update(ViewerCell cell) {
+                                          DBSObject unit = (DBSObject) cell.getElement();
+                                          final DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel()
+                                                   .getNodeByObject(unit);
+                                          if (node != null) {
+                                             cell.setText(node.getNodeType());
+                                          } else {
+                                             cell.setText("???"); //$NON-NLS-1$
+                                          }
+                                       }
+                                    });
+         columnController.createColumns();
+         unitTable.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+               IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+               getButton(COMPILE_ID).setEnabled(!selection.isEmpty());
+
+            }
+         });
+         unitTable.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+               IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+               if (!selection.isEmpty()) {
+                  DB2SourceObject unit = (DB2SourceObject) selection.getFirstElement();
+                  NavigatorHandlerObjectOpen.openEntityEditor(unit);
+               }
+            }
+         });
+         unitTable.setContentProvider(new ListContentProvider());
+         unitTable.setInput(compileUnits);
+      }
+
+      {
+         Composite infoGroup = new Composite(composite, SWT.NONE);
+         gd = new GridData(GridData.FILL_BOTH);
+         gd.widthHint = 400;
+         gd.heightHint = 200;
+         gd.verticalIndent = 0;
+         gd.horizontalIndent = 0;
+         infoGroup.setLayoutData(gd);
+         infoGroup.setLayout(new GridLayout(1, false));
+
+         compileLog = new ObjectCompilerLogViewer(infoGroup, true);
+         compileLog.setLevel(ObjectCompilerLogViewer.LOG_LEVEL_ALL);
+      }
+
+      return composite;
+   }
+
+   @Override
+   protected void createButtonsForButtonBar(Composite parent) {
+      // create OK and Cancel buttons by default
+      createButton(parent, COMPILE_ID, DB2Messages.views_db2_compiler_dialog_button_compile, false).setEnabled(false);
+      createButton(parent, COMPILE_ALL_ID, DB2Messages.views_db2_compiler_dialog_button_compile_all, true);
+      createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CLOSE_LABEL, false);
+   }
+
+   @Override
+   protected void okPressed() {
+      super.okPressed();
+   }
+
+   @Override
+   protected void buttonPressed(int buttonId) {
+      final List<DB2SourceObject> toCompile;
+      if (buttonId == COMPILE_ID) {
+         toCompile = ((IStructuredSelection) unitTable.getSelection()).toList();
+      } else if (buttonId == COMPILE_ALL_ID) {
+         toCompile = compileUnits;
+      } else {
+         toCompile = null;
+      }
+
+      if (!CommonUtils.isEmpty(toCompile)) {
+         try {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+               @Override
+               public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                  performCompilation(monitor, toCompile);
+               }
+            });
+         } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(getShell(), "Compile error", null, e.getTargetException());
+         } catch (InterruptedException e) {
+            // do nothing
+         }
+      } else {
+         super.buttonPressed(buttonId);
+      }
+   }
+
+   private void performCompilation(DBRProgressMonitor monitor, List<DB2SourceObject> units) {
+      compileLog.layoutLog();
+      for (DB2SourceObject unit : units) {
+         if (monitor.isCanceled()) {
+            break;
+         }
+         final String message = NLS.bind(DB2Messages.views_db2_compiler_dialog_message_compile_unit, unit.getSourceType().name(),
+                                         unit.getName());
+         compileLog.info(message);
+         boolean success = false;
+         try {
+            success = CompileHandler.compileUnit(monitor, compileLog, unit);
+         } catch (DBCException e) {
+            log.error("Compile error", e);
+         }
+
+         compileLog.info(!success ? DB2Messages.views_db2_compiler_dialog_message_compilation_error
+                  : DB2Messages.views_db2_compiler_dialog_message_compilation_success);
+         compileLog.info(""); //$NON-NLS-1$
+      }
+
+   }
+
+}

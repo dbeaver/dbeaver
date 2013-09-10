@@ -1,0 +1,109 @@
+/*
+ * Copyright (C) 2010-2013 Serge Rieder
+ * serge@jkiss.org
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jkiss.dbeaver.ext.db2.model.session;
+
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * MySQL session manager
+ */
+public class DB2ServerSessionManager implements DBAServerSessionManager<DB2ServerSession> {
+
+   public static final String  PROP_KILL_SESSION = "killSession";
+   public static final String  PROP_IMMEDIATE    = "immediate";
+
+   private final DB2DataSource dataSource;
+
+   public DB2ServerSessionManager(DB2DataSource dataSource) {
+      this.dataSource = dataSource;
+   }
+
+   @Override
+   public DBPDataSource getDataSource() {
+      return dataSource;
+   }
+
+   @Override
+   public Collection<DB2ServerSession> getSessions(DBCExecutionContext context, Map<String, Object> options) throws DBException {
+      try {
+         JDBCPreparedStatement dbStat = ((JDBCExecutionContext) context)
+                  .prepareStatement("SELECT s.*,sq.SQL_TEXT FROM V$SESSION s\n"
+                           + "LEFT OUTER JOIN V$SQL sq ON sq.SQL_ID=s.SQL_ID\n" + "WHERE s.TYPE='USER'");
+         try {
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            try {
+               List<DB2ServerSession> sessions = new ArrayList<DB2ServerSession>();
+               while (dbResult.next()) {
+                  sessions.add(new DB2ServerSession(dbResult));
+               }
+               return sessions;
+            } finally {
+               dbResult.close();
+            }
+         } finally {
+            dbStat.close();
+         }
+      } catch (SQLException e) {
+         throw new DBException(e);
+      }
+   }
+
+   @Override
+   public void alterSession(DBCExecutionContext context, DB2ServerSession session, Map<String, Object> options) throws DBException {
+      final boolean toKill = Boolean.TRUE.equals(options.get(PROP_KILL_SESSION));
+      final boolean immediate = Boolean.TRUE.equals(options.get(PROP_IMMEDIATE));
+
+      try {
+         StringBuilder sql = new StringBuilder("ALTER SYSTEM ");
+         if (toKill) {
+            sql.append("KILL SESSION ");
+         } else {
+            sql.append("DISCONNECT SESSION ");
+         }
+         sql.append("'").append(session.getSid()).append(',').append(session.getSerial()).append("'");
+         if (immediate) {
+            sql.append(" IMMEDIATE");
+         } else if (!toKill) {
+            sql.append(" POST_TRANSACTION");
+         }
+         JDBCPreparedStatement dbStat = ((JDBCExecutionContext) context).prepareStatement(sql.toString());
+         try {
+            dbStat.execute();
+         } finally {
+            dbStat.close();
+         }
+      } catch (SQLException e) {
+         throw new DBException(e);
+      }
+   }
+
+}

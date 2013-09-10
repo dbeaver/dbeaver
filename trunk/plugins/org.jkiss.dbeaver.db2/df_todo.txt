@@ -1,0 +1,78 @@
+
+TODO:
+
+Go through all "TODO" markers and flush remaining unused classes
+
+
+
+Problems:
+- sql editor is erratic
+- investigate while DDL generation does not work for some tables 
+
+
+Missing Functions:
+- a nice connection view setup customized for DB2
+- Explain -> DB2 Explain structure done, all the rest is to be done (execute explain,  display the result)...
+- Editors  / Object creators
+- SQL Content assist
+- Manage explain/ddl generation table creation correctly
+
+
+Display: 
+ - display timestamps with 6 microseconds
+ - missing PK columns indicator (Unique, foreign)
+ - set correct labels for properties displayed
+
+
+Missing objects
+  - Table check constraints
+  - Column check constraints
+  - Nicknames
+  - Synonyms
+  - Servers
+  - DB2User
+  - DB2Groups
+  - ..
+
+
+Missing relationships:
+   - Tables -> Tablespaces (x3) links
+   - Tablespace->Bufferpool link on BPName
+   - Tables -> referenced by triggers
+   
+   
+Missing Dependencies for 
+  - DB2Views
+  - DB2Package
+  - Procedure/Functions
+
+
+Missing Actions
+  db2 reorg
+  db2 runstats
+  db2 backup
+  drop
+  rename
+  set integrity
+  call sysproc.admin_drop_schema
+  call sysproc.admin_copy_schema
+  ...
+
+
+Improvements:
+  - Transform Trigger dependencies into "real objects" 
+  - Propgate and use monitors everywhere
+  - Lazy loading
+
+  - Split DB2Tables into distinct sub types:
+    - Regular
+    - MQT
+    - Temporary Tables
+    - Alias
+    - Hierachies..
+
+    
+Data available at the database level  
+  - Applications/Sessions
+  - DB parameters
+  - DBM parameters
