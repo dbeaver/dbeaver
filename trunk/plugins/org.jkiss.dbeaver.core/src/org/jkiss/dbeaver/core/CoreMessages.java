@@ -329,7 +329,7 @@ public class CoreMessages extends NLS {
 
 	public static String controls_resultset_viewer_dialog_status_title;
 
-	public static String controls_resultset_viewer_execute_statement_context_name;
+	public static String controls_resultset_check_autocommit_state;
 
 	public static String controls_resultset_viewer_job_update;
 
