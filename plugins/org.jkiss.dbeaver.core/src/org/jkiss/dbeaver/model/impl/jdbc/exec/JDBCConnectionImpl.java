@@ -267,15 +267,18 @@ public class JDBCConnectionImpl extends AbstractExecutionContext implements JDBC
     @Override
     public void close()
     {
-        // Check for warnings
-        try {
-            final Connection connection = getConnection();
-            if (connection != null) {
-                JDBCUtils.reportWarnings(this, connection.getWarnings());
-                connection.clearWarnings();
+        DBCExecutionPurpose purpose = getPurpose();
+        if (purpose == DBCExecutionPurpose.USER || purpose == DBCExecutionPurpose.USER_SCRIPT) {
+            // Check for warnings
+            try {
+                final Connection connection = getConnection();
+                if (connection != null) {
+                    JDBCUtils.reportWarnings(this, connection.getWarnings());
+                    connection.clearWarnings();
+                }
+            } catch (Throwable e) {
+                log.debug("Could not check for connection warnings", e);
             }
-        } catch (Throwable e) {
-            log.debug("Could not check for connection warnings", e);
         }
         if (isolatedConnection != null) {
             try {

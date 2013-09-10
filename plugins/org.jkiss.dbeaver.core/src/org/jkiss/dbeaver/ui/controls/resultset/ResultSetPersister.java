@@ -343,12 +343,12 @@ class ResultSetPersister {
 
         private Throwable executeStatements(DBRProgressMonitor monitor)
         {
-            DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_execute_statement_context_name);
+            DBCExecutionContext context = getDataSource().openContext(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_job_update);
             try {
                 monitor.beginTask(
                     CoreMessages.controls_resultset_viewer_monitor_aply_changes,
-                    ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size());
-
+                    ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
+                monitor.subTask(CoreMessages.controls_resultset_check_autocommit_state);
                 try {
                     this.autocommit = context.getTransactionManager().isAutoCommit();
                 }
@@ -356,6 +356,7 @@ class ResultSetPersister {
                     ResultSetViewer.log.warn("Could not determine autocommit state", e);
                     this.autocommit = true;
                 }
+                monitor.worked(1);
                 if (!this.autocommit && context.getTransactionManager().supportsSavepoints()) {
                     try {
                         this.savepoint = context.getTransactionManager().setSavepoint(null);
