@@ -67,7 +67,7 @@ public class DB2Utils {
       // Ref to db2look :
       // http://pic.dhe.ibm.com/infocenter/db2luw/v10r5/topic/com.ibm.db2.luw.admin.cmd.doc/doc/r0002051.html
       //
-      // Option that do not seem to work: -dp
+      // Option that do not seem to work: -dp -a
 
       StringBuilder sb = new StringBuilder(2048);
 
