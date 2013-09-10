@@ -35,7 +35,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.db2.model.DB2ObjectType;
+import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.views.DB2CompilerDialog;
 import org.jkiss.dbeaver.model.DBPEvent;
