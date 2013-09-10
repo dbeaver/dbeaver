@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DB2 DataSource
@@ -119,7 +120,31 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
       return DB2DataSourceProvider.getConnectionsProps();
    }
 
-   @Override
+    @Override
+    public void initialize(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        super.initialize(monitor);
+
+        {
+            final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+            try {
+                // Get active schema
+                this.activeSchemaName = JDBCUtils.queryString(context, "SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1");
+                if (this.activeSchemaName != null) {
+                    this.activeSchemaName = this.activeSchemaName.trim();
+                }
+            } catch (SQLException e) {
+                LOG.warn(e);
+            }
+            finally {
+                context.close();
+            }
+        }
+        this.dataTypeCache.getObjects(monitor, this);
+    }
+
+    @Override
    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
       super.refreshObject(monitor);
 
@@ -238,7 +263,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     * 
     * 
     * @param monitor
-    * @param dataSource
     * @param parentSchema
     * @param objectSchemaName
     * @return
