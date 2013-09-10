@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,19 +20,16 @@ package org.jkiss.dbeaver.ext.db2.editors;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2ConstraintType;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -41,7 +38,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -49,31 +45,70 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * DB2StructureAssistant
+ * DB2 Structure Assistant
+ * 
+ * @author Denis Forveille
+ * 
  */
 public class DB2StructureAssistant implements DBSStructureAssistant {
-   static protected final Log  log = LogFactory.getLog(DB2StructureAssistant.class);
+   private static final Log             LOG               = LogFactory.getLog(DB2StructureAssistant.class);
 
-   private final DB2DataSource dataSource;
+   // TODO DF: Work in progess
+   // For now only support Search/Autocomplete on Tables and Views..
 
+   private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+   private static final DBSObjectType[] AUTOC_OBJ_TYPES   = { DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+   private static final DBSObjectType[] SUPP_OBJ_TYPES    = { DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+
+   private static String                SQL_ALL;
+   private static String                SQL_TAB;
+   static {
+      StringBuilder sb = new StringBuilder(1024);
+      sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
+      sb.append("  FROM SYSCAT.TABLES");
+      sb.append(" WHERE TABSCHEMA = ?");
+      sb.append("   AND TABNAME LIKE ?");
+      sb.append("   AND TYPE NOT IN ('A','H','N','L')"); // DF : Temp
+      sb.append(" WITH UR");
+      SQL_TAB = sb.toString();
+
+      sb.setLength(0);
+
+      sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
+      sb.append("  FROM SYSCAT.TABLES");
+      sb.append(" WHERE TABNAME LIKE ?");
+      sb.append("   AND TYPE NOT IN ('A','H','N','L')");// DF : Temp
+      sb.append(" WITH UR");
+
+      SQL_ALL = sb.toString();
+   }
+
+   private final DB2DataSource          dataSource;
+
+   // -----------------
+   // Constructors
+   // -----------------
    public DB2StructureAssistant(DB2DataSource dataSource) {
       this.dataSource = dataSource;
    }
 
+   // -----------------
+   // Method Interface
+   // -----------------
+
    @Override
    public DBSObjectType[] getSupportedObjectTypes() {
-      return new DBSObjectType[] { DB2ObjectType.TABLE, DB2ObjectType.CONSTRAINT, DB2ObjectType.FOREIGN_KEY, DB2ObjectType.INDEX,
-               DB2ObjectType.PROCEDURE, DB2ObjectType.TRIGGER, };
+      return SUPP_OBJ_TYPES;
    }
 
    @Override
    public DBSObjectType[] getHyperlinkObjectTypes() {
-      return new DBSObjectType[] { DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+      return HYPER_LINKS_TYPES;
    }
 
    @Override
    public DBSObjectType[] getAutoCompleteObjectTypes() {
-      return new DBSObjectType[] { DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+      return AUTOC_OBJ_TYPES;
    }
 
    @Override
@@ -83,20 +118,12 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                                                            String objectNameMask,
                                                            boolean caseSensitive,
                                                            int maxResults) throws DBException {
+
       DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
       JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Find objects by name");
+
       try {
-         List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
-
-         // Search all objects
-         searchAllObjects(context, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
-
-         if (CommonUtils.contains(objectTypes, DB2ObjectType.CONSTRAINT, DB2ObjectType.FOREIGN_KEY) && objects.size() < maxResults) {
-            // Search constraints
-            findConstraintsByMask(context, schema, objectNameMask, objectTypes, maxResults, objects);
-         }
-
-         return objects;
+         return searchAllObjects(context, schema, objectNameMask, objectTypes, caseSensitive, maxResults);
       } catch (SQLException ex) {
          throw new DBException(ex);
       } finally {
@@ -104,158 +131,78 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
       }
    }
 
-   private void findConstraintsByMask(JDBCExecutionContext context,
-                                      final DB2Schema schema,
-                                      String constrNameMask,
-                                      DBSObjectType[] objectTypes,
-                                      int maxResults,
-                                      List<DBSObjectReference> objects) throws SQLException, DBException {
-      DBRProgressMonitor monitor = context.getProgressMonitor();
+   // -----------------
+   // Helpers
+   // -----------------
 
-      List<DBSObjectType> objectTypesList = Arrays.asList(objectTypes);
-      final boolean hasFK = objectTypesList.contains(DB2ObjectType.FOREIGN_KEY);
-      final boolean hasConstraints = objectTypesList.contains(DB2ObjectType.CONSTRAINT);
+   private List<DBSObjectReference> searchAllObjects(final JDBCExecutionContext context,
+                                                     final DB2Schema schema,
+                                                     String objectNameMask,
+                                                     DBSObjectType[] objectTypes,
+                                                     boolean caseSensitive,
+                                                     int maxResults) throws SQLException, DBException {
 
-      // Load tables
-      JDBCPreparedStatement dbStat = context.prepareStatement("SELECT \n"
-               + "OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE, SEARCH_CONDITION, STATUS\n" + "FROM SYS.ALL_CONSTRAINTS\n"
-               + "WHERE CONSTRAINT_NAME like ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "")
-               + (schema != null ? " AND OWNER=?" : ""));
+      List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
+
+      String searchObjectNameMask = objectNameMask;
+      if (!caseSensitive) {
+         searchObjectNameMask = searchObjectNameMask.toUpperCase();
+      }
+
+      String sql;
+      if (schema != null) {
+         sql = SQL_TAB;
+      } else {
+         sql = SQL_ALL;
+      }
+      JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+
+      int n = 1;
       try {
-         dbStat.setString(1, constrNameMask);
          if (schema != null) {
-            dbStat.setString(2, schema.getName());
+            dbStat.setString(n++, schema.getName());
          }
-         JDBCResultSet dbResult = dbStat.executeQuery();
-         try {
-            int tableNum = maxResults;
-            while (dbResult.next() && tableNum-- > 0) {
-               if (monitor.isCanceled()) {
-                  break;
-               }
-               final String schemaName = JDBCUtils.safeGetString(dbResult, DB2Constants.COL_OWNER);
-               final String tableName = JDBCUtils.safeGetString(dbResult, DB2Constants.COL_TABLE_NAME);
-               final String constrName = JDBCUtils.safeGetString(dbResult, DB2Constants.COL_CONSTRAINT_NAME);
-               final String constrType = JDBCUtils.safeGetString(dbResult, DB2Constants.COL_CONSTRAINT_TYPE);
-               final DBSEntityConstraintType type = DB2ConstraintType.getConstraintType(constrType);
-               objects.add(new AbstractObjectReference(constrName,
-                                                       dataSource.getSchema(context.getProgressMonitor(), schemaName),
-                                                       null,
-                                                       type == DBSEntityConstraintType.FOREIGN_KEY ? DB2ObjectType.FOREIGN_KEY
-                                                                : DB2ObjectType.CONSTRAINT) {
-                  @Override
-                  public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                     DB2Schema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
-                     if (tableSchema == null) {
-                        throw new DBException("Constraint schema '" + schemaName + "' not found");
-                     }
-                     DB2Table table = tableSchema.getTable(monitor, tableName);
-                     if (table == null) {
-                        throw new DBException("Constraint table '" + tableName + "' not found in catalog '" + tableSchema.getName()
-                                 + "'");
-                     }
-                     DBSObject constraint = null;
-                     if (hasFK && type == DBSEntityConstraintType.FOREIGN_KEY) {
-                        constraint = table.getAssociation(monitor, constrName);
-                     }
-                     if (hasConstraints && type != DBSEntityConstraintType.FOREIGN_KEY) {
-                        constraint = table.getConstraint(monitor, constrName);
-                     }
-                     if (constraint == null) {
-                        throw new DBException("Constraint '" + constrName + "' not found in table '" + table.getFullQualifiedName()
-                                 + "'");
-                     }
-                     return constraint;
-                  }
-               });
-            }
-         } finally {
-            dbResult.close();
-         }
-      } finally {
-         dbStat.close();
-      }
-   }
+         dbStat.setString(n++, searchObjectNameMask);
 
-   private void searchAllObjects(final JDBCExecutionContext context,
-                                 final DB2Schema schema,
-                                 String objectNameMask,
-                                 DBSObjectType[] objectTypes,
-                                 boolean caseSensitive,
-                                 int maxResults,
-                                 List<DBSObjectReference> objects) throws SQLException, DBException {
-      StringBuilder objectTypeClause = new StringBuilder(100);
-      final List<DB2ObjectType> db2ObjectTypes = new ArrayList<DB2ObjectType>(objectTypes.length + 2);
-      for (DBSObjectType objectType : objectTypes) {
-         if (objectType instanceof DB2ObjectType) {
-            db2ObjectTypes.add((DB2ObjectType) objectType);
-            if (objectType == DB2ObjectType.PROCEDURE) {
-               db2ObjectTypes.add(DB2ObjectType.FUNCTION);
-            } else if (objectType == DB2ObjectType.TABLE) {
-               db2ObjectTypes.add(DB2ObjectType.VIEW);
-               db2ObjectTypes.add(DB2ObjectType.MATERIALIZED_VIEW);
-            }
-         }
-      }
-      for (DB2ObjectType objectType : db2ObjectTypes) {
-         if (objectTypeClause.length() > 0)
-            objectTypeClause.append(",");
-         objectTypeClause.append("'").append(objectType.getTypeName()).append("'");
-      }
-      if (objectTypeClause.length() == 0) {
-         return;
-      }
-      // Seek for objects (join with public synonyms)
-      JDBCPreparedStatement dbStat = context
-               .prepareStatement("SELECT DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE "
-                        + "OBJECT_TYPE IN ("
-                        + objectTypeClause
-                        + ") AND OBJECT_NAME LIKE ? "
-                        + (schema == null ? "" : " AND OWNER=?")
-                        + "UNION ALL\n"
-                        + "SELECT O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n"
-                        + "FROM ALL_SYNONYMS S,ALL_OBJECTS O\n"
-                        + "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)"
-                        + "\nORDER BY OBJECT_NAME");
-      try {
-         if (!caseSensitive) {
-            objectNameMask = objectNameMask.toUpperCase();
-         }
-         dbStat.setString(1, objectNameMask);
-         if (schema != null) {
-            dbStat.setString(2, schema.getName());
-         }
-         dbStat.setString(schema != null ? 3 : 2, objectNameMask);
          dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+         dbStat.setMaxRows(maxResults); // TODO DF: not exact as object may be filtered later
+
+         String schemaName;
+         String objectName;
+         DB2Schema db2Schema;
+         DB2TableType tableType;
+         DB2ObjectType objectType;
+
          JDBCResultSet dbResult = dbStat.executeQuery();
          try {
-            while (objects.size() < maxResults && dbResult.next()) {
+            while (dbResult.next()) {
                if (context.getProgressMonitor().isCanceled()) {
                   break;
                }
-               final String schemaName = JDBCUtils.safeGetString(dbResult, "OWNER");
-               final String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-               final String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
-               final DB2ObjectType objectType = DB2ObjectType.getByType(objectTypeName);
-               if (objectType != null && objectType.isBrowsable() && db2ObjectTypes.contains(objectType)) {
-                  DB2Schema objectSchema = dataSource.getSchema(context.getProgressMonitor(), schemaName);
-                  if (objectSchema == null) {
-                     log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
-                     continue;
-                  }
-                  objects.add(new AbstractObjectReference(objectName, objectSchema, null, objectType) {
-                     @Override
-                     public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                        DB2Schema tableSchema = (DB2Schema) getContainer();
-                        DBSObject object = objectType.findObject(context.getProgressMonitor(), tableSchema, objectName);
-                        if (object == null) {
-                           throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '"
-                                    + tableSchema.getName() + "'");
-                        }
-                        return object;
-                     }
-                  });
+
+               schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
+               objectName = JDBCUtils.safeGetString(dbResult, "TABNAME");
+               tableType = CommonUtils.valueOf(DB2TableType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
+
+               db2Schema = dataSource.getSchema(context.getProgressMonitor(), schemaName);
+               if (db2Schema == null) {
+                  LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
+                  continue;
                }
+
+               switch (tableType) {
+               case T:
+                  objectType = DB2ObjectType.TABLE;
+                  break;
+               case V:
+                  objectType = DB2ObjectType.VIEW;
+                  break;
+               default:
+                  LOG.warn(" Table Type '" + tableType + "' not yet supported in search/content assist");
+                  continue;
+               }
+
+               objects.add(new DB2ObjectReference(objectName, db2Schema, objectType));
             }
          } finally {
             dbResult.close();
@@ -263,6 +210,30 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
       } finally {
          dbStat.close();
       }
+      return objects;
    }
 
+   // --------------
+   // Helper Classes
+   // --------------
+   private class DB2ObjectReference extends AbstractObjectReference {
+
+      private DB2ObjectReference(String objectName, DB2Schema db2Schema, DB2ObjectType objectType) {
+         super(objectName, db2Schema, null, objectType);
+      }
+
+      @Override
+      public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+
+         DB2ObjectType db2ObjectType = (DB2ObjectType) getObjectType();
+         DB2Schema db2Schema = (DB2Schema) getContainer();
+
+         DBSObject object = db2ObjectType.findObject(monitor, db2Schema, getName());
+         if (object == null) {
+            throw new DBException(db2ObjectType + " '" + getName() + "' not found in schema '" + db2Schema.getName() + "'");
+         }
+         return object;
+      }
+
+   }
 }
