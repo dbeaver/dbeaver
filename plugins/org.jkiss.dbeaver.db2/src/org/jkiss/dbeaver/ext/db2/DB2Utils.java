@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -63,7 +63,7 @@ public class DB2Utils {
 
       monitor.beginTask("Generating DDL", 1);
 
-      // DF: Use "Undocumented SYSPROC.DB2LK_GENERATE_DDL stored proc
+      // DF: Use "Undocumented" SYSPROC.DB2LK_GENERATE_DDL stored proc
       // Ref to db2look :
       // http://pic.dhe.ibm.com/infocenter/db2luw/v10r5/topic/com.ibm.db2.luw.admin.cmd.doc/doc/r0002051.html
       //

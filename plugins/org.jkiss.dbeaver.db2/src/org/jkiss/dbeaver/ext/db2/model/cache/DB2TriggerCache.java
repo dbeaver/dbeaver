@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * @author Denis Forveille
  * 
  */
-// TODO DF: Correct? Triggers have no "children".. Just relationships. What Kind of cache to use here?
+// TODO DF: Correct? Triggers have no "children".. Just relationships. What Kind
+// of cache to use here?
 public final class DB2TriggerCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2Trigger, DBSObject> {
 
    private static String SQL_TRIG_ALL = "SELECT * FROM SYSCAT.TRIGGERS WHERE TRIGSCHEMA = ? ORDER BY TRIGNAME WITH UR";

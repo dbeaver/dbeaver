@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,11 +22,14 @@ import org.jkiss.dbeaver.model.DBConstants;
 
 /**
  * DB2 constants
+ * 
+ * @author Denis Forveille
+ * 
  */
 public class DB2Constants {
 
-    // Display Categories
-    public static final int DEFAULT_PORT = 50000;
+   // Connection properties
+   public static final int      DEFAULT_PORT            = 50000;
 
    // Display Categories
    public static final String   CAT_DATETIME            = "Date & Time";
