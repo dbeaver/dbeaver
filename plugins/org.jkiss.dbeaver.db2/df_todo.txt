@@ -21,8 +21,7 @@ Missing Functions:
 Display: 
  - display timestamps with 6 microseconds
  - missing PK columns indicator (Unique, foreign)
- - set correct labels for properties displayed
-
+ 
 
 Missing objects
   - Table check constraints
