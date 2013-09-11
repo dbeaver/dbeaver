@@ -268,7 +268,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     * @throws DBException
     */
    public DB2Schema schemaLookup(DBRProgressMonitor monitor, DB2Schema parentSchema, String objectSchemaName) throws DBException {
-      LOG.trace("schemaLookup");
+      LOG.debug("schemaLookup");
 
       // Quick bypass: If it's the same name (99% of the time), return the
       // parentSchema
