@@ -87,8 +87,8 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
    @Override
    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command) {
       String schemaName = command.getObject().getName();
-      AbstractDatabasePersistAction action = new AbstractDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
-                                                                                                                  schemaName));
+      IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
+                                                                                                           schemaName));
       return new IDatabasePersistAction[] { action };
    }
 
