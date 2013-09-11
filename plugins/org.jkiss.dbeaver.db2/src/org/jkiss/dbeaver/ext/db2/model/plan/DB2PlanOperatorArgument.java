@@ -44,10 +44,34 @@ public class DB2PlanOperatorArgument {
       this.db2Operator = db2Operator;
 
       this.operatorId = JDBCUtils.safeGetInteger(dbResult, "OPERATOR_ID");
-      this.argumentType = JDBCUtils.safeGetString(dbResult, "ARGUMENT_TYPE");
-      this.argumentValue = JDBCUtils.safeGetString(dbResult, "ARGUMENT_VALUE");
+      this.argumentType = JDBCUtils.safeGetStringTrimmed(dbResult, "ARGUMENT_TYPE");
+      this.argumentValue = JDBCUtils.safeGetStringTrimmed(dbResult, "ARGUMENT_VALUE");
       // TODO DF: bad. this is a Clob!
       this.longArgumentValue = JDBCUtils.safeGetString(dbResult, "LONG_ARGUMENT_VALUE");
+   }
+
+   @Override
+   public String toString() {
+      // TODO DF: Weak
+      if (argumentType.equals("EARLYOUT")) {
+         return "Early Out Flag:" + argumentValue;
+      }
+      if (argumentType.equals("OUTERJN")) {
+         return "Outer Join Type:" + argumentValue;
+      }
+      if (argumentType.equals("JN INPUT")) {
+         return "Join Input Leg:" + argumentValue;
+      }
+      if (argumentType.equals("PREFETCH")) {
+         return "Prefetch:" + argumentValue;
+      }
+      if (argumentType.equals("SCANDIR")) {
+         return "Scan Direction:" + argumentValue;
+      }
+      if (argumentType.equals("SPEED")) {
+         return "Speed:" + argumentValue;
+      }
+      return argumentType + "=" + argumentValue;
    }
 
    // ----------------

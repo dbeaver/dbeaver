@@ -21,17 +21,16 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 /**
  * DB2 EXPLAIN_INSTANCE table
  * 
  * @author Denis Forveille
  * 
  */
-import java.util.List;
-
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
  * DB2 EXPLAIN_INSTANCE table
@@ -41,7 +40,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanInstance {
 
-   private static String          SEL_EXP_STATEMENT;
+   // TODO DF : This class is not used yet by the tool
+
+   private static String    SEL_EXP_STATEMENT;
    static {
       StringBuilder sb = new StringBuilder(1024);
       sb.append("SELECT *");
@@ -55,21 +56,26 @@ public class DB2PlanInstance {
       SEL_EXP_STATEMENT = sb.toString();
    }
 
-   private List<DB2PlanStatement> listPlanStatements;
+   private DB2PlanStatement db2PlanStatement;
 
-   private String                 statement_id;
+   private String           statement_id;
 
-   private String                 explainRequester;
-   private Timestamp              explainTime;
-   private String                 sourceName;
-   private String                 sourceSchema;
-   private String                 sourceVersion;
+   private String           explainRequester;
+   private Timestamp        explainTime;
+   private String           sourceName;
+   private String           sourceSchema;
+   private String           sourceVersion;
 
    // ------------
    // Constructors
    // ------------
 
-   public DB2PlanInstance(DB2DataSource dataSource, JDBCExecutionContext context, ResultSet dbResult) throws SQLException {
+   public DB2PlanInstance(DB2DataSource dataSource,
+                          JDBCExecutionContext context,
+                          ResultSet dbResult,
+                          DB2PlanStatement db2PlanStatement) throws SQLException {
+
+      this.db2PlanStatement = db2PlanStatement;
 
       this.explainRequester = JDBCUtils.safeGetStringTrimmed(dbResult, "EXPLAIN_REQUESTER");
       this.explainTime = JDBCUtils.safeGetTimestamp(dbResult, "EXPLAIN_TIME");
@@ -82,14 +88,6 @@ public class DB2PlanInstance {
    // -------------
    // Standards Getters
    // -------------
-   public List<DB2PlanStatement> getListPlanStatements() {
-      return listPlanStatements;
-   }
-
-   public void setListPlanStatements(List<DB2PlanStatement> listPlanStatements) {
-      this.listPlanStatements = listPlanStatements;
-   }
-
    public String getStatement_id() {
       return statement_id;
    }

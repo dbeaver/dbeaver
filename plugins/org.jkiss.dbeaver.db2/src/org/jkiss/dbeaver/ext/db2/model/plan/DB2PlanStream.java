@@ -32,12 +32,17 @@ public class DB2PlanStream {
    private DB2PlanStatement db2Statement;
 
    private Integer          streamId;
+
    private String           sourceType;
    private Integer          sourceId;
+
    private String           targetType;
    private Integer          targetId;
+
    private String           objectSchema;
-   private String           objectname;
+   private String           objectName;
+
+   private Double           streamCount;
 
    // TODO DF: and many many more
 
@@ -53,8 +58,29 @@ public class DB2PlanStream {
       this.sourceId = JDBCUtils.safeGetInteger(dbResult, "SOURCE_ID");
       this.targetType = JDBCUtils.safeGetString(dbResult, "TARGET_TYPE");
       this.targetId = JDBCUtils.safeGetInteger(dbResult, "TARGET_ID");
-      this.objectSchema = JDBCUtils.safeGetString(dbResult, "OBJECT_SCHEMA");
-      this.objectname = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+      this.objectSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "OBJECT_SCHEMA");
+      this.objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+      this.streamCount = JDBCUtils.safeGetDouble(dbResult, "STREAM_COUNT");
+   }
+
+   public String getSourceName() {
+      if (sourceType.equals("O")) {
+         // Operator
+         return String.valueOf(sourceId);
+      } else {
+         // Data Object
+         return objectSchema + "." + objectName;
+      }
+   }
+
+   public String getTargetName() {
+      if (targetType.equals("O")) {
+         // Operator
+         return String.valueOf(targetId);
+      } else {
+         // D: Data Object
+         return objectSchema + "." + objectName;
+      }
    }
 
    // ----------------
@@ -85,12 +111,16 @@ public class DB2PlanStream {
       return objectSchema;
    }
 
-   public String getObjectname() {
-      return objectname;
+   public String getObjectName() {
+      return objectName;
    }
 
    public DB2PlanStatement getDb2Statement() {
       return db2Statement;
+   }
+
+   public Double getStreamCount() {
+      return streamCount;
    }
 
 }
