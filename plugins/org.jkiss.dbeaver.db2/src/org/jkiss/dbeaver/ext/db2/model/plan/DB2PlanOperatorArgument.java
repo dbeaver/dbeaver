@@ -22,64 +22,56 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
- * DB2 EXPLAIN_PREDICATE table
+ * DB2 EXPLAIN_ARGUMENT table
  * 
  * @author Denis Forveille
  * 
  */
-public class DB2PlanStatementPredicate {
+public class DB2PlanOperatorArgument {
 
-   private DB2PlanStatement db2PlanStatement;
+   private DB2PlanOperator db2Operator;
 
-   private Integer          operatorId;
-   private Integer          predicateId;
-   private String           howApplied;
-   private String           whenApplied;
-   private String           predicateText;
-
-   // TODO DF: and many many more
+   private Integer         operatorId;
+   private String          argumentType;
+   private String          argumentValue;
+   private String          longArgumentValue;
 
    // ------------
    // Constructors
    // ------------
 
-   public DB2PlanStatementPredicate(JDBCResultSet dbResult, DB2PlanStatement db2PlanStatement) {
-      this.db2PlanStatement = db2PlanStatement;
+   public DB2PlanOperatorArgument(JDBCResultSet dbResult, DB2PlanOperator db2Operator) {
+      this.db2Operator = db2Operator;
 
       this.operatorId = JDBCUtils.safeGetInteger(dbResult, "OPERATOR_ID");
-      this.predicateId = JDBCUtils.safeGetInteger(dbResult, "PREDICATE_ID");
-      this.howApplied = JDBCUtils.safeGetString(dbResult, "HOW_APPLIED");
-      this.whenApplied = JDBCUtils.safeGetString(dbResult, "WHEN_APPLIED");
-
-      // TODO DF: bad Clob..
-      this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
+      this.argumentType = JDBCUtils.safeGetString(dbResult, "ARGUMENT_TYPE");
+      this.argumentValue = JDBCUtils.safeGetString(dbResult, "ARGUMENT_VALUE");
+      // TODO DF: bad. this is a Clob!
+      this.longArgumentValue = JDBCUtils.safeGetString(dbResult, "LONG_ARGUMENT_VALUE");
    }
 
    // ----------------
    // Standard Getters
    // ----------------
-   public DB2PlanStatement getDb2PlanStatement() {
-      return db2PlanStatement;
-   }
 
    public Integer getOperatorId() {
       return operatorId;
    }
 
-   public Integer getPredicateId() {
-      return predicateId;
+   public String getArgumentValue() {
+      return argumentValue;
    }
 
-   public String getHowApplied() {
-      return howApplied;
+   public String getArgumentType() {
+      return argumentType;
    }
 
-   public String getWhenApplied() {
-      return whenApplied;
+   public String getLongArgumentValue() {
+      return longArgumentValue;
    }
 
-   public String getPredicateText() {
-      return predicateText;
+   public DB2PlanOperator getDb2Operator() {
+      return db2Operator;
    }
 
 }

@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 /**
  * DB2 EXPLAIN_INSTANCE table
  * 
@@ -32,8 +31,6 @@ import java.util.List;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
@@ -44,7 +41,19 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanInstance {
 
-   private static String          SEL_EXP_STATEMENT; // See init below
+   private static String          SEL_EXP_STATEMENT;
+   static {
+      StringBuilder sb = new StringBuilder(1024);
+      sb.append("SELECT *");
+      sb.append(" FROM EXPLAIN_STATEMENT");
+      sb.append(" WHERE EXPLAIN_REQUESTER = ?");
+      sb.append("   AND EXPLAIN_TIME = ?");
+      sb.append("   AND SOURCE_NAME = ?");
+      sb.append("   AND SOURCE_SCHEMA = ?");
+      sb.append("   AND SOURCE_VERSION = ?");
+      sb.append(" WITH UR");
+      SEL_EXP_STATEMENT = sb.toString();
+   }
 
    private List<DB2PlanStatement> listPlanStatements;
 
@@ -68,39 +77,6 @@ public class DB2PlanInstance {
       this.sourceSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_SCHEMA");
       this.sourceVersion = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_VERSION");
 
-      this.listPlanStatements = loadListPlanStatements(context, dbResult);
-   }
-
-   // -------------
-   // Load children
-   // -------------
-   private List<DB2PlanStatement> loadListPlanStatements(JDBCExecutionContext context, ResultSet dbResult) throws SQLException {
-
-      List<DB2PlanStatement> listeRes = new ArrayList<DB2PlanStatement>();
-
-      JDBCPreparedStatement sqlStmt = context.prepareStatement(SEL_EXP_STATEMENT);
-      sqlStmt.setString(1, explainRequester);
-      sqlStmt.setTimestamp(2, explainTime);
-      sqlStmt.setString(3, sourceName);
-      sqlStmt.setString(4, sourceSchema);
-      sqlStmt.setString(5, sourceVersion);
-
-      JDBCResultSet res = null;
-      try {
-         res = sqlStmt.executeQuery();
-         while (dbResult.next()) {
-            listeRes.add(new DB2PlanStatement(context, res, this));
-         }
-      } finally {
-         if (res != null) {
-            res.close();
-         }
-         if (sqlStmt != null) {
-            sqlStmt.close();
-         }
-      }
-
-      return listeRes;
    }
 
    // -------------
@@ -141,15 +117,5 @@ public class DB2PlanInstance {
    // -------
    // Queries
    // -------
-   static {
-      StringBuilder sb = new StringBuilder(1024);
-      sb.append("SELECT *");
-      sb.append(" FROM EXPLAIN_STATEMENT");
-      sb.append(" WHERE EXPLAIN_REQUESTER = ?");
-      sb.append("   AND EXPLAIN_TIME = ?");
-      sb.append("   AND SOURCE_NAME = ?");
-      sb.append("   AND SOURCE_SCHEMA = ?");
-      sb.append("   AND SOURCE_VERSION = ?");
-      SEL_EXP_STATEMENT = sb.toString();
-   }
+
 }
