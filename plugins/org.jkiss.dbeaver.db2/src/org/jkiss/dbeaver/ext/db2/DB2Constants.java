@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
-import org.jkiss.dbeaver.model.DBConstants;
-
 /**
  * DB2 constants
  * 
@@ -45,23 +43,21 @@ public class DB2Constants {
    // ------------------
    // TODO DF Sortout those remaining consts..
    // --------------------------
-   public static final String   CMD_COMPILE             = "org.jkiss.dbeaver.ext.db2.code.compile";             //$NON-NLS-1$
-
-   public static final String   PROP_CONNECTION_TYPE    = DBConstants.INTERNAL_PROP_PREFIX + "connection-type@";
-
-   public static final String   TYPE_NAME_XML           = "XMLTYPE";
-   public static final String   TYPE_FQ_XML             = "SYS.XMLTYPE";
-
+   public static final String   CMD_COMPILE             = "org.jkiss.dbeaver.ext.db2.code.compile"; //$NON-NLS-1$
+   //
    public static final String   PROP_SOURCE_DEFINITION  = "sourceDefinition";
    public static final String   PROP_SOURCE_DECLARATION = "sourceDeclaration";
 
-   public static final String   COL_OWNER               = "OWNER";
-   public static final String   COL_TABLE_NAME          = "TABLE_NAME";
-   public static final String   COL_CONSTRAINT_NAME     = "CONSTRAINT_NAME";
-   public static final String   COL_CONSTRAINT_TYPE     = "CONSTRAINT_TYPE";
-
-   public static final String[] ADVANCED_KEYWORDS       = { "PACKAGE", "FUNCTION", "TYPE", "TRIGGER", "MATERIALIZED", "IF", "EACH",
-            "RETURN", "WRAPPED"                        };
+   public static final String[] ADVANCED_KEYWORDS       = {
+            "PACKAGE",
+            "FUNCTION",
+            "TYPE",
+            "TRIGGER",
+            "MATERIALIZED",
+            "IF",
+            "EACH",
+            "RETURN",
+            "WRAPPED"                                  };
 
    public static final String   PREF_KEY_DDL_FORMAT     = "db2.ddl.format";
 

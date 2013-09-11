@@ -27,7 +27,7 @@
 <setting id="org.eclipse.jdt.core.formatter.indent_breaks_compare_to_cases" value="true"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_after_at_in_annotation" value="do not insert"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_multiple_fields" value="16"/>
-<setting id="org.eclipse.jdt.core.formatter.alignment_for_expressions_in_array_initializer" value="16"/>
+<setting id="org.eclipse.jdt.core.formatter.alignment_for_expressions_in_array_initializer" value="50"/>
 <setting id="org.eclipse.jdt.core.formatter.alignment_for_conditional_expression" value="80"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_for" value="insert"/>
 <setting id="org.eclipse.jdt.core.formatter.insert_space_after_binary_operator" value="insert"/>

@@ -56,6 +56,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
    private TypeDesc                           typeDesc;
 
    private Integer                            db2TypeId;
+
    private String                             owner;
    private DB2OwnerType                       ownerType;
 
@@ -110,8 +111,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
          try {
             this.db2Schema = ((DB2DataSource) owner).getSchema(VoidProgressMonitor.INSTANCE, schemaName);
          } catch (DBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??");
          }
       }
 
@@ -163,6 +163,10 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
    public int getMaxScale() {
       // TODO Auto-generated method stub
       return 0;
+   }
+
+   public int getEquivalentSqlTYpe() {
+      return typeDesc.sqlType;
    }
 
    // -----------------
