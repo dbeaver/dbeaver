@@ -18,11 +18,10 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * DB2 Plan Node
@@ -30,16 +29,33 @@ import org.jkiss.dbeaver.model.meta.Property;
  * @author Denis Forveille
  * 
  */
-public class DB2PlanNode implements DBCPlanNode {
+public abstract class DB2PlanNode implements DBCPlanNode {
 
-   private DB2PlanOperator planOperator;
-   private DB2PlanNode     parent;
+   private DB2PlanNode             parent;
+   private Collection<DB2PlanNode> listNestedNodes = new ArrayList<DB2PlanNode>(64);
 
-   public DB2PlanNode(DB2PlanOperator planOperator, DB2PlanNode parent) {
-      this.planOperator = planOperator;
+   // --------------------
+   // DB2PlanNode Contract
+   // --------------------
+   public abstract String getNodeName();
+
+   public abstract Double getEstimatedCardinality();
+
+   public void setEstimatedCardinality(Double estimatedCardinality) {
+      // Not supported by every kind of DB2PlanNode
+   }
+
+   public String getDetails() {
+      return "";
+   }
+
+   public void setParent(DB2PlanNode parent) {
       this.parent = parent;
    }
 
+   // ----------------------
+   // Methods from Interface
+   // ---------------------
    @Override
    public DB2PlanNode getParent() {
       return parent;
@@ -47,26 +63,7 @@ public class DB2PlanNode implements DBCPlanNode {
 
    @Override
    public Collection<DB2PlanNode> getNested() {
-      return Collections.emptyList();
-   }
-
-   // ----------
-   // Properties
-   // ----------
-
-   @Property(editable = false, viewable = true, order = 1)
-   public Integer getId() {
-      return planOperator.getOperatorId();
-   }
-
-   @Property(editable = false, viewable = true, order = 2)
-   public String getType() {
-      return planOperator.getOperatorType();
-   }
-
-   @Property(editable = false, viewable = true, order = 3)
-   public Double getTotalCost() {
-      return planOperator.getTotalCost();
+      return listNestedNodes;
    }
 
 }

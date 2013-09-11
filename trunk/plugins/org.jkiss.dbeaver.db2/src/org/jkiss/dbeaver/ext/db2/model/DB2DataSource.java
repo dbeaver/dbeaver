@@ -192,6 +192,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    }
 
    @Override
+   @SuppressWarnings("rawtypes")
    public Object getAdapter(Class adapter) {
       if (adapter == DBSStructureAssistant.class) {
          return new DB2StructureAssistant(this);
@@ -298,16 +299,17 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
    @Override
    public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException {
-      DB2PlanAnalyser plan = new DB2PlanAnalyser(this, query);
+      String ptSchemaname = getPlanTableSchemaName(context);
+      DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
       plan.explain((JDBCExecutionContext) context);
       return plan;
    }
 
-   public String getPlanTableSchemaName(JDBCExecutionContext context) throws DBCException {
+   private String getPlanTableSchemaName(DBCExecutionContext context) throws DBCException {
       if (planTableSchemaName == null) {
 
          // TODO DF: not sure of activeSchema. Explain tables could be created in any schema or at default, in SYSTOOLS
-         // Should be current user in fact..
+         // Should be "CURRENT USER" in fact..
          planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, activeSchemaName);
 
          if (planTableSchemaName == null) {

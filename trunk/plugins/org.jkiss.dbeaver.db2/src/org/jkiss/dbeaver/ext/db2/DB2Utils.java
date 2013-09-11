@@ -50,8 +50,7 @@ public class DB2Utils {
    private static final String SEL_DB2LK        = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO_V WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
 
    private static final String CALL_INST_OBJ    = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
-
-   private static final String PLAN_TABLE_CHK   = "SELECT TABSCHEMA FROM SYSCAT.TABLES WHERE TABNAME = 'EXPLAIN_INSTANCE' AND TABSCHEMA IN('SYSTOOLS',?) WITH UR";
+   private static final String SYSTOOLS         = "SYSTOOLS";
 
    private static final String LINE_SEP         = "\n";
 
@@ -62,7 +61,7 @@ public class DB2Utils {
                                             DB2Table db2Table) throws DBException {
       LOG.debug("generate DDL for " + db2Table.getFullQualifiedName());
 
-      // TODO DF: Systools tables must exist first
+      // TODO DF: Tables in SYSTOOLS tables must exist first
 
       monitor.beginTask("Generating DDL", 1);
 
@@ -143,38 +142,49 @@ public class DB2Utils {
       }
    }
 
-   public static String checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String currentSchemaName) throws DBCException {
-      LOG.debug("Check EXPLAIN tables existence in SYSTOOLS and " + currentSchemaName);
+   public static String checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName) throws DBCException {
+      LOG.debug("Check EXPLAIN tables in " + explainTableSchemaName);
 
-      // TODO DF: Systools tables can be created in different Tablespace/schema..
+      // TODO DF: EXPLAIN tables can be created in different Tablespace/schema..
 
-      monitor.beginTask("Check explain table existence", 1);
+      monitor.beginTask("Check EXPLAIN tables", 1);
 
-      JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Check explain table existence");
-      JDBCPreparedStatement stmt = null;
-      JDBCResultSet res = null;
+      JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Verify EXPLAIN tables");
+      JDBCCallableStatement stmtSP = null;
 
+      // First Check with given schema
       try {
-         LOG.debug("Calling Stored Proc");
+         stmtSP = context.prepareCall(CALL_INST_OBJ);
+         stmtSP.setString(1, "EXPLAIN"); // EXPLAIN
+         stmtSP.setString(2, "V"); // Verify
+         stmtSP.setString(3, ""); // Tablespace
+         stmtSP.setString(4, explainTableSchemaName); // Schema
+         stmtSP.execute();
+         LOG.debug("EXPLAIN tables with schema " + explainTableSchemaName + " found.");
+         return explainTableSchemaName;
 
-         stmt = context.prepareStatement(PLAN_TABLE_CHK);
-         stmt.setString(1, currentSchemaName); //
-         res = stmt.executeQuery();
-         if (res.next()) {
-            return res.getString(1);
-         } else {
-            LOG.debug("No explain tables found");
-            return null;
-         }
       } catch (SQLException e) {
-         LOG.error("SQLException occured during EXPLAIN tables creation", e);
+         System.out.println(e.getErrorCode() + " " + e.getSQLState() + " " + e.getMessage());
+         if (e.getErrorCode() == -438) {
+            LOG.info("No valid EXPLAIN tables found in schema " + explainTableSchemaName + ". Check within " + SYSTOOLS + ".");
+            try {
+               stmtSP.setString(4, SYSTOOLS); // Schema
+               stmtSP.execute();
+               LOG.info("EXPLAIN tables with schema " + SYSTOOLS + " found.");
+               return SYSTOOLS;
+            } catch (SQLException e2) {
+               System.out.println("" + e.getErrorCode());
+               if (e.getErrorCode() == -438) {
+                  LOG.info("No valid EXPLAIN tables found in schema " + SYSTOOLS);
+                  return null;
+               }
+               throw new DBCException(e);
+            }
+         }
          throw new DBCException(e);
       } finally {
-         if (res != null) {
-            res.close();
-         }
-         if (stmt != null) {
-            stmt.close();
+         if (stmtSP != null) {
+            stmtSP.close();
          }
          if (context != null) {
             context.close();
@@ -187,26 +197,24 @@ public class DB2Utils {
    public static void createExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName) throws DBCException {
       LOG.debug("Create EXPLAIN tables in " + explainTableSchemaName);
 
-      // TODO DF: Systools tables can be created in different Tablespace/schema..
+      // TODO DF: EXPLAIN tables can be created in different Tablespace/schema..
 
-      monitor.beginTask("Create SYSTOOLS Tables", 1);
+      monitor.beginTask("Create EXPLAIN Tables", 1);
 
       JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Create EXPLAIN tables");
       JDBCCallableStatement stmtSP = null;
 
       try {
-         LOG.debug("Calling Stored Proc");
-
          stmtSP = context.prepareCall(CALL_INST_OBJ);
-         stmtSP.setString(1, "EXPLAIN");
+         stmtSP.setString(1, "EXPLAIN"); // EXPLAIN
          stmtSP.setString(2, "C"); // Create
-         stmtSP.setString(3, "SYSTOOLS"); // Tablespace
-         stmtSP.setString(4, "SYSTOOLS"); // Schema
+         stmtSP.setString(3, ""); // Tablespace
+         stmtSP.setString(4, explainTableSchemaName); // Schema
          stmtSP.executeUpdate();
 
-         LOG.debug("Terminated OK");
+         LOG.debug("Creation OK");
       } catch (SQLException e) {
-         LOG.error("SQLException occured during EXPLAIN tables creation in " + explainTableSchemaName, e);
+         LOG.error("SQLException occured during EXPLAIN tables creation in schema " + explainTableSchemaName, e);
          throw new DBCException(e);
       } finally {
          if (stmtSP != null) {

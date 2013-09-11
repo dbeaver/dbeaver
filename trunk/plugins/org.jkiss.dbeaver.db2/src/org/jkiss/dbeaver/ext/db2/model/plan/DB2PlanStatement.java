@@ -21,10 +21,14 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -38,27 +42,29 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanStatement {
 
-   private static String                 SEL_BASE_SELECT; // See init below
+   private static final Log      LOG = LogFactory.getLog(DB2PlanStatement.class);
 
-   private Map<Integer, DB2PlanOperator> mapOperators;
-   private Map<String, DB2PlanObject>    mapObjects;
-   private List<DB2PlanStream>           listStreams;
+   private static String         SEL_BASE_SELECT;                                // See init below
 
-   private DB2PlanInstance               planInstance;
-   private String                        planTableSchema;
+   private List<DB2PlanOperator> listOperators;
+   private List<DB2PlanObject>   listObjects;
+   private List<DB2PlanStream>   listStreams;
 
-   private String                        explainRequester;
-   private Timestamp                     explainTime;
-   private String                        sourceName;
-   private String                        sourceSchema;
-   private String                        sourceVersion;
-   private String                        explainLevel;
-   private Integer                       stmtNo;
-   private Integer                       sectNo;
-   private Double                        totalCost;
-   private String                        statementText;
-   private byte[]                        snapshot;
-   private Integer                       queryDegree;
+   private DB2PlanInstance       planInstance;
+   private String                planTableSchema;
+
+   private String                explainRequester;
+   private Timestamp             explainTime;
+   private String                sourceName;
+   private String                sourceSchema;
+   private String                sourceVersion;
+   private String                explainLevel;
+   private Integer               stmtNo;
+   private Integer               sectNo;
+   private Double                totalCost;
+   private String                statementText;
+   private byte[]                snapshot;
+   private Integer               queryDegree;
 
    // ------------
    // Constructors
@@ -89,15 +95,33 @@ public class DB2PlanStatement {
    // ----------------
    // Business Methods
    // ----------------
-   public List<DB2PlanNode> buildNodes() {
-      List<DB2PlanNode> listNodes = new ArrayList<DB2PlanNode>(32);
+   public Collection<DB2PlanNode> buildNodes() {
+      Map<String, DB2PlanNode> mapNodes = new HashMap<String, DB2PlanNode>(32);
 
-      for (DB2PlanStream planStream : listStreams) {
-         // TODO DF
-         // listNodes.add(new DB2PlanNode(planOperator, null));
+      // First Put all current objects and operators in a map
+      for (DB2PlanNode planNode : listOperators) {
+         mapNodes.put(planNode.getNodeName(), planNode);
+      }
+      for (DB2PlanNode planNode : listObjects) {
+         mapNodes.put(planNode.getNodeName(), planNode);
       }
 
-      return listNodes;
+      // Then Based on streams, establish relationships between nodes
+      DB2PlanNode sourceNode;
+      DB2PlanNode targetNode;
+      for (DB2PlanStream planStream : listStreams) {
+         sourceNode = mapNodes.get(planStream.getSourceName());
+         targetNode = mapNodes.get(planStream.getTargetName());
+
+         targetNode.getNested().add(sourceNode);
+         LOG.error("is=" + targetNode.getNodeName() + " v=" + planStream.getStreamCount());
+         targetNode.setEstimatedCardinality(planStream.getStreamCount());
+         sourceNode.setParent(targetNode);
+      }
+
+      // // Keep only the "root" node
+      DB2PlanNode rootNode = mapNodes.get(String.valueOf("1"));
+      return Collections.singletonList(rootNode);
    }
 
    // -------------
@@ -107,12 +131,12 @@ public class DB2PlanStatement {
 
       JDBCPreparedStatement sqlStmt = null;
       JDBCResultSet res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT"));
-      mapObjects = new HashMap<String, DB2PlanObject>();
+      listObjects = new ArrayList<DB2PlanObject>(32);
       DB2PlanObject planObject;
       try {
          while (res.next()) {
             planObject = new DB2PlanObject(res, this);
-            mapObjects.put(planObject.getObjectSchema() + planObject.getObjectName(), planObject);
+            listObjects.add(planObject);
          }
       } finally {
          if (res != null) {
@@ -123,13 +147,13 @@ public class DB2PlanStatement {
          }
       }
 
-      mapOperators = new HashMap<Integer, DB2PlanOperator>();
+      listOperators = new ArrayList<DB2PlanOperator>(64);
       res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR"));
       DB2PlanOperator planOperator;
       try {
          while (res.next()) {
             planOperator = new DB2PlanOperator(context, res, this, planTableSchema);
-            mapOperators.put(planOperator.getOperatorId(), planOperator);
+            listOperators.add(planOperator);
          }
       } finally {
          if (res != null) {
@@ -141,9 +165,7 @@ public class DB2PlanStatement {
       }
 
       listStreams = new ArrayList<DB2PlanStream>();
-      // TODO DF: beurk !!!
-      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM")
-               + " ORDER BY STREAM_ID DESC");
+      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM"));
       try {
          while (res.next()) {
             listStreams.add(new DB2PlanStream(res, this));
@@ -188,6 +210,7 @@ public class DB2PlanStatement {
       sb.append("   AND EXPLAIN_LEVEL = ?");// 6
       sb.append("   AND STMTNO = ?");// 7
       sb.append("   AND SECTNO = ?");// 8
+      sb.append(" WITH UR");// 8
       SEL_BASE_SELECT = sb.toString();
    }
 

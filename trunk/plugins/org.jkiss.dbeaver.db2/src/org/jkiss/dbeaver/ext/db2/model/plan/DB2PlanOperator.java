@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * DB2 EXPLAIN_OPERATOR table
@@ -33,9 +34,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2PlanOperator {
+public class DB2PlanOperator extends DB2PlanNode {
 
-   private static String                  SEL_BASE_SELECT; // See init below
+   private static String                  SEL_BASE_SELECT;           // See init below
 
    private DB2PlanStatement               db2Statement;
    private String                         planTableSchema;
@@ -46,6 +47,10 @@ public class DB2PlanOperator {
    private Integer                        operatorId;
    private String                         operatorType;
    private Double                         totalCost;
+
+   private Double                         estimatedCardinality = -1d;
+
+   private String                         details;
 
    // TODO DF: and many many more
 
@@ -66,6 +71,55 @@ public class DB2PlanOperator {
       this.totalCost = JDBCUtils.safeGetDouble(dbResult, "TOTAL_COST");
 
       loadChildren(context);
+
+      // Build details field once
+      StringBuilder sb = new StringBuilder(256);
+      for (DB2PlanOperatorArgument arg : listArguments) {
+         sb.append(arg.toString());
+         sb.append(";");
+      }
+      details = sb.toString();
+   }
+
+   @Override
+   public void setEstimatedCardinality(Double estimatedCardinality) {
+      // TODO DF: not sure of the rule here
+      this.estimatedCardinality = Math.max(this.estimatedCardinality, estimatedCardinality);
+   }
+
+   public Integer getOperatorId() {
+      return operatorId;
+   }
+
+   // ----------------
+   // Pproperties
+   // ----------------
+
+   @Property(viewable = true, order = 1)
+   public String getOperatorType() {
+      return operatorType;
+   }
+
+   @Override
+   @Property(viewable = true, order = 2)
+   public String getNodeName() {
+      return String.valueOf(operatorId);
+   }
+
+   @Property(viewable = true, order = 3)
+   public Double getTotalCost() {
+      return totalCost;
+   }
+
+   @Property(viewable = true, order = 4)
+   public Double getEstimatedCardinality() {
+      return estimatedCardinality;
+   }
+
+   @Override
+   @Property(viewable = true, order = 5)
+   public String getDetails() {
+      return details;
    }
 
    // -------------
@@ -139,22 +193,6 @@ public class DB2PlanOperator {
       sb.append("   AND OPERATOR_ID = ?");// 9
       sb.append(" WITH UR");
       SEL_BASE_SELECT = sb.toString();
-   }
-
-   // ----------------
-   // Standard Getters
-   // ----------------
-
-   public Integer getOperatorId() {
-      return operatorId;
-   }
-
-   public String getOperatorType() {
-      return operatorType;
-   }
-
-   public Double getTotalCost() {
-      return totalCost;
    }
 
    public DB2PlanStatement getDb2Statement() {
