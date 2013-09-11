@@ -10,6 +10,7 @@ Problems :
  
 Missing Functions:
 - Editors  / Object creators
+- Remove "rename" and "edit" action on schema
 
 Display: 
  - display timestamps with 6 microseconds
