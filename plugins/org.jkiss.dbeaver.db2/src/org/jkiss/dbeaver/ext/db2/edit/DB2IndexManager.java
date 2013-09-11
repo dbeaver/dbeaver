@@ -23,8 +23,8 @@ import java.util.Collections;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCIndexManager;
@@ -64,11 +64,6 @@ public class DB2IndexManager extends JDBCIndexManager<DB2Index, DB2Table> {
       // }
       // return index;
       return null;
-   }
-
-   @Override
-   protected String getDropIndexPattern(DB2Index index) {
-      return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP INDEX " + PATTERN_ITEM_INDEX_SHORT; //$NON-NLS-1$ //$NON-NLS-2$
    }
 
 }
