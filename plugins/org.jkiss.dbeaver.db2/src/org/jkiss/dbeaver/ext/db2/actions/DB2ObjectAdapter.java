@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.actions;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.ext.IDatabaseEditor;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObjectEx;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -31,29 +32,30 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
  */
 public class DB2ObjectAdapter implements IAdapterFactory {
 
-   public DB2ObjectAdapter() {
-   }
+    public DB2ObjectAdapter()
+    {
+    }
 
-   @Override
-   public Object getAdapter(Object adaptableObject, Class adapterType) {
-      if (DB2SourceObject.class.isAssignableFrom(adapterType)) {
-         DBSObject dbObject = null;
-         if (adaptableObject instanceof DBNDatabaseNode) {
+    @Override
+    public Object getAdapter(Object adaptableObject, Class adapterType)
+    {
+        DBSObject dbObject = null;
+        if (adaptableObject instanceof DBNDatabaseNode) {
             dbObject = ((DBNDatabaseNode) adaptableObject).getObject();
-         } else if (adaptableObject instanceof IDatabaseEditor) {
+        } else if (adaptableObject instanceof IDatabaseEditor) {
             dbObject = ((IDatabaseEditor) adaptableObject).getEditorInput().getDatabaseObject();
-         } else if (adaptableObject instanceof DatabaseEditorInput) {
+        } else if (adaptableObject instanceof DatabaseEditorInput) {
             dbObject = ((DatabaseEditorInput) adaptableObject).getDatabaseObject();
-         }
-         if (dbObject != null && adapterType.isAssignableFrom(dbObject.getClass())) {
+        }
+        if (dbObject != null && adapterType.isAssignableFrom(dbObject.getClass())) {
             return dbObject;
-         }
-      }
-      return null;
-   }
+        }
+        return null;
+    }
 
-   @Override
-   public Class[] getAdapterList() {
-      return new Class[] { DB2SourceObject.class, DB2SourceObjectEx.class };
-   }
+    @Override
+    public Class[] getAdapterList()
+    {
+        return new Class[]{DB2SourceObject.class, DB2SourceObjectEx.class, DB2Schema.class};
+    }
 }

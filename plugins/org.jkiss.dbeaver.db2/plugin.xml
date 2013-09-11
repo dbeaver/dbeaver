@@ -24,6 +24,7 @@
     <extension point="org.eclipse.ui.commands">
         <category id="org.jkiss.dbeaver.ext.db2" name="DB2" description="DB2 Commands"/>
         <command id="org.jkiss.dbeaver.ext.db2.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.db2"/>
+        <command id="org.jkiss.dbeaver.ext.db2.schema.copy" name="Create schema copy" description="Create DB2 schema copy" categoryId="org.jkiss.dbeaver.ext.db2"/>
     </extension>
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ext.db2.code.compile" icon="icons/compile.png"/>
@@ -44,10 +45,25 @@
                 </or>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.db2.schema.copy" class="org.jkiss.dbeaver.ext.db2.actions.CopySchemaHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
+                        </iterate>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
     </extension>
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
             <command commandId="org.jkiss.dbeaver.ext.db2.code.compile">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ext.db2.schema.copy">
                 <visibleWhen checkEnabled="true"/>
             </command>
         </menuContribution>
@@ -55,6 +71,7 @@
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.db2.actions.DB2ObjectAdapter">
             <adapter type="org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject"/>
+            <adapter type="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
         </factory>
     </extension>
     <extension point="org.eclipse.ui.bindings">
