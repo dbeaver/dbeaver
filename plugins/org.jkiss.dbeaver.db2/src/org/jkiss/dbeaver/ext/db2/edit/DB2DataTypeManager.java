@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
- * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,9 +32,19 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 
 /**
- * DB2DataTypeManager
+ * DB2 Data Type Manager
+ * 
+ * @author Denis Forveille
+ * 
  */
 public class DB2DataTypeManager extends JDBCObjectEditor<DB2DataType, DB2Schema> {
+
+   private static final String SQL_DROP_TYPE = "DROP TYPE %s RESTRICT";
+
+   @Override
+   public long getMakerOptions() {
+      return FEATURE_EDITOR_ON_CREATE;
+   }
 
    @Override
    public DBSObjectCache<? extends DBSObject, DB2DataType> getObjectsCache(DB2DataType object) {
@@ -71,20 +81,14 @@ public class DB2DataTypeManager extends JDBCObjectEditor<DB2DataType, DB2Schema>
 
    @Override
    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand) {
-      final DB2DataType object = objectDeleteCommand.getObject();
-      return new IDatabasePersistAction[] { new AbstractDatabasePersistAction("Drop type",
-                                                                              "DROP TYPE " + object.getFullQualifiedName()) //$NON-NLS-1$
-      };
+      String typeName = objectDeleteCommand.getObject().getFullQualifiedName();
+      IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop type", String.format(SQL_DROP_TYPE, typeName));
+      return new IDatabasePersistAction[] { action };
    }
 
    @Override
    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand) {
       return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
-   }
-
-   @Override
-   public long getMakerOptions() {
-      return FEATURE_EDITOR_ON_CREATE;
    }
 
    private IDatabasePersistAction[] createOrReplaceProcedureQuery(DB2DataType dataType) {
