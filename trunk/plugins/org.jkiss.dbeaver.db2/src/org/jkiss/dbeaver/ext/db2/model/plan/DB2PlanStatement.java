@@ -21,7 +21,9 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -36,27 +38,27 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanStatement {
 
-   private static String         SEL_BASE_SELECT; // See init below
+   private static String                 SEL_BASE_SELECT; // See init below
 
-   private List<DB2PlanOperator> listOperators;
-   private List<DB2PlanObject>   listObjects;
-   private List<DB2PlanStream>   listStreams;
+   private Map<Integer, DB2PlanOperator> mapOperators;
+   private Map<String, DB2PlanObject>    mapObjects;
+   private List<DB2PlanStream>           listStreams;
 
-   private DB2PlanInstance       planInstance;
-   private String                planTableSchema;
+   private DB2PlanInstance               planInstance;
+   private String                        planTableSchema;
 
-   private String                explainRequester;
-   private Timestamp             explainTime;
-   private String                sourceName;
-   private String                sourceSchema;
-   private String                sourceVersion;
-   private String                explainLevel;
-   private Integer               stmtNo;
-   private Integer               sectNo;
-   private Double                totalCost;
-   private String                statementText;
-   private byte[]                snapshot;
-   private Integer               queryDegree;
+   private String                        explainRequester;
+   private Timestamp                     explainTime;
+   private String                        sourceName;
+   private String                        sourceSchema;
+   private String                        sourceVersion;
+   private String                        explainLevel;
+   private Integer                       stmtNo;
+   private Integer                       sectNo;
+   private Double                        totalCost;
+   private String                        statementText;
+   private byte[]                        snapshot;
+   private Integer                       queryDegree;
 
    // ------------
    // Constructors
@@ -90,8 +92,9 @@ public class DB2PlanStatement {
    public List<DB2PlanNode> buildNodes() {
       List<DB2PlanNode> listNodes = new ArrayList<DB2PlanNode>(32);
 
-      for (DB2PlanOperator planOperator : listOperators) {
-         listNodes.add(new DB2PlanNode(planOperator, null));
+      for (DB2PlanStream planStream : listStreams) {
+         // TODO DF
+         // listNodes.add(new DB2PlanNode(planOperator, null));
       }
 
       return listNodes;
@@ -104,10 +107,12 @@ public class DB2PlanStatement {
 
       JDBCPreparedStatement sqlStmt = null;
       JDBCResultSet res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT"));
-      listObjects = new ArrayList<DB2PlanObject>();
+      mapObjects = new HashMap<String, DB2PlanObject>();
+      DB2PlanObject planObject;
       try {
          while (res.next()) {
-            listObjects.add(new DB2PlanObject(res, this));
+            planObject = new DB2PlanObject(res, this);
+            mapObjects.put(planObject.getObjectSchema() + planObject.getObjectName(), planObject);
          }
       } finally {
          if (res != null) {
@@ -118,13 +123,13 @@ public class DB2PlanStatement {
          }
       }
 
-      listOperators = new ArrayList<DB2PlanOperator>();
-      // TODO DF: beurk !!!
-      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR")
-               + " ORDER BY OPERATOR_ID");
+      mapOperators = new HashMap<Integer, DB2PlanOperator>();
+      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR"));
+      DB2PlanOperator planOperator;
       try {
          while (res.next()) {
-            listOperators.add(new DB2PlanOperator(context, res, this, planTableSchema));
+            planOperator = new DB2PlanOperator(context, res, this, planTableSchema);
+            mapOperators.put(planOperator.getOperatorId(), planOperator);
          }
       } finally {
          if (res != null) {
@@ -136,7 +141,9 @@ public class DB2PlanStatement {
       }
 
       listStreams = new ArrayList<DB2PlanStream>();
-      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM"));
+      // TODO DF: beurk !!!
+      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM")
+               + " ORDER BY STREAM_ID DESC");
       try {
          while (res.next()) {
             listStreams.add(new DB2PlanStream(res, this));
@@ -218,14 +225,6 @@ public class DB2PlanStatement {
 
    public Integer getQueryDegree() {
       return queryDegree;
-   }
-
-   public List<DB2PlanOperator> getListOperators() {
-      return listOperators;
-   }
-
-   public List<DB2PlanObject> getListObjects() {
-      return listObjects;
    }
 
    public List<DB2PlanStream> getListStreams() {
