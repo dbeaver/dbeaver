@@ -27,9 +27,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2PlanStatementObject {
+public class DB2PlanObject {
 
-   private DB2PlanStatement db2PlanStatement;
+   private DB2PlanStatement db2Statement;
 
    private String           objectSchema;
    private String           objectName;
@@ -41,8 +41,8 @@ public class DB2PlanStatementObject {
    // Constructors
    // ------------
 
-   public DB2PlanStatementObject(JDBCResultSet dbResult, DB2PlanStatement db2PlanStatement) {
-      this.db2PlanStatement = db2PlanStatement;
+   public DB2PlanObject(JDBCResultSet dbResult, DB2PlanStatement db2Statement) {
+      this.db2Statement = db2Statement;
 
       this.objectSchema = JDBCUtils.safeGetString(dbResult, "OBJECT_SCHEMA");
       this.objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
@@ -52,9 +52,6 @@ public class DB2PlanStatementObject {
    // ----------------
    // Standard Getters
    // ----------------
-   public DB2PlanStatement getDb2PlanStatement() {
-      return db2PlanStatement;
-   }
 
    public String getObjectSchema() {
       return objectSchema;
@@ -66,6 +63,10 @@ public class DB2PlanStatementObject {
 
    public String getObjectType() {
       return objectType;
+   }
+
+   public DB2PlanStatement getDb2Statement() {
+      return db2Statement;
    }
 
 }

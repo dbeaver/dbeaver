@@ -19,7 +19,11 @@
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -27,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.utils.SecurityUtils;
 
 /**
  * DB2 execution plan analyser
@@ -37,17 +40,35 @@ import org.jkiss.utils.SecurityUtils;
  */
 public class DB2PlanAnalyser implements DBCPlan {
 
+   private static final Log     LOG         = LogFactory.getLog(DB2DataSource.class);
+
+   private static final String  PT_DELETE   = "DELETE FROM %s.EXPLAIN_STATEMENT WHERE QUERYNO = ?";
+   private static final String  PT_EXPLAIN  = "EXPLAIN PLAN SET QUERYNO = %d FOR %s";
+   private static final String  SEL_STMT    = "SELECT * FROM %s.EXPLAIN_STATEMENT WHERE QUERYNO = ? AND EXPLAIN_LEVEL = 'P' WITH UR";
+
+   private static AtomicInteger STMT_NO_GEN = new AtomicInteger(Long.valueOf(System.currentTimeMillis() / 10000000L).intValue());
+
    // TODO DF: most everything to be done here
 
-   private DB2DataSource   dataSource;
-   private String          query;
+   private DB2DataSource        dataSource;
+   private String               query;
 
-   private DB2PlanInstance db2PlanInstance;
+   private List<DB2PlanNode>    listNodes;
+
+   private DB2PlanStatement     db2PlanStatement;
+
+   // ------------
+   // Constructors
+   // ------------
 
    public DB2PlanAnalyser(DB2DataSource dataSource, String query) {
       this.dataSource = dataSource;
       this.query = query;
    }
+
+   // ----------------
+   // Standard Getters
+   // ----------------
 
    @Override
    public String getQueryString() {
@@ -56,49 +77,60 @@ public class DB2PlanAnalyser implements DBCPlan {
 
    @Override
    public Collection<? extends DBCPlanNode> getPlanNodes() {
-      // TODO DF: don'T understand whan a DBCPlanNode is ...
-      return null;
+      return listNodes;
    }
 
+   // ----------------
+   // Business Methods
+   // ----------------
+
    public void explain(JDBCExecutionContext context) throws DBCException {
-      String planStmtId = SecurityUtils.generateUniqueId();
+      Integer stmtNo = STMT_NO_GEN.incrementAndGet();
+      String planTableSchema = dataSource.getPlanTableSchemaName(context);
+
+      LOG.error("schema=" + planTableSchema + " explain " + stmtNo + " for " + query);
+
       try {
          // Detect plan table
-         String planTableName = dataSource.getPlanTableName(context);
-         if (planTableName == null) {
+
+         if (planTableSchema == null) {
             throw new DBCException("Plan table not found - query can't be explained");
          }
 
          // Delete previous statement rows
-         // (actually there should be no statement with this id -
-         // but let's do it, just in case)
-         JDBCPreparedStatement dbStat = context.prepareStatement("DELETE FROM " + planTableName + " WHERE STATEMENT_ID=? ");
+         JDBCPreparedStatement dbStat = context.prepareStatement(String.format(PT_DELETE, planTableSchema));
          try {
-            dbStat.setString(1, planStmtId);
+            dbStat.setInt(1, stmtNo);
             dbStat.execute();
          } finally {
-            dbStat.close();
+            if (dbStat != null) {
+               dbStat.close();
+            }
          }
 
          // Explain plan
-         StringBuilder explainSQL = new StringBuilder();
-         explainSQL.append("EXPLAIN PLAN ").append("\n").append("SET STATEMENT_ID = '").append(planStmtId).append("'\n")
-                  .append("INTO ").append(planTableName).append("\n").append("FOR ").append(query);
-         dbStat = context.prepareStatement(explainSQL.toString());
+         System.out.println("no=" + stmtNo + "q=" + query);
+
+         dbStat = context.prepareStatement(String.format(PT_EXPLAIN, stmtNo, query));
+         // dbStat.setInt(1, stmtNo);
+         // dbStat.setString(2, query);
          try {
             dbStat.execute();
          } finally {
-            dbStat.close();
+            if (dbStat != null) {
+               dbStat.close();
+            }
          }
 
-         // Read explained plan
-         dbStat = context.prepareStatement("SELECT * FROM " + planTableName + " WHERE STATEMENT_ID=? ORDER BY ID");
+         // Build Node Structure
+         dbStat = context.prepareStatement(String.format(SEL_STMT, planTableSchema));
          JDBCResultSet dbResult = null;
          try {
-            dbStat.setString(1, planStmtId);
+            dbStat.setInt(1, stmtNo);
             dbResult = dbStat.executeQuery();
+            dbResult.next();
 
-            db2PlanInstance = new DB2PlanInstance(dataSource, context, dbResult);
+            db2PlanStatement = new DB2PlanStatement(context, dbResult, planTableSchema);
 
          } finally {
             if (dbResult != null) {
@@ -108,9 +140,11 @@ public class DB2PlanAnalyser implements DBCPlan {
                dbStat.close();
             }
          }
+
+         listNodes = db2PlanStatement.buildNodes();
+
       } catch (SQLException e) {
          throw new DBCException(e);
       }
    }
-
 }

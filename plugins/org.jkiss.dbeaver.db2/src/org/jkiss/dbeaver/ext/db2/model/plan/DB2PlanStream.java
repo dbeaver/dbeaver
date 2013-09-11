@@ -27,9 +27,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2PlanStatementStream {
+public class DB2PlanStream {
 
-   private DB2PlanStatement db2PlanStatement;
+   private DB2PlanStatement db2Statement;
 
    private Integer          streamId;
    private String           sourceType;
@@ -45,8 +45,8 @@ public class DB2PlanStatementStream {
    // Constructors
    // ------------
 
-   public DB2PlanStatementStream(JDBCResultSet dbResult, DB2PlanStatement db2PlanStatement) {
-      this.db2PlanStatement = db2PlanStatement;
+   public DB2PlanStream(JDBCResultSet dbResult, DB2PlanStatement db2Statement) {
+      this.db2Statement = db2Statement;
 
       this.streamId = JDBCUtils.safeGetInteger(dbResult, "STREAM_ID");
       this.sourceType = JDBCUtils.safeGetString(dbResult, "SOURCE_TYPE");
@@ -60,9 +60,6 @@ public class DB2PlanStatementStream {
    // ----------------
    // Standard Getters
    // ----------------
-   public DB2PlanStatement getDb2PlanStatement() {
-      return db2PlanStatement;
-   }
 
    public Integer getStreamId() {
       return streamId;
@@ -90,6 +87,10 @@ public class DB2PlanStatementStream {
 
    public String getObjectname() {
       return objectname;
+   }
+
+   public DB2PlanStatement getDb2Statement() {
+      return db2Statement;
    }
 
 }

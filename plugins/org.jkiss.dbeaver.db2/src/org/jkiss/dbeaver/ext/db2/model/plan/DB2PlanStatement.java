@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -34,35 +36,40 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanStatement {
 
-   private static String                   SEL_EXP_STMT_ARGS;      // See init below
-   private static String                   SEL_EXP_STMT_OBJECT;    // See init below
-   private static String                   SEL_EXP_STMT_OPERATOR;  // See init below
-   private static String                   SEL_EXP_STMT_PREDICATE; // See init below
-   private static String                   SEL_EXP_STMT_STREAM;    // See init below
+   private static String         SEL_BASE_SELECT; // See init below
 
-   private List<DB2PlanStatementArgument>  listStatementArguments;
-   private List<DB2PlanStatementObject>    listStatementObjects;
-   private List<DB2PlanStatementOperator>  listStatementOperators;
-   private List<DB2PlanStatementPredicate> listStatementPredicates;
-   private List<DB2PlanStatementStream>    listStatementStreams;
+   private List<DB2PlanOperator> listOperators;
+   private List<DB2PlanObject>   listObjects;
+   private List<DB2PlanStream>   listStreams;
 
-   private DB2PlanInstance                 planInstance;
+   private DB2PlanInstance       planInstance;
+   private String                planTableSchema;
 
-   private String                          explainLevel;
-   private Integer                         stmtNo;
-   private Integer                         sectNo;
-   private Double                          totalCost;
-   private String                          statementText;
-   private byte[]                          snapshot;
-   private Integer                         queryDegree;
+   private String                explainRequester;
+   private Timestamp             explainTime;
+   private String                sourceName;
+   private String                sourceSchema;
+   private String                sourceVersion;
+   private String                explainLevel;
+   private Integer               stmtNo;
+   private Integer               sectNo;
+   private Double                totalCost;
+   private String                statementText;
+   private byte[]                snapshot;
+   private Integer               queryDegree;
 
    // ------------
    // Constructors
    // ------------
-   public DB2PlanStatement(JDBCExecutionContext context, JDBCResultSet dbResult, DB2PlanInstance planInstance) throws SQLException {
+   public DB2PlanStatement(JDBCExecutionContext context, JDBCResultSet dbResult, String planTableSchema) throws SQLException {
 
-      this.planInstance = planInstance;
+      this.planTableSchema = planTableSchema;
 
+      this.explainRequester = JDBCUtils.safeGetStringTrimmed(dbResult, "EXPLAIN_REQUESTER");
+      this.explainTime = JDBCUtils.safeGetTimestamp(dbResult, "EXPLAIN_TIME");
+      this.sourceName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_NAME");
+      this.sourceSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_SCHEMA");
+      this.sourceVersion = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_VERSION");
       this.explainLevel = JDBCUtils.safeGetStringTrimmed(dbResult, "EXPLAIN_LEVEL");
       this.stmtNo = JDBCUtils.safeGetInteger(dbResult, "STMTNO");
       this.sectNo = JDBCUtils.safeGetInteger(dbResult, "SECTNO");
@@ -77,16 +84,30 @@ public class DB2PlanStatement {
       loadChildren(context);
    }
 
+   // ----------------
+   // Business Methods
+   // ----------------
+   public List<DB2PlanNode> buildNodes() {
+      List<DB2PlanNode> listNodes = new ArrayList<DB2PlanNode>(32);
+
+      for (DB2PlanOperator planOperator : listOperators) {
+         listNodes.add(new DB2PlanNode(planOperator, null));
+      }
+
+      return listNodes;
+   }
+
    // -------------
    // Load children
    // -------------
    private void loadChildren(JDBCExecutionContext context) throws SQLException {
 
       JDBCPreparedStatement sqlStmt = null;
-      JDBCResultSet res = executeQuery(context, sqlStmt, SEL_EXP_STMT_ARGS);
+      JDBCResultSet res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT"));
+      listObjects = new ArrayList<DB2PlanObject>();
       try {
          while (res.next()) {
-            listStatementArguments.add(new DB2PlanStatementArgument(res, this));
+            listObjects.add(new DB2PlanObject(res, this));
          }
       } finally {
          if (res != null) {
@@ -97,10 +118,13 @@ public class DB2PlanStatement {
          }
       }
 
-      res = executeQuery(context, sqlStmt, SEL_EXP_STMT_OBJECT);
+      listOperators = new ArrayList<DB2PlanOperator>();
+      // TODO DF: beurk !!!
+      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR")
+               + " ORDER BY OPERATOR_ID");
       try {
          while (res.next()) {
-            listStatementObjects.add(new DB2PlanStatementObject(res, this));
+            listOperators.add(new DB2PlanOperator(context, res, this, planTableSchema));
          }
       } finally {
          if (res != null) {
@@ -111,10 +135,11 @@ public class DB2PlanStatement {
          }
       }
 
-      res = executeQuery(context, sqlStmt, SEL_EXP_STMT_OPERATOR);
+      listStreams = new ArrayList<DB2PlanStream>();
+      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM"));
       try {
          while (res.next()) {
-            listStatementOperators.add(new DB2PlanStatementOperator(res, this));
+            listStreams.add(new DB2PlanStream(res, this));
          }
       } finally {
          if (res != null) {
@@ -124,45 +149,16 @@ public class DB2PlanStatement {
             sqlStmt.close();
          }
       }
-
-      res = executeQuery(context, sqlStmt, SEL_EXP_STMT_PREDICATE);
-      try {
-         while (res.next()) {
-            listStatementPredicates.add(new DB2PlanStatementPredicate(res, this));
-         }
-      } finally {
-         if (res != null) {
-            res.close();
-         }
-         if (sqlStmt != null) {
-            sqlStmt.close();
-         }
-      }
-
-      res = executeQuery(context, sqlStmt, SEL_EXP_STMT_STREAM);
-      try {
-         while (res.next()) {
-            listStatementStreams.add(new DB2PlanStatementStream(res, this));
-         }
-      } finally {
-         if (res != null) {
-            res.close();
-         }
-         if (sqlStmt != null) {
-            sqlStmt.close();
-         }
-      }
-
    }
 
    private JDBCResultSet executeQuery(JDBCExecutionContext context, JDBCPreparedStatement sqlStmt, String sql) throws SQLException {
 
       sqlStmt = context.prepareStatement(sql);
-      sqlStmt.setString(1, planInstance.getExplainRequester());
-      sqlStmt.setTimestamp(2, planInstance.getExplainTime());
-      sqlStmt.setString(3, planInstance.getSourceName());
-      sqlStmt.setString(4, planInstance.getSourceSchema());
-      sqlStmt.setString(5, planInstance.getSourceSchema());
+      sqlStmt.setString(1, explainRequester);
+      sqlStmt.setTimestamp(2, explainTime);
+      sqlStmt.setString(3, sourceName);
+      sqlStmt.setString(4, sourceSchema);
+      sqlStmt.setString(5, sourceVersion);
       sqlStmt.setString(6, explainLevel);
       sqlStmt.setInt(7, stmtNo);
       sqlStmt.setInt(8, sectNo);
@@ -176,47 +172,21 @@ public class DB2PlanStatement {
    static {
       StringBuilder sb = new StringBuilder(1024);
       sb.append("SELECT *");
-      sb.append(" FROM %s");
-      sb.append(" WHERE EXPLAIN_REQUESTER = ?");
-      sb.append("   AND EXPLAIN_TIME = ?");
-      sb.append("   AND SOURCE_NAME = ?");
-      sb.append("   AND SOURCE_SCHEMA = ?");
-      sb.append("   AND SOURCE_VERSION = ?");
-      sb.append("   AND EXPLAIN_LEVEL = ?");
-      sb.append("   AND STMTNO = ?");
-      sb.append("   AND SECTNO = ?");
-      String sql = sb.toString();
-
-      SEL_EXP_STMT_ARGS = String.format(sql, "EXPLAIN_ARGUMENT");
-      SEL_EXP_STMT_OBJECT = String.format(sql, "EXPLAIN_OBJECT");
-      SEL_EXP_STMT_OPERATOR = String.format(sql, "EXPLAIN_OPERATOR");
-      SEL_EXP_STMT_PREDICATE = String.format(sql, "EXPLAIN_PREDICATE");
-      SEL_EXP_STMT_STREAM = String.format(sql, "EXPLAIN_STREAM");
+      sb.append(" FROM %s.%s");
+      sb.append(" WHERE EXPLAIN_REQUESTER = ?"); // 1
+      sb.append("   AND EXPLAIN_TIME = ?");// 2
+      sb.append("   AND SOURCE_NAME = ?");// 3
+      sb.append("   AND SOURCE_SCHEMA = ?");// 4
+      sb.append("   AND SOURCE_VERSION = ?");// 5
+      sb.append("   AND EXPLAIN_LEVEL = ?");// 6
+      sb.append("   AND STMTNO = ?");// 7
+      sb.append("   AND SECTNO = ?");// 8
+      SEL_BASE_SELECT = sb.toString();
    }
 
    // ----------------
    // Standard Getters
    // ----------------
-
-   public List<DB2PlanStatementArgument> getListStatementArguments() {
-      return listStatementArguments;
-   }
-
-   public List<DB2PlanStatementObject> getListStatementObjects() {
-      return listStatementObjects;
-   }
-
-   public List<DB2PlanStatementOperator> getListStatementOperators() {
-      return listStatementOperators;
-   }
-
-   public List<DB2PlanStatementPredicate> getListStatementPredicates() {
-      return listStatementPredicates;
-   }
-
-   public List<DB2PlanStatementStream> getListStatementStreams() {
-      return listStatementStreams;
-   }
 
    public DB2PlanInstance getPlanInstance() {
       return planInstance;
@@ -248,6 +218,42 @@ public class DB2PlanStatement {
 
    public Integer getQueryDegree() {
       return queryDegree;
+   }
+
+   public List<DB2PlanOperator> getListOperators() {
+      return listOperators;
+   }
+
+   public List<DB2PlanObject> getListObjects() {
+      return listObjects;
+   }
+
+   public List<DB2PlanStream> getListStreams() {
+      return listStreams;
+   }
+
+   public String getPlanTableSchema() {
+      return planTableSchema;
+   }
+
+   public String getExplainRequester() {
+      return explainRequester;
+   }
+
+   public Timestamp getExplainTime() {
+      return explainTime;
+   }
+
+   public String getSourceName() {
+      return sourceName;
+   }
+
+   public String getSourceSchema() {
+      return sourceSchema;
+   }
+
+   public String getSourceVersion() {
+      return sourceVersion;
    }
 
 }
