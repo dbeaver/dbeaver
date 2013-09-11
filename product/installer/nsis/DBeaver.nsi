@@ -173,7 +173,7 @@ Section "-DBeaver Core" SecCore
   File "..\raw\win32.@arch@\dbeaver\dbeaver.exe"
   File /r "..\raw\win32.@arch@\dbeaver\configuration"
   ;File /r  "..\raw\win32.@arch@\dbeaver\features"
-  File /r  /x org.jkiss.* /x com.oracle.* /x com.mysql.* "..\raw\win32.@arch@\dbeaver\plugins"
+  File /r  /x org.jkiss.* /x com.oracle.* /x com.mysql.* /x com.ibm.db2.* "..\raw\win32.@arch@\dbeaver\plugins"
 
   ; Unpack script
   File "install.cmd"
@@ -247,6 +247,15 @@ SectionGroup /e "Plugins" SecPlugins
 
 	SectionEnd
 
+	Section "DB2 Plugin" SecDB2
+
+	  SetOutPath "$INSTDIR\plugins"
+
+	  File "..\raw\win32.@arch@\dbeaver\plugins\org.jkiss.dbeaver.ext.db2_*"
+	  File /r "..\raw\win32.@arch@\dbeaver\plugins\com.ibm.*"
+
+	SectionEnd
+
 	Section "WMI" SecWMI
 
 	  SetOutPath "$INSTDIR\plugins"
@@ -313,6 +322,7 @@ SectionEnd
   LangString DESC_SecGeneric ${LANG_ENGLISH} "Support of generic JDBC drivers."
   LangString DESC_SecMySQL ${LANG_ENGLISH} "Supports additional features for MySQL 5.x databases. Includes MySQL JDBC driver"
   LangString DESC_SecOracle ${LANG_ENGLISH} "Supports additional features for Oracle 8.x-11.x databases."
+  LangString DESC_SecDB2 ${LANG_ENGLISH} "Supports additional features for IBM DB2 LUW databases."
   LangString DESC_SecWMI ${LANG_ENGLISH} "Supports additional features for Windows Management Instrumentation (WMI)."
   LangString DESC_SecNoSQL ${LANG_ENGLISH} "NoSQL databases support (Cassandra)."
   LangString DESC_SecERD ${LANG_ENGLISH} "Provides support of ERD diagrams for schemas and individual tables."
@@ -326,6 +336,7 @@ SectionEnd
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecGeneric} $(DESC_SecGeneric)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecMySQL} $(DESC_SecMySQL)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecOracle} $(DESC_SecOracle)
+	!insertmacro MUI_DESCRIPTION_TEXT ${SecDB2} $(DESC_SecDB2)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecWMI} $(DESC_SecWMI)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecNoSQL} $(DESC_SecNoSQL)
 	!insertmacro MUI_DESCRIPTION_TEXT ${SecERD} $(DESC_SecERD)
