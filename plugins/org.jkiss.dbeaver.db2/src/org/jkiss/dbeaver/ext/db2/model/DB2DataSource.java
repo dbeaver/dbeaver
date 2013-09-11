@@ -163,7 +163,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
    @Override
    public Collection<DB2DataType> getDataTypes() {
-      // TODO DF: not sure it is the beqst way to do it
       try {
          return getDataTypes(VoidProgressMonitor.INSTANCE);
       } catch (DBException e) {
@@ -174,21 +173,12 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
    @Override
    public DB2DataType getDataType(String typeName) {
-      // TODO DF: not sure it is the beqst way to do it
       try {
          return getDataType(VoidProgressMonitor.INSTANCE, typeName);
       } catch (DBException e) {
          LOG.error("DBException occurred when reading system dataTYpe : " + typeName, e);
          return null;
       }
-   }
-
-   // --------------
-   // TODO DF: No idea what to do with those methods, what they are used for...
-   // --------------
-
-   @Override
-   public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
    }
 
    @Override
@@ -198,6 +188,14 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
          return new DB2StructureAssistant(this);
       }
       return null;
+   }
+
+   // --------------
+   // TODO DF: No idea what to do with this method, what it is used for...
+   // --------------
+
+   @Override
+   public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
    }
 
    // --------------------------
@@ -295,8 +293,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    // Plan Tables
    // --------------
 
-   // TODO DF: yet to be done
-
    @Override
    public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException {
       String ptSchemaname = getPlanTableSchemaName(context);
@@ -308,7 +304,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    private String getPlanTableSchemaName(DBCExecutionContext context) throws DBCException {
       if (planTableSchemaName == null) {
 
-         // TODO DF: not sure of activeSchema. Explain tables could be created in any schema or at default, in SYSTOOLS
+         // TODO DF: not sure of "activeSchema".
+         // Explain tables could be created in any schema or at default, in SYSTOOLS
          // Should be "CURRENT USER" in fact..
          planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, activeSchemaName);
 

@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
 /**
  * DB2 Group
@@ -34,7 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
  * 
  * 
  */
-public class DB2Group extends DB2GlobalObject implements DBAUser, DBSObjectLazy<DB2DataSource> {
+public class DB2Group extends DB2GlobalObject implements DBAUser {
    static final Log log = LogFactory.getLog(DB2Group.class);
 
    // TODO DF: yet to be done
@@ -46,21 +45,10 @@ public class DB2Group extends DB2GlobalObject implements DBAUser, DBSObjectLazy<
    // Constructors
    // -----------------------
 
-   public DB2Group(DB2DataSource dataSource) {
-      super(dataSource, true);
-      // TODO DF: Used for what?
-   }
-
    public DB2Group(DB2DataSource dataSource, ResultSet resultSet) {
       super(dataSource, true);
       this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
       this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
-   }
-
-   @Override
-   public Object getLazyReference(Object propertyId) {
-      // TODO Auto-generated method stub
-      return null;
    }
 
    // -----------------

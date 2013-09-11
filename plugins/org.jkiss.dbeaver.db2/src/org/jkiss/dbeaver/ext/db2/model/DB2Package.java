@@ -21,14 +21,11 @@ package org.jkiss.dbeaver.ext.db2.model;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -37,7 +34,7 @@ import org.jkiss.utils.CommonUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject {
+public class DB2Package extends DB2SchemaObject {
 
    private Boolean      valid;
    private String       owner;
@@ -62,12 +59,6 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
       this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
       this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
-   }
-
-   @Override
-   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
-      // TODO Auto-generated method stub
-      return false;
    }
 
    // -----------------
