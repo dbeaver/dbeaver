@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
- * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,15 +27,21 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * DB2TriggerManager
+ * DB2 Trigger Manager
+ * 
+ * @author Denis Forveille
+ * 
  */
 public class DB2TriggerManager extends JDBCObjectEditor<DB2Trigger, DB2Table> {
+
+   private static final String SQL_DROP_TRIGGER = "DROP TRIGGER %S";
 
    @Override
    public long getMakerOptions() {
@@ -85,10 +91,10 @@ public class DB2TriggerManager extends JDBCObjectEditor<DB2Trigger, DB2Table> {
 
    @Override
    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command) {
-      // return new IDatabasePersistAction[] {
-      //            new AbstractDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
-      // };
-      return null;
+      String triggerName = command.getObject().getFullQualifiedName();
+      IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop trigger",
+                                                                        String.format(SQL_DROP_TRIGGER, triggerName));
+      return new IDatabasePersistAction[] { action };
    }
 
    private IDatabasePersistAction[] createOrReplaceViewQuery(DB2Trigger trigger) {
