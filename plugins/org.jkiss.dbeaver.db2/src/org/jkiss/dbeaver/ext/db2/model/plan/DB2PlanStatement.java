@@ -114,7 +114,6 @@ public class DB2PlanStatement {
          targetNode = mapNodes.get(planStream.getTargetName());
 
          targetNode.getNested().add(sourceNode);
-         LOG.error("is=" + targetNode.getNodeName() + " v=" + planStream.getStreamCount());
          targetNode.setEstimatedCardinality(planStream.getStreamCount());
          sourceNode.setParent(targetNode);
       }
