@@ -19,12 +19,10 @@
 
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -40,30 +38,28 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
  */
 public class DB2PlanAnalyser implements DBCPlan {
 
-   private static final Log     LOG         = LogFactory.getLog(DB2DataSource.class);
+   private static final Log        LOG         = LogFactory.getLog(DB2PlanAnalyser.class);
 
-   private static final String  PT_DELETE   = "DELETE FROM %s.EXPLAIN_STATEMENT WHERE QUERYNO = ?";
-   private static final String  PT_EXPLAIN  = "EXPLAIN PLAN SET QUERYNO = %d FOR %s";
-   private static final String  SEL_STMT    = "SELECT * FROM %s.EXPLAIN_STATEMENT WHERE QUERYNO = ? AND EXPLAIN_LEVEL = 'P' WITH UR";
+   // See init below
+   private static String           PT_DELETE;
+   private static final String     PT_EXPLAIN  = "EXPLAIN PLAN SET QUERYNO = %d FOR %s";
+   private static final String     SEL_STMT    = "SELECT * FROM %s.EXPLAIN_STATEMENT WHERE QUERYNO = ? AND EXPLAIN_LEVEL = 'P' WITH UR";
 
-   private static AtomicInteger STMT_NO_GEN = new AtomicInteger(Long.valueOf(System.currentTimeMillis() / 10000000L).intValue());
+   private static AtomicInteger    STMT_NO_GEN = new AtomicInteger(Long.valueOf(System.currentTimeMillis() / 10000000L).intValue());
 
-   // TODO DF: most everything to be done here
+   private String                  query;
+   private String                  planTableSchema;
 
-   private DB2DataSource        dataSource;
-   private String               query;
-
-   private List<DB2PlanNode>    listNodes;
-
-   private DB2PlanStatement     db2PlanStatement;
+   private Collection<DB2PlanNode> listNodes;
+   private DB2PlanStatement        db2PlanStatement;
 
    // ------------
    // Constructors
    // ------------
 
-   public DB2PlanAnalyser(DB2DataSource dataSource, String query) {
-      this.dataSource = dataSource;
+   public DB2PlanAnalyser(String query, String planTableSchema) {
       this.query = query;
+      this.planTableSchema = planTableSchema;
    }
 
    // ----------------
@@ -86,34 +82,17 @@ public class DB2PlanAnalyser implements DBCPlan {
 
    public void explain(JDBCExecutionContext context) throws DBCException {
       Integer stmtNo = STMT_NO_GEN.incrementAndGet();
-      String planTableSchema = dataSource.getPlanTableSchemaName(context);
 
-      LOG.error("schema=" + planTableSchema + " explain " + stmtNo + " for " + query);
+      String explainStmt = String.format(PT_EXPLAIN, stmtNo, query);
+      LOG.debug("Schema=" + planTableSchema + " : " + explainStmt);
 
       try {
-         // Detect plan table
 
-         if (planTableSchema == null) {
-            throw new DBCException("Plan table not found - query can't be explained");
-         }
+         // Start by cleaning old rows for safety
+         cleanExplainTables(context, stmtNo, planTableSchema);
 
-         // Delete previous statement rows
-         JDBCPreparedStatement dbStat = context.prepareStatement(String.format(PT_DELETE, planTableSchema));
-         try {
-            dbStat.setInt(1, stmtNo);
-            dbStat.execute();
-         } finally {
-            if (dbStat != null) {
-               dbStat.close();
-            }
-         }
-
-         // Explain plan
-         System.out.println("no=" + stmtNo + "q=" + query);
-
-         dbStat = context.prepareStatement(String.format(PT_EXPLAIN, stmtNo, query));
-         // dbStat.setInt(1, stmtNo);
-         // dbStat.setString(2, query);
+         // Explain
+         JDBCPreparedStatement dbStat = context.prepareStatement(String.format(PT_EXPLAIN, stmtNo, query));
          try {
             dbStat.execute();
          } finally {
@@ -131,7 +110,6 @@ public class DB2PlanAnalyser implements DBCPlan {
             dbResult.next();
 
             db2PlanStatement = new DB2PlanStatement(context, dbResult, planTableSchema);
-
          } finally {
             if (dbResult != null) {
                dbResult.close();
@@ -143,8 +121,42 @@ public class DB2PlanAnalyser implements DBCPlan {
 
          listNodes = db2PlanStatement.buildNodes();
 
+         // Clean afterward
+         cleanExplainTables(context, stmtNo, planTableSchema);
+
       } catch (SQLException e) {
          throw new DBCException(e);
       }
    }
+
+   // ----------------
+   // Helpers
+   // ----------------
+   private void cleanExplainTables(JDBCExecutionContext context, Integer stmtNo, String planTableSchema) throws SQLException {
+      // Delete previous statement rows
+      JDBCPreparedStatement dbStat = context.prepareStatement(String.format(PT_DELETE, planTableSchema, planTableSchema));
+      try {
+         dbStat.setInt(1, stmtNo);
+         dbStat.execute();
+      } finally {
+         if (dbStat != null) {
+            dbStat.close();
+         }
+      }
+   }
+
+   static {
+      StringBuilder sb = new StringBuilder(256);
+      sb.append("DELETE");
+      sb.append("  FROM %s.EXPLAIN_INSTANCE I");
+      sb.append(" WHERE EXISTS (SELECT 1");
+      sb.append("                 FROM %s.EXPLAIN_STATEMENT S");
+      sb.append("                WHERE S.EXPLAIN_TIME = I.EXPLAIN_TIME");
+      sb.append("                  AND S.SOURCE_NAME = I.SOURCE_NAME");
+      sb.append("                  AND S.SOURCE_SCHEMA = I.SOURCE_SCHEMA");
+      sb.append("                  AND S.SOURCE_VERSION = I.SOURCE_VERSION");
+      sb.append("                  AND QUERYNO = ?)");
+      PT_DELETE = sb.toString();
+   }
+
 }

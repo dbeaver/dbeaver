@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * DB2 EXPLAIN_OBJECT table
@@ -27,13 +28,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2PlanObject {
+public class DB2PlanObject extends DB2PlanNode {
 
    private DB2PlanStatement db2Statement;
 
    private String           objectSchema;
    private String           objectName;
    private String           objectType;
+   private Integer          rowCount;
 
    // TODO DF: and many many more
 
@@ -44,9 +46,25 @@ public class DB2PlanObject {
    public DB2PlanObject(JDBCResultSet dbResult, DB2PlanStatement db2Statement) {
       this.db2Statement = db2Statement;
 
-      this.objectSchema = JDBCUtils.safeGetString(dbResult, "OBJECT_SCHEMA");
+      this.objectSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "OBJECT_SCHEMA");
       this.objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
       this.objectType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
+      this.rowCount = JDBCUtils.safeGetInteger(dbResult, "ROW_COUNT");
+   }
+
+   // ----------------
+   // Properties
+   // ----------------
+
+   @Override
+   @Property(editable = false, viewable = true, order = 1)
+   public String getNodeName() {
+      return objectSchema + "." + objectName;
+   }
+
+   @Property(editable = false, viewable = true, order = 2)
+   public Double getEstimatedCardinality() {
+      return Double.valueOf(rowCount);
    }
 
    // ----------------
