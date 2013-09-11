@@ -4,9 +4,10 @@ TODO:
 
 Problems :
 - (minor importance) investigate while DDL generation does not work for some kind of "regular tables"
+- when a drop action fail, the structure need to be refresh. where to do that?
 - Manage explain/ddl generation table creation correctly
   - EXPLAIN tables can be cecreated in any schema where the user has the right
-  Q: How to handel this?
+  Q: How to handle this?
  
 Missing Functions:
 - Editors  / Object creators
