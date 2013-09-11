@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -42,9 +40,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanStatement {
 
-   private static final Log      LOG = LogFactory.getLog(DB2PlanStatement.class);
-
-   private static String         SEL_BASE_SELECT;                                // See init below
+   private static String         SEL_BASE_SELECT; // See init below
 
    private List<DB2PlanOperator> listOperators;
    private List<DB2PlanObject>   listObjects;
@@ -128,60 +124,56 @@ public class DB2PlanStatement {
    // -------------
    private void loadChildren(JDBCExecutionContext context) throws SQLException {
 
-      JDBCPreparedStatement sqlStmt = null;
-      JDBCResultSet res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT"));
       listObjects = new ArrayList<DB2PlanObject>(32);
-      DB2PlanObject planObject;
+      JDBCPreparedStatement sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT"));
       try {
-         while (res.next()) {
-            planObject = new DB2PlanObject(res, this);
-            listObjects.add(planObject);
-         }
-      } finally {
-         if (res != null) {
+         setQueryParameters(sqlStmt);
+         JDBCResultSet res = sqlStmt.executeQuery();
+         try {
+            while (res.next()) {
+               listObjects.add(new DB2PlanObject(res, this));
+            }
+         } finally {
             res.close();
          }
-         if (sqlStmt != null) {
-            sqlStmt.close();
-         }
+      } finally {
+         sqlStmt.close();
       }
 
       listOperators = new ArrayList<DB2PlanOperator>(64);
-      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR"));
-      DB2PlanOperator planOperator;
+      sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR"));
       try {
-         while (res.next()) {
-            planOperator = new DB2PlanOperator(context, res, this, planTableSchema);
-            listOperators.add(planOperator);
-         }
-      } finally {
-         if (res != null) {
+         setQueryParameters(sqlStmt);
+         JDBCResultSet res = sqlStmt.executeQuery();
+         try {
+            while (res.next()) {
+               listOperators.add(new DB2PlanOperator(context, res, this, planTableSchema));
+            }
+         } finally {
             res.close();
          }
-         if (sqlStmt != null) {
-            sqlStmt.close();
-         }
+      } finally {
+         sqlStmt.close();
       }
 
       listStreams = new ArrayList<DB2PlanStream>();
-      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM"));
+      sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM"));
       try {
-         while (res.next()) {
-            listStreams.add(new DB2PlanStream(res, this));
-         }
-      } finally {
-         if (res != null) {
+         setQueryParameters(sqlStmt);
+         JDBCResultSet res = sqlStmt.executeQuery();
+         try {
+            while (res.next()) {
+               listStreams.add(new DB2PlanStream(res, this));
+            }
+         } finally {
             res.close();
          }
-         if (sqlStmt != null) {
-            sqlStmt.close();
-         }
+      } finally {
+         sqlStmt.close();
       }
    }
 
-   private JDBCResultSet executeQuery(JDBCExecutionContext context, JDBCPreparedStatement sqlStmt, String sql) throws SQLException {
-
-      sqlStmt = context.prepareStatement(sql);
+   private void setQueryParameters(JDBCPreparedStatement sqlStmt) throws SQLException {
       sqlStmt.setString(1, explainRequester);
       sqlStmt.setTimestamp(2, explainTime);
       sqlStmt.setString(3, sourceName);
@@ -190,8 +182,6 @@ public class DB2PlanStatement {
       sqlStmt.setString(6, explainLevel);
       sqlStmt.setInt(7, stmtNo);
       sqlStmt.setInt(8, sectNo);
-
-      return sqlStmt.executeQuery();
    }
 
    // -------

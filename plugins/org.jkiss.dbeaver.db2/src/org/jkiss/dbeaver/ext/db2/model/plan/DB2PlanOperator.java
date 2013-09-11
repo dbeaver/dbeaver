@@ -127,41 +127,40 @@ public class DB2PlanOperator extends DB2PlanNode {
    // -------------
    private void loadChildren(JDBCExecutionContext context) throws SQLException {
 
-      JDBCPreparedStatement sqlStmt = null;
       listArguments = new ArrayList<DB2PlanOperatorArgument>();
-      JDBCResultSet res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT"));
+      JDBCPreparedStatement sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT"));
       try {
-         while (res.next()) {
-            listArguments.add(new DB2PlanOperatorArgument(res, this));
-         }
-      } finally {
-         if (res != null) {
+         setQueryParameters(sqlStmt);
+         JDBCResultSet res = sqlStmt.executeQuery();
+         try {
+            while (res.next()) {
+               listArguments.add(new DB2PlanOperatorArgument(res, this));
+            }
+         } finally {
             res.close();
          }
-         if (sqlStmt != null) {
-            sqlStmt.close();
-         }
+      } finally {
+         sqlStmt.close();
       }
 
       listPredicates = new ArrayList<DB2PlanOperatorPredicate>();
-      res = executeQuery(context, sqlStmt, String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE"));
+      sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE"));
       try {
-         while (res.next()) {
-            listPredicates.add(new DB2PlanOperatorPredicate(res, this));
-         }
-      } finally {
-         if (res != null) {
+         setQueryParameters(sqlStmt);
+         JDBCResultSet res = sqlStmt.executeQuery();
+         try {
+            while (res.next()) {
+               listPredicates.add(new DB2PlanOperatorPredicate(res, this));
+            }
+         } finally {
             res.close();
          }
-         if (sqlStmt != null) {
-            sqlStmt.close();
-         }
+      } finally {
+         sqlStmt.close();
       }
    }
 
-   private JDBCResultSet executeQuery(JDBCExecutionContext context, JDBCPreparedStatement sqlStmt, String sql) throws SQLException {
-
-      sqlStmt = context.prepareStatement(sql);
+   private void setQueryParameters(JDBCPreparedStatement sqlStmt) throws SQLException {
       sqlStmt.setString(1, db2Statement.getExplainRequester());
       sqlStmt.setTimestamp(2, db2Statement.getExplainTime());
       sqlStmt.setString(3, db2Statement.getSourceName());
@@ -171,8 +170,6 @@ public class DB2PlanOperator extends DB2PlanNode {
       sqlStmt.setInt(7, db2Statement.getStmtNo());
       sqlStmt.setInt(8, db2Statement.getSectNo());
       sqlStmt.setInt(9, operatorId);
-
-      return sqlStmt.executeQuery();
    }
 
    // -------
