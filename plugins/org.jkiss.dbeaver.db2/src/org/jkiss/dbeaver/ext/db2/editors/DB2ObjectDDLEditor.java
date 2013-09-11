@@ -19,15 +19,7 @@
 
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.eclipse.jface.action.ControlContribution;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -36,14 +28,11 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * DB2ObjectDDLEditor
  */
 public class DB2ObjectDDLEditor extends SQLEditorNested<DB2Table> {
-
-   private DB2DDLFormat ddlFormat = DB2DDLFormat.FULL;
 
    public DB2ObjectDDLEditor() {
    }
@@ -62,14 +51,7 @@ public class DB2ObjectDDLEditor extends SQLEditorNested<DB2Table> {
    protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
       String ddlFormatString = getEditorInput().getDatabaseObject().getDataSource().getContainer().getPreferenceStore()
                .getString(DB2Constants.PREF_KEY_DDL_FORMAT);
-      if (!CommonUtils.isEmpty(ddlFormatString)) {
-         try {
-            ddlFormat = DB2DDLFormat.valueOf(ddlFormatString);
-         } catch (IllegalArgumentException e) {
-            log.error(e);
-         }
-      }
-      return ((DB2Table) getEditorInput().getDatabaseObject()).getDDL(monitor, ddlFormat);
+      return ((DB2Table) getEditorInput().getDatabaseObject()).getDDL(monitor);
    }
 
    @Override
@@ -79,36 +61,5 @@ public class DB2ObjectDDLEditor extends SQLEditorNested<DB2Table> {
    @Override
    protected void contributeEditorCommands(ToolBarManager toolBarManager) {
       super.contributeEditorCommands(toolBarManager);
-
-      toolBarManager.add(new Separator());
-      toolBarManager.add(new ControlContribution("DDLFormat") {
-         @Override
-         protected Control createControl(Composite parent) {
-            final Combo ddlFormatCombo = new Combo(parent, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
-            ddlFormatCombo.setToolTipText("DDL Format");
-            for (DB2DDLFormat format : DB2DDLFormat.values()) {
-               ddlFormatCombo.add(format.getTitle());
-               if (format == ddlFormat) {
-                  ddlFormatCombo.select(ddlFormatCombo.getItemCount() - 1);
-               }
-            }
-            ddlFormatCombo.addSelectionListener(new SelectionAdapter() {
-               @Override
-               public void widgetSelected(SelectionEvent e) {
-                  for (DB2DDLFormat format : DB2DDLFormat.values()) {
-                     if (format.ordinal() == ddlFormatCombo.getSelectionIndex()) {
-                        ddlFormat = format;
-                        getEditorInput().getDatabaseObject().getDataSource().getContainer().getPreferenceStore()
-                                 .setValue(DB2Constants.PREF_KEY_DDL_FORMAT, ddlFormat.name());
-                        refreshPart(this, true);
-                        break;
-                     }
-                  }
-               }
-            });
-            return ddlFormatCombo;
-         }
-      });
    }
-
 }

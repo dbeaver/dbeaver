@@ -85,7 +85,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
    // ------------
    // Constructors
    // ------------
-   DB2Schema(DB2DataSource dataSource, long id, String name) {
+   public DB2Schema(DB2DataSource dataSource, String name) {
       super(dataSource, true);
       this.name = name;
    }
