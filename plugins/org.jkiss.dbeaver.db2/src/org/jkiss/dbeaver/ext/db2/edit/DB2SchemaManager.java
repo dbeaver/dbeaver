@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  * 
  * @author Denis Forveille
  */
-public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource> implements DBEObjectRenamer<DB2Schema> {
+public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource> {
 
    private static final String SQL_CREATE_SCHEMA = "CREATE SCHEMA %s";
    private static final String SQL_DROP_SCHEMA   = "DROP SCHEMA %s RESTRICT";
@@ -90,11 +90,6 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
       IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
                                                                                                            schemaName));
       return new IDatabasePersistAction[] { action };
-   }
-
-   @Override
-   public void renameObject(DBECommandContext commandContext, DB2Schema schema, String newName) throws DBException {
-      throw new DBException("Direct schema rename is not yet implemented in DB2. You should use export/import functions for that.");
    }
 
    // --------
