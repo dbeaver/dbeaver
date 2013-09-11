@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2BufferpoolCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2DataTypeCache;
@@ -59,7 +60,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * DB2 DataSource
@@ -71,6 +71,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
    private static final Log         LOG             = LogFactory.getLog(DB2DataSource.class);
 
+   private static final String      PLAN_TABLE_TIT  = "PLAN_TABLE missing";
+   private static final String      PLAN_TABLE_MSG  = "PLAN_TABLE not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new PLAN_TABLE?";
+
    private final DB2SchemaCache     schemaCache     = new DB2SchemaCache();
    private final DB2DataTypeCache   dataTypeCache   = new DB2DataTypeCache();
    private final DB2BufferpoolCache bufferpoolCache = new DB2BufferpoolCache();
@@ -80,7 +83,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    private final DB2GroupCache      groupCache      = new DB2GroupCache();
 
    private String                   activeSchemaName;
-   private String                   planTableName;
+   private String                   planTableSchemaName;
 
    // -----------------------
    // Constructors
@@ -120,31 +123,28 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
       return DB2DataSourceProvider.getConnectionsProps();
    }
 
-    @Override
-    public void initialize(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        super.initialize(monitor);
+   @Override
+   public void initialize(DBRProgressMonitor monitor) throws DBException {
+      super.initialize(monitor);
 
-        {
-            final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
-            try {
-                // Get active schema
-                this.activeSchemaName = JDBCUtils.queryString(context, "SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1");
-                if (this.activeSchemaName != null) {
-                    this.activeSchemaName = this.activeSchemaName.trim();
-                }
-            } catch (SQLException e) {
-                LOG.warn(e);
+      {
+         final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+         try {
+            // Get active schema
+            this.activeSchemaName = JDBCUtils.queryString(context, "SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1");
+            if (this.activeSchemaName != null) {
+               this.activeSchemaName = this.activeSchemaName.trim();
             }
-            finally {
-                context.close();
-            }
-        }
-        this.dataTypeCache.getObjects(monitor, this);
-    }
+         } catch (SQLException e) {
+            LOG.warn(e);
+         } finally {
+            context.close();
+         }
+      }
+      this.dataTypeCache.getObjects(monitor, this);
+   }
 
-    @Override
+   @Override
    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
       super.refreshObject(monitor);
 
@@ -303,35 +303,24 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
       return plan;
    }
 
-   public String getPlanTableName(JDBCExecutionContext context) throws SQLException {
-      if (planTableName == null) {
-         String[] candidateNames = new String[] { "PLAN_TABLE", "TOAD_PLAN_TABLE" };
-         for (String candidate : candidateNames) {
-            try {
-               JDBCUtils.executeSQL(context, "SELECT 1 FROM " + candidate);
-            } catch (SQLException e) {
-               // No such table
-               continue;
-            }
-            planTableName = candidate;
-            break;
-         }
-         if (planTableName == null) {
+   public String getPlanTableSchemaName(JDBCExecutionContext context) throws DBCException {
+      if (planTableSchemaName == null) {
+
+         // TODO DF: not sure of activeSchema Explain tables could be created in any schema or at default, in SYSTOOLS
+         // Should be current user in fact..
+         planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, activeSchemaName);
+
+         if (planTableSchemaName == null) {
             // Plan table not found - try to create new one
-            if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), "DB2 PLAN_TABLE missing",
-                                       "PLAN_TABLE not found in current user's context. "
-                                                + "Do you want DBeaver to create new PLAN_TABLE?")) {
+            // TODO DF: ask the user in what schema to create the tables
+            if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), PLAN_TABLE_TIT, PLAN_TABLE_MSG)) {
                return null;
             }
-            planTableName = createPlanTable(context);
+            planTableSchemaName = "SYSTOOLS";
+            DB2Utils.createExplainTables(context.getProgressMonitor(), this, planTableSchemaName);
          }
       }
-      return planTableName;
-   }
-
-   private String createPlanTable(JDBCExecutionContext context) throws SQLException {
-      // JDBCUtils.executeSQL(context, DB2Constants.PLAN_TABLE_DEFINITION);
-      return "PLAN_TABLE";
+      return planTableSchemaName;
    }
 
    // --------------
@@ -422,10 +411,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
    public DB2RoleCache getRoleCache() {
       return roleCache;
-   }
-
-   public String getPlanTableName() {
-      return planTableName;
    }
 
 }

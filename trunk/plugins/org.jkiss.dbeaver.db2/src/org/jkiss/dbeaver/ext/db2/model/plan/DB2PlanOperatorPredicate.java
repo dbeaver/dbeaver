@@ -22,18 +22,20 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
- * DB2 EXPLAIN_OPERATOR table
+ * DB2 EXPLAIN_PREDICATE table
  * 
  * @author Denis Forveille
  * 
  */
-public class DB2PlanStatementOperator {
+public class DB2PlanOperatorPredicate {
 
-   private DB2PlanStatement db2PlanStatement;
+   private DB2PlanOperator db2Operator;
 
-   private Integer          operatorId;
-   private String           operatorType;
-   private Double           totalCost;
+   private Integer         operatorId;
+   private Integer         predicateId;
+   private String          howApplied;
+   private String          whenApplied;
+   private String          predicateText;
 
    // TODO DF: and many many more
 
@@ -41,32 +43,44 @@ public class DB2PlanStatementOperator {
    // Constructors
    // ------------
 
-   public DB2PlanStatementOperator(JDBCResultSet dbResult, DB2PlanStatement db2PlanStatement) {
-      this.db2PlanStatement = db2PlanStatement;
+   public DB2PlanOperatorPredicate(JDBCResultSet dbResult, DB2PlanOperator db2Operator) {
+      this.db2Operator = db2Operator;
 
       this.operatorId = JDBCUtils.safeGetInteger(dbResult, "OPERATOR_ID");
-      this.operatorType = JDBCUtils.safeGetString(dbResult, "OPERATOR_TYPE");
-      this.totalCost = JDBCUtils.safeGetDouble(dbResult, "TOTAL_COST");
+      this.predicateId = JDBCUtils.safeGetInteger(dbResult, "PREDICATE_ID");
+      this.howApplied = JDBCUtils.safeGetString(dbResult, "HOW_APPLIED");
+      this.whenApplied = JDBCUtils.safeGetString(dbResult, "WHEN_APPLIED");
+
+      // TODO DF: bad Clob..
+      this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
    }
 
    // ----------------
    // Standard Getters
    // ----------------
 
-   public DB2PlanStatement getDb2PlanStatement() {
-      return db2PlanStatement;
-   }
-
    public Integer getOperatorId() {
       return operatorId;
    }
 
-   public String getOperatorType() {
-      return operatorType;
+   public Integer getPredicateId() {
+      return predicateId;
    }
 
-   public Double getTotalCost() {
-      return totalCost;
+   public String getHowApplied() {
+      return howApplied;
+   }
+
+   public String getWhenApplied() {
+      return whenApplied;
+   }
+
+   public String getPredicateText() {
+      return predicateText;
+   }
+
+   public DB2PlanOperator getDb2Operator() {
+      return db2Operator;
    }
 
 }
