@@ -306,7 +306,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    public String getPlanTableSchemaName(JDBCExecutionContext context) throws DBCException {
       if (planTableSchemaName == null) {
 
-         // TODO DF: not sure of activeSchema Explain tables could be created in any schema or at default, in SYSTOOLS
+         // TODO DF: not sure of activeSchema. Explain tables could be created in any schema or at default, in SYSTOOLS
          // Should be current user in fact..
          planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, activeSchemaName);
 
