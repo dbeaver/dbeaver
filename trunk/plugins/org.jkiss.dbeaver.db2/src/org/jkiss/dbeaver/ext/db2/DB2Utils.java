@@ -119,7 +119,6 @@ public class DB2Utils {
          return sb.toString();
 
       } catch (SQLException e) {
-         LOG.error("SQLException occured during DDL generation", e);
          throw new DBException(e);
       } finally {
          if (dbResult != null) {

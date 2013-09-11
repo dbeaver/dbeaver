@@ -118,7 +118,7 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
       String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
       DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
       if (tableColumn == null) {
-         log.error("DB2TableForeignKeyCache : Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName()
+         log.debug("DB2TableForeignKeyCache : Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName()
                   + "' ??");
          return null;
       } else {

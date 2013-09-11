@@ -117,7 +117,7 @@ public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, 
       String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
       DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
       if (tableColumn == null) {
-         log.error("DB2TableReferenceCache : Column '" + colName + "' not found in table '" + db2Table.getName() + "' ??");
+         log.debug("DB2TableReferenceCache : Column '" + colName + "' not found in table '" + db2Table.getName() + "' ??");
          return null;
       } else {
          return new DB2TableKeyColumn(db2TableReference, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));

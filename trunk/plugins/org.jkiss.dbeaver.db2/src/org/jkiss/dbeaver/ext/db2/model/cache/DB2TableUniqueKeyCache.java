@@ -123,7 +123,7 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
       String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
       DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
       if (tableColumn == null) {
-         log.error("v : Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName() + "' ??");
+         log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName() + "' ??");
          return null;
       } else {
          return new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));
