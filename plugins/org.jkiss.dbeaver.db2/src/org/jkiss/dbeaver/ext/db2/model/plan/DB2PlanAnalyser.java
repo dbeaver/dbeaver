@@ -96,27 +96,22 @@ public class DB2PlanAnalyser implements DBCPlan {
          try {
             dbStat.execute();
          } finally {
-            if (dbStat != null) {
-               dbStat.close();
-            }
+            dbStat.close();
          }
 
          // Build Node Structure
          dbStat = context.prepareStatement(String.format(SEL_STMT, planTableSchema));
-         JDBCResultSet dbResult = null;
          try {
             dbStat.setInt(1, stmtNo);
-            dbResult = dbStat.executeQuery();
-            dbResult.next();
-
-            db2PlanStatement = new DB2PlanStatement(context, dbResult, planTableSchema);
-         } finally {
-            if (dbResult != null) {
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            try {
+               dbResult.next();
+               db2PlanStatement = new DB2PlanStatement(context, dbResult, planTableSchema);
+            } finally {
                dbResult.close();
             }
-            if (dbStat != null) {
-               dbStat.close();
-            }
+         } finally {
+            dbStat.close();
          }
 
          listNodes = db2PlanStatement.buildNodes();
@@ -139,9 +134,7 @@ public class DB2PlanAnalyser implements DBCPlan {
          dbStat.setInt(1, stmtNo);
          dbStat.execute();
       } finally {
-         if (dbStat != null) {
-            dbStat.close();
-         }
+         dbStat.close();
       }
    }
 
