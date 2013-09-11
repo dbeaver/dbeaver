@@ -24,7 +24,6 @@ import java.util.Collection;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.actions.DB2ObjectPersistAction;
-import org.jkiss.dbeaver.ext.db2.editors.DB2DDLFormat;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
@@ -131,7 +130,7 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
 
    }
 
-   public String getDDL(DBRProgressMonitor monitor, DB2DDLFormat ddlFormat) throws DBException {
+   public String getDDL(DBRProgressMonitor monitor) throws DBException {
       return text;
    }
 

@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
- * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.db2.edit;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2User;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -41,9 +39,14 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * DB2SchemaManager
+ * DB2 Schema Manager
+ * 
+ * @author Denis Forveille
  */
 public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource> implements DBEObjectRenamer<DB2Schema> {
+
+   private static final String SQL_CREATE_SCHEMA = "CREATE SCHEMA %s";
+   private static final String SQL_DROP_SCHEMA   = "DROP SCHEMA %s RESTRICT";
 
    @Override
    public long getMakerOptions() {
@@ -64,30 +67,29 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
       if (dialog.open() != IDialogConstants.OK_ID) {
          return null;
       }
-      DB2Schema newSchema = new DB2Schema(parent, null);
-      newSchema.setName(dialog.getUser().getName());
+      String schemaName = dialog.getSchemaName();
+      if (schemaName.length() == 0) {
+         return null;
+      }
+      DB2Schema newSchema = new DB2Schema(parent, schemaName);
 
       return newSchema;
    }
 
    @Override
    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command) {
-      StringBuilder sb = new StringBuilder(64);
-      sb.append("CREATE SCHEMA ");
-      sb.append(command.getObject().getName());
-      return new IDatabasePersistAction[] { new AbstractDatabasePersistAction("Create schema", sb.toString()) };
+      String schemaName = command.getObject().getName();
+      AbstractDatabasePersistAction action = new AbstractDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
+                                                                                                              schemaName));
+      return new IDatabasePersistAction[] { action };
    }
 
    @Override
    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command) {
-      StringBuilder sb = new StringBuilder(64);
-      sb.append("DROP SCHEMA ");
-      sb.append(command.getObject().getName());
-      sb.append(" RESTRICT");
-
-      IDatabasePersistAction[] actions = new IDatabasePersistAction[1];
-      actions[0] = new AbstractDatabasePersistAction("Drop schema", sb.toString()); //$NON-NLS-2$
-      return actions;
+      String schemaName = command.getObject().getName();
+      AbstractDatabasePersistAction action = new AbstractDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
+                                                                                                                  schemaName));
+      return new IDatabasePersistAction[] { action };
    }
 
    @Override
@@ -95,19 +97,23 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
       throw new DBException("Direct schema rename is not yet implemented in DB2. You should use export/import functions for that.");
    }
 
+   // --------
+   // Dialog
+   // --------
+
    static class NewUserDialog extends Dialog {
 
-      private DB2User user;
-      private Text    nameText;
-      private Text    passwordText;
+      private String schemaName;
+
+      public String getSchemaName() {
+         return schemaName;
+      }
+
+      // Dialog managment
+      private Text nameText;
 
       public NewUserDialog(Shell parentShell, DB2DataSource dataSource) {
          super(parentShell);
-         // this.user = new DB2User(dataSource);
-      }
-
-      public DB2User getUser() {
-         return user;
       }
 
       @Override
@@ -117,23 +123,20 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
 
       @Override
       protected Control createDialogArea(Composite parent) {
-         getShell().setText("Set schema/user properties");
+         getShell().setText("New Schema Name");
          Control container = super.createDialogArea(parent);
          Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
          composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-         nameText = UIUtils.createLabelText(composite, "Schema/User Name", null);
+         nameText = UIUtils.createLabelText(composite, "Schema Name", null);
          nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-         passwordText = UIUtils.createLabelText(composite, "User Password", null, SWT.BORDER | SWT.PASSWORD);
-         passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
          return parent;
       }
 
       @Override
       protected void okPressed() {
-         // user.setName(DBObjectNameCaseTransformer.transformName(user, nameText.getText()));
-         // user.setPassword(passwordText.getText());
+         this.schemaName = nameText.getText().trim().toUpperCase();
          super.okPressed();
       }
 
