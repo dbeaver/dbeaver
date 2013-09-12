@@ -79,6 +79,11 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
    }
 
    static {
+      ARGUMENT_TYPES.put("BLDLEVEL", "Build Level");
+      ARGUMENT_TYPES.put("HEAPUSE", "Heap Use");
+      ARGUMENT_TYPES.put("PREPTIME", "Preparation Time");
+      ARGUMENT_TYPES.put("SPEED", "Scan Speed");
+
       ARGUMENT_TYPES.put("AGGMODE", "Aggregate Mode");
       ARGUMENT_TYPES.put("BACKJOIN", "Back join?");
       ARGUMENT_TYPES.put("BITFLTR", "Size of Hash Join Bit Filter");
@@ -156,11 +161,13 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
       ARGUMENT_TYPES.put("TRANSFERRATE", "Transfer rate");
       ARGUMENT_TYPES.put("TRUNCTQ", "Truncated Table Queue");
       ARGUMENT_TYPES.put("TRUNCSRT", "Truncated sort");
+      ARGUMENT_TYPES.put("TUPBLKSZ", "Nb of bytes that a tuple will be stored in");
       ARGUMENT_TYPES.put("UNIQUE", "Eliminates rows having dup values");
       ARGUMENT_TYPES.put("UNIQKEY", "Unique key columns");
       ARGUMENT_TYPES.put("UR_EXTRA", "UR isolation with extra processing");
       ARGUMENT_TYPES.put("USAGE", "NLJOIN  useage");
       ARGUMENT_TYPES.put("VISIBLE", "Shared scans are visible to other shared scans?");
       ARGUMENT_TYPES.put("VOLATILE", "Volatile table?");
+      ARGUMENT_TYPES.put("WRAPPING", "Scan wrapping allowed?");
    }
 }
