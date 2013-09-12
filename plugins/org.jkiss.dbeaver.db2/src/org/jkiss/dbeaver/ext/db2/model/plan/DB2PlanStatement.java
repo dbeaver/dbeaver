@@ -40,7 +40,23 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanStatement {
 
-   private static String         SEL_BASE_SELECT; // See init below
+   private static String         SEL_BASE_SELECT;
+
+   static {
+      StringBuilder sb = new StringBuilder(1024);
+      sb.append("SELECT *");
+      sb.append(" FROM %s.%s");
+      sb.append(" WHERE EXPLAIN_REQUESTER = ?"); // 1
+      sb.append("   AND EXPLAIN_TIME = ?");// 2
+      sb.append("   AND SOURCE_NAME = ?");// 3
+      sb.append("   AND SOURCE_SCHEMA = ?");// 4
+      sb.append("   AND SOURCE_VERSION = ?");// 5
+      sb.append("   AND EXPLAIN_LEVEL = ?");// 6
+      sb.append("   AND STMTNO = ?");// 7
+      sb.append("   AND SECTNO = ?");// 8
+      sb.append(" WITH UR");// 8
+      SEL_BASE_SELECT = sb.toString();
+   }
 
    private List<DB2PlanOperator> listOperators;
    private List<DB2PlanObject>   listObjects;
@@ -182,25 +198,6 @@ public class DB2PlanStatement {
       sqlStmt.setString(6, explainLevel);
       sqlStmt.setInt(7, stmtNo);
       sqlStmt.setInt(8, sectNo);
-   }
-
-   // -------
-   // Queries
-   // -------
-   static {
-      StringBuilder sb = new StringBuilder(1024);
-      sb.append("SELECT *");
-      sb.append(" FROM %s.%s");
-      sb.append(" WHERE EXPLAIN_REQUESTER = ?"); // 1
-      sb.append("   AND EXPLAIN_TIME = ?");// 2
-      sb.append("   AND SOURCE_NAME = ?");// 3
-      sb.append("   AND SOURCE_SCHEMA = ?");// 4
-      sb.append("   AND SOURCE_VERSION = ?");// 5
-      sb.append("   AND EXPLAIN_LEVEL = ?");// 6
-      sb.append("   AND STMTNO = ?");// 7
-      sb.append("   AND SECTNO = ?");// 8
-      sb.append(" WITH UR");// 8
-      SEL_BASE_SELECT = sb.toString();
    }
 
    // ----------------
