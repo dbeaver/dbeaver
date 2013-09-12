@@ -35,7 +35,7 @@ public class DB2Constants {
    public static final String   CAT_STATS               = "Statistiques";
    public static final String   CAT_TABLESPACE          = "Tablespace";
    public static final String   CAT_AUDIT               = "Audit";
-   public static final String   CAT_METRICS             = "Performance";
+   public static final String   CAT_PERFORMANCE         = "Performance";
    public static final String   CAT_COLLATION           = "Collation";
    public static final String   CAT_BASEBJECT           = "Base Object";
    public static final String   CAT_COMPILER            = "Compiler";
