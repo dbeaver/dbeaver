@@ -70,8 +70,6 @@ public class DB2PlanOperator extends DB2PlanNode {
 
    private Double                         estimatedCardinality = -1d;
 
-   private String                         details;
-
    // TODO DF: and many many more
 
    // ------------
@@ -94,14 +92,6 @@ public class DB2PlanOperator extends DB2PlanNode {
       this.displayName = nodename + " - " + operatorType;
 
       loadChildren(context);
-
-      // Build details field once
-      StringBuilder sb = new StringBuilder(256);
-      for (DB2PlanOperatorArgument arg : listArguments) {
-         sb.append(arg.toString());
-         sb.append(";");
-      }
-      details = sb.toString();
    }
 
    @Override
@@ -144,10 +134,14 @@ public class DB2PlanOperator extends DB2PlanNode {
       return estimatedCardinality;
    }
 
-   @Override
    @Property(viewable = false, order = 5)
-   public String getDetails() {
-      return details;
+   public List<DB2PlanOperatorArgument> getArguments() {
+      return listArguments;
+   }
+
+   @Property(viewable = false, order = 6)
+   public List<DB2PlanOperatorPredicate> getPredicates() {
+      return listPredicates;
    }
 
    // -------------
