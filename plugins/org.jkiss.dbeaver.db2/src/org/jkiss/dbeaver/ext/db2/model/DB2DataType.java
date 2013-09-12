@@ -99,8 +99,8 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
       this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");
       this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
       this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
-      this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
-      this.constraintText = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TEXT");
+      // DB2 v10 this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
+      // DB2 v10 this.constraintText = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TEXT");
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
       // Store associated DB2Schema
