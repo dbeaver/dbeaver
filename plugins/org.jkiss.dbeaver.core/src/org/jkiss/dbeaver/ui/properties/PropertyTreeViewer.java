@@ -687,8 +687,11 @@ public class PropertyTreeViewer extends TreeViewer {
             } else {
                 if (node.property != null) {
                     final Object propertyValue = getPropertyValue(node);
-                    if (propertyValue instanceof Boolean || renderer.isHyperlink(propertyValue)) {
+                    if (propertyValue == null || propertyValue instanceof Boolean || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
+                    }
+                    if (BeanUtils.isCollectionType(propertyValue.getClass())) {
+                        return "";
                     }
                     return CommonUtils.toString(propertyValue);
                 } else {
