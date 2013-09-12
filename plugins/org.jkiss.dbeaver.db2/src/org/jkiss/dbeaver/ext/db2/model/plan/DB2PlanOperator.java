@@ -36,7 +36,24 @@ import org.jkiss.dbeaver.model.meta.Property;
  */
 public class DB2PlanOperator extends DB2PlanNode {
 
-   private static String                  SEL_BASE_SELECT;           // See init below
+   private static String                  SEL_BASE_SELECT;
+
+   static {
+      StringBuilder sb = new StringBuilder(1024);
+      sb.append("SELECT *");
+      sb.append(" FROM %s.%s");
+      sb.append(" WHERE EXPLAIN_REQUESTER = ?"); // 1
+      sb.append("   AND EXPLAIN_TIME = ?"); // 2
+      sb.append("   AND SOURCE_NAME = ?");// 3
+      sb.append("   AND SOURCE_SCHEMA = ?");// 4
+      sb.append("   AND SOURCE_VERSION = ?");// 5
+      sb.append("   AND EXPLAIN_LEVEL = ?");// 6
+      sb.append("   AND STMTNO = ?");// 7
+      sb.append("   AND SECTNO = ?");// 8
+      sb.append("   AND OPERATOR_ID = ?");// 9
+      sb.append(" WITH UR");
+      SEL_BASE_SELECT = sb.toString();
+   }
 
    private DB2PlanStatement               db2Statement;
    private String                         planTableSchema;
@@ -175,25 +192,9 @@ public class DB2PlanOperator extends DB2PlanNode {
    // -------
    // Queries
    // -------
-   static {
-      StringBuilder sb = new StringBuilder(1024);
-      sb.append("SELECT *");
-      sb.append(" FROM %s.%S");
-      sb.append(" WHERE EXPLAIN_REQUESTER = ?"); // 1
-      sb.append("   AND EXPLAIN_TIME = ?"); // 2
-      sb.append("   AND SOURCE_NAME = ?");// 3
-      sb.append("   AND SOURCE_SCHEMA = ?");// 4
-      sb.append("   AND SOURCE_VERSION = ?");// 5
-      sb.append("   AND EXPLAIN_LEVEL = ?");// 6
-      sb.append("   AND STMTNO = ?");// 7
-      sb.append("   AND SECTNO = ?");// 8
-      sb.append("   AND OPERATOR_ID = ?");// 9
-      sb.append(" WITH UR");
-      SEL_BASE_SELECT = sb.toString();
-   }
 
-   public DB2PlanStatement getDb2Statement() {
-      return db2Statement;
-   }
+   // public DB2PlanStatement getDb2Statement() {
+   // return db2Statement;
+   // }
 
 }
