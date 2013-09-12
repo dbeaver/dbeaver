@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerEvent;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerGranularity;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerTime;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerValid;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -94,9 +93,9 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
       this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
       this.time = CommonUtils.valueOf(DB2TriggerTime.class, JDBCUtils.safeGetString(dbResult, "TRIGTIME"));
       this.event = CommonUtils.valueOf(DB2TriggerEvent.class, JDBCUtils.safeGetString(dbResult, "TRIGEVENT"));
-      this.eventUpdate = JDBCUtils.safeGetBoolean(dbResult, "EVENTUPDATE", DB2YesNo.Y.name());
-      this.eventDelete = JDBCUtils.safeGetBoolean(dbResult, "EVENTDELETE", DB2YesNo.Y.name());
-      this.eventInsert = JDBCUtils.safeGetBoolean(dbResult, "EVENTINSERT", DB2YesNo.Y.name());
+      // DB2 v10 this.eventUpdate = JDBCUtils.safeGetBoolean(dbResult, "EVENTUPDATE", DB2YesNo.Y.name());
+      // DB2 v10 this.eventDelete = JDBCUtils.safeGetBoolean(dbResult, "EVENTDELETE", DB2YesNo.Y.name());
+      // DB2 v10 this.eventInsert = JDBCUtils.safeGetBoolean(dbResult, "EVENTINSERT", DB2YesNo.Y.name());
       this.granularity = CommonUtils.valueOf(DB2TriggerGranularity.class, JDBCUtils.safeGetString(dbResult, "GRANULARITY"));
       this.valid = CommonUtils.valueOf(DB2TriggerValid.class, JDBCUtils.safeGetString(dbResult, "VALID"));
       this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
@@ -108,11 +107,11 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
       this.collationName = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
       this.collationSchemaOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA_ORDERBY");
       this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");
-      this.secure = JDBCUtils.safeGetBoolean(dbResult, "SECURE", DB2YesNo.Y.name());
-      this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
-      this.libId = JDBCUtils.safeGetInteger(dbResult, "LIB_ID");
-      this.precompileOptions = JDBCUtils.safeGetString(dbResult, "PRECOMPILE_OPTIONS");
-      this.compileOptions = JDBCUtils.safeGetString(dbResult, "COMPILE_OPTIONS");
+      // DB2 v10 this.secure = JDBCUtils.safeGetBoolean(dbResult, "SECURE", DB2YesNo.Y.name());
+      // DB2 v10 this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+      // DB2 v10 this.libId = JDBCUtils.safeGetInteger(dbResult, "LIB_ID");
+      // DB2 v10 this.precompileOptions = JDBCUtils.safeGetString(dbResult, "PRECOMPILE_OPTIONS");
+      // DB2 v10this.compileOptions = JDBCUtils.safeGetString(dbResult, "COMPILE_OPTIONS");
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
    }
 

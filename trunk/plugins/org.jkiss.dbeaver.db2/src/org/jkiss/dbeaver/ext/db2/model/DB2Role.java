@@ -60,8 +60,8 @@ public class DB2Role extends DB2GlobalObject implements DBPSaveableObject, DBARo
       this.name = JDBCUtils.safeGetString(resultSet, "ROLENAME");
       this.id = JDBCUtils.safeGetInteger(resultSet, "ROLEID");
       this.createTime = JDBCUtils.safeGetTimestamp(resultSet, "CREATE_TIME");
-      this.auditPolicyId = JDBCUtils.safeGetInteger(resultSet, "AUDITPOLICYID");
-      this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
+      // DB2 v10 this.auditPolicyId = JDBCUtils.safeGetInteger(resultSet, "AUDITPOLICYID");
+      // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
       this.remarks = JDBCUtils.safeGetString(resultSet, "REMARKS");
    }
 
