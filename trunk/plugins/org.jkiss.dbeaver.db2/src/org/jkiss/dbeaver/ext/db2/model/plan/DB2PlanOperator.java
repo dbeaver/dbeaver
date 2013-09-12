@@ -158,7 +158,7 @@ public class DB2PlanOperator extends DB2PlanNode {
          JDBCResultSet res = sqlStmt.executeQuery();
          try {
             while (res.next()) {
-               listArguments.add(new DB2PlanOperatorArgument(res, this));
+               listArguments.add(new DB2PlanOperatorArgument(res));
             }
          } finally {
             res.close();
