@@ -345,6 +345,7 @@ public class ContentEditorInput implements IPathEditorInput, IDataSourceProvider
     @Override
     public DBSDataSourceContainer getDataSourceContainer()
     {
-        return valueController.getDataSource().getContainer();
+        DBPDataSource dataSource = valueController.getDataSource();
+        return dataSource == null ? null : dataSource.getContainer();
     }
 }
