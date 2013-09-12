@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2UserDefinedTypeCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -97,9 +96,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
       this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
       this.ownerType = DB2OwnerType.valueOf(JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
       this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-      this.auditPolicyID = JDBCUtils.safeGetInteger(dbResult, "AUDITPOLICYID");
-      this.auditPolicyName = JDBCUtils.safeGetString(dbResult, "AUDITPOLICYNAME");
-      this.dataCapture = JDBCUtils.safeGetBoolean(dbResult, "DATACAPTURE", DB2YesNo.Y.name());
+      // DB2 v10 this.auditPolicyID = JDBCUtils.safeGetInteger(dbResult, "AUDITPOLICYID");
+      // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(dbResult, "AUDITPOLICYNAME");
+      // DB2 v10 this.dataCapture = JDBCUtils.safeGetBoolean(dbResult, "DATACAPTURE", DB2YesNo.Y.name());
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
    }
 

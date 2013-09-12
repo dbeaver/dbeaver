@@ -63,9 +63,9 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
       this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
       this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
       this.enforced = JDBCUtils.safeGetBoolean(dbResult, "ENFORCED", DB2YesNo.Y.name());
-      this.trusted = JDBCUtils.safeGetBoolean(dbResult, "TRUSTED", DB2YesNo.Y.name());
-      this.checkExistingData = JDBCUtils.safeGetString(dbResult, "TRUSTED");
-      this.enableQueryOpt = JDBCUtils.safeGetBoolean(dbResult, "TRUSTED", DB2YesNo.Y.name());
+      // DB2 v10 this.trusted = JDBCUtils.safeGetBoolean(dbResult, "TRUSTED", DB2YesNo.Y.name());
+      this.checkExistingData = JDBCUtils.safeGetString(dbResult, "CHECKEXISTINGDATA");
+      this.enableQueryOpt = JDBCUtils.safeGetBoolean(dbResult, "ENABLEQUERYOPT", DB2YesNo.Y.name());
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
    }
