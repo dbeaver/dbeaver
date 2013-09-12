@@ -147,7 +147,7 @@ public class DB2PlanStatement {
          JDBCResultSet res = sqlStmt.executeQuery();
          try {
             while (res.next()) {
-               listObjects.add(new DB2PlanObject(res, this));
+               listObjects.add(new DB2PlanObject(res));
             }
          } finally {
             res.close();

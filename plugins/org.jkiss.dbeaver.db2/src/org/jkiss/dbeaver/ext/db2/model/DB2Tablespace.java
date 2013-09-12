@@ -167,37 +167,37 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPRefreshableObje
       return dataType;
    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_METRICS)
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
    public Integer getExtentSize() {
       return extentSize;
    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_METRICS)
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
    public Integer getPrefetchSize() {
       return prefetchSize;
    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_METRICS)
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
    public Double getOverHead() {
       return overHead;
    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_METRICS)
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
    public Double getTransferRate() {
       return transferRate;
    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_METRICS)
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
    public Double getWriteOverHead() {
       return writeOverHead;
    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_METRICS)
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
    public Double getWriteTransferRate() {
       return writeTransferRate;
    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_METRICS)
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)
    public Integer getEffectivePrefetchSize() {
       return effectivePrefetchSize;
    }

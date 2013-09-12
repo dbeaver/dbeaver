@@ -61,6 +61,9 @@ public class DB2PlanOperator extends DB2PlanNode {
    private List<DB2PlanOperatorArgument>  listArguments;
    private List<DB2PlanOperatorPredicate> listPredicates;
 
+   private String                         displayName;
+   private String                         nodename;
+
    private Integer                        operatorId;
    private String                         operatorType;
    private Double                         totalCost;
@@ -87,6 +90,9 @@ public class DB2PlanOperator extends DB2PlanNode {
       this.operatorType = JDBCUtils.safeGetString(dbResult, "OPERATOR_TYPE");
       this.totalCost = JDBCUtils.safeGetDouble(dbResult, "TOTAL_COST");
 
+      this.nodename = String.valueOf(operatorId);
+      this.displayName = nodename + " - " + operatorType;
+
       loadChildren(context);
 
       // Build details field once
@@ -104,8 +110,14 @@ public class DB2PlanOperator extends DB2PlanNode {
       this.estimatedCardinality = Math.max(this.estimatedCardinality, estimatedCardinality);
    }
 
-   public Integer getOperatorId() {
-      return operatorId;
+   @Override
+   public String toString() {
+      return displayName;
+   }
+
+   @Override
+   public String getNodeName() {
+      return nodename;
    }
 
    // ----------------
@@ -117,10 +129,9 @@ public class DB2PlanOperator extends DB2PlanNode {
       return operatorType;
    }
 
-   @Override
    @Property(viewable = true, order = 2)
-   public String getNodeName() {
-      return String.valueOf(operatorId);
+   public String getDisplayName() {
+      return ""; // Looks better without a name...
    }
 
    @Property(viewable = true, order = 3)
@@ -188,13 +199,4 @@ public class DB2PlanOperator extends DB2PlanNode {
       sqlStmt.setInt(8, db2Statement.getSectNo());
       sqlStmt.setInt(9, operatorId);
    }
-
-   // -------
-   // Queries
-   // -------
-
-   // public DB2PlanStatement getDb2Statement() {
-   // return db2Statement;
-   // }
-
 }
