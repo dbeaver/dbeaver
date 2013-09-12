@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
  */
 public class DB2SequenceCache extends JDBCObjectCache<DB2Schema, DB2Sequence> {
 
-   private static final String SQL = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? ORDER BY SEQNAME WITH UR";
+   private static final String SQL = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR";
 
    @Override
    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException {

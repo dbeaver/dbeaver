@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2AliasCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2IndexCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2PackageCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineCache;
@@ -60,6 +61,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
    private final DB2TableCache           tableCache       = new DB2TableCache();
    private final DB2ViewCache            viewCache        = new DB2ViewCache();
    private final DB2SequenceCache        sequenceCache    = new DB2SequenceCache();
+   private final DB2AliasCache           aliasCache       = new DB2AliasCache();
    private final DB2PackageCache         packageCache     = new DB2PackageCache();
    private final DB2RoutineCache         procedureCache   = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
    private final DB2RoutineCache         udfCache         = new DB2RoutineCache(DBSProcedureType.FUNCTION);
@@ -142,6 +144,8 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
          packageCache.getObjects(monitor, this);
          monitor.subTask("Cache Sequences");
          sequenceCache.getObjects(monitor, this);
+         monitor.subTask("Cache Aliases");
+         aliasCache.getObjects(monitor, this);
          monitor.subTask("Cache Views");
          viewCache.getObjects(monitor, this);
       }
@@ -157,6 +161,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
       udfCache.clearCache();
       udtCache.clearCache();
       sequenceCache.clearCache();
+      aliasCache.clearCache();
 
       indexCache.clearCache();
       constraintCache.clearCache();
@@ -230,6 +235,19 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
    @Association
    public Collection<DB2Sequence> getSequences(DBRProgressMonitor monitor) throws DBException {
       return sequenceCache.getObjects(monitor, this);
+   }
+
+   public DB2Sequence getSequence(DBRProgressMonitor monitor, String name) throws DBException {
+      return sequenceCache.getObject(monitor, this, name, DB2Sequence.class);
+   }
+
+   @Association
+   public Collection<DB2Alias> getAliases(DBRProgressMonitor monitor) throws DBException {
+      return aliasCache.getObjects(monitor, this);
+   }
+
+   public DB2Alias getAlias(DBRProgressMonitor monitor, String name) throws DBException {
+      return aliasCache.getObject(monitor, this, name, DB2Alias.class);
    }
 
    @Association
@@ -319,6 +337,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
    public DB2SequenceCache getSequenceCache() {
       return sequenceCache;
+   }
+
+   public DB2AliasCache getAliasCache() {
+      return aliasCache;
    }
 
    public DB2PackageCache getPackageCache() {
