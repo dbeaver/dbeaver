@@ -22,7 +22,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.PaintEvent;
@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.views.properties.IPropertySource;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -45,6 +46,9 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.DBIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 /**
  * ResultSetViewer
@@ -54,12 +58,14 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     //static final Log log = LogFactory.getLog(ResultSetViewer.class);
     private IDataSourceProvider dataSourceProvider;
     private SashForm planPanel;
+    private Text sqlText;
     private PlanNodesTree planTree;
+    private PropertyTreeViewer planProperties;
 
     private DBCQueryPlanner planner;
     private RefreshPlanAction refreshPlanAction;
     private ToggleViewAction toggleViewAction;
-    private Text sqlText;
+    private final SashForm leftPanel;
 
     public ExplainPlanViewer(IWorkbenchPart workbenchPart, Composite parent, IDataSourceProvider dataSourceProvider)
     {
@@ -76,24 +82,34 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         gl.marginHeight = 0;
         this.planPanel.setLayout(gl);
         {
-            sqlText = new Text(planPanel, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-        }
-        this.planTree = new PlanNodesTree(planPanel, SWT.SHEET) {
-            @Override
-            protected void fillCustomToolbar(ToolBarManager toolbarManager) {
-                toolbarManager.add(toggleViewAction);
-                toolbarManager.add(refreshPlanAction);
-            }
-        };
-        this.planTree.setShowDivider(true);
-        this.planTree.createProgressPanel(composite);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.horizontalIndent = 0;
-        gd.verticalIndent = 0;
-        planTree.setLayoutData(gd);
+            leftPanel = UIUtils.createPartDivider(workbenchPart, planPanel, SWT.VERTICAL | SWT.SMOOTH);
+            leftPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        planPanel.setWeights(new int[] {30, 70});
-        planPanel.setMaximizedControl(planTree);
+            this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET) {
+                @Override
+                protected void fillCustomToolbar(ToolBarManager toolbarManager) {
+                    toolbarManager.add(toggleViewAction);
+                    toolbarManager.add(refreshPlanAction);
+                }
+            };
+            this.planTree.setShowDivider(true);
+            this.planTree.createProgressPanel(composite);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalIndent = 0;
+            gd.verticalIndent = 0;
+            planTree.setLayoutData(gd);
+
+            sqlText = new Text(leftPanel, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+
+            leftPanel.setWeights(new int[] {80, 20});
+            leftPanel.setMaximizedControl(planTree);
+        }
+        {
+            planProperties = new PropertyTreeViewer(planPanel, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        }
+
+        planPanel.setWeights(new int[] {70, 30});
+        //planPanel.setMaximizedControl(planTree);
 
         planTree.getControl().addPaintListener(new PaintListener() {
             @Override
@@ -112,6 +128,13 @@ public class ExplainPlanViewer implements IPropertyChangeListener
                 }
             }
         });
+        planTree.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event)
+            {
+                showPlanNode();
+            }
+        });
 
         this.planTree.getControl().addTraverseListener(new TraverseListener() {
             @Override
@@ -126,6 +149,19 @@ public class ExplainPlanViewer implements IPropertyChangeListener
                 }
             }
         });
+    }
+
+    private void showPlanNode()
+    {
+        ISelection selection = planTree.getItemsViewer().getSelection();
+        if (selection.isEmpty()) {
+            planProperties.clearProperties();
+        } else if (selection instanceof IStructuredSelection) {
+            Object element = ((IStructuredSelection) selection).getFirstElement();
+            PropertyCollector propertySource = new PropertyCollector(element, true);
+            propertySource.collectProperties();
+            planProperties.loadProperties(propertySource);
+        }
     }
 
     private void createActions()
@@ -215,11 +251,11 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         @Override
         public void run()
         {
-            final Control maxControl = planPanel.getMaximizedControl();
+            final Control maxControl = leftPanel.getMaximizedControl();
             if (maxControl == null) {
-                planPanel.setMaximizedControl(planTree);
+                leftPanel.setMaximizedControl(planTree);
             } else {
-                planPanel.setMaximizedControl(null);
+                leftPanel.setMaximizedControl(null);
             }
         }
     }
