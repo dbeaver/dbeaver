@@ -134,7 +134,7 @@ public class DB2PlanOperator extends DB2PlanNode {
    }
 
    @Override
-   @Property(viewable = true, order = 5)
+   @Property(viewable = false, order = 5)
    public String getDetails() {
       return details;
    }
