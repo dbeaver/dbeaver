@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
  */
 public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB2TableColumn> {
 
-   private static final String SQL_TABS     = "SELECT * FROM SYSCAT.TABLES WHERE TABSCHEMA = ? AND TYPE IN ('A','H','L','T','U') ORDER BY TABNAME WITH UR";
+   private static final String SQL_TABS     = "SELECT * FROM SYSCAT.TABLES WHERE TABSCHEMA = ? AND TYPE IN ('H','L','T','U') ORDER BY TABNAME WITH UR";
    private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY COLNO WITH UR";
    private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? ORDER BY TABNAME, COLNO WITH UR";
 
