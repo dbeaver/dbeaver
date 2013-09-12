@@ -55,6 +55,12 @@ public class DB2PlanOperatorPredicate {
       this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
    }
 
+   @Override
+   public String toString() {
+      return predicateId.toString();
+
+   }
+
    // ----------------
    // Standard Getters
    // ----------------

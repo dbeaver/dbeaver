@@ -177,7 +177,7 @@ public class DB2PlanObject extends DB2PlanNode {
       return createTime;
    }
 
-   @Property(editable = false, viewable = false, category = DB2Constants.CAT_DATETIME)
+   @Property(editable = false, viewable = false, category = DB2Constants.CAT_STATS)
    public Timestamp getStatsTime() {
       return statsTime;
    }
