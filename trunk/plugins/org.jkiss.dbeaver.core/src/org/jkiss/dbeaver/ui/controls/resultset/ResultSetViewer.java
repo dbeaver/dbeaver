@@ -504,7 +504,8 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
     @Override
     public DBPDataSource getDataSource()
     {
-        return getDataContainer().getDataSource();
+        DBSDataContainer dataContainer = getDataContainer();
+        return dataContainer == null ? null : dataContainer.getDataSource();
     }
 
     public IFindReplaceTarget getFindReplaceTarget()

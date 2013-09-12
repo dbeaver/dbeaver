@@ -209,8 +209,8 @@
 
                     <!--<replace provider="generic" driver="db2"/>-->
                     
-                    <property name="fullyMaterializeLobData" value="true"/>
-                    <property name="fullyMaterializeInputStreams" value="true"/>
+                    <!--<property name="fullyMaterializeLobData" value="true"/>-->
+                    <!--<property name="fullyMaterializeInputStreams" value="true"/>-->
                     <property name="progressiveStreaming" value="2"/>
                     <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
                 </driver>
