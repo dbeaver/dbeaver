@@ -18,84 +18,91 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * DB2 EXPLAIN_ARGUMENT table
- * 
+ *
  * @author Denis Forveille
- * 
  */
-public class DB2PlanOperatorArgument {
+public class DB2PlanOperatorArgument implements DBPNamedObject {
 
-   private DB2PlanOperator db2Operator;
+    private DB2PlanOperator db2Operator;
 
-   private Integer         operatorId;
-   private String          argumentType;
-   private String          argumentValue;
-   private String          longArgumentValue;
+    //private Integer operatorId;
+    private String argumentType;
+    private String argumentValue;
+    private String longArgumentValue;
 
-   // ------------
-   // Constructors
-   // ------------
+    // ------------
+    // Constructors
+    // ------------
 
-   public DB2PlanOperatorArgument(JDBCResultSet dbResult, DB2PlanOperator db2Operator) {
-      this.db2Operator = db2Operator;
+    public DB2PlanOperatorArgument(JDBCResultSet dbResult, DB2PlanOperator db2Operator)
+    {
+        this.db2Operator = db2Operator;
 
-      this.operatorId = JDBCUtils.safeGetInteger(dbResult, "OPERATOR_ID");
-      this.argumentType = JDBCUtils.safeGetStringTrimmed(dbResult, "ARGUMENT_TYPE");
-      this.argumentValue = JDBCUtils.safeGetStringTrimmed(dbResult, "ARGUMENT_VALUE");
-      // TODO DF: bad. this is a Clob!
-      this.longArgumentValue = JDBCUtils.safeGetString(dbResult, "LONG_ARGUMENT_VALUE");
-   }
+        //this.operatorId = JDBCUtils.safeGetInteger(dbResult, "OPERATOR_ID");
+        this.argumentType = JDBCUtils.safeGetStringTrimmed(dbResult, "ARGUMENT_TYPE");
+        this.argumentValue = JDBCUtils.safeGetStringTrimmed(dbResult, "ARGUMENT_VALUE");
+        // TODO DF: bad. this is a Clob!
+        this.longArgumentValue = JDBCUtils.safeGetString(dbResult, "LONG_ARGUMENT_VALUE");
+    }
 
-   @Override
-   public String toString() {
-      // TODO DF: Weak
-      if (argumentType.equals("EARLYOUT")) {
-         return "Early Out Flag:" + argumentValue;
-      }
-      if (argumentType.equals("OUTERJN")) {
-         return "Outer Join Type:" + argumentValue;
-      }
-      if (argumentType.equals("JN INPUT")) {
-         return "Join Input Leg:" + argumentValue;
-      }
-      if (argumentType.equals("PREFETCH")) {
-         return "Prefetch:" + argumentValue;
-      }
-      if (argumentType.equals("SCANDIR")) {
-         return "Scan Direction:" + argumentValue;
-      }
-      if (argumentType.equals("SPEED")) {
-         return "Speed:" + argumentValue;
-      }
-      return argumentType + "=" + argumentValue;
-   }
+    @Override
+    public String toString()
+    {
+        return argumentValue;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public Integer getOperatorId() {
-      return operatorId;
-   }
+    public String getArgumentValue()
+    {
+        return argumentValue;
+    }
 
-   public String getArgumentValue() {
-      return argumentValue;
-   }
+    public String getArgumentType()
+    {
+        return argumentType;
+    }
 
-   public String getArgumentType() {
-      return argumentType;
-   }
+    public String getLongArgumentValue()
+    {
+        return longArgumentValue;
+    }
 
-   public String getLongArgumentValue() {
-      return longArgumentValue;
-   }
+    public DB2PlanOperator getDb2Operator()
+    {
+        return db2Operator;
+    }
 
-   public DB2PlanOperator getDb2Operator() {
-      return db2Operator;
-   }
-
+    @Override
+    public String getName()
+    {
+        if (argumentType.equals("EARLYOUT")) {
+            return "Early Out Flag";
+        }
+        if (argumentType.equals("OUTERJN")) {
+            return "Outer Join Type";
+        }
+        if (argumentType.equals("JN INPUT")) {
+            return "Join Input Leg";
+        }
+        if (argumentType.equals("PREFETCH")) {
+            return "Prefetch";
+        }
+        if (argumentType.equals("SCANDIR")) {
+            return "Scan Direction";
+        }
+        if (argumentType.equals("SPEED")) {
+            return "Speed";
+        }
+        return argumentType;
+    }
 }
