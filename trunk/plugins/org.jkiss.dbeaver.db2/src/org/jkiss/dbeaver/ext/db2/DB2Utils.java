@@ -159,7 +159,7 @@ public class DB2Utils {
          } catch (SQLException e) {
             System.out.println(e.getErrorCode() + " " + e.getSQLState() + " " + e.getMessage());
             if (e.getErrorCode() == CALL_INST_OBJ_BAD_RC) {
-               LOG.warn("No valid EXPLAIN tables found in schema " + explainTableSchemaName + ". Check within " + SYSTOOLS + ".");
+               LOG.debug("No valid EXPLAIN tables found in schema " + explainTableSchemaName + ". Check within " + SYSTOOLS + ".");
                try {
                   stmtSP.setString(4, SYSTOOLS); // Schema
                   stmtSP.execute();
