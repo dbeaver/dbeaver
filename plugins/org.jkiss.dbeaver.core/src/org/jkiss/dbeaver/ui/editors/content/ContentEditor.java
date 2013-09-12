@@ -70,7 +70,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         // Save data to file
         try {
             LOBInitializer initializer = new LOBInitializer(valueController, editorParts, null);
-            valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
+            //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
+            DBeaverUI.runInProgressService(initializer);
             editorInput = initializer.editorInput;
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
@@ -111,7 +112,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         }
     }
 
-    private static class LOBInitializer implements IRunnableWithProgress {
+    private static class LOBInitializer implements DBRRunnableWithProgress {
         DBDValueController valueController;
         ContentEditorPart[] editorParts;
         ContentEditorInput editorInput;
@@ -124,24 +125,22 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         }
 
         @Override
-        public void run(IProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
                 if (editorInput == null) {
                     editorInput = new ContentEditorInput(
                         valueController,
                         editorParts,
-                        RuntimeUtils.makeMonitor(monitor));
+                        monitor);
                 } else {
-                    editorInput.refreshContent
-                        (RuntimeUtils.makeMonitor(monitor),
-                        valueController);
+                    editorInput.refreshContent(monitor, valueController);
                 }
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }
         }
+
     }
 
     private boolean valueEditorRegistered = false;
@@ -476,7 +475,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements IDataSourc
         DBDValueController valueController = getEditorInput().getValueController();
         LOBInitializer initializer = new LOBInitializer(valueController, getEditorInput().getEditors(), getEditorInput());
         try {
-            valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
+            //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
+            DBeaverUI.runInProgressService(initializer);
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(valueController.getValueSite().getShell(), "Cannot refresh content editor", null, e);
         } catch (InterruptedException e) {
