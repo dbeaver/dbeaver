@@ -134,15 +134,17 @@ public class DB2PlanOperator extends DB2PlanNode {
       return estimatedCardinality;
    }
 
+   // TODO DF: Serge: help !!...How to display this list correctly .Implement a labelprovider?
+   // @Property(viewable = false, order = 5, labelProvider = ???)
    @Property(viewable = false, order = 5)
    public List<DB2PlanOperatorArgument> getArguments() {
       return listArguments;
    }
 
-   @Property(viewable = false, order = 6)
-   public List<DB2PlanOperatorPredicate> getPredicates() {
-      return listPredicates;
-   }
+   // @Property(viewable = false, order = 6)
+   // public List<DB2PlanOperatorPredicate> getPredicates() {
+   // return listPredicates;
+   // }
 
    // -------------
    // Load children
