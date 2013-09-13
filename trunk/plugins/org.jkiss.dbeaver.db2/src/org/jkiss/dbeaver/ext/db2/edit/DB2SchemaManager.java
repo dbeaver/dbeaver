@@ -26,12 +26,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
@@ -63,7 +61,7 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
                                             DBECommandContext context,
                                             DB2DataSource parent,
                                             Object copyFrom) {
-      NewUserDialog dialog = new NewUserDialog(workbenchWindow.getShell(), parent);
+      NewSchemaDialog dialog = new NewSchemaDialog(workbenchWindow.getShell(), parent);
       if (dialog.open() != IDialogConstants.OK_ID) {
          return null;
       }
@@ -96,7 +94,7 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
    // Dialog
    // --------
 
-   static class NewUserDialog extends Dialog {
+   static class NewSchemaDialog extends Dialog {
 
       private String schemaName;
 
@@ -107,7 +105,7 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
       // Dialog managment
       private Text nameText;
 
-      public NewUserDialog(Shell parentShell, DB2DataSource dataSource) {
+      public NewSchemaDialog(Shell parentShell, DB2DataSource dataSource) {
          super(parentShell);
       }
 
