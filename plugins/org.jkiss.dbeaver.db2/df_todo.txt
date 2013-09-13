@@ -25,9 +25,14 @@ Add the following Actions Meenu
       call sysproc.admin_drop_schema
       call sysproc.admin_copy_schema
   -DB2Tables. Menu "Tools" with 
-      call sysproc.asmin_cmd("reorg table xx");
-      call sysproc.asmin_cmd("runstats table xx");
-      set integrity
+      call sysproc.admin_cmd("reorg table xx");
+      call sysproc.admin_cmd("runstats table xx");
+      call sysproc.admin_cmd("load table xx");
+      call sysproc.admin_cmd("export table xx");
+      call sysproc.admin_cmd("import table xx");
+      call sysproc.admin_cmd("describe table xx");
+      call sysproc.ADMIN_MOVE_TABLE("runstats table xx");
+     set integrity
       
   db2 backup
 
