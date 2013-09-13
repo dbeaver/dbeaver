@@ -45,7 +45,7 @@ public class DB2Bufferpool extends DB2GlobalObject {
    // -----------------
 
    public DB2Bufferpool(DB2DataSource db2DataSource, ResultSet dbResult) {
-      super(db2DataSource, dbResult != null);
+      super(db2DataSource, true);
 
       this.name = JDBCUtils.safeGetString(dbResult, "BPNAME");
       this.id = JDBCUtils.safeGetInteger(dbResult, "BUFFERPOOLID");

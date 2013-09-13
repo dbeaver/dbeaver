@@ -54,7 +54,6 @@ Add a "Federation" menu at the datasource level with
 
 
 Missing relationships:
-   - Tables -> Tablespaces (x3) links
    - Tablespace->Bufferpool link on BPName
    - Tables -> referenced by triggers
    - Tables -> referenced by aliases
