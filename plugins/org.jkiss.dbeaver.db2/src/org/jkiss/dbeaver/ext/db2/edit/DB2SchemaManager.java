@@ -61,7 +61,7 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
                                             DBECommandContext context,
                                             DB2DataSource parent,
                                             Object copyFrom) {
-      NewSchemaDialog dialog = new NewSchemaDialog(workbenchWindow.getShell(), parent);
+      NewSchemaDialog dialog = new NewSchemaDialog(workbenchWindow.getShell());
       if (dialog.open() != IDialogConstants.OK_ID) {
          return null;
       }
@@ -105,7 +105,7 @@ public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource>
       // Dialog managment
       private Text nameText;
 
-      public NewSchemaDialog(Shell parentShell, DB2DataSource dataSource) {
+      public NewSchemaDialog(Shell parentShell) {
          super(parentShell);
       }
 
