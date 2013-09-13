@@ -20,12 +20,6 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.ResultSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jkiss.dbeaver.model.access.DBAUser;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
-
 /**
  * DB2 Group
  * 
@@ -33,36 +27,13 @@ import org.jkiss.dbeaver.model.meta.Property;
  * 
  * 
  */
-public class DB2Group extends DB2GlobalObject implements DBAUser {
-   static final Log log = LogFactory.getLog(DB2Group.class);
-
-   // TODO DF: yet to be done
-
-   private long     id;
-   private String   name;
+public class DB2Group extends DB2UserBase {
 
    // -----------------------
    // Constructors
    // -----------------------
 
    public DB2Group(DB2DataSource dataSource, ResultSet resultSet) {
-      super(dataSource, true);
-      this.id = JDBCUtils.safeGetLong(resultSet, "USER_ID");
-      this.name = JDBCUtils.safeGetString(resultSet, "USERNAME");
+      super(dataSource, resultSet);
    }
-
-   // -----------------
-   // Properties
-   // -----------------
-   @Property(order = 1)
-   public long getId() {
-      return id;
-   }
-
-   @Override
-   @Property(viewable = true, order = 2)
-   public String getName() {
-      return name;
-   }
-
 }

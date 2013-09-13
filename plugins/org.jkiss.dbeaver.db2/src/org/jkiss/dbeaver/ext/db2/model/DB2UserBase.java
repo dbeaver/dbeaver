@@ -20,20 +20,37 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.ResultSet;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+
 /**
- * DB2 User
+ * DB2 Super class for Users and Groups
  * 
  * @author Denis Forveille
  * 
  */
-public class DB2User extends DB2UserBase {
+public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser {
+   private static final Log LOG = LogFactory.getLog(DB2UserBase.class);
+
+   private String           name;
 
    // -----------------------
    // Constructors
    // -----------------------
-   public DB2User(DB2DataSource dataSource, ResultSet resultSet) {
-      super(dataSource, resultSet);
-
+   public DB2UserBase(DB2DataSource dataSource, ResultSet resultSet) {
+      super(dataSource, true);
+      this.name = JDBCUtils.safeGetString(resultSet, "AUTHID");
    }
 
+   // -----------------
+   // Properties
+   // -----------------
+   @Override
+   @Property(viewable = true, order = 1)
+   public String getName() {
+      return name;
+   }
 }

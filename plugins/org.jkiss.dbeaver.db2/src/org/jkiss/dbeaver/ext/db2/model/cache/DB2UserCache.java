@@ -37,9 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
  */
 public class DB2UserCache extends JDBCObjectCache<DB2DataSource, DB2User> {
 
-   // TODO DF: yet to be done
-
-   private static final String SQL = "??? TBD";
+   private static final String SQL = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'U' ORDER BY AUTHID WITH UR";
 
    @Override
    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2DataSource db2DataSource) throws SQLException {
