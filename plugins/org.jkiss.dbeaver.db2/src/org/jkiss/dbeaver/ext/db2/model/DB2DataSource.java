@@ -147,6 +147,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             }
 
             listApplication = DB2InfoUtils.readApplications(monitor, context);
+            listDBMParameters = DB2InfoUtils.readDBMCfg(monitor, context);
+            listDBParameters = DB2InfoUtils.readDBCfg(monitor, context);
 
          } catch (SQLException e) {
             LOG.warn(e);
@@ -415,11 +417,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
       return listApplication;
    }
 
-   public List<DB2Parameter> getDBParameters(DBRProgressMonitor monitor) throws DBException {
-      return listDBMParameters;
+   public List<DB2Parameter> getDbParameters(DBRProgressMonitor monitor) throws DBException {
+      return listDBParameters;
    }
 
-   public List<DB2Parameter> getDBMParameters(DBRProgressMonitor monitor) throws DBException {
+   public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException {
       return listDBMParameters;
    }
 
