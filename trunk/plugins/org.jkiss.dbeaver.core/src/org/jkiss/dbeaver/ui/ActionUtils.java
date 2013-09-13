@@ -22,15 +22,18 @@ package org.jkiss.dbeaver.ui;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.commands.Command;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.services.IEvaluationService;
@@ -127,6 +130,36 @@ public class ActionUtils
             }
         }
         return false;
+    }
+
+    public static String findCommandDescription(String commandId, IServiceLocator serviceLocator)
+    {
+        String commandName = null;
+        String shortcut = null;
+        ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
+        if (commandService != null) {
+            Command command = commandService.getCommand(commandId);
+            if (command != null && command.isDefined()) {
+                try {
+                    commandName = command.getName();
+                } catch (NotDefinedException e) {
+                    log.debug(e);
+                }
+            }
+        }
+        IBindingService bindingService = (IBindingService)serviceLocator.getService(IBindingService.class);
+        if (bindingService != null) {
+            TriggerSequence sequence = bindingService.getBestActiveBindingFor(commandId);
+            shortcut = sequence.format();
+        }
+
+        if (shortcut == null) {
+            return commandName;
+        }
+        if (commandName == null) {
+            return shortcut;
+        }
+        return commandName + " (" + shortcut + ")";
     }
 
     public static void runCommand(String commandId, IServiceLocator serviceLocator)
