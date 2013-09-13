@@ -203,7 +203,7 @@
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.information.node.name" icon="#folder_info" description="Database system information" >
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Application" label="%tree.applications.node.name" icon="#info" description="Applications">
-                        <items label="%tree.application.node.name" path="application" property="applications" icon="#info" navigable="true" virtual="false"/>
+                        <items label="%tree.application.node.name" path="application" property="applications" icon="#info" navigable="true" virtual="true"/>
                     </folder> 
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" label="%tree.dbparameters.node.name" icon="#info" description="Database Configuration">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="#info" navigable="false" virtual="true"/>

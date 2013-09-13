@@ -160,13 +160,18 @@ public class DB2Application implements DBSObject {
    }
 
    @Property(viewable = true, editable = false, order = 10)
-   public String getTpmonAccountingString() {
-      return tpmonAccountingString;
+   public String getClientProductId() {
+      return clientProductId;
    }
 
-   @Property(viewable = false)
+   @Property(viewable = true, editable = false, order = 11)
    public String getClientPlatform() {
       return clientPlatform;
+   }
+
+   @Property(viewable = true, editable = false, order = 12)
+   public String getTpmonAccountingString() {
+      return tpmonAccountingString;
    }
 
    @Property(viewable = false)
@@ -212,11 +217,6 @@ public class DB2Application implements DBSObject {
    @Property(viewable = false)
    public String getTpmonClientApplicationName() {
       return tpmonClientApplicationName;
-   }
-
-   @Property(viewable = false)
-   public String getClientProductId() {
-      return clientProductId;
    }
 
 }
