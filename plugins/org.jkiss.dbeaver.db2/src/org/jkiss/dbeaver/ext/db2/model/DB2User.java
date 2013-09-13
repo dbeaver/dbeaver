@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.ResultSet;
 
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2AuthIDType;
+
 /**
  * DB2 User
  * 
@@ -34,6 +36,11 @@ public class DB2User extends DB2UserBase {
    public DB2User(DB2DataSource dataSource, ResultSet resultSet) {
       super(dataSource, resultSet);
 
+   }
+
+   @Override
+   public DB2AuthIDType getType() {
+      return DB2AuthIDType.U;
    }
 
 }

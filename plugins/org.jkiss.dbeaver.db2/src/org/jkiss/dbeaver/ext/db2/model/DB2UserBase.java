@@ -19,12 +19,17 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2UserAuthCache;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2AuthIDType;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DB2 Super class for Users and Groups
@@ -32,10 +37,11 @@ import org.jkiss.dbeaver.model.meta.Property;
  * @author Denis Forveille
  * 
  */
-public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser {
-   private static final Log LOG = LogFactory.getLog(DB2UserBase.class);
+public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DBPRefreshableObject {
 
-   private String           name;
+   private final DB2UserAuthCache userAuthCache = new DB2UserAuthCache();
+
+   private String                 name;
 
    // -----------------------
    // Constructors
@@ -44,6 +50,23 @@ public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser {
       super(dataSource, true);
       this.name = JDBCUtils.safeGetString(resultSet, "AUTHID");
    }
+
+   // -----------------
+   // Associations
+   // -----------------
+
+   @Association
+   public Collection<DB2UserAuth> getUserAuths(DBRProgressMonitor monitor) throws DBException {
+      return userAuthCache.getObjects(monitor, this);
+   }
+
+   @Override
+   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
+      userAuthCache.clearCache();
+      return true;
+   }
+
+   public abstract DB2AuthIDType getType();
 
    // -----------------
    // Properties
