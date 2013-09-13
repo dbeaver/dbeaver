@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.ext.db2.info.DB2Application;
+import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -40,13 +41,17 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class DB2InfoUtils {
 
-   private static final Log    LOG     = LogFactory.getLog(DB2InfoUtils.class);
+   private static final Log    LOG            = LogFactory.getLog(DB2InfoUtils.class);
 
-   private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+   private static final String SEL_APP        = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+   private static final String SEL_DB_PARAMS  = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
+   private static final String SEL_DBM_PARAMS = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
+
+   // TODO D: could propably be factorized or genreric-ified
 
    public static List<DB2Application> readApplications(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
 
-      LOG.debug("readApplications ");
+      LOG.debug("readApplications");
 
       List<DB2Application> listApplications = new ArrayList<DB2Application>();
       JDBCPreparedStatement dbStat = context.prepareStatement(SEL_APP);
@@ -63,6 +68,48 @@ public class DB2InfoUtils {
          dbStat.close();
       }
       return listApplications;
+   }
+
+   public static List<DB2Parameter> readDBCfg(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
+
+      LOG.debug("readDBCfg");
+
+      List<DB2Parameter> listDBParameters = new ArrayList<DB2Parameter>();
+      JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DB_PARAMS);
+      try {
+         JDBCResultSet dbResult = dbStat.executeQuery();
+         try {
+            while (dbResult.next()) {
+               listDBParameters.add(new DB2Parameter((DB2DataSource) context.getDataSource(), dbResult));
+            }
+         } finally {
+            dbResult.close();
+         }
+      } finally {
+         dbStat.close();
+      }
+      return listDBParameters;
+   }
+
+   public static List<DB2Parameter> readDBMCfg(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
+
+      LOG.debug("readDBMCfg");
+
+      List<DB2Parameter> listDBMParameters = new ArrayList<DB2Parameter>();
+      JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DBM_PARAMS);
+      try {
+         JDBCResultSet dbResult = dbStat.executeQuery();
+         try {
+            while (dbResult.next()) {
+               listDBMParameters.add(new DB2Parameter((DB2DataSource) context.getDataSource(), dbResult));
+            }
+         } finally {
+            dbResult.close();
+         }
+      } finally {
+         dbStat.close();
+      }
+      return listDBMParameters;
    }
 
    private DB2InfoUtils() {

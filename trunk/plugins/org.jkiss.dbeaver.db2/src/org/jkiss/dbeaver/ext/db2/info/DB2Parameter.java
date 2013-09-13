@@ -20,10 +20,11 @@ package org.jkiss.dbeaver.ext.db2.info;
 
 import java.sql.ResultSet;
 
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2SchemaObject;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DB2 Database and Instance parameters
@@ -31,17 +32,49 @@ import org.jkiss.dbeaver.model.meta.Property;
  * @author Denis Forveille
  * 
  */
-public class DB2Parameter extends DB2SchemaObject {
+public class DB2Parameter implements DBSObject {
 
-   private String owner;
+   private DB2DataSource dataSource;
+
+   private String        name;
+   private String        value;
+   private String        flags;
+   private String        defferedValue;
+   private String        defferedValueFlags;
+   private String        dataType;
 
    // -----------------------
    // Constructors
    // -----------------------
-   public DB2Parameter(DB2Schema schema, ResultSet dbResult) {
-      super(schema, JDBCUtils.safeGetString(dbResult, "SEQNAME"), true);
+   public DB2Parameter(DB2DataSource dataSource, ResultSet dbResult) {
+      this.dataSource = dataSource;
 
-      this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+      this.name = JDBCUtils.safeGetString(dbResult, "NAME");
+      this.value = JDBCUtils.safeGetString(dbResult, "VALUE");
+      this.flags = JDBCUtils.safeGetString(dbResult, "VALUE_FLAGS");
+      this.defferedValue = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE");
+      this.defferedValueFlags = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE_FLAGS ");
+      this.dataType = JDBCUtils.safeGetString(dbResult, "DATATYPE");
+   }
+
+   @Override
+   public DBPDataSource getDataSource() {
+      return dataSource;
+   }
+
+   @Override
+   public DBSObject getParentObject() {
+      return dataSource.getContainer();
+   }
+
+   @Override
+   public boolean isPersisted() {
+      return false;
+   }
+
+   @Override
+   public String getDescription() {
+      return null;
    }
 
    // -----------------
@@ -51,12 +84,32 @@ public class DB2Parameter extends DB2SchemaObject {
    @Override
    @Property(viewable = true, editable = false, order = 1)
    public String getName() {
-      return super.getName();
+      return name;
    }
 
    @Property(viewable = true, editable = false, order = 2)
-   public DB2Schema getSchema() {
-      return super.getSchema();
+   public String getValue() {
+      return value;
+   }
+
+   @Property(viewable = true, editable = false, order = 3)
+   public String getFlags() {
+      return flags;
+   }
+
+   @Property(viewable = true, editable = false, order = 4)
+   public String getDefferedValue() {
+      return defferedValue;
+   }
+
+   @Property(viewable = true, editable = false, order = 5)
+   public String getDefferedValueFlags() {
+      return defferedValueFlags;
+   }
+
+   @Property(viewable = true, editable = false, order = 6)
+   public String getDataType() {
+      return dataType;
    }
 
 }
