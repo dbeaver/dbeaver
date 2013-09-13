@@ -64,7 +64,7 @@ public class DB2Utils {
                                              String errorSchemaName,
                                              String errorTableName) throws SQLException {
       LOG.debug("Call admin_drop_schema for " + schemaName);
-      JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "ADMI_DROP_SCHEMA");
+      JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "ADMIN_DROP_SCHEMA");
       try {
 
          JDBCCallableStatement stmtSP = context.prepareCall(CALL_ADS);
