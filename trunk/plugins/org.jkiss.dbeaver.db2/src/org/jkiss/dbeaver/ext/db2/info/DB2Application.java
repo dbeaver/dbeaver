@@ -176,7 +176,7 @@ public class DB2Application implements DBSObject, DBAServerSession {
       return clientPlatform;
    }
 
-   @Property(viewable = true, editable = false, order = 12)
+   @Property(viewable = false)
    public String getTpmonAccountingString() {
       return tpmonAccountingString;
    }
