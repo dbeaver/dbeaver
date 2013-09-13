@@ -44,11 +44,14 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * ResultSetViewer
@@ -67,7 +70,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private ToggleViewAction toggleViewAction;
     private final SashForm leftPanel;
 
-    public ExplainPlanViewer(IWorkbenchPart workbenchPart, Composite parent, IDataSourceProvider dataSourceProvider)
+    public ExplainPlanViewer(final IWorkbenchPart workbenchPart, Composite parent, IDataSourceProvider dataSourceProvider)
     {
         super();
         this.dataSourceProvider = dataSourceProvider;
@@ -115,14 +118,21 @@ public class ExplainPlanViewer implements IPropertyChangeListener
             @Override
             public void paintControl(PaintEvent e)
             {
+                String message = null;
                 if (planner == null) {
-                    Rectangle bounds = planTree.getBounds();
-                    String message;
                     if (getDataSource() != null) {
                         message = "Data provider doesn't support execution plan";
                     } else {
                         message = CoreMessages.editors_sql_status_not_connected_to_database;
                     }
+                } else if (CommonUtils.isEmpty(sqlText.getText())) {
+
+                    message = "Select a query and run " + ActionUtils.findCommandDescription(
+                        ICommandIds.CMD_EXPLAIN_PLAN,
+                        workbenchPart.getSite());
+                }
+                if (message != null) {
+                    Rectangle bounds = planTree.getBounds();
                     Point ext = e.gc.textExtent(message);
                     e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
                 }
