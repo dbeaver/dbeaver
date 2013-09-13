@@ -59,7 +59,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    private Timestamp        alterTime;
    private Timestamp        invalidateTime;
 
-   private String           tablespace;                             // TODO DF: replace with real tablespace
+   private DB2Tablespace    tablespace;
    private String           indexTablespace;
    private String           longTablespace;
 
@@ -72,7 +72,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    // -----------------
    // Constructors
    // -----------------
-   public DB2Table(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult) {
+   public DB2Table(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult) throws DBException {
       super(monitor, schema, dbResult);
 
       setName(JDBCUtils.safeGetString(dbResult, "TABNAME"));
@@ -84,7 +84,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
       this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
       this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
 
-      this.tablespace = JDBCUtils.safeGetString(dbResult, "TBSPACE");
       this.indexTablespace = JDBCUtils.safeGetString(dbResult, "INDEX_TBSPACE");
       this.longTablespace = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
 
@@ -92,6 +91,10 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
       this.nPages = JDBCUtils.safeGetLongNullable(dbResult, "NPAGES");
       this.fPages = JDBCUtils.safeGetLongNullable(dbResult, "FPAGES");
       this.overFLow = JDBCUtils.safeGetLongNullable(dbResult, "OVERFLOW");
+
+      String tablespaceName = JDBCUtils.safeGetString(dbResult, "TBSPACE");
+      this.tablespace = getDataSource().getTablespace(monitor, tablespaceName);
+
    }
 
    @Override
@@ -227,7 +230,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    }
 
    @Property(viewable = true, editable = false, category = DB2Constants.CAT_TABLESPACE)
-   public String getTablespace() {
+   public DB2Tablespace getTablespace() {
       return tablespace;
    }
 
