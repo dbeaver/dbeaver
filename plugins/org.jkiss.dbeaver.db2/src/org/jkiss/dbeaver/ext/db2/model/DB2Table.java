@@ -60,8 +60,8 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    private Timestamp        invalidateTime;
 
    private DB2Tablespace    tablespace;
-   private String           indexTablespace;
-   private String           longTablespace;
+   private DB2Tablespace    indexTablespace;
+   private DB2Tablespace    longTablespace;
 
    private Timestamp        statsTime;
    private Long             card;
@@ -84,9 +84,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
       this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
       this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
 
-      this.indexTablespace = JDBCUtils.safeGetString(dbResult, "INDEX_TBSPACE");
-      this.longTablespace = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
-
       this.card = JDBCUtils.safeGetLongNullable(dbResult, "CARD");
       this.nPages = JDBCUtils.safeGetLongNullable(dbResult, "NPAGES");
       this.fPages = JDBCUtils.safeGetLongNullable(dbResult, "FPAGES");
@@ -94,6 +91,14 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
       String tablespaceName = JDBCUtils.safeGetString(dbResult, "TBSPACE");
       this.tablespace = getDataSource().getTablespace(monitor, tablespaceName);
+      String indexTablespaceName = JDBCUtils.safeGetString(dbResult, "INDEX_TBSPACE");
+      if (indexTablespaceName != null) {
+         this.indexTablespace = getDataSource().getTablespace(monitor, indexTablespaceName);
+      }
+      String longTablespaceName = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
+      if (longTablespaceName != null) {
+         this.longTablespace = getDataSource().getTablespace(monitor, longTablespaceName);
+      }
 
    }
 
@@ -235,12 +240,12 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    }
 
    @Property(viewable = false, editable = false, category = DB2Constants.CAT_TABLESPACE)
-   public String getIndexTablespace() {
+   public DB2Tablespace getIndexTablespace() {
       return indexTablespace;
    }
 
    @Property(viewable = false, editable = false, category = DB2Constants.CAT_TABLESPACE)
-   public String getLongTablespace() {
+   public DB2Tablespace getLongTablespace() {
       return longTablespace;
    }
 
