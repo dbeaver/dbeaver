@@ -5,28 +5,52 @@ TODO:
 Problems :
 - (minor importance) investigate while DDL generation does not work for some kind of "regular tables"
 - when a drop action fail, the structure need to be refresh. where to do that?
-- Manage explain/ddl generation table creation correctly
-  - EXPLAIN tables can be cecreated in any schema where the user has the right
-  Q: How to handle this?
+
+Manage explain/ddl generation table creation correctly
+- EXPLAIN tables can be created in any schema where the user has the right
+- If EXPLAIN tables notofund in standard location (CURRENT USER + SUSTOOLS) then ask teh user where to create the tables
+
  
 Missing Functions:
-- Editors  / Object creators
-- Remove "rename" and "edit" action on schema
+- Editors  / Object creators / Managers
+- Remove "edit" action on schema
+
 
 Display: 
  - display timestamps with 6 microseconds
- - missing PK columns indicator/icon in lits of columns (Unique, foreign)
- 
+
 
 Missing objects
-  - Table check constraints
-  - Column check constraints
-  - Nicknames
-  - Synonyms
-  - Servers
-  - DB2User
-  - DB2Groups
-  - ..
+  - 2Users
+  - Groups
+
+
+Add the following Actions Meenu
+  - DB2Schema. Menu "Tools" with
+      call sysproc.admin_drop_schema
+      call sysproc.admin_copy_schema
+  -DB2Tables. Menu "Tools" with 
+      call sysproc.asmin_cmd("reorg table xx");
+      call sysproc.asmin_cmd("runstats table xx");
+      set integrity
+      
+  db2 backup
+
+
+Add a "System" menu at the datasource level with
+- Current  Applicationa
+- TOP SQL
+- current locks
+- database configuration
+- instance configuration
+- Server OS INFO
+
+
+Add a "Federation" menu at the datasource level with
+- Servers
+- Wrapeprs
+- Federated Users
+- Nicknames (or maybe under the "schema" section)?
 
 
 Missing relationships:
@@ -42,18 +66,6 @@ Missing Dependencies for
   - DB2Package
   - Procedure/Functions
 
-
-Missing Actions
-  db2 reorg
-  db2 runstats
-  db2 backup
-  drop
-  rename
-  set integrity
-  call sysproc.admin_drop_schema
-  call sysproc.admin_copy_schema
-  ...
-
 Improvements:
   - Enhance connection view with DB2 trace settings - > Serge
   - Enhance EXPLAIN facility: add a graphic view?
@@ -61,15 +73,11 @@ Improvements:
   - Transform Trigger dependencies into "real objects" 
   - Propgate and use monitors everywhere
   - Lazy loading
+  - missing PK columns indicator/icon in lits of columns (Unique, foreign)
+  
 
   - Split DB2Tables into distinct sub types:
     - Regular
     - MQT
     - Temporary Tables
     - Hierachies..
-
-    
-Data available at the database level  
-  - Applications/Sessions
-  - DB parameters
-  - DBM parameters
