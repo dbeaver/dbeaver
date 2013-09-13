@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -32,7 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * @author Denis Forveille
  * 
  */
-public class DB2Application implements DBSObject {
+public class DB2Application implements DBSObject, DBAServerSession {
 
    private DB2DataSource dataSource;
 
@@ -107,6 +108,12 @@ public class DB2Application implements DBSObject {
 
    @Override
    public String getDescription() {
+      return null;
+   }
+
+   // TODO DF: no idea what "Active Query" is...
+   @Override
+   public String getActiveQuery() {
       return null;
    }
 

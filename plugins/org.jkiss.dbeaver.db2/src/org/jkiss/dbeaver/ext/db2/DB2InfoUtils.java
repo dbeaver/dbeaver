@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.ext.db2.info.DB2Application;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2TopSQL;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -35,21 +37,49 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * 
- * DB2 Util method to deal with specific database wide queries
+ * Various util methods to deal with DB2 database wide queries
  * 
  * @author Denis Forveille
  * 
  */
 public class DB2InfoUtils {
 
+   // TODO DF: many things in this class could probably be factorized or genreric-ified
+
    private static final Log    LOG             = LogFactory.getLog(DB2InfoUtils.class);
 
    private static final String SEL_APP         = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+   private static final String FORCE_APP       = "CALL SYSPROC.ADMIN_CMD( 'force application (%d)')";
+
    private static final String SEL_DB_PARAMS   = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
    private static final String SEL_DBM_PARAMS  = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
+
    private static final String SEL_TOP_DYN_SQL = "SELECT * FROM SYSIBMADM.TOP_DYNAMIC_SQL ORDER BY NUM_EXECUTIONS DESC FETCH FIRST 20 ROWS ONLY WITH UR";
 
-   // TODO D: could propably be factorized or genreric-ified
+   /**
+    * "Force" (ie "Kill") an application
+    * 
+    * @param monitor
+    * @param dataSource
+    * @param applicationId
+    * @return
+    * @throws SQLException
+    */
+   public static Boolean forceApplication(DBRProgressMonitor monitor, DB2DataSource dataSource, Long agentId) throws SQLException {
+      LOG.debug("Force Application : " + agentId.toString());
+
+      JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Force Application");
+      try {
+         JDBCCallableStatement stmtSP = context.prepareCall(String.format(FORCE_APP, agentId));
+         try {
+            return stmtSP.execute();
+         } finally {
+            stmtSP.close();
+         }
+      } finally {
+         context.close();
+      }
+   }
 
    public static List<DB2Application> readApplications(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
       LOG.debug("readApplications");
