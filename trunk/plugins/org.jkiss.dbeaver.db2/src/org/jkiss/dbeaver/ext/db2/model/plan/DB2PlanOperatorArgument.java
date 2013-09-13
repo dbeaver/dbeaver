@@ -43,7 +43,6 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
 
    public DB2PlanOperatorArgument(JDBCResultSet dbResult) {
 
-      // this.operatorId = JDBCUtils.safeGetInteger(dbResult, "OPERATOR_ID");
       this.argumentType = JDBCUtils.safeGetStringTrimmed(dbResult, "ARGUMENT_TYPE");
       this.argumentValue = JDBCUtils.safeGetStringTrimmed(dbResult, "ARGUMENT_VALUE");
       if (argumentValue == null) {

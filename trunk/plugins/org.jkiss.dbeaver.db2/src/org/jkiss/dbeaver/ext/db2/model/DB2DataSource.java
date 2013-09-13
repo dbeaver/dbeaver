@@ -149,6 +149,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             listApplication = DB2InfoUtils.readApplications(monitor, context);
             listDBMParameters = DB2InfoUtils.readDBMCfg(monitor, context);
             listDBParameters = DB2InfoUtils.readDBCfg(monitor, context);
+            listTopSQL = DB2InfoUtils.readTopDynSQL(monitor, context);
 
          } catch (SQLException e) {
             LOG.warn(e);
