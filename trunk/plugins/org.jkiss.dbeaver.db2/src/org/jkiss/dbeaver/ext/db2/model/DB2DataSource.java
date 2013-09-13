@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -29,8 +30,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
+import org.jkiss.dbeaver.ext.db2.DB2InfoUtils;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
+import org.jkiss.dbeaver.ext.db2.info.DB2Application;
+import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
+import org.jkiss.dbeaver.ext.db2.info.DB2TopSQL;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2BufferpoolCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2DataTypeCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2GroupCache;
@@ -81,6 +86,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    private final DB2RoleCache       roleCache       = new DB2RoleCache();
    private final DB2UserCache       userCache       = new DB2UserCache();
    private final DB2GroupCache      groupCache      = new DB2GroupCache();
+
+   private List<DB2Application>     listApplication;
+   private List<DB2Parameter>       listDBParameters;
+   private List<DB2Parameter>       listDBMParameters;
+   private List<DB2TopSQL>          listTopSQL;
 
    private String                   activeSchemaName;
    private String                   planTableSchemaName;
@@ -135,12 +145,16 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             if (this.activeSchemaName != null) {
                this.activeSchemaName = this.activeSchemaName.trim();
             }
+
+            listApplication = DB2InfoUtils.readApplications(monitor, context);
+
          } catch (SQLException e) {
             LOG.warn(e);
          } finally {
             context.close();
          }
       }
+
       this.dataTypeCache.getObjects(monitor, this);
    }
 
@@ -155,6 +169,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
       this.bufferpoolCache.clearCache();
       this.schemaCache.clearCache();
       this.dataTypeCache.clearCache();
+
+      this.listApplication = null;
+      this.listDBMParameters = null;
+      this.listDBParameters = null;
+      this.listTopSQL = null;
 
       this.initialize(monitor);
 
@@ -387,6 +406,25 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
    public DB2Role getRole(DBRProgressMonitor monitor, String name) throws DBException {
       return roleCache.getObject(monitor, this, name);
+   }
+
+   // -------------
+   // Dynamic Data
+   // -------------
+   public List<DB2Application> getApplications(DBRProgressMonitor monitor) throws DBException {
+      return listApplication;
+   }
+
+   public List<DB2Parameter> getDBParameters(DBRProgressMonitor monitor) throws DBException {
+      return listDBMParameters;
+   }
+
+   public List<DB2Parameter> getDBMParameters(DBRProgressMonitor monitor) throws DBException {
+      return listDBMParameters;
+   }
+
+   public List<DB2TopSQL> getTopSQLs(DBRProgressMonitor monitor) throws DBException {
+      return listTopSQL;
    }
 
    // -------------------------
