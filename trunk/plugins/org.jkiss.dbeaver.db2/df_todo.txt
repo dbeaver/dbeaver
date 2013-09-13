@@ -20,11 +20,6 @@ Display:
  - display timestamps with 6 microseconds
 
 
-Missing objects
-  - 2Users
-  - Groups
-
-
 Add the following Actions Meenu
   - DB2Schema. Menu "Tools" with
       call sysproc.admin_drop_schema
@@ -39,7 +34,7 @@ Add the following Actions Meenu
 
 Add a "System" menu at the datasource level with
 - Current  Applicationa
-- TOP SQL
+- TOP SQL Statements
 - current locks
 - database configuration
 - instance configuration
