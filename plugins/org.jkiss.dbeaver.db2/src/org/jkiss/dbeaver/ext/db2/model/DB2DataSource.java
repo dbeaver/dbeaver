@@ -372,6 +372,15 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    }
 
    @Association
+   public Collection<DB2Group> getGroups(DBRProgressMonitor monitor) throws DBException {
+      return groupCache.getObjects(monitor, this);
+   }
+
+   public DB2Group getGroup(DBRProgressMonitor monitor, String name) throws DBException {
+      return groupCache.getObject(monitor, this, name);
+   }
+
+   @Association
    public Collection<DB2Role> getRoles(DBRProgressMonitor monitor) throws DBException {
       return roleCache.getObjects(monitor, this);
    }
