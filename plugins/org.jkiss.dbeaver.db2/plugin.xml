@@ -22,11 +22,23 @@
 <plugin>
 
     <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.ext.db2" name="DB2" description="DB2 Commands"/>
-        <command id="org.jkiss.dbeaver.ext.db2.schema.copy" name="Create schema copy" description="Create DB2 schema copy" categoryId="org.jkiss.dbeaver.ext.db2"/>
+        <category id="org.jkiss.dbeaver.ext.db2" name="%category.db2.name" description="%category.db2.description"/>
+        <command id="org.jkiss.dbeaver.ext.db2.schema.drop" name="%command.org.jkiss.dbeaver.ext.db2.schema.drop.name" description="%command.org.jkiss.dbeaver.ext.db2.schema.drop.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
+        <command id="org.jkiss.dbeaver.ext.db2.schema.copy" name="%command.org.jkiss.dbeaver.ext.db2.schema.copy.name" description="%command.org.jkiss.dbeaver.ext.db2.schema.copy.name" categoryId="org.jkiss.dbeaver.ext.db2"/>
     </extension>
+
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.db2.schema.copy" class="org.jkiss.dbeaver.ext.db2.actions.CopySchemaHandler">
+        <handler commandId="org.jkiss.dbeaver.ext.db2.schema.drop" class="org.jkiss.dbeaver.ext.db2.actions.DB2SchemaToolsHandler">
+            <enabledWhen>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
+                        </iterate>
+                    </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.db2.schema.copy" class="org.jkiss.dbeaver.ext.db2.actions.DB2SchemaToolsHandler">
             <enabledWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -37,13 +49,20 @@
             </enabledWhen>
         </handler>
     </extension>
+
     <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
-            <command commandId="org.jkiss.dbeaver.ext.db2.schema.copy">
+       <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
+          <menu label="%menu.schema.tools" icon="icons/tools.png">
+             <command commandId="org.jkiss.dbeaver.ext.db2.schema.drop">
                 <visibleWhen checkEnabled="true"/>
-            </command>
-        </menuContribution>
+             </command>
+             <command commandId="org.jkiss.dbeaver.ext.db2.schema.copy">
+                <visibleWhen checkEnabled="true"/>
+             </command>
+          </menu>
+      </menuContribution>
     </extension>
+
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.db2.actions.DB2ObjectAdapter">
             <adapter type="org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject"/>

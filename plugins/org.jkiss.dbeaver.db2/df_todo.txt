@@ -4,9 +4,9 @@ TODO:
 
 Problems :
 - (minor importance) investigate while DDL generation does not work for some kind of "regular tables"
-- when a drop action fail, the structure need to be refresh. where to do that?
+- when a drop action fail, the structure need to be refreshed. how to do that?
 
-Manage explain/ddl generation table creation correctly
+Manage explain/ddl generation table creation 
 - EXPLAIN tables can be created in any schema where the user has the right
 - If EXPLAIN tables notofund in standard location (CURRENT USER + SUSTOOLS) then ask teh user where to create the tables
 

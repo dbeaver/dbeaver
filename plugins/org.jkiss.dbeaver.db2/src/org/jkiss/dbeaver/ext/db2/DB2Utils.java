@@ -54,7 +54,32 @@ public class DB2Utils {
    private static final String SYSTOOLS             = "SYSTOOLS";
    private static final int    CALL_INST_OBJ_BAD_RC = -438;
 
+   private static final String CALL_ADS             = "CALL SYSPROC.ADMIN_DROP_SCHEMA(?,NULL,?,?)";
+
    private static final String LINE_SEP             = "\n";
+
+   public static Boolean callAdminDropSchema(DBRProgressMonitor monitor,
+                                             DB2DataSource dataSource,
+                                             String schemaName,
+                                             String errorSchemaName,
+                                             String errorTableName) throws SQLException {
+      LOG.debug("Call admin_drop_schema for " + schemaName);
+      JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "ADMI_DROP_SCHEMA");
+      try {
+
+         JDBCCallableStatement stmtSP = context.prepareCall(CALL_ADS);
+         try {
+            stmtSP.setString(1, schemaName);
+            stmtSP.setString(2, errorSchemaName);
+            stmtSP.setString(3, errorTableName);
+            return stmtSP.execute();
+         } finally {
+            stmtSP.close();
+         }
+      } finally {
+         context.close();
+      }
+   }
 
    // Generate DDL
    // TODO DF: Tables in SYSTOOLS tables must exist first
