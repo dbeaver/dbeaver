@@ -192,7 +192,7 @@
                     </folder> 
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Group" label="%tree.groups.node.name" icon="#folder_role" description="Groups">
                         <items label="%tree.group.node.name" path="group" property="groups" icon="#group">
-                           <items label="%tree.groupeauth.node.name" path="groupauth" property="userAuths" icon="#groupauth"/>
+                           <items label="%tree.groupauth.node.name" path="groupauth" property="userAuths" icon="#groupauth"/>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
