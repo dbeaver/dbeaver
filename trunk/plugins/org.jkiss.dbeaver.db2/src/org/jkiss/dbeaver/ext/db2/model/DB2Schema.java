@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.db2.model.cache.DB2PackageCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2SequenceCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCheckConstraintCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableForeignKeyCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableReferenceCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableUniqueKeyCache;
@@ -55,33 +56,34 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
  * 
  */
 public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject {
-   static final Log                      log              = LogFactory.getLog(DB2Schema.class);
+   static final Log                           log              = LogFactory.getLog(DB2Schema.class);
 
    // DB2Schema's children
-   private final DB2TableCache           tableCache       = new DB2TableCache();
-   private final DB2ViewCache            viewCache        = new DB2ViewCache();
-   private final DB2SequenceCache        sequenceCache    = new DB2SequenceCache();
-   private final DB2AliasCache           aliasCache       = new DB2AliasCache();
-   private final DB2PackageCache         packageCache     = new DB2PackageCache();
-   private final DB2RoutineCache         procedureCache   = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
-   private final DB2RoutineCache         udfCache         = new DB2RoutineCache(DBSProcedureType.FUNCTION);
-   private final DB2UserDefinedTypeCache udtCache         = new DB2UserDefinedTypeCache();
+   private final DB2TableCache                tableCache       = new DB2TableCache();
+   private final DB2ViewCache                 viewCache        = new DB2ViewCache();
+   private final DB2SequenceCache             sequenceCache    = new DB2SequenceCache();
+   private final DB2AliasCache                aliasCache       = new DB2AliasCache();
+   private final DB2PackageCache              packageCache     = new DB2PackageCache();
+   private final DB2RoutineCache              procedureCache   = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
+   private final DB2RoutineCache              udfCache         = new DB2RoutineCache(DBSProcedureType.FUNCTION);
+   private final DB2UserDefinedTypeCache      udtCache         = new DB2UserDefinedTypeCache();
 
    // DB2Table's children
-   private final DB2IndexCache           indexCache       = new DB2IndexCache(tableCache);
-   private final DB2TableUniqueKeyCache  constraintCache  = new DB2TableUniqueKeyCache(tableCache);
-   private final DB2TableForeignKeyCache associationCache = new DB2TableForeignKeyCache(tableCache);
-   private final DB2TableReferenceCache  referenceCache   = new DB2TableReferenceCache(tableCache);
-   private final DB2TriggerCache         triggerCache     = new DB2TriggerCache(tableCache);
+   private final DB2IndexCache                indexCache       = new DB2IndexCache(tableCache);
+   private final DB2TableUniqueKeyCache       constraintCache  = new DB2TableUniqueKeyCache(tableCache);
+   private final DB2TableForeignKeyCache      associationCache = new DB2TableForeignKeyCache(tableCache);
+   private final DB2TableReferenceCache       referenceCache   = new DB2TableReferenceCache(tableCache);
+   private final DB2TriggerCache              triggerCache     = new DB2TriggerCache(tableCache);
+   private final DB2TableCheckConstraintCache checkCache       = new DB2TableCheckConstraintCache(tableCache);
 
-   private String                        name;
-   private String                        owner;
-   private DB2OwnerType                  ownerType;
-   private Timestamp                     createTime;
-   private Integer                       auditPolicyID;
-   private String                        auditPolicyName;
-   private Boolean                       dataCapture;
-   private String                        remarks;
+   private String                             name;
+   private String                             owner;
+   private DB2OwnerType                       ownerType;
+   private Timestamp                          createTime;
+   private Integer                            auditPolicyID;
+   private String                             auditPolicyName;
+   private Boolean                            dataCapture;
+   private String                             remarks;
 
    // ------------
    // Constructors
@@ -148,6 +150,8 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
          aliasCache.getObjects(monitor, this);
          monitor.subTask("Cache Views");
          viewCache.getObjects(monitor, this);
+         monitor.subTask("Cache Check Constraints");
+         checkCache.getObjects(monitor, this);
       }
    }
 
@@ -168,6 +172,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
       associationCache.clearCache();
       referenceCache.clearCache();
       triggerCache.clearCache();
+      checkCache.clearCache();
 
       return true;
    }
@@ -369,6 +374,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
    public DB2TriggerCache getTriggerCache() {
       return triggerCache;
+   }
+
+   public DB2TableCheckConstraintCache getCheckCache() {
+      return checkCache;
    }
 
 }

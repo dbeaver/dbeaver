@@ -187,6 +187,15 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    }
 
    @Association
+   public Collection<DB2TableCheckConstraint> getCheckConstraints(DBRProgressMonitor monitor) throws DBException {
+      return getContainer().getCheckCache().getObjects(monitor, getContainer(), this);
+   }
+
+   public DB2TableCheckConstraint getCheckConstraint(DBRProgressMonitor monitor, String ukName) throws DBException {
+      return getContainer().getCheckCache().getObject(monitor, getContainer(), this, ukName);
+   }
+
+   @Association
    public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
       return getContainer().getTriggerCache().getObjects(monitor, getContainer(), this);
    }
