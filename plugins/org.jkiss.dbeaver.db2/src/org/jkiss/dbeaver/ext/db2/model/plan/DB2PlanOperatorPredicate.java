@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
@@ -27,15 +28,16 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2PlanOperatorPredicate {
+public class DB2PlanOperatorPredicate implements DBPNamedObject {
 
    private DB2PlanOperator db2Operator;
 
-   private Integer         operatorId;
    private Integer         predicateId;
    private String          howApplied;
    private String          whenApplied;
    private String          predicateText;
+
+   private String          displayName;
 
    // TODO DF: and many many more
 
@@ -46,28 +48,37 @@ public class DB2PlanOperatorPredicate {
    public DB2PlanOperatorPredicate(JDBCResultSet dbResult, DB2PlanOperator db2Operator) {
       this.db2Operator = db2Operator;
 
-      this.operatorId = JDBCUtils.safeGetInteger(dbResult, "OPERATOR_ID");
       this.predicateId = JDBCUtils.safeGetInteger(dbResult, "PREDICATE_ID");
       this.howApplied = JDBCUtils.safeGetString(dbResult, "HOW_APPLIED");
       this.whenApplied = JDBCUtils.safeGetString(dbResult, "WHEN_APPLIED");
 
       // TODO DF: bad Clob..
       this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
+
+      StringBuilder sb = new StringBuilder(32);
+      sb.append(predicateId);
+      if (whenApplied != null) {
+         sb.append(" - ");
+         sb.append(whenApplied);
+      }
+      sb.append(" ");
+      sb.append(howApplied);
+      displayName = sb.toString();
    }
 
    @Override
    public String toString() {
-      return predicateId.toString();
+      return predicateText;
+   }
 
+   @Override
+   public String getName() {
+      return displayName;
    }
 
    // ----------------
    // Standard Getters
    // ----------------
-
-   public Integer getOperatorId() {
-      return operatorId;
-   }
 
    public Integer getPredicateId() {
       return predicateId;
