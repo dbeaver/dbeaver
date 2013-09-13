@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.ext.db2.info.DB2Application;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
+import org.jkiss.dbeaver.ext.db2.info.DB2TopSQL;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -41,16 +42,16 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class DB2InfoUtils {
 
-   private static final Log    LOG            = LogFactory.getLog(DB2InfoUtils.class);
+   private static final Log    LOG             = LogFactory.getLog(DB2InfoUtils.class);
 
-   private static final String SEL_APP        = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
-   private static final String SEL_DB_PARAMS  = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
-   private static final String SEL_DBM_PARAMS = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
+   private static final String SEL_APP         = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+   private static final String SEL_DB_PARAMS   = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
+   private static final String SEL_DBM_PARAMS  = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
+   private static final String SEL_TOP_DYN_SQL = "SELECT * FROM SYSIBMADM.TOP_DYNAMIC_SQL ORDER BY NUM_EXECUTIONS DESC FETCH FIRST 20 ROWS ONLY WITH UR";
 
    // TODO D: could propably be factorized or genreric-ified
 
    public static List<DB2Application> readApplications(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
-
       LOG.debug("readApplications");
 
       List<DB2Application> listApplications = new ArrayList<DB2Application>();
@@ -71,7 +72,6 @@ public class DB2InfoUtils {
    }
 
    public static List<DB2Parameter> readDBCfg(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
-
       LOG.debug("readDBCfg");
 
       List<DB2Parameter> listDBParameters = new ArrayList<DB2Parameter>();
@@ -92,7 +92,6 @@ public class DB2InfoUtils {
    }
 
    public static List<DB2Parameter> readDBMCfg(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
-
       LOG.debug("readDBMCfg");
 
       List<DB2Parameter> listDBMParameters = new ArrayList<DB2Parameter>();
@@ -110,6 +109,26 @@ public class DB2InfoUtils {
          dbStat.close();
       }
       return listDBMParameters;
+   }
+
+   public static List<DB2TopSQL> readTopDynSQL(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
+      LOG.debug("readDBMCfg");
+
+      List<DB2TopSQL> listTopDynSQL = new ArrayList<DB2TopSQL>();
+      JDBCPreparedStatement dbStat = context.prepareStatement(SEL_TOP_DYN_SQL);
+      try {
+         JDBCResultSet dbResult = dbStat.executeQuery();
+         try {
+            while (dbResult.next()) {
+               listTopDynSQL.add(new DB2TopSQL((DB2DataSource) context.getDataSource(), dbResult));
+            }
+         } finally {
+            dbResult.close();
+         }
+      } finally {
+         dbStat.close();
+      }
+      return listTopDynSQL;
    }
 
    private DB2InfoUtils() {

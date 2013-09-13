@@ -18,12 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2.info;
 
+import java.sql.Clob;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2SchemaObject;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DB2 Top SQL
@@ -31,17 +34,48 @@ import org.jkiss.dbeaver.model.meta.Property;
  * @author Denis Forveille
  * 
  */
-public class DB2TopSQL extends DB2SchemaObject {
+public class DB2TopSQL implements DBSObject {
 
-   private String owner;
+   private DB2DataSource dataSource;
+
+   private Long          numExecutions;
+   private Long          averageExecutionTime;
+   private Long          statementSorts;
+   private Long          sortsPerExecution;
+   private Clob          text;
 
    // -----------------------
    // Constructors
    // -----------------------
-   public DB2TopSQL(DB2Schema schema, ResultSet dbResult) {
-      super(schema, JDBCUtils.safeGetString(dbResult, "SEQNAME"), true);
+   public DB2TopSQL(DB2DataSource dataSource, ResultSet dbResult) throws SQLException {
+      this.dataSource = dataSource;
 
-      this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+      this.numExecutions = JDBCUtils.safeGetLong(dbResult, "NUM_EXECUTIONS");
+      this.averageExecutionTime = JDBCUtils.safeGetLong(dbResult, "AVERAGE_EXECUTION_TIME_S");
+      this.statementSorts = JDBCUtils.safeGetLong(dbResult, "STMT_SORTS");
+      this.sortsPerExecution = JDBCUtils.safeGetLong(dbResult, "SORTS_PER_EXECUTION");
+
+      this.text = dbResult.getClob("STMT_TEXT");
+   }
+
+   @Override
+   public DBPDataSource getDataSource() {
+      return dataSource;
+   }
+
+   @Override
+   public DBSObject getParentObject() {
+      return dataSource.getContainer();
+   }
+
+   @Override
+   public boolean isPersisted() {
+      return false;
+   }
+
+   @Override
+   public String getDescription() {
+      return null;
    }
 
    // -----------------
@@ -49,14 +83,34 @@ public class DB2TopSQL extends DB2SchemaObject {
    // -----------------
 
    @Override
-   @Property(viewable = true, editable = false, order = 1)
+   @Property(hidden = true)
    public String getName() {
-      return super.getName();
+      return null;
+   }
+
+   @Property(viewable = true, editable = false, order = 1)
+   public Long getNumExecutions() {
+      return numExecutions;
    }
 
    @Property(viewable = true, editable = false, order = 2)
-   public DB2Schema getSchema() {
-      return super.getSchema();
+   public Long getAverageExecutionTime() {
+      return averageExecutionTime;
    }
 
+   @Property(viewable = true, editable = false, order = 3)
+   public Long getStatementSorts() {
+      return statementSorts;
+   }
+
+   @Property(viewable = true, editable = false, order = 4)
+   public Long getSortsPerExecution() {
+      return sortsPerExecution;
+   }
+
+   @Property(viewable = true, editable = false, order = 5)
+   // TODO DF: What valueHandler to display CLobs?
+   public Clob getText() {
+      return text;
+   }
 }
