@@ -260,8 +260,12 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor id="source.declaration" class="org.jkiss.dbeaver.ext.db2.editors.DB2SourceDeclarationEditor"
-            label="%editor.package.declaration.name" description="%editor.package.declaration.description" icon="#sql_text" position="additions_middle"
+        <editor id="source.declaration" 
+                class="org.jkiss.dbeaver.ext.db2.editors.DB2SourceDeclarationEditor"
+                label="%editor.package.declaration.name" 
+                description="%editor.package.declaration.description" 
+                icon="#sql_text" 
+                position="additions_middle"
             contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Routine"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint"/>

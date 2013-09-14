@@ -7,8 +7,8 @@ Problems :
 - when the user cancel a drop action after viewing the drop command, the structure need to be refreshed. how to do that?
 
 Manage explain/ddl generation table creation 
-- EXPLAIN tables can be created in any schema where the user has the right
-- If EXPLAIN tables notfound in standard location (CURRENT USER + SYSTOOLS) then ask teh user where to create the tables
+- EXPLAIN tables may be created in any schema where the user has the right to create them
+- If EXPLAIN tables not found in standard locations (CURRENT USER then SYSTOOLS) then ask teh user where to create the tables
  
 Missing Functions:
 - Editors  / Object creators / Managers

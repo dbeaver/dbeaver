@@ -42,8 +42,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> implements DBEObjectRenamer<DB2Table> {
 
-   private static final Class<?>[] CHILD_TYPES = { DB2TableColumn.class, DB2TableUniqueKey.class, DB2TableForeignKey.class,
-            DB2Index.class                    };
+   private static final String     SQL_RENAME_TABLE = "RENAME TABLE %s TO %S";
+
+   private static final Class<?>[] CHILD_TYPES      = {
+            DB2TableColumn.class,
+            DB2TableUniqueKey.class,
+            DB2TableForeignKey.class,
+            DB2Index.class                         };
 
    @Override
    public DBSObjectCache<? extends DBSObject, DB2Table> getObjectsCache(DB2Table object) {
@@ -84,14 +89,9 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
 
    @Override
    protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command) {
-      StringBuilder sb = new StringBuilder(256);
-      sb.append("RENAME TABLE ");
-      sb.append(command.getObject().getName());
-      sb.append(" TO ");
-      sb.append(command.getNewName());
-
+      String sql = String.format(SQL_RENAME_TABLE, command.getObject().getName(), command.getNewName());
       IDatabasePersistAction[] actions = new IDatabasePersistAction[1];
-      actions[0] = new AbstractDatabasePersistAction("Rename table", sb.toString()); //$NON-NLS-1$
+      actions[0] = new AbstractDatabasePersistAction("Rename table", sql); //$NON-NLS-1$
       return actions;
    }
 
