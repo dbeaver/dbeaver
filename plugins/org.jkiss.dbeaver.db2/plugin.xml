@@ -123,11 +123,11 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.db2.model.DB2View" label="%tree.views.node.name" icon="#folder_view" description="Views">
                             <items label="%tree.view.node.name" path="view" property="views" icon="#view">
-                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns" >
                                     <items label="%tree.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributes" icon="#column"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ViewDep" label="%tree.viewdeps.node.name" icon="#dependenciess" description="View Dependencies">
-                                   <items label="%tree.view.node.name" path="viewdep" property="viewDeps" icon="#viewdep"/>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2ViewDep" label="%tree.viewdeps.node.name" icon="#dependencies" description="View Dependencies" navigable="false">
+                                   <items label="%tree.viewdep.node.name" path="viewdep" property="viewDeps" icon="#viewdep"/>
                                 </folder>
                             </items>
                         </folder>
@@ -164,7 +164,11 @@
                              </items>
                           </folder>
                           <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Package" label="%tree.packages.node.name" icon="#packages" description="Packages">
-                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package"/>
+                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2PackageDep" label="%tree.packagedeps.node.name" icon="#dependencies" description="Package Dependencies" navigable="false">
+                                   <items label="%tree.packagedep.node.name" path="packagedep" property="packageDeps" icon="#packagedep"/>
+                                </folder>
+                             </items>
                           </folder>
                        </folder>
                     </items>

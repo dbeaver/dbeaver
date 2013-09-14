@@ -10,17 +10,37 @@ Manage explain/ddl generation table creation
 - EXPLAIN tables may be created in any schema where the user has the right to create them
 - If EXPLAIN tables not found in standard locations (CURRENT USER then SYSTOOLS) then ask teh user where to create the tables
  
-Missing Functions:
-- Editors  / Object creators / Managers
-- Remove "edit" action on schema
+Missing relationships:
+   - Tablespace->Bufferpool link on BPName
+   - Tables -> referenced by triggers
+   - Tables -> referenced by aliases
+   - Sequencess -> referenced by aliases
+   
+Improvements:
+  - by default, the DB2 timestamps display format must be with 6 microseconds : 2013-09-12-18.05.00.000000
+  - Enhance SQL Content assist + Search
+    - Add Tablespaces, indexes, columns, foreign keys...
+  - Propgate and use monitors everywhere
+  - Lazy loading
+  
+  - Serge?
+    - missing PK columns indicator/icon in  columns lists (Unique, foreign)
+    - Enhance connection view with DB2 trace settings -> Serge?
+    - Enhance EXPLAIN facility: add a graphic view? -> Serge?
+  
+  - Split DB2Tables into distinct sub types:
+    - Regular
+    - MQT
+    - Temporary Tables
+    - Hierachies..
 
-Display: 
- - display DB2 timestamps with 6 microseconds by default
-
-Add the following Actions Menu
+Missing Menu Actions
+  - Almost everywhere
+    - Editors  / Object creators / Managers
   - DB2Schema. Menu "Tools" with
       call sysproc.admin_drop_schema
       call sysproc.admin_copy_schema
+      Remove "edit" action on schema
   - DB2Tables. Menu "Tools" with 
       call sysproc.admin_cmd("reorg table xx");
       call sysproc.admin_cmd("runstats table xx");
@@ -31,38 +51,12 @@ Add the following Actions Menu
       call sysproc.ADMIN_MOVE_TABLE();
      set integrity
   - DataSource
-      call sysproc.admin_cmd("backup...");
-
-Add a "System" menu at the datasource level with
-- current locks
-- Server OS INFO
+    - call sysproc.admin_cmd("backup...");
+    - current locks
+    - Server OS INFO
 
 Add a "Federation" menu at the datasource level with (<1% of users use federation=oracle dblinks)
 - Servers
 - Wrapeprs
 - Federated Users
 - Nicknames (or maybe under the "schema" section)?
-
-Missing relationships:
-   - Tablespace->Bufferpool link on BPName
-   - Tables -> referenced by triggers
-   - Tables -> referenced by aliases
-   - Sequencess -> referenced by aliases
-   
-Missing Dependencies for 
-  - DB2Package
-  - Procedure/Functions
-
-Improvements:
-  - Enhance SQL Content assist + Search
-    - Add Tablespaces, indexes, columns, foreign keys...
-  - Enhance connection view with DB2 trace settings -> Serge
-  - Enhance EXPLAIN facility: add a graphic view? -> Serge?
-  - Propgate and use monitors everywhere
-  - Lazy loading
-  - missing PK columns indicator/icon in  columns lists (Unique, foreign)
-  - Split DB2Tables into distinct sub types:
-    - Regular
-    - MQT
-    - Temporary Tables
-    - Hierachies..

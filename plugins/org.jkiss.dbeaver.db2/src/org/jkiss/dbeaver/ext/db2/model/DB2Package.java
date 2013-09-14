@@ -20,12 +20,18 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.Collection;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2PackageDepCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -34,14 +40,16 @@ import org.jkiss.utils.CommonUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2Package extends DB2SchemaObject {
+public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject {
 
-   private Boolean      valid;
-   private String       owner;
-   private DB2OwnerType ownerType;
-   private Timestamp    createTime;
-   private Timestamp    alterTime;
-   private String       remarks;
+   private final DB2PackageDepCache packageDepCache = new DB2PackageDepCache();
+
+   private Boolean                  valid;
+   private String                   owner;
+   private DB2OwnerType             ownerType;
+   private Timestamp                createTime;
+   private Timestamp                alterTime;
+   private String                   remarks;
 
    // TODO DF: Add other attributes
    // TODO DF: Add dependencies
@@ -59,6 +67,21 @@ public class DB2Package extends DB2SchemaObject {
       this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
       this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+   }
+
+   // -----------------
+   // Association
+   // -----------------
+
+   @Association
+   public Collection<DB2PackageDep> getPackageDeps(DBRProgressMonitor monitor) throws DBException {
+      return packageDepCache.getObjects(monitor, this);
+   }
+
+   @Override
+   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
+      packageDepCache.clearCache();
+      return true;
    }
 
    // -----------------
