@@ -15,9 +15,9 @@ Missing Functions:
 - Remove "edit" action on schema
 
 Display: 
- - display timestamps with 6 microseconds
+ - display DB2 timestamps with 6 microseconds by default
 
-Add the following Actions Meenu
+Add the following Actions Menu
   - DB2Schema. Menu "Tools" with
       call sysproc.admin_drop_schema
       call sysproc.admin_copy_schema
@@ -55,13 +55,13 @@ Missing Dependencies for
   - Procedure/Functions
 
 Improvements:
-  - Enhance connection view with DB2 trace settings - > Serge
-  - Enhance EXPLAIN facility: add a graphic view?
-  - Enhance SQL Content assist
-  - Transform Trigger dependencies into "real objects" 
+  - Enhance SQL Content assist + Search
+    - Add Tablespaces, indexes, columns, foreign keys...
+  - Enhance connection view with DB2 trace settings -> Serge
+  - Enhance EXPLAIN facility: add a graphic view? -> Serge?
   - Propgate and use monitors everywhere
   - Lazy loading
-  - missing PK columns indicator/icon in lits of columns (Unique, foreign)
+  - missing PK columns indicator/icon in  columns lists (Unique, foreign)
   - Split DB2Tables into distinct sub types:
     - Regular
     - MQT

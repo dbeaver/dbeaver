@@ -189,21 +189,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                   continue;
                }
 
-               switch (tableType) {
-               case A:
-                  objectType = DB2ObjectType.ALIAS;
-                  break;
-               case T:
-                  objectType = DB2ObjectType.TABLE;
-                  break;
-               case V:
-                  objectType = DB2ObjectType.VIEW;
-                  break;
-               default:
-                  LOG.warn(" Table Type '" + tableType + "' not yet supported in search/content assist");
-                  continue;
-               }
-
+               objectType = tableType.getDb2ObjectType();
                objects.add(new DB2ObjectReference(objectName, db2Schema, objectType));
             }
          } finally {

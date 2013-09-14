@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
+
 /**
  * DB2 Type of Trigger Dependency
  * 
@@ -25,58 +27,64 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
  * 
  */
 public enum DB2TriggerDepType {
-   A("A (Table alias)"),
+   A("A (Table alias)", DB2ObjectType.ALIAS),
 
-   B("B (Trigger)"),
+   B("B (Trigger)", DB2ObjectType.TRIGGER),
 
    C("C (Column)"),
 
-   F("F (Routine)"),
+   F("F (Function)", DB2ObjectType.UDF),
 
-   G("G (Global temporary table)"),
+   G("G (Global temporary table)", DB2ObjectType.TABLE),
 
-   H("H (Hierachy table)"),
+   H("H (Hierachy table)", DB2ObjectType.TABLE),
 
-   K("K (Package)"),
+   K("K (Package)", DB2ObjectType.PACKAGE),
 
-   L("L (Detached table)"),
+   L("L (Detached table)", DB2ObjectType.TABLE),
 
    N("N (Nickname)"),
 
    O("O (Privilege dependency on all subtables or subviews in a table or view hierarchy)"),
 
-   Q("Q (Sequence)"),
+   Q("Q (Sequence)", DB2ObjectType.TABLE),
 
-   R("R (UDT)"),
+   R("R (UDT)", DB2ObjectType.UDT),
 
-   S("S (MQT)"),
+   S("S (MQT)", DB2ObjectType.TABLE),
 
-   T("T (Table)"),
+   T("T (Table)", DB2ObjectType.TABLE),
 
-   U("U (Typed table)"),
+   U("U (Typed table)", DB2ObjectType.TABLE),
 
-   V("V (View)"),
+   V("V (View)", DB2ObjectType.VIEW),
 
-   W("W (Typed view)"),
+   W("W (Typed view)", DB2ObjectType.VIEW),
 
    X("X (Index extension)"),
 
    Z("Z (XSR object)"),
 
-   q("q (Sequence alias)"),
+   q("q (Sequence alias)", DB2ObjectType.ALIAS),
 
-   u("u (Module alias)"),
+   u("u (Module alias)", DB2ObjectType.ALIAS),
 
    v("v ( Global variable)");
 
-   private String description;
+   private String        description;
+   private DB2ObjectType db2ObjectType;
 
    // -----------
    // Constructor
    // -----------
 
-   private DB2TriggerDepType(String description) {
+   private DB2TriggerDepType(String description, DB2ObjectType db2ObjectType) {
       this.description = description;
+      this.db2ObjectType = db2ObjectType;
+   }
+
+   private DB2TriggerDepType(String description) {
+      this(description, null);
    }
 
    // ----------------
@@ -86,4 +94,9 @@ public enum DB2TriggerDepType {
    public String getDescription() {
       return description;
    }
+
+   public DB2ObjectType getDb2ObjectType() {
+      return db2ObjectType;
+   }
+
 }
