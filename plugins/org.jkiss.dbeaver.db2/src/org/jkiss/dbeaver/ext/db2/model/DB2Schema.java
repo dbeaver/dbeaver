@@ -340,6 +340,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
       return udtCache;
    }
 
+   public DB2RoutineCache getUdfCache() {
+      return udfCache;
+   }
+
    public DB2SequenceCache getSequenceCache() {
       return sequenceCache;
    }
