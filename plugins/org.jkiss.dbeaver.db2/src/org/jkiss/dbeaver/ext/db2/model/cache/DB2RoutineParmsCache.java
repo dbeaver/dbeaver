@@ -47,7 +47,7 @@ public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2Routine
    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Routine db2Routine) throws SQLException {
       JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
       dbStat.setString(1, db2Routine.getSchema().getName());
-      dbStat.setString(2, db2Routine.getSpecificName());
+      dbStat.setString(2, db2Routine.getName());
       return dbStat;
    }
 

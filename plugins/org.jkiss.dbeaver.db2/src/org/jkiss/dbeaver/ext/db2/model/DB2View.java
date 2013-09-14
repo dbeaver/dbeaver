@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.actions.DB2ObjectPersistAction;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewDepCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -47,8 +49,10 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DB2View extends DB2TableBase implements DB2SourceObject {
 
-   private DB2ViewStatus status;
-   private String        text;
+   private final DB2ViewDepCache viewDepCache = new DB2ViewDepCache();
+
+   private DB2ViewStatus         status;
+   private String                text;
 
    // -----------------
    // Constructors
@@ -76,6 +80,7 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
    @Override
    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
       getContainer().getViewCache().clearChildrenCache(this);
+      viewDepCache.clearCache();
       return true;
    }
 
@@ -132,6 +137,15 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
 
    public String getDDL(DBRProgressMonitor monitor) throws DBException {
       return text;
+   }
+
+   // -----------------
+   // Association
+   // -----------------
+
+   @Association
+   public Collection<DB2ViewDep> getViewDeps(DBRProgressMonitor monitor) throws DBException {
+      return viewDepCache.getObjects(monitor, this);
    }
 
    // -----------------
