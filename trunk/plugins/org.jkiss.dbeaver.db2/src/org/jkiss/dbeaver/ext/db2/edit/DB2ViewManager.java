@@ -53,8 +53,9 @@ public class DB2ViewManager extends JDBCObjectEditor<DB2View, DB2Schema> {
    }
 
    @Override
+   @SuppressWarnings("unchecked")
    public DBSObjectCache<? extends DBSObject, DB2View> getObjectsCache(DB2View object) {
-      return (DBSObjectCache) object.getSchema().getTableCache();
+      return (DBSObjectCache) object.getSchema().getViewCache();
    }
 
    @Override
