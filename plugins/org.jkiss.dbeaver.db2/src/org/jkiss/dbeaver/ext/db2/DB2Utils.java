@@ -20,12 +20,17 @@ package org.jkiss.dbeaver.ext.db2;
 
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
+import org.jkiss.dbeaver.ext.db2.info.DB2TopSQL;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
@@ -45,16 +50,29 @@ public class DB2Utils {
 
    private static final Log    LOG                  = LogFactory.getLog(DB2Utils.class);
 
+   // TODO DF: many things in this class could probably be factorized or genreric-ified
+
+   // DB2LOOK
    private static final String CALL_DB2LK_GEN       = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
    private static final String CALL_DB2LK_CLEAN     = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
    private static final String SEL_DB2LK            = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO_V WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
    private static final String DB2LK_COMMAND        = "-e -td %s -t %s";
 
+   // EXPLAIN
    private static final String CALL_INST_OBJ        = "CALL SYSPROC.SYSINSTALLOBJECTS(?,?,?,?)";
    private static final String SYSTOOLS             = "SYSTOOLS";
    private static final int    CALL_INST_OBJ_BAD_RC = -438;
 
+   // ADMIN ACTIONS
    private static final String CALL_ADS             = "CALL SYSPROC.ADMIN_DROP_SCHEMA(?,NULL,?,?)";
+   private static final String SEL_DB_PARAMS        = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
+   private static final String SEL_DBM_PARAMS       = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
+
+   private static final String SEL_TOP_DYN_SQL      = "SELECT * FROM SYSIBMADM.TOP_DYNAMIC_SQL ORDER BY NUM_EXECUTIONS DESC FETCH FIRST 20 ROWS ONLY WITH UR";
+
+   // APPLICATIONS
+   private static final String SEL_APP              = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
+   private static final String FORCE_APP            = "CALL SYSPROC.ADMIN_CMD( 'force application (%d)')";
 
    private static final String LINE_SEP             = "\n";
 
@@ -239,6 +257,111 @@ public class DB2Utils {
          context.close();
          monitor.done();
       }
+   }
+
+   /**
+    * "Force" (ie "Kill") an application
+    * 
+    * @param monitor
+    * @param dataSource
+    * @param applicationId
+    * @return
+    * @throws SQLException
+    */
+   public static Boolean forceApplication(DBRProgressMonitor monitor, DB2DataSource dataSource, Long agentId) throws SQLException {
+      LOG.debug("Force Application : " + agentId.toString());
+
+      JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Force Application");
+      try {
+         JDBCCallableStatement stmtSP = context.prepareCall(String.format(FORCE_APP, agentId));
+         try {
+            return stmtSP.execute();
+         } finally {
+            stmtSP.close();
+         }
+      } finally {
+         context.close();
+      }
+   }
+
+   public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
+      LOG.debug("readApplications");
+
+      List<DB2ServerApplication> listApplications = new ArrayList<DB2ServerApplication>();
+      JDBCPreparedStatement dbStat = context.prepareStatement(SEL_APP);
+      try {
+         JDBCResultSet dbResult = dbStat.executeQuery();
+         try {
+            while (dbResult.next()) {
+               listApplications.add(new DB2ServerApplication(dbResult));
+            }
+         } finally {
+            dbResult.close();
+         }
+      } finally {
+         dbStat.close();
+      }
+      return listApplications;
+   }
+
+   public static List<DB2Parameter> readDBCfg(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
+      LOG.debug("readDBCfg");
+
+      List<DB2Parameter> listDBParameters = new ArrayList<DB2Parameter>();
+      JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DB_PARAMS);
+      try {
+         JDBCResultSet dbResult = dbStat.executeQuery();
+         try {
+            while (dbResult.next()) {
+               listDBParameters.add(new DB2Parameter((DB2DataSource) context.getDataSource(), dbResult));
+            }
+         } finally {
+            dbResult.close();
+         }
+      } finally {
+         dbStat.close();
+      }
+      return listDBParameters;
+   }
+
+   public static List<DB2Parameter> readDBMCfg(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
+      LOG.debug("readDBMCfg");
+
+      List<DB2Parameter> listDBMParameters = new ArrayList<DB2Parameter>();
+      JDBCPreparedStatement dbStat = context.prepareStatement(SEL_DBM_PARAMS);
+      try {
+         JDBCResultSet dbResult = dbStat.executeQuery();
+         try {
+            while (dbResult.next()) {
+               listDBMParameters.add(new DB2Parameter((DB2DataSource) context.getDataSource(), dbResult));
+            }
+         } finally {
+            dbResult.close();
+         }
+      } finally {
+         dbStat.close();
+      }
+      return listDBMParameters;
+   }
+
+   public static List<DB2TopSQL> readTopDynSQL(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException {
+      LOG.debug("readDBMCfg");
+
+      List<DB2TopSQL> listTopDynSQL = new ArrayList<DB2TopSQL>();
+      JDBCPreparedStatement dbStat = context.prepareStatement(SEL_TOP_DYN_SQL);
+      try {
+         JDBCResultSet dbResult = dbStat.executeQuery();
+         try {
+            while (dbResult.next()) {
+               listTopDynSQL.add(new DB2TopSQL((DB2DataSource) context.getDataSource(), dbResult));
+            }
+         } finally {
+            dbResult.close();
+         }
+      } finally {
+         dbStat.close();
+      }
+      return listTopDynSQL;
    }
 
    private DB2Utils() {

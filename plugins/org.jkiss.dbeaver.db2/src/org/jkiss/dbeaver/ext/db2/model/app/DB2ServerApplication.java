@@ -16,16 +16,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.info;
+package org.jkiss.dbeaver.ext.db2.model.app;
 
 import java.sql.ResultSet;
 
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DB2 Application
@@ -33,40 +31,37 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * @author Denis Forveille
  * 
  */
-public class DB2Application implements DBSObject, DBAServerSession {
+public class DB2ServerApplication implements DBAServerSession {
 
-   private DB2DataSource dataSource;
+   private String  databaseName;
+   private Long    agentId;
+   private String  authorisationId;
 
-   private String        databaseName;
-   private Long          agentId;
-   private String        authorisationId;
+   private String  applicationName;
+   private String  applicationId;
+   private String  applicationStatus;
+   private String  statusChangeTime;
+   private String  sequenceNo;
 
-   private String        applicationName;
-   private String        applicationId;
-   private String        applicationStatus;
-   private String        statusChangeTime;
-   private String        sequenceNo;
+   private String  clientDatabaseAlias;
+   private String  clientProductId;
+   private Long    clientPId;
+   private String  clientPlatform;
+   private String  clientProtocol;
+   private String  clientNName;
 
-   private String        clientDatabaseAlias;
-   private String        clientProductId;
-   private Long          clientPId;
-   private String        clientPlatform;
-   private String        clientProtocol;
-   private String        clientNName;
-
-   private Integer       coordNodeNum;
-   private Long          coordAgentPid;
-   private Long          numAssociatedAgents;
-   private String        tpmonClientUserid;
-   private String        tpmonClientWorkstationNane;
-   private String        tpmonClientApplicationName;
-   private String        tpmonAccountingString;
+   private Integer coordNodeNum;
+   private Long    coordAgentPid;
+   private Long    numAssociatedAgents;
+   private String  tpmonClientUserid;
+   private String  tpmonClientWorkstationNane;
+   private String  tpmonClientApplicationName;
+   private String  tpmonAccountingString;
 
    // -----------------------
    // Constructors
    // -----------------------
-   public DB2Application(DB2DataSource dataSource, ResultSet dbResult) {
-      this.dataSource = dataSource;
+   public DB2ServerApplication(ResultSet dbResult) {
 
       this.clientDatabaseAlias = JDBCUtils.safeGetString(dbResult, "CLIENT_DB_ALIAS");
       this.databaseName = JDBCUtils.safeGetString(dbResult, "DB_NAME");
@@ -92,37 +87,21 @@ public class DB2Application implements DBSObject, DBAServerSession {
    }
 
    @Override
-   public DBPDataSource getDataSource() {
-      return dataSource;
-   }
-
-   @Override
-   public DBSObject getParentObject() {
-      return dataSource.getContainer();
-   }
-
-   @Override
-   public boolean isPersisted() {
-      return false;
-   }
-
-   @Override
-   public String getDescription() {
-      return null;
-   }
-
-   // TODO DF: no idea what "Active Query" is...
-   @Override
    public String getActiveQuery() {
+      // TODO DF: no "Active Query" easily available in DB2 and most applications are not currently executing an SQL...
       return null;
+   }
+
+   @Override
+   public String toString() {
+      return agentId.toString();
    }
 
    // -----------------
    // Properties
    // -----------------
-   @Override
    @Property(viewable = true, editable = false, order = 1)
-   public String getName() {
+   public String getApplicationId() {
       return applicationId;
    }
 
@@ -151,27 +130,27 @@ public class DB2Application implements DBSObject, DBAServerSession {
       return authorisationId;
    }
 
-   @Property(viewable = true, editable = false, order = 7)
+   @Property(viewable = true, editable = false, order = 7, category = DB2Constants.CAT_CLIENT)
    public String getClientNName() {
       return clientNName;
    }
 
-   @Property(viewable = true, editable = false, order = 8)
+   @Property(viewable = true, editable = false, order = 8, category = DB2Constants.CAT_CLIENT)
    public String getClientDatabaseAlias() {
       return clientDatabaseAlias;
    }
 
-   @Property(viewable = true, editable = false, order = 9)
+   @Property(viewable = true, editable = false, order = 9, category = DB2Constants.CAT_CLIENT)
    public Long getClientPId() {
       return clientPId;
    }
 
-   @Property(viewable = true, editable = false, order = 10)
+   @Property(viewable = true, editable = false, order = 10, category = DB2Constants.CAT_CLIENT)
    public String getClientProductId() {
       return clientProductId;
    }
 
-   @Property(viewable = true, editable = false, order = 11)
+   @Property(viewable = true, editable = false, order = 11, category = DB2Constants.CAT_CLIENT)
    public String getClientPlatform() {
       return clientPlatform;
    }
@@ -181,7 +160,7 @@ public class DB2Application implements DBSObject, DBAServerSession {
       return tpmonAccountingString;
    }
 
-   @Property(viewable = false)
+   @Property(viewable = false, category = DB2Constants.CAT_CLIENT)
    public String getClientProtocol() {
       return clientProtocol;
    }
@@ -211,17 +190,17 @@ public class DB2Application implements DBSObject, DBAServerSession {
       return numAssociatedAgents;
    }
 
-   @Property(viewable = false)
+   @Property(viewable = false, category = DB2Constants.CAT_CLIENT)
    public String getTpmonClientUserid() {
       return tpmonClientUserid;
    }
 
-   @Property(viewable = false)
+   @Property(viewable = false, category = DB2Constants.CAT_CLIENT)
    public String getTpmonClientWorkstationNane() {
       return tpmonClientWorkstationNane;
    }
 
-   @Property(viewable = false)
+   @Property(viewable = false, category = DB2Constants.CAT_CLIENT)
    public String getTpmonClientApplicationName() {
       return tpmonClientApplicationName;
    }
