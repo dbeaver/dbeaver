@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerDepType;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableDepType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,34 +30,34 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 /**
- * DB2 Trigger Dependency
+ * DB2 View Dependency
  * 
  * @author Denis Forveille
  * 
  */
-public class DB2TriggerDep extends DB2Object<DB2Trigger> {
+public class DB2ViewDep extends DB2Object<DB2View> {
 
-   private DB2TriggerDepType triggerDepType;
-   private DB2Schema         depSchema;
-   private String            depModuleId;
-   private String            tabAuth;
+   private DB2TableDepType tableDepType;
+   private DB2Schema       depSchema;
+   private String          depModuleId;
+   private String          tabAuth;
 
-   private DBSObject         depObject;
+   private DBSObject       depObject;
 
    // -----------------------
    // Constructors
    // -----------------------
-   public DB2TriggerDep(DBRProgressMonitor monitor, DB2Trigger db2Trigger, ResultSet resultSet) throws DBException {
+   public DB2ViewDep(DBRProgressMonitor monitor, DB2View db2View, ResultSet resultSet) throws DBException {
       // TODO DF: Bad should be BTYPE+BSCHEMA+BNAME
-      super(db2Trigger, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
+      super(db2View, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
 
       this.depModuleId = JDBCUtils.safeGetString(resultSet, "BMODULEID");
       this.tabAuth = JDBCUtils.safeGetString(resultSet, "TABAUTH");
-      this.triggerDepType = CommonUtils.valueOf(DB2TriggerDepType.class, JDBCUtils.safeGetString(resultSet, "BTYPE"));
+      this.tableDepType = CommonUtils.valueOf(DB2TableDepType.class, JDBCUtils.safeGetString(resultSet, "BTYPE"));
 
       String depSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "BSCHEMA");
 
-      DB2ObjectType db2ObjectType = triggerDepType.getDb2ObjectType();
+      DB2ObjectType db2ObjectType = tableDepType.getDb2ObjectType();
       if (db2ObjectType != null) {
          depSchema = getDataSource().getSchema(monitor, depSchemaName);
          depObject = db2ObjectType.findObject(monitor, depSchema, getName());
@@ -75,8 +75,8 @@ public class DB2TriggerDep extends DB2Object<DB2Trigger> {
    }
 
    @Property(viewable = true, editable = false, order = 2)
-   public String getTriggerDepTypeDescription() {
-      return triggerDepType.getDescription();
+   public String getTableDepTypeDescription() {
+      return tableDepType.getDescription();
    }
 
    @Property(viewable = true, editable = false, order = 3)

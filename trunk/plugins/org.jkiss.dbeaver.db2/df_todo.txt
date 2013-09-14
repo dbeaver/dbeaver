@@ -50,7 +50,6 @@ Missing relationships:
    - Sequencess -> referenced by aliases
    
 Missing Dependencies for 
-  - DB2Views
   - DB2Package
   - Procedure/Functions
 
