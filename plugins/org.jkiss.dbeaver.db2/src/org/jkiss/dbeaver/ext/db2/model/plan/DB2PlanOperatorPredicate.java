@@ -51,8 +51,6 @@ public class DB2PlanOperatorPredicate implements DBPNamedObject {
       this.predicateId = JDBCUtils.safeGetInteger(dbResult, "PREDICATE_ID");
       this.howApplied = JDBCUtils.safeGetString(dbResult, "HOW_APPLIED");
       this.whenApplied = JDBCUtils.safeGetString(dbResult, "WHEN_APPLIED");
-
-      // TODO DF: bad Clob..
       this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
 
       StringBuilder sb = new StringBuilder(32);

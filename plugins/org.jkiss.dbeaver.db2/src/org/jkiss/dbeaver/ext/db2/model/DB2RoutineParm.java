@@ -44,6 +44,7 @@ public class DB2RoutineParm implements DBSProcedureParameter {
    private Integer           scale;
    private Integer           length;
    private DB2DataType       dataType;
+   private DB2Schema         dataTypeSchema;
    private String            typeName;
    private DB2RoutineRowType rowType;
 
@@ -62,16 +63,19 @@ public class DB2RoutineParm implements DBSProcedureParameter {
       this.length = JDBCUtils.safeGetInteger(dbResult, "LENGTH");
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
       this.rowType = CommonUtils.valueOf(DB2RoutineRowType.class, JDBCUtils.safeGetString(dbResult, "ROWTYPE"));
+      this.typeName = JDBCUtils.safeGetString(dbResult, "TYPENAME");
 
       // Search for DataType
-      typeName = JDBCUtils.safeGetString(dbResult, "TYPENAME");
-      // Look first in Standards type
+      // First Search in Standard Data Types
       this.dataType = procedure.getDataSource().getDataTypeCache().getObject(monitor, procedure.getDataSource(), typeName);
       if (this.dataType == null) {
-         // Then Look in UDT
-         // TODO DF yet to be done
+         // It not found, seaqrch in UDTs
+         String typeSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
+         this.dataTypeSchema = getDataSource().getSchema(monitor, typeSchemaName);
+         this.dataType = this.dataTypeSchema.getUDT(monitor, typeName);
+      } else {
+         this.dataTypeSchema = dataType.getSchema();
       }
-
    }
 
    @Override
@@ -95,33 +99,9 @@ public class DB2RoutineParm implements DBSProcedureParameter {
    }
 
    @Override
-   @Property(viewable = true, order = 1)
-   public String getName() {
-      return name;
-   }
-
-   @Override
-   @Property(viewable = true, order = 3)
-   public long getMaxLength() {
-      return length;
-   }
-
-   @Override
-   @Property(viewable = true, order = 4)
-   public int getScale() {
-      return scale;
-   }
-
-   @Override
    public int getPrecision() {
       // TODO Auto-generated method stub
       return 0;
-   }
-
-   @Override
-   @Property(viewable = true, order = 5)
-   public DBSProcedureParameterType getParameterType() {
-      return rowType.getParameterType();
    }
 
    // DF: Strange typeName and typeId are attributes of DBSDataKind...
@@ -144,9 +124,38 @@ public class DB2RoutineParm implements DBSProcedureParameter {
    // Properties
    // -----------------------
 
+   @Override
+   @Property(viewable = true, order = 1)
+   public String getName() {
+      return name;
+   }
+
    @Property(viewable = true, order = 2)
+   public DB2Schema getDataTypeSchema() {
+      return dataTypeSchema;
+   }
+
+   @Property(viewable = true, order = 3)
    public DB2DataType getDataType() {
       return dataType;
+   }
+
+   @Override
+   @Property(viewable = true, order = 4)
+   public long getMaxLength() {
+      return length;
+   }
+
+   @Override
+   @Property(viewable = true, order = 5)
+   public int getScale() {
+      return scale;
+   }
+
+   @Override
+   @Property(viewable = true, order = 6)
+   public DBSProcedureParameterType getParameterType() {
+      return rowType.getParameterType();
    }
 
    public DB2RoutineRowType getRowType() {

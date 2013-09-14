@@ -91,7 +91,7 @@ public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDataba
          final DBAServerSession session = applicationViewer.getSelectedSession();
          final String action = DB2Messages.editors_db2_application_editor_action_force;
 
-         // TODO DF: Don't know how to remove teh "remember me" toggle...
+         // TODO DF: Don't know how to remove the "remember me" toggle...
          ConfirmationDialog dialog = new ConfirmationDialog(getSite().getShell(),
                                                             action,
                                                             null,

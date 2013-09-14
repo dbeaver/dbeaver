@@ -88,7 +88,8 @@ public class DB2ServerApplication implements DBAServerSession {
 
    @Override
    public String getActiveQuery() {
-      // TODO DF: no "Active Query" easily available in DB2 and most applications are not currently executing an SQL...
+      // TODO DF: no "Active Query" easily available in DB2
+      // ..and most applications are not currently executing an SQL...
       // It needs to activate some monitoring flags that are usually off..
       return null;
    }

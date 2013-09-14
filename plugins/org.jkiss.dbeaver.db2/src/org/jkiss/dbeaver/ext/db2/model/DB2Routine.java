@@ -138,7 +138,7 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
       if ((language != null) && (language.equals(DB2RoutineLanguage.SQL))) {
          return text;
       } else {
-         return "";
+         return "N/A";
       }
    }
 
