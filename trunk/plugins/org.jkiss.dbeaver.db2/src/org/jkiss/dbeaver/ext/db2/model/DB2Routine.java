@@ -135,7 +135,7 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
 
    @Override
    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException {
-      if (language.equals(DB2RoutineLanguage.SQL)) {
+      if ((language != null) && (language.equals(DB2RoutineLanguage.SQL))) {
          return text;
       } else {
          return "";
