@@ -52,7 +52,7 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
    private final DB2RoutineParmsCache parmsCache = new DB2RoutineParmsCache();
 
    private String                     moduleName;
-   private String                     specificName;
+   private String                     routineName;
    private Integer                    routineId;
    private Integer                    routineModuleId;
    private DB2RoutineOrigin           origin;
@@ -72,11 +72,10 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
    // -----------------------
 
    public DB2Routine(DB2Schema schema, ResultSet dbResult) {
-      // TODO BAD: should be ROUTINEMODULENAME+ROUTINENAME or SPECIFICNAME
-      super(schema, JDBCUtils.safeGetString(dbResult, "ROUTINENAME"), true);
+      super(schema, JDBCUtils.safeGetString(dbResult, "SPECIFICNAME"), true);
 
       this.moduleName = JDBCUtils.safeGetString(dbResult, "ROUTINEMODULENAME");
-      this.specificName = JDBCUtils.safeGetString(dbResult, "SPECIFICNAME");
+      this.routineName = JDBCUtils.safeGetString(dbResult, "ROUTINENAME");
       this.routineId = JDBCUtils.safeGetInteger(dbResult, "ROUTINEID");
       this.routineModuleId = JDBCUtils.safeGetInteger(dbResult, "ROUTINEMODULEID");
       this.origin = CommonUtils.valueOf(DB2RoutineOrigin.class, JDBCUtils.safeGetString(dbResult, "ORIGIN"));
@@ -153,14 +152,20 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
    // Properties
    // -----------------------
 
+   @Override
+   @Property(viewable = true, editable = false, order = 1)
+   public String getName() {
+      return super.getName();
+   }
+
    @Property(viewable = true, editable = false, order = 2)
    public DB2Schema getSchema() {
       return parent;
    }
 
    @Property(viewable = true, editable = false, order = 3)
-   public String getSpecificName() {
-      return specificName;
+   public String getRoutineName() {
+      return routineName;
    }
 
    @Property(viewable = true, editable = false, order = 4)
