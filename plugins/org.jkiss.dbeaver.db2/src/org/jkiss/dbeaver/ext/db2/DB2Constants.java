@@ -39,6 +39,7 @@ public class DB2Constants {
    public static final String   CAT_COLLATION           = "Collation";
    public static final String   CAT_BASEBJECT           = "Base Object";
    public static final String   CAT_COMPILER            = "Compiler";
+   public static final String   CAT_CLIENT              = "Client";
 
    // ------------------
    // TODO DF Sortout those remaining consts..

@@ -30,10 +30,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
-import org.jkiss.dbeaver.ext.db2.DB2InfoUtils;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
-import org.jkiss.dbeaver.ext.db2.info.DB2Application;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2TopSQL;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2BufferpoolCache;
@@ -87,7 +85,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    private final DB2UserCache       userCache       = new DB2UserCache();
    private final DB2GroupCache      groupCache      = new DB2GroupCache();
 
-   private List<DB2Application>     listApplication;
    private List<DB2Parameter>       listDBParameters;
    private List<DB2Parameter>       listDBMParameters;
    private List<DB2TopSQL>          listTopSQL;
@@ -146,10 +143,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
                this.activeSchemaName = this.activeSchemaName.trim();
             }
 
-            listApplication = DB2InfoUtils.readApplications(monitor, context);
-            listDBMParameters = DB2InfoUtils.readDBMCfg(monitor, context);
-            listDBParameters = DB2InfoUtils.readDBCfg(monitor, context);
-            listTopSQL = DB2InfoUtils.readTopDynSQL(monitor, context);
+            listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
+            listDBParameters = DB2Utils.readDBCfg(monitor, context);
+            listTopSQL = DB2Utils.readTopDynSQL(monitor, context);
 
          } catch (SQLException e) {
             LOG.warn(e);
@@ -173,7 +169,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
       this.schemaCache.clearCache();
       this.dataTypeCache.clearCache();
 
-      this.listApplication = null;
       this.listDBMParameters = null;
       this.listDBParameters = null;
       this.listTopSQL = null;
@@ -414,9 +409,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
    // -------------
    // Dynamic Data
    // -------------
-   public List<DB2Application> getApplications(DBRProgressMonitor monitor) throws DBException {
-      return listApplication;
-   }
 
    public List<DB2Parameter> getDbParameters(DBRProgressMonitor monitor) throws DBException {
       return listDBParameters;
