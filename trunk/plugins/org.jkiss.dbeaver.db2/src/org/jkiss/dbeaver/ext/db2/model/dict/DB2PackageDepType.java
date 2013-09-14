@@ -26,32 +26,32 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
  * @author Denis Forveille
  * 
  */
-public enum DB2TriggerDepType {
+public enum DB2PackageDepType {
    A("A (Table alias)", DB2ObjectType.ALIAS),
 
    B("B (Trigger)", DB2ObjectType.TRIGGER),
 
-   C("C (Column)"),
+   D("D (Server)"),
 
    F("F (Function)", DB2ObjectType.UDF),
 
    G("G (Global temporary table)", DB2ObjectType.TABLE),
 
-   H("H (Hierachy table)", DB2ObjectType.TABLE),
+   I("I (Index)", DB2ObjectType.INDEX),
 
-   K("K (Package)", DB2ObjectType.PACKAGE),
-
-   L("L (Detached table)", DB2ObjectType.TABLE),
+   M("M (Function Mapping)"),
 
    N("N (Nickname)"),
 
    O("O (Privilege dependency on all subtables or subviews in a table or view hierarchy)"),
 
-   Q("Q (Sequence)", DB2ObjectType.TABLE),
+   P("P (Page Size)"),
+
+   Q("Q (Sequence)", DB2ObjectType.SEQUENCE),
 
    R("R (UDT)", DB2ObjectType.UDT),
 
-   S("S (MQT)", DB2ObjectType.SEQUENCE),
+   S("S (MQT)", DB2ObjectType.TABLE),
 
    T("T (Table)", DB2ObjectType.TABLE),
 
@@ -78,12 +78,12 @@ public enum DB2TriggerDepType {
    // Constructor
    // -----------
 
-   private DB2TriggerDepType(String description, DB2ObjectType db2ObjectType) {
+   private DB2PackageDepType(String description, DB2ObjectType db2ObjectType) {
       this.description = description;
       this.db2ObjectType = db2ObjectType;
    }
 
-   private DB2TriggerDepType(String description) {
+   private DB2PackageDepType(String description) {
       this(description, null);
    }
 
