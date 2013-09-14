@@ -25,6 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -42,7 +43,12 @@ import org.jkiss.dbeaver.ui.DBIcon;
  */
 public enum DB2ObjectType implements DBSObjectType {
 
-   // See init below
+   ALIAS(DBIcon.TREE_SYNONYM.getImage(), DB2Alias.class, new ObjectFinder() {
+      @Override
+      public DB2Alias findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getAliasCache().getObject(monitor, schema, objectName);
+      }
+   }),
 
    TABLE(DBIcon.TREE_TABLE.getImage(), DB2Table.class, new ObjectFinder() {
       @Override

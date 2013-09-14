@@ -53,11 +53,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
    private static final Log             LOG               = LogFactory.getLog(DB2StructureAssistant.class);
 
    // TODO DF: Work in progess
-   // For now only support Search/Autocomplete on Tables and Views..
+   // For now only support Search/Autocomplete on Aliases, Tables and Views..
 
-   private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
-   private static final DBSObjectType[] AUTOC_OBJ_TYPES   = { DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
-   private static final DBSObjectType[] SUPP_OBJ_TYPES    = { DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+   private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+   private static final DBSObjectType[] AUTOC_OBJ_TYPES   = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+   private static final DBSObjectType[] SUPP_OBJ_TYPES    = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
 
    private static String                SQL_ALL;
    private static String                SQL_TAB;
@@ -67,7 +67,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
       sb.append("  FROM SYSCAT.TABLES");
       sb.append(" WHERE TABSCHEMA = ?");
       sb.append("   AND TABNAME LIKE ?");
-      sb.append("   AND TYPE NOT IN ('A','H','N','L')"); // DF : Temp
+      sb.append("   AND TYPE IN ('A','G','N','S','T','U','V','W')"); // DF : Temp
       sb.append(" WITH UR");
       SQL_TAB = sb.toString();
 
@@ -76,7 +76,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
       sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
       sb.append("  FROM SYSCAT.TABLES");
       sb.append(" WHERE TABNAME LIKE ?");
-      sb.append("   AND TYPE NOT IN ('A','H','N','L')");// DF : Temp
+      sb.append("   AND TYPE IN ('A','G','N','S','T','U','V','W')");// DF : Temp
       sb.append(" WITH UR");
 
       SQL_ALL = sb.toString();
@@ -190,6 +190,9 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                }
 
                switch (tableType) {
+               case A:
+                  objectType = DB2ObjectType.ALIAS;
+                  break;
                case T:
                   objectType = DB2ObjectType.TABLE;
                   break;
