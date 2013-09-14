@@ -114,7 +114,6 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
       return remarks;
    }
 
-   // TODO DF: conflict with parent class
    @Property(viewable = false, editable = false)
    public String getOwner() {
       return owner;

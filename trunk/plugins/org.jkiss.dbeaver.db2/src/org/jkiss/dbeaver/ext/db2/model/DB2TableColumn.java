@@ -19,8 +19,6 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
@@ -33,7 +31,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 /**
  * DB2 Table Column
@@ -44,6 +41,7 @@ import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBSTableColumn, DBPHiddenObject {
 
    private DB2DataType dataType;
+   private DB2Schema   dataTypeSchema;
    private String      remarks;
    private boolean     hidden;
 
@@ -66,16 +64,18 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
 
       // Set DataTypes data
       // Search for DataType
-      String typeName = JDBCUtils.safeGetString(dbResult, "TYPENAME");
       // Look first in Standards type
+      String typeName = JDBCUtils.safeGetString(dbResult, "TYPENAME");
       this.dataType = tableBase.getDataSource().getDataTypeCache().getObject(monitor, getTable().getDataSource(), typeName);
       if (this.dataType == null) {
-         // Then Look in UDT
-         // TODO DF yet to be done
+         String typeSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
+         this.dataTypeSchema = getDataSource().getSchema(monitor, typeSchemaName);
+         this.dataType = this.dataTypeSchema.getUDT(monitor, typeName);
+      } else {
+         this.dataTypeSchema = dataType.getSchema();
       }
       setTypeName(dataType.getFullQualifiedName());
       setValueType(dataType.getTypeID());
-
    }
 
    @Override
@@ -104,18 +104,22 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
       return dataType.getDataKind();
    }
 
-   // -----------------
-   // Direct Attributes
-   // -----------------
-   // @Property(viewable = true, editable = false,order=2)
-   @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnDataTypeListProvider.class)
-   public DBSDataType getType() {
-      return dataType;
-   }
-
    @Override
    public String getTypeName() {
       return super.getTypeName();
+   }
+
+   // -----------------
+   // Properties
+   // -----------------
+   @Property(viewable = true, editable = false, order = 20)
+   public DB2Schema getTypeSchema() {
+      return dataTypeSchema;
+   }
+
+   @Property(viewable = true, editable = false, order = 21)
+   public DBSDataType getType() {
+      return dataType;
    }
 
    @Property(viewable = true, editable = false)
@@ -128,22 +132,4 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
    public String getComment() {
       return remarks;
    }
-
-   public static class ColumnDataTypeListProvider implements IPropertyValueListProvider<DB2TableColumn> {
-
-      @Override
-      public boolean allowCustomValue() {
-         return false;
-      }
-
-      @Override
-      public Object[] getPossibleValues(DB2TableColumn column) {
-         List<DBSDataType> dataTypes = new ArrayList<DBSDataType>(column.getTable().getDataSource().getDataTypes());
-         if (!dataTypes.contains(column.getType())) {
-            dataTypes.add(column.getType());
-         }
-         return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
-      }
-   }
-
 }

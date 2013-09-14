@@ -75,7 +75,6 @@ public class DB2PlanStatement {
    private Integer               sectNo;
    private Double                totalCost;
    private String                statementText;
-   private byte[]                snapshot;
    private Integer               queryDegree;
 
    // ------------
@@ -96,10 +95,7 @@ public class DB2PlanStatement {
       this.totalCost = JDBCUtils.safeGetDouble(dbResult, "TOTAL_COST");
       this.queryDegree = JDBCUtils.safeGetInteger(dbResult, "QUERY_DEGREE");
 
-      // TODO DF: bad: clob + blob
       this.statementText = JDBCUtils.safeGetString(dbResult, "STATEMENT_TEXT");
-      // this.snapshot = JDBCUtils
-      // .safeGetString(dbResult, "SNAPSHOT");
 
       loadChildren(context);
    }
@@ -226,10 +222,6 @@ public class DB2PlanStatement {
 
    public String getStatementText() {
       return statementText;
-   }
-
-   public byte[] getSnapshot() {
-      return snapshot;
    }
 
    public Integer getQueryDegree() {
