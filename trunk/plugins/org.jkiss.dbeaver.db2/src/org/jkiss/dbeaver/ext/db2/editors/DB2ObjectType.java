@@ -27,8 +27,18 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2Package;
+import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -36,7 +46,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
- * DB2 Object type used by Search and Content Assist
+ * DB2 Object type used by Search, Content Assist and object dependency resolution
  * 
  * @author Denis Forveille
  * 
@@ -50,10 +60,87 @@ public enum DB2ObjectType implements DBSObjectType {
       }
    }),
 
+   CHECK(DBIcon.TREE_CONSTRAINT.getImage(), DB2TableCheckConstraint.class, new ObjectFinder() {
+      @Override
+      public DB2TableCheckConstraint findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getCheckCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   FOREIGN_KEY(DBIcon.TREE_FOREIGN_KEY.getImage(), DB2TableForeignKey.class, new ObjectFinder() {
+      @Override
+      public DB2TableForeignKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getAssociationCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   INDEX(DBIcon.TREE_INDEX.getImage(), DB2Index.class, new ObjectFinder() {
+      @Override
+      public DB2Index findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getIndexCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   PACKAGE(DBIcon.TREE_PACKAGE.getImage(), DB2Package.class, new ObjectFinder() {
+      @Override
+      public DB2Package findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getPackageCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   PROCEDURE(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
+      @Override
+      public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getProcedureCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   REFERENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2TableReference.class, new ObjectFinder() {
+      @Override
+      public DB2TableReference findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getReferenceCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   SEQUENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2Sequence.class, new ObjectFinder() {
+      @Override
+      public DB2Sequence findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getSequenceCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
    TABLE(DBIcon.TREE_TABLE.getImage(), DB2Table.class, new ObjectFinder() {
       @Override
       public DB2Table findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
          return schema.getTableCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   TRIGGER(DBIcon.TREE_TABLE.getImage(), DB2Trigger.class, new ObjectFinder() {
+      @Override
+      public DB2Trigger findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getTriggerCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   UDF(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
+      @Override
+      public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getUdfCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   UDT(DBIcon.TREE_DATA_TYPE.getImage(), DB2DataType.class, new ObjectFinder() {
+      @Override
+      public DB2DataType findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getUdtCache().getObject(monitor, schema, objectName);
+      }
+   }),
+
+   UNIQUE_KEY(DBIcon.TREE_UNIQUE_KEY.getImage(), DB2TableUniqueKey.class, new ObjectFinder() {
+      @Override
+      public DB2TableUniqueKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
+         return schema.getConstraintCache().getObject(monitor, schema, objectName);
       }
    }),
 
