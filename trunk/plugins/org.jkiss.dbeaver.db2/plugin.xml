@@ -201,16 +201,18 @@
                         </items>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.information.node.name" icon="#folder_info" description="Database system information" >
-                    <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Application" label="%tree.applications.node.name" icon="#info" description="Applications">
-                        <items label="%tree.application.node.name" path="application" property="applications" icon="#info" navigable="true" virtual="true"/>
-                    </folder> 
+                <folder type="" label="%tree.administer.node.name" icon="#folder_admin" description="Maintenance/Settings" >
+                    
+                    <object type="org.jkiss.dbeaver.ext.db2.editors.DB2ApplicationEditor" label="%tree.applications.node.name" icon="#admin" description="Server application manager" editor="org.jkiss.dbeaver.ext.db2.editors.DB2ApplicationEditor"/>
+                    
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" label="%tree.dbparameters.node.name" icon="#info" description="Database Configuration">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="#info" navigable="false" virtual="true"/>
                     </folder>
+                    
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" label="%tree.dbmparameters.node.name" icon="#info" description="Database Manager Configuration">
                         <items label="%tree.parameter.node.name" path="parameter" property="dbmParameters" icon="#info" navigable="false" virtual="true"/>
                     </folder>
+                    
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2TopSQL" label="%tree.topsqls.node.name" icon="#info" description="Top SQL">
                         <items label="%tree.topsql.node.name" path="topSQL" property="topSQLs" icon="#info" navigable="false" virtual="true"/>
                     </folder>
@@ -321,10 +323,10 @@
 
     <extension point="org.eclipse.ui.editors">
         <editor
-            name="Session Manager"
-            icon="icons/sessions.png"
-            class="org.jkiss.dbeaver.ext.db2.editors.DB2SessionEditor"
-            id="org.jkiss.dbeaver.ext.db2.editors.DB2SessionEditor">
+            name="Application Manager"
+            icon="icons/compile.png"
+            class="org.jkiss.dbeaver.ext.db2.editors.DB2ApplicationEditor"
+            id="org.jkiss.dbeaver.ext.db2.editors.DB2ApplicationEditor">
         </editor>
     </extension>
 

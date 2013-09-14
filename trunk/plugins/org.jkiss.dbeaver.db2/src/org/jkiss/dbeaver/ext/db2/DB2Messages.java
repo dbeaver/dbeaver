@@ -77,13 +77,11 @@ public class DB2Messages extends NLS {
    public static String edit_db2_package_manager_dialog_title;
    public static String edit_db2_schema_manager_dialog_title;
    public static String edit_db2_trigger_manager_dialog_title;
-   public static String editors_db2_session_editor_action__session;
-   public static String editors_db2_session_editor_action_disconnect;
-   public static String editors_db2_session_editor_action_kill;
-   public static String editors_db2_session_editor_confirm_action;
-   public static String editors_db2_session_editor_confirm_title;
-   public static String editors_db2_session_editor_title_disconnect_session;
-   public static String editors_db2_session_editor_title_kill_session;
+
+   public static String editors_db2_application_editor_title_force_application;
+   public static String editors_db2_application_editor_action_force;
+   public static String editors_db2_application_editor_confirm_action;
+
    public static String editors_db2_source_abstract_editor_action_name;
    public static String editors_db2_source_abstract_editor_state;
    public static String tools_script_execute_wizard_error_sqlplus_not_found;
