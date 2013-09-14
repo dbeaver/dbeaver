@@ -89,6 +89,7 @@ public class DB2ServerApplication implements DBAServerSession {
    @Override
    public String getActiveQuery() {
       // TODO DF: no "Active Query" easily available in DB2 and most applications are not currently executing an SQL...
+      // It needs to activate some monitoring flags that are usually off..
       return null;
    }
 
@@ -106,23 +107,23 @@ public class DB2ServerApplication implements DBAServerSession {
    }
 
    @Property(viewable = true, editable = false, order = 2)
+   public Long getAgentId() {
+      return agentId;
+   }
+
+   @Property(viewable = true, editable = false, order = 3)
    public String getDatabaseName() {
       return databaseName;
    }
 
-   @Property(viewable = true, editable = false, order = 3)
+   @Property(viewable = true, editable = false, order = 4)
    public String getApplicationName() {
       return applicationName;
    }
 
-   @Property(viewable = true, editable = false, order = 4)
+   @Property(viewable = true, editable = false, order = 5)
    public String getApplicationStatus() {
       return applicationStatus;
-   }
-
-   @Property(viewable = true, editable = false, order = 5)
-   public Long getAgentId() {
-      return agentId;
    }
 
    @Property(viewable = true, editable = false, order = 6)
