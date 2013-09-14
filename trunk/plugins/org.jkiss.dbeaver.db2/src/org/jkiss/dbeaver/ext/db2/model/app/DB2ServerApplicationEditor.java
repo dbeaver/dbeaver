@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.editors;
+package org.jkiss.dbeaver.ext.db2.model.app;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.ui.DBIcon;
@@ -44,7 +43,7 @@ import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
  * 
  * @author Denis Forveille
  */
-public class DB2ApplicationEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> {
+public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> {
    private SessionManagerViewer   applicationViewer;
    private ForceApplicationAction forceApplicationAction;
 
