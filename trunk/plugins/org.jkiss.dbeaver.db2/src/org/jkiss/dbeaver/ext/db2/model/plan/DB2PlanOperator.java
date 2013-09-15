@@ -96,7 +96,7 @@ public class DB2PlanOperator extends DB2PlanNode {
 
    @Override
    public void setEstimatedCardinality(Double estimatedCardinality) {
-      // TODO DF: not sure of the rule here
+      // TODO DF: not sure if this rule is correct
       this.estimatedCardinality = Math.max(this.estimatedCardinality, estimatedCardinality);
    }
 

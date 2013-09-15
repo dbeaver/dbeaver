@@ -24,23 +24,16 @@ Improvements:
   - Propgate and use monitors everywhere
   - Lazy loading
   
-  - Serge?
-    - missing PK columns indicator/icon in  columns lists (Unique, foreign)
-    - Enhance connection view with DB2 trace settings -> Serge?
-    - Enhance EXPLAIN facility: add a graphic view? -> Serge?
+  - Serge to check?
+    - missing PK columns indicator/icon in columns lists (Unique, foreign)
+    - Enhance connection view with DB2 trace settings 
+    - Enhance EXPLAIN facility with a graphic view of nodes -> Later
   
   - Split DB2Tables into distinct sub types:
     - Regular
     - MQT
     - Temporary Tables
     - Hierachies..
-
-Missing relationships:
-   - Tablespace->Bufferpool link on BPName
-   - Tables -> referenced by triggers
-   - Tables -> referenced by aliases
-   - Sequences -> referenced by aliases
-   
 
 Missing Menu Actions
   - Almost everywhere
@@ -63,6 +56,12 @@ Missing Menu Actions
     - current locks
     - Server OS INFO
 
+Missing relationships (All nice to have):
+   - Tablespace->Bufferpool link on BPName
+   - Tables -> referenced by triggers
+   - Tables -> referenced by aliases
+   - Sequences -> referenced by aliases
+   
 Add a "Federation" menu at the datasource level with (<1% of users use federation=oracle dblinks)
 - Servers
 - Wrapeprs

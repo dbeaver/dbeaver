@@ -165,7 +165,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
       return 0;
    }
 
-   public int getEquivalentSqlTYpe() {
+   public int getEquivalentSqlType() {
       return typeDesc.sqlType;
    }
 

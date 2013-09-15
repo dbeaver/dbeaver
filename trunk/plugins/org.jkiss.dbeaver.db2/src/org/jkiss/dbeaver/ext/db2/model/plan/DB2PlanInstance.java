@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+
 /**
  * DB2 EXPLAIN_INSTANCE table
  * 
@@ -40,7 +41,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanInstance {
 
-   // TODO DF : This class is not used yet by the tool
+   // DF : This class is not used yet by the tool
 
    private static String    SEL_EXP_STATEMENT;
    static {
