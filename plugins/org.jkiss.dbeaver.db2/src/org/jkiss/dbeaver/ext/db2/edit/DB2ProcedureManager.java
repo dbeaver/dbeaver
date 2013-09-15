@@ -36,8 +36,7 @@ public class DB2ProcedureManager extends JDBCObjectEditor<DB2Routine, DB2Schema>
 
    @Override
    public DBSObjectCache<? extends DBSObject, DB2Routine> getObjectsCache(DB2Routine object) {
-      // return object.getSchema().getRoutineCache();
-      return null;
+      return object.getSchema().getProcedureCache();
    }
 
    @Override

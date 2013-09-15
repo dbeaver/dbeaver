@@ -39,6 +39,7 @@ import org.jkiss.utils.CommonUtils;
  * DB2ViewManager
  */
 public class DB2ViewManager extends JDBCObjectEditor<DB2View, DB2Schema> {
+   private static final String SQL_DROP_VIEW = "DROP VIEW %s";
 
    @Override
    public long getMakerOptions() {
@@ -53,7 +54,7 @@ public class DB2ViewManager extends JDBCObjectEditor<DB2View, DB2Schema> {
    }
 
    @Override
-   @SuppressWarnings("unchecked")
+   @SuppressWarnings({ "unchecked", "rawtypes" })
    public DBSObjectCache<? extends DBSObject, DB2View> getObjectsCache(DB2View object) {
       return (DBSObjectCache) object.getSchema().getViewCache();
    }
@@ -80,8 +81,9 @@ public class DB2ViewManager extends JDBCObjectEditor<DB2View, DB2Schema> {
 
    @Override
    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command) {
-      return new IDatabasePersistAction[] { new AbstractDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
-      };
+      String sql = String.format(SQL_DROP_VIEW, command.getObject().getFullQualifiedName());
+      IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop view", sql);
+      return new IDatabasePersistAction[] { action };
    }
 
    private IDatabasePersistAction[] createOrReplaceViewQuery(DBECommandComposite<DB2View, PropertyHandler> command) {

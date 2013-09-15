@@ -38,7 +38,7 @@ public enum DB2TableType {
 
    N("N (Nickname)", DB2ObjectType.ALIAS), // TODO DF: Wrong will be NICKNAME in the future..
 
-   S("S ( Materialized query table)", DB2ObjectType.TABLE),
+   S("S (Materialized query table)", DB2ObjectType.TABLE),
 
    T("T (Table (untyped))", DB2ObjectType.TABLE),
 
