@@ -21,14 +21,17 @@ package org.jkiss.dbeaver.ext.db2.model;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.edit.DB2EnumListProvideHelper.DB2SequencePrecisionListProvider;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2SequencePrecision;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2SequenceType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -37,7 +40,7 @@ import org.jkiss.utils.CommonUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2Sequence extends DB2SchemaObject {
+public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject {
 
    private String               owner;
    private DB2OwnerType         ownerType;
@@ -121,6 +124,10 @@ public class DB2Sequence extends DB2SchemaObject {
    @Property(viewable = true, editable = false, order = 3)
    public Long getNextCacheFirstValue() {
       return nextCacheFirstValue;
+   }
+
+   public void setNextCacheFirstValue(Long nextCacheFirstValue) {
+      this.nextCacheFirstValue = nextCacheFirstValue;
    }
 
    @Property(viewable = true, editable = true, updatable = true, order = 4)
@@ -208,7 +215,7 @@ public class DB2Sequence extends DB2SchemaObject {
       return owner;
    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+   @Property(viewable = false, editable = true, category = DB2Constants.CAT_OWNER)
    public String getOwnerTypeDescription() {
       return ownerType.getDescription();
    }
@@ -261,19 +268,24 @@ public class DB2Sequence extends DB2SchemaObject {
       return origin;
    }
 
-   @Property(viewable = false, editable = false, updatable = true, order = 23)
+   @Property(viewable = false, editable = false, order = 23)
    public String getOriginDescription() {
       return origin.getDescription();
    }
 
    @Override
-   @Property(viewable = false, editable = true)
+   @Property(viewable = false, editable = true, updatable = true)
    public String getDescription() {
       return remarks;
    }
 
    public void setDescription(String remarks) {
       this.remarks = remarks;
+   }
+
+   @Override
+   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
+      return true;
    }
 
 }
