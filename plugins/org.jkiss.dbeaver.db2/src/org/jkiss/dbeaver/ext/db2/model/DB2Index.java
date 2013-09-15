@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
@@ -39,8 +41,8 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
 
-   // private String indSchema;
-   // private String indName;
+   private static final Log     LOG = LogFactory.getLog(DB2Index.class);
+
    private DB2UniqueRule        uniqueRule;
    private Boolean              madeUnique;
    private Integer              colCount;
@@ -56,8 +58,6 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
    public DB2Index(DBRProgressMonitor monitor, DB2Schema schema, DB2Table table, ResultSet dbResult) {
       super(schema, table, JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME"), null, true);
 
-      // this.indSchema = JDBCUtils.safeGetString(dbResult, "INDSCHEMA");
-      // this.indName = JDBCUtils.safeGetString(dbResult, "INDNAME");
       this.uniqueRule = CommonUtils.valueOf(DB2UniqueRule.class, JDBCUtils.safeGetString(dbResult, "UNIQUERULE"));
       this.madeUnique = JDBCUtils.safeGetBoolean(dbResult, "MADE_UNIQUE");
       this.colCount = JDBCUtils.safeGetInteger(dbResult, "COLCOUNT");
@@ -98,8 +98,8 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
       try {
          return getContainer().getIndexCache().getChildren(monitor, getContainer(), this);
       } catch (DBException e) {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
+         // TODO DF: Don't know what to do with this exception except log it
+         LOG.error("DBException swallowed during getAttributeReferences", e);
          return null;
       }
    }

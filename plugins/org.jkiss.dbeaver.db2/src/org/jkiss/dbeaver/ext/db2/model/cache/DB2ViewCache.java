@@ -44,7 +44,6 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
    private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? ORDER BY TABNAME, COLNO WITH UR";
 
    public DB2ViewCache() {
-      // TODO BAD: should be VIEWSCHEMA+VIEWNAME
       super("VIEWNAME");
       setListOrderComparator(DBUtils.<DB2View> nameComparator());
    }

@@ -207,12 +207,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
       return null;
    }
 
-   // --------------
-   // TODO DF: No idea what to do with this method, what it is used for...
-   // --------------
-
    @Override
    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+      // TODO DF: No idea what to do with this method, what it is used for...
    }
 
    // --------------------------
