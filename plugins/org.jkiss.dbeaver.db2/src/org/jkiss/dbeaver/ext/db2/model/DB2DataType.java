@@ -91,7 +91,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
       this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
       this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
       this.moduleName = JDBCUtils.safeGetString(dbResult, "TYPEMODULENAME");
-      this.sourceSchema = JDBCUtils.safeGetString(dbResult, "SOURCESCHEMA");
+      this.sourceSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCESCHEMA");
       this.sourceModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCEMODULENAME");
       this.sourceName = JDBCUtils.safeGetString(dbResult, "SOURCENAME");
       this.metaType = CommonUtils.valueOf(DB2DataTypeMetaType.class, JDBCUtils.safeGetString(dbResult, "METATYPE"));
