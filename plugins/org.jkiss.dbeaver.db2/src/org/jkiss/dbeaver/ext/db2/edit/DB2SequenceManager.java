@@ -47,11 +47,9 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
    private static final String SQL_CREATE  = "CREATE SEQUENCE ";
    private static final String SQL_ALTER   = "ALTER SEQUENCE ";
    private static final String SQL_DROP    = "DROP SEQUENCE %s";
-   private static final String SQL_COMMENT = "COMMENT ON SEQUENCE %s is '%s'";
+   private static final String SQL_COMMENT = "COMMENT ON SEQUENCE %s IS '%s'";
 
    private static final String SPACE       = "\n   ";
-   private static final String KW_START    = "START";
-   private static final String KW_RESTART  = "RESTART";
 
    @Override
    public long getMakerOptions() {
@@ -89,7 +87,7 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command) {
       List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
 
-      String sql = buildStatement(command.getObject(), SQL_CREATE, KW_START, true);
+      String sql = buildStatement(command.getObject(), false);
       listeCommands.add(new AbstractDatabasePersistAction("Create Sequence", sql));
 
       String comment = buildComment(command.getObject());
@@ -104,7 +102,7 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command) {
       List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
 
-      String sql = buildStatement(command.getObject(), SQL_ALTER, KW_RESTART, false);
+      String sql = buildStatement(command.getObject(), true);
       listeCommands.add(new AbstractDatabasePersistAction("Alter Sequence", sql));
 
       String comment = buildComment(command.getObject());
@@ -125,18 +123,28 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
    // -------
    // Helpers
    // -------
-   private String buildStatement(DB2Sequence sequence, String createOrAlter, String startKw, Boolean type) {
+   private String buildStatement(DB2Sequence sequence, Boolean forUpdate) {
 
       StringBuilder sb = new StringBuilder(256);
-      sb.append(createOrAlter);
+      if (forUpdate) {
+         sb.append(SQL_ALTER);
+      } else {
+         sb.append(SQL_CREATE);
+      }
       sb.append(sequence.getFullQualifiedName()).append(SPACE);
-      if (type) {
+      if (!(forUpdate)) {
          sb.append("AS ");
          sb.append(sequence.getPrecision().getSqlKeyword()).append(SPACE);
       }
+
       if (sequence.getStart() != null) {
-         sb.append(startKw).append(" WITH ").append(sequence.getStart()).append(SPACE);
+         if (forUpdate) {
+            sb.append("RESTART WITH ").append(sequence.getStart()).append(SPACE);
+         } else {
+            sb.append("START WITH ").append(sequence.getStart()).append(SPACE);
+         }
       }
+
       if (sequence.getIncrement() != null) {
          sb.append("INCREMENT BY ").append(sequence.getIncrement()).append(SPACE);
       }
