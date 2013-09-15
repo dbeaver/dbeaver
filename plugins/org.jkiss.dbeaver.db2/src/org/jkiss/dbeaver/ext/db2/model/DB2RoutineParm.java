@@ -112,7 +112,7 @@ public class DB2RoutineParm implements DBSProcedureParameter {
 
    @Override
    public int getTypeID() {
-      return dataType.getEquivalentSqlTYpe();
+      return dataType.getEquivalentSqlType();
    }
 
    @Override
