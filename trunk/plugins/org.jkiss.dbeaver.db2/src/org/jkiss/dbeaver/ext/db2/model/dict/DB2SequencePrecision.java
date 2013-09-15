@@ -27,21 +27,28 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
  * 
  */
 public enum DB2SequencePrecision {
-   P5("5 (Smallint)", 5),
+   P5("5 (Smallint)", 5, "SMALLINT"),
 
-   P10("10 (Integer)", 10),
+   P10("10 (Integer)", 10, "INTEGER"),
 
-   P19("19 (Bigint)", 19);
+   P19("19 (Bigint)", 19, "BIGINT");
 
    private String  description;
    private Integer dataType;
+   private String  sqlKeyword;
 
    // -----------
    // Constructor
    // -----------
-   private DB2SequencePrecision(String description, Integer dataType) {
+   private DB2SequencePrecision(String description, Integer dataType, String sqlKeyword) {
       this.description = description;
       this.dataType = dataType;
+      this.sqlKeyword = sqlKeyword;
+   }
+
+   @Override
+   public String toString() {
+      return description;
    }
 
    // ------------------------
@@ -50,6 +57,16 @@ public enum DB2SequencePrecision {
    public static DB2SequencePrecision getFromDataType(Integer dataType) {
       for (DB2SequencePrecision item : DB2SequencePrecision.values()) {
          if (dataType.equals(item.getDataType())) {
+            return item;
+         }
+      }
+      return null;
+   }
+
+   // TOOD DF: This to compensante for editor that set the object with the toString value instead of enum itsef. to be removed ASAP
+   public static DB2SequencePrecision getFromDescription(String description) {
+      for (DB2SequencePrecision item : DB2SequencePrecision.values()) {
+         if (description.equals(item.getDescription())) {
             return item;
          }
       }
@@ -66,6 +83,10 @@ public enum DB2SequencePrecision {
 
    public Integer getDataType() {
       return dataType;
+   }
+
+   public String getSqlKeyword() {
+      return sqlKeyword;
    }
 
 }

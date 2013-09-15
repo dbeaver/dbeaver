@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.edit.DB2EnumListProvideHelper.DB2SequencePrecisionListProvider;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2SequencePrecision;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2SequenceType;
@@ -92,9 +93,14 @@ public class DB2Sequence extends DB2SchemaObject {
    public DB2Sequence(DB2Schema schema, String name) {
       super(schema, name, false);
       seqType = DB2SequenceType.S;
-      precision = DB2SequencePrecision.P19;
       origin = DB2OwnerType.U;
       ownerType = DB2OwnerType.U;
+      // DB2 Default
+      precision = DB2SequencePrecision.P10;
+      order = false;
+      cycle = false;
+      cache = 20;
+      increment = 1L;
    }
 
    // -----------------
@@ -117,48 +123,81 @@ public class DB2Sequence extends DB2SchemaObject {
       return nextCacheFirstValue;
    }
 
-   @Property(viewable = true, editable = false, order = 4)
+   @Property(viewable = true, editable = true, order = 4)
    public Long getMinValue() {
       return minValue;
    }
 
-   @Property(viewable = true, editable = false, order = 5)
+   public void setMinValue(Long minValue) {
+      this.minValue = minValue;
+   }
+
+   @Property(viewable = true, editable = true, order = 5)
    public Long getMaxValue() {
       return maxValue;
    }
 
-   @Property(viewable = true, editable = false, order = 6)
+   public void setMaxValue(Long maxValue) {
+      this.maxValue = maxValue;
+   }
+
+   @Property(viewable = true, editable = true, order = 6)
    public Long getIncrement() {
       return increment;
    }
 
-   @Property(viewable = true, editable = false, order = 7)
+   public void setIncrement(Long increment) {
+      this.increment = increment;
+   }
+
+   @Property(viewable = true, editable = true, order = 7)
    public Long getStart() {
       return start;
    }
 
-   @Property(viewable = true, editable = false, order = 8)
+   public void setStart(Long start) {
+      this.start = start;
+   }
+
+   @Property(viewable = true, editable = true, order = 8)
    public Integer getCache() {
       return cache;
    }
 
-   @Property(viewable = true, editable = false, order = 9)
+   public void setCache(Integer cache) {
+      this.cache = cache;
+   }
+
+   @Property(viewable = true, editable = true, order = 9)
    public Boolean getCycle() {
       return cycle;
    }
 
-   @Property(viewable = true, editable = false, order = 10)
+   public void setCycle(Boolean cycle) {
+      this.cycle = cycle;
+   }
+
+   @Property(viewable = true, editable = true, order = 10)
    public Boolean getOrder() {
       return order;
    }
 
+   public void setOrder(Boolean order) {
+      this.order = order;
+   }
+
+   @Property(viewable = true, editable = true, order = 11, listProvider = DB2SequencePrecisionListProvider.class)
    public DB2SequencePrecision getPrecision() {
       return precision;
    }
 
-   @Property(viewable = true, editable = false, order = 11)
-   public String getPrecisionDescription() {
-      return precision.getDescription();
+   // TODO DF: Help ! The setter is called with the value of toString(), not the enum...
+   // public void setPrecision(DB2SequencePrecision precision) {
+   // System.out.println("aaa=" + precision);
+   // this.precision = precision;
+   // }
+   public void setPrecision(String precisionDescription) {
+      this.precision = DB2SequencePrecision.getFromDescription(precisionDescription);
    }
 
    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
@@ -225,9 +264,13 @@ public class DB2Sequence extends DB2SchemaObject {
    }
 
    @Override
-   @Property(viewable = false, editable = false)
+   @Property(viewable = false, editable = true)
    public String getDescription() {
       return remarks;
+   }
+
+   public void setDescription(String remarks) {
+      this.remarks = remarks;
    }
 
 }
