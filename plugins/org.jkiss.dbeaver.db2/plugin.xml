@@ -281,33 +281,17 @@
             contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="section">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
         </editor>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2DataTypeManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2SchemaManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2TableManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2TableColumnManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2ForeignKeyManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2ConstraintManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2IndexManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"
-            objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
+        
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2DataTypeManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SchemaManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TableManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TableColumnManager" objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ForeignKeyManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ConstraintManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2IndexManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SequenceManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
     </extension>
 
 <!--

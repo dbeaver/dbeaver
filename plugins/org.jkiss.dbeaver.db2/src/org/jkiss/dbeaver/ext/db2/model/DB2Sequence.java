@@ -89,6 +89,14 @@ public class DB2Sequence extends DB2SchemaObject {
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
    }
 
+   public DB2Sequence(DB2Schema schema, String name) {
+      super(schema, name, false);
+      seqType = DB2SequenceType.S;
+      precision = DB2SequencePrecision.P19;
+      origin = DB2OwnerType.U;
+      ownerType = DB2OwnerType.U;
+   }
+
    // -----------------
    // Properties
    // -----------------
