@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -52,8 +53,8 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
    // -----------------
    // Constructors
    // -----------------
-   public DB2Index(DB2Schema schema, DB2Table table, String indexName, ResultSet dbResult) {
-      super(schema, table, indexName, null, true);
+   public DB2Index(DBRProgressMonitor monitor, DB2Schema schema, DB2Table table, ResultSet dbResult) {
+      super(schema, table, JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME"), null, true);
 
       // this.indSchema = JDBCUtils.safeGetString(dbResult, "INDSCHEMA");
       // this.indName = JDBCUtils.safeGetString(dbResult, "INDNAME");
@@ -63,8 +64,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
       this.uniqueColCount = JDBCUtils.safeGetInteger(dbResult, "UNIQUE_COLCOUNT");
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-      // DF: Could have been done in constructor. More "readable" to do it
-      // here
+      // DF: Could have been done in constructor. More "readable" to do it here
       this.db2IndexType = CommonUtils.valueOf(DB2IndexType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "INDEXTYPE"));
       this.indexType = db2IndexType.getDBSIndexType();
    }
@@ -95,11 +95,13 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
 
    @Override
    public Collection<DB2IndexColumn> getAttributeReferences(DBRProgressMonitor monitor) {
-      return columns;
-   }
-
-   public void setColumns(List<DB2IndexColumn> columns) {
-      this.columns = columns;
+      try {
+         return getContainer().getIndexCache().getChildren(monitor, getContainer(), this);
+      } catch (DBException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+         return null;
+      }
    }
 
    // -----------------
@@ -112,7 +114,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
       return super.getName();
    }
 
-   @Property(viewable = true, editable = false, order = 2, id = "Schema")
+   @Property(viewable = true, editable = false, order = 2)
    public DB2Schema getIndSchema() {
       return getContainer();
    }

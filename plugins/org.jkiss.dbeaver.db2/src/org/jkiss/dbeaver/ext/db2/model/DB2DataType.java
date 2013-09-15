@@ -184,31 +184,31 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
       return db2Schema;
    }
 
-   @Property(viewable = true, editable = false, order = 3, id = "Module Name")
+   @Property(viewable = true, editable = false, order = 3)
    public String getModuleName() {
       return moduleName;
    }
 
    @Override
-   @Property(viewable = false, editable = false, id = "SQL Type ID")
+   @Property(viewable = false, editable = false)
    public int getTypeID() {
       return typeDesc.sqlType;
    }
 
    @Override
-   @Property(viewable = true, editable = false, order = 4, id = "Data Kind")
+   @Property(viewable = true, editable = false, order = 4)
    public DBSDataKind getDataKind() {
       return typeDesc.dataKind;
    }
 
    @Override
-   @Property(viewable = true, editable = false, order = 5, id = "Max Length")
+   @Property(viewable = true, editable = false, order = 5)
    public long getMaxLength() {
       return length;
    }
 
    @Override
-   @Property(viewable = true, editable = false, order = 6, id = "Scale")
+   @Property(viewable = true, editable = false, order = 6)
    public int getScale() {
       return scale;
    }

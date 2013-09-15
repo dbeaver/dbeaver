@@ -22,9 +22,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -32,32 +32,32 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
 /**
- * Cache for DB2 Triggers
+ * Cache for DB2 Sequences
  * 
  * @author Denis Forveille
  * 
  */
-public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
+public class DB2TableIndexCache extends JDBCObjectCache<DB2Table, DB2Index> {
 
-   private static final String SQL_TRIG_ALL = "SELECT * FROM SYSCAT.TRIGGERS WHERE TRIGSCHEMA = ? ORDER BY TRIGNAME WITH UR";
+   private static final String SQL_INDS_TAB = "SELECT * FROM SYSCAT.INDEXES WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY INDNAME WITH UR";
 
    @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException {
-      JDBCPreparedStatement dbStat = context.prepareStatement(SQL_TRIG_ALL);
-      dbStat.setString(1, db2Schema.getName());
+   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Table db2Table) throws SQLException {
+      final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_INDS_TAB);
+      dbStat.setString(1, db2Table.getSchema().getName());
+      dbStat.setString(2, db2Table.getName());
       return dbStat;
    }
 
    @Override
-   protected DB2Trigger fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
-                                                                                                          DBException {
+   protected DB2Index fetchObject(JDBCExecutionContext context, DB2Table db2Table, ResultSet dbResult) throws SQLException,
+                                                                                                      DBException {
 
-      // Look for related table
-      String tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
-      String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
-      DB2Schema tableSchema = db2Schema.getDataSource().schemaLookup(context.getProgressMonitor(), db2Schema, tableSchemaName);
-      DB2Table db2Table = tableSchema.getTable(context.getProgressMonitor(), tableName);
-
-      return new DB2Trigger(context.getProgressMonitor(), db2Schema, db2Table, dbResult);
+      // Lookup for indexes in right cache..
+      String indexSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDSCHEMA");
+      String indexName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME");
+      DB2Schema tableSchema = db2Table.getSchema();
+      DB2Schema indexSchema = db2Table.getDataSource().schemaLookup(context.getProgressMonitor(), tableSchema, indexSchemaName);
+      return indexSchema.getIndex(context.getProgressMonitor(), indexName);
    }
 }

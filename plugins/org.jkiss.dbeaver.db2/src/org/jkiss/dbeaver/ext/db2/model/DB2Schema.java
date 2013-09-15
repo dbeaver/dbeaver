@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2UserDefinedTypeCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -56,12 +57,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
  * 
  */
 public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject {
-   static final Log                           log              = LogFactory.getLog(DB2Schema.class);
+   private static final Log                   LOG              = LogFactory.getLog(DB2Schema.class);
 
    // DB2Schema's children
    private final DB2TableCache                tableCache       = new DB2TableCache();
    private final DB2ViewCache                 viewCache        = new DB2ViewCache();
    private final DB2SequenceCache             sequenceCache    = new DB2SequenceCache();
+   private final DB2IndexCache                indexCache       = new DB2IndexCache();
+   private final DB2TriggerCache              triggerCache     = new DB2TriggerCache();
    private final DB2AliasCache                aliasCache       = new DB2AliasCache();
    private final DB2PackageCache              packageCache     = new DB2PackageCache();
    private final DB2RoutineCache              procedureCache   = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
@@ -69,11 +72,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
    private final DB2UserDefinedTypeCache      udtCache         = new DB2UserDefinedTypeCache();
 
    // DB2Table's children
-   private final DB2IndexCache                indexCache       = new DB2IndexCache(tableCache);
    private final DB2TableUniqueKeyCache       constraintCache  = new DB2TableUniqueKeyCache(tableCache);
    private final DB2TableForeignKeyCache      associationCache = new DB2TableForeignKeyCache(tableCache);
    private final DB2TableReferenceCache       referenceCache   = new DB2TableReferenceCache(tableCache);
-   private final DB2TriggerCache              triggerCache     = new DB2TriggerCache(tableCache);
    private final DB2TableCheckConstraintCache checkCache       = new DB2TableCheckConstraintCache(tableCache);
 
    private String                             name;
@@ -100,10 +101,12 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
       this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
       this.ownerType = DB2OwnerType.valueOf(JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
       this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-      // DB2 v10 this.auditPolicyID = JDBCUtils.safeGetInteger(dbResult, "AUDITPOLICYID");
-      // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(dbResult, "AUDITPOLICYNAME");
-      // DB2 v10 this.dataCapture = JDBCUtils.safeGetBoolean(dbResult, "DATACAPTURE", DB2YesNo.Y.name());
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+      // DB2 v10.1+ columns
+      this.auditPolicyID = JDBCUtils.safeGetInteger(dbResult, "AUDITPOLICYID");
+      this.auditPolicyName = JDBCUtils.safeGetString(dbResult, "AUDITPOLICYNAME");
+      this.dataCapture = JDBCUtils.safeGetBoolean(dbResult, "DATACAPTURE", DB2YesNo.Y.name());
    }
 
    @Override
@@ -127,8 +130,6 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
          tableCache.loadChildren(monitor, this, null);
       }
       if ((scope & STRUCT_ASSOCIATIONS) != 0) {
-         monitor.subTask("Cache indexes");
-         indexCache.getObjects(monitor, this, null);
          monitor.subTask("Cache table unique keys");
          constraintCache.getObjects(monitor, this, null);
          monitor.subTask("Cache table foreign keys");
@@ -136,6 +137,8 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
          monitor.subTask("Cache table references");
          referenceCache.getObjects(monitor, this, null);
 
+         monitor.subTask("Cache indexes");
+         indexCache.getObjects(monitor, this);
          monitor.subTask("Cache Functions");
          udfCache.getObjects(monitor, this);
          monitor.subTask("Cache Types");
@@ -161,17 +164,18 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
       viewCache.clearCache();
       packageCache.clearCache();
       procedureCache.clearCache();
-      triggerCache.clearCache();
       udfCache.clearCache();
       udtCache.clearCache();
       sequenceCache.clearCache();
       aliasCache.clearCache();
 
+      // For those 2, need to refresh dependent cache (cache for tables..?)
       indexCache.clearCache();
+      triggerCache.clearCache();
+
       constraintCache.clearCache();
       associationCache.clearCache();
       referenceCache.clearCache();
-      triggerCache.clearCache();
       checkCache.clearCache();
 
       return true;
@@ -223,9 +227,17 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
       return indexCache.getObjects(monitor, this);
    }
 
+   public DB2Index getIndex(DBRProgressMonitor monitor, String name) throws DBException {
+      return indexCache.getObject(monitor, this, name, DB2Index.class);
+   }
+
    @Association
    public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
       return triggerCache.getObjects(monitor, this);
+   }
+
+   public DB2Trigger getTrigger(DBRProgressMonitor monitor, String name) throws DBException {
+      return triggerCache.getObject(monitor, this, name, DB2Trigger.class);
    }
 
    @Association

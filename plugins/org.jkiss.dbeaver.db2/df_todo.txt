@@ -4,18 +4,19 @@ TODO:
 
 Problems :
 - (minor importance) investigate while DDL generation does not work for some kind of "regular tables"
-- when the user cancel a drop action after viewing the drop command, the structure need to be refreshed. how to do that?
+- when the user tries to delete a schema but the SQL drop fail (ie because it is linked to an existing object)
+  or 
+  the user cancels a drop action after viewing the drop command, 
+  then the schema disappear from the list
+  -> the schema must dissapear from the schema list ONLY if the drop succedeed..
 
 Manage explain/ddl generation table creation 
 - EXPLAIN tables may be created in any schema where the user has the right to create them
-- If EXPLAIN tables not found in standard locations (CURRENT USER then SYSTOOLS) then ask teh user where to create the tables
+  -> the schema for explain tables should be in DB2 preferences. By default it is SYSTOOLS (best place for that)
+  -> the first time the user tries to do an explain, if EXPLAIN tables can not be found or not usable 
+    in standard locations (CURRENT USER then SYSTOOLS) then ask the user where to create the tables. 
+    Create them and store the schema for explain tables in preferences..
  
-Missing relationships:
-   - Tablespace->Bufferpool link on BPName
-   - Tables -> referenced by triggers
-   - Tables -> referenced by aliases
-   - Sequencess -> referenced by aliases
-   
 Improvements:
   - by default, the DB2 timestamps display format must be with 6 microseconds : 2013-09-12-18.05.00.000000
   - Enhance SQL Content assist + Search
@@ -33,6 +34,13 @@ Improvements:
     - MQT
     - Temporary Tables
     - Hierachies..
+
+Missing relationships:
+   - Tablespace->Bufferpool link on BPName
+   - Tables -> referenced by triggers
+   - Tables -> referenced by aliases
+   - Sequences -> referenced by aliases
+   
 
 Missing Menu Actions
   - Almost everywhere
