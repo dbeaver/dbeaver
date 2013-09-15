@@ -26,7 +26,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -53,35 +52,39 @@ public class DB2SchemaToolsHandler extends AbstractHandler {
       DB2Schema sourceSchema = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DB2Schema.class);
 
       if (sourceSchema != null) {
-         if (event.getCommand().getId().equals(DROP)) {
 
-            Shell activeShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+         Shell activeShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 
-            NewSchemaDialog dialog = new NewSchemaDialog(activeShell);
-            if (dialog.open() != IDialogConstants.OK_ID) {
-               return null;
+         NewSchemaDialog dialog = new NewSchemaDialog(activeShell);
+         if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+         }
+
+         try {
+            Boolean res;
+            if (event.getCommand().getId().equals(DROP)) {
+               res = DB2Utils.callAdminDropSchema(VoidProgressMonitor.INSTANCE, sourceSchema.getDataSource(),
+                                                  sourceSchema.getName(), dialog.getErrorSchemaName(), dialog.getErrorTableName());
+            } else {
+               // res = DB2Utils.callAdmiCopySchema(VoidProgressMonitor.INSTANCE,
+               // sourceSchema.getDataSource(),
+               // sourceSchema.getName(),
+               // targetSchema.getDataSource(),
+               // targetSchema.getName(),
+               // dialog.getErrorSchemaName(),
+               // dialog.getErrorTableName());
             }
 
-            try {
-               Boolean res = DB2Utils.callAdminDropSchema(VoidProgressMonitor.INSTANCE, sourceSchema.getDataSource(),
-                                                          sourceSchema.getName(), dialog.getErrorSchemaName(),
-                                                          dialog.getErrorTableName());
-               // TOOD DF: refresh worspace
-               sourceSchema.refreshObject(VoidProgressMonitor.INSTANCE);
-               // DBNModel.getInstance().refreshNodeContent(sourceSchema, this, DBNEvent.NodeChange.REFRESH);
+            // TOOD DF: refresh worspace
+            sourceSchema.refreshObject(VoidProgressMonitor.INSTANCE);
+            // DBNModel.getInstance().refreshNodeContent(sourceSchema, this, DBNEvent.NodeChange.REFRESH);
 
-            } catch (SQLException e) {
-               // TODO Auto-generated catch block
-               e.printStackTrace();
-            } catch (DBException e) {
-               // TODO Auto-generated catch block
-               e.printStackTrace();
-            }
-
-         } else {
-            UIUtils.showMessageBox(HandlerUtil.getActiveShell(event), "Copy schema", "Create schema '" + sourceSchema.getName()
-                     + "' copy", SWT.ICON_INFORMATION);
-
+         } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         } catch (DBException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
          }
       }
 
