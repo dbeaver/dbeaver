@@ -123,7 +123,7 @@ public class DB2Sequence extends DB2SchemaObject {
       return nextCacheFirstValue;
    }
 
-   @Property(viewable = true, editable = true, order = 4)
+   @Property(viewable = true, editable = true, updatable = true, order = 4)
    public Long getMinValue() {
       return minValue;
    }
@@ -132,7 +132,7 @@ public class DB2Sequence extends DB2SchemaObject {
       this.minValue = minValue;
    }
 
-   @Property(viewable = true, editable = true, order = 5)
+   @Property(viewable = true, editable = true, updatable = true, order = 5)
    public Long getMaxValue() {
       return maxValue;
    }
@@ -141,7 +141,7 @@ public class DB2Sequence extends DB2SchemaObject {
       this.maxValue = maxValue;
    }
 
-   @Property(viewable = true, editable = true, order = 6)
+   @Property(viewable = true, editable = true, updatable = true, order = 6)
    public Long getIncrement() {
       return increment;
    }
@@ -150,7 +150,7 @@ public class DB2Sequence extends DB2SchemaObject {
       this.increment = increment;
    }
 
-   @Property(viewable = true, editable = true, order = 7)
+   @Property(viewable = true, editable = true, updatable = true, order = 7)
    public Long getStart() {
       return start;
    }
@@ -159,7 +159,7 @@ public class DB2Sequence extends DB2SchemaObject {
       this.start = start;
    }
 
-   @Property(viewable = true, editable = true, order = 8)
+   @Property(viewable = true, editable = true, updatable = true, order = 8)
    public Integer getCache() {
       return cache;
    }
@@ -168,7 +168,7 @@ public class DB2Sequence extends DB2SchemaObject {
       this.cache = cache;
    }
 
-   @Property(viewable = true, editable = true, order = 9)
+   @Property(viewable = true, editable = true, updatable = true, order = 9)
    public Boolean getCycle() {
       return cycle;
    }
@@ -177,7 +177,7 @@ public class DB2Sequence extends DB2SchemaObject {
       this.cycle = cycle;
    }
 
-   @Property(viewable = true, editable = true, order = 10)
+   @Property(viewable = true, editable = true, updatable = true, order = 10)
    public Boolean getOrder() {
       return order;
    }
@@ -261,7 +261,7 @@ public class DB2Sequence extends DB2SchemaObject {
       return origin;
    }
 
-   @Property(viewable = false, editable = false, order = 23)
+   @Property(viewable = false, editable = false, updatable = true, order = 23)
    public String getOriginDescription() {
       return origin.getDescription();
    }
