@@ -148,7 +148,7 @@ public class DB2Sequence extends DB2SchemaObject {
       return precision;
    }
 
-   @Property(viewable = true, editable = false, order = 11, id = "Precision")
+   @Property(viewable = true, editable = false, order = 11)
    public String getPrecisionDescription() {
       return precision.getDescription();
    }
@@ -172,7 +172,7 @@ public class DB2Sequence extends DB2SchemaObject {
       return seqType;
    }
 
-   @Property(viewable = false, editable = false, id = "seqType")
+   @Property(viewable = false, editable = false)
    public String getSeqTypeDescription() {
       return seqType.getDescription();
    }
@@ -211,7 +211,7 @@ public class DB2Sequence extends DB2SchemaObject {
       return origin;
    }
 
-   @Property(viewable = false, editable = false, order = 23, id = "origin")
+   @Property(viewable = false, editable = false, order = 23)
    public String getOriginDescription() {
       return origin.getDescription();
    }

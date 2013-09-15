@@ -27,6 +27,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2StatefulObject;
@@ -51,23 +53,26 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2StatefulObject {
 
-   private static final Log log = LogFactory.getLog(DB2Table.class);
+   private static final Log     log               = LogFactory.getLog(DB2Table.class);
 
-   private DB2TableStatus   status;
-   private DB2TableType     type;
-   private Timestamp        createTime;
-   private Timestamp        alterTime;
-   private Timestamp        invalidateTime;
+   private DB2TableIndexCache   tableIndexCache   = new DB2TableIndexCache();
+   private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
 
-   private DB2Tablespace    tablespace;
-   private DB2Tablespace    indexTablespace;
-   private DB2Tablespace    longTablespace;
+   private DB2TableStatus       status;
+   private DB2TableType         type;
+   private Timestamp            createTime;
+   private Timestamp            alterTime;
+   private Timestamp            invalidateTime;
 
-   private Timestamp        statsTime;
-   private Long             card;
-   private Long             nPages;
-   private Long             fPages;
-   private Long             overFLow;
+   private DB2Tablespace        tablespace;
+   private DB2Tablespace        indexTablespace;
+   private DB2Tablespace        longTablespace;
+
+   private Timestamp            statsTime;
+   private Long                 card;
+   private Long                 nPages;
+   private Long                 fPages;
+   private Long                 overFLow;
 
    // -----------------
    // Constructors
@@ -121,11 +126,13 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
       getContainer().getTableCache().clearChildrenCache(this);
 
-      getContainer().getIndexCache().clearObjectCache(this);
+      // DF: Refresh parent cache ie cache for schemaof indexes/triggers different from table schema?
+      tableIndexCache.clearCache();
+      tableTriggerCache.clearCache();
+
       getContainer().getConstraintCache().clearObjectCache(this);
       getContainer().getAssociationCache().clearObjectCache(this);
       getContainer().getReferenceCache().clearObjectCache(this);
-      getContainer().getTriggerCache().clearObjectCache(this);
 
       return true;
    }
@@ -161,7 +168,12 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
    @Override
    @Association
    public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException {
-      return getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+      return tableIndexCache.getObjects(monitor, this);
+   }
+
+   @Association
+   public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+      return tableTriggerCache.getObjects(monitor, this);
    }
 
    @Override
@@ -201,11 +213,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
    public DB2TableCheckConstraint getCheckConstraint(DBRProgressMonitor monitor, String ukName) throws DBException {
       return getContainer().getCheckCache().getObject(monitor, getContainer(), this, ukName);
-   }
-
-   @Association
-   public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
-      return getContainer().getTriggerCache().getObjects(monitor, getContainer(), this);
    }
 
    // -----------------

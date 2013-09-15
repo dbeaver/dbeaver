@@ -78,7 +78,7 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
    // -----------------
 
    @Override
-   @Property(viewable = true, editable = false, id = "Name", order = 1)
+   @Property(viewable = true, editable = false, order = 1)
    public String getName() {
       return super.getName();
    }

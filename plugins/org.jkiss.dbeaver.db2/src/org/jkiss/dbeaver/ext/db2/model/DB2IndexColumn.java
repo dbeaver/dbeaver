@@ -18,10 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import java.sql.ResultSet;
+
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexColOrder;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableIndexColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * DB2 Index Column
@@ -30,7 +35,7 @@ import org.jkiss.dbeaver.model.meta.Property;
  * 
  * */
 public class DB2IndexColumn extends AbstractTableIndexColumn {
-   private DB2Index         index;
+   private DB2Index         db2Index;
    private DB2TableColumn   tableColumn;
 
    private Integer          colSeq;
@@ -42,34 +47,44 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
    // Constructors
    // -----------------
 
-   public DB2IndexColumn(DB2Index index,
-                         DB2TableColumn tableColumn,
-                         Integer colSeq,
-                         DB2IndexColOrder colOrder,
-                         String collationSchema,
-                         String collationNane) {
-      this.index = index;
-      this.tableColumn = tableColumn;
+   public DB2IndexColumn(DBRProgressMonitor monitor, DB2Index db2Index, ResultSet dbResult) throws DBException {
 
-      this.colSeq = colSeq;
-      this.colOrder = colOrder;
-      this.collationSchema = collationSchema;
-      this.collationNane = collationNane;
+      this.db2Index = db2Index;
+      this.colSeq = JDBCUtils.safeGetInteger(dbResult, "COLSEQ");
+      this.colOrder = DB2IndexColOrder.valueOf(JDBCUtils.safeGetString(dbResult, "COLORDER"));
+      this.collationSchema = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA");
+      this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+
+      // Look for Table Column
+      DB2Table db2Table = db2Index.getTable();
+      String columnName = JDBCUtils.safeGetString(dbResult, "COLNAME");
+      this.tableColumn = db2Table.getAttribute(monitor, columnName);
+      if (tableColumn == null) {
+         StringBuilder sb = new StringBuilder(64);
+         sb.append("Column '");
+         sb.append(columnName);
+         sb.append("' not found in table '");
+         sb.append(db2Table.getName());
+         sb.append("' for index '");
+         sb.append(db2Index.getName());
+         sb.append("'");
+         throw new DBException(sb.toString());
+      }
    }
 
    @Override
    public DB2DataSource getDataSource() {
-      return index.getDataSource();
+      return db2Index.getDataSource();
    }
 
    @Override
    public DB2Index getParentObject() {
-      return index;
+      return db2Index;
    }
 
    @Override
    public DB2Index getIndex() {
-      return index;
+      return db2Index;
    }
 
    @Override
@@ -97,17 +112,17 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
    // -----------------
 
    @Override
-   @Property(id = "name", viewable = true)
+   @Property(viewable = true, order = 1)
    public DB2TableColumn getTableColumn() {
       return tableColumn;
    }
 
-   @Property(viewable = true, editable = false, order = 2, id = "Ordering")
+   @Property(viewable = true, editable = false, order = 2)
    public String getColOrderDescription() {
       return colOrder.getDescription();
    }
 
-   @Property(viewable = true, editable = false, order = 3, id = "Sequence")
+   @Property(viewable = true, editable = false, order = 3)
    public Integer getColSeq() {
       return colSeq;
    }
