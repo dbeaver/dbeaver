@@ -45,9 +45,13 @@ import org.jkiss.utils.CommonUtils;
 public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema> {
 
    private static final String SQL_CREATE  = "CREATE SEQUENCE ";
+   private static final String SQL_ALTER   = "ALTER SEQUENCE ";
    private static final String SQL_DROP    = "DROP SEQUENCE %s";
    private static final String SQL_COMMENT = "COMMENT ON SEQUENCE %s is '%s'";
+
    private static final String SPACE       = "\n   ";
+   private static final String KW_START    = "START";
+   private static final String KW_RESTART  = "RESTART";
 
    @Override
    public long getMakerOptions() {
@@ -83,14 +87,53 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
 
    @Override
    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command) {
-      DB2Sequence sequence = command.getObject();
+      List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
+
+      String sql = buildStatement(command.getObject(), SQL_CREATE, KW_START);
+      listeCommands.add(new AbstractDatabasePersistAction("Create Sequence", sql));
+
+      String comment = buildComment(command.getObject());
+      if (comment != null) {
+         listeCommands.add(new AbstractDatabasePersistAction("Comment on Sequence", comment));
+      }
+
+      return listeCommands.toArray(new IDatabasePersistAction[listeCommands.size()]);
+   }
+
+   @Override
+   protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command) {
+      List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
+
+      String sql = buildStatement(command.getObject(), SQL_ALTER, KW_RESTART);
+      listeCommands.add(new AbstractDatabasePersistAction("Alter Sequence", sql));
+
+      String comment = buildComment(command.getObject());
+      if (comment != null) {
+         listeCommands.add(new AbstractDatabasePersistAction("Comment on Sequence", comment));
+      }
+
+      return listeCommands.toArray(new IDatabasePersistAction[listeCommands.size()]);
+   }
+
+   @Override
+   protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command) {
+      String sql = String.format(SQL_DROP, command.getObject().getFullQualifiedName());
+      IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop Sequence", sql);
+      return new IDatabasePersistAction[] { action };
+   }
+
+   // -------
+   // Helpers
+   // -------
+   private String buildStatement(DB2Sequence sequence, String createOrAlter, String startKw) {
+
       StringBuilder sb = new StringBuilder(256);
-      sb.append(SQL_CREATE);
-      sb.append(sequence.getFullQualifiedName()).append(SPACE);
+      sb.append(createOrAlter);
       sb.append(sequence.getPrecision().getSqlKeyword()).append(SPACE);
       if (sequence.getStart() != null) {
-         sb.append("START WITH ").append(sequence.getStart()).append(SPACE);
+         sb.append(startKw).append(" WITH ").append(sequence.getStart()).append(SPACE);
       }
+      sb.append(sequence.getFullQualifiedName()).append(SPACE);
       if (sequence.getIncrement() != null) {
          sb.append("INCREMENT BY ").append(sequence.getIncrement()).append(SPACE);
       }
@@ -106,28 +149,15 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
       if (sequence.getOrder()) {
          sb.append("ORDER ");
       }
+      return sb.toString();
+   }
 
-      List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
-      listeCommands.add(new AbstractDatabasePersistAction("Create Sequence", sb.toString()));
-
+   private String buildComment(DB2Sequence sequence) {
       if ((sequence.getDescription() != null) && (sequence.getDescription().length() > 0)) {
-         String comment = String.format(SQL_COMMENT, sequence.getFullQualifiedName(), sequence.getDescription());
-         listeCommands.add(new AbstractDatabasePersistAction("Commen Sequence", comment));
+         return String.format(SQL_COMMENT, sequence.getFullQualifiedName(), sequence.getDescription());
+      } else {
+         return null;
       }
-
-      return listeCommands.toArray(new IDatabasePersistAction[listeCommands.size()]);
-   }
-
-   @Override
-   protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command) {
-      return null;
-   }
-
-   @Override
-   protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command) {
-      String sql = String.format(SQL_DROP, command.getObject().getFullQualifiedName());
-      IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop Sequence", sql);
-      return new IDatabasePersistAction[] { action };
    }
 
 }

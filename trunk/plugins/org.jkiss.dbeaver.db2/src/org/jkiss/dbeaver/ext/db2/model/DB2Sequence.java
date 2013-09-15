@@ -186,6 +186,9 @@ public class DB2Sequence extends DB2SchemaObject {
       this.order = order;
    }
 
+   // TODO DF: labelProvider seems useless and never called..
+   // @Property(viewable = true, editable = true, order = 11, labelProvider = DB2SequencePrecisionLabelProvider.class, listProvider
+   // = DB2SequencePrecisionListProvider.class)
    @Property(viewable = true, editable = true, order = 11, listProvider = DB2SequencePrecisionListProvider.class)
    public DB2SequencePrecision getPrecision() {
       return precision;
