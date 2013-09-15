@@ -18,6 +18,9 @@
  */
 package org.jkiss.dbeaver.ext.db2.edit;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -41,8 +44,10 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema> {
 
-   private static final String SQL_CREATE = "CREATE SEQUENCE %s";
-   private static final String SQL_DROP   = "DROP SEQUENCE %s";
+   private static final String SQL_CREATE  = "CREATE SEQUENCE ";
+   private static final String SQL_DROP    = "DROP SEQUENCE %s";
+   private static final String SQL_COMMENT = "COMMENT ON SEQUENCE %s is '%s'";
+   private static final String SPACE       = "\n   ";
 
    @Override
    public long getMakerOptions() {
@@ -78,24 +83,50 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
 
    @Override
    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command) {
-      return createOrReplaceViewQuery(command.getObject());
+      DB2Sequence sequence = command.getObject();
+      StringBuilder sb = new StringBuilder(256);
+      sb.append(SQL_CREATE);
+      sb.append(sequence.getFullQualifiedName()).append(SPACE);
+      sb.append(sequence.getPrecision().getSqlKeyword()).append(SPACE);
+      if (sequence.getStart() != null) {
+         sb.append("START WITH ").append(sequence.getStart()).append(SPACE);
+      }
+      if (sequence.getIncrement() != null) {
+         sb.append("INCREMENT BY ").append(sequence.getIncrement()).append(SPACE);
+      }
+      if (sequence.getMinValue() != null) {
+         sb.append("MINVALUE ").append(sequence.getMinValue()).append(SPACE);
+      }
+      if (sequence.getMaxValue() != null) {
+         sb.append("MAXVALUE ").append(sequence.getMaxValue()).append(SPACE);
+      }
+      if (sequence.getCycle()) {
+         sb.append("CYCLE ");
+      }
+      if (sequence.getOrder()) {
+         sb.append("ORDER ");
+      }
+
+      List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
+      listeCommands.add(new AbstractDatabasePersistAction("Create Sequence", sb.toString()));
+
+      if ((sequence.getDescription() != null) && (sequence.getDescription().length() > 0)) {
+         String comment = String.format(SQL_COMMENT, sequence.getFullQualifiedName(), sequence.getDescription());
+         listeCommands.add(new AbstractDatabasePersistAction("Commen Sequence", comment));
+      }
+
+      return listeCommands.toArray(new IDatabasePersistAction[listeCommands.size()]);
    }
 
    @Override
    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command) {
-      return createOrReplaceViewQuery(command.getObject());
+      return null;
    }
 
    @Override
    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command) {
       String sql = String.format(SQL_DROP, command.getObject().getFullQualifiedName());
       IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop Sequence", sql);
-      return new IDatabasePersistAction[] { action };
-   }
-
-   private IDatabasePersistAction[] createOrReplaceViewQuery(DB2Sequence sequence) {
-      String sql = String.format(SQL_CREATE, sequence.getFullQualifiedName());
-      IDatabasePersistAction action = new AbstractDatabasePersistAction("Create Sequence", sql);
       return new IDatabasePersistAction[] { action };
    }
 
