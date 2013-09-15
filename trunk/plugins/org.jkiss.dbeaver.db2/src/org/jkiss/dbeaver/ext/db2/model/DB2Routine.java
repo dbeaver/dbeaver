@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineLanguage;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineOrigin;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -47,7 +48,7 @@ import org.jkiss.utils.CommonUtils;
  * @author Denis Forveille
  * 
  */
-public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2SourceObject {
+public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2SourceObject, DBPRefreshableObject {
 
    private final DB2RoutineParmsCache parmsCache = new DB2RoutineParmsCache();
 
@@ -102,7 +103,13 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
 
    @Override
    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
+      // TODO DF: What to do here?
+   }
+
+   @Override
+   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
       parmsCache.clearCache();
+      return true;
    }
 
    @Override
