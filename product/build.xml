@@ -364,8 +364,15 @@
     <!-- MacOS installer -->
     <!-- ===================================================================== -->
 
-    <target name="dist-macos">
-
+    <!-- Patch archives with corrected Info.plist -->
+    <target name="dist-macos" depends="init">
+        <copy file="installer/mac/Info.plist" tofile="${buildDirectory}/Info.plist" filtering="true"/>
+        <zip destfile="${distDirectory}/dbeaver-${productVersion}-macosx.cocoa.x86.zip" update="true">
+            <zipfileset dir="${buildDirectory}" includes="Info.plist" prefix="dbeaver/dbeaver.app/Contents"/>
+        </zip>
+        <zip destfile="${distDirectory}/dbeaver-${productVersion}-macosx.cocoa.x86_64.zip" update="true">
+            <zipfileset dir="${buildDirectory}" includes="Info.plist" prefix="dbeaver/dbeaver.app/Contents"/>
+        </zip>
     </target>
 
     <!-- ===================================================================== -->
