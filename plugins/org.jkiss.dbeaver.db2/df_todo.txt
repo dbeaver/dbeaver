@@ -1,6 +1,7 @@
 
 TODO:
 - Go through all "TODO" markers and flush remaining unused classes
+- finish DB2SequenceManager (alter) + solve enum display/setter problem
 
 Problems :
 - (minor importance) investigate while DDL generation does not work for some kind of "regular tables"
