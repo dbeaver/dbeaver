@@ -89,7 +89,7 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command) {
       List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
 
-      String sql = buildStatement(command.getObject(), SQL_CREATE, KW_START);
+      String sql = buildStatement(command.getObject(), SQL_CREATE, KW_START, true);
       listeCommands.add(new AbstractDatabasePersistAction("Create Sequence", sql));
 
       String comment = buildComment(command.getObject());
@@ -104,7 +104,7 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command) {
       List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
 
-      String sql = buildStatement(command.getObject(), SQL_ALTER, KW_RESTART);
+      String sql = buildStatement(command.getObject(), SQL_ALTER, KW_RESTART, false);
       listeCommands.add(new AbstractDatabasePersistAction("Alter Sequence", sql));
 
       String comment = buildComment(command.getObject());
@@ -125,15 +125,18 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
    // -------
    // Helpers
    // -------
-   private String buildStatement(DB2Sequence sequence, String createOrAlter, String startKw) {
+   private String buildStatement(DB2Sequence sequence, String createOrAlter, String startKw, Boolean type) {
 
       StringBuilder sb = new StringBuilder(256);
       sb.append(createOrAlter);
-      sb.append(sequence.getPrecision().getSqlKeyword()).append(SPACE);
+      sb.append(sequence.getFullQualifiedName()).append(SPACE);
+      if (type) {
+         sb.append("AS ");
+         sb.append(sequence.getPrecision().getSqlKeyword()).append(SPACE);
+      }
       if (sequence.getStart() != null) {
          sb.append(startKw).append(" WITH ").append(sequence.getStart()).append(SPACE);
       }
-      sb.append(sequence.getFullQualifiedName()).append(SPACE);
       if (sequence.getIncrement() != null) {
          sb.append("INCREMENT BY ").append(sequence.getIncrement()).append(SPACE);
       }
@@ -144,11 +147,21 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
          sb.append("MAXVALUE ").append(sequence.getMaxValue()).append(SPACE);
       }
       if (sequence.getCycle()) {
-         sb.append("CYCLE ");
+         sb.append("CYCLE ").append(SPACE);
+      } else {
+         sb.append("NO CYCLE ").append(SPACE);
+      }
+      if (sequence.getCache() != null) {
+         sb.append("CACHE ").append(sequence.getCache()).append(SPACE);
+      } else {
+         sb.append("NO CACHE ").append(SPACE);
       }
       if (sequence.getOrder()) {
-         sb.append("ORDER ");
+         sb.append("ORDER ").append(SPACE);
+      } else {
+         sb.append("NO ORDER ").append(SPACE);
       }
+
       return sb.toString();
    }
 
