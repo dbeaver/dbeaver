@@ -18,23 +18,25 @@ Manage explain/ddl generation table creation
     Create them and store the schema for explain tables in preferences..
  
 Improvements:
-  - by default, the DB2 timestamps display format must be with 6 microseconds : 2013-09-12-18.05.00.000000
+  - by default, the DB2 timestamps display format should be with 6 microseconds : 2013-09-12-18.05.00.000000
   - Enhance SQL Content assist + Search
     - Add Tablespaces, indexes, columns, foreign keys...
-  - Propgate and use monitors everywhere
+  - Propagate and use monitors everywhere
   - Lazy loading
-  
-  - Serge to check?
-    - missing PK columns indicator/icon in columns lists (Unique, foreign)
-    - Enhance connection view with DB2 trace settings 
-    - Enhance EXPLAIN facility with a graphic view of nodes -> Later
-  
   - Split DB2Tables into distinct sub types:
     - Regular
     - MQT
     - Temporary Tables
     - Hierachies..
-
+  
+Serge to check?
+  - check DB2TopSQL.getText() on how to display CLobs
+  - in "session/aplication" view, we don't have any SQL text to display. Could we hide the corresponding  panel section?
+  - looked for icon sessions.png used by myslq and orcle, didn't find it
+  - missing PK columns indicator/icon in columns lists (Unique, foreign)
+  - Enhance connection view with DB2 trace settings 
+  - Enhance EXPLAIN facility with a graphic view of nodes -> Later
+  
 Missing Menu Actions
   - Almost everywhere
     - Editors  / Object creators / Managers
@@ -57,10 +59,11 @@ Missing Menu Actions
     - Server OS INFO
 
 Missing relationships (All nice to have):
-   - Tablespace->Bufferpool link on BPName
-   - Tables -> referenced by triggers
-   - Tables -> referenced by aliases
-   - Sequences -> referenced by aliases
+   - Tablespace -> Bufferpool link on BPName (On id)
+   - Tables     -> referenced by triggers (that could be in a different schema...)
+   - Tables     -> referenced by aliases (that could be in a different schema...)
+   - Tables     -> referenced by indexes  (that could be in a different schema...)
+   - Sequences  -> referenced by aliases (that could be in a different schema...)
    
 Add a "Federation" menu at the datasource level with (<1% of users use federation=oracle dblinks)
 - Servers

@@ -35,10 +35,11 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
  */
 public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignKey, DB2Table> {
 
+   private static final String SQL_DROP_FK = "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
+
    @Override
    public DBSObjectCache<? extends DBSObject, DB2TableForeignKey> getObjectsCache(DB2TableForeignKey object) {
-      // return object.getParentObject().getSchema().getTableFKCache();
-      return null;
+      return object.getParentObject().getSchema().getAssociationCache();
    }
 
    @Override
@@ -49,7 +50,8 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
       EditForeignKeyDialog editDialog = new EditForeignKeyDialog(workbenchWindow.getShell(),
                                                                  DB2Messages.edit_db2_foreign_key_manager_dialog_title,
                                                                  table,
-                                                                 new DBSForeignKeyModifyRule[] { DBSForeignKeyModifyRule.NO_ACTION,
+                                                                 new DBSForeignKeyModifyRule[] {
+                                                                          DBSForeignKeyModifyRule.NO_ACTION,
                                                                           DBSForeignKeyModifyRule.CASCADE,
                                                                           DBSForeignKeyModifyRule.RESTRICT,
                                                                           DBSForeignKeyModifyRule.SET_NULL,
@@ -75,7 +77,7 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
 
    @Override
    protected String getDropForeignKeyPattern(DB2TableForeignKey foreignKey) {
-      return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
+      return SQL_DROP_FK;
    }
 
 }
