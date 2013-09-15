@@ -77,6 +77,7 @@ public class DB2Messages extends NLS {
    public static String edit_db2_package_manager_dialog_title;
    public static String edit_db2_schema_manager_dialog_title;
    public static String edit_db2_trigger_manager_dialog_title;
+   public static String edit_db2_sequence_manager_dialog_title;
 
    public static String editors_db2_application_editor_title_force_application;
    public static String editors_db2_application_editor_action_force;
