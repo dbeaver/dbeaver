@@ -32,7 +32,7 @@ public class DB2Constants {
    // Display Categories
    public static final String   CAT_DATETIME            = "Date & Time";
    public static final String   CAT_OWNER               = "Owner";
-   public static final String   CAT_STATS               = "Statistiques";
+   public static final String   CAT_STATS               = "Statistics";
    public static final String   CAT_TABLESPACE          = "Tablespace";
    public static final String   CAT_AUDIT               = "Audit";
    public static final String   CAT_PERFORMANCE         = "Performance";
