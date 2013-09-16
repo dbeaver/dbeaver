@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 "Precision" of the Sequence
  * <p/>
@@ -25,7 +27,7 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
  *
  * @author Denis Forveille
  */
-public enum DB2SequencePrecision {
+public enum DB2SequencePrecision implements DBPNamedObject {
     P5("5 (Smallint)", 5, "SMALLINT"),
 
     P10("10 (Integer)", 10, "INTEGER"),
@@ -44,12 +46,6 @@ public enum DB2SequencePrecision {
         this.description = description;
         this.dataType = dataType;
         this.sqlKeyword = sqlKeyword;
-    }
-
-    @Override
-    public String toString()
-    {
-        return description;
     }
 
     // ------------------------
@@ -95,4 +91,9 @@ public enum DB2SequencePrecision {
         return sqlKeyword;
     }
 
+    @Override
+    public String getName()
+    {
+        return description;
+    }
 }
