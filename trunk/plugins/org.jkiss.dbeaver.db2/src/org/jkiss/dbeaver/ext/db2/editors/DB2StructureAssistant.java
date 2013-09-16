@@ -18,11 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
@@ -43,185 +38,198 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * DB2 Structure Assistant
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2StructureAssistant implements DBSStructureAssistant {
-   private static final Log             LOG               = LogFactory.getLog(DB2StructureAssistant.class);
+    private static final Log LOG = LogFactory.getLog(DB2StructureAssistant.class);
 
-   // TODO DF: Work in progess
-   // For now only support Search/Autocomplete on Aliases, Tables and Views..
+    // TODO DF: Work in progess
+    // For now only support Search/Autocomplete on Aliases, Tables and Views..
 
-   private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
-   private static final DBSObjectType[] AUTOC_OBJ_TYPES   = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
-   private static final DBSObjectType[] SUPP_OBJ_TYPES    = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW, };
+    private static final DBSObjectType[] HYPER_LINKS_TYPES = {DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,};
+    private static final DBSObjectType[] AUTOC_OBJ_TYPES = {DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,};
+    private static final DBSObjectType[] SUPP_OBJ_TYPES = {DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,};
 
-   private static String                SQL_ALL;
-   private static String                SQL_TAB;
-   static {
-      StringBuilder sb = new StringBuilder(1024);
-      sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
-      sb.append("  FROM SYSCAT.TABLES");
-      sb.append(" WHERE TABSCHEMA = ?");
-      sb.append("   AND TABNAME LIKE ?");
-      sb.append("   AND TYPE IN ('A','G','N','S','T','U','V','W')"); // DF : Temp
-      sb.append(" WITH UR");
-      SQL_TAB = sb.toString();
+    private static String SQL_ALL;
+    private static String SQL_TAB;
 
-      sb.setLength(0);
+    static {
+        StringBuilder sb = new StringBuilder(1024);
+        sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
+        sb.append("  FROM SYSCAT.TABLES");
+        sb.append(" WHERE TABSCHEMA = ?");
+        sb.append("   AND TABNAME LIKE ?");
+        sb.append("   AND TYPE IN ('A','G','N','S','T','U','V','W')"); // DF : Temp
+        sb.append(" WITH UR");
+        SQL_TAB = sb.toString();
 
-      sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
-      sb.append("  FROM SYSCAT.TABLES");
-      sb.append(" WHERE TABNAME LIKE ?");
-      sb.append("   AND TYPE IN ('A','G','N','S','T','U','V','W')");// DF : Temp
-      sb.append(" WITH UR");
+        sb.setLength(0);
 
-      SQL_ALL = sb.toString();
-   }
+        sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
+        sb.append("  FROM SYSCAT.TABLES");
+        sb.append(" WHERE TABNAME LIKE ?");
+        sb.append("   AND TYPE IN ('A','G','N','S','T','U','V','W')");// DF : Temp
+        sb.append(" WITH UR");
 
-   private final DB2DataSource          dataSource;
+        SQL_ALL = sb.toString();
+    }
 
-   // -----------------
-   // Constructors
-   // -----------------
-   public DB2StructureAssistant(DB2DataSource dataSource) {
-      this.dataSource = dataSource;
-   }
+    private final DB2DataSource dataSource;
 
-   // -----------------
-   // Method Interface
-   // -----------------
+    // -----------------
+    // Constructors
+    // -----------------
+    public DB2StructureAssistant(DB2DataSource dataSource)
+    {
+        this.dataSource = dataSource;
+    }
 
-   @Override
-   public DBSObjectType[] getSupportedObjectTypes() {
-      return SUPP_OBJ_TYPES;
-   }
+    // -----------------
+    // Method Interface
+    // -----------------
 
-   @Override
-   public DBSObjectType[] getHyperlinkObjectTypes() {
-      return HYPER_LINKS_TYPES;
-   }
+    @Override
+    public DBSObjectType[] getSupportedObjectTypes()
+    {
+        return SUPP_OBJ_TYPES;
+    }
 
-   @Override
-   public DBSObjectType[] getAutoCompleteObjectTypes() {
-      return AUTOC_OBJ_TYPES;
-   }
+    @Override
+    public DBSObjectType[] getHyperlinkObjectTypes()
+    {
+        return HYPER_LINKS_TYPES;
+    }
 
-   @Override
-   public Collection<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor,
-                                                           DBSObject parentObject,
-                                                           DBSObjectType[] objectTypes,
-                                                           String objectNameMask,
-                                                           boolean caseSensitive,
-                                                           int maxResults) throws DBException {
+    @Override
+    public DBSObjectType[] getAutoCompleteObjectTypes()
+    {
+        return AUTOC_OBJ_TYPES;
+    }
 
-      DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
-      JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Find objects by name");
+    @Override
+    public Collection<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor,
+                                                            DBSObject parentObject,
+                                                            DBSObjectType[] objectTypes,
+                                                            String objectNameMask,
+                                                            boolean caseSensitive,
+                                                            int maxResults) throws DBException
+    {
 
-      try {
-         return searchAllObjects(context, schema, objectNameMask, objectTypes, caseSensitive, maxResults);
-      } catch (SQLException ex) {
-         throw new DBException(ex);
-      } finally {
-         context.close();
-      }
-   }
+        DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
+        JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Find objects by name");
 
-   // -----------------
-   // Helpers
-   // -----------------
+        try {
+            return searchAllObjects(context, schema, objectNameMask, objectTypes, caseSensitive, maxResults);
+        } catch (SQLException ex) {
+            throw new DBException(ex);
+        } finally {
+            context.close();
+        }
+    }
 
-   private List<DBSObjectReference> searchAllObjects(final JDBCExecutionContext context,
-                                                     final DB2Schema schema,
-                                                     String objectNameMask,
-                                                     DBSObjectType[] objectTypes,
-                                                     boolean caseSensitive,
-                                                     int maxResults) throws SQLException, DBException {
+    // -----------------
+    // Helpers
+    // -----------------
 
-      List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
+    private List<DBSObjectReference> searchAllObjects(final JDBCExecutionContext context,
+                                                      final DB2Schema schema,
+                                                      String objectNameMask,
+                                                      DBSObjectType[] objectTypes,
+                                                      boolean caseSensitive,
+                                                      int maxResults) throws SQLException, DBException
+    {
 
-      String searchObjectNameMask = objectNameMask;
-      if (!caseSensitive) {
-         searchObjectNameMask = searchObjectNameMask.toUpperCase();
-      }
+        List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
 
-      String sql;
-      if (schema != null) {
-         sql = SQL_TAB;
-      } else {
-         sql = SQL_ALL;
-      }
-      JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        String searchObjectNameMask = objectNameMask;
+        if (!caseSensitive) {
+            searchObjectNameMask = searchObjectNameMask.toUpperCase();
+        }
 
-      int n = 1;
-      try {
-         if (schema != null) {
-            dbStat.setString(n++, schema.getName());
-         }
-         dbStat.setString(n++, searchObjectNameMask);
+        String sql;
+        if (schema != null) {
+            sql = SQL_TAB;
+        } else {
+            sql = SQL_ALL;
+        }
+        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
 
-         dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-         dbStat.setMaxRows(maxResults); // TODO DF: not exact as object may be filtered later
-
-         String schemaName;
-         String objectName;
-         DB2Schema db2Schema;
-         DB2TableType tableType;
-         DB2ObjectType objectType;
-
-         JDBCResultSet dbResult = dbStat.executeQuery();
-         try {
-            while (dbResult.next()) {
-               if (context.getProgressMonitor().isCanceled()) {
-                  break;
-               }
-
-               schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
-               objectName = JDBCUtils.safeGetString(dbResult, "TABNAME");
-               tableType = CommonUtils.valueOf(DB2TableType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
-
-               db2Schema = dataSource.getSchema(context.getProgressMonitor(), schemaName);
-               if (db2Schema == null) {
-                  LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
-                  continue;
-               }
-
-               objectType = tableType.getDb2ObjectType();
-               objects.add(new DB2ObjectReference(objectName, db2Schema, objectType));
+        int n = 1;
+        try {
+            if (schema != null) {
+                dbStat.setString(n++, schema.getName());
             }
-         } finally {
-            dbResult.close();
-         }
-      } finally {
-         dbStat.close();
-      }
-      return objects;
-   }
+            dbStat.setString(n++, searchObjectNameMask);
 
-   // --------------
-   // Helper Classes
-   // --------------
-   private class DB2ObjectReference extends AbstractObjectReference {
+            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+            dbStat.setMaxRows(maxResults); // TODO DF: not exact as object may be filtered later
 
-      private DB2ObjectReference(String objectName, DB2Schema db2Schema, DB2ObjectType objectType) {
-         super(objectName, db2Schema, null, objectType);
-      }
+            String schemaName;
+            String objectName;
+            DB2Schema db2Schema;
+            DB2TableType tableType;
+            DB2ObjectType objectType;
 
-      @Override
-      public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+            JDBCResultSet dbResult = dbStat.executeQuery();
+            try {
+                while (dbResult.next()) {
+                    if (context.getProgressMonitor().isCanceled()) {
+                        break;
+                    }
 
-         DB2ObjectType db2ObjectType = (DB2ObjectType) getObjectType();
-         DB2Schema db2Schema = (DB2Schema) getContainer();
+                    schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
+                    objectName = JDBCUtils.safeGetString(dbResult, "TABNAME");
+                    tableType = CommonUtils.valueOf(DB2TableType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
 
-         DBSObject object = db2ObjectType.findObject(monitor, db2Schema, getName());
-         if (object == null) {
-            throw new DBException(db2ObjectType + " '" + getName() + "' not found in schema '" + db2Schema.getName() + "'");
-         }
-         return object;
-      }
+                    db2Schema = dataSource.getSchema(context.getProgressMonitor(), schemaName);
+                    if (db2Schema == null) {
+                        LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
+                        continue;
+                    }
 
-   }
+                    objectType = tableType.getDb2ObjectType();
+                    objects.add(new DB2ObjectReference(objectName, db2Schema, objectType));
+                }
+            } finally {
+                dbResult.close();
+            }
+        } finally {
+            dbStat.close();
+        }
+        return objects;
+    }
+
+    // --------------
+    // Helper Classes
+    // --------------
+    private class DB2ObjectReference extends AbstractObjectReference {
+
+        private DB2ObjectReference(String objectName, DB2Schema db2Schema, DB2ObjectType objectType)
+        {
+            super(objectName, db2Schema, null, objectType);
+        }
+
+        @Override
+        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
+        {
+
+            DB2ObjectType db2ObjectType = (DB2ObjectType) getObjectType();
+            DB2Schema db2Schema = (DB2Schema) getContainer();
+
+            DBSObject object = db2ObjectType.findObject(monitor, db2Schema, getName());
+            if (object == null) {
+                throw new DBException(db2ObjectType + " '" + getName() + "' not found in schema '" + db2Schema.getName() + "'");
+            }
+            return object;
+        }
+
+    }
 }

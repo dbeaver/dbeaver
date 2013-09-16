@@ -18,102 +18,114 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Collection;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoleAuthCache;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBARole;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Collection;
+
 /**
  * DB2 Role
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2Role extends DB2GlobalObject implements DBPSaveableObject, DBARole, DBPRefreshableObject {
 
-   private final DB2RoleAuthCache roleAuthCache = new DB2RoleAuthCache();
+    private final DBSObjectCache<DB2Role, DB2RoleAuth> roleAuthCache;
 
-   private String                 name;
-   private Integer                id;
-   private Timestamp              createTime;
-   private Integer                auditPolicyId;
-   private String                 auditPolicyName;
-   private String                 remarks;
+    private String name;
+    private Integer id;
+    private Timestamp createTime;
+    private Integer auditPolicyId;
+    private String auditPolicyName;
+    private String remarks;
 
-   // -----------------------
-   // Constructors
-   // -----------------------
+    // -----------------------
+    // Constructors
+    // -----------------------
 
-   public DB2Role(DB2DataSource dataSource, ResultSet resultSet) {
-      super(dataSource, true);
+    public DB2Role(DB2DataSource dataSource, ResultSet resultSet)
+    {
+        super(dataSource, true);
 
-      this.name = JDBCUtils.safeGetString(resultSet, "ROLENAME");
-      this.id = JDBCUtils.safeGetInteger(resultSet, "ROLEID");
-      this.createTime = JDBCUtils.safeGetTimestamp(resultSet, "CREATE_TIME");
-      // DB2 v10 this.auditPolicyId = JDBCUtils.safeGetInteger(resultSet, "AUDITPOLICYID");
-      // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
-      this.remarks = JDBCUtils.safeGetString(resultSet, "REMARKS");
-   }
+        this.name = JDBCUtils.safeGetString(resultSet, "ROLENAME");
+        this.id = JDBCUtils.safeGetInteger(resultSet, "ROLEID");
+        this.createTime = JDBCUtils.safeGetTimestamp(resultSet, "CREATE_TIME");
+        // DB2 v10 this.auditPolicyId = JDBCUtils.safeGetInteger(resultSet, "AUDITPOLICYID");
+        // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
+        this.remarks = JDBCUtils.safeGetString(resultSet, "REMARKS");
+        this.roleAuthCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleAuth>(
+            DB2RoleAuth.class, "SELECT * FROM SYSCAT.ROLEAUTH WHERE ROLENAME=? ORDER BY GRANTOR,GRANTEE WITH UR",
+            name);
+    }
 
-   // -----------------
-   // Associations
-   // -----------------
+    // -----------------
+    // Associations
+    // -----------------
 
-   @Association
-   public Collection<DB2RoleAuth> getRoleAuths(DBRProgressMonitor monitor) throws DBException {
-      return roleAuthCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2RoleAuth> getRoleAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return roleAuthCache.getObjects(monitor, this);
+    }
 
-   @Override
-   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
-      roleAuthCache.clearCache();
-      return true;
-   }
+    @Override
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    {
+        roleAuthCache.clearCache();
+        return true;
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   @Property(viewable = true, order = 1)
-   public String getName() {
-      return name;
-   }
+    @Override
+    @Property(viewable = true, order = 1)
+    public String getName()
+    {
+        return name;
+    }
 
-   @Property(viewable = true, order = 2)
-   public Integer getId() {
-      return id;
-   }
+    @Property(viewable = true, order = 2)
+    public Integer getId()
+    {
+        return id;
+    }
 
-   @Property(viewable = false, category = DB2Constants.CAT_DATETIME)
-   public Timestamp getCreateTime() {
-      return createTime;
-   }
+    @Property(viewable = false, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getCreateTime()
+    {
+        return createTime;
+    }
 
-   @Property(viewable = false, category = DB2Constants.CAT_AUDIT)
-   public Integer getAuditPolicyId() {
-      return auditPolicyId;
-   }
+    @Property(viewable = false, category = DB2Constants.CAT_AUDIT)
+    public Integer getAuditPolicyId()
+    {
+        return auditPolicyId;
+    }
 
-   @Property(viewable = false, category = DB2Constants.CAT_AUDIT)
-   public String getAuditPolicyName() {
-      return auditPolicyName;
-   }
+    @Property(viewable = false, category = DB2Constants.CAT_AUDIT)
+    public String getAuditPolicyName()
+    {
+        return auditPolicyName;
+    }
 
-   @Override
-   @Property(viewable = true)
-   public String getDescription() {
-      return remarks;
-   }
+    @Override
+    @Property(viewable = true)
+    public String getDescription()
+    {
+        return remarks;
+    }
 
 }

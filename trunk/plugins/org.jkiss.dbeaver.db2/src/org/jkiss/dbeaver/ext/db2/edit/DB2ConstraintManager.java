@@ -35,55 +35,58 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
  */
 public class DB2ConstraintManager extends JDBCConstraintManager<DB2TableUniqueKey, DB2Table> {
 
-   @Override
-   public DBSObjectCache<? extends DBSObject, DB2TableUniqueKey> getObjectsCache(DB2TableUniqueKey object) {
-      return object.getParentObject().getSchema().getConstraintCache();
-   }
+    @Override
+    public DBSObjectCache<? extends DBSObject, DB2TableUniqueKey> getObjectsCache(DB2TableUniqueKey object)
+    {
+        return object.getParentObject().getSchema().getConstraintCache();
+    }
 
-   @Override
-   protected DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                                    DBECommandContext context,
-                                                    DB2Table parent,
-                                                    Object from) {
-      EditConstraintDialog editDialog = new EditConstraintDialog(workbenchWindow.getShell(),
-                                                                 DB2Messages.edit_db2_constraint_manager_dialog_title,
-                                                                 parent,
-                                                                 new DBSEntityConstraintType[] {
-                                                                          DBSEntityConstraintType.PRIMARY_KEY,
-                                                                          DBSEntityConstraintType.UNIQUE_KEY });
-      if (editDialog.open() != IDialogConstants.OK_ID) {
-         return null;
-      }
+    @Override
+    protected DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow,
+                                                     DBECommandContext context,
+                                                     DB2Table parent,
+                                                     Object from)
+    {
+        EditConstraintDialog editDialog = new EditConstraintDialog(workbenchWindow.getShell(),
+            DB2Messages.edit_db2_constraint_manager_dialog_title,
+            parent,
+            new DBSEntityConstraintType[]{
+                DBSEntityConstraintType.PRIMARY_KEY,
+                DBSEntityConstraintType.UNIQUE_KEY});
+        if (editDialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
 
-      // final DB2TableConstraint constraint = new DB2TableConstraint(
-      // parent,
-      // null,
-      // editDialog.getConstraintType(),
-      // null,
-      // DB2ObjectStatus.ENABLED);
-      //        constraint.setName(DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
-      // int colIndex = 1;
-      // for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns())
-      // {
-      // constraint.addColumn(
-      // new DB2TableConstraintColumn(
-      // constraint,
-      // (DB2TableColumn) tableColumn,
-      // colIndex++));
-      // }
-      // return constraint;
-      return null;
-   }
+        // final DB2TableConstraint constraint = new DB2TableConstraint(
+        // parent,
+        // null,
+        // editDialog.getConstraintType(),
+        // null,
+        // DB2ObjectStatus.ENABLED);
+        //        constraint.setName(DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
+        // int colIndex = 1;
+        // for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns())
+        // {
+        // constraint.addColumn(
+        // new DB2TableConstraintColumn(
+        // constraint,
+        // (DB2TableColumn) tableColumn,
+        // colIndex++));
+        // }
+        // return constraint;
+        return null;
+    }
 
-   @Override
-   protected String getDropConstraintPattern(DB2TableUniqueKey constraint) {
-      String clause;
-      if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-         clause = "PRIMARY KEY"; //$NON-NLS-1$
-      } else {
-         clause = "KEY"; //$NON-NLS-1$
-      }
-      return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-   }
+    @Override
+    protected String getDropConstraintPattern(DB2TableUniqueKey constraint)
+    {
+        String clause;
+        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
+            clause = "PRIMARY KEY"; //$NON-NLS-1$
+        } else {
+            clause = "KEY"; //$NON-NLS-1$
+        }
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
 
 }

@@ -18,10 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.List;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -36,92 +32,105 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * DB2 Table Foreign Key
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements DBSTableForeignKey {
 
-   private DB2Table                refTable;
+    private DB2Table refTable;
 
-   private DB2DeleteUpdateRule     deleteRule;
-   private DB2DeleteUpdateRule     updateRule;
+    private DB2DeleteUpdateRule deleteRule;
+    private DB2DeleteUpdateRule updateRule;
 
-   private List<DB2TableKeyColumn> columns;
+    private List<DB2TableKeyColumn> columns;
 
-   private DB2TableUniqueKey       referencedKey;
+    private DB2TableUniqueKey referencedKey;
 
-   // -----------------
-   // Constructors
-   // -----------------
+    // -----------------
+    // Constructors
+    // -----------------
 
-   public DB2TableReference(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult) throws DBException {
-      super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.FOREIGN_KEY, true);
+    public DB2TableReference(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult) throws DBException
+    {
+        super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.FOREIGN_KEY, true);
 
-      String refSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
-      String refTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
-      String constName = JDBCUtils.safeGetString(dbResult, "CONSTNAME");
-      refTable = DB2Table.findTable(monitor, table.getSchema(), refSchemaName, refTableName);
-      referencedKey = refTable.getConstraint(monitor, constName);
+        String refSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
+        String refTableName = JDBCUtils.safeGetString(dbResult, "TABNAME");
+        String constName = JDBCUtils.safeGetString(dbResult, "CONSTNAME");
+        refTable = DB2Table.findTable(monitor, table.getSchema(), refSchemaName, refTableName);
+        referencedKey = refTable.getConstraint(monitor, constName);
 
-      deleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));
-      updateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
-   }
+        deleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));
+        updateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
+    }
 
-   @Override
-   public DBPDataSource getDataSource() {
-      return getTable().getDataSource();
-   }
+    @Override
+    public DBPDataSource getDataSource()
+    {
+        return getTable().getDataSource();
+    }
 
-   @Override
-   public DB2Table getAssociatedEntity() {
-      return refTable;
-   }
+    @Override
+    public DB2Table getAssociatedEntity()
+    {
+        return refTable;
+    }
 
-   @Override
-   public String getFullQualifiedName() {
-      return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
-   }
+    @Override
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
+    }
 
-   // -----------------
-   // Columns
-   // -----------------
-   @Override
-   public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
-      return columns;
-   }
+    // -----------------
+    // Columns
+    // -----------------
+    @Override
+    public Collection<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException
+    {
+        return columns;
+    }
 
-   public void setColumns(List<DB2TableKeyColumn> columns) {
-      this.columns = columns;
-   }
+    public void setColumns(List<DB2TableKeyColumn> columns)
+    {
+        this.columns = columns;
+    }
 
-   // -----------------
-   // Direct Attributes
-   // -----------------
+    // -----------------
+    // Direct Attributes
+    // -----------------
 
-   @Property(viewable = true, order = 3)
-   public DB2Table getReferencedTable() {
-      return refTable;
-   }
+    @Property(viewable = true, order = 3)
+    public DB2Table getReferencedTable()
+    {
+        return refTable;
+    }
 
-   @Override
-   @Property(id = "reference", viewable = false)
-   public DB2TableUniqueKey getReferencedConstraint() {
-      return referencedKey;
-   }
+    @Override
+    @Property(id = "reference", viewable = false)
+    public DB2TableUniqueKey getReferencedConstraint()
+    {
+        return referencedKey;
+    }
 
-   @Override
-   @Property(viewable = true, editable = false)
-   public DBSForeignKeyModifyRule getUpdateRule() {
-      return updateRule.getRule();
-   }
+    @Override
+    @Property(viewable = true, editable = false)
+    public DBSForeignKeyModifyRule getUpdateRule()
+    {
+        return updateRule.getRule();
+    }
 
-   @Override
-   @Property(viewable = true, editable = false)
-   public DBSForeignKeyModifyRule getDeleteRule() {
-      return deleteRule.getRule();
-   }
+    @Override
+    @Property(viewable = true, editable = false)
+    public DBSForeignKeyModifyRule getDeleteRule()
+    {
+        return deleteRule.getRule();
+    }
 
 }

@@ -20,34 +20,35 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Type of Table Check Constraint
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TableCheckConstraintColUsage {
-   D("D (Child in a functional dependency)"),
+    D("D (Child in a functional dependency)"),
 
-   P("P (Parent in a functional dependency)"),
+    P("P (Parent in a functional dependency)"),
 
-   R("R (Object property)"),
+    R("R (Object property)"),
 
-   S("S (Source in a MQT system-generated column )"),
+    S("S (Source in a MQT system-generated column )"),
 
-   T("T (Target in a MQT ystem-generated column)");
+    T("T (Target in a MQT ystem-generated column)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2TableCheckConstraintColUsage(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2TableCheckConstraintColUsage(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

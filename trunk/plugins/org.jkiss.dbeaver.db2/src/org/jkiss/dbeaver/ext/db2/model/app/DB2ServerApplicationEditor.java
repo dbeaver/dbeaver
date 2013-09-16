@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.app;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
@@ -38,74 +35,84 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * DB2 Application Editor
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> {
-   private SessionManagerViewer   applicationViewer;
-   private ForceApplicationAction forceApplicationAction;
+    private SessionManagerViewer applicationViewer;
+    private ForceApplicationAction forceApplicationAction;
 
-   @Override
-   public void dispose() {
-      applicationViewer.dispose();
-      super.dispose();
-   }
+    @Override
+    public void dispose()
+    {
+        applicationViewer.dispose();
+        super.dispose();
+    }
 
-   @Override
-   public void createPartControl(Composite parent) {
-      forceApplicationAction = new ForceApplicationAction();
-      applicationViewer = new SessionManagerViewer(this, parent, new DB2ServerApplicationManager((DB2DataSource) getDataSource())) {
+    @Override
+    public void createPartControl(Composite parent)
+    {
+        forceApplicationAction = new ForceApplicationAction();
+        applicationViewer = new SessionManagerViewer(this, parent, new DB2ServerApplicationManager((DB2DataSource) getDataSource())) {
 
-         @Override
-         @SuppressWarnings("rawtypes")
-         protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar) {
-            toolBar.add(forceApplicationAction);
-            toolBar.add(new Separator());
-         }
+            @Override
+            @SuppressWarnings("rawtypes")
+            protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
+            {
+                toolBar.add(forceApplicationAction);
+                toolBar.add(new Separator());
+            }
 
-         @Override
-         protected void onSessionSelect(DBAServerSession session) {
-            super.onSessionSelect(session);
-            forceApplicationAction.setEnabled(session != null);
-         }
-      };
+            @Override
+            protected void onSessionSelect(DBAServerSession session)
+            {
+                super.onSessionSelect(session);
+                forceApplicationAction.setEnabled(session != null);
+            }
+        };
 
-      applicationViewer.refreshSessions();
-   }
+        applicationViewer.refreshSessions();
+    }
 
-   @Override
-   public void refreshPart(Object source, boolean force) {
-      applicationViewer.refreshSessions();
-   }
+    @Override
+    public void refreshPart(Object source, boolean force)
+    {
+        applicationViewer.refreshSessions();
+    }
 
-   private class ForceApplicationAction extends Action {
+    private class ForceApplicationAction extends Action {
 
-      public ForceApplicationAction() {
-         super(DB2Messages.editors_db2_application_editor_title_force_application, DBIcon.REJECT.getImageDescriptor());
-      }
+        public ForceApplicationAction()
+        {
+            super(DB2Messages.editors_db2_application_editor_title_force_application, DBIcon.REJECT.getImageDescriptor());
+        }
 
-      @Override
-      public void run() {
-         final DBAServerSession session = applicationViewer.getSelectedSession();
-         final String action = DB2Messages.editors_db2_application_editor_action_force;
+        @Override
+        public void run()
+        {
+            final DBAServerSession session = applicationViewer.getSelectedSession();
+            final String action = DB2Messages.editors_db2_application_editor_action_force;
 
-         // TODO DF: Don't know how to remove the "remember me" toggle...
-         ConfirmationDialog dialog = new ConfirmationDialog(getSite().getShell(),
-                                                            action,
-                                                            null,
-                                                            NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action,
-                                                                     action.toLowerCase(), session),
-                                                            MessageDialog.CONFIRM,
-                                                            new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL },
-                                                            0,
-                                                            null,
-                                                            false);
-         if (dialog.open() == IDialogConstants.YES_ID) {
-            Map<String, Object> options = new HashMap<String, Object>();
-            applicationViewer.alterSession(session, options);
-         }
-      }
-   }
+            // TODO DF: Don't know how to remove the "remember me" toggle...
+            ConfirmationDialog dialog = new ConfirmationDialog(getSite().getShell(),
+                action,
+                null,
+                NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action,
+                    action.toLowerCase(), session),
+                MessageDialog.CONFIRM,
+                new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL},
+                0,
+                null,
+                false);
+            if (dialog.open() == IDialogConstants.YES_ID) {
+                Map<String, Object> options = new HashMap<String, Object>();
+                applicationViewer.alterSession(session, options);
+            }
+        }
+    }
 }

@@ -28,62 +28,72 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Abstract DB2 object
  */
 public abstract class DB2Object<PARENT extends DBSObject> implements DBSObject, DBPSaveableObject {
-   static final Log       log = LogFactory.getLog(DB2Object.class);
+    static final Log log = LogFactory.getLog(DB2Object.class);
 
-   protected final PARENT parent;
-   protected String       name;
-   private boolean        persisted;
-   private long           objectId;
+    protected final PARENT parent;
+    protected String name;
+    private boolean persisted;
+    private long objectId;
 
-   protected DB2Object(PARENT parent, String name, long objectId, boolean persisted) {
-      this.parent = parent;
-      this.name = name;
-      this.objectId = objectId;
-      this.persisted = persisted;
-   }
+    protected DB2Object(PARENT parent, String name, long objectId, boolean persisted)
+    {
+        this.parent = parent;
+        this.name = name;
+        this.objectId = objectId;
+        this.persisted = persisted;
+    }
 
-   protected DB2Object(PARENT parent, String name, boolean persisted) {
-      this.parent = parent;
-      this.name = name;
-      this.persisted = persisted;
-   }
+    protected DB2Object(PARENT parent, String name, boolean persisted)
+    {
+        this.parent = parent;
+        this.name = name;
+        this.persisted = persisted;
+    }
 
-   @Override
-   public String getDescription() {
-      return null;
-   }
+    @Override
+    public String getDescription()
+    {
+        return null;
+    }
 
-   @Override
-   public PARENT getParentObject() {
-      return parent;
-   }
+    @Override
+    public PARENT getParentObject()
+    {
+        return parent;
+    }
 
-   @Override
-   public DB2DataSource getDataSource() {
-      return (DB2DataSource) parent.getDataSource();
-   }
+    @Override
+    public DB2DataSource getDataSource()
+    {
+        return (DB2DataSource) parent.getDataSource();
+    }
 
-   @Override
-   @Property(viewable = true, editable = false, order = 1)
-   public String getName() {
-      return name;
-   }
+    @Override
+    @Property(viewable = true, editable = false, order = 1)
+    public String getName()
+    {
+        return name;
+    }
 
-   public void setName(String name) {
-      this.name = name;
-   }
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-   public long getObjectId() {
-      return objectId;
-   }
+    public long getObjectId()
+    {
+        return objectId;
+    }
 
-   @Override
-   public boolean isPersisted() {
-      return persisted;
-   }
+    @Override
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
 
-   @Override
-   public void setPersisted(boolean persisted) {
-      this.persisted = persisted;
-   }
+    @Override
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
+    }
 }

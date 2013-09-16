@@ -20,31 +20,32 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Kind of Authid
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2AuthIDType {
 
-   U("U (User)"),
+    U("U (User)"),
 
-   G("G (Group)"),
+    G("G (Group)"),
 
-   R("R (Role)");
+    R("R (Role)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2AuthIDType(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2AuthIDType(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

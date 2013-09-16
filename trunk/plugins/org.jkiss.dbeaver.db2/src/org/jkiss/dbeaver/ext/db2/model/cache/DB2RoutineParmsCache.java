@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2RoutineParm;
@@ -29,32 +26,37 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2RoutineParm> {
 
-   private static String SQL;
+    private static String SQL;
 
-   static {
-      StringBuilder sb = new StringBuilder(256);
-      sb.append("SELECT *");
-      sb.append("  FROM SYSCAT.ROUTINEPARMS");
-      sb.append(" WHERE ROUTINESCHEMA = ?");
-      sb.append("   AND SPECIFICNAME = ?");
-      sb.append(" ORDER BY ORDINAL");
-      SQL = sb.toString();
-   }
+    static {
+        StringBuilder sb = new StringBuilder(256);
+        sb.append("SELECT *");
+        sb.append("  FROM SYSCAT.ROUTINEPARMS");
+        sb.append(" WHERE ROUTINESCHEMA = ?");
+        sb.append("   AND SPECIFICNAME = ?");
+        sb.append(" ORDER BY ORDINAL");
+        SQL = sb.toString();
+    }
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Routine db2Routine) throws SQLException {
-      JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
-      dbStat.setString(1, db2Routine.getSchema().getName());
-      dbStat.setString(2, db2Routine.getName());
-      return dbStat;
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Routine db2Routine) throws SQLException
+    {
+        JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        dbStat.setString(1, db2Routine.getSchema().getName());
+        dbStat.setString(2, db2Routine.getName());
+        return dbStat;
+    }
 
-   @Override
-   protected DB2RoutineParm fetchObject(JDBCExecutionContext context, DB2Routine db2Routine, ResultSet resultSet) throws SQLException,
-                                                                                                                 DBException {
-      return new DB2RoutineParm(context.getProgressMonitor(), db2Routine, resultSet);
-   }
+    @Override
+    protected DB2RoutineParm fetchObject(JDBCExecutionContext context, DB2Routine db2Routine, ResultSet resultSet) throws SQLException,
+        DBException
+    {
+        return new DB2RoutineParm(context.getProgressMonitor(), db2Routine, resultSet);
+    }
 
 }

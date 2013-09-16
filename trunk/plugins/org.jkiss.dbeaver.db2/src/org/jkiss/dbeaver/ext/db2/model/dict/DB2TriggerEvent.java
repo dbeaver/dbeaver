@@ -20,32 +20,33 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Trigger Event
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TriggerEvent {
-   D("D (On Delete)"),
+    D("D (On Delete)"),
 
-   I("I (On Insert)"),
+    I("I (On Insert)"),
 
-   M("M (On Multiple)"),
+    M("M (On Multiple)"),
 
-   U("U (On Update)");
+    U("U (On Update)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2TriggerEvent(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2TriggerEvent(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

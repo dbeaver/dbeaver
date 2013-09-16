@@ -20,32 +20,33 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Type of Grantee/Grantor
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2GrantorGranteeType {
-   S("S (System)"),
+    S("S (System)"),
 
-   G("G (Group)"),
+    G("G (Group)"),
 
-   R("R (Role)"),
+    R("R (Role)"),
 
-   U("U (User)");
+    U("U (User)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2GrantorGranteeType(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2GrantorGranteeType(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

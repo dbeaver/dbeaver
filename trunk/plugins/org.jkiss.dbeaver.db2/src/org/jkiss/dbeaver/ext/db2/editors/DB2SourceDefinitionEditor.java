@@ -30,19 +30,22 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
  */
 public class DB2SourceDefinitionEditor extends SQLEditorNested<DB2SourceObjectEx> {
 
-   @Override
-   protected String getCompileCommandId() {
-      return DB2Constants.CMD_COMPILE;
-   }
+    @Override
+    protected String getCompileCommandId()
+    {
+        return DB2Constants.CMD_COMPILE;
+    }
 
-   @Override
-   protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
-      return getSourceObject().getSourceDefinition(monitor);
-   }
+    @Override
+    protected String getSourceText(DBRProgressMonitor monitor) throws DBException
+    {
+        return getSourceObject().getSourceDefinition(monitor);
+    }
 
-   @Override
-   protected void setSourceText(String sourceText) {
-      getEditorInput().getPropertySource().setPropertyValue(DB2Constants.PROP_SOURCE_DEFINITION, sourceText);
-   }
+    @Override
+    protected void setSourceText(String sourceText)
+    {
+        getEditorInput().getPropertySource().setPropertyValue(DB2Constants.PROP_SOURCE_DEFINITION, sourceText);
+    }
 
 }

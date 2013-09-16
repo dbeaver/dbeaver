@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2TriggerDep;
@@ -29,27 +26,31 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Cache for dependencies on DB2 Triggers
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2TriggerDepCache extends JDBCObjectCache<DB2Trigger, DB2TriggerDep> {
 
-   private static final String SQL = "SELECT * FROM SYSCAT.TRIGDEP WHERE TRIGSCHEMA = ? AND TRIGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
+    private static final String SQL = "SELECT * FROM SYSCAT.TRIGDEP WHERE TRIGSCHEMA = ? AND TRIGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Trigger db2Trigger) throws SQLException {
-      final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
-      dbStat.setString(1, db2Trigger.getParentObject().getName());
-      dbStat.setString(2, db2Trigger.getName());
-      return dbStat;
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Trigger db2Trigger) throws SQLException
+    {
+        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        dbStat.setString(1, db2Trigger.getParentObject().getName());
+        dbStat.setString(2, db2Trigger.getName());
+        return dbStat;
+    }
 
-   @Override
-   protected DB2TriggerDep fetchObject(JDBCExecutionContext context, DB2Trigger db2Trigger, ResultSet resultSet) throws SQLException,
-                                                                                                                DBException {
-      return new DB2TriggerDep(context.getProgressMonitor(), db2Trigger, resultSet);
-   }
+    @Override
+    protected DB2TriggerDep fetchObject(JDBCExecutionContext context, DB2Trigger db2Trigger, ResultSet resultSet) throws SQLException,
+        DBException
+    {
+        return new DB2TriggerDep(context.getProgressMonitor(), db2Trigger, resultSet);
+    }
 }

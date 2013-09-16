@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.DB2ViewDep;
@@ -29,27 +26,31 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Cache for dependencies for DB2 Views
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2ViewDepCache extends JDBCObjectCache<DB2View, DB2ViewDep> {
 
-   private static final String SQL = "SELECT * FROM SYSCAT.TABDEP WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
+    private static final String SQL = "SELECT * FROM SYSCAT.TABDEP WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2View db2View) throws SQLException {
-      final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
-      dbStat.setString(1, db2View.getParentObject().getName());
-      dbStat.setString(2, db2View.getName());
-      return dbStat;
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2View db2View) throws SQLException
+    {
+        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        dbStat.setString(1, db2View.getParentObject().getName());
+        dbStat.setString(2, db2View.getName());
+        return dbStat;
+    }
 
-   @Override
-   protected DB2ViewDep fetchObject(JDBCExecutionContext context, DB2View db2View, ResultSet resultSet) throws SQLException,
-                                                                                                       DBException {
-      return new DB2ViewDep(context.getProgressMonitor(), db2View, resultSet);
-   }
+    @Override
+    protected DB2ViewDep fetchObject(JDBCExecutionContext context, DB2View db2View, ResultSet resultSet) throws SQLException,
+        DBException
+    {
+        return new DB2ViewDep(context.getProgressMonitor(), db2View, resultSet);
+    }
 }

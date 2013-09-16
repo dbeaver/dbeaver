@@ -20,34 +20,35 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Compression Mode
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2CompressionMode {
-   B("B (Value + Row compression)"),
+    B("B (Value + Row compression)"),
 
-   N("N (None)"),
+    N("N (None)"),
 
-   R("R (Row)"),
+    R("R (Row)"),
 
-   V("V (Value Compression)");
+    V("V (Value Compression)");
 
-   private String description;
+    private String description;
 
-   // -----------
-   // Constructor
-   // -----------
+    // -----------
+    // Constructor
+    // -----------
 
-   private DB2CompressionMode(String description) {
-      this.description = description;
-   }
+    private DB2CompressionMode(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 }

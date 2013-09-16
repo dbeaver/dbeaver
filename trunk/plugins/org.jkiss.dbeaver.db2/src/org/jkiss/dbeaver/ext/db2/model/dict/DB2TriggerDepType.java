@@ -22,81 +22,84 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 
 /**
  * DB2 Type of Trigger Dependency
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TriggerDepType {
-   A("A (Table alias)", DB2ObjectType.ALIAS),
+    A("A (Table alias)", DB2ObjectType.ALIAS),
 
-   B("B (Trigger)", DB2ObjectType.TRIGGER),
+    B("B (Trigger)", DB2ObjectType.TRIGGER),
 
-   C("C (Column)"),
+    C("C (Column)"),
 
-   F("F (Function)", DB2ObjectType.UDF),
+    F("F (Function)", DB2ObjectType.UDF),
 
-   G("G (Global temporary table)", DB2ObjectType.TABLE),
+    G("G (Global temporary table)", DB2ObjectType.TABLE),
 
-   H("H (Hierachy table)", DB2ObjectType.TABLE),
+    H("H (Hierachy table)", DB2ObjectType.TABLE),
 
-   K("K (Package)", DB2ObjectType.PACKAGE),
+    K("K (Package)", DB2ObjectType.PACKAGE),
 
-   L("L (Detached table)", DB2ObjectType.TABLE),
+    L("L (Detached table)", DB2ObjectType.TABLE),
 
-   N("N (Nickname)"),
+    N("N (Nickname)"),
 
-   O("O (Privilege dependency on all subtables or subviews in a table or view hierarchy)"),
+    O("O (Privilege dependency on all subtables or subviews in a table or view hierarchy)"),
 
-   Q("Q (Sequence)", DB2ObjectType.TABLE),
+    Q("Q (Sequence)", DB2ObjectType.TABLE),
 
-   R("R (UDT)", DB2ObjectType.UDT),
+    R("R (UDT)", DB2ObjectType.UDT),
 
-   S("S (MQT)", DB2ObjectType.SEQUENCE),
+    S("S (MQT)", DB2ObjectType.SEQUENCE),
 
-   T("T (Table)", DB2ObjectType.TABLE),
+    T("T (Table)", DB2ObjectType.TABLE),
 
-   U("U (Typed table)", DB2ObjectType.TABLE),
+    U("U (Typed table)", DB2ObjectType.TABLE),
 
-   V("V (View)", DB2ObjectType.VIEW),
+    V("V (View)", DB2ObjectType.VIEW),
 
-   W("W (Typed view)", DB2ObjectType.VIEW),
+    W("W (Typed view)", DB2ObjectType.VIEW),
 
-   X("X (Index extension)"),
+    X("X (Index extension)"),
 
-   Z("Z (XSR object)"),
+    Z("Z (XSR object)"),
 
-   q("q (Sequence alias)", DB2ObjectType.ALIAS),
+    q("q (Sequence alias)", DB2ObjectType.ALIAS),
 
-   u("u (Module alias)", DB2ObjectType.ALIAS),
+    u("u (Module alias)", DB2ObjectType.ALIAS),
 
-   v("v ( Global variable)");
+    v("v ( Global variable)");
 
-   private String        description;
-   private DB2ObjectType db2ObjectType;
+    private String description;
+    private DB2ObjectType db2ObjectType;
 
-   // -----------
-   // Constructor
-   // -----------
+    // -----------
+    // Constructor
+    // -----------
 
-   private DB2TriggerDepType(String description, DB2ObjectType db2ObjectType) {
-      this.description = description;
-      this.db2ObjectType = db2ObjectType;
-   }
+    private DB2TriggerDepType(String description, DB2ObjectType db2ObjectType)
+    {
+        this.description = description;
+        this.db2ObjectType = db2ObjectType;
+    }
 
-   private DB2TriggerDepType(String description) {
-      this(description, null);
-   }
+    private DB2TriggerDepType(String description)
+    {
+        this(description, null);
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public DB2ObjectType getDb2ObjectType() {
-      return db2ObjectType;
-   }
+    public DB2ObjectType getDb2ObjectType()
+    {
+        return db2ObjectType;
+    }
 
 }

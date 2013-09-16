@@ -20,28 +20,29 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Type of Tablespace
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TablespaceType {
-   D("D (Database Managed)"),
+    D("D (Database Managed)"),
 
-   S("S (System Managed)");
+    S("S (System Managed)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2TablespaceType(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2TablespaceType(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

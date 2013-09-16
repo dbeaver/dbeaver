@@ -20,30 +20,31 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Trigger Time
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TriggerTime {
-   A("A (After)"),
+    A("A (After)"),
 
-   B("B (Before)"),
+    B("B (Before)"),
 
-   I("I (Instead)");
+    I("I (Instead)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2TriggerTime(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2TriggerTime(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

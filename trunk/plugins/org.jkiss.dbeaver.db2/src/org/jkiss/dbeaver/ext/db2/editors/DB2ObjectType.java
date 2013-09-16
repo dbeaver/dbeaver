@@ -18,237 +18,247 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2Package;
-import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
-import org.jkiss.dbeaver.ext.db2.model.DB2View;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.ui.DBIcon;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * DB2 Object type used by Search, Content Assist and object dependency resolution
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2ObjectType implements DBSObjectType {
 
-   ALIAS(DBIcon.TREE_SYNONYM.getImage(), DB2Alias.class, new ObjectFinder() {
-      @Override
-      public DB2Alias findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getAliasCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    ALIAS(DBIcon.TREE_SYNONYM.getImage(), DB2Alias.class, new ObjectFinder() {
+        @Override
+        public DB2Alias findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getAliasCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   CHECK(DBIcon.TREE_CONSTRAINT.getImage(), DB2TableCheckConstraint.class, new ObjectFinder() {
-      @Override
-      public DB2TableCheckConstraint findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getCheckCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    CHECK(DBIcon.TREE_CONSTRAINT.getImage(), DB2TableCheckConstraint.class, new ObjectFinder() {
+        @Override
+        public DB2TableCheckConstraint findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getCheckCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   FOREIGN_KEY(DBIcon.TREE_FOREIGN_KEY.getImage(), DB2TableForeignKey.class, new ObjectFinder() {
-      @Override
-      public DB2TableForeignKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getAssociationCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    FOREIGN_KEY(DBIcon.TREE_FOREIGN_KEY.getImage(), DB2TableForeignKey.class, new ObjectFinder() {
+        @Override
+        public DB2TableForeignKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getAssociationCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   INDEX(DBIcon.TREE_INDEX.getImage(), DB2Index.class, new ObjectFinder() {
-      @Override
-      public DB2Index findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getIndexCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    INDEX(DBIcon.TREE_INDEX.getImage(), DB2Index.class, new ObjectFinder() {
+        @Override
+        public DB2Index findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getIndexCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   PACKAGE(DBIcon.TREE_PACKAGE.getImage(), DB2Package.class, new ObjectFinder() {
-      @Override
-      public DB2Package findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getPackageCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    PACKAGE(DBIcon.TREE_PACKAGE.getImage(), DB2Package.class, new ObjectFinder() {
+        @Override
+        public DB2Package findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getPackageCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   PROCEDURE(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
-      @Override
-      public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getProcedureCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    PROCEDURE(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
+        @Override
+        public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getProcedureCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   REFERENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2TableReference.class, new ObjectFinder() {
-      @Override
-      public DB2TableReference findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getReferenceCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    REFERENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2TableReference.class, new ObjectFinder() {
+        @Override
+        public DB2TableReference findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getReferenceCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   SEQUENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2Sequence.class, new ObjectFinder() {
-      @Override
-      public DB2Sequence findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getSequenceCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    SEQUENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2Sequence.class, new ObjectFinder() {
+        @Override
+        public DB2Sequence findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getSequenceCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   TABLE(DBIcon.TREE_TABLE.getImage(), DB2Table.class, new ObjectFinder() {
-      @Override
-      public DB2Table findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getTableCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    TABLE(DBIcon.TREE_TABLE.getImage(), DB2Table.class, new ObjectFinder() {
+        @Override
+        public DB2Table findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getTableCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   TRIGGER(DBIcon.TREE_TABLE.getImage(), DB2Trigger.class, new ObjectFinder() {
-      @Override
-      public DB2Trigger findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getTriggerCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    TRIGGER(DBIcon.TREE_TABLE.getImage(), DB2Trigger.class, new ObjectFinder() {
+        @Override
+        public DB2Trigger findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getTriggerCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   UDF(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
-      @Override
-      public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getUdfCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    UDF(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
+        @Override
+        public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getUdfCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   UDT(DBIcon.TREE_DATA_TYPE.getImage(), DB2DataType.class, new ObjectFinder() {
-      @Override
-      public DB2DataType findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getUdtCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    UDT(DBIcon.TREE_DATA_TYPE.getImage(), DB2DataType.class, new ObjectFinder() {
+        @Override
+        public DB2DataType findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getUdtCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   UNIQUE_KEY(DBIcon.TREE_UNIQUE_KEY.getImage(), DB2TableUniqueKey.class, new ObjectFinder() {
-      @Override
-      public DB2TableUniqueKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getConstraintCache().getObject(monitor, schema, objectName);
-      }
-   }),
+    UNIQUE_KEY(DBIcon.TREE_UNIQUE_KEY.getImage(), DB2TableUniqueKey.class, new ObjectFinder() {
+        @Override
+        public DB2TableUniqueKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getConstraintCache().getObject(monitor, schema, objectName);
+        }
+    }),
 
-   VIEW(DBIcon.TREE_VIEW.getImage(), DB2View.class, new ObjectFinder() {
-      @Override
-      public DB2View findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-         return schema.getViewCache().getObject(monitor, schema, objectName, DB2View.class);
-      }
-   });
+    VIEW(DBIcon.TREE_VIEW.getImage(), DB2View.class, new ObjectFinder() {
+        @Override
+        public DB2View findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getViewCache().getObject(monitor, schema, objectName, DB2View.class);
+        }
+    });
 
-   private final static Log                 LOG = LogFactory.getLog(DB2ObjectType.class);
+    private final static Log LOG = LogFactory.getLog(DB2ObjectType.class);
 
-   private final Image                      image;
-   private final Class<? extends DBSObject> typeClass;
-   private final ObjectFinder               finder;
+    private final Image image;
+    private final Class<? extends DBSObject> typeClass;
+    private final ObjectFinder finder;
 
-   // -----------
-   // Constructor
-   // -----------
-   <OBJECT_TYPE extends DBSObject> DB2ObjectType(Image image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder) {
-      this.image = image;
-      this.typeClass = typeClass;
-      this.finder = finder;
-   }
+    // -----------
+    // Constructor
+    // -----------
+    <OBJECT_TYPE extends DBSObject> DB2ObjectType(Image image, Class<OBJECT_TYPE> typeClass, ObjectFinder finder)
+    {
+        this.image = image;
+        this.typeClass = typeClass;
+        this.finder = finder;
+    }
 
-   @Override
-   public String getTypeName() {
-      return this.name();
-   }
+    @Override
+    public String getTypeName()
+    {
+        return this.name();
+    }
 
-   public boolean isBrowsable() {
-      return finder != null;
-   }
+    public boolean isBrowsable()
+    {
+        return finder != null;
+    }
 
-   public DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException {
-      if (finder != null) {
-         return finder.findObject(monitor, schema, objectName);
-      } else {
-         return null;
-      }
-   }
+    public DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+    {
+        if (finder != null) {
+            return finder.findObject(monitor, schema, objectName);
+        } else {
+            return null;
+        }
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   @Override
-   public String getDescription() {
-      return null;
-   }
+    @Override
+    public String getDescription()
+    {
+        return null;
+    }
 
-   @Override
-   public Image getImage() {
-      return image;
-   }
+    @Override
+    public Image getImage()
+    {
+        return image;
+    }
 
-   @Override
-   public Class<? extends DBSObject> getTypeClass() {
-      return typeClass;
-   }
+    @Override
+    public Class<? extends DBSObject> getTypeClass()
+    {
+        return typeClass;
+    }
 
-   // ----------------
-   // Helpers
-   // ----------------
+    // ----------------
+    // Helpers
+    // ----------------
 
-   private static interface ObjectFinder {
-      DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException;
-   }
+    private static interface ObjectFinder {
+        DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException;
+    }
 
-   public static DB2ObjectType getByType(String typeName) {
-      return typeMap.get(typeName);
-   }
+    public static DB2ObjectType getByType(String typeName)
+    {
+        return typeMap.get(typeName);
+    }
 
-   public static Object resolveObject(DBRProgressMonitor monitor,
-                                      DB2DataSource dataSource,
-                                      String objectTypeName,
-                                      String objectOwner,
-                                      String objectName) throws DBException {
-      DB2ObjectType objectType = DB2ObjectType.getByType(objectTypeName);
-      if (objectType == null) {
-         LOG.debug("Unrecognized object type: " + objectTypeName);
-         return objectName;
-      }
-      if (!objectType.isBrowsable()) {
-         LOG.debug("Unsupported object type: " + objectTypeName);
-         return objectName;
-      }
-      final DB2Schema schema = dataSource.getSchema(monitor, objectOwner);
-      if (schema == null) {
-         LOG.debug("Schema '" + objectOwner + "' not found");
-         return objectName;
-      }
-      final DBSObject object = objectType.findObject(monitor, schema, objectName);
-      if (object == null) {
-         LOG.debug(objectTypeName + " '" + objectName + "' not found in '" + schema.getName() + "'");
-         return objectName;
-      }
-      return object;
-   }
+    public static Object resolveObject(
+        DBRProgressMonitor monitor,
+        DB2DataSource dataSource,
+        String objectTypeName,
+        String objectOwner,
+        String objectName) throws DBException
+    {
+        DB2ObjectType objectType = DB2ObjectType.getByType(objectTypeName);
+        if (objectType == null) {
+            LOG.debug("Unrecognized object type: " + objectTypeName);
+            return objectName;
+        }
+        if (!objectType.isBrowsable()) {
+            LOG.debug("Unsupported object type: " + objectTypeName);
+            return objectName;
+        }
+        final DB2Schema schema = dataSource.getSchema(monitor, objectOwner);
+        if (schema == null) {
+            LOG.debug("Schema '" + objectOwner + "' not found");
+            return objectName;
+        }
+        final DBSObject object = objectType.findObject(monitor, schema, objectName);
+        if (object == null) {
+            LOG.debug(objectTypeName + " '" + objectName + "' not found in '" + schema.getName() + "'");
+            return objectName;
+        }
+        return object;
+    }
 
-   // ---
-   // Init
-   // ---
-   private static Map<String, DB2ObjectType> typeMap = new HashMap<String, DB2ObjectType>();
-   static {
-      for (DB2ObjectType type : values()) {
-         typeMap.put(type.getTypeName(), type);
-      }
-   }
+    // ---
+    // Init
+    // ---
+    private static Map<String, DB2ObjectType> typeMap = new HashMap<String, DB2ObjectType>();
+
+    static {
+        for (DB2ObjectType type : values()) {
+            typeMap.put(type.getTypeName(), type);
+        }
+    }
 
 }

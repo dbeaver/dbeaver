@@ -20,50 +20,53 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Column Hidden Status
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2ColumnHiddenState {
-   I("I (Implicitely hidden)", true),
+    I("I (Implicitely hidden)", true),
 
-   S("S (System managed hidden)", false);
+    S("S (System managed hidden)", false);
 
-   private String  description;
-   private Boolean hidden;
+    private String description;
+    private Boolean hidden;
 
-   // -----------
-   // Constructor
-   // -----------
+    // -----------
+    // Constructor
+    // -----------
 
-   private DB2ColumnHiddenState(String description, Boolean hidden) {
-      this.description = description;
-      this.hidden = hidden;
-   }
+    private DB2ColumnHiddenState(String description, Boolean hidden)
+    {
+        this.description = description;
+        this.hidden = hidden;
+    }
 
-   // ----------------
-   // Static Helpers
-   // ----------------
+    // ----------------
+    // Static Helpers
+    // ----------------
 
-   public static Boolean isHidden(String hiddenChar) {
-      if (hiddenChar == null) {
-         return false;
-      }
-      if (hiddenChar.trim().length() == 0) {
-         return false;
-      }
-      return DB2ColumnHiddenState.valueOf(hiddenChar).isHidden();
-   }
+    public static Boolean isHidden(String hiddenChar)
+    {
+        if (hiddenChar == null) {
+            return false;
+        }
+        if (hiddenChar.trim().length() == 0) {
+            return false;
+        }
+        return DB2ColumnHiddenState.valueOf(hiddenChar).isHidden();
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public Boolean isHidden() {
-      return hidden;
-   }
+    public Boolean isHidden()
+    {
+        return hidden;
+    }
 }

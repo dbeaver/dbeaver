@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
@@ -32,104 +30,116 @@ import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
+import java.sql.ResultSet;
+
 /**
  * DB2 Table Column
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBSTableColumn, DBPHiddenObject {
 
-   private DB2DataType dataType;
-   private DB2Schema   dataTypeSchema;
-   private String      remarks;
-   private boolean     hidden;
+    private DB2DataType dataType;
+    private DB2Schema dataTypeSchema;
+    private String remarks;
+    private boolean hidden;
 
-   // -----------------
-   // Constructors
-   // -----------------
+    // -----------------
+    // Constructors
+    // -----------------
 
-   public DB2TableColumn(DBRProgressMonitor monitor, DB2TableBase tableBase, ResultSet dbResult) throws DBException {
-      super(tableBase, true);
+    public DB2TableColumn(DBRProgressMonitor monitor, DB2TableBase tableBase, ResultSet dbResult) throws DBException
+    {
+        super(tableBase, true);
 
-      setName(JDBCUtils.safeGetString(dbResult, "COLNAME"));
-      setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLNO"));
-      setRequired(JDBCUtils.safeGetBoolean(dbResult, "NULLS", DB2YesNo.N.name()));
-      setDefaultValue(JDBCUtils.safeGetString(dbResult, "DEFAULT"));
-      setMaxLength(JDBCUtils.safeGetInteger(dbResult, "LENGTH"));
-      setScale(JDBCUtils.safeGetInteger(dbResult, "SCALE"));
+        setName(JDBCUtils.safeGetString(dbResult, "COLNAME"));
+        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLNO"));
+        setRequired(JDBCUtils.safeGetBoolean(dbResult, "NULLS", DB2YesNo.N.name()));
+        setDefaultValue(JDBCUtils.safeGetString(dbResult, "DEFAULT"));
+        setMaxLength(JDBCUtils.safeGetInteger(dbResult, "LENGTH"));
+        setScale(JDBCUtils.safeGetInteger(dbResult, "SCALE"));
 
-      this.hidden = DB2ColumnHiddenState.isHidden(JDBCUtils.safeGetString(dbResult, "HIDDEN"));
-      this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+        this.hidden = DB2ColumnHiddenState.isHidden(JDBCUtils.safeGetString(dbResult, "HIDDEN"));
+        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-      // Set DataTypes data
-      // Search for DataType
-      // Look first in Standards type
-      String typeName = JDBCUtils.safeGetString(dbResult, "TYPENAME");
-      this.dataType = tableBase.getDataSource().getDataTypeCache().getObject(monitor, getTable().getDataSource(), typeName);
-      if (this.dataType == null) {
-         String typeSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
-         this.dataTypeSchema = getDataSource().getSchema(monitor, typeSchemaName);
-         this.dataType = this.dataTypeSchema.getUDT(monitor, typeName);
-      } else {
-         this.dataTypeSchema = dataType.getSchema();
-      }
-      setTypeName(dataType.getFullQualifiedName());
-      setValueType(dataType.getTypeID());
-   }
+        // Set DataTypes data
+        // Search for DataType
+        // Look first in Standards type
+        String typeName = JDBCUtils.safeGetString(dbResult, "TYPENAME");
+        this.dataType = tableBase.getDataSource().getDataTypeCache().getObject(monitor, getTable().getDataSource(), typeName);
+        if (this.dataType == null) {
+            String typeSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
+            this.dataTypeSchema = getDataSource().getSchema(monitor, typeSchemaName);
+            this.dataType = this.dataTypeSchema.getUDT(monitor, typeName);
+        } else {
+            this.dataTypeSchema = dataType.getSchema();
+        }
+        setTypeName(dataType.getFullQualifiedName());
+        setValueType(dataType.getTypeID());
+    }
 
-   @Override
-   public DB2DataSource getDataSource() {
-      return getTable().getDataSource();
-   }
+    @Override
+    public DB2DataSource getDataSource()
+    {
+        return getTable().getDataSource();
+    }
 
-   @Override
-   @Property(viewable = true, order = 41)
-   public int getPrecision() {
-      return super.getPrecision();
-   }
+    @Override
+    @Property(viewable = true, order = 41)
+    public int getPrecision()
+    {
+        return super.getPrecision();
+    }
 
-   @Override
-   public boolean isSequence() {
-      return false;
-   }
+    @Override
+    public boolean isSequence()
+    {
+        return false;
+    }
 
-   @Override
-   public boolean isHidden() {
-      return hidden;
-   }
+    @Override
+    public boolean isHidden()
+    {
+        return hidden;
+    }
 
-   @Override
-   public DBSDataKind getDataKind() {
-      return dataType.getDataKind();
-   }
+    @Override
+    public DBSDataKind getDataKind()
+    {
+        return dataType.getDataKind();
+    }
 
-   @Override
-   public String getTypeName() {
-      return super.getTypeName();
-   }
+    @Override
+    public String getTypeName()
+    {
+        return super.getTypeName();
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
-   @Property(viewable = true, editable = false, order = 20)
-   public DB2Schema getTypeSchema() {
-      return dataTypeSchema;
-   }
+    // -----------------
+    // Properties
+    // -----------------
+    @Property(viewable = true, editable = false, order = 20)
+    public DB2Schema getTypeSchema()
+    {
+        return dataTypeSchema;
+    }
 
-   @Property(viewable = true, editable = false, order = 21)
-   public DBSDataType getType() {
-      return dataType;
-   }
+    @Property(viewable = true, editable = false, order = 21)
+    public DBSDataType getType()
+    {
+        return dataType;
+    }
 
-   @Property(viewable = true, editable = false)
-   @Override
-   public boolean isRequired() {
-      return super.isRequired();
-   }
+    @Property(viewable = true, editable = false)
+    @Override
+    public boolean isRequired()
+    {
+        return super.isRequired();
+    }
 
-   @Property(viewable = true, editable = false)
-   public String getComment() {
-      return remarks;
-   }
+    @Property(viewable = true, editable = false)
+    public String getComment()
+    {
+        return remarks;
+    }
 }

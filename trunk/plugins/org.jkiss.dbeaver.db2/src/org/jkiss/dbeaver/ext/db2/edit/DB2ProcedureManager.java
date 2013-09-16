@@ -34,63 +34,70 @@ import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
  */
 public class DB2ProcedureManager extends JDBCObjectEditor<DB2Routine, DB2Schema> {
 
-   @Override
-   public DBSObjectCache<? extends DBSObject, DB2Routine> getObjectsCache(DB2Routine object) {
-      return object.getSchema().getProcedureCache();
-   }
+    @Override
+    public DBSObjectCache<? extends DBSObject, DB2Routine> getObjectsCache(DB2Routine object)
+    {
+        return object.getSchema().getProcedureCache();
+    }
 
-   @Override
-   protected DB2Routine createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                             DBECommandContext context,
-                                             DB2Schema parent,
-                                             Object copyFrom) {
-      CreateProcedureDialog dialog = new CreateProcedureDialog(workbenchWindow.getShell(), parent.getDataSource());
-      if (dialog.open() != IDialogConstants.OK_ID) {
-         return null;
-      }
-      // return new DB2RoutineBase(parent, dialog.getProcedureName(),
-      // dialog.getProcedureType());
-      return null;
-   }
+    @Override
+    protected DB2Routine createDatabaseObject(IWorkbenchWindow workbenchWindow,
+                                              DBECommandContext context,
+                                              DB2Schema parent,
+                                              Object copyFrom)
+    {
+        CreateProcedureDialog dialog = new CreateProcedureDialog(workbenchWindow.getShell(), parent.getDataSource());
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        // return new DB2RoutineBase(parent, dialog.getProcedureName(),
+        // dialog.getProcedureType());
+        return null;
+    }
 
-   @Override
-   protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand) {
-      // return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
-      return null;
-   }
+    @Override
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    {
+        // return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
+        return null;
+    }
 
-   @Override
-   protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand) {
-      // final DB2RoutineBase object = objectDeleteCommand.getObject();
-      // return new IDatabasePersistAction[] { new
-      // AbstractDatabasePersistAction("Drop procedure",
-      //               "DROP " + object.getProcedureType().name() + " " + object.getFullQualifiedName()) //$NON-NLS-1$ //$NON-NLS-2$
-      // };
-      return null;
-   }
+    @Override
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    {
+        // final DB2RoutineBase object = objectDeleteCommand.getObject();
+        // return new IDatabasePersistAction[] { new
+        // AbstractDatabasePersistAction("Drop procedure",
+        //               "DROP " + object.getProcedureType().name() + " " + object.getFullQualifiedName()) //$NON-NLS-1$ //$NON-NLS-2$
+        // };
+        return null;
+    }
 
-   @Override
-   protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand) {
-      // return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
-      return null;
-   }
+    @Override
+    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    {
+        // return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
+        return null;
+    }
 
-   @Override
-   public long getMakerOptions() {
-      return FEATURE_EDITOR_ON_CREATE;
-   }
+    @Override
+    public long getMakerOptions()
+    {
+        return FEATURE_EDITOR_ON_CREATE;
+    }
 
-   private IDatabasePersistAction[] createOrReplaceProcedureQuery(DB2Routine procedure) {
-      // String source = DB2Utils.normalizeSourceName(procedure, false);
-      // if (source == null) {
-      // return null;
-      // }
-      // List<IDatabasePersistAction> actions = new
-      // ArrayList<IDatabasePersistAction>();
-      //      actions.add(new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
-      // DB2Utils.addSchemaChangeActions(actions, procedure);
-      // return actions.toArray(new IDatabasePersistAction[actions.size()]);
-      return null;
-   }
+    private IDatabasePersistAction[] createOrReplaceProcedureQuery(DB2Routine procedure)
+    {
+        // String source = DB2Utils.normalizeSourceName(procedure, false);
+        // if (source == null) {
+        // return null;
+        // }
+        // List<IDatabasePersistAction> actions = new
+        // ArrayList<IDatabasePersistAction>();
+        //      actions.add(new AbstractDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
+        // DB2Utils.addSchemaChangeActions(actions, procedure);
+        // return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return null;
+    }
 
 }

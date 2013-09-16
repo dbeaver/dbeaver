@@ -18,62 +18,71 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-import java.util.Collection;
-
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2UserAuthCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2AuthIDType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.sql.ResultSet;
+import java.util.Collection;
+
 /**
  * DB2 Super class for Users and Groups
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DBPRefreshableObject {
 
-   private final DB2UserAuthCache userAuthCache = new DB2UserAuthCache();
+    private final DBSObjectCache<DB2UserBase, DB2UserAuth> userAuthCache;
+    private String name;
 
-   private String                 name;
+    // -----------------------
+    // Constructors
+    // -----------------------
+    public DB2UserBase(DB2DataSource dataSource, ResultSet resultSet)
+    {
+        super(dataSource, true);
+        this.name = JDBCUtils.safeGetString(resultSet, "AUTHID");
+        this.userAuthCache = new JDBCObjectSimpleCache<DB2UserBase, DB2UserAuth>(
+            DB2UserAuth.class,
+            "SELECT * FROM SYSIBMADM.PRIVILEGES WHERE AUTHID = ? AND AUTHIDTYPE = ? ORDER BY OBJECTSCHEMA,OBJECTNAME WITH UR",
+            getName(),
+            getType().name());
+    }
 
-   // -----------------------
-   // Constructors
-   // -----------------------
-   public DB2UserBase(DB2DataSource dataSource, ResultSet resultSet) {
-      super(dataSource, true);
-      this.name = JDBCUtils.safeGetString(resultSet, "AUTHID");
-   }
+    // -----------------
+    // Associations
+    // -----------------
 
-   // -----------------
-   // Associations
-   // -----------------
+    @Association
+    public Collection<DB2UserAuth> getUserAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return userAuthCache.getObjects(monitor, this);
+    }
 
-   @Association
-   public Collection<DB2UserAuth> getUserAuths(DBRProgressMonitor monitor) throws DBException {
-      return userAuthCache.getObjects(monitor, this);
-   }
+    @Override
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    {
+        userAuthCache.clearCache();
+        return true;
+    }
 
-   @Override
-   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
-      userAuthCache.clearCache();
-      return true;
-   }
+    public abstract DB2AuthIDType getType();
 
-   public abstract DB2AuthIDType getType();
+    // -----------------
+    // Properties
+    // -----------------
+    @Override
+    @Property(viewable = true, order = 1)
+    public String getName()
+    {
+        return name;
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
-   @Override
-   @Property(viewable = true, order = 1)
-   public String getName() {
-      return name;
-   }
 }

@@ -20,30 +20,31 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Row Compression Mode
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2CompressionRowMode {
-   A("A (Adaptive)"),
+    A("A (Adaptive)"),
 
-   S("S (Static)");
+    S("S (Static)");
 
-   private String description;
+    private String description;
 
-   // -----------
-   // Constructor
-   // -----------
+    // -----------
+    // Constructor
+    // -----------
 
-   private DB2CompressionRowMode(String description) {
-      this.description = description;
-   }
+    private DB2CompressionRowMode(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 }

@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -30,38 +27,43 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Cache for DB2 Procedures
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
 
-   private static final String SQL_P = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINETYPE= 'P' AND ROUTINESCHEMA = ? ORDER BY ROUTINENAME WITH UR";
-   private static final String SQL_F = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINETYPE= 'F' AND ROUTINESCHEMA = ? ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_P = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINETYPE= 'P' AND ROUTINESCHEMA = ? ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_F = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINETYPE= 'F' AND ROUTINESCHEMA = ? ORDER BY ROUTINENAME WITH UR";
 
-   private String              sql;
+    private String sql;
 
-   public DB2RoutineCache(DBSProcedureType procedureType) {
-      super();
-      if (procedureType.equals(DBSProcedureType.FUNCTION)) {
-         sql = SQL_F;
-      } else {
-         sql = SQL_P;
-      }
-   }
+    public DB2RoutineCache(DBSProcedureType procedureType)
+    {
+        super();
+        if (procedureType.equals(DBSProcedureType.FUNCTION)) {
+            sql = SQL_F;
+        } else {
+            sql = SQL_P;
+        }
+    }
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException {
-      JDBCPreparedStatement dbStat = context.prepareStatement(sql);
-      dbStat.setString(1, db2Schema.getName());
-      return dbStat;
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
+    {
+        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        dbStat.setString(1, db2Schema.getName());
+        return dbStat;
+    }
 
-   @Override
-   protected DB2Routine fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
-                                                                                                          DBException {
-      return new DB2Routine(db2Schema, dbResult);
-   }
+    @Override
+    protected DB2Routine fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
+        DBException
+    {
+        return new DB2Routine(db2Schema, dbResult);
+    }
 }

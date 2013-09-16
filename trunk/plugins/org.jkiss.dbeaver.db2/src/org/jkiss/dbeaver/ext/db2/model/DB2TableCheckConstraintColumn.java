@@ -25,68 +25,75 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * DB2 Table Constraint Column
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2TableCheckConstraintColumn extends AbstractTableConstraintColumn {
 
-   private AbstractTableConstraint<DB2Table> constraint;
-   private DB2TableColumn                    tableColumn;
-   private DB2TableCheckConstraintColUsage   usage;
+    private AbstractTableConstraint<DB2Table> constraint;
+    private DB2TableColumn tableColumn;
+    private DB2TableCheckConstraintColUsage usage;
 
-   // -----------------
-   // Constructors
-   // -----------------
+    // -----------------
+    // Constructors
+    // -----------------
 
-   public DB2TableCheckConstraintColumn(AbstractTableConstraint<DB2Table> constraint,
-                                        DB2TableColumn tableColumn,
-                                        DB2TableCheckConstraintColUsage usage) {
-      this.constraint = constraint;
-      this.tableColumn = tableColumn;
-      this.usage = usage;
-   }
+    public DB2TableCheckConstraintColumn(AbstractTableConstraint<DB2Table> constraint,
+                                         DB2TableColumn tableColumn,
+                                         DB2TableCheckConstraintColUsage usage)
+    {
+        this.constraint = constraint;
+        this.tableColumn = tableColumn;
+        this.usage = usage;
+    }
 
-   @Override
-   public AbstractTableConstraint<DB2Table> getParentObject() {
-      return constraint;
-   }
+    @Override
+    public AbstractTableConstraint<DB2Table> getParentObject()
+    {
+        return constraint;
+    }
 
-   @Override
-   public DB2DataSource getDataSource() {
-      return constraint.getTable().getDataSource();
-   }
+    @Override
+    public DB2DataSource getDataSource()
+    {
+        return constraint.getTable().getDataSource();
+    }
 
-   // Check Constraint columns do not have ordinal position...
-   @Override
-   @Property(hidden = true)
-   public int getOrdinalPosition() {
-      return 0;
-   }
+    // Check Constraint columns do not have ordinal position...
+    @Override
+    @Property(hidden = true)
+    public int getOrdinalPosition()
+    {
+        return 0;
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   public String getName() {
-      return tableColumn.getName();
-   }
+    @Override
+    public String getName()
+    {
+        return tableColumn.getName();
+    }
 
-   @Override
-   @Property(id = "name", viewable = true, order = 1)
-   public DB2TableColumn getAttribute() {
-      return tableColumn;
-   }
+    @Override
+    @Property(id = "name", viewable = true, order = 1)
+    public DB2TableColumn getAttribute()
+    {
+        return tableColumn;
+    }
 
-   @Property(viewable = true, order = 2)
-   public String getUsage() {
-      return usage.getDescription();
-   }
+    @Property(viewable = true, order = 2)
+    public String getUsage()
+    {
+        return usage.getDescription();
+    }
 
-   @Override
-   public String getDescription() {
-      return tableColumn.getDescription();
-   }
+    @Override
+    public String getDescription()
+    {
+        return tableColumn.getDescription();
+    }
 
 }

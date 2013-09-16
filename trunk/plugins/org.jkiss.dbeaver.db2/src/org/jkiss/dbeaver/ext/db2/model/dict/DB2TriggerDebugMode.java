@@ -20,14 +20,13 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Trigger Debug Mode
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TriggerDebugMode {
-   DISALLOW,
+    DISALLOW,
 
-   ALLOW,
+    ALLOW,
 
-   DISABLED;
+    DISABLED;
 }

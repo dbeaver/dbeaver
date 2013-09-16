@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -31,33 +28,37 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Cache for DB2 Sequences
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2TableTriggerCache extends JDBCObjectCache<DB2Table, DB2Trigger> {
 
-   private static final String SQL_TRIG_TAB = "SELECT * FROM SYSCAT.TRIGGERS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY TRIGNAME WITH UR";
+    private static final String SQL_TRIG_TAB = "SELECT * FROM SYSCAT.TRIGGERS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY TRIGNAME WITH UR";
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Table db2Table) throws SQLException {
-      final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_TRIG_TAB);
-      dbStat.setString(1, db2Table.getSchema().getName());
-      dbStat.setString(2, db2Table.getName());
-      return dbStat;
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Table db2Table) throws SQLException
+    {
+        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_TRIG_TAB);
+        dbStat.setString(1, db2Table.getSchema().getName());
+        dbStat.setString(2, db2Table.getName());
+        return dbStat;
+    }
 
-   @Override
-   protected DB2Trigger fetchObject(JDBCExecutionContext context, DB2Table db2Table, ResultSet dbResult) throws SQLException,
-                                                                                                        DBException {
+    @Override
+    protected DB2Trigger fetchObject(JDBCExecutionContext context, DB2Table db2Table, ResultSet dbResult) throws SQLException,
+        DBException
+    {
 
-      // Lookup for indexes in right cache..
-      String triggerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGSCHEMA");
-      String triggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGNAME");
-      DB2Schema tableSchema = db2Table.getSchema();
-      DB2Schema triggerSchema = db2Table.getDataSource().schemaLookup(context.getProgressMonitor(), tableSchema, triggerSchemaName);
-      return triggerSchema.getTrigger(context.getProgressMonitor(), triggerName);
-   }
+        // Lookup for indexes in right cache..
+        String triggerSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGSCHEMA");
+        String triggerName = JDBCUtils.safeGetStringTrimmed(dbResult, "TRIGNAME");
+        DB2Schema tableSchema = db2Table.getSchema();
+        DB2Schema triggerSchema = db2Table.getDataSource().schemaLookup(context.getProgressMonitor(), tableSchema, triggerSchemaName);
+        return triggerSchema.getTrigger(context.getProgressMonitor(), triggerName);
+    }
 }
