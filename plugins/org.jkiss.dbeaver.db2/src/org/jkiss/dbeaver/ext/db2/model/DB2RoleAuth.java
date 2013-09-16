@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2GrantorGranteeType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
@@ -27,68 +25,77 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+
 /**
  * DB2 Role Authorisations
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
 
-   private DB2GrantorGranteeType granteeType;
-   private String                grantor;
-   private DB2GrantorGranteeType grantorType;
-   private Boolean               admin;
+    private DB2GrantorGranteeType granteeType;
+    private String grantor;
+    private DB2GrantorGranteeType grantorType;
+    private Boolean admin;
 
-   // -----------------------
-   // Constructors
-   // -----------------------
-   public DB2RoleAuth(DB2Role role, ResultSet resultSet) {
-      // TODO DF: Bad should be GRANTEETYPE+GRANTEE
-      super(role, JDBCUtils.safeGetString(resultSet, "GRANTEE"), true);
+    // -----------------------
+    // Constructors
+    // -----------------------
+    public DB2RoleAuth(DB2Role role, ResultSet resultSet)
+    {
+        // TODO DF: Bad should be GRANTEETYPE+GRANTEE
+        super(role, JDBCUtils.safeGetString(resultSet, "GRANTEE"), true);
 
-      this.granteeType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTEETYPE"));
-      this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
-      this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
-      this.admin = JDBCUtils.safeGetBoolean(resultSet, "ADMIN", DB2YesNo.Y.name());
-   }
+        this.granteeType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTEETYPE"));
+        this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
+        this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
+        this.admin = JDBCUtils.safeGetBoolean(resultSet, "ADMIN", DB2YesNo.Y.name());
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   @Property(viewable = true, editable = false)
-   public String getName() {
-      return super.getName();
-   }
+    @Override
+    @Property(viewable = true, editable = false)
+    public String getName()
+    {
+        return super.getName();
+    }
 
-   public DB2GrantorGranteeType getGranteeType() {
-      return granteeType;
-   }
+    public DB2GrantorGranteeType getGranteeType()
+    {
+        return granteeType;
+    }
 
-   @Property(viewable = true, editable = false)
-   public DB2GrantorGranteeType getGranteeTypeDescription() {
-      return granteeType;
-   }
+    @Property(viewable = true, editable = false)
+    public DB2GrantorGranteeType getGranteeTypeDescription()
+    {
+        return granteeType;
+    }
 
-   @Property(viewable = true, editable = false)
-   public String getGrantor() {
-      return grantor;
-   }
+    @Property(viewable = true, editable = false)
+    public String getGrantor()
+    {
+        return grantor;
+    }
 
-   public DB2GrantorGranteeType getGrantorType() {
-      return grantorType;
-   }
+    public DB2GrantorGranteeType getGrantorType()
+    {
+        return grantorType;
+    }
 
-   @Property(viewable = true, editable = false)
-   public String getGrantorTypeDescription() {
-      return grantorType.getDescription();
-   }
+    @Property(viewable = true, editable = false)
+    public String getGrantorTypeDescription()
+    {
+        return grantorType.getDescription();
+    }
 
-   @Property(viewable = true, editable = false)
-   public Boolean getAdmin() {
-      return admin;
-   }
+    @Property(viewable = true, editable = false)
+    public Boolean getAdmin()
+    {
+        return admin;
+    }
 
 }

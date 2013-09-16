@@ -34,32 +34,38 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
  */
 public class DB2ObjectDDLEditor extends SQLEditorNested<DB2Table> {
 
-   public DB2ObjectDDLEditor() {
-   }
+    public DB2ObjectDDLEditor()
+    {
+    }
 
-   @Override
-   public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-      super.init(site, input);
-   }
+    @Override
+    public void init(IEditorSite site, IEditorInput input) throws PartInitException
+    {
+        super.init(site, input);
+    }
 
-   @Override
-   public boolean isReadOnly() {
-      return true;
-   }
+    @Override
+    public boolean isReadOnly()
+    {
+        return true;
+    }
 
-   @Override
-   protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
-      String ddlFormatString = getEditorInput().getDatabaseObject().getDataSource().getContainer().getPreferenceStore()
-               .getString(DB2Constants.PREF_KEY_DDL_FORMAT);
-      return ((DB2Table) getEditorInput().getDatabaseObject()).getDDL(monitor);
-   }
+    @Override
+    protected String getSourceText(DBRProgressMonitor monitor) throws DBException
+    {
+        String ddlFormatString = getEditorInput().getDatabaseObject().getDataSource().getContainer().getPreferenceStore()
+            .getString(DB2Constants.PREF_KEY_DDL_FORMAT);
+        return ((DB2Table) getEditorInput().getDatabaseObject()).getDDL(monitor);
+    }
 
-   @Override
-   protected void setSourceText(String sourceText) {
-   }
+    @Override
+    protected void setSourceText(String sourceText)
+    {
+    }
 
-   @Override
-   protected void contributeEditorCommands(ToolBarManager toolBarManager) {
-      super.contributeEditorCommands(toolBarManager);
-   }
+    @Override
+    protected void contributeEditorCommands(ToolBarManager toolBarManager)
+    {
+        super.contributeEditorCommands(toolBarManager);
+    }
 }

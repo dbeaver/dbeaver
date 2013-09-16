@@ -22,43 +22,45 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 
 /**
  * DB2 Routine Rowtype
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2RoutineRowType {
-   B("B (Both input and output parameter )", DBSProcedureParameterType.INOUT),
+    B("B (Both input and output parameter )", DBSProcedureParameterType.INOUT),
 
-   C("C (Result after casting)", DBSProcedureParameterType.RETURN),
+    C("C (Result after casting)", DBSProcedureParameterType.RETURN),
 
-   O("O (Output parameter)", DBSProcedureParameterType.OUT),
+    O("O (Output parameter)", DBSProcedureParameterType.OUT),
 
-   P("P (Input parameter)", DBSProcedureParameterType.IN),
+    P("P (Input parameter)", DBSProcedureParameterType.IN),
 
-   R("F (Result before casting)", DBSProcedureParameterType.RETURN);
+    R("F (Result before casting)", DBSProcedureParameterType.RETURN);
 
-   private String                    description;
-   private DBSProcedureParameterType parameterType;
+    private String description;
+    private DBSProcedureParameterType parameterType;
 
-   // -----------
-   // Constructor
-   // -----------
+    // -----------
+    // Constructor
+    // -----------
 
-   private DB2RoutineRowType(String description, DBSProcedureParameterType parameterType) {
-      this.description = description;
-      this.parameterType = parameterType;
-   }
+    private DB2RoutineRowType(String description, DBSProcedureParameterType parameterType)
+    {
+        this.description = description;
+        this.parameterType = parameterType;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public DBSProcedureParameterType getParameterType() {
-      return parameterType;
-   }
+    public DBSProcedureParameterType getParameterType()
+    {
+        return parameterType;
+    }
 
 }

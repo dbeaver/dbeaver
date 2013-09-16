@@ -22,39 +22,41 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 
 /**
  * DB2 Foreign Key Rule
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2DeleteUpdateRule {
-   A("A (No Action)", DBSForeignKeyModifyRule.NO_ACTION),
+    A("A (No Action)", DBSForeignKeyModifyRule.NO_ACTION),
 
-   C("C (Cascade)", DBSForeignKeyModifyRule.CASCADE),
+    C("C (Cascade)", DBSForeignKeyModifyRule.CASCADE),
 
-   N("F (Set Null)", DBSForeignKeyModifyRule.SET_NULL),
+    N("F (Set Null)", DBSForeignKeyModifyRule.SET_NULL),
 
-   R("R (Restrict)", DBSForeignKeyModifyRule.RESTRICT);
+    R("R (Restrict)", DBSForeignKeyModifyRule.RESTRICT);
 
-   private String                  description;
-   private DBSForeignKeyModifyRule rule;
+    private String description;
+    private DBSForeignKeyModifyRule rule;
 
-   // ------------
-   // Constructors
-   // ------------
-   private DB2DeleteUpdateRule(String description, DBSForeignKeyModifyRule rule) {
-      this.description = description;
-      this.rule = rule;
-   }
+    // ------------
+    // Constructors
+    // ------------
+    private DB2DeleteUpdateRule(String description, DBSForeignKeyModifyRule rule)
+    {
+        this.description = description;
+        this.rule = rule;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public DBSForeignKeyModifyRule getRule() {
-      return rule;
-   }
+    public DBSForeignKeyModifyRule getRule()
+    {
+        return rule;
+    }
 }

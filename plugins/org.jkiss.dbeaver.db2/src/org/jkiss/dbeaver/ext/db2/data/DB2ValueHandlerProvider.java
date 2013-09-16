@@ -30,15 +30,17 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class DB2ValueHandlerProvider implements DBDValueHandlerProvider {
 
-   @Override
-   public Image getTypeImage(DBSTypedObject type) {
-      return DBUtils.getDataIcon(type).getImage();
-   }
+    @Override
+    public Image getTypeImage(DBSTypedObject type)
+    {
+        return DBUtils.getDataIcon(type).getImage();
+    }
 
-   @Override
-   public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType) {
-      // TODO DF: yet to be implemented
-      throw new UnsupportedOperationException("Not yet implemented");
-   }
+    @Override
+    public DBDValueHandler getHandler(DBDPreferences preferences, String typeName, int valueType)
+    {
+        // TODO DF: yet to be implemented
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 
 }

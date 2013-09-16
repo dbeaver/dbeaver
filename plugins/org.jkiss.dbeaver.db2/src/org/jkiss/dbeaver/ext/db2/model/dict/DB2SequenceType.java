@@ -20,30 +20,31 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Sequence Type
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2SequenceType {
-   A("A (Alias)"),
+    A("A (Alias)"),
 
-   I("I (Identity Sequence)"),
+    I("I (Identity Sequence)"),
 
-   S("S (Sequence)");
+    S("S (Sequence)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2SequenceType(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2SequenceType(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

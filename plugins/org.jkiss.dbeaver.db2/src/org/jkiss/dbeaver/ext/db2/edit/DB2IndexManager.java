@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.edit;
 
-import java.util.Collections;
-
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
@@ -33,37 +31,41 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditIndexDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
+
 /**
  * DB2 index manager
  */
 public class DB2IndexManager extends JDBCIndexManager<DB2Index, DB2Table> {
 
-   @Override
-   public DBSObjectCache<? extends DBSObject, DB2Index> getObjectsCache(DB2Index object) {
-      return object.getParentObject().getSchema().getIndexCache();
-   }
+    @Override
+    public DBSObjectCache<? extends DBSObject, DB2Index> getObjectsCache(DB2Index object)
+    {
+        return object.getParentObject().getSchema().getIndexCache();
+    }
 
-   @Override
-   protected DB2Index createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table parent, Object from) {
-      EditIndexDialog editDialog = new EditIndexDialog(workbenchWindow.getShell(),
-                                                       DB2Messages.edit_db2_index_manager_dialog_title,
-                                                       parent,
-                                                       Collections.singletonList(DBSIndexType.OTHER));
-      if (editDialog.open() != IDialogConstants.OK_ID) {
-         return null;
-      }
+    @Override
+    protected DB2Index createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table parent, Object from)
+    {
+        EditIndexDialog editDialog = new EditIndexDialog(workbenchWindow.getShell(),
+            DB2Messages.edit_db2_index_manager_dialog_title,
+            parent,
+            Collections.singletonList(DBSIndexType.OTHER));
+        if (editDialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
 
-      StringBuilder idxName = new StringBuilder(64);
-      idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
-               .append(CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName())).append("_IDX"); //$NON-NLS-1$
-      // final DB2TableIndex index = new DB2TableIndex(parent.getSchema(),parent, DBObjectNameCaseTransformer.transformName(
-      // (DBPDataSource) parent.getDataSource(), idxName.toString()), false, editDialog.getIndexType());
-      // int colIndex = 1;
-      // for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
-      // index.addColumn(new DB2TableIndexColumn(index, (DB2TableColumn) tableColumn, colIndex++, true));
-      // }
-      // return index;
-      return null;
-   }
+        StringBuilder idxName = new StringBuilder(64);
+        idxName.append(CommonUtils.escapeIdentifier(parent.getName())).append("_") //$NON-NLS-1$
+            .append(CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName())).append("_IDX"); //$NON-NLS-1$
+        // final DB2TableIndex index = new DB2TableIndex(parent.getSchema(),parent, DBObjectNameCaseTransformer.transformName(
+        // (DBPDataSource) parent.getDataSource(), idxName.toString()), false, editDialog.getIndexType());
+        // int colIndex = 1;
+        // for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
+        // index.addColumn(new DB2TableIndexColumn(index, (DB2TableColumn) tableColumn, colIndex++, true));
+        // }
+        // return index;
+        return null;
+    }
 
 }

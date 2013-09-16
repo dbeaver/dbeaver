@@ -25,53 +25,58 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Abstract DB2 schema object
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public abstract class DB2GlobalObject implements DBSObject, DBPSaveableObject {
-   protected Log               log = LogFactory.getLog(this.getClass().getName());
+    protected Log log = LogFactory.getLog(this.getClass().getName());
 
-   private final DB2DataSource dataSource;
-   private boolean             persisted;
+    private final DB2DataSource dataSource;
+    private boolean persisted;
 
-   // -----------------------
-   // Constructors
-   // -----------------------
+    // -----------------------
+    // Constructors
+    // -----------------------
 
-   protected DB2GlobalObject(DB2DataSource dataSource, boolean persisted) {
-      this.dataSource = dataSource;
-      this.persisted = persisted;
-   }
+    protected DB2GlobalObject(DB2DataSource dataSource, boolean persisted)
+    {
+        this.dataSource = dataSource;
+        this.persisted = persisted;
+    }
 
-   // By default : no Description
-   @Override
-   public String getDescription() {
-      return null;
-   }
+    // By default : no Description
+    @Override
+    public String getDescription()
+    {
+        return null;
+    }
 
-   // -----------------------
-   // Standard Getters/Setters
-   // -----------------------
+    // -----------------------
+    // Standard Getters/Setters
+    // -----------------------
 
-   @Override
-   public DBSObject getParentObject() {
-      return dataSource.getContainer();
-   }
+    @Override
+    public DBSObject getParentObject()
+    {
+        return dataSource.getContainer();
+    }
 
-   @Override
-   public DB2DataSource getDataSource() {
-      return dataSource;
-   }
+    @Override
+    public DB2DataSource getDataSource()
+    {
+        return dataSource;
+    }
 
-   @Override
-   public boolean isPersisted() {
-      return persisted;
-   }
+    @Override
+    public boolean isPersisted()
+    {
+        return persisted;
+    }
 
-   @Override
-   public void setPersisted(boolean persisted) {
-      this.persisted = persisted;
-   }
+    @Override
+    public void setPersisted(boolean persisted)
+    {
+        this.persisted = persisted;
+    }
 
 }

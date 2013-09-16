@@ -23,37 +23,39 @@ import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * DB2 View Status
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2ViewStatus {
-   Y("Y (Valid)", DBSObjectState.NORMAL),
+    Y("Y (Valid)", DBSObjectState.NORMAL),
 
-   N("N (Invalid)", DBSObjectState.INVALID),
+    N("N (Invalid)", DBSObjectState.INVALID),
 
-   X("X (Inoperative)", new DBSObjectState("Inoperative", DBIcon.OVER_ERROR));
+    X("X (Inoperative)", new DBSObjectState("Inoperative", DBIcon.OVER_ERROR));
 
-   private String         description;
-   private DBSObjectState state;
+    private String description;
+    private DBSObjectState state;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2ViewStatus(String description, DBSObjectState state) {
-      this.description = description;
-      this.state = state;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2ViewStatus(String description, DBSObjectState state)
+    {
+        this.description = description;
+        this.state = state;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public DBSObjectState getState() {
-      return state;
-   }
+    public DBSObjectState getState()
+    {
+        return state;
+    }
 }

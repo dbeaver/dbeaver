@@ -24,15 +24,17 @@ package org.jkiss.dbeaver.ext.db2.model.source;
  */
 public enum DB2SourceType {
 
-   TYPE(false), PROCEDURE(false), FUNCTION(false), PACKAGE(false), TRIGGER(false), VIEW(true), MATERIALIZED_VIEW(true);
+    TYPE(false), PROCEDURE(false), FUNCTION(false), PACKAGE(false), TRIGGER(false), VIEW(true), MATERIALIZED_VIEW(true);
 
-   private final boolean isCustom;
+    private final boolean isCustom;
 
-   DB2SourceType(boolean custom) {
-      isCustom = custom;
-   }
+    DB2SourceType(boolean custom)
+    {
+        isCustom = custom;
+    }
 
-   public boolean isCustom() {
-      return isCustom;
-   }
+    public boolean isCustom()
+    {
+        return isCustom;
+    }
 }

@@ -18,114 +18,114 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
+
 /**
  * Cache for DB2 Table Forign Keys (Reverse)
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public final class DB2TableReferenceCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableReference, DB2TableKeyColumn> {
 
-   private static String SQL_REF_TAB;
-   private static String SQL_REF_ALL;
+    private static String SQL_REF_TAB;
+    private static String SQL_REF_ALL;
 
-   static {
-      StringBuilder sb = new StringBuilder(256);
-      sb.append(" SELECT R.*");
-      sb.append("      , KCU.COLNAME");
-      sb.append("      , KCU.COLSEQ");
-      sb.append("   FROM SYSCAT.REFERENCES R");
-      sb.append("       ,SYSCAT.KEYCOLUSE KCU");
-      sb.append("  WHERE R.REFTABSCHEMA = ?");
-      sb.append("    AND R.REFTABNAME = ?");
-      sb.append("    AND KCU.CONSTNAME = R.REFKEYNAME");
-      sb.append("    AND KCU.TABSCHEMA = R.REFTABSCHEMA");
-      sb.append("    AND KCU.TABNAME   = R.REFTABNAME");
-      sb.append("  ORDER BY R.REFKEYNAME");
-      sb.append("         , KCU.COLSEQ");
-      sb.append(" WITH UR");
-      SQL_REF_TAB = sb.toString();
+    static {
+        StringBuilder sb = new StringBuilder(256);
+        sb.append(" SELECT R.*");
+        sb.append("      , KCU.COLNAME");
+        sb.append("      , KCU.COLSEQ");
+        sb.append("   FROM SYSCAT.REFERENCES R");
+        sb.append("       ,SYSCAT.KEYCOLUSE KCU");
+        sb.append("  WHERE R.REFTABSCHEMA = ?");
+        sb.append("    AND R.REFTABNAME = ?");
+        sb.append("    AND KCU.CONSTNAME = R.REFKEYNAME");
+        sb.append("    AND KCU.TABSCHEMA = R.REFTABSCHEMA");
+        sb.append("    AND KCU.TABNAME   = R.REFTABNAME");
+        sb.append("  ORDER BY R.REFKEYNAME");
+        sb.append("         , KCU.COLSEQ");
+        sb.append(" WITH UR");
+        SQL_REF_TAB = sb.toString();
 
-      sb.setLength(0);
+        sb.setLength(0);
 
-      sb.append(" SELECT R.*");
-      sb.append("      , KCU.COLNAME");
-      sb.append("      , KCU.COLSEQ");
-      sb.append("   FROM SYSCAT.REFERENCES R");
-      sb.append("       ,SYSCAT.KEYCOLUSE KCU");
-      sb.append("  WHERE R.REFTABSCHEMA = ?");
-      sb.append("    AND KCU.CONSTNAME = R.REFKEYNAME");
-      sb.append("    AND KCU.TABSCHEMA = R.REFTABSCHEMA");
-      sb.append("    AND KCU.TABNAME   = R.REFTABNAME");
-      sb.append("  ORDER BY R.REFKEYNAME");
-      sb.append("         , KCU.COLSEQ");
-      sb.append(" WITH UR");
-      SQL_REF_ALL = sb.toString();
-   }
+        sb.append(" SELECT R.*");
+        sb.append("      , KCU.COLNAME");
+        sb.append("      , KCU.COLSEQ");
+        sb.append("   FROM SYSCAT.REFERENCES R");
+        sb.append("       ,SYSCAT.KEYCOLUSE KCU");
+        sb.append("  WHERE R.REFTABSCHEMA = ?");
+        sb.append("    AND KCU.CONSTNAME = R.REFKEYNAME");
+        sb.append("    AND KCU.TABSCHEMA = R.REFTABSCHEMA");
+        sb.append("    AND KCU.TABNAME   = R.REFTABNAME");
+        sb.append("  ORDER BY R.REFKEYNAME");
+        sb.append("         , KCU.COLSEQ");
+        sb.append(" WITH UR");
+        SQL_REF_ALL = sb.toString();
+    }
 
-   public DB2TableReferenceCache(DB2TableCache tableCache) {
-      super(tableCache, DB2Table.class, "REFTABNAME", "CONSTNAME");
-   }
+    public DB2TableReferenceCache(DB2TableCache tableCache)
+    {
+        super(tableCache, DB2Table.class, "REFTABNAME", "CONSTNAME");
+    }
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable) throws SQLException {
-      String sql;
-      if (forTable != null) {
-         sql = SQL_REF_TAB;
-      } else {
-         sql = SQL_REF_ALL;
-      }
-      JDBCPreparedStatement dbStat = context.prepareStatement(sql);
-      dbStat.setString(1, db2Schema.getName());
-      if (forTable != null) {
-         dbStat.setString(2, forTable.getName());
-      }
-      return dbStat;
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable) throws SQLException
+    {
+        String sql;
+        if (forTable != null) {
+            sql = SQL_REF_TAB;
+        } else {
+            sql = SQL_REF_ALL;
+        }
+        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        dbStat.setString(1, db2Schema.getName());
+        if (forTable != null) {
+            dbStat.setString(2, forTable.getName());
+        }
+        return dbStat;
+    }
 
-   @Override
-   protected DB2TableReference fetchObject(JDBCExecutionContext context,
-                                           DB2Schema db2Schema,
-                                           DB2Table db2Table,
-                                           String constName,
-                                           ResultSet dbResult) throws SQLException, DBException {
-      return new DB2TableReference(context.getProgressMonitor(), db2Table, dbResult);
-   }
+    @Override
+    protected DB2TableReference fetchObject(JDBCExecutionContext context,
+                                            DB2Schema db2Schema,
+                                            DB2Table db2Table,
+                                            String constName,
+                                            ResultSet dbResult) throws SQLException, DBException
+    {
+        return new DB2TableReference(context.getProgressMonitor(), db2Table, dbResult);
+    }
 
-   @Override
-   protected DB2TableKeyColumn fetchObjectRow(JDBCExecutionContext context,
-                                              DB2Table db2Table,
-                                              DB2TableReference db2TableReference,
-                                              ResultSet dbResult) throws SQLException, DBException {
+    @Override
+    protected DB2TableKeyColumn fetchObjectRow(JDBCExecutionContext context,
+                                               DB2Table db2Table,
+                                               DB2TableReference db2TableReference,
+                                               ResultSet dbResult) throws SQLException, DBException
+    {
 
-      String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
-      DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
-      if (tableColumn == null) {
-         log.debug("DB2TableReferenceCache : Column '" + colName + "' not found in table '" + db2Table.getName() + "' ??");
-         return null;
-      } else {
-         return new DB2TableKeyColumn(db2TableReference, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));
-      }
-   }
+        String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
+        DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
+        if (tableColumn == null) {
+            log.debug("DB2TableReferenceCache : Column '" + colName + "' not found in table '" + db2Table.getName() + "' ??");
+            return null;
+        } else {
+            return new DB2TableKeyColumn(db2TableReference, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));
+        }
+    }
 
-   @Override
-   protected void cacheChildren(DB2TableReference constraint, List<DB2TableKeyColumn> rows) {
-      constraint.setColumns(rows);
-   }
+    @Override
+    protected void cacheChildren(DB2TableReference constraint, List<DB2TableKeyColumn> rows)
+    {
+        constraint.setColumns(rows);
+    }
 }

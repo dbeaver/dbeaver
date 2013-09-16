@@ -22,50 +22,52 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
  * DB2 Type of Indexes
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2IndexType {
-   BLOK("BLOK"),
+    BLOK("BLOK"),
 
-   CLUS("CLUS (CLustering)"),
+    CLUS("CLUS (CLustering)"),
 
-   DIM("DIM (Dimension Block Index)"),
+    DIM("DIM (Dimension Block Index)"),
 
-   RCT("RCT (Key Sequence Index)"),
+    RCT("RCT (Key Sequence Index)"),
 
-   REG("REG (Regular)"),
+    REG("REG (Regular)"),
 
-   TEXT("TEXT"),
+    TEXT("TEXT"),
 
-   XPTH("XPTH (XML path index)"),
+    XPTH("XPTH (XML path index)"),
 
-   XRGN("XRGN (XML region index)"),
+    XRGN("XRGN (XML region index)"),
 
-   XVIL("XVIL (Index over XML column (logical))"),
+    XVIL("XVIL (Index over XML column (logical))"),
 
-   XVIP("XVIP ( Index over XML column (physical))");
+    XVIP("XVIP ( Index over XML column (physical))");
 
-   private String       description;
-   private DBSIndexType dbsIndexType;
+    private String description;
+    private DBSIndexType dbsIndexType;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2IndexType(String description) {
-      this.description = description;
-      this.dbsIndexType = new DBSIndexType(this.name(), description);
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2IndexType(String description)
+    {
+        this.description = description;
+        this.dbsIndexType = new DBSIndexType(this.name(), description);
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public DBSIndexType getDBSIndexType() {
-      return dbsIndexType;
-   }
+    public DBSIndexType getDBSIndexType()
+    {
+        return dbsIndexType;
+    }
 }

@@ -20,38 +20,39 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Meta Type for DataTypes
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2DataTypeMetaType {
-   A("A (User-defined array type )"),
+    A("A (User-defined array type )"),
 
-   C("C (User-defined cursor type )"),
+    C("C (User-defined cursor type )"),
 
-   F("F (User-defined row type )"),
+    F("F (User-defined row type )"),
 
-   L("L (User-defined associative array type)"),
+    L("L (User-defined associative array type)"),
 
-   R("R (User-defined structured type)"),
+    R("R (User-defined structured type)"),
 
-   S("S (System predefined type)"),
+    S("S (System predefined type)"),
 
-   T("T (User-defined distinct type)");
+    T("T (User-defined distinct type)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2DataTypeMetaType(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2DataTypeMetaType(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

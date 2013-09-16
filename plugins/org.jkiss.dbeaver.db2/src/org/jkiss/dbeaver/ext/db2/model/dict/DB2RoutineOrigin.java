@@ -20,45 +20,46 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Routine Origin
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2RoutineOrigin {
-   B("B (Built-in)"),
+    B("B (Built-in)"),
 
-   E("E (User-defined, external)"),
+    E("E (User-defined, external)"),
 
-   M("M (Template function)"),
+    M("M (Template function)"),
 
-   F("F (Federated procedure)"),
+    F("F (Federated procedure)"),
 
-   Q("Q (SQL-bodied)"),
+    Q("Q (SQL-bodied)"),
 
-   R("R (System-generated SQL-bodied routine)"),
+    R("R (System-generated SQL-bodied routine)"),
 
-   S("S (System-generated)"),
+    S("S (System-generated)"),
 
-   T("T (System-generated transform function (not directly invokable))"),
+    T("T (System-generated transform function (not directly invokable))"),
 
-   U("U (User-defined, based on a source)");
+    U("U (User-defined, based on a source)");
 
-   private String description;
+    private String description;
 
-   // -----------
-   // Constructor
-   // -----------
+    // -----------
+    // Constructor
+    // -----------
 
-   private DB2RoutineOrigin(String description) {
-      this.description = description;
-   }
+    private DB2RoutineOrigin(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
 }

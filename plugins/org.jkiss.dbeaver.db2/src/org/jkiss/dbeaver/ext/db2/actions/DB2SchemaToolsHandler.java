@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.actions;
 
-import java.sql.SQLException;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -40,104 +38,113 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.sql.SQLException;
+
 public class DB2SchemaToolsHandler extends AbstractHandler {
 
-   private static final String DROP = "org.jkiss.dbeaver.ext.db2.schema.drop";
-   private static final String COPY = "org.jkiss.dbeaver.ext.db2.schema.copy";
+    private static final String DROP = "org.jkiss.dbeaver.ext.db2.schema.drop";
+    private static final String COPY = "org.jkiss.dbeaver.ext.db2.schema.copy";
 
-   @Override
-   public Object execute(ExecutionEvent event) throws ExecutionException {
-      IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException
+    {
+        IStructuredSelection selection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
 
-      DB2Schema sourceSchema = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DB2Schema.class);
+        DB2Schema sourceSchema = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DB2Schema.class);
 
-      if (sourceSchema != null) {
+        if (sourceSchema != null) {
 
-         Shell activeShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+            Shell activeShell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 
-         NewSchemaDialog dialog = new NewSchemaDialog(activeShell);
-         if (dialog.open() != IDialogConstants.OK_ID) {
-            return null;
-         }
-
-         try {
-            Boolean res;
-            if (event.getCommand().getId().equals(DROP)) {
-               res = DB2Utils.callAdminDropSchema(VoidProgressMonitor.INSTANCE, sourceSchema.getDataSource(),
-                                                  sourceSchema.getName(), dialog.getErrorSchemaName(), dialog.getErrorTableName());
-            } else {
-               // res = DB2Utils.callAdmiCopySchema(VoidProgressMonitor.INSTANCE,
-               // sourceSchema.getDataSource(),
-               // sourceSchema.getName(),
-               // targetSchema.getDataSource(),
-               // targetSchema.getName(),
-               // dialog.getErrorSchemaName(),
-               // dialog.getErrorTableName());
+            NewSchemaDialog dialog = new NewSchemaDialog(activeShell);
+            if (dialog.open() != IDialogConstants.OK_ID) {
+                return null;
             }
 
-            // TOOD DF: refresh worspace
-            sourceSchema.refreshObject(VoidProgressMonitor.INSTANCE);
-            // DBNModel.getInstance().refreshNodeContent(sourceSchema, this, DBNEvent.NodeChange.REFRESH);
+            try {
+                Boolean res;
+                if (event.getCommand().getId().equals(DROP)) {
+                    res = DB2Utils.callAdminDropSchema(VoidProgressMonitor.INSTANCE, sourceSchema.getDataSource(),
+                        sourceSchema.getName(), dialog.getErrorSchemaName(), dialog.getErrorTableName());
+                } else {
+                    // res = DB2Utils.callAdmiCopySchema(VoidProgressMonitor.INSTANCE,
+                    // sourceSchema.getDataSource(),
+                    // sourceSchema.getName(),
+                    // targetSchema.getDataSource(),
+                    // targetSchema.getName(),
+                    // dialog.getErrorSchemaName(),
+                    // dialog.getErrorTableName());
+                }
 
-         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         } catch (DBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-         }
-      }
+                // TOOD DF: refresh worspace
+                sourceSchema.refreshObject(VoidProgressMonitor.INSTANCE);
+                // DBNModel.getInstance().refreshNodeContent(sourceSchema, this, DBNEvent.NodeChange.REFRESH);
 
-      return null;
-   }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (DBException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
 
-   static class NewSchemaDialog extends Dialog {
+        return null;
+    }
 
-      private String errorSchemaName;
-      private String errorTableName;
+    static class NewSchemaDialog extends Dialog {
 
-      public String getErrorSchemaName() {
-         return errorSchemaName;
-      }
+        private String errorSchemaName;
+        private String errorTableName;
 
-      public String getErrorTableName() {
-         return errorTableName;
-      }
+        public String getErrorSchemaName()
+        {
+            return errorSchemaName;
+        }
 
-      // Dialog managment
-      private Text errorSchmaNameText;
-      private Text errorTableNameText;
+        public String getErrorTableName()
+        {
+            return errorTableName;
+        }
 
-      public NewSchemaDialog(Shell parentShell) {
-         super(parentShell);
-      }
+        // Dialog managment
+        private Text errorSchmaNameText;
+        private Text errorTableNameText;
 
-      @Override
-      protected boolean isResizable() {
-         return true;
-      }
+        public NewSchemaDialog(Shell parentShell)
+        {
+            super(parentShell);
+        }
 
-      @Override
-      protected Control createDialogArea(Composite parent) {
-         getShell().setText("Name for Error Table?");
-         Control container = super.createDialogArea(parent);
-         Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
-         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        @Override
+        protected boolean isResizable()
+        {
+            return true;
+        }
 
-         errorSchmaNameText = UIUtils.createLabelText(composite, "Schema", null);
-         errorSchmaNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        @Override
+        protected Control createDialogArea(Composite parent)
+        {
+            getShell().setText("Name for Error Table?");
+            Control container = super.createDialogArea(parent);
+            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-         errorTableNameText = UIUtils.createLabelText(composite, "Name", null);
-         errorTableNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            errorSchmaNameText = UIUtils.createLabelText(composite, "Schema", null);
+            errorSchmaNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-         return parent;
-      }
+            errorTableNameText = UIUtils.createLabelText(composite, "Name", null);
+            errorTableNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-      @Override
-      protected void okPressed() {
-         this.errorSchemaName = errorSchmaNameText.getText().trim().toUpperCase();
-         this.errorTableName = errorTableNameText.getText().trim().toUpperCase();
-         super.okPressed();
-      }
-   }
+            return parent;
+        }
+
+        @Override
+        protected void okPressed()
+        {
+            this.errorSchemaName = errorSchmaNameText.getText().trim().toUpperCase();
+            this.errorTableName = errorTableNameText.getText().trim().toUpperCase();
+            super.okPressed();
+        }
+    }
 }

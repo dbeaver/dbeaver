@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2AliasType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -28,66 +26,72 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+
 /**
  * DB2 Alias. Can be on DB2Table, DB2Sequence or DB2Module
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2Alias extends DB2SchemaObject {
 
-   private DB2AliasType type;
-   private DBSObject    targetObject;
+    private DB2AliasType type;
+    private DBSObject targetObject;
 
-   // -----------------------
-   // Constructors
-   // -----------------------
-   public DB2Alias(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult) throws DBException {
-      super(schema, JDBCUtils.safeGetString(dbResult, "NAME"), true);
+    // -----------------------
+    // Constructors
+    // -----------------------
+    public DB2Alias(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult) throws DBException
+    {
+        super(schema, JDBCUtils.safeGetString(dbResult, "NAME"), true);
 
-      this.type = CommonUtils.valueOf(DB2AliasType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
-      String baseSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "BASE_SCHEMA");
-      String baseObjectName = JDBCUtils.safeGetString(dbResult, "BASE_NAME");
+        this.type = CommonUtils.valueOf(DB2AliasType.class, JDBCUtils.safeGetString(dbResult, "TYPE"));
+        String baseSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "BASE_SCHEMA");
+        String baseObjectName = JDBCUtils.safeGetString(dbResult, "BASE_NAME");
 
-      DB2Schema targetSchema = getDataSource().getSchema(monitor, baseSchemaName);
-      switch (type) {
-      case TABLE:
-         this.targetObject = targetSchema.getTable(monitor, baseObjectName);
-         break;
+        DB2Schema targetSchema = getDataSource().getSchema(monitor, baseSchemaName);
+        switch (type) {
+            case TABLE:
+                this.targetObject = targetSchema.getTable(monitor, baseObjectName);
+                break;
 
-      case SEQUENCE:
-         this.targetObject = targetSchema.getSequence(monitor, baseObjectName);
-         break;
+            case SEQUENCE:
+                this.targetObject = targetSchema.getSequence(monitor, baseObjectName);
+                break;
 
-      default:
-         // DF Ignore ALIASES on MODULES for now
-         break;
-      }
-   }
+            default:
+                // DF Ignore ALIASES on MODULES for now
+                break;
+        }
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   @Property(viewable = true, editable = false, order = 1)
-   public String getName() {
-      return super.getName();
-   }
+    @Override
+    @Property(viewable = true, editable = false, order = 1)
+    public String getName()
+    {
+        return super.getName();
+    }
 
-   @Property(viewable = true, editable = false, order = 2)
-   public DB2Schema getSchema() {
-      return super.getSchema();
-   }
+    @Property(viewable = true, editable = false, order = 2)
+    public DB2Schema getSchema()
+    {
+        return super.getSchema();
+    }
 
-   @Property(viewable = true, editable = false, order = 3)
-   public DB2AliasType getType() {
-      return type;
-   }
+    @Property(viewable = true, editable = false, order = 3)
+    public DB2AliasType getType()
+    {
+        return type;
+    }
 
-   @Property(viewable = true, editable = false, order = 4)
-   public DBSObject getTargetObject() {
-      return targetObject;
-   }
+    @Property(viewable = true, editable = false, order = 4)
+    public DBSObject getTargetObject()
+    {
+        return targetObject;
+    }
 
 }

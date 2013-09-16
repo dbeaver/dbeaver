@@ -18,29 +18,30 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2AuthIDType;
+
+import java.sql.ResultSet;
 
 /**
  * DB2 User
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2User extends DB2UserBase {
 
-   // -----------------------
-   // Constructors
-   // -----------------------
-   public DB2User(DB2DataSource dataSource, ResultSet resultSet) {
-      super(dataSource, resultSet);
+    // -----------------------
+    // Constructors
+    // -----------------------
+    public DB2User(DB2DataSource dataSource, ResultSet resultSet)
+    {
+        super(dataSource, resultSet);
 
-   }
+    }
 
-   @Override
-   public DB2AuthIDType getType() {
-      return DB2AuthIDType.U;
-   }
+    @Override
+    public DB2AuthIDType getType()
+    {
+        return DB2AuthIDType.U;
+    }
 
 }

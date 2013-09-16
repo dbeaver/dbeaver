@@ -20,37 +20,39 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Unique Rule
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2UniqueRule {
-   D("D (Permits duplicates)", false),
+    D("D (Permits duplicates)", false),
 
-   U("U (Unique)", true),
+    U("U (Unique)", true),
 
-   P("P (Implements primary key)", true);
+    P("P (Implements primary key)", true);
 
-   private String  description;
-   private Boolean unique;
+    private String description;
+    private Boolean unique;
 
-   // -----------------
-   // Constructor
-   // -----------------
+    // -----------------
+    // Constructor
+    // -----------------
 
-   private DB2UniqueRule(String description, Boolean unique) {
-      this.description = description;
-      this.unique = unique;
-   }
+    private DB2UniqueRule(String description, Boolean unique)
+    {
+        this.description = description;
+        this.unique = unique;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public Boolean isUnique() {
-      return unique;
-   }
+    public Boolean isUnique()
+    {
+        return unique;
+    }
 }

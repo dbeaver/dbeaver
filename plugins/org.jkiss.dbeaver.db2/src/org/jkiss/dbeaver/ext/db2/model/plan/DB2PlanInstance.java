@@ -18,103 +18,110 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
 /**
  * DB2 EXPLAIN_INSTANCE table
- * 
+ *
  * @author Denis Forveille
- * 
+ *
  */
 
 /**
  * DB2 EXPLAIN_INSTANCE table
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2PlanInstance {
 
-   // DF : This class is not used yet by the tool
+    // DF : This class is not used yet by the tool
 
-   private static String    SEL_EXP_STATEMENT;
-   static {
-      StringBuilder sb = new StringBuilder(1024);
-      sb.append("SELECT *");
-      sb.append(" FROM EXPLAIN_STATEMENT");
-      sb.append(" WHERE EXPLAIN_REQUESTER = ?");
-      sb.append("   AND EXPLAIN_TIME = ?");
-      sb.append("   AND SOURCE_NAME = ?");
-      sb.append("   AND SOURCE_SCHEMA = ?");
-      sb.append("   AND SOURCE_VERSION = ?");
-      sb.append(" WITH UR");
-      SEL_EXP_STATEMENT = sb.toString();
-   }
+    private static String SEL_EXP_STATEMENT;
 
-   private DB2PlanStatement db2PlanStatement;
+    static {
+        StringBuilder sb = new StringBuilder(1024);
+        sb.append("SELECT *");
+        sb.append(" FROM EXPLAIN_STATEMENT");
+        sb.append(" WHERE EXPLAIN_REQUESTER = ?");
+        sb.append("   AND EXPLAIN_TIME = ?");
+        sb.append("   AND SOURCE_NAME = ?");
+        sb.append("   AND SOURCE_SCHEMA = ?");
+        sb.append("   AND SOURCE_VERSION = ?");
+        sb.append(" WITH UR");
+        SEL_EXP_STATEMENT = sb.toString();
+    }
 
-   private String           statement_id;
+    private DB2PlanStatement db2PlanStatement;
 
-   private String           explainRequester;
-   private Timestamp        explainTime;
-   private String           sourceName;
-   private String           sourceSchema;
-   private String           sourceVersion;
+    private String statement_id;
 
-   // ------------
-   // Constructors
-   // ------------
+    private String explainRequester;
+    private Timestamp explainTime;
+    private String sourceName;
+    private String sourceSchema;
+    private String sourceVersion;
 
-   public DB2PlanInstance(DB2DataSource dataSource,
-                          JDBCExecutionContext context,
-                          ResultSet dbResult,
-                          DB2PlanStatement db2PlanStatement) throws SQLException {
+    // ------------
+    // Constructors
+    // ------------
 
-      this.db2PlanStatement = db2PlanStatement;
+    public DB2PlanInstance(DB2DataSource dataSource,
+                           JDBCExecutionContext context,
+                           ResultSet dbResult,
+                           DB2PlanStatement db2PlanStatement) throws SQLException
+    {
 
-      this.explainRequester = JDBCUtils.safeGetStringTrimmed(dbResult, "EXPLAIN_REQUESTER");
-      this.explainTime = JDBCUtils.safeGetTimestamp(dbResult, "EXPLAIN_TIME");
-      this.sourceName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_NAME");
-      this.sourceSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_SCHEMA");
-      this.sourceVersion = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_VERSION");
+        this.db2PlanStatement = db2PlanStatement;
 
-   }
+        this.explainRequester = JDBCUtils.safeGetStringTrimmed(dbResult, "EXPLAIN_REQUESTER");
+        this.explainTime = JDBCUtils.safeGetTimestamp(dbResult, "EXPLAIN_TIME");
+        this.sourceName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_NAME");
+        this.sourceSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_SCHEMA");
+        this.sourceVersion = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCE_VERSION");
 
-   // -------------
-   // Standards Getters
-   // -------------
-   public String getStatement_id() {
-      return statement_id;
-   }
+    }
 
-   public String getExplainRequester() {
-      return explainRequester;
-   }
+    // -------------
+    // Standards Getters
+    // -------------
+    public String getStatement_id()
+    {
+        return statement_id;
+    }
 
-   public Timestamp getExplainTime() {
-      return explainTime;
-   }
+    public String getExplainRequester()
+    {
+        return explainRequester;
+    }
 
-   public String getSourceName() {
-      return sourceName;
-   }
+    public Timestamp getExplainTime()
+    {
+        return explainTime;
+    }
 
-   public String getSourceSchema() {
-      return sourceSchema;
-   }
+    public String getSourceName()
+    {
+        return sourceName;
+    }
 
-   public String getSourceVersion() {
-      return sourceVersion;
-   }
+    public String getSourceSchema()
+    {
+        return sourceSchema;
+    }
 
-   // -------
-   // Queries
-   // -------
+    public String getSourceVersion()
+    {
+        return sourceVersion;
+    }
+
+    // -------
+    // Queries
+    // -------
 
 }
