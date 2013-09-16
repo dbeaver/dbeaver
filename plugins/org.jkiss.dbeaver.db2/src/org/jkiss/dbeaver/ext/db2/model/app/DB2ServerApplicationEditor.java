@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.ui.DBIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
@@ -97,19 +98,11 @@ public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDataba
         {
             final DBAServerSession session = applicationViewer.getSelectedSession();
             final String action = DB2Messages.editors_db2_application_editor_action_force;
-
-            // TODO DF: Don't know how to remove the "remember me" toggle...
-            ConfirmationDialog dialog = new ConfirmationDialog(getSite().getShell(),
-                action,
-                null,
-                NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action,
-                    action.toLowerCase(), session),
-                MessageDialog.CONFIRM,
-                new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL},
-                0,
-                null,
-                false);
-            if (dialog.open() == IDialogConstants.YES_ID) {
+            if (UIUtils.confirmAction(
+                getSite().getShell(),
+                "Confirm force application",
+                NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action, action.toLowerCase(), session)))
+            {
                 Map<String, Object> options = new HashMap<String, Object>();
                 applicationViewer.alterSession(session, options);
             }
