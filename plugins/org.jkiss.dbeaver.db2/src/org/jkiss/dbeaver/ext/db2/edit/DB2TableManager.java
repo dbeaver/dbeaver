@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCache;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -42,7 +43,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> implements DBEObjectRenamer<DB2Table> {
 
+   private static final String     SQL_ALTER        = "ALTER TABLE ";
    private static final String     SQL_RENAME_TABLE = "RENAME TABLE %s TO %S";
+   private static final String     SQL_COMMENT      = "COMMENT ON TABLE %s IS '%s'";
 
    private static final Class<?>[] CHILD_TYPES      = {
             DB2TableColumn.class,
@@ -52,35 +55,36 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
 
    @Override
    public DBSObjectCache<? extends DBSObject, DB2Table> getObjectsCache(DB2Table object) {
-      return (DBSObjectCache) object.getSchema().getTableCache();
+      return (DB2TableCache) object.getSchema().getTableCache();
    }
 
    @Override
    protected DB2Table createDatabaseObject(IWorkbenchWindow workbenchWindow,
                                            DBECommandContext context,
-                                           DB2Schema parent,
+                                           DB2Schema db2Schema,
                                            Object copyFrom) {
-      return null;
-      //return new DB2Table(parent, DBObjectNameCaseTransformer.transformName(parent, "NewTable")); //$NON-NLS-1$
+      return new DB2Table(db2Schema, "NEW_TABLE");
    }
 
    @Override
    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command) {
-      final DB2Table table = command.getObject();
-      boolean hasComment = command.getProperty("comment") != null;
-      List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
-      if (!hasComment || command.getProperties().size() > 1) {
-         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
-         query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
-         appendTableModifiers(command.getObject(), command, query);
-         actions.add(new AbstractDatabasePersistAction(query.toString()));
-      }
-      if (hasComment) {
-         // actions.add(new AbstractDatabasePersistAction("Comment table", "COMMENT ON TABLE " + table.getFullQualifiedName()
-         // + " IS '" + table.getRemarks() + "'"));
+      final DB2Table db2Table = command.getObject();
+
+      List<IDatabasePersistAction> listeActions = new ArrayList<IDatabasePersistAction>(2);
+
+      StringBuilder sb = new StringBuilder(128);
+      sb.append(SQL_ALTER);
+      sb.append(db2Table.getFullQualifiedName()).append(" ");
+      appendTableModifiers(command.getObject(), command, sb);
+
+      listeActions.add(new AbstractDatabasePersistAction("Alter Table", sb.toString()));
+
+      String comment = buildComment(command.getObject());
+      if (comment != null) {
+         listeActions.add(new AbstractDatabasePersistAction("Comment on Table", comment));
       }
 
-      return actions.toArray(new IDatabasePersistAction[actions.size()]);
+      return listeActions.toArray(new IDatabasePersistAction[listeActions.size()]);
    }
 
    @Override
@@ -105,4 +109,14 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
       processObjectRename(commandContext, object, newName);
    }
 
+   // -------
+   // Helpers
+   // -------
+   private String buildComment(DB2Table db2Table) {
+      if ((db2Table.getDescription() != null) && (db2Table.getDescription().length() > 0)) {
+         return String.format(SQL_COMMENT, db2Table.getFullQualifiedName(), db2Table.getDescription());
+      } else {
+         return null;
+      }
+   }
 }

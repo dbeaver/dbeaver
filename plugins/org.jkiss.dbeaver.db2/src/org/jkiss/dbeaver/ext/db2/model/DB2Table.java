@@ -107,6 +107,16 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
    }
 
+   public DB2Table(DB2Schema schema, String name) {
+      super(schema, name, false);
+
+      this.type = DB2TableType.T;
+      this.status = DB2TableStatus.N;
+   }
+
+   // -----------------
+   // Business Contract
+   // -----------------
    @Override
    public boolean isView() {
       return false;

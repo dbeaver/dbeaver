@@ -66,6 +66,10 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
    }
 
+   public DB2TableBase(DB2Schema container, String name, Boolean persisted) {
+      super(container, name, persisted);
+   }
+
    @Override
    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
       // TODO DF : What to do here?
