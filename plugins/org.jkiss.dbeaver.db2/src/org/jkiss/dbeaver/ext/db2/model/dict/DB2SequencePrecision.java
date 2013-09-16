@@ -20,73 +20,79 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 "Precision" of the Sequence
- * 
+ * <p/>
  * DF: Added a "P" in front of value because Enum don' accept number only values
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2SequencePrecision {
-   P5("5 (Smallint)", 5, "SMALLINT"),
+    P5("5 (Smallint)", 5, "SMALLINT"),
 
-   P10("10 (Integer)", 10, "INTEGER"),
+    P10("10 (Integer)", 10, "INTEGER"),
 
-   P19("19 (Bigint)", 19, "BIGINT");
+    P19("19 (Bigint)", 19, "BIGINT");
 
-   private String  description;
-   private Integer dataType;
-   private String  sqlKeyword;
+    private String description;
+    private Integer dataType;
+    private String sqlKeyword;
 
-   // -----------
-   // Constructor
-   // -----------
-   private DB2SequencePrecision(String description, Integer dataType, String sqlKeyword) {
-      this.description = description;
-      this.dataType = dataType;
-      this.sqlKeyword = sqlKeyword;
-   }
+    // -----------
+    // Constructor
+    // -----------
+    private DB2SequencePrecision(String description, Integer dataType, String sqlKeyword)
+    {
+        this.description = description;
+        this.dataType = dataType;
+        this.sqlKeyword = sqlKeyword;
+    }
 
-   @Override
-   public String toString() {
-      return description;
-   }
+    @Override
+    public String toString()
+    {
+        return description;
+    }
 
-   // ------------------------
-   // Helpers
-   // ------------------------
-   public static DB2SequencePrecision getFromDataType(Integer dataType) {
-      for (DB2SequencePrecision item : DB2SequencePrecision.values()) {
-         if (dataType.equals(item.getDataType())) {
-            return item;
-         }
-      }
-      return null;
-   }
+    // ------------------------
+    // Helpers
+    // ------------------------
+    public static DB2SequencePrecision getFromDataType(Integer dataType)
+    {
+        for (DB2SequencePrecision item : DB2SequencePrecision.values()) {
+            if (dataType.equals(item.getDataType())) {
+                return item;
+            }
+        }
+        return null;
+    }
 
-   // TOOD DF: This to compensante for editor that set the object with the toString value instead of enum itsef. to be removed ASAP
-   public static DB2SequencePrecision getFromDescription(String description) {
-      for (DB2SequencePrecision item : DB2SequencePrecision.values()) {
-         if (description.equals(item.getDescription())) {
-            return item;
-         }
-      }
-      return null;
-   }
+    // TOOD DF: This to compensante for editor that set the object with the toString value instead of enum itsef. to be removed ASAP
+    public static DB2SequencePrecision getFromDescription(String description)
+    {
+        for (DB2SequencePrecision item : DB2SequencePrecision.values()) {
+            if (description.equals(item.getDescription())) {
+                return item;
+            }
+        }
+        return null;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public Integer getDataType() {
-      return dataType;
-   }
+    public Integer getDataType()
+    {
+        return dataType;
+    }
 
-   public String getSqlKeyword() {
-      return sqlKeyword;
-   }
+    public String getSqlKeyword()
+    {
+        return sqlKeyword;
+    }
 
 }

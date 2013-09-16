@@ -20,14 +20,13 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Owner Type of Alias
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2AliasType {
-   TABLE,
+    TABLE,
 
-   SEQUENCE,
+    SEQUENCE,
 
-   MODULE;
+    MODULE;
 }

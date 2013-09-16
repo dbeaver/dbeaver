@@ -18,98 +18,108 @@
  */
 package org.jkiss.dbeaver.ext.db2.info;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.sql.ResultSet;
+
 /**
  * DB2 Database and Instance parameters
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2Parameter implements DBSObject {
 
-   private DB2DataSource dataSource;
+    private DB2DataSource dataSource;
 
-   private String        name;
-   private String        value;
-   private String        flags;
-   private String        defferedValue;
-   private String        defferedValueFlags;
-   private String        dataType;
+    private String name;
+    private String value;
+    private String flags;
+    private String defferedValue;
+    private String defferedValueFlags;
+    private String dataType;
 
-   // -----------------------
-   // Constructors
-   // -----------------------
-   public DB2Parameter(DB2DataSource dataSource, ResultSet dbResult) {
-      this.dataSource = dataSource;
+    // -----------------------
+    // Constructors
+    // -----------------------
+    public DB2Parameter(DB2DataSource dataSource, ResultSet dbResult)
+    {
+        this.dataSource = dataSource;
 
-      this.name = JDBCUtils.safeGetString(dbResult, "NAME");
-      this.value = JDBCUtils.safeGetString(dbResult, "VALUE");
-      this.flags = JDBCUtils.safeGetString(dbResult, "VALUE_FLAGS");
-      this.defferedValue = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE");
-      this.defferedValueFlags = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE_FLAGS ");
-      this.dataType = JDBCUtils.safeGetString(dbResult, "DATATYPE");
-   }
+        this.name = JDBCUtils.safeGetString(dbResult, "NAME");
+        this.value = JDBCUtils.safeGetString(dbResult, "VALUE");
+        this.flags = JDBCUtils.safeGetString(dbResult, "VALUE_FLAGS");
+        this.defferedValue = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE");
+        this.defferedValueFlags = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE_FLAGS ");
+        this.dataType = JDBCUtils.safeGetString(dbResult, "DATATYPE");
+    }
 
-   @Override
-   public DBPDataSource getDataSource() {
-      return dataSource;
-   }
+    @Override
+    public DBPDataSource getDataSource()
+    {
+        return dataSource;
+    }
 
-   @Override
-   public DBSObject getParentObject() {
-      return dataSource.getContainer();
-   }
+    @Override
+    public DBSObject getParentObject()
+    {
+        return dataSource.getContainer();
+    }
 
-   @Override
-   public boolean isPersisted() {
-      return false;
-   }
+    @Override
+    public boolean isPersisted()
+    {
+        return false;
+    }
 
-   @Override
-   public String getDescription() {
-      return null;
-   }
+    @Override
+    public String getDescription()
+    {
+        return null;
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   @Property(viewable = true, editable = false, order = 1)
-   public String getName() {
-      return name;
-   }
+    @Override
+    @Property(viewable = true, editable = false, order = 1)
+    public String getName()
+    {
+        return name;
+    }
 
-   @Property(viewable = true, editable = false, order = 2)
-   public String getValue() {
-      return value;
-   }
+    @Property(viewable = true, editable = false, order = 2)
+    public String getValue()
+    {
+        return value;
+    }
 
-   @Property(viewable = true, editable = false, order = 3)
-   public String getFlags() {
-      return flags;
-   }
+    @Property(viewable = true, editable = false, order = 3)
+    public String getFlags()
+    {
+        return flags;
+    }
 
-   @Property(viewable = true, editable = false, order = 4)
-   public String getDefferedValue() {
-      return defferedValue;
-   }
+    @Property(viewable = true, editable = false, order = 4)
+    public String getDefferedValue()
+    {
+        return defferedValue;
+    }
 
-   @Property(viewable = true, editable = false, order = 5)
-   public String getDefferedValueFlags() {
-      return defferedValueFlags;
-   }
+    @Property(viewable = true, editable = false, order = 5)
+    public String getDefferedValueFlags()
+    {
+        return defferedValueFlags;
+    }
 
-   @Property(viewable = true, editable = false, order = 6)
-   public String getDataType() {
-      return dataType;
-   }
+    @Property(viewable = true, editable = false, order = 6)
+    public String getDataType()
+    {
+        return dataType;
+    }
 
 }

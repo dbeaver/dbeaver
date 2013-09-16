@@ -23,104 +23,115 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
  * DB2 EXPLAIN_STREAM table
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2PlanStream {
 
-   private DB2PlanStatement db2Statement;
+    private DB2PlanStatement db2Statement;
 
-   private Integer          streamId;
+    private Integer streamId;
 
-   private String           sourceType;
-   private Integer          sourceId;
+    private String sourceType;
+    private Integer sourceId;
 
-   private String           targetType;
-   private Integer          targetId;
+    private String targetType;
+    private Integer targetId;
 
-   private String           objectSchema;
-   private String           objectName;
+    private String objectSchema;
+    private String objectName;
 
-   private Double           streamCount;
+    private Double streamCount;
 
-   // TODO DF: and many many more
+    // TODO DF: and many many more
 
-   // ------------
-   // Constructors
-   // ------------
+    // ------------
+    // Constructors
+    // ------------
 
-   public DB2PlanStream(JDBCResultSet dbResult, DB2PlanStatement db2Statement) {
-      this.db2Statement = db2Statement;
+    public DB2PlanStream(JDBCResultSet dbResult, DB2PlanStatement db2Statement)
+    {
+        this.db2Statement = db2Statement;
 
-      this.streamId = JDBCUtils.safeGetInteger(dbResult, "STREAM_ID");
-      this.sourceType = JDBCUtils.safeGetString(dbResult, "SOURCE_TYPE");
-      this.sourceId = JDBCUtils.safeGetInteger(dbResult, "SOURCE_ID");
-      this.targetType = JDBCUtils.safeGetString(dbResult, "TARGET_TYPE");
-      this.targetId = JDBCUtils.safeGetInteger(dbResult, "TARGET_ID");
-      this.objectSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "OBJECT_SCHEMA");
-      this.objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
-      this.streamCount = JDBCUtils.safeGetDouble(dbResult, "STREAM_COUNT");
-   }
+        this.streamId = JDBCUtils.safeGetInteger(dbResult, "STREAM_ID");
+        this.sourceType = JDBCUtils.safeGetString(dbResult, "SOURCE_TYPE");
+        this.sourceId = JDBCUtils.safeGetInteger(dbResult, "SOURCE_ID");
+        this.targetType = JDBCUtils.safeGetString(dbResult, "TARGET_TYPE");
+        this.targetId = JDBCUtils.safeGetInteger(dbResult, "TARGET_ID");
+        this.objectSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "OBJECT_SCHEMA");
+        this.objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
+        this.streamCount = JDBCUtils.safeGetDouble(dbResult, "STREAM_COUNT");
+    }
 
-   public String getSourceName() {
-      if (sourceType.equals("O")) {
-         // Operator
-         return String.valueOf(sourceId);
-      } else {
-         // Data Object
-         return objectSchema + "." + objectName;
-      }
-   }
+    public String getSourceName()
+    {
+        if (sourceType.equals("O")) {
+            // Operator
+            return String.valueOf(sourceId);
+        } else {
+            // Data Object
+            return objectSchema + "." + objectName;
+        }
+    }
 
-   public String getTargetName() {
-      if (targetType.equals("O")) {
-         // Operator
-         return String.valueOf(targetId);
-      } else {
-         // D: Data Object
-         return objectSchema + "." + objectName;
-      }
-   }
+    public String getTargetName()
+    {
+        if (targetType.equals("O")) {
+            // Operator
+            return String.valueOf(targetId);
+        } else {
+            // D: Data Object
+            return objectSchema + "." + objectName;
+        }
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public Integer getStreamId() {
-      return streamId;
-   }
+    public Integer getStreamId()
+    {
+        return streamId;
+    }
 
-   public String getSourceType() {
-      return sourceType;
-   }
+    public String getSourceType()
+    {
+        return sourceType;
+    }
 
-   public Integer getSourceId() {
-      return sourceId;
-   }
+    public Integer getSourceId()
+    {
+        return sourceId;
+    }
 
-   public String getTargetType() {
-      return targetType;
-   }
+    public String getTargetType()
+    {
+        return targetType;
+    }
 
-   public Integer getTargetId() {
-      return targetId;
-   }
+    public Integer getTargetId()
+    {
+        return targetId;
+    }
 
-   public String getObjectSchema() {
-      return objectSchema;
-   }
+    public String getObjectSchema()
+    {
+        return objectSchema;
+    }
 
-   public String getObjectName() {
-      return objectName;
-   }
+    public String getObjectName()
+    {
+        return objectName;
+    }
 
-   public DB2PlanStatement getDb2Statement() {
-      return db2Statement;
-   }
+    public DB2PlanStatement getDb2Statement()
+    {
+        return db2Statement;
+    }
 
-   public Double getStreamCount() {
-      return streamCount;
-   }
+    public Double getStreamCount()
+    {
+        return streamCount;
+    }
 
 }

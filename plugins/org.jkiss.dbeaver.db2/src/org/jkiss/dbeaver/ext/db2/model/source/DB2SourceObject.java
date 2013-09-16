@@ -28,14 +28,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DB2SourceObject extends DB2StatefulObject {
 
-   void setName(String name);
+    void setName(String name);
 
-   DB2SourceType getSourceType();
+    DB2SourceType getSourceType();
 
-   String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException;
+    String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException;
 
-   void setSourceDeclaration(String source);
+    void setSourceDeclaration(String source);
 
-   IDatabasePersistAction[] getCompileActions();
+    IDatabasePersistAction[] getCompileActions();
 
 }

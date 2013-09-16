@@ -489,6 +489,29 @@ public class ContentUtils {
         }
     }
 
+    public static String readToString(InputStream is, String charset) throws IOException
+    {
+        return readToString(new UnicodeReader(is, charset));
+    }
+
+    public static String readToString(Reader is) throws IOException
+    {
+        try {
+            StringBuilder result = new StringBuilder(4000);
+            char[] buffer = new char[4000];
+            for (;;) {
+                int count = is.read(buffer);
+                if (count <= 0) {
+                    break;
+                }
+                result.append(buffer, 0, count);
+            }
+            return result.toString();
+        } finally {
+            ContentUtils.close(is);
+        }
+    }
+
     public static MimeType getMimeType(String contentType)
     {
         MimeType mimeType = null;

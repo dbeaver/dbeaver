@@ -18,11 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
@@ -34,13 +29,6 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2TopSQL;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2BufferpoolCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2DataTypeCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2GroupCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoleCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2SchemaCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TablespaceCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2UserCache;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -52,9 +40,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -64,391 +54,420 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 /**
  * DB2 DataSource
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
 
-   private static final Log         LOG             = LogFactory.getLog(DB2DataSource.class);
+    private static final Log LOG = LogFactory.getLog(DB2DataSource.class);
 
-   private static final String      PLAN_TABLE_TIT  = "PLAN_TABLE missing";
-   private static final String      PLAN_TABLE_MSG  = "PLAN_TABLE not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new PLAN_TABLE?";
+    private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
+    private static final String PLAN_TABLE_MSG = "PLAN_TABLE not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new PLAN_TABLE?";
 
-   private final DB2SchemaCache     schemaCache     = new DB2SchemaCache();
-   private final DB2DataTypeCache   dataTypeCache   = new DB2DataTypeCache();
-   private final DB2BufferpoolCache bufferpoolCache = new DB2BufferpoolCache();
-   private final DB2TablespaceCache tablespaceCache = new DB2TablespaceCache();
-   private final DB2RoleCache       roleCache       = new DB2RoleCache();
-   private final DB2UserCache       userCache       = new DB2UserCache();
-   private final DB2GroupCache      groupCache      = new DB2GroupCache();
+    private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Schema>(
+        DB2Schema.class, "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR");
+    private final DBSObjectCache<DB2DataSource, DB2DataType> dataTypeCache = new JDBCObjectSimpleCache<DB2DataSource, DB2DataType>(
+        DB2DataType.class, "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR");
+    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(
+        DB2Bufferpool.class, "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR");
+    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(
+        DB2Tablespace.class, "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR");
+    private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
+        DB2Role.class, "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR");
+    private final DBSObjectCache<DB2DataSource, DB2User> userCache = new JDBCObjectSimpleCache<DB2DataSource, DB2User>(
+        DB2User.class, "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'U' ORDER BY AUTHID WITH UR");
+    private final DBSObjectCache<DB2DataSource, DB2Group> groupCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Group>(
+        DB2Group.class, "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'G' ORDER BY AUTHID WITH UR");
 
-   private List<DB2Parameter>       listDBParameters;
-   private List<DB2Parameter>       listDBMParameters;
-   private List<DB2TopSQL>          listTopSQL;
+    private List<DB2Parameter> listDBParameters;
+    private List<DB2Parameter> listDBMParameters;
+    private List<DB2TopSQL> listTopSQL;
 
-   private String                   activeSchemaName;
-   private String                   planTableSchemaName;
+    private String activeSchemaName;
+    private String planTableSchemaName;
 
-   // -----------------------
-   // Constructors
-   // -----------------------
+    // -----------------------
+    // Constructors
+    // -----------------------
 
-   public DB2DataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException {
-      super(monitor, container);
-   }
+    public DB2DataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
+    {
+        super(monitor, container);
+    }
 
-   // -----------------------
-   // Connection related Info
-   // -----------------------
+    // -----------------------
+    // Connection related Info
+    // -----------------------
 
-   @Override
-   protected String getConnectionUserName(DBPConnectionInfo connectionInfo) {
-      return connectionInfo.getUserName();
-   }
+    @Override
+    protected String getConnectionUserName(DBPConnectionInfo connectionInfo)
+    {
+        return connectionInfo.getUserName();
+    }
 
-   @Override
-   // TODO DF strange...What is the role of this non static mathod?
-   public DB2DataSource getDataSource() {
-      return this;
-   }
+    @Override
+    // TODO DF strange...What is the role of this non static mathod?
+    public DB2DataSource getDataSource()
+    {
+        return this;
+    }
 
-   @Override
-   protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData) {
-      final JDBCDataSourceInfo info = new JDBCDataSourceInfo(metaData);
-      // TODO DF: Need to be reviewed
-      for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
-         info.addSQLKeyword(kw);
-      }
-      return info;
-   }
+    @Override
+    protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
+    {
+        final JDBCDataSourceInfo info = new JDBCDataSourceInfo(metaData);
+        // TODO DF: Need to be reviewed
+        for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
+            info.addSQLKeyword(kw);
+        }
+        return info;
+    }
 
-   @Override
-   protected Map<String, String> getInternalConnectionProperties() {
-      return DB2DataSourceProvider.getConnectionsProps();
-   }
+    @Override
+    protected Map<String, String> getInternalConnectionProperties()
+    {
+        return DB2DataSourceProvider.getConnectionsProps();
+    }
 
-   @Override
-   public void initialize(DBRProgressMonitor monitor) throws DBException {
-      super.initialize(monitor);
+    @Override
+    public void initialize(DBRProgressMonitor monitor) throws DBException
+    {
+        super.initialize(monitor);
 
-      {
-         final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
-         try {
-            // Get active schema
-            this.activeSchemaName = JDBCUtils.queryString(context, "SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1");
-            if (this.activeSchemaName != null) {
-               this.activeSchemaName = this.activeSchemaName.trim();
+        {
+            final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
+            try {
+                // Get active schema
+                this.activeSchemaName = JDBCUtils.queryString(context, "SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1");
+                if (this.activeSchemaName != null) {
+                    this.activeSchemaName = this.activeSchemaName.trim();
+                }
+
+                listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
+                listDBParameters = DB2Utils.readDBCfg(monitor, context);
+                listTopSQL = DB2Utils.readTopDynSQL(monitor, context);
+
+            } catch (SQLException e) {
+                LOG.warn(e);
+            } finally {
+                context.close();
             }
+        }
 
-            listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
-            listDBParameters = DB2Utils.readDBCfg(monitor, context);
-            listTopSQL = DB2Utils.readTopDynSQL(monitor, context);
+        this.dataTypeCache.getObjects(monitor, this);
+    }
 
-         } catch (SQLException e) {
-            LOG.warn(e);
-         } finally {
+    @Override
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    {
+        super.refreshObject(monitor);
+
+        this.userCache.clearCache();
+        this.groupCache.clearCache();
+        this.roleCache.clearCache();
+        this.tablespaceCache.clearCache();
+        this.bufferpoolCache.clearCache();
+        this.schemaCache.clearCache();
+        this.dataTypeCache.clearCache();
+
+        this.listDBMParameters = null;
+        this.listDBParameters = null;
+        this.listTopSQL = null;
+
+        this.initialize(monitor);
+
+        return true;
+    }
+
+    @Override
+    public Collection<DB2DataType> getDataTypes()
+    {
+        try {
+            return getDataTypes(VoidProgressMonitor.INSTANCE);
+        } catch (DBException e) {
+            LOG.error("DBException occurred when reading system dataTypes: ", e);
+            return null;
+        }
+    }
+
+    @Override
+    public DB2DataType getDataType(String typeName)
+    {
+        try {
+            return getDataType(VoidProgressMonitor.INSTANCE, typeName);
+        } catch (DBException e) {
+            LOG.error("DBException occurred when reading system dataTYpe : " + typeName, e);
+            return null;
+        }
+    }
+
+    @Override
+    @SuppressWarnings("rawtypes")
+    public Object getAdapter(Class adapter)
+    {
+        if (adapter == DBSStructureAssistant.class) {
+            return new DB2StructureAssistant(this);
+        }
+        return null;
+    }
+
+    @Override
+    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    {
+        // TODO DF: No idea what to do with this method, what it is used for...
+    }
+
+    // --------------------------
+    // Manage Children: DB2Schema
+    // --------------------------
+
+    @Override
+    public boolean supportsObjectSelect()
+    {
+        return true;
+    }
+
+    @Override
+    public Class<? extends DB2Schema> getChildType(DBRProgressMonitor monitor) throws DBException
+    {
+        return DB2Schema.class;
+    }
+
+    @Override
+    public Collection<DB2Schema> getChildren(DBRProgressMonitor monitor) throws DBException
+    {
+        return getSchemas(monitor);
+    }
+
+    @Override
+    public DB2Schema getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    {
+        return getSchema(monitor, childName);
+    }
+
+    @Override
+    public DB2Schema getSelectedObject()
+    {
+        return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
+    }
+
+    @Override
+    public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException
+    {
+        final DB2Schema oldSelectedEntity = getSelectedObject();
+
+        if (!(object instanceof DB2Schema)) {
+            throw new IllegalArgumentException("Invalid object type: " + object);
+        }
+
+        activeSchemaName = object.getName();
+
+        JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
+        try {
+            JDBCUtils.executeSQL(context, "SET CURRENT SCHEMA = " + activeSchemaName);
+        } catch (SQLException e) {
+            throw new DBException(e);
+        } finally {
             context.close();
-         }
-      }
+        }
 
-      this.dataTypeCache.getObjects(monitor, this);
-   }
+        // Send notifications
+        if (oldSelectedEntity != null) {
+            DBUtils.fireObjectSelect(oldSelectedEntity, false);
+        }
+        if (this.activeSchemaName != null) {
+            DBUtils.fireObjectSelect(object, true);
+        }
+    }
 
-   @Override
-   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
-      super.refreshObject(monitor);
+    // -------
+    // Helpers
+    // -------
 
-      this.userCache.clearCache();
-      this.groupCache.clearCache();
-      this.roleCache.clearCache();
-      this.tablespaceCache.clearCache();
-      this.bufferpoolCache.clearCache();
-      this.schemaCache.clearCache();
-      this.dataTypeCache.clearCache();
+    /**
+     * @param monitor
+     * @param parentSchema
+     * @param objectSchemaName
+     * @return
+     * @throws DBException
+     */
+    public DB2Schema schemaLookup(DBRProgressMonitor monitor, DB2Schema parentSchema, String objectSchemaName) throws DBException
+    {
+        LOG.debug("schemaLookup");
 
-      this.listDBMParameters = null;
-      this.listDBParameters = null;
-      this.listTopSQL = null;
+        // Quick bypass: If it's the same name (99% of the time), return the
+        // parentSchema
+        if (parentSchema.getName().equals(objectSchemaName)) {
+            return parentSchema;
+        }
 
-      this.initialize(monitor);
+        // Lookup fo the schema that correspond to the name
+        DB2Schema objectSchema = getSchema(monitor, objectSchemaName);
+        if (objectSchema == null) {
+            String msg = "Schema  '" + objectSchemaName + "' not found in database ??? Impossible";
+            LOG.error(msg);
+            throw new DBException(msg);
 
-      return true;
-   }
+        }
+        LOG.debug("objectSchemaName : " + objectSchemaName + " was different from parentSchema : " + parentSchema.getName());
 
-   @Override
-   public Collection<DB2DataType> getDataTypes() {
-      try {
-         return getDataTypes(VoidProgressMonitor.INSTANCE);
-      } catch (DBException e) {
-         LOG.error("DBException occurred when reading system dataTypes: ", e);
-         return null;
-      }
-   }
+        return objectSchema;
+    }
 
-   @Override
-   public DB2DataType getDataType(String typeName) {
-      try {
-         return getDataType(VoidProgressMonitor.INSTANCE, typeName);
-      } catch (DBException e) {
-         LOG.error("DBException occurred when reading system dataTYpe : " + typeName, e);
-         return null;
-      }
-   }
+    // --------------
+    // Plan Tables
+    // --------------
 
-   @Override
-   @SuppressWarnings("rawtypes")
-   public Object getAdapter(Class adapter) {
-      if (adapter == DBSStructureAssistant.class) {
-         return new DB2StructureAssistant(this);
-      }
-      return null;
-   }
+    @Override
+    public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
+    {
+        String ptSchemaname = getPlanTableSchemaName(context);
+        DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
+        plan.explain((JDBCExecutionContext) context);
+        return plan;
+    }
 
-   @Override
-   public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
-      // TODO DF: No idea what to do with this method, what it is used for...
-   }
+    private String getPlanTableSchemaName(DBCExecutionContext context) throws DBCException
+    {
+        if (planTableSchemaName == null) {
 
-   // --------------------------
-   // Manage Children: DB2Schema
-   // --------------------------
+            // TODO DF: not sure of "activeSchema".
+            // Explain tables could be created in any schema or at default, in SYSTOOLS
+            // Should be "CURRENT USER" in fact..
+            planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, activeSchemaName);
 
-   @Override
-   public boolean supportsObjectSelect() {
-      return true;
-   }
-
-   @Override
-   public Class<? extends DB2Schema> getChildType(DBRProgressMonitor monitor) throws DBException {
-      return DB2Schema.class;
-   }
-
-   @Override
-   public Collection<DB2Schema> getChildren(DBRProgressMonitor monitor) throws DBException {
-      return getSchemas(monitor);
-   }
-
-   @Override
-   public DB2Schema getChild(DBRProgressMonitor monitor, String childName) throws DBException {
-      return getSchema(monitor, childName);
-   }
-
-   @Override
-   public DB2Schema getSelectedObject() {
-      return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
-   }
-
-   @Override
-   public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException {
-      final DB2Schema oldSelectedEntity = getSelectedObject();
-
-      if (!(object instanceof DB2Schema)) {
-         throw new IllegalArgumentException("Invalid object type: " + object);
-      }
-
-      activeSchemaName = object.getName();
-
-      JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
-      try {
-         JDBCUtils.executeSQL(context, "SET CURRENT SCHEMA = " + activeSchemaName);
-      } catch (SQLException e) {
-         throw new DBException(e);
-      } finally {
-         context.close();
-      }
-
-      // Send notifications
-      if (oldSelectedEntity != null) {
-         DBUtils.fireObjectSelect(oldSelectedEntity, false);
-      }
-      if (this.activeSchemaName != null) {
-         DBUtils.fireObjectSelect(object, true);
-      }
-   }
-
-   // -------
-   // Helpers
-   // -------
-   /**
-    * 
-    * 
-    * @param monitor
-    * @param parentSchema
-    * @param objectSchemaName
-    * @return
-    * @throws DBException
-    */
-   public DB2Schema schemaLookup(DBRProgressMonitor monitor, DB2Schema parentSchema, String objectSchemaName) throws DBException {
-      LOG.debug("schemaLookup");
-
-      // Quick bypass: If it's the same name (99% of the time), return the
-      // parentSchema
-      if (parentSchema.getName().equals(objectSchemaName)) {
-         return parentSchema;
-      }
-
-      // Lookup fo the schema that correspond to the name
-      DB2Schema objectSchema = getSchema(monitor, objectSchemaName);
-      if (objectSchema == null) {
-         String msg = "Schema  '" + objectSchemaName + "' not found in database ??? Impossible";
-         LOG.error(msg);
-         throw new DBException(msg);
-
-      }
-      LOG.debug("objectSchemaName : " + objectSchemaName + " was different from parentSchema : " + parentSchema.getName());
-
-      return objectSchema;
-   }
-
-   // --------------
-   // Plan Tables
-   // --------------
-
-   @Override
-   public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException {
-      String ptSchemaname = getPlanTableSchemaName(context);
-      DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
-      plan.explain((JDBCExecutionContext) context);
-      return plan;
-   }
-
-   private String getPlanTableSchemaName(DBCExecutionContext context) throws DBCException {
-      if (planTableSchemaName == null) {
-
-         // TODO DF: not sure of "activeSchema".
-         // Explain tables could be created in any schema or at default, in SYSTOOLS
-         // Should be "CURRENT USER" in fact..
-         planTableSchemaName = DB2Utils.checkExplainTables(context.getProgressMonitor(), this, activeSchemaName);
-
-         if (planTableSchemaName == null) {
-            // Plan table not found - try to create new one
-            // TODO DF: ask the user in what schema to create the tables
-            if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), PLAN_TABLE_TIT, PLAN_TABLE_MSG)) {
-               return null;
+            if (planTableSchemaName == null) {
+                // Plan table not found - try to create new one
+                // TODO DF: ask the user in what schema to create the tables
+                if (!UIUtils.confirmAction(DBeaverUI.getActiveWorkbenchShell(), PLAN_TABLE_TIT, PLAN_TABLE_MSG)) {
+                    return null;
+                }
+                planTableSchemaName = "SYSTOOLS";
+                DB2Utils.createExplainTables(context.getProgressMonitor(), this, planTableSchemaName);
             }
-            planTableSchemaName = "SYSTOOLS";
-            DB2Utils.createExplainTables(context.getProgressMonitor(), this, planTableSchemaName);
-         }
-      }
-      return planTableSchemaName;
-   }
+        }
+        return planTableSchemaName;
+    }
 
-   // --------------
-   // Associations
-   // --------------
+    // --------------
+    // Associations
+    // --------------
 
-   @Association
-   public Collection<DB2Schema> getSchemas(DBRProgressMonitor monitor) throws DBException {
-      return schemaCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2Schema> getSchemas(DBRProgressMonitor monitor) throws DBException
+    {
+        return schemaCache.getObjects(monitor, this);
+    }
 
-   public DB2Schema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
-      return schemaCache.getObject(monitor, this, name);
-   }
+    public DB2Schema getSchema(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return schemaCache.getObject(monitor, this, name);
+    }
 
-   @Association
-   public Collection<DB2DataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
-      return dataTypeCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2DataType> getDataTypes(DBRProgressMonitor monitor) throws DBException
+    {
+        return dataTypeCache.getObjects(monitor, this);
+    }
 
-   public DB2DataType getDataType(DBRProgressMonitor monitor, String name) throws DBException {
-      return dataTypeCache.getObject(monitor, this, name);
-   }
+    public DB2DataType getDataType(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return dataTypeCache.getObject(monitor, this, name);
+    }
 
-   @Association
-   public Collection<DB2Tablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
-      return tablespaceCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2Tablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException
+    {
+        return tablespaceCache.getObjects(monitor, this);
+    }
 
-   public DB2Tablespace getTablespace(DBRProgressMonitor monitor, String name) throws DBException {
-      return tablespaceCache.getObject(monitor, this, name);
-   }
+    public DB2Tablespace getTablespace(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return tablespaceCache.getObject(monitor, this, name);
+    }
 
-   @Association
-   public Collection<DB2Bufferpool> getBufferpools(DBRProgressMonitor monitor) throws DBException {
-      return bufferpoolCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2Bufferpool> getBufferpools(DBRProgressMonitor monitor) throws DBException
+    {
+        return bufferpoolCache.getObjects(monitor, this);
+    }
 
-   public DB2Bufferpool getBufferpool(DBRProgressMonitor monitor, String name) throws DBException {
-      return bufferpoolCache.getObject(monitor, this, name);
-   }
+    public DB2Bufferpool getBufferpool(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return bufferpoolCache.getObject(monitor, this, name);
+    }
 
-   @Association
-   public Collection<DB2User> getUsers(DBRProgressMonitor monitor) throws DBException {
-      return userCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2User> getUsers(DBRProgressMonitor monitor) throws DBException
+    {
+        return userCache.getObjects(monitor, this);
+    }
 
-   public DB2User getUser(DBRProgressMonitor monitor, String name) throws DBException {
-      return userCache.getObject(monitor, this, name);
-   }
+    public DB2User getUser(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return userCache.getObject(monitor, this, name);
+    }
 
-   @Association
-   public Collection<DB2Group> getGroups(DBRProgressMonitor monitor) throws DBException {
-      return groupCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2Group> getGroups(DBRProgressMonitor monitor) throws DBException
+    {
+        return groupCache.getObjects(monitor, this);
+    }
 
-   public DB2Group getGroup(DBRProgressMonitor monitor, String name) throws DBException {
-      return groupCache.getObject(monitor, this, name);
-   }
+    public DB2Group getGroup(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return groupCache.getObject(monitor, this, name);
+    }
 
-   @Association
-   public Collection<DB2Role> getRoles(DBRProgressMonitor monitor) throws DBException {
-      return roleCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2Role> getRoles(DBRProgressMonitor monitor) throws DBException
+    {
+        return roleCache.getObjects(monitor, this);
+    }
 
-   public DB2Role getRole(DBRProgressMonitor monitor, String name) throws DBException {
-      return roleCache.getObject(monitor, this, name);
-   }
+    public DB2Role getRole(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return roleCache.getObject(monitor, this, name);
+    }
 
-   // -------------
-   // Dynamic Data
-   // -------------
+    // -------------
+    // Dynamic Data
+    // -------------
 
-   public List<DB2Parameter> getDbParameters(DBRProgressMonitor monitor) throws DBException {
-      return listDBParameters;
-   }
+    public List<DB2Parameter> getDbParameters(DBRProgressMonitor monitor) throws DBException
+    {
+        return listDBParameters;
+    }
 
-   public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException {
-      return listDBMParameters;
-   }
+    public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException
+    {
+        return listDBMParameters;
+    }
 
-   public List<DB2TopSQL> getTopSQLs(DBRProgressMonitor monitor) throws DBException {
-      return listTopSQL;
-   }
+    public List<DB2TopSQL> getTopSQLs(DBRProgressMonitor monitor) throws DBException
+    {
+        return listTopSQL;
+    }
 
-   // -------------------------
-   // Standards Getters
-   // -------------------------
+    // -------------------------
+    // Standards Getters
+    // -------------------------
 
-   public DB2SchemaCache getSchemaCache() {
-      return schemaCache;
-   }
+    public DBSObjectCache<DB2DataSource, DB2Schema> getSchemaCache()
+    {
+        return schemaCache;
+    }
 
-   public DB2BufferpoolCache getBufferpoolCache() {
-      return bufferpoolCache;
-   }
-
-   public DB2DataTypeCache getDataTypeCache() {
-      return dataTypeCache;
-   }
-
-   public DB2TablespaceCache getTablespaceCache() {
-      return tablespaceCache;
-   }
-
-   public DB2UserCache getUserCache() {
-      return userCache;
-   }
-
-   public DB2GroupCache getGroupCache() {
-      return groupCache;
-   }
-
-   public DB2RoleCache getRoleCache() {
-      return roleCache;
-   }
+    public DBSObjectCache<DB2DataSource, DB2DataType> getDataTypeCache()
+    {
+        return dataTypeCache;
+    }
 
 }

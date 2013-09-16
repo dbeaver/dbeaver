@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
@@ -31,57 +28,64 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Cache for DB2 Views
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> {
 
-   private static final String SQL_TABS     = "SELECT * FROM SYSCAT.VIEWS WHERE VIEWSCHEMA=? ORDER BY VIEWNAME WITH UR";
-   private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? AND TABNAME = ? ORDER BY COLNO WITH UR";
-   private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? ORDER BY TABNAME, COLNO WITH UR";
+    private static final String SQL_TABS = "SELECT * FROM SYSCAT.VIEWS WHERE VIEWSCHEMA=? ORDER BY VIEWNAME WITH UR";
+    private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? AND TABNAME = ? ORDER BY COLNO WITH UR";
+    private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA=? ORDER BY TABNAME, COLNO WITH UR";
 
-   public DB2ViewCache() {
-      super("VIEWNAME");
-      setListOrderComparator(DBUtils.<DB2View> nameComparator());
-   }
+    public DB2ViewCache()
+    {
+        super("VIEWNAME");
+        setListOrderComparator(DBUtils.<DB2View>nameComparator());
+    }
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException {
-      final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_TABS);
-      dbStat.setString(1, db2Schema.getName());
-      return dbStat;
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
+    {
+        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_TABS);
+        dbStat.setString(1, db2Schema.getName());
+        return dbStat;
+    }
 
-   @Override
-   protected DB2View fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
-                                                                                                       DBException {
-      return new DB2View(context.getProgressMonitor(), db2Schema, dbResult);
-   }
+    @Override
+    protected DB2View fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
+        DBException
+    {
+        return new DB2View(context.getProgressMonitor(), db2Schema, dbResult);
+    }
 
-   @Override
-   protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2View forView) throws SQLException {
+    @Override
+    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2View forView) throws SQLException
+    {
 
-      String sql;
-      if (forView != null) {
-         sql = SQL_COLS_TAB;
-      } else {
-         sql = SQL_COLS_ALL;
-      }
-      JDBCPreparedStatement dbStat = context.prepareStatement(sql);
-      dbStat.setString(1, db2Schema.getName());
-      if (forView != null) {
-         dbStat.setString(2, forView.getName());
-      }
-      return dbStat;
-   }
+        String sql;
+        if (forView != null) {
+            sql = SQL_COLS_TAB;
+        } else {
+            sql = SQL_COLS_ALL;
+        }
+        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
+        dbStat.setString(1, db2Schema.getName());
+        if (forView != null) {
+            dbStat.setString(2, forView.getName());
+        }
+        return dbStat;
+    }
 
-   @Override
-   protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2View db2View, ResultSet dbResult) throws SQLException,
-                                                                                                                              DBException {
-      return new DB2TableColumn(context.getProgressMonitor(), db2View, dbResult);
-   }
+    @Override
+    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2View db2View, ResultSet dbResult) throws SQLException,
+        DBException
+    {
+        return new DB2TableColumn(context.getProgressMonitor(), db2View, dbResult);
+    }
 
 }

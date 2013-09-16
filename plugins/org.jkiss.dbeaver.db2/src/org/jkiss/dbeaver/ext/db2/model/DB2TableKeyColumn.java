@@ -24,60 +24,66 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * DB2 Table Constraint Column
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2TableKeyColumn extends AbstractTableConstraintColumn {
 
-   private AbstractTableConstraint<DB2Table> constraint;
-   private DB2TableColumn                    tableColumn;
-   private Integer                           ordinalPosition;
+    private AbstractTableConstraint<DB2Table> constraint;
+    private DB2TableColumn tableColumn;
+    private Integer ordinalPosition;
 
-   // -----------------
-   // Constructors
-   // -----------------
+    // -----------------
+    // Constructors
+    // -----------------
 
-   public DB2TableKeyColumn(AbstractTableConstraint<DB2Table> constraint, DB2TableColumn tableColumn, Integer ordinalPosition) {
-      this.constraint = constraint;
-      this.tableColumn = tableColumn;
-      this.ordinalPosition = ordinalPosition;
-   }
+    public DB2TableKeyColumn(AbstractTableConstraint<DB2Table> constraint, DB2TableColumn tableColumn, Integer ordinalPosition)
+    {
+        this.constraint = constraint;
+        this.tableColumn = tableColumn;
+        this.ordinalPosition = ordinalPosition;
+    }
 
-   @Override
-   public AbstractTableConstraint<DB2Table> getParentObject() {
-      return constraint;
-   }
+    @Override
+    public AbstractTableConstraint<DB2Table> getParentObject()
+    {
+        return constraint;
+    }
 
-   @Override
-   public DB2DataSource getDataSource() {
-      return constraint.getTable().getDataSource();
-   }
+    @Override
+    public DB2DataSource getDataSource()
+    {
+        return constraint.getTable().getDataSource();
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   public String getName() {
-      return tableColumn.getName();
-   }
+    @Override
+    public String getName()
+    {
+        return tableColumn.getName();
+    }
 
-   @Override
-   @Property(id = "name", viewable = true, order = 1)
-   public DB2TableColumn getAttribute() {
-      return tableColumn;
-   }
+    @Override
+    @Property(id = "name", viewable = true, order = 1)
+    public DB2TableColumn getAttribute()
+    {
+        return tableColumn;
+    }
 
-   @Override
-   @Property(viewable = true, editable = false, order = 3)
-   public int getOrdinalPosition() {
-      return ordinalPosition;
-   }
+    @Override
+    @Property(viewable = true, editable = false, order = 3)
+    public int getOrdinalPosition()
+    {
+        return ordinalPosition;
+    }
 
-   @Override
-   public String getDescription() {
-      return tableColumn.getDescription();
-   }
+    @Override
+    public String getDescription()
+    {
+        return tableColumn.getDescription();
+    }
 
 }

@@ -24,78 +24,85 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
  * DB2 EXPLAIN_PREDICATE table
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2PlanOperatorPredicate implements DBPNamedObject {
 
-   private DB2PlanOperator db2Operator;
+    private DB2PlanOperator db2Operator;
 
-   private Integer         predicateId;
-   private String          howApplied;
-   private String          whenApplied;
-   private String          predicateText;
+    private Integer predicateId;
+    private String howApplied;
+    private String whenApplied;
+    private String predicateText;
 
-   private String          displayName;
+    private String displayName;
 
-   // TODO DF: and many many more
+    // TODO DF: and many many more
 
-   // ------------
-   // Constructors
-   // ------------
+    // ------------
+    // Constructors
+    // ------------
 
-   public DB2PlanOperatorPredicate(JDBCResultSet dbResult, DB2PlanOperator db2Operator) {
-      this.db2Operator = db2Operator;
+    public DB2PlanOperatorPredicate(JDBCResultSet dbResult, DB2PlanOperator db2Operator)
+    {
+        this.db2Operator = db2Operator;
 
-      this.predicateId = JDBCUtils.safeGetInteger(dbResult, "PREDICATE_ID");
-      this.howApplied = JDBCUtils.safeGetString(dbResult, "HOW_APPLIED");
-      this.whenApplied = JDBCUtils.safeGetString(dbResult, "WHEN_APPLIED");
-      this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
+        this.predicateId = JDBCUtils.safeGetInteger(dbResult, "PREDICATE_ID");
+        this.howApplied = JDBCUtils.safeGetString(dbResult, "HOW_APPLIED");
+        this.whenApplied = JDBCUtils.safeGetString(dbResult, "WHEN_APPLIED");
+        this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
 
-      StringBuilder sb = new StringBuilder(32);
-      sb.append(predicateId);
-      if (whenApplied != null) {
-         sb.append(" - ");
-         sb.append(whenApplied);
-      }
-      sb.append(" ");
-      sb.append(howApplied);
-      displayName = sb.toString();
-   }
+        StringBuilder sb = new StringBuilder(32);
+        sb.append(predicateId);
+        if (whenApplied != null) {
+            sb.append(" - ");
+            sb.append(whenApplied);
+        }
+        sb.append(" ");
+        sb.append(howApplied);
+        displayName = sb.toString();
+    }
 
-   @Override
-   public String toString() {
-      return predicateText;
-   }
+    @Override
+    public String toString()
+    {
+        return predicateText;
+    }
 
-   @Override
-   public String getName() {
-      return displayName;
-   }
+    @Override
+    public String getName()
+    {
+        return displayName;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public Integer getPredicateId() {
-      return predicateId;
-   }
+    public Integer getPredicateId()
+    {
+        return predicateId;
+    }
 
-   public String getHowApplied() {
-      return howApplied;
-   }
+    public String getHowApplied()
+    {
+        return howApplied;
+    }
 
-   public String getWhenApplied() {
-      return whenApplied;
-   }
+    public String getWhenApplied()
+    {
+        return whenApplied;
+    }
 
-   public String getPredicateText() {
-      return predicateText;
-   }
+    public String getPredicateText()
+    {
+        return predicateText;
+    }
 
-   public DB2PlanOperator getDb2Operator() {
-      return db2Operator;
-   }
+    public DB2PlanOperator getDb2Operator()
+    {
+        return db2Operator;
+    }
 
 }

@@ -18,10 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Iterator;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -31,42 +27,49 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Iterator;
+
 /**
- * 
  * Cache for DB2 Schemas
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public final class DB2SchemaCache extends JDBCObjectCache<DB2DataSource, DB2Schema> {
 
-   private static final String SQL = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
+    private static final String SQL = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
 
-   public DB2SchemaCache() {
-      init();
-   }
+    public DB2SchemaCache()
+    {
+        init();
+    }
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2DataSource db2DataSource) throws SQLException {
-      return context.prepareStatement(SQL);
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2DataSource db2DataSource) throws SQLException
+    {
+        return context.prepareStatement(SQL);
+    }
 
-   @Override
-   protected DB2Schema fetchObject(JDBCExecutionContext context, DB2DataSource db2DataSource, ResultSet resultSet) throws SQLException,
-                                                                                                                  DBException {
-      return new DB2Schema(db2DataSource, resultSet);
-   }
+    @Override
+    protected DB2Schema fetchObject(JDBCExecutionContext context, DB2DataSource db2DataSource, ResultSet resultSet) throws SQLException,
+        DBException
+    {
+        return new DB2Schema(db2DataSource, resultSet);
+    }
 
-   @Override
-   protected void invalidateObjects(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Iterator<DB2Schema> objectIter) {
-      init();
-   }
+    @Override
+    protected void invalidateObjects(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Iterator<DB2Schema> objectIter)
+    {
+        init();
+    }
 
-   // -------
-   // Helpers
-   // -------
+    // -------
+    // Helpers
+    // -------
 
-   private void init() {
-      setListOrderComparator(DBUtils.<DB2Schema> nameComparator());
-   }
+    private void init()
+    {
+        setListOrderComparator(DBUtils.<DB2Schema>nameComparator());
+    }
 }

@@ -15,7 +15,8 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */package org.jkiss.dbeaver.ext.db2.edit;
+ */
+package org.jkiss.dbeaver.ext.db2.edit;
 
 import org.eclipse.jface.viewers.LabelProvider;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
@@ -24,40 +25,43 @@ import org.jkiss.dbeaver.ui.properties.IPropertyValueListProvider;
 
 /**
  * Groups all List providers for enums used by editors
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2EnumListProvideHelper {
 
-   public static class DB2SequencePrecisionListProvider implements IPropertyValueListProvider<DB2Sequence> {
+    public static class DB2SequencePrecisionListProvider implements IPropertyValueListProvider<DB2Sequence> {
 
-      @Override
-      public boolean allowCustomValue() {
-         return false;
-      }
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
 
-      @Override
-      public Object[] getPossibleValues(DB2Sequence sequence) {
-         return DB2SequencePrecision.values();
-      }
-   }
+        @Override
+        public Object[] getPossibleValues(DB2Sequence sequence)
+        {
+            return DB2SequencePrecision.values();
+        }
+    }
 
-   public static class DB2SequencePrecisionLabelProvider extends LabelProvider {
+    public static class DB2SequencePrecisionLabelProvider extends LabelProvider {
 
-      @Override
-      public String getText(Object element) {
-         System.out.println("ici...");
-         return ((DB2SequencePrecision) element).getDescription();
-      }
+        @Override
+        public String getText(Object element)
+        {
+            System.out.println("ici...");
+            return ((DB2SequencePrecision) element).getDescription();
+        }
 
-   }
+    }
 
-   // --------------
-   // Constructor
-   // --------------
-   private DB2EnumListProvideHelper() {
-      // Pure utility class
-   }
+    // --------------
+    // Constructor
+    // --------------
+    private DB2EnumListProvideHelper()
+    {
+        // Pure utility class
+    }
 
 }

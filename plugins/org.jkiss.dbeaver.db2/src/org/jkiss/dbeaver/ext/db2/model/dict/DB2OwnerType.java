@@ -20,28 +20,29 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Owner Type Constants
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2OwnerType {
-   S("S (System)"),
+    S("S (System)"),
 
-   U("U (User)");
+    U("U (User)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2OwnerType(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2OwnerType(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

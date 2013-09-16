@@ -20,32 +20,33 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * Type of data that can be stored in a DB2 Tablespace
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TablespaceDataType {
-   A("A (All types, regular)"),
+    A("A (All types, regular)"),
 
-   L("L (All types, large)"),
+    L("L (All types, large)"),
 
-   T("T (System temporary tables only)"),
+    T("T (System temporary tables only)"),
 
-   U("U (Created temporary tables or declared temporary tables only)");
+    U("U (Created temporary tables or declared temporary tables only)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2TablespaceDataType(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2TablespaceDataType(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 }

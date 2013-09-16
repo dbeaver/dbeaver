@@ -33,84 +33,90 @@ import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 
 /**
  * DB2 Data Type Manager
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2DataTypeManager extends JDBCObjectEditor<DB2DataType, DB2Schema> {
 
-   private static final String SQL_DROP_TYPE = "DROP TYPE %s RESTRICT";
+    private static final String SQL_DROP_TYPE = "DROP TYPE %s RESTRICT";
 
-   @Override
-   public long getMakerOptions() {
-      return FEATURE_EDITOR_ON_CREATE;
-   }
+    @Override
+    public long getMakerOptions()
+    {
+        return FEATURE_EDITOR_ON_CREATE;
+    }
 
-   @Override
-   public DBSObjectCache<? extends DBSObject, DB2DataType> getObjectsCache(DB2DataType object) {
-      // return object.getSchema().getDataTypeCache();
-      return null;
-   }
+    @Override
+    public DBSObjectCache<? extends DBSObject, DB2DataType> getObjectsCache(DB2DataType object)
+    {
+        // return object.getSchema().getDataTypeCache();
+        return null;
+    }
 
-   @Override
-   protected DB2DataType createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                              DBECommandContext context,
-                                              DB2Schema parent,
-                                              Object copyFrom) {
-      CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(),
-                                                         parent.getDataSource(),
-                                                         DB2Messages.edit_db2_data_type_manager_dialog_title);
-      if (dialog.open() != IDialogConstants.OK_ID) {
-         return null;
-      }
-      // DB2DataType dataType = new DB2DataType(
-      // parent,
-      // dialog.getEntityName(),
-      // false);
-      //        dataType.setSourceDeclaration("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
-      //            "(\n" + //$NON-NLS-1$
-      //            ")"); //$NON-NLS-1$
-      // return dataType;
-      return null;
-   }
+    @Override
+    protected DB2DataType createDatabaseObject(IWorkbenchWindow workbenchWindow,
+                                               DBECommandContext context,
+                                               DB2Schema parent,
+                                               Object copyFrom)
+    {
+        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(),
+            parent.getDataSource(),
+            DB2Messages.edit_db2_data_type_manager_dialog_title);
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        // DB2DataType dataType = new DB2DataType(
+        // parent,
+        // dialog.getEntityName(),
+        // false);
+        //        dataType.setSourceDeclaration("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
+        //            "(\n" + //$NON-NLS-1$
+        //            ")"); //$NON-NLS-1$
+        // return dataType;
+        return null;
+    }
 
-   @Override
-   protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand) {
-      return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
-   }
+    @Override
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    {
+        return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
+    }
 
-   @Override
-   protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand) {
-      String typeName = objectDeleteCommand.getObject().getFullQualifiedName();
-      IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop type", String.format(SQL_DROP_TYPE, typeName));
-      return new IDatabasePersistAction[] { action };
-   }
+    @Override
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    {
+        String typeName = objectDeleteCommand.getObject().getFullQualifiedName();
+        IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop type", String.format(SQL_DROP_TYPE, typeName));
+        return new IDatabasePersistAction[]{action};
+    }
 
-   @Override
-   protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand) {
-      return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
-   }
+    @Override
+    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    {
+        return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
+    }
 
-   private IDatabasePersistAction[] createOrReplaceProcedureQuery(DB2DataType dataType) {
-      // List<IDatabasePersistAction> actions = new
-      // ArrayList<IDatabasePersistAction>();
-      // String header = DB2Utils.normalizeSourceName(dataType, false);
-      // if (!CommonUtils.isEmpty(header)) {
-      // actions.add(
-      // new AbstractDatabasePersistAction(
-      // "Create type header",
-      //                    "CREATE OR REPLACE " + header)); //$NON-NLS-1$
-      // }
-      // String body = DB2Utils.normalizeSourceName(dataType, true);
-      // if (!CommonUtils.isEmpty(body)) {
-      // actions.add(
-      // new AbstractDatabasePersistAction(
-      // "Create type body",
-      //                    "CREATE OR REPLACE " + body)); //$NON-NLS-1$
-      // }
-      // // DB2Utils.addSchemaChangeActions(actions, dataType);
-      // return actions.toArray(new IDatabasePersistAction[actions.size()]);
-      return null;
-   }
+    private IDatabasePersistAction[] createOrReplaceProcedureQuery(DB2DataType dataType)
+    {
+        // List<IDatabasePersistAction> actions = new
+        // ArrayList<IDatabasePersistAction>();
+        // String header = DB2Utils.normalizeSourceName(dataType, false);
+        // if (!CommonUtils.isEmpty(header)) {
+        // actions.add(
+        // new AbstractDatabasePersistAction(
+        // "Create type header",
+        //                    "CREATE OR REPLACE " + header)); //$NON-NLS-1$
+        // }
+        // String body = DB2Utils.normalizeSourceName(dataType, true);
+        // if (!CommonUtils.isEmpty(body)) {
+        // actions.add(
+        // new AbstractDatabasePersistAction(
+        // "Create type body",
+        //                    "CREATE OR REPLACE " + body)); //$NON-NLS-1$
+        // }
+        // // DB2Utils.addSchemaChangeActions(actions, dataType);
+        // return actions.toArray(new IDatabasePersistAction[actions.size()]);
+        return null;
+    }
 
 }

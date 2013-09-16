@@ -18,10 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
@@ -38,107 +34,124 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Super class for DB2 Tables and Views
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> implements
-                                                                              DBPNamedObject2,
-                                                                              DBPRefreshableObject,
-                                                                              DB2StatefulObject {
+    DBPNamedObject2,
+    DBPRefreshableObject,
+    DB2StatefulObject {
 
-   private static final Log log = LogFactory.getLog(DB2TableBase.class);
+    private static final Log log = LogFactory.getLog(DB2TableBase.class);
 
-   private String           owner;
-   private DB2OwnerType     ownerType;
-   private String           remarks;
+    private String owner;
+    private DB2OwnerType ownerType;
+    private String remarks;
 
-   // -----------------
-   // Constructors
-   // -----------------
-   public DB2TableBase(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult) {
-      super(schema, true);
+    // -----------------
+    // Constructors
+    // -----------------
+    public DB2TableBase(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult)
+    {
+        super(schema, true);
 
-      this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
-      this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
-      this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
-   }
+        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
+        this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+    }
 
-   public DB2TableBase(DB2Schema container, String name, Boolean persisted) {
-      super(container, name, persisted);
-   }
+    public DB2TableBase(DB2Schema container, String name, Boolean persisted)
+    {
+        super(container, name, persisted);
+    }
 
-   @Override
-   public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
-      // TODO DF : What to do here?
+    @Override
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+        // TODO DF : What to do here?
 
-   }
+    }
 
-   @Override
-   public DB2Schema getSchema() {
-      return super.getContainer();
-   }
+    @Override
+    public DB2Schema getSchema()
+    {
+        return super.getContainer();
+    }
 
-   @Override
-   @Property(viewable = false, editable = false)
-   public String getDescription() {
-      return remarks;
-   }
+    @Override
+    @Property(viewable = false, editable = false)
+    public String getDescription()
+    {
+        return remarks;
+    }
 
-   @Override
-   public String getFullQualifiedName() {
-      return getContainer().getName() + "." + this.getName();
-   }
+    @Override
+    public String getFullQualifiedName()
+    {
+        return getContainer().getName() + "." + this.getName();
+    }
 
-   // -----------------
-   // Associations (Imposed from DBSTable). In DB2, Most of objects "derived"
-   // from Tables don't have those..
-   // -----------------
+    // -----------------
+    // Associations (Imposed from DBSTable). In DB2, Most of objects "derived"
+    // from Tables don't have those..
+    // -----------------
 
-   @Override
-   public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException {
-      return Collections.emptyList();
-   }
+    @Override
+    public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
+    {
+        return Collections.emptyList();
+    }
 
-   @Override
-   public Collection<DB2TableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException {
-      return Collections.emptyList();
-   }
+    @Override
+    public Collection<DB2TableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException
+    {
+        return Collections.emptyList();
+    }
 
-   @Override
-   public Collection<DB2TableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException {
-      return Collections.emptyList();
-   }
+    @Override
+    public Collection<DB2TableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    {
+        return Collections.emptyList();
+    }
 
-   @Override
-   public Collection<DB2TableReference> getReferences(DBRProgressMonitor monitor) throws DBException {
-      return Collections.emptyList();
-   }
+    @Override
+    public Collection<DB2TableReference> getReferences(DBRProgressMonitor monitor) throws DBException
+    {
+        return Collections.emptyList();
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
-   public String getName() {
-      return super.getName();
-   }
+    @Override
+    @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    public String getName()
+    {
+        return super.getName();
+    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-   public String getOwner() {
-      return owner;
-   }
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+    public String getOwner()
+    {
+        return owner;
+    }
 
-   @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-   public String getOwnerTypeDescription() {
-      return ownerType.getDescription();
-   }
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+    public String getOwnerTypeDescription()
+    {
+        return ownerType.getDescription();
+    }
 
-   public DB2OwnerType getOwnerType() {
-      return ownerType;
-   }
+    public DB2OwnerType getOwnerType()
+    {
+        return ownerType;
+    }
 
 }

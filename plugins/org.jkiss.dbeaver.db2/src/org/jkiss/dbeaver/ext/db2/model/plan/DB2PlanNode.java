@@ -18,52 +18,56 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-
 /**
  * DB2 Plan Node
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public abstract class DB2PlanNode implements DBCPlanNode {
 
-   private DB2PlanNode             parent;
-   private Collection<DB2PlanNode> listNestedNodes = new ArrayList<DB2PlanNode>(64);
+    private DB2PlanNode parent;
+    private Collection<DB2PlanNode> listNestedNodes = new ArrayList<DB2PlanNode>(64);
 
-   // --------------------
-   // DB2PlanNode Contract
-   // --------------------
-   public abstract String getNodeName();
+    // --------------------
+    // DB2PlanNode Contract
+    // --------------------
+    public abstract String getNodeName();
 
-   public abstract Double getEstimatedCardinality();
+    public abstract Double getEstimatedCardinality();
 
-   public void setEstimatedCardinality(Double estimatedCardinality) {
-      // Not supported by every kind of DB2PlanNode
-   }
+    public void setEstimatedCardinality(Double estimatedCardinality)
+    {
+        // Not supported by every kind of DB2PlanNode
+    }
 
-   public String getDetails() {
-      return "";
-   }
+    public String getDetails()
+    {
+        return "";
+    }
 
-   public void setParent(DB2PlanNode parent) {
-      this.parent = parent;
-   }
+    public void setParent(DB2PlanNode parent)
+    {
+        this.parent = parent;
+    }
 
-   // ----------------------
-   // Methods from Interface
-   // ---------------------
-   @Override
-   public DB2PlanNode getParent() {
-      return parent;
-   }
+    // ----------------------
+    // Methods from Interface
+    // ---------------------
+    @Override
+    public DB2PlanNode getParent()
+    {
+        return parent;
+    }
 
-   @Override
-   public Collection<DB2PlanNode> getNested() {
-      return listNestedNodes;
-   }
+    @Override
+    public Collection<DB2PlanNode> getNested()
+    {
+        return listNestedNodes;
+    }
 
 }

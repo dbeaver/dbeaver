@@ -38,101 +38,111 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * DB2 Schema Manager
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2SchemaManager extends JDBCObjectEditor<DB2Schema, DB2DataSource> {
 
-   private static final String SQL_CREATE_SCHEMA = "CREATE SCHEMA %s";
-   private static final String SQL_DROP_SCHEMA   = "DROP SCHEMA %s RESTRICT";
+    private static final String SQL_CREATE_SCHEMA = "CREATE SCHEMA %s";
+    private static final String SQL_DROP_SCHEMA = "DROP SCHEMA %s RESTRICT";
 
-   @Override
-   public long getMakerOptions() {
-      return FEATURE_SAVE_IMMEDIATELY;
-   }
+    @Override
+    public long getMakerOptions()
+    {
+        return FEATURE_SAVE_IMMEDIATELY;
+    }
 
-   @Override
-   public DBSObjectCache<? extends DBSObject, DB2Schema> getObjectsCache(DB2Schema object) {
-      return object.getDataSource().getSchemaCache();
-   }
+    @Override
+    public DBSObjectCache<? extends DBSObject, DB2Schema> getObjectsCache(DB2Schema object)
+    {
+        return object.getDataSource().getSchemaCache();
+    }
 
-   @Override
-   protected DB2Schema createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                            DBECommandContext context,
-                                            DB2DataSource parent,
-                                            Object copyFrom) {
-      NewSchemaDialog dialog = new NewSchemaDialog(workbenchWindow.getShell());
-      if (dialog.open() != IDialogConstants.OK_ID) {
-         return null;
-      }
-      String schemaName = dialog.getSchemaName();
-      if (schemaName.length() == 0) {
-         return null;
-      }
-      DB2Schema newSchema = new DB2Schema(parent, schemaName);
+    @Override
+    protected DB2Schema createDatabaseObject(IWorkbenchWindow workbenchWindow,
+                                             DBECommandContext context,
+                                             DB2DataSource parent,
+                                             Object copyFrom)
+    {
+        NewSchemaDialog dialog = new NewSchemaDialog(workbenchWindow.getShell());
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        String schemaName = dialog.getSchemaName();
+        if (schemaName.length() == 0) {
+            return null;
+        }
+        DB2Schema newSchema = new DB2Schema(parent, schemaName);
 
-      return newSchema;
-   }
+        return newSchema;
+    }
 
-   @Override
-   protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command) {
-      String schemaName = command.getObject().getName();
-      AbstractDatabasePersistAction action = new AbstractDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
-                                                                                                              schemaName));
-      return new IDatabasePersistAction[] { action };
-   }
+    @Override
+    protected IDatabasePersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    {
+        String schemaName = command.getObject().getName();
+        AbstractDatabasePersistAction action = new AbstractDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
+            schemaName));
+        return new IDatabasePersistAction[]{action};
+    }
 
-   @Override
-   protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command) {
-      String schemaName = command.getObject().getName();
-      IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
-                                                                                                           schemaName));
-      return new IDatabasePersistAction[] { action };
-   }
+    @Override
+    protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    {
+        String schemaName = command.getObject().getName();
+        IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop schema (SQL)", String.format(SQL_DROP_SCHEMA,
+            schemaName));
+        return new IDatabasePersistAction[]{action};
+    }
 
-   // --------
-   // Dialog
-   // --------
+    // --------
+    // Dialog
+    // --------
 
-   static class NewSchemaDialog extends Dialog {
+    static class NewSchemaDialog extends Dialog {
 
-      private String schemaName;
+        private String schemaName;
 
-      public String getSchemaName() {
-         return schemaName;
-      }
+        public String getSchemaName()
+        {
+            return schemaName;
+        }
 
-      // Dialog managment
-      private Text nameText;
+        // Dialog managment
+        private Text nameText;
 
-      public NewSchemaDialog(Shell parentShell) {
-         super(parentShell);
-      }
+        public NewSchemaDialog(Shell parentShell)
+        {
+            super(parentShell);
+        }
 
-      @Override
-      protected boolean isResizable() {
-         return true;
-      }
+        @Override
+        protected boolean isResizable()
+        {
+            return true;
+        }
 
-      @Override
-      protected Control createDialogArea(Composite parent) {
-         getShell().setText("New Schema Name");
-         Control container = super.createDialogArea(parent);
-         Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
-         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        @Override
+        protected Control createDialogArea(Composite parent)
+        {
+            getShell().setText("New Schema Name");
+            Control container = super.createDialogArea(parent);
+            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
+            composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-         nameText = UIUtils.createLabelText(composite, "Schema Name", null);
-         nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            nameText = UIUtils.createLabelText(composite, "Schema Name", null);
+            nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-         return parent;
-      }
+            return parent;
+        }
 
-      @Override
-      protected void okPressed() {
-         this.schemaName = nameText.getText().trim().toUpperCase();
-         super.okPressed();
-      }
+        @Override
+        protected void okPressed()
+        {
+            this.schemaName = nameText.getText().trim().toUpperCase();
+            super.okPressed();
+        }
 
-   }
+    }
 
 }

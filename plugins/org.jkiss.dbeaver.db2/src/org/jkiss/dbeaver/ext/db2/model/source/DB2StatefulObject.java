@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
  * DB2StatefulObject
  */
 public interface DB2StatefulObject extends DBSObjectStateful {
-   @Override
-   DB2DataSource getDataSource();
+    @Override
+    DB2DataSource getDataSource();
 
-   DB2Schema getSchema();
+    DB2Schema getSchema();
 
 }

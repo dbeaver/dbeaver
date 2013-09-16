@@ -20,36 +20,38 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Index Column Order
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2IndexColOrder {
-   A("A (Ascending)", true),
+    A("A (Ascending)", true),
 
-   D("D (Descending)", false),
+    D("D (Descending)", false),
 
-   I("I (Include)", true);
+    I("I (Include)", true);
 
-   private String  description;
-   private Boolean ascending;
+    private String description;
+    private Boolean ascending;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2IndexColOrder(String description, Boolean ascending) {
-      this.description = description;
-      this.ascending = ascending;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2IndexColOrder(String description, Boolean ascending)
+    {
+        this.description = description;
+        this.ascending = ascending;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public Boolean isAscending() {
-      return ascending;
-   }
+    public Boolean isAscending()
+    {
+        return ascending;
+    }
 }

@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-import java.util.Collection;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.actions.DB2ObjectPersistAction;
@@ -41,126 +38,144 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.util.Collection;
+
 /**
  * DB2 View
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2View extends DB2TableBase implements DB2SourceObject {
 
-   private final DB2ViewDepCache viewDepCache = new DB2ViewDepCache();
+    private final DB2ViewDepCache viewDepCache = new DB2ViewDepCache();
 
-   private DB2ViewStatus         status;
-   private String                text;
+    private DB2ViewStatus status;
+    private String text;
 
-   // -----------------
-   // Constructors
-   // -----------------
+    // -----------------
+    // Constructors
+    // -----------------
 
-   public DB2View(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult) {
-      super(monitor, schema, dbResult);
+    public DB2View(DBRProgressMonitor monitor, DB2Schema schema, ResultSet dbResult)
+    {
+        super(monitor, schema, dbResult);
 
-      setName(JDBCUtils.safeGetString(dbResult, "VIEWNAME"));
+        setName(JDBCUtils.safeGetString(dbResult, "VIEWNAME"));
 
-      this.status = CommonUtils.valueOf(DB2ViewStatus.class, JDBCUtils.safeGetString(dbResult, "VALID"));
-      this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
-   }
+        this.status = CommonUtils.valueOf(DB2ViewStatus.class, JDBCUtils.safeGetString(dbResult, "VALID"));
+        this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
+    }
 
-   @Override
-   public boolean isView() {
-      return true;
-   }
+    @Override
+    public boolean isView()
+    {
+        return true;
+    }
 
-   @Override
-   public DBSObjectState getObjectState() {
-      return status.getState();
-   }
+    @Override
+    public DBSObjectState getObjectState()
+    {
+        return status.getState();
+    }
 
-   @Override
-   public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
-      getContainer().getViewCache().clearChildrenCache(this);
-      viewDepCache.clearCache();
-      return true;
-   }
+    @Override
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    {
+        getContainer().getViewCache().clearChildrenCache(this);
+        viewDepCache.clearCache();
+        return true;
+    }
 
-   @Override
-   public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException {
-      // this.valid = DB2Utils.getObjectStatus(monitor, this,
-      // DB2ObjectType.VIEW);
-   }
+    @Override
+    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    {
+        // this.valid = DB2Utils.getObjectStatus(monitor, this,
+        // DB2ObjectType.VIEW);
+    }
 
-   // @Override
-   public IDatabasePersistAction[] getCompileActions() {
-      return new IDatabasePersistAction[] { new DB2ObjectPersistAction(DB2ObjectType.VIEW, "Compile view", "ALTER VIEW "
-               + getFullQualifiedName() + " COMPILE") };
-   }
+    // @Override
+    public IDatabasePersistAction[] getCompileActions()
+    {
+        return new IDatabasePersistAction[]{new DB2ObjectPersistAction(DB2ObjectType.VIEW, "Compile view", "ALTER VIEW "
+            + getFullQualifiedName() + " COMPILE")};
+    }
 
-   @Override
-   public JDBCStructCache<DB2Schema, ? extends JDBCTable, ? extends JDBCTableColumn> getCache() {
-      return getContainer().getViewCache();
-   }
+    @Override
+    public JDBCStructCache<DB2Schema, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
+    {
+        return getContainer().getViewCache();
+    }
 
-   // -----------------
-   // Columns
-   // -----------------
+    // -----------------
+    // Columns
+    // -----------------
 
-   @Override
-   public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException {
-      return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
-   }
+    @Override
+    public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException
+    {
+        return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
+    }
 
-   @Override
-   public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
-      return getContainer().getViewCache().getChild(monitor, getContainer(), this, attributeName);
-   }
+    @Override
+    public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
+    {
+        return getContainer().getViewCache().getChild(monitor, getContainer(), this, attributeName);
+    }
 
-   // -----------------
-   // Source
-   // -----------------
+    // -----------------
+    // Source
+    // -----------------
 
-   @Override
-   public DB2SourceType getSourceType() {
-      return DB2SourceType.VIEW;
-   }
+    @Override
+    public DB2SourceType getSourceType()
+    {
+        return DB2SourceType.VIEW;
+    }
 
-   @Override
-   public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException {
-      return text;
-   }
+    @Override
+    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    {
+        return text;
+    }
 
-   @Override
-   public void setSourceDeclaration(String source) {
-      // TODO Auto-generated method stub
+    @Override
+    public void setSourceDeclaration(String source)
+    {
+        // TODO Auto-generated method stub
 
-   }
+    }
 
-   public String getDDL(DBRProgressMonitor monitor) throws DBException {
-      return text;
-   }
+    public String getDDL(DBRProgressMonitor monitor) throws DBException
+    {
+        return text;
+    }
 
-   // -----------------
-   // Association
-   // -----------------
+    // -----------------
+    // Association
+    // -----------------
 
-   @Association
-   public Collection<DB2ViewDep> getViewDeps(DBRProgressMonitor monitor) throws DBException {
-      return viewDepCache.getObjects(monitor, this);
-   }
+    @Association
+    public Collection<DB2ViewDep> getViewDeps(DBRProgressMonitor monitor) throws DBException
+    {
+        return viewDepCache.getObjects(monitor, this);
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
-   public String getName() {
-      return super.getName();
-   }
+    @Override
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    public String getName()
+    {
+        return super.getName();
+    }
 
-   @Property(viewable = true, editable = false, order = 2)
-   public DB2ViewStatus getStatus() {
-      return status;
-   }
+    @Property(viewable = true, editable = false, order = 2)
+    public DB2ViewStatus getStatus()
+    {
+        return status;
+    }
 
 }

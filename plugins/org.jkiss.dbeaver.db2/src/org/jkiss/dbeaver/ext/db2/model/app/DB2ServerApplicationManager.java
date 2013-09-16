@@ -18,10 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.app;
 
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -30,40 +26,48 @@ import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * DB2 Application Manager
- * 
+ *
  * @author Denis Forveille
  */
 public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2ServerApplication> {
 
-   private final DB2DataSource dataSource;
+    private final DB2DataSource dataSource;
 
-   public DB2ServerApplicationManager(DB2DataSource dataSource) {
-      this.dataSource = dataSource;
-   }
+    public DB2ServerApplicationManager(DB2DataSource dataSource)
+    {
+        this.dataSource = dataSource;
+    }
 
-   @Override
-   public DBPDataSource getDataSource() {
-      return dataSource;
-   }
+    @Override
+    public DBPDataSource getDataSource()
+    {
+        return dataSource;
+    }
 
-   @Override
-   public Collection<DB2ServerApplication> getSessions(DBCExecutionContext context, Map<String, Object> options) throws DBException {
-      try {
-         return DB2Utils.readApplications(context.getProgressMonitor(), (JDBCExecutionContext) context);
-      } catch (SQLException e) {
-         throw new DBException(e);
-      }
-   }
+    @Override
+    public Collection<DB2ServerApplication> getSessions(DBCExecutionContext context, Map<String, Object> options) throws DBException
+    {
+        try {
+            return DB2Utils.readApplications(context.getProgressMonitor(), (JDBCExecutionContext) context);
+        } catch (SQLException e) {
+            throw new DBException(e);
+        }
+    }
 
-   @Override
-   public void alterSession(DBCExecutionContext context, DB2ServerApplication session, Map<String, Object> options) throws DBException {
-      try {
-         DB2Utils.forceApplication(context.getProgressMonitor(), dataSource, session.getAgentId());
-      } catch (SQLException e) {
-         throw new DBException(e);
-      }
-   }
+    @Override
+    public void alterSession(DBCExecutionContext context, DB2ServerApplication session, Map<String, Object> options) throws DBException
+    {
+        try {
+            DB2Utils.forceApplication(context.getProgressMonitor(), dataSource, session.getAgentId());
+        } catch (SQLException e) {
+            throw new DBException(e);
+        }
+    }
 
 }

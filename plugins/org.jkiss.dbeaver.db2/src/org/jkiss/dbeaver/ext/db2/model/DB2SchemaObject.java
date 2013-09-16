@@ -25,17 +25,20 @@ import org.jkiss.dbeaver.model.DBUtils;
  * Abstract DB2 schema object
  */
 public abstract class DB2SchemaObject extends DB2Object<DB2Schema> implements DBPQualifiedObject {
-   protected DB2SchemaObject(DB2Schema schema, String name, boolean persisted) {
-      super(schema, name, persisted);
-   }
+    protected DB2SchemaObject(DB2Schema schema, String name, boolean persisted)
+    {
+        super(schema, name, persisted);
+    }
 
-   public DB2Schema getSchema() {
-      return getParentObject();
-   }
+    public DB2Schema getSchema()
+    {
+        return getParentObject();
+    }
 
-   @Override
-   public String getFullQualifiedName() {
-      return DBUtils.getFullQualifiedName(getDataSource(), getParentObject(), this);
-   }
+    @Override
+    public String getFullQualifiedName()
+    {
+        return DBUtils.getFullQualifiedName(getDataSource(), getParentObject(), this);
+    }
 
 }

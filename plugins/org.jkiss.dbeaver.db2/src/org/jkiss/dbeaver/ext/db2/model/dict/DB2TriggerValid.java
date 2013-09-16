@@ -22,38 +22,40 @@ import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 /**
  * DB2 Trigger Valid attribute
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TriggerValid {
-   N("N (Invalid)", DBSObjectState.INVALID),
+    N("N (Invalid)", DBSObjectState.INVALID),
 
-   X("X (Inoperative)", DBSObjectState.INVALID), // TODO DF: No exact correspondance
+    X("X (Inoperative)", DBSObjectState.INVALID), // TODO DF: No exact correspondance
 
-   Y("Y (Valid)", DBSObjectState.ACTIVE); // TODO DF: No exact correspondance
+    Y("Y (Valid)", DBSObjectState.ACTIVE); // TODO DF: No exact correspondance
 
-   private String         description;
-   private DBSObjectState state;
+    private String description;
+    private DBSObjectState state;
 
-   // -----------------
-   // Constructor
-   // -----------------
+    // -----------------
+    // Constructor
+    // -----------------
 
-   private DB2TriggerValid(String description, DBSObjectState state) {
-      this.description = description;
-      this.state = state;
-   }
+    private DB2TriggerValid(String description, DBSObjectState state)
+    {
+        this.description = description;
+        this.state = state;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public DBSObjectState getState() {
-      return state;
-   }
+    public DBSObjectState getState()
+    {
+        return state;
+    }
 }

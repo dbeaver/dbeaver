@@ -22,51 +22,53 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 
 /**
  * DB2 Table Type
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TableType {
 
-   A("A (Alias)", DB2ObjectType.ALIAS),
+    A("A (Alias)", DB2ObjectType.ALIAS),
 
-   G("G (Created temporary table)", DB2ObjectType.TABLE),
+    G("G (Created temporary table)", DB2ObjectType.TABLE),
 
-   H("H (Hierarchy table)", DB2ObjectType.TABLE),
+    H("H (Hierarchy table)", DB2ObjectType.TABLE),
 
-   L("L (Detached table)", DB2ObjectType.TABLE),
+    L("L (Detached table)", DB2ObjectType.TABLE),
 
-   N("N (Nickname)", DB2ObjectType.ALIAS), // TODO DF: Wrong will be NICKNAME in the future..
+    N("N (Nickname)", DB2ObjectType.ALIAS), // TODO DF: Wrong will be NICKNAME in the future..
 
-   S("S (Materialized query table)", DB2ObjectType.TABLE),
+    S("S (Materialized query table)", DB2ObjectType.TABLE),
 
-   T("T (Table (untyped))", DB2ObjectType.TABLE),
+    T("T (Table (untyped))", DB2ObjectType.TABLE),
 
-   U("U (Inoperative)", DB2ObjectType.TABLE),
+    U("U (Inoperative)", DB2ObjectType.TABLE),
 
-   V("V (View (untyped))", DB2ObjectType.VIEW),
+    V("V (View (untyped))", DB2ObjectType.VIEW),
 
-   W("W (Typed view)", DB2ObjectType.VIEW);
+    W("W (Typed view)", DB2ObjectType.VIEW);
 
-   private String        description;
-   private DB2ObjectType db2ObjectType;
+    private String description;
+    private DB2ObjectType db2ObjectType;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2TableType(String description, DB2ObjectType db2ObjectType) {
-      this.description = description;
-      this.db2ObjectType = db2ObjectType;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2TableType(String description, DB2ObjectType db2ObjectType)
+    {
+        this.description = description;
+        this.db2ObjectType = db2ObjectType;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public DB2ObjectType getDb2ObjectType() {
-      return db2ObjectType;
-   }
+    public DB2ObjectType getDb2ObjectType()
+    {
+        return db2ObjectType;
+    }
 }

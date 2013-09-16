@@ -35,49 +35,52 @@ import org.jkiss.dbeaver.ui.dialogs.struct.EditForeignKeyDialog;
  */
 public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignKey, DB2Table> {
 
-   private static final String SQL_DROP_FK = "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
+    private static final String SQL_DROP_FK = "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
 
-   @Override
-   public DBSObjectCache<? extends DBSObject, DB2TableForeignKey> getObjectsCache(DB2TableForeignKey object) {
-      return object.getParentObject().getSchema().getAssociationCache();
-   }
+    @Override
+    public DBSObjectCache<? extends DBSObject, DB2TableForeignKey> getObjectsCache(DB2TableForeignKey object)
+    {
+        return object.getParentObject().getSchema().getAssociationCache();
+    }
 
-   @Override
-   protected DB2TableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                                     DBECommandContext context,
-                                                     DB2Table table,
-                                                     Object from) {
-      EditForeignKeyDialog editDialog = new EditForeignKeyDialog(workbenchWindow.getShell(),
-                                                                 DB2Messages.edit_db2_foreign_key_manager_dialog_title,
-                                                                 table,
-                                                                 new DBSForeignKeyModifyRule[] {
-                                                                          DBSForeignKeyModifyRule.NO_ACTION,
-                                                                          DBSForeignKeyModifyRule.CASCADE,
-                                                                          DBSForeignKeyModifyRule.RESTRICT,
-                                                                          DBSForeignKeyModifyRule.SET_NULL,
-                                                                          DBSForeignKeyModifyRule.SET_DEFAULT });
-      if (editDialog.open() != IDialogConstants.OK_ID) {
-         return null;
-      }
+    @Override
+    protected DB2TableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow,
+                                                      DBECommandContext context,
+                                                      DB2Table table,
+                                                      Object from)
+    {
+        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(workbenchWindow.getShell(),
+            DB2Messages.edit_db2_foreign_key_manager_dialog_title,
+            table,
+            new DBSForeignKeyModifyRule[]{
+                DBSForeignKeyModifyRule.NO_ACTION,
+                DBSForeignKeyModifyRule.CASCADE,
+                DBSForeignKeyModifyRule.RESTRICT,
+                DBSForeignKeyModifyRule.SET_NULL,
+                DBSForeignKeyModifyRule.SET_DEFAULT});
+        if (editDialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
 
-      // final DB2TableFK foreignKey = new DB2TableFK(table, null, null,
-      // (DB2TableConstraint) editDialog.getUniqueConstraint(),
-      // editDialog.getOnDeleteRule());
-      //      foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey, CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-      //               CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
-      // int colIndex = 1;
-      // for (EditForeignKeyDialog.FKColumnInfo tableColumn :
-      // editDialog.getColumns()) {
-      // foreignKey.addColumn(new DB2TableFKColumn(foreignKey, (DB2TableColumn)
-      // tableColumn.getOwnColumn(), colIndex++));
-      // }
-      // return foreignKey;
-      return null;
-   }
+        // final DB2TableFK foreignKey = new DB2TableFK(table, null, null,
+        // (DB2TableConstraint) editDialog.getUniqueConstraint(),
+        // editDialog.getOnDeleteRule());
+        //      foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey, CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+        //               CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+        // int colIndex = 1;
+        // for (EditForeignKeyDialog.FKColumnInfo tableColumn :
+        // editDialog.getColumns()) {
+        // foreignKey.addColumn(new DB2TableFKColumn(foreignKey, (DB2TableColumn)
+        // tableColumn.getOwnColumn(), colIndex++));
+        // }
+        // return foreignKey;
+        return null;
+    }
 
-   @Override
-   protected String getDropForeignKeyPattern(DB2TableForeignKey foreignKey) {
-      return SQL_DROP_FK;
-   }
+    @Override
+    protected String getDropForeignKeyPattern(DB2TableForeignKey foreignKey)
+    {
+        return SQL_DROP_FK;
+    }
 
 }

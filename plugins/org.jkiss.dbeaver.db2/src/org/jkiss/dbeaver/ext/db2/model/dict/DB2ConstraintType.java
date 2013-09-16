@@ -22,48 +22,51 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
  * DB2 Type of Constraints
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2ConstraintType {
-   F("F (Foreign key)", DBSEntityConstraintType.FOREIGN_KEY),
+    F("F (Foreign key)", DBSEntityConstraintType.FOREIGN_KEY),
 
-   I("I (Functional dependency)", DBSEntityConstraintType.ASSOCIATION),
+    I("I (Functional dependency)", DBSEntityConstraintType.ASSOCIATION),
 
-   K("K (Check)", DBSEntityConstraintType.CHECK),
+    K("K (Check)", DBSEntityConstraintType.CHECK),
 
-   P("P ( Primary key)", DBSEntityConstraintType.PRIMARY_KEY),
+    P("P ( Primary key)", DBSEntityConstraintType.PRIMARY_KEY),
 
-   U("U (Unique)", DBSEntityConstraintType.UNIQUE_KEY);
+    U("U (Unique)", DBSEntityConstraintType.UNIQUE_KEY);
 
-   private String                  description;
-   private DBSEntityConstraintType type;
+    private String description;
+    private DBSEntityConstraintType type;
 
-   // -----------
-   // Constructor
-   // -----------
-   private DB2ConstraintType(String description, DBSEntityConstraintType type) {
-      this.description = description;
-      this.type = type;
-   }
+    // -----------
+    // Constructor
+    // -----------
+    private DB2ConstraintType(String description, DBSEntityConstraintType type)
+    {
+        this.description = description;
+        this.type = type;
+    }
 
-   // -----------
-   // Helpers
-   // -----------
-   public static DBSEntityConstraintType getConstraintType(String code) {
-      return DB2ConstraintType.valueOf(code).getType();
-   }
+    // -----------
+    // Helpers
+    // -----------
+    public static DBSEntityConstraintType getConstraintType(String code)
+    {
+        return DB2ConstraintType.valueOf(code).getType();
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
+    // ----------------
+    // Standard Getters
+    // ----------------
 
-   public String getDescription() {
-      return description;
-   }
+    public String getDescription()
+    {
+        return description;
+    }
 
-   public DBSEntityConstraintType getType() {
-      return type;
-   }
+    public DBSEntityConstraintType getType()
+    {
+        return type;
+    }
 }

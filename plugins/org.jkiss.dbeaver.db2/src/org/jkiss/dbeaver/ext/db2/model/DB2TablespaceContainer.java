@@ -18,68 +18,73 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
+import java.sql.ResultSet;
+
 /**
- * 
  * DB2 Tablespace Container
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2TablespaceContainer extends DB2Object<DB2Tablespace> {
 
-   private final DB2Tablespace tablespace;
+    private final DB2Tablespace tablespace;
 
-   private Long                containerId;
-   private String              containerType;
+    private Long containerId;
+    private String containerType;
 
-   // -----------------------
-   // Constructors
-   // -----------------------
+    // -----------------------
+    // Constructors
+    // -----------------------
 
-   public DB2TablespaceContainer(DB2Tablespace tablespace, ResultSet dbResult) {
-      super(tablespace, JDBCUtils.safeGetString(dbResult, "CONTAINER_NAME"), true);
+    public DB2TablespaceContainer(DB2Tablespace tablespace, ResultSet dbResult)
+    {
+        super(tablespace, JDBCUtils.safeGetString(dbResult, "CONTAINER_NAME"), true);
 
-      this.tablespace = tablespace;
+        this.tablespace = tablespace;
 
-      this.containerId = JDBCUtils.safeGetLong(dbResult, "CONTAINER_ID");
-      this.containerType = JDBCUtils.safeGetString(dbResult, "CONTAINER_TYPE");
-   }
+        this.containerId = JDBCUtils.safeGetLong(dbResult, "CONTAINER_ID");
+        this.containerType = JDBCUtils.safeGetString(dbResult, "CONTAINER_TYPE");
+    }
 
-   public DB2Tablespace getTablespace() {
-      return tablespace;
-   }
+    public DB2Tablespace getTablespace()
+    {
+        return tablespace;
+    }
 
-   // -----------------
-   // Properties
-   // -----------------
+    // -----------------
+    // Properties
+    // -----------------
 
-   @Override
-   @Property(viewable = true, editable = false, order = 1)
-   public String getName() {
-      return name;
-   }
+    @Override
+    @Property(viewable = true, editable = false, order = 1)
+    public String getName()
+    {
+        return name;
+    }
 
-   @Property(viewable = true, editable = false, order = 2)
-   public Long getContainerId() {
-      return containerId;
-   }
+    @Property(viewable = true, editable = false, order = 2)
+    public Long getContainerId()
+    {
+        return containerId;
+    }
 
-   public void setContainerId(Long containerId) {
-      this.containerId = containerId;
-   }
+    public void setContainerId(Long containerId)
+    {
+        this.containerId = containerId;
+    }
 
-   @Property(viewable = true, editable = false, order = 3)
-   public String getContainerType() {
-      return containerType;
-   }
+    @Property(viewable = true, editable = false, order = 3)
+    public String getContainerType()
+    {
+        return containerType;
+    }
 
-   public void setContainerType(String containerType) {
-      this.containerType = containerType;
-   }
+    public void setContainerType(String containerType)
+    {
+        this.containerType = containerType;
+    }
 
 }

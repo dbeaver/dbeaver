@@ -18,9 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -29,27 +26,31 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * Cache for DB2 UDT
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2UserDefinedTypeCache extends JDBCObjectCache<DB2Schema, DB2DataType> {
 
-   private static final String SQL = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR";
+    private static final String SQL = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR";
 
-   @Override
-   protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException {
-      JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
-      dbStat.setString(1, db2Schema.getName());
-      return dbStat;
-   }
+    @Override
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema) throws SQLException
+    {
+        JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        dbStat.setString(1, db2Schema.getName());
+        return dbStat;
+    }
 
-   @Override
-   protected DB2DataType fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet resultSet) throws SQLException,
-                                                                                                            DBException {
-      return new DB2DataType(db2Schema, resultSet);
-   }
+    @Override
+    protected DB2DataType fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, ResultSet resultSet) throws SQLException,
+        DBException
+    {
+        return new DB2DataType(db2Schema, resultSet);
+    }
 
 }

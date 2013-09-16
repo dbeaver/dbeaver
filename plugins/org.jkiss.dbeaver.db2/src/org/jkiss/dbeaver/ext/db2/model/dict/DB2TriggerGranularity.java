@@ -20,29 +20,30 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Trigger Granularity
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public enum DB2TriggerGranularity {
-   R("R (Row)"),
+    R("R (Row)"),
 
-   S("S (Statement)");
+    S("S (Statement)");
 
-   private String description;
+    private String description;
 
-   // -----------------
-   // Constructor
-   // -----------------
-   private DB2TriggerGranularity(String description) {
-      this.description = description;
-   }
+    // -----------------
+    // Constructor
+    // -----------------
+    private DB2TriggerGranularity(String description)
+    {
+        this.description = description;
+    }
 
-   // ----------------
-   // Standard Getters
-   // ----------------
-   public String getDescription() {
-      return description;
-   }
+    // ----------------
+    // Standard Getters
+    // ----------------
+    public String getDescription()
+    {
+        return description;
+    }
 
 }

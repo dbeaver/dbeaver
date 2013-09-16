@@ -64,8 +64,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
         //group.setLayout(new GridLayout(1, true));
         setImageDescriptor(logoImage);
 
-        ModifyListener textListener = new ModifyListener()
-        {
+        ModifyListener textListener = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)
             {
@@ -203,7 +202,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     @Override
     public IDialogPage[] getSubPages()
     {
-        return new IDialogPage[] {
+        return new IDialogPage[]{
             new DriverPropertiesDialogPage(this)
         };
     }

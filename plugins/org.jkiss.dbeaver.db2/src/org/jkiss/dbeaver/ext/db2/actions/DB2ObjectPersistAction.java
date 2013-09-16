@@ -26,19 +26,22 @@ import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
  */
 public class DB2ObjectPersistAction extends AbstractDatabasePersistAction {
 
-   private final DB2ObjectType objectType;
+    private final DB2ObjectType objectType;
 
-   public DB2ObjectPersistAction(DB2ObjectType objectType, String title, String script) {
-      super(title, script);
-      this.objectType = objectType;
-   }
+    public DB2ObjectPersistAction(DB2ObjectType objectType, String title, String script)
+    {
+        super(title, script);
+        this.objectType = objectType;
+    }
 
-   public DB2ObjectPersistAction(DB2ObjectType objectType, String script) {
-      super(script);
-      this.objectType = objectType;
-   }
+    public DB2ObjectPersistAction(DB2ObjectType objectType, String script)
+    {
+        super(script);
+        this.objectType = objectType;
+    }
 
-   public DB2ObjectType getObjectType() {
-      return objectType;
-   }
+    public DB2ObjectType getObjectType()
+    {
+        return objectType;
+    }
 }

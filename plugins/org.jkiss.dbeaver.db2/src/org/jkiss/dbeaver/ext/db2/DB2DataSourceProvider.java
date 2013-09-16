@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -30,53 +28,60 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+
 /**
  * DB2 DataSource provider
- * 
  */
 public class DB2DataSourceProvider extends JDBCDataSourceProvider {
 
-   private static Map<String, String> connectionsProps;
+    private static Map<String, String> connectionsProps;
 
-   // ------------
-   // Constructors
-   // ------------
+    // ------------
+    // Constructors
+    // ------------
 
-   public DB2DataSourceProvider() {
-   }
+    public DB2DataSourceProvider()
+    {
+    }
 
-   public static Map<String, String> getConnectionsProps() {
-      return connectionsProps;
-   }
+    public static Map<String, String> getConnectionsProps()
+    {
+        return connectionsProps;
+    }
 
-   @Override
-   protected String getConnectionPropertyDefaultValue(String name, String value) {
-      String ovrValue = connectionsProps.get(name);
-      return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
-   }
+    @Override
+    protected String getConnectionPropertyDefaultValue(String name, String value)
+    {
+        String ovrValue = connectionsProps.get(name);
+        return ovrValue != null ? ovrValue : super.getConnectionPropertyDefaultValue(name, value);
+    }
 
-   @Override
-   public long getFeatures() {
-      return FEATURE_SCHEMAS;
-   }
+    @Override
+    public long getFeatures()
+    {
+        return FEATURE_SCHEMAS;
+    }
 
-   @Override
-   public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo) {
-      StringBuilder url = new StringBuilder(128);
-      url.append("jdbc:db2://").append(connectionInfo.getHostName());
-      if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-         url.append(":").append(connectionInfo.getHostPort());
-      }
-      url.append("/");
-      if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-         url.append(connectionInfo.getDatabaseName());
-      }
-      return url.toString();
-   }
+    @Override
+    public String getConnectionURL(DBPDriver driver, DBPConnectionInfo connectionInfo)
+    {
+        StringBuilder url = new StringBuilder(128);
+        url.append("jdbc:db2://").append(connectionInfo.getHostName());
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            url.append(":").append(connectionInfo.getHostPort());
+        }
+        url.append("/");
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            url.append(connectionInfo.getDatabaseName());
+        }
+        return url.toString();
+    }
 
-   @Override
-   public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException {
-      return new DB2DataSource(monitor, container);
-   }
+    @Override
+    public DBPDataSource openDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
+    {
+        return new DB2DataSource(monitor, container);
+    }
 
 }

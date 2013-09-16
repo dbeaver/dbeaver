@@ -20,46 +20,45 @@ package org.jkiss.dbeaver.ext.db2;
 
 /**
  * DB2 constants
- * 
+ *
  * @author Denis Forveille
- * 
  */
 public class DB2Constants {
 
-   // Connection properties
-   public static final int      DEFAULT_PORT            = 50000;
+    // Connection properties
+    public static final int DEFAULT_PORT = 50000;
 
-   // Display Categories
-   public static final String   CAT_DATETIME            = "Date & Time";
-   public static final String   CAT_OWNER               = "Owner";
-   public static final String   CAT_STATS               = "Statistics";
-   public static final String   CAT_TABLESPACE          = "Tablespace";
-   public static final String   CAT_AUDIT               = "Audit";
-   public static final String   CAT_PERFORMANCE         = "Performance";
-   public static final String   CAT_COLLATION           = "Collation";
-   public static final String   CAT_BASEBJECT           = "Base Object";
-   public static final String   CAT_COMPILER            = "Compiler";
-   public static final String   CAT_CLIENT              = "Client";
+    // Display Categories
+    public static final String CAT_DATETIME = "Date & Time";
+    public static final String CAT_OWNER = "Owner";
+    public static final String CAT_STATS = "Statistics";
+    public static final String CAT_TABLESPACE = "Tablespace";
+    public static final String CAT_AUDIT = "Audit";
+    public static final String CAT_PERFORMANCE = "Performance";
+    public static final String CAT_COLLATION = "Collation";
+    public static final String CAT_BASEBJECT = "Base Object";
+    public static final String CAT_COMPILER = "Compiler";
+    public static final String CAT_CLIENT = "Client";
 
-   // ------------------
-   // TODO DF Sortout those remaining consts..
-   // --------------------------
-   public static final String   CMD_COMPILE             = "org.jkiss.dbeaver.ext.db2.code.compile"; //$NON-NLS-1$
-   //
-   public static final String   PROP_SOURCE_DEFINITION  = "sourceDefinition";
-   public static final String   PROP_SOURCE_DECLARATION = "sourceDeclaration";
+    // ------------------
+    // TODO DF Sortout those remaining consts..
+    // --------------------------
+    public static final String CMD_COMPILE = "org.jkiss.dbeaver.ext.db2.code.compile"; //$NON-NLS-1$
+    //
+    public static final String PROP_SOURCE_DEFINITION = "sourceDefinition";
+    public static final String PROP_SOURCE_DECLARATION = "sourceDeclaration";
 
-   public static final String[] ADVANCED_KEYWORDS       = {
-            "PACKAGE",
-            "FUNCTION",
-            "TYPE",
-            "TRIGGER",
-            "MATERIALIZED",
-            "IF",
-            "EACH",
-            "RETURN",
-            "WRAPPED"                                  };
+    public static final String[] ADVANCED_KEYWORDS = {
+        "PACKAGE",
+        "FUNCTION",
+        "TYPE",
+        "TRIGGER",
+        "MATERIALIZED",
+        "IF",
+        "EACH",
+        "RETURN",
+        "WRAPPED"};
 
-   public static final String   PREF_KEY_DDL_FORMAT     = "db2.ddl.format";
+    public static final String PREF_KEY_DDL_FORMAT = "db2.ddl.format";
 
 }
