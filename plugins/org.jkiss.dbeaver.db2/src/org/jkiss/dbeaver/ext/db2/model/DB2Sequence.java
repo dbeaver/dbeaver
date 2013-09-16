@@ -215,7 +215,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
       return owner;
    }
 
-   @Property(viewable = false, editable = true, category = DB2Constants.CAT_OWNER)
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
    public String getOwnerTypeDescription() {
       return ownerType.getDescription();
    }
