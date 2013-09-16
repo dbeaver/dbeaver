@@ -212,23 +212,15 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.order = order;
     }
 
-    // TODO DF: labelProvider seems useless and never called..
-    // @Property(viewable = true, editable = true, order = 11, labelProvider = DB2SequencePrecisionLabelProvider.class, listProvider
-    // = DB2SequencePrecisionListProvider.class)
     @Property(viewable = true, editable = true, order = 11, listProvider = DB2SequencePrecisionListProvider.class)
     public DB2SequencePrecision getPrecision()
     {
         return precision;
     }
 
-    // TODO DF: Help ! The setter is called with the value of toString(), not the enum...
-    // public void setPrecision(DB2SequencePrecision precision) {
-    // System.out.println("aaa=" + precision);
-    // this.precision = precision;
-    // }
-    public void setPrecision(String precisionDescription)
+    public void setPrecision(DB2SequencePrecision precision)
     {
-        this.precision = DB2SequencePrecision.getFromDescription(precisionDescription);
+        this.precision = precision;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
