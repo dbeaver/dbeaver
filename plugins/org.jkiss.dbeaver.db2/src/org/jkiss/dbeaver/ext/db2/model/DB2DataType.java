@@ -210,7 +210,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     @Property(viewable = true, editable = false, order = 4)
     public DBSDataKind getDataKind()
     {
-        return typeDesc.dataKind;
+        return typeDesc == null ? DBSDataKind.UNKNOWN : typeDesc.dataKind;
     }
 
     @Override
@@ -297,7 +297,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     @Property(viewable = false, editable = false)
     public Integer getDb2TypeId()
     {
-        return db2TypeId;
+        return this.typeDesc == null ? db2TypeId : this.typeDesc.sqlType;
     }
 
     // --------------
@@ -341,7 +341,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         PREDEFINED_TYPES.put("VARBINARY", new TypeDesc(DBSDataKind.BINARY, Types.VARBINARY));
         PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBSDataKind.STRING, Types.VARCHAR));
         PREDEFINED_TYPES.put("VARGRAPHIC", new TypeDesc(DBSDataKind.STRING, Types.VARCHAR));
-        PREDEFINED_TYPES.put("XML", new TypeDesc(DBSDataKind.UNKNOWN, Types.SQLXML));
+        PREDEFINED_TYPES.put("XML", new TypeDesc(DBSDataKind.LOB, Types.SQLXML));
     }
 
 }
