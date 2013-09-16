@@ -112,19 +112,23 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
    // -----------------
 
    @Override
-   @Property(viewable = true, order = 1)
+   // col name in index name
+   @Property(viewable = true, order = 1, id = "name")
    public DB2TableColumn getTableColumn() {
       return tableColumn;
    }
 
-   @Property(viewable = true, editable = false, order = 2)
-   public String getColOrderDescription() {
-      return colOrder.getDescription();
-   }
-
-   @Property(viewable = true, editable = false, order = 3)
+   // order in index schema name
+   @Property(viewable = true, editable = false, order = 2, id = "indSchema")
    public Integer getColSeq() {
       return colSeq;
+   }
+
+   // asc/decc/include in table name
+   @Property(viewable = true, editable = false, order = 3, id = "table")
+   //
+   public String getColOrderDescription() {
+      return colOrder.getDescription();
    }
 
    @Property(viewable = false, editable = false, category = DB2Constants.CAT_COLLATION)
