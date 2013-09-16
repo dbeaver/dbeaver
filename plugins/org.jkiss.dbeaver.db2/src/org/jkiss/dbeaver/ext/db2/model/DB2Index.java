@@ -56,6 +56,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
    private Boolean          reverseScans;
    private Integer          tablespaceId;
    private String           pageSplit;                              // TODO DF: create an enum
+   private Boolean          compression;
    private String           remarks;
 
    // Derived
@@ -85,6 +86,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
       this.minPctUsed = JDBCUtils.safeGetInteger(dbResult, "MINPCTUSED");
       this.reverseScans = JDBCUtils.safeGetBoolean(dbResult, "REVERSE_SCANS", DB2YesNo.Y.name());
       this.tablespaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
+      this.compression = JDBCUtils.safeGetBoolean(dbResult, "COMPRESSION", DB2YesNo.Y.name());
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
       this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
@@ -193,9 +195,14 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
       return reverseScans;
    }
 
-   @Property(viewable = true, order = 23, editable = false)
+   @Property(viewable = false, order = 23, editable = false)
    public String getPageSplit() {
       return pageSplit;
+   }
+
+   @Property(viewable = false, order = 24, editable = false)
+   public Boolean getCompression() {
+      return compression;
    }
 
    @Override
