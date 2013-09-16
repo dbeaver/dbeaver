@@ -59,7 +59,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
     private final DB2RoutineCache procedureCache = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
     private final DB2RoutineCache udfCache = new DB2RoutineCache(DBSProcedureType.FUNCTION);
-    private final DB2UserDefinedTypeCache udtCache = new DB2UserDefinedTypeCache();
+    private final DBSObjectCache<DB2Schema, DB2DataType> udtCache;
 
     // DB2Table's children
     private final DB2TableUniqueKeyCache constraintCache = new DB2TableUniqueKeyCache(tableCache);
@@ -89,6 +89,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             name);
         this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(
             DB2Package.class, "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR",
+            name);
+        this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(
+            DB2DataType.class, "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR",
             name);
     }
 
@@ -248,7 +251,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
     public DB2DataType getUDT(DBRProgressMonitor monitor, String name) throws DBException
     {
-        return udtCache.getObject(monitor, this, name, DB2DataType.class);
+        return udtCache.getObject(monitor, this, name);
     }
 
     @Association
@@ -369,7 +372,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return viewCache;
     }
 
-    public DB2UserDefinedTypeCache getUdtCache()
+    public DBSObjectCache<DB2Schema, DB2DataType> getUdtCache()
     {
         return udtCache;
     }
