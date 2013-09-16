@@ -19,14 +19,16 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
@@ -41,16 +43,33 @@ import org.jkiss.utils.CommonUtils;
  */
 public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
 
-   private static final Log     LOG = LogFactory.getLog(DB2Index.class);
+   private static final Log LOG = LogFactory.getLog(DB2Index.class);
 
-   private DB2UniqueRule        uniqueRule;
-   private Boolean              madeUnique;
-   private Integer              colCount;
-   private Integer              uniqueColCount;
-   private DB2IndexType         db2IndexType;
-   private String               remarks;
+   // Structure
+   private DB2UniqueRule    uniqueRule;
+   private Integer          colCount;
+   private Integer          uniqueColCount;
+   private DB2IndexType     db2IndexType;
+   private Integer          pctFree;
+   private Integer          indexId;
+   private Integer          minPctUsed;
+   private Boolean          reverseScans;
+   private Integer          tablespaceId;
+   private String           pageSplit;                              // TODO DF: create an enum
+   private String           remarks;
 
-   private List<DB2IndexColumn> columns;
+   // Derived
+   private Timestamp        createTime;
+   private Boolean          madeUnique;
+
+   // Stats
+   private Timestamp        statsTime;
+   private Long             fullKeycard;
+   private Long             firstKeycard;
+   private Long             first2Keycard;
+   private Long             first3Keycard;
+   private Long             first4Keycard;
+   private Integer          clusterRatio;
 
    // -----------------
    // Constructors
@@ -59,10 +78,25 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
       super(schema, table, JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME"), null, true);
 
       this.uniqueRule = CommonUtils.valueOf(DB2UniqueRule.class, JDBCUtils.safeGetString(dbResult, "UNIQUERULE"));
-      this.madeUnique = JDBCUtils.safeGetBoolean(dbResult, "MADE_UNIQUE");
       this.colCount = JDBCUtils.safeGetInteger(dbResult, "COLCOUNT");
       this.uniqueColCount = JDBCUtils.safeGetInteger(dbResult, "UNIQUE_COLCOUNT");
+      this.pctFree = JDBCUtils.safeGetInteger(dbResult, "PCTFREE");
+      this.indexId = JDBCUtils.safeGetInteger(dbResult, "IID");
+      this.minPctUsed = JDBCUtils.safeGetInteger(dbResult, "MINPCTUSED");
+      this.reverseScans = JDBCUtils.safeGetBoolean(dbResult, "REVERSE_SCANS", DB2YesNo.Y.name());
+      this.tablespaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
       this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+      this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
+      this.madeUnique = JDBCUtils.safeGetBoolean(dbResult, "MADE_UNIQUE");
+
+      this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
+      this.fullKeycard = JDBCUtils.safeGetLong(dbResult, "FULLKEYCARD");
+      this.firstKeycard = JDBCUtils.safeGetLong(dbResult, "FIRSTKEYCARD");
+      this.first2Keycard = JDBCUtils.safeGetLong(dbResult, "FIRST2KEYCARD");
+      this.first3Keycard = JDBCUtils.safeGetLong(dbResult, "FIRST3KEYCARD");
+      this.first4Keycard = JDBCUtils.safeGetLong(dbResult, "FIRST4KEYCARD");
+      this.clusterRatio = JDBCUtils.safeGetInteger(dbResult, "CLUSTERRATIO");
 
       // DF: Could have been done in constructor. More "readable" to do it here
       this.db2IndexType = CommonUtils.valueOf(DB2IndexType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "INDEXTYPE"));
@@ -72,11 +106,6 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
    @Override
    public boolean isUnique() {
       return (uniqueRule.isUnique());
-   }
-
-   @Override
-   public String getDescription() {
-      return remarks;
    }
 
    @Override
@@ -119,28 +148,100 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
       return getContainer();
    }
 
-   public DB2UniqueRule getUniqueRule() {
-      return uniqueRule;
-   }
-
-   @Property(viewable = true, editable = false)
+   @Property(viewable = true, editable = false, order = 5)
    public String getUniqueRuleDescription() {
       return uniqueRule.getDescription();
    }
 
-   @Property(viewable = false, editable = false)
+   @Property(viewable = false, editable = false, order = 10)
    public Boolean getMadeUnique() {
       return madeUnique;
    }
 
-   @Property(viewable = false, editable = false)
+   @Property(viewable = false, editable = false, order = 11)
    public Integer getColCount() {
       return colCount;
    }
 
-   @Property(viewable = true, editable = false)
+   @Property(viewable = false, editable = false, order = 12)
    public Integer getUniqueColCount() {
       return uniqueColCount;
+   }
+
+   @Property(viewable = false, editable = false, order = 70)
+   public Integer getIndexId() {
+      return indexId;
+   }
+
+   @Property(viewable = false, editable = false, order = 71)
+   public Integer getTablespaceId() {
+      return tablespaceId;
+   }
+
+   @Property(viewable = true, order = 20, editable = false)
+   public Integer getPctFree() {
+      return pctFree;
+   }
+
+   @Property(viewable = true, order = 21, editable = false)
+   public Integer getMinPctUsed() {
+      return minPctUsed;
+   }
+
+   @Property(viewable = true, order = 22, editable = false)
+   public Boolean getReverseScans() {
+      return reverseScans;
+   }
+
+   @Property(viewable = true, order = 23, editable = false)
+   public String getPageSplit() {
+      return pageSplit;
+   }
+
+   @Override
+   @Property(viewable = false, editable = false)
+   public String getDescription() {
+      return remarks;
+   }
+
+   @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
+   public Timestamp getCreateTime() {
+      return createTime;
+   }
+
+   @Property(viewable = false, editable = false, order = 30, category = DB2Constants.CAT_STATS)
+   public Timestamp getStatsTime() {
+      return statsTime;
+   }
+
+   @Property(viewable = false, editable = false, order = 31, category = DB2Constants.CAT_STATS)
+   public Long getFullKeycard() {
+      return fullKeycard;
+   }
+
+   @Property(viewable = false, editable = false, order = 32, category = DB2Constants.CAT_STATS)
+   public Long getFirstKeycard() {
+      return firstKeycard;
+   }
+
+   @Property(viewable = false, editable = false, order = 33, category = DB2Constants.CAT_STATS)
+   public Long getFirst2Keycard() {
+      return first2Keycard;
+   }
+
+   @Property(viewable = false, editable = false, order = 34, category = DB2Constants.CAT_STATS)
+   public Long getFirst3Keycard() {
+      return first3Keycard;
+   }
+
+   @Property(viewable = false, editable = false, order = 35, category = DB2Constants.CAT_STATS)
+   public Long getFirst4Keycard() {
+      return first4Keycard;
+   }
+
+   @Property(viewable = false, editable = false, order = 36, category = DB2Constants.CAT_STATS)
+   public Integer getClusterRatio() {
+      return clusterRatio;
    }
 
 }
