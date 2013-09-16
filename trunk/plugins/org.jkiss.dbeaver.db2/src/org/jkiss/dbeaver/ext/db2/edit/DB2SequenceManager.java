@@ -100,17 +100,17 @@ public class DB2SequenceManager extends JDBCObjectEditor<DB2Sequence, DB2Schema>
 
    @Override
    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command) {
-      List<IDatabasePersistAction> listeCommands = new ArrayList<IDatabasePersistAction>(2);
+      List<IDatabasePersistAction> listeActions = new ArrayList<IDatabasePersistAction>(2);
 
       String sql = buildStatement(command.getObject(), true);
-      listeCommands.add(new AbstractDatabasePersistAction("Alter Sequence", sql));
+      listeActions.add(new AbstractDatabasePersistAction("Alter Sequence", sql));
 
       String comment = buildComment(command.getObject());
       if (comment != null) {
-         listeCommands.add(new AbstractDatabasePersistAction("Comment on Sequence", comment));
+         listeActions.add(new AbstractDatabasePersistAction("Comment on Sequence", comment));
       }
 
-      return listeCommands.toArray(new IDatabasePersistAction[listeCommands.size()]);
+      return listeActions.toArray(new IDatabasePersistAction[listeActions.size()]);
    }
 
    @Override
