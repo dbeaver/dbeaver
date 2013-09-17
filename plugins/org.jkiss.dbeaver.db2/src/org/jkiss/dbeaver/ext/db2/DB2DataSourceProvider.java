@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
+import com.ibm.db2.jcc.DB2BaseDataSource;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
@@ -74,6 +75,20 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
         url.append("/");
         if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             url.append(connectionInfo.getDatabaseName());
+        }
+        Map<Object, Object> properties = connectionInfo.getProperties();
+        boolean traceEnabled = CommonUtils.getBoolean(properties.get(DB2Constants.PROP_TRACE_ENABLED), false);
+        if (traceEnabled) {
+            url.append(":traceDirectory=").append(CommonUtils.toString(
+                properties.get(DB2Constants.PROP_TRACE_FOLDER)));
+            url.append(";traceFile=").append(CommonUtils.escapeFileName(CommonUtils.toString(
+                properties.get(DB2Constants.PROP_TRACE_FILE))));
+            url.append(";traceFileAppend=").append(
+                CommonUtils.getBoolean(properties.get(DB2Constants.PROP_TRACE_APPEND), false));
+            url.append(";traceFileAppend=").append(
+                CommonUtils.toInt(
+                    properties.get(DB2Constants.PROP_TRACE_LEVEL), DB2BaseDataSource.TRACE_ALL));
+            url.append(";");
         }
         return url.toString();
     }

@@ -319,19 +319,24 @@ public class CommonUtils {
         return object != null && getBoolean(object.toString());
     }
 
-    public static int toInt(Object object)
+    public static int toInt(Object object, int def)
     {
         if (object == null) {
-            return 0;
+            return def;
         } else if (object instanceof Number) {
             return ((Number)object).intValue();
         } else {
             try {
                 return Integer.parseInt(toString(object));
             } catch (NumberFormatException e) {
-                return -1;
+                return def;
             }
         }
+    }
+
+    public static int toInt(Object object)
+    {
+        return toInt(object, 0);
     }
 
     public static boolean isInt(Object object)
