@@ -19,7 +19,10 @@
 package org.jkiss.dbeaver.ext.db2.views;
 
 import com.ibm.db2.jcc.DB2BaseDataSource;
+import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -45,6 +48,8 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     private Text folderText;
     private Button traceAppendCheck;
     private LevelConfig[] levels;
+    private ControlEnableState traceEnableState;
+    private Composite traceGroup;
 
     private static class LevelConfig {
         final int level;
@@ -96,9 +101,10 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
 
         enableTraceCheck = UIUtils.createCheckbox(cfgGroup, "Enable trace", false);
 
-        Composite traceGroup = new Composite(cfgGroup, SWT.NONE);
+        traceGroup = new Composite(cfgGroup, SWT.NONE);
         traceGroup.setLayout(new GridLayout(2, false));
         traceGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         folderText = UIUtils.createOutputFolderChooser(traceGroup, "Folder", null);
         fileNameText = UIUtils.createLabelText(traceGroup, "File name", "trace");
         traceAppendCheck = UIUtils.createLabelCheckbox(traceGroup, "Append", false);
@@ -111,6 +117,19 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
         for (LevelConfig level : levels) {
             level.checkbox = UIUtils.createCheckbox(levelsGroup, level.label, false);
         }
+
+        enableTraceCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                if (traceEnableState == null) {
+                    traceEnableState = ControlEnableState.disable(traceGroup);
+                } else {
+                    traceEnableState.restore();
+                    traceEnableState = null;
+                }
+            }
+        });
 
         setControl(cfgGroup);
     }
@@ -133,6 +152,9 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
             enableTraceCheck.setSelection(
                 CommonUtils.getBoolean(
                     connectionProperties.get(DB2Constants.PROP_TRACE_ENABLED), false));
+            if (!enableTraceCheck.getSelection()) {
+                traceEnableState = ControlEnableState.disable(traceGroup);
+            }
             if (connectionProperties.containsKey(DB2Constants.PROP_TRACE_FOLDER)) {
                 folderText.setText(
                     CommonUtils.toString(

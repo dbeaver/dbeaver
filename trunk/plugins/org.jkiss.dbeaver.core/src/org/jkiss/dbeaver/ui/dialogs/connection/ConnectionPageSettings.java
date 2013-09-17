@@ -64,6 +64,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private DataSourceDescriptor dataSource;
     private Map<DriverDescriptor, DBPConnectionInfo> infoMap = new HashMap<DriverDescriptor, DBPConnectionInfo>();
     private IDialogPage[] subPages;
+    private boolean activated;
 
     /**
      * Constructor for ConnectionPageSettings
@@ -96,16 +97,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     public void activatePage()
     {
         setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getName()));
-
-        if (this.connectionEditor != null) {
-            this.connectionEditor.loadSettings();
-        }
-        if (subPages != null) {
-            for (IDialogPage page : subPages) {
-                if (page instanceof IDataSourceConnectionEditor) {
-                    ((IDataSourceConnectionEditor) page).loadSettings();
+        if (!activated) {
+            if (this.connectionEditor != null) {
+                this.connectionEditor.loadSettings();
+            }
+            if (subPages != null) {
+                for (IDialogPage page : subPages) {
+                    if (page instanceof IDataSourceConnectionEditor) {
+                        ((IDataSourceConnectionEditor) page).loadSettings();
+                    }
                 }
             }
+            activated = true;
         }
     }
 
