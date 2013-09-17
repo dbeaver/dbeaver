@@ -203,7 +203,8 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     public IDialogPage[] getSubPages()
     {
         return new IDialogPage[]{
-            new DriverPropertiesDialogPage(this)
+            new DB2ConnectionTracePage(),
+            new DriverPropertiesDialogPage(this),
         };
     }
 
