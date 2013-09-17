@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
+import org.jkiss.dbeaver.model.DBConstants;
+
 /**
  * DB2 constants
  *
@@ -60,5 +62,11 @@ public class DB2Constants {
         "WRAPPED"};
 
     public static final String PREF_KEY_DDL_FORMAT = "db2.ddl.format";
+
+    public static final String PROP_TRACE_ENABLED = DBConstants.INTERNAL_PROP_PREFIX + "trace.enabled";
+    public static final String PROP_TRACE_FOLDER = DBConstants.INTERNAL_PROP_PREFIX + "trace.folder";
+    public static final String PROP_TRACE_FILE = DBConstants.INTERNAL_PROP_PREFIX + "trace.file";
+    public static final String PROP_TRACE_APPEND = DBConstants.INTERNAL_PROP_PREFIX + "trace.append";
+    public static final String PROP_TRACE_LEVEL = DBConstants.INTERNAL_PROP_PREFIX + "trace.level";
 
 }
