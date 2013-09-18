@@ -18,11 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
+import java.sql.Clob;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
-import org.jkiss.dbeaver.ext.db2.info.DB2TopSQL;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
@@ -34,14 +38,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.sql.Clob;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * DB2 Utils
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Utils {
@@ -53,7 +52,8 @@ public class DB2Utils {
     // DB2LOOK
     private static final String CALL_DB2LK_GEN = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
     private static final String CALL_DB2LK_CLEAN = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
-    private static final String SEL_DB2LK = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO_V WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
+    private static final String SEL_DB2LK =
+        "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO_V WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
     private static final String DB2LK_COMMAND = "-e -td %s -t %s";
 
     // EXPLAIN
@@ -66,7 +66,8 @@ public class DB2Utils {
     private static final String SEL_DB_PARAMS = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
     private static final String SEL_DBM_PARAMS = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
 
-    private static final String SEL_TOP_DYN_SQL = "SELECT * FROM SYSIBMADM.TOP_DYNAMIC_SQL ORDER BY NUM_EXECUTIONS DESC FETCH FIRST 20 ROWS ONLY WITH UR";
+    private static final String SEL_TOP_DYN_SQL =
+        "SELECT * FROM SYSIBMADM.TOP_DYNAMIC_SQL ORDER BY NUM_EXECUTIONS DESC FETCH FIRST 20 ROWS ONLY WITH UR";
 
     // APPLICATIONS
     private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
@@ -74,11 +75,8 @@ public class DB2Utils {
 
     private static final String LINE_SEP = "\n";
 
-    public static Boolean callAdminDropSchema(DBRProgressMonitor monitor,
-                                              DB2DataSource dataSource,
-                                              String schemaName,
-                                              String errorSchemaName,
-                                              String errorTableName) throws SQLException
+    public static Boolean callAdminDropSchema(DBRProgressMonitor monitor, DB2DataSource dataSource, String schemaName,
+        String errorSchemaName, String errorTableName) throws SQLException
     {
         LOG.debug("Call admin_drop_schema for " + schemaName);
         JDBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "ADMIN_DROP_SCHEMA");
@@ -100,10 +98,8 @@ public class DB2Utils {
 
     // Generate DDL
     // TODO DF: Tables in SYSTOOLS tables must exist first
-    public static String generateDDLforTable(DBRProgressMonitor monitor,
-                                             String statementDelimiter,
-                                             DB2DataSource dataSource,
-                                             DB2Table db2Table) throws DBException
+    public static String generateDDLforTable(DBRProgressMonitor monitor, String statementDelimiter, DB2DataSource dataSource,
+        DB2Table db2Table) throws DBException
     {
         LOG.debug("Generate DDL for " + db2Table.getFullQualifiedName());
 
@@ -180,7 +176,8 @@ public class DB2Utils {
         }
     }
 
-    public static String checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName) throws DBCException
+    public static String checkExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
+        throws DBCException
     {
         LOG.debug("Check EXPLAIN tables in " + explainTableSchemaName);
 
@@ -203,7 +200,8 @@ public class DB2Utils {
             } catch (SQLException e) {
                 System.out.println(e.getErrorCode() + " " + e.getSQLState() + " " + e.getMessage());
                 if (e.getErrorCode() == CALL_INST_OBJ_BAD_RC) {
-                    LOG.debug("No valid EXPLAIN tables found in schema " + explainTableSchemaName + ". Check within " + SYSTOOLS + ".");
+                    LOG.debug("No valid EXPLAIN tables found in schema " + explainTableSchemaName + ". Check within " + SYSTOOLS
+                        + ".");
                     try {
                         stmtSP.setString(4, SYSTOOLS); // Schema
                         stmtSP.execute();
@@ -230,7 +228,8 @@ public class DB2Utils {
         }
     }
 
-    public static void createExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName) throws DBCException
+    public static void createExplainTables(DBRProgressMonitor monitor, DB2DataSource dataSource, String explainTableSchemaName)
+        throws DBCException
     {
         LOG.debug("Create EXPLAIN tables in " + explainTableSchemaName);
 
@@ -263,7 +262,7 @@ public class DB2Utils {
 
     /**
      * "Force" (ie "Kill") an application
-     *
+     * 
      * @param monitor
      * @param dataSource
      * @param applicationId
@@ -287,7 +286,8 @@ public class DB2Utils {
         }
     }
 
-    public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException
+    public static List<DB2ServerApplication> readApplications(DBRProgressMonitor monitor, JDBCExecutionContext context)
+        throws SQLException
     {
         LOG.debug("readApplications");
 
@@ -348,27 +348,6 @@ public class DB2Utils {
             dbStat.close();
         }
         return listDBMParameters;
-    }
-
-    public static List<DB2TopSQL> readTopDynSQL(DBRProgressMonitor monitor, JDBCExecutionContext context) throws SQLException
-    {
-        LOG.debug("readDBMCfg");
-
-        List<DB2TopSQL> listTopDynSQL = new ArrayList<DB2TopSQL>();
-        JDBCPreparedStatement dbStat = context.prepareStatement(SEL_TOP_DYN_SQL);
-        try {
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
-                while (dbResult.next()) {
-                    listTopDynSQL.add(new DB2TopSQL((DB2DataSource) context.getDataSource(), dbResult));
-                }
-            } finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
-        }
-        return listTopDynSQL;
     }
 
     private DB2Utils()
