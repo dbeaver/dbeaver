@@ -18,6 +18,11 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
@@ -28,7 +33,6 @@ import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
-import org.jkiss.dbeaver.ext.db2.info.DB2TopSQL;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -54,41 +58,47 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 /**
  * DB2 DataSource
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
 
     private static final Log LOG = LogFactory.getLog(DB2DataSource.class);
 
+    private static final String GET_CURRENT_SCHEMA = "VALUES(CURRENT SCHEMA)";
+    private static final String SET_CURRENT_SCHEMA = "SET CURRENT SCHEMA = %s";
+
+    private static final String C_SCHEMA = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
+    private static final String C_DT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR";
+    private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
+    private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
+    private static final String C_RL = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
+    private static final String C_US = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'U' ORDER BY AUTHID WITH UR";
+    private static final String C_GR = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'G' ORDER BY AUTHID WITH UR";
+
     private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
-    private static final String PLAN_TABLE_MSG = "PLAN_TABLE not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new PLAN_TABLE?";
+    private static final String PLAN_TABLE_MSG =
+        "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
 
     private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Schema>(
-        DB2Schema.class, "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR");
+        DB2Schema.class, C_SCHEMA);
     private final DBSObjectCache<DB2DataSource, DB2DataType> dataTypeCache = new JDBCObjectSimpleCache<DB2DataSource, DB2DataType>(
-        DB2DataType.class, "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR");
-    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(
-        DB2Bufferpool.class, "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR");
-    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(
-        DB2Tablespace.class, "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR");
+        DB2DataType.class, C_DT);
+    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(DB2Bufferpool.class, C_BP);
+    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(DB2Tablespace.class, C_TS);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
-        DB2Role.class, "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR");
+        DB2Role.class, C_RL);
     private final DBSObjectCache<DB2DataSource, DB2User> userCache = new JDBCObjectSimpleCache<DB2DataSource, DB2User>(
-        DB2User.class, "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'U' ORDER BY AUTHID WITH UR");
+        DB2User.class, C_US);
     private final DBSObjectCache<DB2DataSource, DB2Group> groupCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Group>(
-        DB2Group.class, "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'G' ORDER BY AUTHID WITH UR");
+        DB2Group.class, C_GR);
 
     private List<DB2Parameter> listDBParameters;
     private List<DB2Parameter> listDBMParameters;
-    private List<DB2TopSQL> listTopSQL;
 
     private String activeSchemaName;
     private String planTableSchemaName;
@@ -113,7 +123,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    // TODO DF strange...What is the role of this non static mathod?
     public DB2DataSource getDataSource()
     {
         return this;
@@ -123,7 +132,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     protected DBPDataSourceInfo makeInfo(JDBCDatabaseMetaData metaData)
     {
         final JDBCDataSourceInfo info = new JDBCDataSourceInfo(metaData);
-        // TODO DF: Need to be reviewed
+        // TODO DF: Needs to be reviewed
         for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
             info.addSQLKeyword(kw);
         }
@@ -145,14 +154,13 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             final JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.META, "Load data source meta info");
             try {
                 // Get active schema
-                this.activeSchemaName = JDBCUtils.queryString(context, "SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1");
+                this.activeSchemaName = JDBCUtils.queryString(context, GET_CURRENT_SCHEMA);
                 if (this.activeSchemaName != null) {
                     this.activeSchemaName = this.activeSchemaName.trim();
                 }
 
                 listDBMParameters = DB2Utils.readDBMCfg(monitor, context);
                 listDBParameters = DB2Utils.readDBCfg(monitor, context);
-                listTopSQL = DB2Utils.readTopDynSQL(monitor, context);
 
             } catch (SQLException e) {
                 LOG.warn(e);
@@ -179,7 +187,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         this.listDBMParameters = null;
         this.listDBParameters = null;
-        this.listTopSQL = null;
 
         this.initialize(monitor);
 
@@ -271,7 +278,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         JDBCExecutionContext context = openContext(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
         try {
-            JDBCUtils.executeSQL(context, "SET CURRENT SCHEMA = " + activeSchemaName);
+            JDBCUtils.executeSQL(context, String.format(SET_CURRENT_SCHEMA, activeSchemaName));
         } catch (SQLException e) {
             throw new DBException(e);
         } finally {
@@ -302,8 +309,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     {
         LOG.debug("schemaLookup");
 
-        // Quick bypass: If it's the same name (99% of the time), return the
-        // parentSchema
+        // Quick bypass: If it's the same name (99% of the time), return the parentSchema
         if (parentSchema.getName().equals(objectSchemaName)) {
             return parentSchema;
         }
@@ -449,11 +455,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException
     {
         return listDBMParameters;
-    }
-
-    public List<DB2TopSQL> getTopSQLs(DBRProgressMonitor monitor) throws DBException
-    {
-        return listTopSQL;
     }
 
     // -------------------------
