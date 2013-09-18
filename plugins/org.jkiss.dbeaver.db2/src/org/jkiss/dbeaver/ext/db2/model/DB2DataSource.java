@@ -74,7 +74,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private static final String C_DT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR";
     private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
     private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
-    private static final String C_RL = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
+    private static final String C_RL = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
     private static final String C_US = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'U' ORDER BY AUTHID WITH UR";
     private static final String C_GR = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'G' ORDER BY AUTHID WITH UR";
 
