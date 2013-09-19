@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: ERD Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.erd;singleton:=true
-Bundle-Version: 1.0.15
+Bundle-Version: 1.0.16
 Bundle-Activator: org.jkiss.dbeaver.ext.erd.Activator
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
@@ -13,6 +13,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.core
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Bundle-Vendor: Serge Rieder
+Bundle-Vendor: JKISS
 Bundle-ClassPath: .
 Bundle-Localization: plugin
