@@ -20,31 +20,12 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Yes/No Constants
- *
+ * 
  * @author Denis Forveille
  */
 public enum DB2YesNo {
-    Y("Y (Yes)"), // DF: =Yes. really?
+    Y,
 
-    N("N (No)");
+    N;
 
-    private String description;
-
-    // -----------
-    // Constructor
-    // -----------
-
-    private DB2YesNo(String description)
-    {
-        this.description = description;
-    }
-
-    // ----------------
-    // Standard Getters
-    // ----------------
-
-    public String getDescription()
-    {
-        return description;
-    }
 }

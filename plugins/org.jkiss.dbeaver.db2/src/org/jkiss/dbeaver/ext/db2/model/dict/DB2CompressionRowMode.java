@@ -18,33 +18,44 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Row Compression Mode
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2CompressionRowMode {
+public enum DB2CompressionRowMode implements DBPNamedObject {
     A("A (Adaptive)"),
 
     S("S (Static)");
 
-    private String description;
+    private String name;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2CompressionRowMode(String description)
+    private DB2CompressionRowMode(String name)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 }

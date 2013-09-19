@@ -18,14 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
  * DB2 Type of Constraints
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2ConstraintType {
+public enum DB2ConstraintType implements DBPNamedObject {
     F("F (Foreign key)", DBSEntityConstraintType.FOREIGN_KEY),
 
     I("I (Functional dependency)", DBSEntityConstraintType.ASSOCIATION),
@@ -36,16 +37,25 @@ public enum DB2ConstraintType {
 
     U("U (Unique)", DBSEntityConstraintType.UNIQUE_KEY);
 
-    private String description;
+    private String name;
     private DBSEntityConstraintType type;
 
     // -----------
     // Constructor
     // -----------
-    private DB2ConstraintType(String description, DBSEntityConstraintType type)
+    private DB2ConstraintType(String name, DBSEntityConstraintType type)
     {
-        this.description = description;
+        this.name = name;
         this.type = type;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // -----------
@@ -59,14 +69,15 @@ public enum DB2ConstraintType {
     // ----------------
     // Standard Getters
     // ----------------
-
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public DBSEntityConstraintType getType()
     {
         return type;
     }
+
 }
