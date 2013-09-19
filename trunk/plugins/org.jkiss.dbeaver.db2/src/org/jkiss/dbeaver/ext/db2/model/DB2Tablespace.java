@@ -37,7 +37,7 @@ import java.util.Collection;
 
 /**
  * DB2 Tablespace
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Tablespace extends DB2GlobalObject implements DBPRefreshableObject {
@@ -136,15 +136,15 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPRefreshableObje
     }
 
     @Property(viewable = true, editable = false, order = 5)
-    public String getTbspaceTypeDescription()
+    public DB2TablespaceType getTbspaceType()
     {
-        return tbspaceType.getDescription();
+        return tbspaceType;
     }
 
     @Property(viewable = true, editable = false, order = 6)
-    public String getDataTypeDescription()
+    public DB2TablespaceDataType getDataType()
     {
-        return dataType.getDescription();
+        return dataType;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
@@ -153,31 +153,16 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPRefreshableObje
         return owner;
     }
 
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
-    }
-
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public String getOwnerTypeDescription()
-    {
-        return ownerType.getDescription();
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
     public Timestamp getCreateTime()
     {
         return createTime;
-    }
-
-    public DB2TablespaceType getTbspaceType()
-    {
-        return tbspaceType;
-    }
-
-    public DB2TablespaceDataType getDataType()
-    {
-        return dataType;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_PERFORMANCE)

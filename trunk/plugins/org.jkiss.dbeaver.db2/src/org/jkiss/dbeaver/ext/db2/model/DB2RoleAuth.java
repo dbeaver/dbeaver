@@ -29,7 +29,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Role Authorisations
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
@@ -64,13 +64,8 @@ public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
         return super.getName();
     }
 
-    public DB2GrantorGranteeType getGranteeType()
-    {
-        return granteeType;
-    }
-
     @Property(viewable = true, editable = false)
-    public DB2GrantorGranteeType getGranteeTypeDescription()
+    public DB2GrantorGranteeType getGranteeType()
     {
         return granteeType;
     }
@@ -81,15 +76,10 @@ public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
         return grantor;
     }
 
+    @Property(viewable = true, editable = false)
     public DB2GrantorGranteeType getGrantorType()
     {
         return grantorType;
-    }
-
-    @Property(viewable = true, editable = false)
-    public String getGrantorTypeDescription()
-    {
-        return grantorType.getDescription();
     }
 
     @Property(viewable = true, editable = false)

@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * Type of data that can be stored in a DB2 Tablespace
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2TablespaceDataType {
+public enum DB2TablespaceDataType implements DBPNamedObject {
     A("A (All types, regular)"),
 
     L("L (All types, large)"),
@@ -32,21 +34,31 @@ public enum DB2TablespaceDataType {
 
     U("U (Created temporary tables or declared temporary tables only)");
 
-    private String description;
+    private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2TablespaceDataType(String description)
+    private DB2TablespaceDataType(String name)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 }

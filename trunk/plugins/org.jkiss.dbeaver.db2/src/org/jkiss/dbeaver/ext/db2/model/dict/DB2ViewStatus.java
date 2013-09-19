@@ -18,40 +18,54 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * DB2 View Status
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2ViewStatus {
+public enum DB2ViewStatus implements DBPNamedObject {
     Y("Y (Valid)", DBSObjectState.NORMAL),
 
     N("N (Invalid)", DBSObjectState.INVALID),
 
     X("X (Inoperative)", new DBSObjectState("Inoperative", DBIcon.OVER_ERROR));
 
-    private String description;
+    private String name;
     private DBSObjectState state;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2ViewStatus(String description, DBSObjectState state)
+    private DB2ViewStatus(String name, DBSObjectState state)
     {
-        this.description = description;
+        this.name = name;
         this.state = state;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
 
-    public String getDescription()
+    // ----------------
+    // Standard Getters
+    // ----------------
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public DBSObjectState getState()

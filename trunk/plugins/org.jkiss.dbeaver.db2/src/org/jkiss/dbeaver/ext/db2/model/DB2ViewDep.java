@@ -31,7 +31,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 View Dependency
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2ViewDep extends DB2Object<DB2View> {
@@ -76,9 +76,9 @@ public class DB2ViewDep extends DB2Object<DB2View> {
     }
 
     @Property(viewable = true, editable = false, order = 2)
-    public String getTableDepTypeDescription()
+    public DB2TableDepType getTableDepType()
     {
-        return tableDepType.getDescription();
+        return tableDepType;
     }
 
     @Property(viewable = true, editable = false, order = 3)

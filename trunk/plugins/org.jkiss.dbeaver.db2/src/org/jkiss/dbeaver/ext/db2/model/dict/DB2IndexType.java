@@ -18,14 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
  * DB2 Type of Indexes
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2IndexType {
+public enum DB2IndexType implements DBPNamedObject {
     BLOK("BLOK"),
 
     CLUS("CLUS (CLustering)"),
@@ -46,24 +47,34 @@ public enum DB2IndexType {
 
     XVIP("XVIP ( Index over XML column (physical))");
 
-    private String description;
+    private String name;
     private DBSIndexType dbsIndexType;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2IndexType(String description)
+    private DB2IndexType(String name)
     {
-        this.description = description;
-        this.dbsIndexType = new DBSIndexType(this.name(), description);
+        this.name = name;
+        this.dbsIndexType = new DBSIndexType(this.name(), name);
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public DBSIndexType getDBSIndexType()
