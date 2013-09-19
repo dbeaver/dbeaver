@@ -18,12 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
@@ -40,6 +34,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * DB2 data types
  * 
@@ -51,7 +51,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>(32); // See init below
 
-    private DBSObject hackParent; // see below
+    private DBSObject parentNode; // see below
 
     private DB2Schema db2Schema;
 
@@ -134,17 +134,16 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         }
         this.typeDesc = tempTypeDesc;
 
-        // DF : Looks like a hack
         // if the getParentObject() return the "real" parent ie DB2Schema or DB2DataSource,
-        // when once, as a first action, opens the table/column tab and the click on the datatype link,
-        // nothing is displayed and the following message appera in the logs
+        // when someone, as a first action, opens the table/column tab and then clicks on the datatype link,
+        // nothing is displayed and the following message appears in the logs :
         // !MESSAGE Can't find tree node for object <database name> (org.jkiss.dbeaver.ext.db2.model.DB2DataSource)
-        // With this hack (copied from OracleDataType), it works!
+        // With this code (copied from OracleDataType), it works.
         if (parent instanceof DB2Schema) {
-            hackParent = parent;
+            parentNode = parent;
         } else {
             if (parent instanceof DB2DataSource) {
-                hackParent = ((DB2DataSource) parent).getContainer();
+                parentNode = ((DB2DataSource) parent).getContainer();
             }
         }
     }
@@ -152,7 +151,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     @Override
     public DBSObject getParentObject()
     {
-        return hackParent;
+        return parentNode;
     }
 
     @Override

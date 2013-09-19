@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.edit.DB2EnumListProvideHelper.DB2SequencePrecisionListProvider;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2SequencePrecision;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2SequenceType;
@@ -36,7 +35,7 @@ import java.sql.Timestamp;
 
 /**
  * DB2 sequence
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject {
@@ -135,7 +134,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.nextCacheFirstValue = nextCacheFirstValue;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 4)
+    @Property(viewable = false, editable = true, updatable = true, order = 4)
     public Long getMinValue()
     {
         return minValue;
@@ -146,7 +145,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.minValue = minValue;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 5)
+    @Property(viewable = false, editable = true, updatable = true, order = 5)
     public Long getMaxValue()
     {
         return maxValue;
@@ -158,17 +157,6 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 6)
-    public Long getIncrement()
-    {
-        return increment;
-    }
-
-    public void setIncrement(Long increment)
-    {
-        this.increment = increment;
-    }
-
-    @Property(viewable = true, editable = true, updatable = true, order = 7)
     public Long getStart()
     {
         return start;
@@ -177,6 +165,17 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
     public void setStart(Long start)
     {
         this.start = start;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 7)
+    public Long getIncrement()
+    {
+        return increment;
+    }
+
+    public void setIncrement(Long increment)
+    {
+        this.increment = increment;
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 8)
@@ -212,7 +211,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.order = order;
     }
 
-    @Property(viewable = true, editable = true, order = 11, listProvider = DB2SequencePrecisionListProvider.class)
+    @Property(viewable = true, editable = true, order = 11)
     public DB2SequencePrecision getPrecision()
     {
         return precision;
