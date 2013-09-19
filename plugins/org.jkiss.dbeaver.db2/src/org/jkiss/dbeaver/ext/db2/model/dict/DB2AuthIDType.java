@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Kind of Authid
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2AuthIDType {
+public enum DB2AuthIDType implements DBPNamedObject {
 
     U("U (User)"),
 
@@ -31,21 +33,31 @@ public enum DB2AuthIDType {
 
     R("R (Role)");
 
-    private String description;
+    private String name;
 
     // -----------------
     // Constructor
     // -----------------
     private DB2AuthIDType(String description)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 }

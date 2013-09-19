@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Compression Mode
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2CompressionMode {
+public enum DB2CompressionMode implements DBPNamedObject {
     B("B (Value + Row compression)"),
 
     N("N (None)"),
@@ -32,23 +34,32 @@ public enum DB2CompressionMode {
 
     V("V (Value Compression)");
 
-    private String description;
+    private String name;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2CompressionMode(String description)
+    private DB2CompressionMode(String name)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 }

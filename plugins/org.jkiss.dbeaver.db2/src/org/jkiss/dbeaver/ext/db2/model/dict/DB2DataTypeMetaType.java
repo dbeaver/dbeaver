@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Meta Type for DataTypes
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2DataTypeMetaType {
+public enum DB2DataTypeMetaType implements DBPNamedObject {
     A("A (User-defined array type )"),
 
     C("C (User-defined cursor type )"),
@@ -38,21 +40,31 @@ public enum DB2DataTypeMetaType {
 
     T("T (User-defined distinct type)");
 
-    private String description;
+    private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2DataTypeMetaType(String description)
+    private DB2DataTypeMetaType(String name)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 }
