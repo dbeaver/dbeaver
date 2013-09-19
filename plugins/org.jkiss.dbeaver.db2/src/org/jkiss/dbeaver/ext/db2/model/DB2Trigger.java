@@ -22,7 +22,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerDepCache;
-import org.jkiss.dbeaver.ext.db2.model.dict.*;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerEvent;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerGranularity;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerTime;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerValid;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -41,7 +46,7 @@ import java.util.Collection;
 
 /**
  * DB2 Table Trigger
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2SourceObject, DBPRefreshableObject {
@@ -203,15 +208,15 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     }
 
     @Property(viewable = true, order = 5)
-    public String getEventDescription()
+    public DB2TriggerEvent getEvent()
     {
-        return event.getDescription();
+        return event;
     }
 
     @Property(viewable = true, order = 6)
-    public String getTimeDescription()
+    public DB2TriggerTime getTime()
     {
-        return time.getDescription();
+        return time;
     }
 
     @Property(viewable = true, order = 7)
@@ -245,9 +250,9 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     }
 
     @Property(viewable = true)
-    public String getGranularityDescription()
+    public DB2TriggerGranularity getGranularity()
     {
-        return granularity.getDescription();
+        return granularity;
     }
 
     @Property(viewable = false)

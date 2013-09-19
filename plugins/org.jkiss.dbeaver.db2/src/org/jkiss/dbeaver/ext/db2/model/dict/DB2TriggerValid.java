@@ -18,40 +18,51 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 /**
  * DB2 Trigger Valid attribute
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2TriggerValid {
+public enum DB2TriggerValid implements DBPNamedObject {
     N("N (Invalid)", DBSObjectState.INVALID),
 
     X("X (Inoperative)", DBSObjectState.INVALID), // TODO DF: No exact correspondance
 
     Y("Y (Valid)", DBSObjectState.ACTIVE); // TODO DF: No exact correspondance
 
-    private String description;
+    private String name;
     private DBSObjectState state;
 
     // -----------------
     // Constructor
     // -----------------
 
-    private DB2TriggerValid(String description, DBSObjectState state)
+    private DB2TriggerValid(String name, DBSObjectState state)
     {
-        this.description = description;
+        this.name = name;
         this.state = state;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
 
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public DBSObjectState getState()

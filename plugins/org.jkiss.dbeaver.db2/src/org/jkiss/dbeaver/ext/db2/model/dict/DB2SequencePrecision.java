@@ -34,16 +34,16 @@ public enum DB2SequencePrecision implements DBPNamedObject {
 
     P19("19 (Bigint)", 19, "BIGINT");
 
-    private String description;
+    private String name;
     private Integer dataType;
     private String sqlKeyword;
 
     // -----------
     // Constructor
     // -----------
-    private DB2SequencePrecision(String description, Integer dataType, String sqlKeyword)
+    private DB2SequencePrecision(String name, Integer dataType, String sqlKeyword)
     {
-        this.description = description;
+        this.name = name;
         this.dataType = dataType;
         this.sqlKeyword = sqlKeyword;
     }
@@ -55,7 +55,7 @@ public enum DB2SequencePrecision implements DBPNamedObject {
     @Override
     public String toString()
     {
-        return description;
+        return name;
     }
 
     // ------------------------
@@ -88,7 +88,7 @@ public enum DB2SequencePrecision implements DBPNamedObject {
     @Override
     public String getName()
     {
-        return description;
+        return name;
     }
 
 }

@@ -30,24 +30,23 @@ public enum DB2OwnerType implements DBPNamedObject {
 
     U("U (User)");
 
-    private String description;
+    private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2OwnerType(String description)
+    private DB2OwnerType(String name)
     {
-        this.description = description;
+        this.name = name;
     }
 
     // -----------------------
     // Display @Property Value
     // -----------------------
-
     @Override
     public String toString()
     {
-        return description;
+        return name;
     }
 
     // ----------------
@@ -56,12 +55,12 @@ public enum DB2OwnerType implements DBPNamedObject {
     // DF TODO To be Removed when all Object will use getName()
     public String getDescription()
     {
-        return description;
+        return name;
     }
 
     @Override
     public String getName()
     {
-        return description;
+        return name;
     }
 }

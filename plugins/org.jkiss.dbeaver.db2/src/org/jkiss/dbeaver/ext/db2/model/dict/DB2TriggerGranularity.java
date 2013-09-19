@@ -18,32 +18,44 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Trigger Granularity
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2TriggerGranularity {
+public enum DB2TriggerGranularity implements DBPNamedObject {
     R("R (Row)"),
 
     S("S (Statement)");
 
-    private String description;
+    private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2TriggerGranularity(String description)
+    private DB2TriggerGranularity(String name)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
 }
