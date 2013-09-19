@@ -183,12 +183,6 @@ public class RuntimeUtils {
     public static Object getPreferenceValue(IPreferenceStore store, String propName, Class<?> valueType)
     {
         try {
-            if (!store.contains(propName)) {
-                if (store instanceof AbstractPreferenceStore && ((AbstractPreferenceStore)store).getParentStore() != null) {
-                    return getPreferenceValue(((AbstractPreferenceStore)store).getParentStore(), propName, valueType);
-                }
-                return null;
-            }
             if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
                 final String str = store.getString(propName);
                 return CommonUtils.isEmpty(str) ? null : str;

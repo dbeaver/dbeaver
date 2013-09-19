@@ -37,6 +37,7 @@ public class DBConstants {
     public static final String PROP_ID_NOT_NULL = "notNull"; //NON-NLS-1
 
     public static final String INTERNAL_PROP_PREFIX = "@dbeaver-"; //NON-NLS-1
+    public static final String DEFAULT_DRIVER_PROP_PREFIX = INTERNAL_PROP_PREFIX + "default-"; //NON-NLS-1
 
     public static final String[] DEFAULT_DATATYPE_NAMES = {
         "varchar", //NON-NLS-1

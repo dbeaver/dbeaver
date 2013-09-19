@@ -19,9 +19,12 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.utils.AbstractPreferenceStore;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * DataSourcePreferenceStore
@@ -34,6 +37,16 @@ public class DataSourcePreferenceStore extends AbstractPreferenceStore
     {
         super(DBeaverCore.getGlobalPreferenceStore());
         this.dataSourceDescriptor = dataSourceDescriptor;
+        // Init default properties from driver overrides
+        Map<Object,Object> defaultConnectionProperties = dataSourceDescriptor.getDriver().getDefaultConnectionProperties();
+        for (Map.Entry<Object, Object> prop : defaultConnectionProperties.entrySet()) {
+            String propName = CommonUtils.toString(prop.getKey());
+            if (propName.startsWith(DBConstants.DEFAULT_DRIVER_PROP_PREFIX)) {
+                getDefaultProperties().put(
+                    propName.substring(DBConstants.DEFAULT_DRIVER_PROP_PREFIX.length()),
+                    CommonUtils.toString(prop.getValue()));
+            }
+        }
     }
 
     public DataSourceDescriptor getDataSourceDescriptor()
