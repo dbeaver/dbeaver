@@ -31,7 +31,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Package Dependency
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2PackageDep extends DB2Object<DB2Package> {
@@ -82,9 +82,9 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
     }
 
     @Property(viewable = true, editable = false, order = 2)
-    public String getPackageDepTypeDescription()
+    public DB2PackageDepType getPackageDepType()
     {
-        return packageDepType.getDescription();
+        return packageDepType;
     }
 
     @Property(viewable = true, editable = false, order = 3)

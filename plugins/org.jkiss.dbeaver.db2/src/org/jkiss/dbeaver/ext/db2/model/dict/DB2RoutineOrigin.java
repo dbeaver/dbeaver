@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Routine Origin
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2RoutineOrigin {
+public enum DB2RoutineOrigin implements DBPNamedObject {
     B("B (Built-in)"),
 
     E("E (User-defined, external)"),
@@ -42,24 +44,34 @@ public enum DB2RoutineOrigin {
 
     U("U (User-defined, based on a source)");
 
-    private String description;
+    private String name;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2RoutineOrigin(String description)
+    private DB2RoutineOrigin(String name)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
 
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
 }

@@ -30,7 +30,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Index Column
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2IndexColumn extends AbstractTableIndexColumn {
@@ -133,12 +133,10 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         return colSeq;
     }
 
-    // asc/decc/include in table name
     @Property(viewable = true, editable = false, order = 3, id = "table")
-    //
-    public String getColOrderDescription()
+    public DB2IndexColOrder getColOrder()
     {
-        return colOrder.getDescription();
+        return colOrder;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_COLLATION)

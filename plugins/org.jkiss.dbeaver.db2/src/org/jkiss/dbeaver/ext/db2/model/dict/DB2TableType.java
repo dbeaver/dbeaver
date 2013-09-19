@@ -19,13 +19,14 @@
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * DB2 Table Type
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2TableType {
+public enum DB2TableType implements DBPNamedObject {
 
     A("A (Alias)", DB2ObjectType.ALIAS),
 
@@ -47,24 +48,34 @@ public enum DB2TableType {
 
     W("W (Typed view)", DB2ObjectType.VIEW);
 
-    private String description;
+    private String name;
     private DB2ObjectType db2ObjectType;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2TableType(String description, DB2ObjectType db2ObjectType)
+    private DB2TableType(String name, DB2ObjectType db2ObjectType)
     {
-        this.description = description;
+        this.name = name;
         this.db2ObjectType = db2ObjectType;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public DB2ObjectType getDb2ObjectType()

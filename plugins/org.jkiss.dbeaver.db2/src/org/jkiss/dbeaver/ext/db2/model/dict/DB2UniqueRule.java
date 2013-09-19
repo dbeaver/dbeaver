@@ -18,37 +18,49 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Unique Rule
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2UniqueRule {
+public enum DB2UniqueRule implements DBPNamedObject {
     D("D (Permits duplicates)", false),
 
     U("U (Unique)", true),
 
     P("P (Implements primary key)", true);
 
-    private String description;
+    private String name;
     private Boolean unique;
 
     // -----------------
     // Constructor
     // -----------------
 
-    private DB2UniqueRule(String description, Boolean unique)
+    private DB2UniqueRule(String name, Boolean unique)
     {
-        this.description = description;
+        this.name = name;
         this.unique = unique;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public Boolean isUnique()

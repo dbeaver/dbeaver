@@ -18,39 +18,50 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.ui.DBIcon;
 
 /**
  * DB2 Table Status
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2TableStatus {
+public enum DB2TableStatus implements DBPNamedObject {
     C("C (Set integrity pending)", new DBSObjectState("Set Integrity Pending", DBIcon.OVER_ERROR)),
 
     N("N (Normal)", DBSObjectState.NORMAL),
 
     X("X (Inoperative)", new DBSObjectState("Inoperative", DBIcon.OVER_ERROR));
 
-    private String description;
+    private String name;
     private DBSObjectState state;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2TableStatus(String description, DBSObjectState state)
+    private DB2TableStatus(String name, DBSObjectState state)
     {
-        this.description = description;
+        this.name = name;
         this.state = state;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public DBSObjectState getState()

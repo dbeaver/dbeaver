@@ -45,7 +45,6 @@ public enum DB2SequenceType implements DBPNamedObject {
     // -----------------------
     // Display @Property Value
     // -----------------------
-
     @Override
     public String toString()
     {

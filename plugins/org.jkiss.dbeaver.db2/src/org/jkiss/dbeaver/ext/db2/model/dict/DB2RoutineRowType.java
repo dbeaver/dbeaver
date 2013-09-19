@@ -18,14 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 
 /**
  * DB2 Routine Rowtype
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2RoutineRowType {
+public enum DB2RoutineRowType implements DBPNamedObject {
     B("B (Both input and output parameter )", DBSProcedureParameterType.INOUT),
 
     C("C (Result after casting)", DBSProcedureParameterType.RETURN),
@@ -36,26 +37,35 @@ public enum DB2RoutineRowType {
 
     R("F (Result before casting)", DBSProcedureParameterType.RETURN);
 
-    private String description;
+    private String name;
     private DBSProcedureParameterType parameterType;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2RoutineRowType(String description, DBSProcedureParameterType parameterType)
+    private DB2RoutineRowType(String name, DBSProcedureParameterType parameterType)
     {
-        this.description = description;
+        this.name = name;
         this.parameterType = parameterType;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public DBSProcedureParameterType getParameterType()
