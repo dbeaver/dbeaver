@@ -85,7 +85,7 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
                 properties.get(DB2Constants.PROP_TRACE_FILE))));
             url.append(";traceFileAppend=").append(
                 CommonUtils.getBoolean(properties.get(DB2Constants.PROP_TRACE_APPEND), false));
-            url.append(";traceFileAppend=").append(
+            url.append(";traceLevel=").append(
                 CommonUtils.toInt(
                     properties.get(DB2Constants.PROP_TRACE_LEVEL), DB2BaseDataSource.TRACE_ALL));
             url.append(";");

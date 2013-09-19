@@ -25,6 +25,7 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.util.SafeRunnable;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -126,51 +127,41 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public boolean getBoolean(String name)
     {
-        return getBoolean(properties, true, false, name);
+        return toBoolean(getString(name));
     }
 
     @Override
     public boolean getDefaultBoolean(String name)
     {
-        return getBoolean(defaultProperties, true, true, name);
+        return toBoolean(getDefaultString(name));
     }
 
-    private boolean getBoolean(Map<String, String> p, boolean useParent, boolean useParentDefault, String name)
+    private boolean toBoolean(String value)
     {
-        String value = p != null ? p.get(name) : null;
-        if (value == null) {
-            return parentStore != null && useParent?
-                (useParentDefault ? parentStore.getDefaultBoolean(name) : parentStore.getBoolean(name)) :
-                BOOLEAN_DEFAULT_DEFAULT;
-        }
-        return value.equals(IPreferenceStore.TRUE);
+        return value != null && value.equals(IPreferenceStore.TRUE);
     }
 
     @Override
     public double getDouble(String name)
     {
-        return getDouble(properties, true, false, name);
+        return toDouble(getString(name));
     }
 
     @Override
     public double getDefaultDouble(String name)
     {
-        return getDouble(defaultProperties, true, true, name);
+        return toDouble(getDefaultString(name));
     }
 
-    private double getDouble(Map<String, String> p, boolean useParent, boolean useParentDefault, String name)
+    private double toDouble(String value)
     {
-        String value = p != null ? p.get(name) : null;
-        if (value == null) {
-            return parentStore != null && useParent ?
-                (useParentDefault ? parentStore.getDefaultDouble(name) : parentStore.getDouble(name)) :
-                DOUBLE_DEFAULT_DEFAULT;
-        }
         double ival = DOUBLE_DEFAULT_DEFAULT;
-        try {
-            ival = Double.parseDouble(value);
-        } catch (NumberFormatException e) {
-            // do nothing
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Double.parseDouble(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
         }
         return ival;
     }
@@ -178,28 +169,24 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public float getFloat(String name)
     {
-        return getFloat(properties, true, false, name);
+        return toFloat(getString(name));
     }
 
     @Override
     public float getDefaultFloat(String name)
     {
-        return getFloat(defaultProperties, true, true, name);
+        return toFloat(getDefaultString(name));
     }
 
-    private float getFloat(Map<String, String> p, boolean useParent, boolean useParentDefault, String name)
+    private float toFloat(String value)
     {
-        String value = p != null ? p.get(name) : null;
-        if (value == null) {
-            return parentStore != null && useParent ?
-                (useParentDefault ? parentStore.getDefaultFloat(name) : parentStore.getFloat(name)) :
-                FLOAT_DEFAULT_DEFAULT;
-        }
         float ival = FLOAT_DEFAULT_DEFAULT;
-        try {
-            ival = Float.parseFloat(value);
-        } catch (NumberFormatException e) {
-            // do nothing
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Float.parseFloat(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
         }
         return ival;
     }
@@ -207,28 +194,24 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public int getInt(String name)
     {
-        return getInt(properties, true, false, name);
+        return toInt(getString(name));
     }
 
     @Override
     public int getDefaultInt(String name)
     {
-        return getInt(defaultProperties, true, true, name);
+        return toInt(getDefaultString(name));
     }
 
-    private int getInt(Map<String, String> p, boolean useParent, boolean useParentDefault, String name)
+    private int toInt(String value)
     {
-        String value = p != null ? p.get(name) : null;
-        if (value == null) {
-            return parentStore != null && useParent ?
-                (useParentDefault ? parentStore.getDefaultInt(name) : parentStore.getInt(name)) :
-                INT_DEFAULT_DEFAULT;
-        }
-        int ival = 0;
-        try {
-            ival = Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            // do nothing
+        int ival = INT_DEFAULT_DEFAULT;
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
         }
         return ival;
     }
@@ -236,28 +219,24 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public long getLong(String name)
     {
-        return getLong(properties, true, false, name);
+        return toLong(getString(name));
     }
 
     @Override
     public long getDefaultLong(String name)
     {
-        return getLong(defaultProperties, true, true, name);
+        return toLong(getDefaultString(name));
     }
 
-    private long getLong(Map<String, String> p, boolean useParent, boolean useParentDefault, String name)
+    private long toLong(String value)
     {
-        String value = p != null ? p.get(name) : null;
-        if (value == null) {
-            return parentStore != null && useParent ?
-                (useParentDefault ? parentStore.getDefaultLong(name) : parentStore.getLong(name)) :
-                LONG_DEFAULT_DEFAULT;
-        }
         long ival = LONG_DEFAULT_DEFAULT;
-        try {
-            ival = Long.parseLong(value);
-        } catch (NumberFormatException e) {
-            // do nothing
+        if (!CommonUtils.isEmpty(value)) {
+            try {
+                ival = Long.parseLong(value);
+            } catch (NumberFormatException e) {
+                // do nothing
+            }
         }
         return ival;
     }
@@ -265,22 +244,28 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public String getString(String name)
     {
-        return getString(properties, true, false, name);
+        String value = properties.get(name);
+        if (value == null) {
+            if (parentStore.isDefault(name)) {
+                value = defaultProperties.get(name);
+            }
+            if (value == null) {
+                value = parentStore.getString(name);
+            }
+        }
+        return value;
     }
 
     @Override
     public String getDefaultString(String name)
     {
-        return getString(defaultProperties, true, true, name);
-    }
-
-    private String getString(Map<String, String> p, boolean useParent, boolean useParentDefault, String name)
-    {
-        String value = p != null ? p.get(name) : null;
+        String value = defaultProperties.get(name);
         if (value == null) {
-            return parentStore != null && useParent ?
-                (useParentDefault ? parentStore.getDefaultString(name) : parentStore.getString(name)) :
-                STRING_DEFAULT_DEFAULT;
+            if (parentStore.isDefault(name)) {
+                return parentStore.getDefaultString(name);
+            } else {
+                return "";
+            }
         }
         return value;
     }
@@ -288,8 +273,7 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public boolean isDefault(String name)
     {
-        return (!properties.containsKey(name) && defaultProperties
-            .containsKey(name));
+        return (!properties.containsKey(name) && (defaultProperties.containsKey(name) || parentStore.isDefault(name)));
     }
 
     public boolean isSet(String name)
@@ -311,9 +295,9 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public void putValue(String name, String value)
     {
-        String oldValue = getString(properties, false, false, name);
+        String oldValue = getString(name);
         if (oldValue == null || !oldValue.equals(value)) {
-            setValue(properties, name, value);
+            properties.put(name, String.valueOf(value));
             dirty = true;
         }
     }
@@ -327,37 +311,37 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public void setDefault(String name, double value)
     {
-        setValue(defaultProperties, name, value);
+        defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
     public void setDefault(String name, float value)
     {
-        setValue(defaultProperties, name, value);
+        defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
     public void setDefault(String name, int value)
     {
-        setValue(defaultProperties, name, value);
+        defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
     public void setDefault(String name, long value)
     {
-        setValue(defaultProperties, name, value);
+        defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
     public void setDefault(String name, String value)
     {
-        setValue(defaultProperties, name, value);
+        defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
     public void setDefault(String name, boolean value)
     {
-        setValue(defaultProperties, name, value);
+        defaultProperties.put(name, String.valueOf(value));
     }
 
     @Override
@@ -376,9 +360,9 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public void setValue(String name, double value)
     {
-        double oldValue = getDouble(properties, false, false, name);
+        double oldValue = getDouble(name);
         if (oldValue != value || !isSet(name)) {
-            setValue(properties, name, value);
+            properties.put(name, String.valueOf(value));
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
         }
@@ -387,9 +371,9 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public void setValue(String name, float value)
     {
-        float oldValue = getFloat(properties, false, false, name);
+        float oldValue = getFloat(name);
         if (oldValue != value || !isSet(name)) {
-            setValue(properties, name, value);
+            properties.put(name, String.valueOf(value));
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
         }
@@ -398,9 +382,9 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public void setValue(String name, int value)
     {
-        int oldValue = getInt(properties, false, false, name);
+        int oldValue = getInt(name);
         if (oldValue != value || !isSet(name)) {
-            setValue(properties, name, value);
+            properties.put(name, String.valueOf(value));
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
         }
@@ -409,9 +393,9 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public void setValue(String name, long value)
     {
-        long oldValue = getLong(properties, false, false, name);
+        long oldValue = getLong(name);
         if (oldValue != value || !isSet(name)) {
-            setValue(properties, name, value);
+            properties.put(name, String.valueOf(value));
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
         }
@@ -420,9 +404,9 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public void setValue(String name, String value)
     {
-        String oldValue = getString(properties, false, false, name);
+        String oldValue = getString(name);
         if (oldValue == null || !oldValue.equals(value) || !isSet(name)) {
-            setValue(properties, name, value);
+            properties.put(name, value);
             dirty = true;
             firePropertyChangeEvent(name, oldValue, value);
         }
@@ -431,43 +415,13 @@ public abstract class AbstractPreferenceStore extends EventManager implements IP
     @Override
     public void setValue(String name, boolean value)
     {
-        boolean oldValue = getBoolean(properties, false, false, name);
+        boolean oldValue = getBoolean(name);
         if (oldValue != value || !isSet(name)) {
-            setValue(properties, name, value);
+            properties.put(name, String.valueOf(value));
             dirty = true;
             firePropertyChangeEvent(name, oldValue ? Boolean.TRUE
                 : Boolean.FALSE, value ? Boolean.TRUE : Boolean.FALSE);
         }
-    }
-
-    private void setValue(Map<String, String> p, String name, double value)
-    {
-        p.put(name, Double.toString(value));
-    }
-
-    private void setValue(Map<String, String> p, String name, float value)
-    {
-        p.put(name, Float.toString(value));
-    }
-
-    private void setValue(Map<String, String> p, String name, int value)
-    {
-        p.put(name, Integer.toString(value));
-    }
-
-    private void setValue(Map<String, String> p, String name, long value)
-    {
-        p.put(name, Long.toString(value));
-    }
-
-    private void setValue(Map<String, String> p, String name, String value)
-    {
-        p.put(name, value);
-    }
-
-    private void setValue(Map<String, String> p, String name, boolean value)
-    {
-        p.put(name, value ? IPreferenceStore.TRUE : IPreferenceStore.FALSE);
     }
 
     @Override
