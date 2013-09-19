@@ -18,33 +18,45 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Trigger Time
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2TriggerTime {
+public enum DB2TriggerTime implements DBPNamedObject {
     A("A (After)"),
 
     B("B (Before)"),
 
     I("I (Instead)");
 
-    private String description;
+    private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2TriggerTime(String description)
+    private DB2TriggerTime(String name)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 }

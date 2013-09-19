@@ -19,13 +19,14 @@
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
  * DB2 Type of Trigger Dependency
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2TriggerDepType {
+public enum DB2TriggerDepType implements DBPNamedObject {
     A("A (Table alias)", DB2ObjectType.ALIAS),
 
     B("B (Trigger)", DB2ObjectType.TRIGGER),
@@ -70,16 +71,16 @@ public enum DB2TriggerDepType {
 
     v("v ( Global variable)");
 
-    private String description;
+    private String name;
     private DB2ObjectType db2ObjectType;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2TriggerDepType(String description, DB2ObjectType db2ObjectType)
+    private DB2TriggerDepType(String name, DB2ObjectType db2ObjectType)
     {
-        this.description = description;
+        this.name = name;
         this.db2ObjectType = db2ObjectType;
     }
 
@@ -88,18 +89,28 @@ public enum DB2TriggerDepType {
         this(description, null);
     }
 
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
+    }
+
     // ----------------
     // Standard Getters
     // ----------------
 
-    public String getDescription()
-    {
-        return description;
-    }
-
     public DB2ObjectType getDb2ObjectType()
     {
         return db2ObjectType;
+    }
+
+    @Override
+    public String getName()
+    {
+        return name;
     }
 
 }
