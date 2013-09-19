@@ -229,9 +229,9 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public String getOwnerTypeDescription()
+    public DB2OwnerType getOwnerType()
     {
-        return ownerType.getDescription();
+        return ownerType;
     }
 
     @Property(viewable = false, editable = false)
@@ -240,15 +240,10 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         return seqId;
     }
 
+    @Property(viewable = false, editable = false)
     public DB2SequenceType getSeqType()
     {
         return seqType;
-    }
-
-    @Property(viewable = false, editable = false)
-    public String getSeqTypeDescription()
-    {
-        return seqType.getDescription();
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_BASEBJECT)
@@ -287,15 +282,10 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         return alterTime;
     }
 
+    @Property(viewable = false, editable = false, order = 23)
     public DB2OwnerType getOrigin()
     {
         return origin;
-    }
-
-    @Property(viewable = false, editable = false, order = 23)
-    public String getOriginDescription()
-    {
-        return origin.getDescription();
     }
 
     @Override
