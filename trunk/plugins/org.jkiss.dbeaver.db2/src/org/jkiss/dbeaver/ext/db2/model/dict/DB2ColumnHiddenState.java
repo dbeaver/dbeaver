@@ -18,26 +18,28 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Column Hidden Status
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2ColumnHiddenState {
+public enum DB2ColumnHiddenState implements DBPNamedObject {
     I("I (Implicitely hidden)", true),
 
     S("S (System managed hidden)", false);
 
-    private String description;
+    private String name;
     private Boolean hidden;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2ColumnHiddenState(String description, Boolean hidden)
+    private DB2ColumnHiddenState(String name, Boolean hidden)
     {
-        this.description = description;
+        this.name = name;
         this.hidden = hidden;
     }
 
@@ -56,13 +58,22 @@ public enum DB2ColumnHiddenState {
         return DB2ColumnHiddenState.valueOf(hiddenChar).isHidden();
     }
 
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
+    }
+
     // ----------------
     // Standard Getters
     // ----------------
-
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public Boolean isHidden()
