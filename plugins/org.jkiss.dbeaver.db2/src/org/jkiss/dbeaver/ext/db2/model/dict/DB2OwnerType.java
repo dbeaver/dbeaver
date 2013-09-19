@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Owner Type Constants
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2OwnerType {
+public enum DB2OwnerType implements DBPNamedObject {
     S("S (System)"),
 
     U("U (User)");
@@ -38,10 +40,27 @@ public enum DB2OwnerType {
         this.description = description;
     }
 
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+
+    @Override
+    public String toString()
+    {
+        return description;
+    }
+
     // ----------------
     // Standard Getters
     // ----------------
+    // DF TODO To be Removed when all Object will use getName()
     public String getDescription()
+    {
+        return description;
+    }
+
+    @Override
+    public String getName()
     {
         return description;
     }

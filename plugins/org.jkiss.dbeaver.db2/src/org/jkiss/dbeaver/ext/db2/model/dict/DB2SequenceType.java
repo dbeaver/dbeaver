@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Sequence Type
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2SequenceType {
+public enum DB2SequenceType implements DBPNamedObject {
     A("A (Alias)"),
 
     I("I (Identity Sequence)"),
@@ -40,10 +42,21 @@ public enum DB2SequenceType {
         this.description = description;
     }
 
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+
+    @Override
+    public String toString()
+    {
+        return description;
+    }
+
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
         return description;
     }

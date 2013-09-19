@@ -48,6 +48,16 @@ public enum DB2SequencePrecision implements DBPNamedObject {
         this.sqlKeyword = sqlKeyword;
     }
 
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+
+    @Override
+    public String toString()
+    {
+        return description;
+    }
+
     // ------------------------
     // Helpers
     // ------------------------
