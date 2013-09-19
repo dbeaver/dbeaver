@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Tester Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.test;singleton:=true
-Bundle-Version: 1.0.6
+Bundle-Version: 1.0.7
 Bundle-Activator: org.jkiss.dbeaver.ext.test.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -10,4 +10,4 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Bundle-Vendor: Serge Rieder
+Bundle-Vendor: JKISS
