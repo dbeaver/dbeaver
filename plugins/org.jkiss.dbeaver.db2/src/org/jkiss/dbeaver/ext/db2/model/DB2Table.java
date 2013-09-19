@@ -47,7 +47,7 @@ import java.util.Collection;
 
 /**
  * DB2 Table
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2StatefulObject {
@@ -262,13 +262,19 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         return super.getContainer();
     }
 
-    @Property(viewable = true, editable = false, order = 3)
+    @Property(viewable = true, editable = false, order = 3, category = DB2Constants.CAT_STATS)
+    public Long getCard()
+    {
+        return card;
+    }
+
+    @Property(viewable = true, editable = false, order = 4)
     public DB2TableStatus getStatus()
     {
         return status;
     }
 
-    @Property(viewable = true, editable = false, order = 4)
+    @Property(viewable = true, editable = false, order = 5)
     public String getTypeDescription()
     {
         return type.getDescription();
@@ -317,12 +323,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
-    public Long getCard()
-    {
-        return card;
-    }
-
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_STATS)
     public Long getnPages()
     {
         return nPages;
@@ -343,7 +343,8 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     // --------------
     // Static Helpers
     // --------------
-    public static DB2Table findTable(DBRProgressMonitor monitor, DB2Schema schema, String ownerName, String tableName) throws DBException
+    public static DB2Table findTable(DBRProgressMonitor monitor, DB2Schema schema, String ownerName, String tableName)
+        throws DBException
     {
 
         if (schema == null) {
