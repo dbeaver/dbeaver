@@ -18,12 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Type of Table Check Constraint
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2TableCheckConstraintType {
+public enum DB2TableCheckConstraintType implements DBPNamedObject {
     F("F (Check constraint)"),
 
     C("C (Functional dependency)"),
@@ -32,21 +34,31 @@ public enum DB2TableCheckConstraintType {
 
     S("S (GENERATED ALWAYS column)");
 
-    private String description;
+    private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2TableCheckConstraintType(String description)
+    private DB2TableCheckConstraintType(String name)
     {
-        this.description = description;
+        this.name = name;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 }

@@ -52,12 +52,6 @@ public enum DB2OwnerType implements DBPNamedObject {
     // ----------------
     // Standard Getters
     // ----------------
-    // DF TODO To be Removed when all Object will use getName()
-    public String getDescription()
-    {
-        return name;
-    }
-
     @Override
     public String getName()
     {

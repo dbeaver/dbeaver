@@ -275,9 +275,9 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     }
 
     @Property(viewable = true, editable = false, order = 5)
-    public String getTypeDescription()
+    public DB2TableType getType()
     {
-        return type.getDescription();
+        return type;
     }
 
     @Property(viewable = true, editable = false, category = DB2Constants.CAT_TABLESPACE)

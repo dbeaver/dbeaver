@@ -38,7 +38,7 @@ import java.util.Collection;
 
 /**
  * DB2 Index
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
@@ -55,7 +55,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
     private Integer minPctUsed;
     private Boolean reverseScans;
     private Integer tablespaceId;
-    private String pageSplit;                              // TODO DF: create an enum
+    private String pageSplit; // TODO DF: create an enum
     private Boolean compression;
     private String remarks;
 
@@ -158,9 +158,9 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
     }
 
     @Property(viewable = true, editable = false, order = 5)
-    public String getUniqueRuleDescription()
+    public DB2UniqueRule getUniqueRule()
     {
-        return uniqueRule.getDescription();
+        return uniqueRule;
     }
 
     @Property(viewable = false, editable = false, order = 10)

@@ -18,36 +18,48 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 /**
  * DB2 Index Column Order
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2IndexColOrder {
+public enum DB2IndexColOrder implements DBPNamedObject {
     A("A (Ascending)", true),
 
     D("D (Descending)", false),
 
     I("I (Include)", true);
 
-    private String description;
+    private String name;
     private Boolean ascending;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2IndexColOrder(String description, Boolean ascending)
+    private DB2IndexColOrder(String name, Boolean ascending)
     {
-        this.description = description;
+        this.name = name;
         this.ascending = ascending;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public Boolean isAscending()

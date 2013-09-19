@@ -43,7 +43,7 @@ import java.util.List;
 
 /**
  * DB2 Table Check Constraint
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> implements DB2SourceObject {
@@ -177,9 +177,9 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     }
 
     @Property(viewable = true, editable = false, order = 3)
-    public String getType()
+    public DB2TableCheckConstraintType getType()
     {
-        return type.getDescription();
+        return type;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)

@@ -40,12 +40,10 @@ import java.util.Collections;
 
 /**
  * Super class for DB2 Tables and Views
- *
+ * 
  * @author Denis Forveille
  */
-public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> implements
-    DBPNamedObject2,
-    DBPRefreshableObject,
+public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> implements DBPNamedObject2, DBPRefreshableObject,
     DB2StatefulObject {
 
     private static final Log log = LogFactory.getLog(DB2TableBase.class);
@@ -144,11 +142,6 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public String getOwnerTypeDescription()
-    {
-        return ownerType.getDescription();
-    }
-
     public DB2OwnerType getOwnerType()
     {
         return ownerType;

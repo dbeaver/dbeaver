@@ -44,7 +44,7 @@ import java.util.Collection;
 
 /**
  * DB2 Routine Base Object (Procedures, Function)
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2SourceObject, DBPRefreshableObject {
@@ -231,9 +231,9 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public String getOwnerTypeDescription()
+    public DB2OwnerType getOwnerType()
     {
-        return ownerType.getDescription();
+        return ownerType;
     }
 
     @Property(viewable = false, editable = false)
@@ -243,9 +243,9 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
     }
 
     @Property(viewable = false, editable = false)
-    public String getOriginDesciption()
+    public DB2RoutineOrigin getOrigin()
     {
-        return origin.getDescription();
+        return origin;
     }
 
     @Override

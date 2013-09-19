@@ -22,7 +22,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.cache.*;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2AliasCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2IndexCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCheckConstraintCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableForeignKeyCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableReferenceCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableUniqueKeyCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -42,7 +51,7 @@ import java.util.Collection;
 
 /**
  * DB2Schema
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject {
@@ -84,15 +93,15 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         super(dataSource, true);
         this.name = name;
 
-        this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(
-            DB2Sequence.class, "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR",
-            name);
-        this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(
-            DB2Package.class, "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR",
-            name);
-        this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(
-            DB2DataType.class, "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR",
-            name);
+        this.sequenceCache =
+            new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class,
+                "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR", name);
+        this.packageCache =
+            new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class,
+                "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR", name);
+        this.udtCache =
+            new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class,
+                "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR", name);
     }
 
     public DB2Schema(DB2DataSource dataSource, ResultSet dbResult)
@@ -316,15 +325,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return owner;
     }
 
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
-    }
-
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public String getOwnerTypeDescription()
-    {
-        return ownerType.getDescription();
     }
 
     @Property(viewable = true, editable = false, category = DB2Constants.CAT_DATETIME)

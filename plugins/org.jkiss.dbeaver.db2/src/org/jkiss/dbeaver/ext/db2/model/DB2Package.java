@@ -37,7 +37,7 @@ import java.util.Collection;
 
 /**
  * DB2 Packages
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject {
@@ -68,12 +68,11 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
-        packageDepCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(
-            DB2PackageDep.class, "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR",
-            schema.getName(),
-            getName());
+        packageDepCache =
+            new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class,
+                "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR",
+                schema.getName(), getName());
     }
-
 
     // -----------------
     // Association
@@ -108,9 +107,9 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
-    public String getOwnerTypeDescription()
+    public DB2OwnerType getOwnerType()
     {
-        return ownerType.getDescription();
+        return ownerType;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)

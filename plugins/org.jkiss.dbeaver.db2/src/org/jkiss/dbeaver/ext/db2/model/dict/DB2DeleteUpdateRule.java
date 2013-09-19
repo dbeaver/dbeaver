@@ -18,14 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 
 /**
  * DB2 Foreign Key Rule
- *
+ * 
  * @author Denis Forveille
  */
-public enum DB2DeleteUpdateRule {
+public enum DB2DeleteUpdateRule implements DBPNamedObject {
     A("A (No Action)", DBSForeignKeyModifyRule.NO_ACTION),
 
     C("C (Cascade)", DBSForeignKeyModifyRule.CASCADE),
@@ -34,25 +35,35 @@ public enum DB2DeleteUpdateRule {
 
     R("R (Restrict)", DBSForeignKeyModifyRule.RESTRICT);
 
-    private String description;
+    private String name;
     private DBSForeignKeyModifyRule rule;
 
     // ------------
     // Constructors
     // ------------
-    private DB2DeleteUpdateRule(String description, DBSForeignKeyModifyRule rule)
+    private DB2DeleteUpdateRule(String name, DBSForeignKeyModifyRule rule)
     {
-        this.description = description;
+        this.name = name;
         this.rule = rule;
+    }
+
+    // -----------------------
+    // Display @Property Value
+    // -----------------------
+    @Override
+    public String toString()
+    {
+        return name;
     }
 
     // ----------------
     // Standard Getters
     // ----------------
 
-    public String getDescription()
+    @Override
+    public String getName()
     {
-        return description;
+        return name;
     }
 
     public DBSForeignKeyModifyRule getRule()

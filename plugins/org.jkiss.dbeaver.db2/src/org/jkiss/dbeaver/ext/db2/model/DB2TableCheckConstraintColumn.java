@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * DB2 Table Constraint Column
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TableCheckConstraintColumn extends AbstractTableConstraintColumn {
@@ -38,9 +38,8 @@ public class DB2TableCheckConstraintColumn extends AbstractTableConstraintColumn
     // Constructors
     // -----------------
 
-    public DB2TableCheckConstraintColumn(AbstractTableConstraint<DB2Table> constraint,
-                                         DB2TableColumn tableColumn,
-                                         DB2TableCheckConstraintColUsage usage)
+    public DB2TableCheckConstraintColumn(AbstractTableConstraint<DB2Table> constraint, DB2TableColumn tableColumn,
+        DB2TableCheckConstraintColUsage usage)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -85,9 +84,9 @@ public class DB2TableCheckConstraintColumn extends AbstractTableConstraintColumn
     }
 
     @Property(viewable = true, order = 2)
-    public String getUsage()
+    public DB2TableCheckConstraintColUsage getUsage()
     {
-        return usage.getDescription();
+        return usage;
     }
 
     @Override
