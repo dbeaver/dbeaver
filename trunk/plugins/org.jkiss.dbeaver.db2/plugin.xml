@@ -234,12 +234,10 @@
                     webURL="http://www-01.ibm.com/support/docview.wss?uid=swg27016878"
                     description="DB2 JCC driver">
 
-                    <!--<replace provider="generic" driver="db2"/>-->
-                    
-                    <!--<property name="fullyMaterializeLobData" value="true"/>-->
-                    <!--<property name="fullyMaterializeInputStreams" value="true"/>-->
                     <property name="progressiveStreaming" value="2"/>
                     <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
+                    
+                    <custom-property name="dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.SSSSSS"/>
                 </driver>
             </drivers>
 
@@ -294,28 +292,6 @@
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SequenceManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
 -->        
     </extension>
-
-<!--
-    <extension point="org.jkiss.dbeaver.dataTypeProvider">
-        <provider
-            class="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
-            description="DB2 data types provider"
-            id="org.jkiss.dbeaver.ext.db2.data.DB2ValueHandlerProvider"
-            label="DB2 data types provider">
-
-            <datasource id="db2"/>
-
-            <type name="XMLTYPE"/>
-            <type name="SYS.XMLTYPE"/>
-            <type name="TIMESTAMP"/>
-            <type name="TIMESTAMP WITH TZ"/>
-            <type name="TIMESTAMP WITH LOCAL TZ"/>
-            <type name="TIMESTAMP WITH TIME ZONE"/>
-            <type name="TIMESTAMP WITH LOCAL TIME ZONE"/>
-
-        </provider>
-    </extension>
--->    
 
     <extension point="org.eclipse.ui.editors">
         <editor
