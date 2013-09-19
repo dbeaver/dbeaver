@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 /**
  * DB2 "Precision" of the Sequence
  * <p/>
- * DF: Added a "P" in front of value because Enum don' accept number only values
- *
+ * DF: Added a "P" in front of "value" because Enum does not accept "number only" as value
+ * 
  * @author Denis Forveille
  */
 public enum DB2SequencePrecision implements DBPNamedObject {
@@ -61,25 +61,9 @@ public enum DB2SequencePrecision implements DBPNamedObject {
         return null;
     }
 
-    // TOOD DF: This to compensante for editor that set the object with the toString value instead of enum itsef. to be removed ASAP
-    public static DB2SequencePrecision getFromDescription(String description)
-    {
-        for (DB2SequencePrecision item : DB2SequencePrecision.values()) {
-            if (description.equals(item.getDescription())) {
-                return item;
-            }
-        }
-        return null;
-    }
-
     // ----------------
     // Standard Getters
     // ----------------
-
-    public String getDescription()
-    {
-        return description;
-    }
 
     public Integer getDataType()
     {
@@ -96,4 +80,5 @@ public enum DB2SequencePrecision implements DBPNamedObject {
     {
         return description;
     }
+
 }
