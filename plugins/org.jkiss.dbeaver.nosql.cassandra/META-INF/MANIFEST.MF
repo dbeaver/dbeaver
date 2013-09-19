@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apache Cassandra Extension
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.nosql.cassandra; singleton:=true
-Bundle-Version: 1.0.9
+Bundle-Version: 1.0.10
 Bundle-Activator: org.jkiss.dbeaver.ext.nosql.cassandra.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -13,5 +13,5 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.jdbc.cassandra
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
-Bundle-Vendor: Serge Rieder
+Bundle-Vendor: JKISS
 Bundle-Localization: plugin
