@@ -32,14 +32,14 @@ public enum DB2SequenceType implements DBPNamedObject {
 
     S("S (Sequence)");
 
-    private String description;
+    private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2SequenceType(String description)
+    private DB2SequenceType(String name)
     {
-        this.description = description;
+        this.name = name;
     }
 
     // -----------------------
@@ -49,7 +49,7 @@ public enum DB2SequenceType implements DBPNamedObject {
     @Override
     public String toString()
     {
-        return description;
+        return name;
     }
 
     // ----------------
@@ -58,6 +58,6 @@ public enum DB2SequenceType implements DBPNamedObject {
     @Override
     public String getName()
     {
-        return description;
+        return name;
     }
 }

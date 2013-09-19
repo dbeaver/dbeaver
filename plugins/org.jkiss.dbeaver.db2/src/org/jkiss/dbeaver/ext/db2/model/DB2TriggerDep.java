@@ -31,7 +31,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Trigger Dependency
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TriggerDep extends DB2Object<DB2Trigger> {
@@ -76,9 +76,9 @@ public class DB2TriggerDep extends DB2Object<DB2Trigger> {
     }
 
     @Property(viewable = true, editable = false, order = 2)
-    public String getTriggerDepTypeDescription()
+    public DB2TriggerDepType getTriggerDepType()
     {
-        return triggerDepType.getDescription();
+        return triggerDepType;
     }
 
     @Property(viewable = true, editable = false, order = 3)
