@@ -78,12 +78,14 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, IPropertyC
         }
         properties.clear();
         for (DataFormatterDescriptor formatter : DBeaverCore.getInstance().getDataFormatterRegistry().getDataFormatters()) {
+            Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
             Map<Object, Object> formatterProps = new HashMap<Object, Object>();
             for (PropertyDescriptorEx prop : formatter.getProperties()) {
+                Object defaultValue = defaultProperties.get(prop.getId());
                 Object propValue = RuntimeUtils.getPreferenceValue(
                     store,
                     DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), prop.getDataType());
-                if (propValue != null) {
+                if (propValue != null && !CommonUtils.equalObjects(defaultValue, propValue)) {
                     formatterProps.put(prop.getId(), propValue);
                 }
             }
