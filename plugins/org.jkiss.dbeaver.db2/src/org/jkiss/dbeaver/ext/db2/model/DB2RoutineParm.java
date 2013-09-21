@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineRowType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 import org.jkiss.utils.CommonUtils;
@@ -109,7 +109,7 @@ public class DB2RoutineParm implements DBSProcedureParameter {
         return 0;
     }
 
-    // DF: Strange typeName and typeId are attributes of DBSDataKind...
+    // DF: Strange typeName and typeId are attributes of DBPDataKind...
     @Override
     public String getTypeName()
     {
@@ -123,7 +123,7 @@ public class DB2RoutineParm implements DBSProcedureParameter {
     }
 
     @Override
-    public DBSDataKind getDataKind()
+    public DBPDataKind getDataKind()
     {
         return dataType.getDataKind();
     }

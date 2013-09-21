@@ -21,12 +21,12 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 
@@ -104,7 +104,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     }
 
     @Override
-    public DBSDataKind getDataKind()
+    public DBPDataKind getDataKind()
     {
         return dataType.getDataKind();
     }

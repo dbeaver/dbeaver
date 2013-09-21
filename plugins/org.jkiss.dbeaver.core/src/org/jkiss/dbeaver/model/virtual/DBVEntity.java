@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -230,7 +231,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         Map<String, DBSEntityAttribute> stringColumns = new TreeMap<String, DBSEntityAttribute>();
         for (DBSEntityAttribute column : allColumns) {
             if (column != keyColumn &&
-                column.getDataKind() == DBSDataKind.STRING &&
+                column.getDataKind() == DBPDataKind.STRING &&
                 column.getMaxLength() < MAX_DESC_COLUMN_LENGTH &&
                 column.getMaxLength() >= MIN_DESC_COLUMN_LENGTH)
             {

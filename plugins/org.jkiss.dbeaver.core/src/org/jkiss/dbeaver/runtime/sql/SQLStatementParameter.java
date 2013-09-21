@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
@@ -133,7 +133,7 @@ public class SQLStatementParameter implements DBSAttributeBase {
     }
 
     @Override
-    public DBSDataKind getDataKind()
+    public DBPDataKind getDataKind()
     {
         return paramType.getDataKind();
     }

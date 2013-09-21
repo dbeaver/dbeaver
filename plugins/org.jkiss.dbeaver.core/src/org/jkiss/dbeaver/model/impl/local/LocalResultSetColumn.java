@@ -20,10 +20,11 @@
 package org.jkiss.dbeaver.model.impl.local;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
@@ -34,12 +35,14 @@ import java.util.List;
  */
 public class LocalResultSetColumn implements DBCAttributeMetaData
 {
+    private final LocalResultSet resultSet;
     private final int index;
     private final String label;
-    private final DBSDataKind dataKind;
+    private final DBPDataKind dataKind;
 
-    public LocalResultSetColumn(int index, String label, DBSDataKind dataKind)
+    public LocalResultSetColumn(LocalResultSet resultSet, int index, String label, DBPDataKind dataKind)
     {
+        this.resultSet = resultSet;
         this.index = index;
         this.label = label;
         this.dataKind = dataKind;
@@ -120,7 +123,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     @Override
     public String getTypeName()
     {
-        return dataKind.getDefaultTypeName();
+        return DBUtils.getDefaultDataType(resultSet.getContext().getDataSource(), dataKind);
     }
 
     @Override
@@ -130,7 +133,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     }
 
     @Override
-    public DBSDataKind getDataKind()
+    public DBPDataKind getDataKind()
     {
         return dataKind;
     }

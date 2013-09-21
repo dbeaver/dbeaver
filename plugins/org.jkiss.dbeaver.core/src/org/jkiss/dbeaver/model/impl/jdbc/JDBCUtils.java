@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.SQLUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
@@ -542,14 +542,14 @@ public class JDBCUtils {
         }
     }
 
-    public static DBSDataKind resolveDataKind(DBPDataSource dataSource, String typeName, int typeID)
+    public static DBPDataKind resolveDataKind(DBPDataSource dataSource, String typeName, int typeID)
     {
         if (dataSource == null) {
             return JDBCDataSource.getDataKind(typeName, typeID);
         } else if (dataSource instanceof DBPDataTypeProvider) {
             return ((DBPDataTypeProvider) dataSource).resolveDataKind(typeName, typeID);
         } else {
-            return DBSDataKind.UNKNOWN;
+            return DBPDataKind.UNKNOWN;
         }
     }
 
