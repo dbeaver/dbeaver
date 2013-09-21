@@ -62,7 +62,6 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
     protected static class CommandTarget {
         private DBECommandContext context;
         private IDatabaseEditor editor;
-        private IDatabaseEditorInput editorInput;
         private CommandTarget()
         {
         }
@@ -83,10 +82,6 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         public IDatabaseEditor getEditor()
         {
             return editor;
-        }
-        public IDatabaseEditorInput getEditorInput()
-        {
-            return editorInput;
         }
     }
 
@@ -131,9 +126,9 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
             }
         }
         if (container instanceof DBNDatabaseNode) {
-            // No editor found and no need to create one - create new command context
+            // No editor found - create new command context
             DBSDataSourceContainer dsContainer = ((DBNDatabaseNode) container).getObject().getDataSource().getContainer();
-            return new CommandTarget(new DBECommandContextImpl(dsContainer));
+            return new CommandTarget(new DBECommandContextImpl(dsContainer, !openEditor));
         } else {
             return new CommandTarget();
         }

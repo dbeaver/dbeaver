@@ -54,7 +54,9 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
         this.node = node;
         this.commandContext = commandContext != null ?
             commandContext :
-            new DBECommandContextImpl(node.getObject().getDataSource().getContainer());
+            new DBECommandContextImpl(
+                node.getObject().getDataSource().getContainer(),
+                false);
     }
 
     @Override
