@@ -80,7 +80,8 @@ public abstract class JDBCObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveab
     {
         commandContext.addCommand(
             new ObjectDeleteCommand(object, CoreMessages.model_jdbc_delete_object),
-            new DeleteObjectReflector<OBJECT_TYPE>(this), true);
+            new DeleteObjectReflector<OBJECT_TYPE>(this),
+            true);
     }
 
     public ObjectCreateCommand makeCreateCommand(OBJECT_TYPE object)

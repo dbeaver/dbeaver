@@ -48,15 +48,23 @@ public class DBECommandContextImpl implements DBECommandContext {
     private final DBSDataSourceContainer dataSourceContainer;
     private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
     private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
-    //private List<CommandInfo> mergedCommands = null;
     private List<CommandQueue> commandQueues;
 
     private final Map<Object, Object> userParams = new HashMap<Object, Object>();
     private final List<DBECommandListener> listeners = new ArrayList<DBECommandListener>();
 
-    public DBECommandContextImpl(DBSDataSourceContainer dataSourceContainer)
+    private final boolean atomic;
+
+    /**
+     * Creates new context
+     * @param dataSourceContainer DS container
+     * @param atomic atomic context reflect commands in UI only after all comands were executed. Non-atomic
+     *               reflects each command at the moment it executed
+     */
+    public DBECommandContextImpl(DBSDataSourceContainer dataSourceContainer, boolean atomic)
     {
         this.dataSourceContainer = dataSourceContainer;
+        this.atomic = atomic;
     }
 
     @Override
@@ -88,7 +96,7 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
 
         // Execute commands
-        List<DBECommand> executedCommands = new ArrayList<DBECommand>();
+        List<CommandInfo> executedCommands = new ArrayList<CommandInfo>();
         try {
             for (CommandQueue queue : commandQueues) {
                 // Make list of not-executed commands
@@ -156,8 +164,8 @@ public class DBECommandContextImpl implements DBECommandContext {
                             commands.remove(cmd);
                         }
                     }
-                    if (!executedCommands.contains(cmd.command)) {
-                        executedCommands.add(cmd.command);
+                    if (!executedCommands.contains(cmd)) {
+                        executedCommands.add(cmd);
                     }
                 }
             }
@@ -186,9 +194,18 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
         finally {
             try {
+                // Update UI
+                if (atomic) {
+                    for (CommandInfo cmd : executedCommands) {
+                        if (cmd.reflector != null) {
+                            cmd.reflector.redoCommand(cmd.command);
+                        }
+                    }
+                }
+
                 // Update model
-                for (DBECommand cmd : executedCommands) {
-                    cmd.updateModel();
+                for (CommandInfo cmd : executedCommands) {
+                    cmd.command.updateModel();
                 }
             } catch (Exception e) {
                 log.warn("Error updating model", e);
@@ -293,7 +310,7 @@ public class DBECommandContextImpl implements DBECommandContext {
             clearCommandQueues();
         }
         fireCommandChange(command);
-        if (execute && reflector != null) {
+        if (execute && reflector != null && !atomic) {
             reflector.redoCommand(command);
         }
         refreshCommandState();
@@ -458,9 +475,9 @@ public class DBECommandContextImpl implements DBECommandContext {
         }
         refreshCommandState();
 
-        // Undo UI changes
+        // Undo UI changes (always because undo doesn't make sense in atomic contexts)
         for (CommandInfo cmd : processedCommands) {
-            if (cmd.reflector != null) {
+            if (cmd.reflector != null && !atomic) {
                 cmd.reflector.undoCommand(cmd.command);
             }
         }
@@ -488,7 +505,7 @@ public class DBECommandContextImpl implements DBECommandContext {
             getCommandQueues();
         }
 
-        // Redo UI changes
+        // Redo UI changes (always because redo doesn't make sense in atomic contexts)
         for (CommandInfo cmd : processedCommands) {
             if (cmd.reflector != null) {
                 cmd.reflector.redoCommand(cmd.command);
