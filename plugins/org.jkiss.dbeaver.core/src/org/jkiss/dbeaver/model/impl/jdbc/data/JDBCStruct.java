@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.SQLUtils;
@@ -234,26 +235,26 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
     }
 
     private static class StructAttribute extends AbstractAttribute {
-        DBSDataKind dataKind;
+        DBPDataKind dataKind;
         public StructAttribute(int index, Object value)
         {
             if (value instanceof CharSequence) {
-                dataKind = DBSDataKind.STRING;
+                dataKind = DBPDataKind.STRING;
                 setValueType(Types.VARCHAR);
             } else if (value instanceof Number) {
-                dataKind = DBSDataKind.NUMERIC;
+                dataKind = DBPDataKind.NUMERIC;
                 setValueType(Types.NUMERIC);
             } else if (value instanceof Boolean) {
-                dataKind = DBSDataKind.BOOLEAN;
+                dataKind = DBPDataKind.BOOLEAN;
                 setValueType(Types.BOOLEAN);
             } else if (value instanceof Date) {
-                dataKind = DBSDataKind.DATETIME;
+                dataKind = DBPDataKind.DATETIME;
                 setValueType(Types.TIMESTAMP);
             } else if (value instanceof byte[]) {
-                dataKind = DBSDataKind.BINARY;
+                dataKind = DBPDataKind.BINARY;
                 setValueType(Types.BINARY);
             } else {
-                dataKind = DBSDataKind.OBJECT;
+                dataKind = DBPDataKind.OBJECT;
                 setValueType(Types.OTHER);
             }
             setName("Attr" + index);
@@ -276,7 +277,7 @@ public class JDBCStruct implements DBDStructure, DBDValueCloneable {
         }
 
         @Override
-        public DBSDataKind getDataKind()
+        public DBPDataKind getDataKind()
         {
             return dataKind;
         }

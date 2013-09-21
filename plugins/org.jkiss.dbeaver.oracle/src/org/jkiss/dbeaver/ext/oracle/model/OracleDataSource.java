@@ -398,14 +398,14 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBSDataKind resolveDataKind(String typeName, int valueType)
+    public DBPDataKind resolveDataKind(String typeName, int valueType)
     {
         if (typeName != null &&
             (typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML)))
         {
-            return DBSDataKind.LOB;
+            return DBPDataKind.LOB;
         }
-        DBSDataKind dataKind = OracleDataType.getDataKind(typeName);
+        DBPDataKind dataKind = OracleDataType.getDataKind(typeName);
         if (dataKind != null) {
             return dataKind;
         }

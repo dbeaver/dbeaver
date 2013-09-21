@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.editors.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatter;
@@ -132,7 +131,7 @@ public final class SQLUtils {
 
     public static void appendValue(StringBuilder buffer, DBSTypedObject type, Object value)
     {
-        if (type.getDataKind() == DBSDataKind.NUMERIC || type.getDataKind() == DBSDataKind.BOOLEAN) {
+        if (type.getDataKind() == DBPDataKind.NUMERIC || type.getDataKind() == DBPDataKind.BOOLEAN) {
             buffer.append(value);
         } else {
             buffer.append('\'').append(value).append('\'');

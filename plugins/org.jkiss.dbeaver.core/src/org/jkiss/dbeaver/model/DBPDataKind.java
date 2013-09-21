@@ -17,35 +17,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package org.jkiss.dbeaver.model.struct;
+package org.jkiss.dbeaver.model;
 
 /**
- * DBSDataKind
+ * Data kind
  */
-public enum DBSDataKind
+public enum DBPDataKind
 {
-    BOOLEAN("BOOLEAN"),
-    NUMERIC("NUMERIC"),
-    STRING("VARCHAR"),
-    DATETIME("TIMESTAMP"),
-    BINARY("BLOB"),
-    LOB("BLOB"),
-    STRUCT("VARCHAR"),
-    ARRAY("VARCHAR"),
-    OBJECT("VARCHAR"),
-    REFERENCE("VARCHAR"),
-    ROWID("ROWID"),
-    UNKNOWN("VARCHAR");
+    BOOLEAN,
+    NUMERIC,
+    STRING,
+    DATETIME,
+    BINARY,
+    LOB,
+    STRUCT,
+    ARRAY,
+    OBJECT,
+    REFERENCE,
+    ROWID,
+    UNKNOWN;
 
-    private final String defaultTypeName;
-
-    private DBSDataKind(String defaultTypeName)
-    {
-        this.defaultTypeName = defaultTypeName;
-    }
-
-    public String getDefaultTypeName()
-    {
-        return defaultTypeName;
-    }
 }

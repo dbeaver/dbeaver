@@ -498,6 +498,16 @@ public final class DBUtils {
         }
     }
 
+    public static String getDefaultDataType(DBPDataSource dataSource, DBPDataKind dataKind)
+    {
+        if (dataSource instanceof DBPDataTypeProvider) {
+            return ((DBPDataTypeProvider) dataSource).getDefaultDataType(dataKind);
+        } else {
+            // Unsupported data kind
+            return "?";
+        }
+    }
+
     public static DBSEntityReferrer getUniqueForeignConstraint(DBCAttributeMetaData attribute)
     {
         return getUniqueForeignConstraint(null, attribute);

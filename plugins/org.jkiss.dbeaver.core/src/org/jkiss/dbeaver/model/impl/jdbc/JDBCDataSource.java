@@ -364,22 +364,22 @@ public abstract class JDBCDataSource
         return valueType;
     }
 
-    public DBSDataKind resolveDataKind(String typeName, int valueType)
+    public DBPDataKind resolveDataKind(String typeName, int valueType)
     {
         return getDataKind(typeName, valueType);
     }
 
-    public static DBSDataKind getDataKind(String typeName, int valueType)
+    public static DBPDataKind getDataKind(String typeName, int valueType)
     {
         switch (getValueTypeByTypeName(typeName, valueType)) {
             case Types.BOOLEAN:
-                return DBSDataKind.BOOLEAN;
+                return DBPDataKind.BOOLEAN;
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.NVARCHAR:
             case Types.LONGVARCHAR:
             case Types.LONGNVARCHAR:
-                return DBSDataKind.STRING;
+                return DBPDataKind.STRING;
             case Types.BIGINT:
             case Types.DECIMAL:
             case Types.DOUBLE:
@@ -388,47 +388,66 @@ public abstract class JDBCDataSource
             case Types.NUMERIC:
             case Types.REAL:
             case Types.SMALLINT:
-                return DBSDataKind.NUMERIC;
+                return DBPDataKind.NUMERIC;
             case Types.BIT:
-                return DBSDataKind.BOOLEAN;
+                return DBPDataKind.BOOLEAN;
             case Types.TINYINT:
                 if (typeName.toLowerCase().contains("bool")) {
                     // Declared as numeric but actually it's a boolean
-                    return DBSDataKind.BOOLEAN;
+                    return DBPDataKind.BOOLEAN;
                 } else {
-                    return DBSDataKind.NUMERIC;
+                    return DBPDataKind.NUMERIC;
                 }
             case Types.DATE:
             case Types.TIME:
             case Types.TIMESTAMP:
-                return DBSDataKind.DATETIME;
+                return DBPDataKind.DATETIME;
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
-                return DBSDataKind.BINARY;
+                return DBPDataKind.BINARY;
             case Types.BLOB:
             case Types.CLOB:
             case Types.NCLOB:
-                return DBSDataKind.LOB;
+                return DBPDataKind.LOB;
             case Types.SQLXML:
-                return DBSDataKind.LOB;
+                return DBPDataKind.LOB;
             case Types.STRUCT:
-                return DBSDataKind.STRUCT;
+                return DBPDataKind.STRUCT;
             case Types.ARRAY:
-                return DBSDataKind.ARRAY;
+                return DBPDataKind.ARRAY;
             case Types.ROWID:
-                return DBSDataKind.ROWID;
+                return DBPDataKind.ROWID;
             case Types.REF:
-                return DBSDataKind.REFERENCE;
+                return DBPDataKind.REFERENCE;
 
         }
-        return DBSDataKind.UNKNOWN;
+        return DBPDataKind.UNKNOWN;
     }
 
     @Override
     public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException
     {
         return getDataType(typeFullName);
+    }
+
+    @Override
+    public String getDefaultDataType(DBPDataKind dataKind)
+    {
+        switch (dataKind) {
+            case BOOLEAN: return "BOOLEAN";
+            case NUMERIC: return "NUMERIC";
+            case STRING: return "VARCHAR";
+            case DATETIME: return "TIMESTAMP";
+            case BINARY: return "BLOB";
+            case LOB: return "BLOB";
+            case STRUCT: return "VARCHAR";
+            case ARRAY: return "VARCHAR";
+            case OBJECT: return "VARCHAR";
+            case REFERENCE: return "VARCHAR";
+            case ROWID: return "ROWID";
+            default: return "VARCHAR";
+        }
     }
 
     /////////////////////////////////////////////////

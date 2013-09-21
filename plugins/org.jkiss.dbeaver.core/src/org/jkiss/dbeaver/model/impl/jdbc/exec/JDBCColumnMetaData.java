@@ -23,10 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -35,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
@@ -69,16 +65,16 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private boolean writable;
     private JDBCTableMetaData tableMetaData;
     private DBSEntityAttribute tableColumn;
-    private final DBSDataKind dataKind;
+    private final DBPDataKind dataKind;
 
     protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
         throws SQLException
     {
         DBPObject rsSource = resultSetMeta.getResultSet().getSource();
         DBSObject dataContainer = rsSource instanceof DBCStatement ? ((DBCStatement)rsSource).getDataContainer() : null;
-        DBSTable ownerTable = null;
-        if (dataContainer instanceof DBSTable) {
-            ownerTable = (DBSTable)dataContainer;
+        DBSEntity ownerEntity = null;
+        if (dataContainer instanceof DBSEntity) {
+            ownerEntity = (DBSEntity)dataContainer;
         }
         this.index = index;
 
@@ -127,9 +123,9 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             }
         }
 
-        if (ownerTable != null) {
+        if (ownerEntity != null) {
             try {
-                this.tableColumn = ownerTable.getAttribute(resultSetMeta.getResultSet().getContext().getProgressMonitor(), name);
+                this.tableColumn = ownerEntity.getAttribute(resultSetMeta.getResultSet().getContext().getProgressMonitor(), name);
             }
             catch (DBException e) {
                 log.warn(e);
@@ -137,7 +133,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
             if (this.tableColumn != null) {
                 this.notNull = this.tableColumn.isRequired();
                 this.displaySize = this.tableColumn.getMaxLength();
-                DBSObject tableParent = ownerTable.getParentObject();
+                DBSObject tableParent = ownerEntity.getParentObject();
                 DBSObject tableGrandParent = tableParent == null ? null : tableParent.getParentObject();
                 this.catalogName = tableParent instanceof DBSCatalog ? tableParent.getName() : tableGrandParent instanceof DBSCatalog ? tableGrandParent.getName() : null;
                 this.schemaName = tableParent instanceof DBSSchema ? tableParent.getName() : null;
@@ -150,7 +146,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
                 this.scale = this.tableColumn.getScale();
 
                 try {
-                    this.tableMetaData = resultSetMeta.getTableMetaData(ownerTable);
+                    this.tableMetaData = resultSetMeta.getTableMetaData(ownerEntity);
                     if (this.tableMetaData != null) {
                         this.tableMetaData.addColumn(this);
                     }
@@ -280,7 +276,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     }
 
     @Override
-    public DBSDataKind getDataKind()
+    public DBPDataKind getDataKind()
     {
         return dataKind;
     }
