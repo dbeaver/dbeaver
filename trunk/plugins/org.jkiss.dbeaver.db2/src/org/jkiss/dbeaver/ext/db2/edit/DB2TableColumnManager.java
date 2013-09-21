@@ -70,7 +70,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
         // column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
         // // column.setType((DB2DataType) columnType);
         //      column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
-        // column.setMaxLength(columnType != null && columnType.getDataKind() == DBSDataKind.STRING ? 100 : 0);
+        // column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         // column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
         // column.setOrdinalPosition(-1);
         // return column;

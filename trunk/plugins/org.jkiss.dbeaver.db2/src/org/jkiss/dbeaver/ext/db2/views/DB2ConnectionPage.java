@@ -64,6 +64,8 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
         //group.setLayout(new GridLayout(1, true));
         setImageDescriptor(logoImage);
 
+        Composite control = UIUtils.createPlaceholder(composite, 1);
+        control.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ModifyListener textListener = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)
@@ -72,61 +74,66 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             }
         };
 
-        Composite addrGroup = UIUtils.createPlaceholder(composite, 4);
-        GridLayout gl = new GridLayout(4, false);
-        addrGroup.setLayout(gl);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        addrGroup.setLayoutData(gd);
+        {
+            Composite addrGroup = UIUtils.createControlGroup(control, "Database", 4, 0, 0);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            addrGroup.setLayoutData(gd);
 
-        Label hostLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_host);
-        hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            Label hostLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_host);
+            hostLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-        hostText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        hostText.setLayoutData(gd);
-        hostText.addModifyListener(textListener);
+            hostText = new Text(addrGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            hostText.setLayoutData(gd);
+            hostText.addModifyListener(textListener);
 
-        Label portLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_port);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        portLabel.setLayoutData(gd);
+            Label portLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_port);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            portLabel.setLayoutData(gd);
 
-        portText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = 40;
-        portText.setLayoutData(gd);
-        portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
-        portText.addModifyListener(textListener);
+            portText = new Text(addrGroup, SWT.BORDER);
+            gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            gd.widthHint = 40;
+            portText.setLayoutData(gd);
+            portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            portText.addModifyListener(textListener);
 
-        Label dbLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_database);
-        dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            Label dbLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_database);
+            dbLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-        dbText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        gd.horizontalSpan = 3;
-        dbText.setLayoutData(gd);
-        dbText.addModifyListener(textListener);
+            dbText = new Text(addrGroup, SWT.BORDER);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.grabExcessHorizontalSpace = true;
+            gd.horizontalSpan = 3;
+            dbText.setLayoutData(gd);
+            dbText.addModifyListener(textListener);
+        }
 
-        Label usernameLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_user_name);
-        usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        {
+            Composite addrGroup = UIUtils.createControlGroup(control, "Security", 2, 0, 0);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            addrGroup.setLayoutData(gd);
+                Label usernameLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_user_name);
+            usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-        usernameText = new Text(addrGroup, SWT.BORDER);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        usernameText.setLayoutData(gd);
-        usernameText.addModifyListener(textListener);
+            usernameText = new Text(addrGroup, SWT.BORDER);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = 200;
+            usernameText.setLayoutData(gd);
+            usernameText.addModifyListener(textListener);
 
-        Label passwordLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_password);
-        passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            Label passwordLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_password);
+            passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-        passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.grabExcessHorizontalSpace = true;
-        passwordText.setLayoutData(gd);
-        passwordText.addModifyListener(textListener);
+            passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = 200;
+            passwordText.setLayoutData(gd);
+            passwordText.addModifyListener(textListener);
+        }
 
-        setControl(addrGroup);
+        setControl(control);
     }
 
     @Override

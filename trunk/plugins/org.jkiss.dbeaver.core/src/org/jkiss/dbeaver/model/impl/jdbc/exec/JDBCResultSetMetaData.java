@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
@@ -104,7 +105,7 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
         return tableMetaData;
     }
 
-    public JDBCTableMetaData getTableMetaData(DBSTable table)
+    public JDBCTableMetaData getTableMetaData(DBSEntity table)
         throws DBException
     {
         DBSObject schema = table.getParentObject();

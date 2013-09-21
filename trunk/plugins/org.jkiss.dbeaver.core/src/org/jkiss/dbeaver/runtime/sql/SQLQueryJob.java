@@ -27,6 +27,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -477,11 +477,11 @@ public class SQLQueryJob extends DataSourceJob
         LocalResultSet fakeResultSet = new LocalResultSet(context, curStatement);
         if (statistics.getStatementsCount() > 1) {
             // Multiple statements - show script statistics
-            fakeResultSet.addColumn("Queries", DBSDataKind.NUMERIC);
-            fakeResultSet.addColumn("Updated Rows", DBSDataKind.NUMERIC);
-            fakeResultSet.addColumn("Execute time", DBSDataKind.NUMERIC);
-            fakeResultSet.addColumn("Fetch time", DBSDataKind.NUMERIC);
-            fakeResultSet.addColumn("Total time", DBSDataKind.NUMERIC);
+            fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Fetch time", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Total time", DBPDataKind.NUMERIC);
             fakeResultSet.addRow(
                 statistics.getStatementsCount(),
                 statistics.getRowsUpdated(),
@@ -492,10 +492,10 @@ public class SQLQueryJob extends DataSourceJob
             // Single statement
             long updateCount = statistics.getRowsUpdated();
             if (updateCount > 0) {
-                fakeResultSet.addColumn("Updated Rows", DBSDataKind.NUMERIC);
+                fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
                 fakeResultSet.addRow(updateCount);
             } else {
-                fakeResultSet.addColumn("Result", DBSDataKind.NUMERIC);
+                fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
         }
         fetchQueryData(context, fakeResultSet, false);

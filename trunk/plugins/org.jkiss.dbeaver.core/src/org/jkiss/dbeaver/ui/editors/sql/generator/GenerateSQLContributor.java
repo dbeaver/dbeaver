@@ -45,7 +45,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -393,7 +393,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             if (DBUtils.isNullValue(value)) {
                 sql.append("NULL");
             } else {
-                boolean isString = binding.getAttribute().getDataKind() == DBSDataKind.STRING;
+                boolean isString = binding.getAttribute().getDataKind() == DBPDataKind.STRING;
                 String displayString = binding.getValueHandler().getValueDisplayString(
                     binding.getAttribute(),
                     value,

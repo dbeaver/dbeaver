@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPObject;
 
 /**
@@ -42,7 +43,7 @@ public interface DBSTypedObject extends DBPObject
      * Determines kind of data for this typed object.
      * @return data kind
      */
-    DBSDataKind getDataKind();
+    DBPDataKind getDataKind();
 
     /**
      * Value scale

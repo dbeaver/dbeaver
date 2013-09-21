@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -74,7 +74,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         if (dataSource instanceof DBPDataTypeProvider) {
             for (DBSDataType dataType : ((DBPDataTypeProvider)dataSource).getDataTypes()) {
-                if (dataType.getDataKind() == DBSDataKind.UNKNOWN) {
+                if (dataType.getDataKind() == DBPDataKind.UNKNOWN) {
                     continue;
                 }
                 final DataTypeProviderDescriptor dataTypeProvider = DataSourceProviderRegistry.getDefault().getDataTypeProvider(dataSource, dataType.getName(), dataType.getTypeID());

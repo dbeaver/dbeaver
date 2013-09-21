@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -74,7 +75,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
     public String getSourceType()
     {
         String typeName = source.getTypeName();
-        if (source.getDataKind() == DBSDataKind.STRING) {
+        if (source.getDataKind() == DBPDataKind.STRING) {
             typeName += "(" + source.getMaxLength() + ")";
         }
         return typeName;
@@ -184,13 +185,11 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
                         possibleTypes.add(type);
                     }
                 }
-                if (possibleTypes.isEmpty()) {
-                    // Not supported by target database
-                    typeName = source.getDataKind().getDefaultTypeName();
-                } else {
+                typeName = DBUtils.getDefaultDataType(targetDataSource, source.getDataKind());
+                if (!possibleTypes.isEmpty()) {
                     DBSDataType targetType = null;
                     for (DBSDataType type : possibleTypes) {
-                        if (type.getName().equals(source.getDataKind().getDefaultTypeName())) {
+                        if (type.getName().equals(typeName)) {
                             targetType = type;
                             break;
                         }
@@ -203,7 +202,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
             }
         }
 
-        if (source.getDataKind() == DBSDataKind.STRING) {
+        if (source.getDataKind() == DBPDataKind.STRING) {
             typeName += "(" + source.getMaxLength() + ")";
         }
         return typeName;

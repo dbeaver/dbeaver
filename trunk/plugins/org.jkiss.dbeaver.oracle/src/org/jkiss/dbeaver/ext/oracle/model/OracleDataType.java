@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -54,12 +55,12 @@ public class OracleDataType extends OracleObject<DBSObject>
     static final Log log = LogFactory.getLog(OracleTableForeignKey.class);
 
     static class TypeDesc {
-        final DBSDataKind dataKind;
+        final DBPDataKind dataKind;
         final int valueType;
         final int precision;
         final int minScale;
         final int maxScale;
-        private TypeDesc(DBSDataKind dataKind, int valueType, int precision, int minScale, int maxScale)
+        private TypeDesc(DBPDataKind dataKind, int valueType, int precision, int minScale, int maxScale)
         {
             this.dataKind = dataKind;
             this.valueType = valueType;
@@ -72,59 +73,59 @@ public class OracleDataType extends OracleObject<DBSObject>
     static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>();
     static final Map<Integer, TypeDesc> PREDEFINED_TYPE_IDS = new HashMap<Integer, TypeDesc>();
     static  {
-        PREDEFINED_TYPES.put("BFILE", new TypeDesc(DBSDataKind.LOB, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("BINARY ROWID", new TypeDesc(DBSDataKind.ROWID, java.sql.Types.ROWID, 0, 0, 0));
-        PREDEFINED_TYPES.put("BINARY_DOUBLE", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.DOUBLE, 63, 127, -84));
-        PREDEFINED_TYPES.put("BINARY_FLOAT", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.FLOAT, 63, 127, -84));
-        PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBSDataKind.LOB, java.sql.Types.BLOB, 0, 0, 0));
-        PREDEFINED_TYPES.put("CANONICAL", new TypeDesc(DBSDataKind.UNKNOWN, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("CFILE", new TypeDesc(DBSDataKind.LOB, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("CHAR", new TypeDesc(DBSDataKind.STRING, java.sql.Types.CHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBSDataKind.LOB, java.sql.Types.CLOB, 0, 0, 0));
-        PREDEFINED_TYPES.put("CONTIGUOUS ARRAY", new TypeDesc(DBSDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
-        PREDEFINED_TYPES.put("DATE", new TypeDesc(DBSDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
-        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.DECIMAL, 63, 127, -84));
-        PREDEFINED_TYPES.put("DOUBLE PRECISION", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.DOUBLE, 63, 127, -84));
-        PREDEFINED_TYPES.put("FLOAT", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.FLOAT, 63, 127, -84));
-        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.INTEGER, 63, 127, -84));
-        PREDEFINED_TYPES.put("INTERVAL DAY TO SECOND", new TypeDesc(DBSDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("INTERVAL YEAR TO MONTH", new TypeDesc(DBSDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("LOB POINTER", new TypeDesc(DBSDataKind.LOB, java.sql.Types.BLOB, 0, 0, 0));
-        PREDEFINED_TYPES.put("NAMED COLLECTION", new TypeDesc(DBSDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
-        PREDEFINED_TYPES.put("NAMED OBJECT", new TypeDesc(DBSDataKind.OBJECT, java.sql.Types.STRUCT, 0, 0, 0));
-        PREDEFINED_TYPES.put("NUMBER", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.NUMERIC, 63, 127, -84));
-        PREDEFINED_TYPES.put("OCTET", new TypeDesc(DBSDataKind.BINARY, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("OID", new TypeDesc(DBSDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("POINTER", new TypeDesc(DBSDataKind.UNKNOWN, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("RAW", new TypeDesc(DBSDataKind.BINARY, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("REAL", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.REAL, 63, 127, -84));
-        PREDEFINED_TYPES.put("REF", new TypeDesc(DBSDataKind.REFERENCE, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.INTEGER, 63, 127, -84));
-        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.SMALLINT, 63, 127, -84));
-        PREDEFINED_TYPES.put("TABLE", new TypeDesc(DBSDataKind.OBJECT, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIME", new TypeDesc(DBSDataKind.DATETIME, java.sql.Types.TIMESTAMP, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIME WITH TZ", new TypeDesc(DBSDataKind.DATETIME, java.sql.Types.TIMESTAMP, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(DBSDataKind.DATETIME, java.sql.Types.TIMESTAMP, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TZ", new TypeDesc(DBSDataKind.DATETIME, -102, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIMESTAMP WITH TZ", new TypeDesc(DBSDataKind.DATETIME, -101, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TIME ZONE", new TypeDesc(DBSDataKind.DATETIME, -102, 0, 0, 0));
-        PREDEFINED_TYPES.put("TIMESTAMP WITH TIME ZONE", new TypeDesc(DBSDataKind.DATETIME, -101, 0, 0, 0));
-        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(DBSDataKind.NUMERIC, java.sql.Types.BIGINT, 63, 127, -84));
-        PREDEFINED_TYPES.put("UROWID", new TypeDesc(DBSDataKind.ROWID, java.sql.Types.ROWID, 0, 0, 0));
-        PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBSDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("VARCHAR2", new TypeDesc(DBSDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("VARYING ARRAY", new TypeDesc(DBSDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
+        PREDEFINED_TYPES.put("BFILE", new TypeDesc(DBPDataKind.LOB, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("BINARY ROWID", new TypeDesc(DBPDataKind.ROWID, java.sql.Types.ROWID, 0, 0, 0));
+        PREDEFINED_TYPES.put("BINARY_DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.DOUBLE, 63, 127, -84));
+        PREDEFINED_TYPES.put("BINARY_FLOAT", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.FLOAT, 63, 127, -84));
+        PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBPDataKind.LOB, java.sql.Types.BLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("CANONICAL", new TypeDesc(DBPDataKind.UNKNOWN, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("CFILE", new TypeDesc(DBPDataKind.LOB, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("CHAR", new TypeDesc(DBPDataKind.STRING, java.sql.Types.CHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.LOB, java.sql.Types.CLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("CONTIGUOUS ARRAY", new TypeDesc(DBPDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
+        PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.DECIMAL, 63, 127, -84));
+        PREDEFINED_TYPES.put("DOUBLE PRECISION", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.DOUBLE, 63, 127, -84));
+        PREDEFINED_TYPES.put("FLOAT", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.FLOAT, 63, 127, -84));
+        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.INTEGER, 63, 127, -84));
+        PREDEFINED_TYPES.put("INTERVAL DAY TO SECOND", new TypeDesc(DBPDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("INTERVAL YEAR TO MONTH", new TypeDesc(DBPDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("LOB POINTER", new TypeDesc(DBPDataKind.LOB, java.sql.Types.BLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("NAMED COLLECTION", new TypeDesc(DBPDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
+        PREDEFINED_TYPES.put("NAMED OBJECT", new TypeDesc(DBPDataKind.OBJECT, java.sql.Types.STRUCT, 0, 0, 0));
+        PREDEFINED_TYPES.put("NUMBER", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.NUMERIC, 63, 127, -84));
+        PREDEFINED_TYPES.put("OCTET", new TypeDesc(DBPDataKind.BINARY, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("OID", new TypeDesc(DBPDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("POINTER", new TypeDesc(DBPDataKind.UNKNOWN, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("RAW", new TypeDesc(DBPDataKind.BINARY, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.REAL, 63, 127, -84));
+        PREDEFINED_TYPES.put("REF", new TypeDesc(DBPDataKind.REFERENCE, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("SIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.INTEGER, 63, 127, -84));
+        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.SMALLINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("TABLE", new TypeDesc(DBPDataKind.OBJECT, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIME", new TypeDesc(DBPDataKind.DATETIME, java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIME WITH TZ", new TypeDesc(DBPDataKind.DATETIME, java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(DBPDataKind.DATETIME, java.sql.Types.TIMESTAMP, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TZ", new TypeDesc(DBPDataKind.DATETIME, -102, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP WITH TZ", new TypeDesc(DBPDataKind.DATETIME, -101, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP WITH LOCAL TIME ZONE", new TypeDesc(DBPDataKind.DATETIME, -102, 0, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP WITH TIME ZONE", new TypeDesc(DBPDataKind.DATETIME, -101, 0, 0, 0));
+        PREDEFINED_TYPES.put("UNSIGNED BINARY INTEGER", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.BIGINT, 63, 127, -84));
+        PREDEFINED_TYPES.put("UROWID", new TypeDesc(DBPDataKind.ROWID, java.sql.Types.ROWID, 0, 0, 0));
+        PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("VARCHAR2", new TypeDesc(DBPDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("VARYING ARRAY", new TypeDesc(DBPDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
 
-        PREDEFINED_TYPES.put("VARRAY", new TypeDesc(DBSDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
-        PREDEFINED_TYPES.put("ROWID", new TypeDesc(DBSDataKind.ROWID, java.sql.Types.ROWID, 0, 0, 0));
-        PREDEFINED_TYPES.put("LONG", new TypeDesc(DBSDataKind.BINARY, java.sql.Types.LONGVARBINARY, 0, 0, 0));
-        PREDEFINED_TYPES.put("RAW", new TypeDesc(DBSDataKind.BINARY, java.sql.Types.LONGVARBINARY, 0, 0, 0));
-        PREDEFINED_TYPES.put("LONG RAW", new TypeDesc(DBSDataKind.BINARY, java.sql.Types.LONGVARBINARY, 0, 0, 0));
-        PREDEFINED_TYPES.put("NVARCHAR2", new TypeDesc(DBSDataKind.STRING, java.sql.Types.NVARCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("NCHAR", new TypeDesc(DBSDataKind.STRING, java.sql.Types.NCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("NCLOB", new TypeDesc(DBSDataKind.LOB, java.sql.Types.NCLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("VARRAY", new TypeDesc(DBPDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
+        PREDEFINED_TYPES.put("ROWID", new TypeDesc(DBPDataKind.ROWID, java.sql.Types.ROWID, 0, 0, 0));
+        PREDEFINED_TYPES.put("LONG", new TypeDesc(DBPDataKind.BINARY, java.sql.Types.LONGVARBINARY, 0, 0, 0));
+        PREDEFINED_TYPES.put("RAW", new TypeDesc(DBPDataKind.BINARY, java.sql.Types.LONGVARBINARY, 0, 0, 0));
+        PREDEFINED_TYPES.put("LONG RAW", new TypeDesc(DBPDataKind.BINARY, java.sql.Types.LONGVARBINARY, 0, 0, 0));
+        PREDEFINED_TYPES.put("NVARCHAR2", new TypeDesc(DBPDataKind.STRING, java.sql.Types.NVARCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("NCHAR", new TypeDesc(DBPDataKind.STRING, java.sql.Types.NCHAR, 0, 0, 0));
+        PREDEFINED_TYPES.put("NCLOB", new TypeDesc(DBPDataKind.LOB, java.sql.Types.NCLOB, 0, 0, 0));
 
-        PREDEFINED_TYPES.put("REF CURSOR", new TypeDesc(DBSDataKind.REFERENCE, -10, 0, 0, 0));
+        PREDEFINED_TYPES.put("REF CURSOR", new TypeDesc(DBPDataKind.REFERENCE, -10, 0, 0, 0));
 
         for (TypeDesc type : PREDEFINED_TYPES.values()) {
             PREDEFINED_TYPE_IDS.put(type.valueType, type);
@@ -221,7 +222,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
     }
 
-    public static DBSDataKind getDataKind(String typeName)
+    public static DBPDataKind getDataKind(String typeName)
     {
         TypeDesc desc = PREDEFINED_TYPES.get(typeName);
         return desc != null ? desc.dataKind : null;
@@ -295,7 +296,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public DBSDataKind getDataKind()
+    public DBPDataKind getDataKind()
     {
         return JDBCUtils.resolveDataKind(getDataSource(), getName(), valueType);
     }

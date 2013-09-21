@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -1458,7 +1459,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         int columnIndex = translateVisualPos(currentPosition).col;
         if (supportsDataFilter() && columnIndex >= 0) {
             DBDAttributeBinding column = model.getColumn(columnIndex);
-            DBSDataKind dataKind = column.getMetaAttribute().getDataKind();
+            DBPDataKind dataKind = column.getMetaAttribute().getDataKind();
             if (!column.getMetaAttribute().isRequired()) {
                 filtersMenu.add(new FilterByColumnAction("IS NULL", FilterByColumnType.NONE, column));
                 filtersMenu.add(new FilterByColumnAction("IS NOT NULL", FilterByColumnType.NONE, column));
@@ -1472,15 +1473,15 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (type.getValue(this, column, true, DBDDisplayFormat.NATIVE) == null) {
                     continue;
                 }
-                if (dataKind == DBSDataKind.BOOLEAN) {
+                if (dataKind == DBPDataKind.BOOLEAN) {
                     filtersMenu.add(new FilterByColumnAction("= ?", type, column));
                     filtersMenu.add(new FilterByColumnAction("<> ?", type, column));
-                } else if (dataKind == DBSDataKind.NUMERIC || dataKind == DBSDataKind.DATETIME) {
+                } else if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
                     filtersMenu.add(new FilterByColumnAction("= ?", type, column));
                     filtersMenu.add(new FilterByColumnAction("<> ?", type, column));
                     filtersMenu.add(new FilterByColumnAction("> ?", type, column));
                     filtersMenu.add(new FilterByColumnAction("< ?", type, column));
-                } else if (dataKind == DBSDataKind.STRING) {
+                } else if (dataKind == DBPDataKind.STRING) {
                     filtersMenu.add(new FilterByColumnAction("= '?'", type, column));
                     filtersMenu.add(new FilterByColumnAction("<> '?'", type, column));
                     filtersMenu.add(new FilterByColumnAction("> '?'", type, column));

@@ -19,9 +19,9 @@
 
 package org.jkiss.dbeaver.model.impl.local;
 
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,9 +124,9 @@ public class LocalResultSet implements DBCResultSet
         metaColumns.clear();
     }
 
-    public DBCAttributeMetaData addColumn(String label, DBSDataKind dataKind)
+    public DBCAttributeMetaData addColumn(String label, DBPDataKind dataKind)
     {
-        LocalResultSetColumn column = new LocalResultSetColumn(metaColumns.size() + 1, label, dataKind);
+        LocalResultSetColumn column = new LocalResultSetColumn(this, metaColumns.size() + 1, label, dataKind);
         metaColumns.add(column);
         return column;
     }

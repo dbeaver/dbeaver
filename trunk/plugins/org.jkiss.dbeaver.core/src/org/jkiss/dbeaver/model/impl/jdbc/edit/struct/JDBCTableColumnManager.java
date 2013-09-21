@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
-import org.jkiss.dbeaver.model.struct.DBSDataKind;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -129,7 +129,7 @@ public abstract class JDBCTableColumnManager<OBJECT_TYPE extends JDBCTableColumn
         final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
         if (dataType == null) {
             log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
-        } else if (dataType.getDataKind() == DBSDataKind.STRING) {
+        } else if (dataType.getDataKind() == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 useMaxLength = true;
             }
