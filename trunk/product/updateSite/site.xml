@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-    <description name="DBeaver Update Site" url="http://dbeaver.jkiss.org/update/2.0">
+    <description name="DBeaver Update Site" url="http://dbeaver.jkiss.org/update/2.2">
         DBeaver Update Site
     </description>
     <category-def name="org.jkiss.dbeaver" label="DBeaver">
