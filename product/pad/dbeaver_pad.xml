@@ -39,8 +39,8 @@
   <Program_Info>
     <Program_Name>DBeaver</Program_Name>
     <Program_Version>2.3.0</Program_Version>
-    <Program_Release_Month>08</Program_Release_Month>
-    <Program_Release_Day>25</Program_Release_Day>
+    <Program_Release_Month>09</Program_Release_Month>
+    <Program_Release_Day>23</Program_Release_Day>
     <Program_Release_Year>2013</Program_Release_Year>
     <Program_Cost_Dollars>0</Program_Cost_Dollars>
     <Program_Type>Freeware</Program_Type>
@@ -49,13 +49,13 @@
     <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS X,Windows2000,Windows2003,WinServer,Linux,Java</Program_OS_Support>
     <Program_Language>English</Program_Language>
     <Program_Change_Info>
-        - Data transfer performance improved
-        - Query/script execution statistics improved
-        - SQL autocomplete improved
-        - Results view copy/advanced copy improved
-        - Results view rendering fixed
-        - Unique keys management simplified
-        - A few minor UI problems fixed
+        - DB2 extension (metadata browser, execution plan view, etc)
+        - Eclipse 4.3 is now base platform (improves UI and editors performance)
+        - Fixes of MS SQL, MySQL, Oracle ad CSV extensions
+        - Metadata editor fixed
+        - Execution plan visualization improved
+        - Auto-increment columns edit fixed
+        - Many minor fixes in UI and model
     </Program_Change_Info>
     <Program_System_Requirements></Program_System_Requirements>
     <Program_Category_Class>Development::Other</Program_Category_Class>

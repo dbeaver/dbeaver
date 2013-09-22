@@ -52,6 +52,13 @@
             <date>23.09.2013</date>
 
             <release-notes>
+                - DB2 extension (metadata browser, execution plan view, etc)
+                - Eclipse 4.3 is now base platform (improves UI and editors performance)
+                - Fixes of MS SQL, MySQL, Oracle ad CSV extensions
+                - Metadata editor fixed
+                - Execution plan visualization improved
+                - Auto-increment columns edit fixed
+                - Many minor fixes in UI and model
             </release-notes>
         </version>
 
