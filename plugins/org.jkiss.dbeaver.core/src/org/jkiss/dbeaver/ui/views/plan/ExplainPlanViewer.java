@@ -79,7 +79,8 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         this.planPanel = UIUtils.createPartDivider(workbenchPart, composite, SWT.HORIZONTAL | SWT.SMOOTH);
-        planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        this.planPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        this.planPanel.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
         final GridLayout gl = new GridLayout(1, false);
         gl.marginWidth = 0;
         gl.marginHeight = 0;
@@ -108,7 +109,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
             leftPanel.setMaximizedControl(planTree);
         }
         {
-            planProperties = new PropertyTreeViewer(planPanel, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+            planProperties = new PropertyTreeViewer(planPanel, SWT.H_SCROLL | SWT.V_SCROLL);
         }
 
         planPanel.setWeights(new int[] {70, 30});
