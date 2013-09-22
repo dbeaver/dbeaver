@@ -51,6 +51,7 @@ public class GenerateFeaturesTask extends Task
         "org.jkiss.dbeaver.ext.generic",
         "org.jkiss.dbeaver.ext.mysql",
         "org.jkiss.dbeaver.ext.oracle",
+        "org.jkiss.dbeaver.ext.db2",
         "org.jkiss.dbeaver.ext.cassandra",
         "org.jkiss.dbeaver.ext.wmi",
     };

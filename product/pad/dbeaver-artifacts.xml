@@ -30,6 +30,7 @@
         <feature id="features/org.jkiss.dbeaver.ext.cassandra" type="general"/>
         <feature id="features/org.jkiss.dbeaver.ext.generic" type="general"/>
         <feature id="features/org.jkiss.dbeaver.ext.mysql" type="general"/>
+        <feature id="features/org.jkiss.dbeaver.ext.db2" type="general"/>
         <feature id="features/org.jkiss.dbeaver.ext.oracle" type="general"/>
         <feature id="features/org.jkiss.dbeaver.ext.wmi" type="general"/>
         <feature id="features/org.jkiss.dbeaver.rcp" type="static"/>
