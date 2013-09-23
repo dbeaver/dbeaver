@@ -1,7 +1,6 @@
 
 TODO:
-- Go through all "TODO" markers and flush remaining unused classes
-- finish DB2SequenceManager (alter) + solve enum display/setter problem
+- Go through all "TODO" markers
 
 Problems :
 - (minor importance) investigate while DDL generation does not work for some kind of "regular tables"
@@ -64,9 +63,4 @@ Missing relationships (All nice to have):
    - Tables     -> referenced by aliases (that could be in a different schema...)
    - Tables     -> referenced by indexes  (that could be in a different schema...)
    - Sequences  -> referenced by aliases (that could be in a different schema...)
-   
-Add a "Federation" menu at the datasource level with (<1% of users use federation=oracle dblinks)
-- Servers
-- Wrapeprs
-- Federated Users
-- Nicknames (or maybe under the "schema" section)?
+      

@@ -27,35 +27,37 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
  * @author Denis Forveille
  */
 public enum DB2IndexType implements DBPNamedObject {
-    BLOK("BLOK"),
+    BLOK("BLOK (Block Index)", false),
 
-    CLUS("CLUS (CLustering)"),
+    CLUS("CLUS (Clustering Index)", true),
 
-    DIM("DIM (Dimension Block Index)"),
+    DIM("DIM (Dimension Block Index)", false),
 
-    RCT("RCT (Key Sequence Index)"),
+    RCT("RCT (Key Sequence Index)", false),
 
-    REG("REG (Regular)"),
+    REG("REG (Regular)", true),
 
-    TEXT("TEXT"),
+    TEXT("TEXT (Text Index)", false),
 
-    XPTH("XPTH (XML path index)"),
+    XPTH("XPTH (XML path Index)", false),
 
-    XRGN("XRGN (XML region index)"),
+    XRGN("XRGN (XML region Index)", false),
 
-    XVIL("XVIL (Index over XML column (logical))"),
+    XVIL("XVIL (Index over XML column (logical))", false),
 
-    XVIP("XVIP ( Index over XML column (physical))");
+    XVIP("XVIP ( Index over XML column (physical))", false);
 
     private String name;
     private DBSIndexType dbsIndexType;
+    private Boolean validForCreation;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2IndexType(String name)
+    private DB2IndexType(String name, Boolean validForCreation)
     {
         this.name = name;
+        this.validForCreation = validForCreation;
         this.dbsIndexType = new DBSIndexType(this.name(), name);
     }
 
@@ -80,5 +82,10 @@ public enum DB2IndexType implements DBPNamedObject {
     public DBSIndexType getDBSIndexType()
     {
         return dbsIndexType;
+    }
+
+    public Boolean isValidForCreation()
+    {
+        return validForCreation;
     }
 }

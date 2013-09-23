@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
- * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,12 @@ package org.jkiss.dbeaver.ext.db2.edit;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
-import org.jkiss.dbeaver.ext.db2.model.*;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCache;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -34,19 +39,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DB2 table manager
+ * DB2 Table Manager
+ * 
+ * @author Denis Forveille<
+ * 
  */
 public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> implements DBEObjectRenamer<DB2Table> {
 
     private static final String SQL_ALTER = "ALTER TABLE ";
-    private static final String SQL_RENAME_TABLE = "RENAME TABLE %s TO %S";
+    private static final String SQL_RENAME_TABLE = "RENAME TABLE %s TO %s";
     private static final String SQL_COMMENT = "COMMENT ON TABLE %s IS '%s'";
 
-    private static final Class<?>[] CHILD_TYPES = {
-        DB2TableColumn.class,
-        DB2TableUniqueKey.class,
-        DB2TableForeignKey.class,
-        DB2Index.class};
+    private static final Class<?>[] CHILD_TYPES = { DB2TableColumn.class, DB2TableUniqueKey.class, DB2TableForeignKey.class,
+        DB2Index.class };
 
     @Override
     public DBSObjectCache<? extends DBSObject, DB2Table> getObjectsCache(DB2Table object)
@@ -55,10 +60,8 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     }
 
     @Override
-    protected DB2Table createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                            DBECommandContext context,
-                                            DB2Schema db2Schema,
-                                            Object copyFrom)
+    protected DB2Table createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Schema db2Schema,
+        Object copyFrom)
     {
         return new DB2Table(db2Schema, "NEW_TABLE");
     }

@@ -18,8 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
@@ -45,8 +43,6 @@ import java.util.Collections;
  */
 public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> implements DBPNamedObject2, DBPRefreshableObject,
     DB2StatefulObject {
-
-    private static final Log log = LogFactory.getLog(DB2TableBase.class);
 
     private String owner;
     private DB2OwnerType ownerType;
@@ -80,13 +76,6 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     public DB2Schema getSchema()
     {
         return super.getContainer();
-    }
-
-    @Override
-    @Property(viewable = false, editable = false)
-    public String getDescription()
-    {
-        return remarks;
     }
 
     @Override
@@ -145,6 +134,18 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
+    }
+
+    @Override
+    @Property(viewable = false, editable = true, updatable = true)
+    public String getDescription()
+    {
+        return remarks;
+    }
+
+    public void setDescription(String description)
+    {
+        this.remarks = description;
     }
 
 }

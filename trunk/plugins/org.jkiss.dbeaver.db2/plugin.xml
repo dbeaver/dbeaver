@@ -146,6 +146,9 @@
                             <items label="%tree.alias.node.name" path="alias" property="aliases" icon="#synonym">
                             </items>
                         </folder>
+                       <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname" label="%tree.nicknames.node.name" icon="#folder_synonyms" description="Nicknames">
+                           <items label="%tree.nickname.node.name" path="nickname" property="nicknames" icon="#synonym" />
+                       </folder>
                         <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Trigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                                <items label="%tree.triggerdeps.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>
@@ -180,19 +183,6 @@
                         <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool" label="%tree.bufferpools.node.name" icon="#bufferpools" description="Bufferpools">
-                        <items label="%tree.bufferpool.node.name" path="bufferpool" property="bufferpools" icon="#bufferpool">
-                        </items>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace" label="%tree.tablespaces.node.name" icon="#folder_tablespace" description="Tablespaces">
-                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
-                            <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablespaceContainer" label="%tree.containers.node.name" icon="#containers" description="Containers">
-                                <items label="%tree.container.node.name" path="container" property="containers" icon="#container"/>
-                            </folder>
-                        </items>
-                    </folder>
-                </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="#security" description="Security management" >
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2User" label="%tree.users.node.name" icon="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="user" property="users" icon="#user">
@@ -207,6 +197,35 @@
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
                         <items label="%tree.role.node.name" path="role" property="roles" icon="#role">
                            <items label="%tree.roleauth.node.name" path="roleauth" property="roleAuths" icon="#roleauth"/>
+                        </items>
+                    </folder>
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.federation.node.name" icon="#storage" description="Federation">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper" label="%tree.wrappers.node.name" icon="#bufferpools" description="Wrappers">
+                        <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="#wrapper" />
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer" label="%tree.remoteservers.node.name" icon="#folder_link" description="Remote Servers">
+                        <items label="%tree.remoteserver.node.name" path="remoteServer" property="remoteServers" icon="#link" />
+                    </folder>
+<!--                    
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2FedSP" label="%tree.fedsp.node.name" icon="#procedures" description="Federated Stored Procs">
+                        <items label="%tree.fedSP.node.name" path="fedsp" property="fedSPs" icon="#procedure" />
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping" label="%tree.usermappings.node.name" icon="#usermappings" description="User Mappings">
+                        <items label="%tree.usermapping.node.name" path="usermapping" property="usermappings" icon="#wrapper" />
+                    </folder>
+-->                    
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool" label="%tree.bufferpools.node.name" icon="#bufferpools" description="Bufferpools">
+                        <items label="%tree.bufferpool.node.name" path="bufferpool" property="bufferpools" icon="#bufferpool">
+                        </items>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Tablespace" label="%tree.tablespaces.node.name" icon="#folder_tablespace" description="Tablespaces">
+                        <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace">
+                            <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablespaceContainer" label="%tree.containers.node.name" icon="#containers" description="Containers">
+                                <items label="%tree.container.node.name" path="container" property="containers" icon="#container"/>
+                            </folder>
                         </items>
                     </folder>
                 </folder>
@@ -279,17 +298,17 @@
         </editor>
         
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SchemaManager"      objectType="org.jkiss.dbeaver.ext.db2.model.DB2Schema"/>
-        
-<!-- DF Not mature enough for first version       
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2SequenceManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2Sequence"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2DataTypeManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
+
+<!-- DF Not mature enough for first version       
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TableManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Table"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TableColumnManager" objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableColumn"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2IndexManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
+        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2DataTypeManager"    objectType="org.jkiss.dbeaver.ext.db2.model.DB2DataType"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ForeignKeyManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ConstraintManager"  objectType="org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2IndexManager"       objectType="org.jkiss.dbeaver.ext.db2.model.DB2Index"/>
         <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2ViewManager"        objectType="org.jkiss.dbeaver.ext.db2.model.DB2View"/>
-        <manager class="org.jkiss.dbeaver.ext.db2.edit.DB2TriggerManager"     objectType="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
 -->        
     </extension>
 

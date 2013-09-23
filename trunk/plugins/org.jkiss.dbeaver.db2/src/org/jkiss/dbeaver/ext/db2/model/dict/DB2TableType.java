@@ -36,7 +36,7 @@ public enum DB2TableType implements DBPNamedObject {
 
     L("L (Detached table)", DB2ObjectType.TABLE),
 
-    N("N (Nickname)", DB2ObjectType.ALIAS), // TODO DF: Wrong will be NICKNAME in the future..
+    N("N (Nickname)", DB2ObjectType.NICKNAME),
 
     S("S (Materialized query table)", DB2ObjectType.TABLE),
 
