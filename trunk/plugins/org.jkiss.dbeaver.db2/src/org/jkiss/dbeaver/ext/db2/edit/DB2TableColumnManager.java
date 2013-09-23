@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.edit;
 
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
+import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -45,8 +46,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     public DBSObjectCache<? extends DBSObject, DB2TableColumn> getObjectsCache(DB2TableColumn object)
     {
 
-        // return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
-        return null;
+        return object.getParentObject().getContainer().getTableCache().getChildrenCache((DB2Table) object.getParentObject());
     }
 
     @Override
