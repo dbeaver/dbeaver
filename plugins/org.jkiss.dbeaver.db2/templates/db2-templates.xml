@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- * Copyright (C) 2010-2013 Serge Rieder
- * serge@jkiss.org
+*
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
+ * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,10 +18,17 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  -->
+ *
+-->
 
 <templates>
 
-    <template id="org.jkiss.dbeaver.templates.curtime" name="curtime" context="sql_db2" autoinsert="true" description="select current time">select current_timestamp from dual;</template>
+    <template id="org.jkiss.dbeaver.templates.curtime" 
+              name="curtimestamp" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="select current timestamp">
+       values (current timestamp);
+    </template>
 
 </templates>
