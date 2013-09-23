@@ -23,24 +23,39 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerCache;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCObjectEditor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * DB2 Trigger Manager
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TriggerManager extends JDBCObjectEditor<DB2Trigger, DB2Table> {
 
-    private static final String SQL_DROP_TRIGGER = "DROP TRIGGER %S";
+    private static String SQL_CREATE_TRIGGER;
+    private static final String SQL_DROP_TRIGGER = "DROP TRIGGER %S ";
+
+    static {
+        StringBuilder sb = new StringBuilder(128);
+        sb.append("CREATE TRIGGER %s.%s\n");
+        sb.append("   BEFORE INSERT\n");
+        sb.append("   ON %s.<table name>\n");
+        sb.append("   REFERENCING NEW AS NEW_ROW\n");
+        sb.append("   FOR EACH ROW\n");
+        sb.append("   MODE DB2SQL\n");
+        sb.append("BEGIN ATOMIC\n");
+        sb.append("\n");
+        sb.append("END;\n");
+        SQL_CREATE_TRIGGER = sb.toString();
+    }
 
     @Override
     public long getMakerOptions()
@@ -57,29 +72,30 @@ public class DB2TriggerManager extends JDBCObjectEditor<DB2Trigger, DB2Table> {
     }
 
     @Override
-    public DBSObjectCache<? extends DBSObject, DB2Trigger> getObjectsCache(DB2Trigger object)
+    public DB2TriggerCache getObjectsCache(DB2Trigger object)
     {
         return object.getSchema().getTriggerCache();
     }
 
     @Override
-    protected DB2Trigger createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                              DBECommandContext context,
-                                              DB2Table parent,
-                                              Object copyFrom)
+    protected DB2Trigger createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table parent,
+        Object copyFrom)
     {
-        CreateEntityDialog dialog = new CreateEntityDialog(workbenchWindow.getShell(),
-            parent.getDataSource(),
-            DB2Messages.edit_db2_trigger_manager_dialog_title);
+        CreateEntityDialog dialog =
+            new CreateEntityDialog(workbenchWindow.getShell(), parent.getDataSource(),
+                DB2Messages.edit_db2_trigger_manager_dialog_title);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
-        // DB2TableTrigger newTrigger = new DB2TableTrigger(parent.getContainer(), parent, dialog.getEntityName());
-        //      newTrigger.setSourceDeclaration("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-        //               "BEGIN\n" + //$NON-NLS-1$
-        //               "END;"); //$NON-NLS-1$
-        // return newTrigger;
-        return null;
+
+        String triggerName = dialog.getEntityName();
+        DB2Schema triggerSchema = parent.getContainer();
+        String triggerSchemaName = triggerSchema.getName();
+
+        DB2Trigger newTrigger = new DB2Trigger(triggerSchema, parent, triggerName);
+        newTrigger.setSourceDeclaration(String.format(SQL_CREATE_TRIGGER, triggerSchemaName, triggerName, triggerSchemaName));
+
+        return newTrigger;
     }
 
     @Override
@@ -98,22 +114,25 @@ public class DB2TriggerManager extends JDBCObjectEditor<DB2Trigger, DB2Table> {
     protected IDatabasePersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         String triggerName = command.getObject().getFullQualifiedName();
-        IDatabasePersistAction action = new AbstractDatabasePersistAction("Drop trigger",
-            String.format(SQL_DROP_TRIGGER, triggerName));
-        return new IDatabasePersistAction[]{action};
+        IDatabasePersistAction action =
+            new AbstractDatabasePersistAction("Drop trigger", String.format(SQL_DROP_TRIGGER, triggerName));
+        return new IDatabasePersistAction[] { action };
     }
 
     private IDatabasePersistAction[] createOrReplaceViewQuery(DB2Trigger trigger)
     {
-        // String source = DB2Utils.normalizeSourceName(trigger, false);
-        // if (source == null) {
-        // return null;
-        // }
-        // List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>();
-        //      actions.add(new AbstractDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
-        // DB2Utils.addSchemaChangeActions(actions, trigger);
-        // return actions.toArray(new IDatabasePersistAction[actions.size()]);
-        return null;
-    }
+        String source = null;
+        try {
+            source = trigger.getSourceDeclaration(null);
+            if (source == null) {
+                return null;
+            }
+        } catch (DBException e) {
+            log.error(e);
+            return null;
+        }
 
+        IDatabasePersistAction action = new AbstractDatabasePersistAction("Create or replace Trigger", source);
+        return new IDatabasePersistAction[] { action };
+    }
 }

@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
- * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,17 +25,19 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * DB2 table column manager
+ * DB2 Table Column Manager
+ * 
+ * @author Denis Forveille
  */
 public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn, DB2TableBase> {
 
@@ -59,22 +61,19 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     }
 
     @Override
-    protected DB2TableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                                  DBECommandContext context,
-                                                  DB2TableBase parent,
-                                                  Object copyFrom)
+    protected DB2TableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2TableBase parent,
+        Object copyFrom)
     {
-        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
+        //        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
 
-        // final DB2TableColumn column = new DB2TableColumn(parent);
-        // column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
-        // // column.setType((DB2DataType) columnType);
-        //      column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
+        final DB2TableColumn column = new DB2TableColumn(parent, "abcd");
+        column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
+        // column.setType((DB2DataType) columnType);
+        //        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
         // column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         // column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
         // column.setOrdinalPosition(-1);
-        // return column;
-        return null;
+        return column;
     }
 
     @Override
@@ -84,8 +83,9 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
         boolean hasComment = command.getProperty("comment") != null;
         if (!hasComment || command.getProperties().size() > 1) {
-            actions.add(new AbstractDatabasePersistAction("Modify column", "ALTER TABLE " + column.getTable().getFullQualifiedName() + //$NON-NLS-1$
-                " MODIFY " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$
+            actions.add(new AbstractDatabasePersistAction(
+                "Modify column", "ALTER TABLE " + column.getTable().getFullQualifiedName() + //$NON-NLS-1$
+                    " MODIFY " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$
         }
         if (hasComment) {
             actions.add(new AbstractDatabasePersistAction("Comment column", "COMMENT ON COLUMN "

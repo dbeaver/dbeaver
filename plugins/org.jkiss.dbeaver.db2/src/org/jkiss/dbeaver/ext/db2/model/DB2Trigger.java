@@ -119,6 +119,22 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
 
     }
 
+    public DB2Trigger(DB2Schema schema, DB2Table table, String name)
+    {
+        super(schema, name, false);
+
+        this.ownerType = DB2OwnerType.U;
+        this.time = DB2TriggerTime.B;
+        this.event = DB2TriggerEvent.I;
+        this.granularity = DB2TriggerGranularity.R;
+        this.valid = DB2TriggerValid.X;
+
+    }
+
+    // -----------------
+    // Business contract
+    // -----------------
+
     @Override
     public DBSObjectState getObjectState()
     {

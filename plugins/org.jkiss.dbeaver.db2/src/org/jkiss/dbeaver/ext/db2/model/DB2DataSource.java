@@ -18,11 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.core.runtime.IAdaptable;
@@ -33,6 +28,8 @@ import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
+import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
+import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -58,6 +55,11 @@ import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 /**
  * DB2 DataSource
  * 
@@ -75,27 +77,35 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
     private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
     private static final String C_RL = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
+
+    private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
+    private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
+
     private static final String C_US = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'U' ORDER BY AUTHID WITH UR";
     private static final String C_GR = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'G' ORDER BY AUTHID WITH UR";
 
     private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
-    private static final String PLAN_TABLE_MSG =
-        "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
+    private static final String PLAN_TABLE_MSG = "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
 
     private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Schema>(
         DB2Schema.class, C_SCHEMA);
     private final DBSObjectCache<DB2DataSource, DB2DataType> dataTypeCache = new JDBCObjectSimpleCache<DB2DataSource, DB2DataType>(
         DB2DataType.class, C_DT);
-    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache =
-        new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(DB2Bufferpool.class, C_BP);
-    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache =
-        new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(DB2Tablespace.class, C_TS);
+    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(
+        DB2Bufferpool.class, C_BP);
+    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(
+        DB2Tablespace.class, C_TS);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
         DB2Role.class, C_RL);
     private final DBSObjectCache<DB2DataSource, DB2User> userCache = new JDBCObjectSimpleCache<DB2DataSource, DB2User>(
         DB2User.class, C_US);
     private final DBSObjectCache<DB2DataSource, DB2Group> groupCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Group>(
         DB2Group.class, C_GR);
+
+    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache = new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(
+        DB2RemoteServer.class, C_SV);
+    private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Wrapper>(
+        DB2Wrapper.class, C_WR);
 
     private List<DB2Parameter> listDBParameters;
     private List<DB2Parameter> listDBMParameters;
@@ -184,6 +194,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         this.bufferpoolCache.clearCache();
         this.schemaCache.clearCache();
         this.dataTypeCache.clearCache();
+
+        this.remoteServerCache.clearCache();
+        this.wrapperCache.clearCache();
 
         this.listDBMParameters = null;
         this.listDBParameters = null;
@@ -411,6 +424,28 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Association
+    public Collection<DB2Wrapper> getWrappers(DBRProgressMonitor monitor) throws DBException
+    {
+        return wrapperCache.getObjects(monitor, this);
+    }
+
+    public DB2Wrapper getWrapper(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return wrapperCache.getObject(monitor, this, name);
+    }
+
+    @Association
+    public Collection<DB2RemoteServer> getRemoteServers(DBRProgressMonitor monitor) throws DBException
+    {
+        return remoteServerCache.getObjects(monitor, this);
+    }
+
+    public DB2RemoteServer getRemoteServer(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return remoteServerCache.getObject(monitor, this, name);
+    }
+
+    @Association
     public Collection<DB2User> getUsers(DBRProgressMonitor monitor) throws DBException
     {
         return userCache.getObjects(monitor, this);
@@ -469,6 +504,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DBSObjectCache<DB2DataSource, DB2DataType> getDataTypeCache()
     {
         return dataTypeCache;
+    }
+
+    public DBSObjectCache<DB2DataSource, DB2Tablespace> getTablespaceCache()
+    {
+        return tablespaceCache;
     }
 
 }

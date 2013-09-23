@@ -34,7 +34,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Table Column
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBSTableColumn, DBPHiddenObject {
@@ -78,17 +78,21 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         setValueType(dataType.getTypeID());
     }
 
+    public DB2TableColumn(DB2TableBase tableBase, String name)
+    {
+        super(tableBase, false);
+
+        setName(name);
+    }
+
+    // -----------------
+    // Business Contract
+    // -----------------
+
     @Override
     public DB2DataSource getDataSource()
     {
         return getTable().getDataSource();
-    }
-
-    @Override
-    @Property(viewable = true, order = 41)
-    public int getPrecision()
-    {
-        return super.getPrecision();
     }
 
     @Override
@@ -142,4 +146,12 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     {
         return remarks;
     }
+
+    @Override
+    @Property(viewable = true, order = 41)
+    public int getPrecision()
+    {
+        return super.getPrecision();
+    }
+
 }
