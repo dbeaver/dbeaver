@@ -83,6 +83,11 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         super(tableBase, false);
 
         setName(name);
+        setMaxLength(50L);
+        this.dataType = tableBase.getDataSource().getDataTypeCache().getCachedObject("VARCHAR");
+        this.dataTypeSchema = dataType.getSchema();
+        setTypeName(dataType.getFullQualifiedName());
+        setValueType(dataType.getTypeID());
     }
 
     // -----------------
@@ -128,23 +133,33 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         return dataTypeSchema;
     }
 
-    @Property(viewable = true, editable = false, order = 21)
+    @Property(viewable = true, editable = true, order = 21)
     public DBSDataType getType()
     {
         return dataType;
     }
 
-    @Property(viewable = true, editable = false)
+    public void setType(DB2DataType dataType)
+    {
+        this.dataType = dataType;
+    }
+
     @Override
+    @Property(viewable = true, editable = true)
     public boolean isRequired()
     {
         return super.isRequired();
     }
 
-    @Property(viewable = true, editable = false)
+    @Property(viewable = true, editable = true)
     public String getComment()
     {
         return remarks;
+    }
+
+    public void setComment(String comment)
+    {
+        this.remarks = comment;
     }
 
     @Override
