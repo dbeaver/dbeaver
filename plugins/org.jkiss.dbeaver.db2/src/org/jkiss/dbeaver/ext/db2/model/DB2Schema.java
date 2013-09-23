@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2AliasCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2IndexCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2NicknameCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCheckConstraintCache;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -65,6 +67,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private final DB2TriggerCache triggerCache = new DB2TriggerCache();
     private final DB2AliasCache aliasCache = new DB2AliasCache();
     private final DBSObjectCache<DB2Schema, DB2Package> packageCache;
+    private final DB2NicknameCache nicknameCache = new DB2NicknameCache();
 
     private final DB2RoutineCache procedureCache = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
     private final DB2RoutineCache udfCache = new DB2RoutineCache(DBSProcedureType.FUNCTION);
@@ -93,15 +96,12 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         super(dataSource, true);
         this.name = name;
 
-        this.sequenceCache =
-            new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class,
-                "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR", name);
-        this.packageCache =
-            new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class,
-                "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR", name);
-        this.udtCache =
-            new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class,
-                "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR", name);
+        this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class,
+            "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR", name);
+        this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class,
+            "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR", name);
+        this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class,
+            "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR", name);
     }
 
     public DB2Schema(DB2DataSource dataSource, ResultSet dbResult)
@@ -228,6 +228,17 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DB2View getView(DBRProgressMonitor monitor, String name) throws DBException
     {
         return tableCache.getObject(monitor, this, name, DB2View.class);
+    }
+
+    @Association
+    public Collection<DB2Nickname> getNicknames(DBRProgressMonitor monitor) throws DBException
+    {
+        return nicknameCache.getTypedObjects(monitor, this, DB2Nickname.class);
+    }
+
+    public DB2Nickname getNickname(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return nicknameCache.getObject(monitor, this, name, DB2Nickname.class);
     }
 
     @Association
@@ -374,6 +385,11 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DB2ViewCache getViewCache()
     {
         return viewCache;
+    }
+
+    public DB2NicknameCache getNicknameCache()
+    {
+        return nicknameCache;
     }
 
     public DBSObjectCache<DB2Schema, DB2DataType> getUdtCache()

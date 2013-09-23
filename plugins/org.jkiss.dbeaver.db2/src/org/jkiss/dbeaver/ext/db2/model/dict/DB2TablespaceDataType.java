@@ -26,22 +26,24 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TablespaceDataType implements DBPNamedObject {
-    A("A (All types, regular)"),
+    A("A (All types, regular)", true),
 
-    L("L (All types, large)"),
+    L("L (All types, large)", true),
 
-    T("T (System temporary tables only)"),
+    T("T (System temporary tables only)", false),
 
-    U("U (Created temporary tables or declared temporary tables only)");
+    U("U (Created temporary tables or declared temporary tables only)", false);
 
     private String name;
+    private Boolean validForUserTables;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2TablespaceDataType(String name)
+    private DB2TablespaceDataType(String name, Boolean validForUserTables)
     {
         this.name = name;
+        this.validForUserTables = validForUserTables;
     }
 
     // -----------------------
@@ -60,5 +62,10 @@ public enum DB2TablespaceDataType implements DBPNamedObject {
     public String getName()
     {
         return name;
+    }
+
+    public Boolean isValidForUserTables()
+    {
+        return validForUserTables;
     }
 }

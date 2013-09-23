@@ -22,7 +22,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.*;
+import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2Package;
+import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
+import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
+import org.jkiss.dbeaver.ext.db2.model.DB2View;
+import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -33,7 +48,7 @@ import java.util.Map;
 
 /**
  * DB2 Object type used by Search, Content Assist and object dependency resolution
- *
+ * 
  * @author Denis Forveille
  */
 public enum DB2ObjectType implements DBSObjectType {
@@ -48,7 +63,8 @@ public enum DB2ObjectType implements DBSObjectType {
 
     CHECK(DBIcon.TREE_CONSTRAINT.getImage(), DB2TableCheckConstraint.class, new ObjectFinder() {
         @Override
-        public DB2TableCheckConstraint findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        public DB2TableCheckConstraint findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName)
+            throws DBException
         {
             return schema.getCheckCache().getObject(monitor, schema, objectName);
         }
@@ -67,6 +83,14 @@ public enum DB2ObjectType implements DBSObjectType {
         public DB2Index findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
             return schema.getIndexCache().getObject(monitor, schema, objectName);
+        }
+    }),
+
+    NICKNAME(DBIcon.TREE_SYNONYM.getImage(), DB2View.class, new ObjectFinder() {
+        @Override
+        public DB2Nickname findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getNicknameCache().getObject(monitor, schema, objectName, DB2Nickname.class);
         }
     }),
 
@@ -221,12 +245,8 @@ public enum DB2ObjectType implements DBSObjectType {
         return typeMap.get(typeName);
     }
 
-    public static Object resolveObject(
-        DBRProgressMonitor monitor,
-        DB2DataSource dataSource,
-        String objectTypeName,
-        String objectOwner,
-        String objectName) throws DBException
+    public static Object resolveObject(DBRProgressMonitor monitor, DB2DataSource dataSource, String objectTypeName,
+        String objectOwner, String objectName) throws DBException
     {
         DB2ObjectType objectType = DB2ObjectType.getByType(objectTypeName);
         if (objectType == null) {

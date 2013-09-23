@@ -72,6 +72,17 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         }
     }
 
+    public DB2IndexColumn(DB2Index db2Index, DB2TableColumn tableColumn, int ordinalPosition)
+    {
+        this.db2Index = db2Index;
+        this.tableColumn = tableColumn;
+        this.colSeq = ordinalPosition;
+        this.colOrder = DB2IndexColOrder.A; // Force Ascending ..
+    }
+
+    // -----------------
+    // Business Contract
+    // -----------------
     @Override
     public DB2DataSource getDataSource()
     {
@@ -133,7 +144,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         return colSeq;
     }
 
-    @Property(viewable = true, editable = false, order = 3, id = "table")
+    @Property(viewable = true, editable = true, order = 3, id = "table")
     public DB2IndexColOrder getColOrder()
     {
         return colOrder;

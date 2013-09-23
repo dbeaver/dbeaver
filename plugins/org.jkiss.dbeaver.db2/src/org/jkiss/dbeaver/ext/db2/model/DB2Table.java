@@ -23,6 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.edit.DB2TableTablespaceListProvider;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
@@ -249,7 +250,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     // -----------------
 
     @Override
-    @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
         return super.getName();
@@ -280,10 +281,15 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         return type;
     }
 
-    @Property(viewable = true, editable = false, category = DB2Constants.CAT_TABLESPACE)
+    @Property(viewable = true, editable = true, category = DB2Constants.CAT_TABLESPACE, listProvider = DB2TableTablespaceListProvider.class)
     public DB2Tablespace getTablespace()
     {
         return tablespace;
+    }
+
+    public void setTablespace(DB2Tablespace tablespace)
+    {
+        this.tablespace = tablespace;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_TABLESPACE)

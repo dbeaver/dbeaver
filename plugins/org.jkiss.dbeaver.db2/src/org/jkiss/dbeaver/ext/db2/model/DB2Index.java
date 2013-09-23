@@ -26,10 +26,12 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -106,6 +108,14 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         this.indexType = db2IndexType.getDBSIndexType();
     }
 
+    public DB2Index(DB2Schema schema, DB2Table db2Table, String name, DBSIndexType indexType)
+    {
+        super(schema, db2Table, name, indexType, false);
+    }
+
+    // -----------------
+    // Business Contract
+    // -----------------
     @Override
     public boolean isUnique()
     {
@@ -140,12 +150,18 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         }
     }
 
+    public void addColumn(DB2IndexColumn ixColumn)
+    {
+        DBSObjectCache<DB2Index, DB2IndexColumn> cols = getContainer().getIndexCache().getChildrenCache(this);
+        cols.cacheObject(ixColumn);
+    }
+
     // -----------------
     // Properties
     // -----------------
 
     @Override
-    @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
+    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()
     {
         return super.getName();

@@ -45,18 +45,21 @@ import java.util.List;
 
 /**
  * DB2 Structure Assistant
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2StructureAssistant implements DBSStructureAssistant {
     private static final Log LOG = LogFactory.getLog(DB2StructureAssistant.class);
 
     // TODO DF: Work in progess
-    // For now only support Search/Autocomplete on Aliases, Tables and Views..
+    // For now only support Search/Autocomplete on Aliases, Tables, Views and Nicknames
 
-    private static final DBSObjectType[] HYPER_LINKS_TYPES = {DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,};
-    private static final DBSObjectType[] AUTOC_OBJ_TYPES = {DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,};
-    private static final DBSObjectType[] SUPP_OBJ_TYPES = {DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,};
+    private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
+        DB2ObjectType.NICKNAME, };
+    private static final DBSObjectType[] AUTOC_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
+        DB2ObjectType.NICKNAME, };
+    private static final DBSObjectType[] SUPP_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
+        DB2ObjectType.NICKNAME, };
 
     private static String SQL_ALL;
     private static String SQL_TAB;
@@ -115,12 +118,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     }
 
     @Override
-    public Collection<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor,
-                                                            DBSObject parentObject,
-                                                            DBSObjectType[] objectTypes,
-                                                            String objectNameMask,
-                                                            boolean caseSensitive,
-                                                            int maxResults) throws DBException
+    public Collection<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
+        DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, int maxResults) throws DBException
     {
 
         DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
@@ -139,12 +138,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     // Helpers
     // -----------------
 
-    private List<DBSObjectReference> searchAllObjects(final JDBCExecutionContext context,
-                                                      final DB2Schema schema,
-                                                      String objectNameMask,
-                                                      DBSObjectType[] objectTypes,
-                                                      boolean caseSensitive,
-                                                      int maxResults) throws SQLException, DBException
+    private List<DBSObjectReference> searchAllObjects(final JDBCExecutionContext context, final DB2Schema schema,
+        String objectNameMask, DBSObjectType[] objectTypes, boolean caseSensitive, int maxResults) throws SQLException, DBException
     {
 
         List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
