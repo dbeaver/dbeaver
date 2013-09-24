@@ -73,6 +73,16 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
 
     }
 
+    public DB2TableUniqueKey(DB2Table db2Table, String name, DBSEntityConstraintType constraintType)
+    {
+        super(db2Table, name, null, constraintType, false);
+        this.ownerType = DB2OwnerType.U;
+    }
+
+    // -----------------
+    // Business Contract
+    // -----------------
+
     @Override
     public String getFullQualifiedName()
     {

@@ -1,6 +1,6 @@
 /*
+ * Copyright (C) 2013      Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2013 Serge Rieder serge@jkiss.org
- * Copyright (C) 2011-2012 Eugene Fradkin eugene.fradkin@gmail.com
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,18 +22,26 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * DB2 constraint manager
+ * DB2 Unique Keys Manager
+ * 
+ * @author Denis Forveille
  */
-public class DB2ConstraintManager extends JDBCConstraintManager<DB2TableUniqueKey, DB2Table> {
+public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey, DB2Table> {
 
     @Override
     public DBSObjectCache<? extends DBSObject, DB2TableUniqueKey> getObjectsCache(DB2TableUniqueKey object)
@@ -42,39 +50,29 @@ public class DB2ConstraintManager extends JDBCConstraintManager<DB2TableUniqueKe
     }
 
     @Override
-    protected DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow,
-                                                     DBECommandContext context,
-                                                     DB2Table parent,
-                                                     Object from)
+    protected DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context,
+        DB2Table db2Table, Object from)
     {
         EditConstraintDialog editDialog = new EditConstraintDialog(workbenchWindow.getShell(),
-            DB2Messages.edit_db2_constraint_manager_dialog_title,
-            parent,
-            new DBSEntityConstraintType[]{
-                DBSEntityConstraintType.PRIMARY_KEY,
-                DBSEntityConstraintType.UNIQUE_KEY});
+            DB2Messages.edit_db2_constraint_manager_dialog_title, db2Table, new DBSEntityConstraintType[] {
+                DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY });
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
 
-        // final DB2TableConstraint constraint = new DB2TableConstraint(
-        // parent,
-        // null,
-        // editDialog.getConstraintType(),
-        // null,
-        // DB2ObjectStatus.ENABLED);
-        //        constraint.setName(DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(parent.getName()) + "_PK")); //$NON-NLS-1$
-        // int colIndex = 1;
-        // for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns())
-        // {
-        // constraint.addColumn(
-        // new DB2TableConstraintColumn(
-        // constraint,
-        // (DB2TableColumn) tableColumn,
-        // colIndex++));
-        // }
-        // return constraint;
-        return null;
+        String name = db2Table.getName() + "_PK";
+        DB2TableUniqueKey constraint = new DB2TableUniqueKey(db2Table, name, editDialog.getConstraintType());
+
+        List<DB2TableKeyColumn> columns = new ArrayList<DB2TableKeyColumn>(editDialog.getSelectedColumns().size());
+        DB2TableKeyColumn column;
+        int colIndex = 1;
+        for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {
+            column = new DB2TableKeyColumn(constraint, (DB2TableColumn) tableColumn, colIndex++);
+            columns.add(column);
+        }
+        constraint.setColumns(columns);
+
+        return constraint;
     }
 
     @Override
