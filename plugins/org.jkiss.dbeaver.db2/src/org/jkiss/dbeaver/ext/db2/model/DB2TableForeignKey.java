@@ -38,7 +38,7 @@ import java.util.List;
 
 /**
  * DB2 Table Foreign Key
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements DBSTableForeignKey {
@@ -69,6 +69,16 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         deleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));
         updateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
     }
+
+    public DB2TableForeignKey(DB2Table db2Table, DB2TableUniqueKey referencedKey, DBSForeignKeyModifyRule deleteRule)
+    {
+        super(db2Table, null, null, DBSEntityConstraintType.FOREIGN_KEY, true);
+        this.referencedKey = referencedKey;
+    }
+
+    // -----------------
+    // Business Contract
+    // -----------------
 
     @Override
     public DBPDataSource getDataSource()
