@@ -8,14 +8,15 @@ Problems :
   or 
   the user cancels a drop action after viewing the drop command, 
   then the schema disappear from the list
-  -> the schema must dissapear from the schema list ONLY if the drop succedeed..
+  -> the schema must disappear from the schema list ONLY if the drop succedeed..
 
 Manage explain/ddl generation table creation 
 - EXPLAIN tables may be created in any schema where the user has the right to create them
-  -> the schema for explain tables should be in DB2 preferences. By default it is SYSTOOLS (best place for that)
-  -> the first time the user tries to do an explain, if EXPLAIN tables can not be found or not usable 
+  -> the schema for explain tables should be in DB2 preferences PER DATASPURCE. 
+  -> By default it should be in SYSTOOLS (best place for that)
+  -> the first time the user tries to do an explain, if EXPLAIN tables can not be found or are not usable 
     in standard locations (CURRENT USER then SYSTOOLS) then ask the user where to create the tables. 
-    Create them and store the schema for explain tables in preferences..
+    Create them and store the schema for explain tables in DATASOURCE preferences..
  
 Improvements:
   - Enhance SQL Content assist + Search
@@ -57,9 +58,7 @@ Missing Menu Actions
     - Server OS INFO
 
 Missing objects in Federation:
-- Wrapper Options
-- Server options
-- User Mappings
+- User mappings
 - Function mappings
 
 Missing relationships (All nice to have):
