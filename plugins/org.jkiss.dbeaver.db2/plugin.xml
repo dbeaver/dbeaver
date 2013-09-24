@@ -202,10 +202,18 @@
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.federation.node.name" icon="#storage" description="Federation">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper" label="%tree.wrappers.node.name" icon="#bufferpools" description="Wrappers">
-                        <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="#wrapper" />
+                        <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="#wrapper" >
+                           <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2WrapperOption" label="%tree.options.node.name" icon="#options" description="Wrapper Options">
+                                <items label="%tree.option.node.name" path="option" property="options" icon="#option"/>
+                           </folder>
+                        </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer" label="%tree.remoteservers.node.name" icon="#folder_link" description="Remote Servers">
-                        <items label="%tree.remoteserver.node.name" path="remoteServer" property="remoteServers" icon="#link" />
+                        <items label="%tree.remoteserver.node.name" path="remoteServer" property="remoteServers" icon="#link" >
+                           <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServerOption" label="%tree.options.node.name" icon="#options" description="Remote Servers Options">
+                                <items label="%tree.option.node.name" path="option" property="options" icon="#option"/>
+                           </folder>
+                        </items>
                     </folder>
 <!--                    
                     <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2FedSP" label="%tree.fedsp.node.name" icon="#procedures" description="Federated Stored Procs">
