@@ -22,13 +22,19 @@ import org.jkiss.dbeaver.model.DBConstants;
 
 /**
  * DB2 constants
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Constants {
 
     // Connection properties
     public static final int DEFAULT_PORT = 50000;
+
+    public static final String PROP_TRACE_ENABLED = DBConstants.INTERNAL_PROP_PREFIX + "trace.enabled";
+    public static final String PROP_TRACE_FOLDER = DBConstants.INTERNAL_PROP_PREFIX + "trace.folder";
+    public static final String PROP_TRACE_FILE = DBConstants.INTERNAL_PROP_PREFIX + "trace.file";
+    public static final String PROP_TRACE_APPEND = DBConstants.INTERNAL_PROP_PREFIX + "trace.append";
+    public static final String PROP_TRACE_LEVEL = DBConstants.INTERNAL_PROP_PREFIX + "trace.level";
 
     // Display Categories
     public static final String CAT_DATETIME = "Date & Time";
@@ -45,28 +51,13 @@ public class DB2Constants {
     // ------------------
     // TODO DF Sortout those remaining consts..
     // --------------------------
-    public static final String CMD_COMPILE = "org.jkiss.dbeaver.ext.db2.code.compile"; //$NON-NLS-1$
     //
     public static final String PROP_SOURCE_DEFINITION = "sourceDefinition";
     public static final String PROP_SOURCE_DECLARATION = "sourceDeclaration";
 
-    public static final String[] ADVANCED_KEYWORDS = {
-        "PACKAGE",
-        "FUNCTION",
-        "TYPE",
-        "TRIGGER",
-        "MATERIALIZED",
-        "IF",
-        "EACH",
-        "RETURN",
-        "WRAPPED"};
+    public static final String[] ADVANCED_KEYWORDS = { "PACKAGE", "FUNCTION", "TYPE", "TRIGGER", "MATERIALIZED", "IF", "EACH",
+        "RETURN", "WRAPPED" };
 
     public static final String PREF_KEY_DDL_FORMAT = "db2.ddl.format";
-
-    public static final String PROP_TRACE_ENABLED = DBConstants.INTERNAL_PROP_PREFIX + "trace.enabled";
-    public static final String PROP_TRACE_FOLDER = DBConstants.INTERNAL_PROP_PREFIX + "trace.folder";
-    public static final String PROP_TRACE_FILE = DBConstants.INTERNAL_PROP_PREFIX + "trace.file";
-    public static final String PROP_TRACE_APPEND = DBConstants.INTERNAL_PROP_PREFIX + "trace.append";
-    public static final String PROP_TRACE_LEVEL = DBConstants.INTERNAL_PROP_PREFIX + "trace.level";
 
 }
