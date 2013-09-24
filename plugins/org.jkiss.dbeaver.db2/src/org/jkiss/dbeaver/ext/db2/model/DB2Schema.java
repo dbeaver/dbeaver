@@ -96,12 +96,15 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         super(dataSource, true);
         this.name = name;
 
-        this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class,
-            "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR", name);
-        this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class,
-            "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR", name);
-        this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class,
-            "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR", name);
+        this.sequenceCache =
+            new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class,
+                "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR", name);
+        this.packageCache =
+            new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class,
+                "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR", name);
+        this.udtCache =
+            new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class,
+                "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR", name);
     }
 
     public DB2Schema(DB2DataSource dataSource, ResultSet dbResult)
@@ -122,7 +125,16 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Override
     public boolean isSystem()
     {
-        return getName().startsWith("SYS");
+        if (getName().startsWith("SYS")) {
+            return true;
+        }
+        if (getName().equals("DB2QP")) {
+            return true;
+        }
+        if (getName().equals("SESSION")) {
+            return true;
+        }
+        return false;
     }
 
     @Override
