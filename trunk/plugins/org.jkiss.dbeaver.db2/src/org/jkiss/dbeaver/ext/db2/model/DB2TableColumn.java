@@ -147,7 +147,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     }
 
     @Override
-    @Property(viewable = true, editable = true)
+    @Property(viewable = true, editable = true, updatable = true)
     public boolean isRequired()
     {
         return super.isRequired();
