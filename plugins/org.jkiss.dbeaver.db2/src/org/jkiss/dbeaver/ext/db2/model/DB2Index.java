@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexPageSplit;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
@@ -57,7 +58,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
     private Integer minPctUsed;
     private Boolean reverseScans;
     private Integer tablespaceId;
-    private String pageSplit; // TODO DF: create an enum
+    private DB2IndexPageSplit pageSplit;
     private Boolean compression;
     private String remarks;
 
@@ -90,6 +91,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         this.reverseScans = JDBCUtils.safeGetBoolean(dbResult, "REVERSE_SCANS", DB2YesNo.Y.name());
         this.tablespaceId = JDBCUtils.safeGetInteger(dbResult, "TBSPACEID");
         this.compression = JDBCUtils.safeGetBoolean(dbResult, "COMPRESSION", DB2YesNo.Y.name());
+        this.pageSplit = CommonUtils.valueOf(DB2IndexPageSplit.class, JDBCUtils.safeGetStringTrimmed(dbResult, "PAGESPLIT"));
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
@@ -228,7 +230,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
     }
 
     @Property(viewable = false, order = 23, editable = false)
-    public String getPageSplit()
+    public DB2IndexPageSplit getPageSplit()
     {
         return pageSplit;
     }

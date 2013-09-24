@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2ConstraintCheckData;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -37,7 +38,7 @@ import java.util.List;
 
 /**
  * DB2 Table Unique Key
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
@@ -46,7 +47,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     private DB2OwnerType ownerType;
     private Boolean enforced;
     private Boolean trusted;
-    private String checkExistingData; // TODO DF : Create Enum
+    private DB2ConstraintCheckData checkExistingData;
     private Boolean enableQueryOpt;
     private String remarks;
 
@@ -56,15 +57,17 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     // Constructor
     // -----------------
 
-    public DB2TableUniqueKey(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult, DBSEntityConstraintType type) throws DBException
+    public DB2TableUniqueKey(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult, DBSEntityConstraintType type)
+        throws DBException
     {
         super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, type, true);
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         this.enforced = JDBCUtils.safeGetBoolean(dbResult, "ENFORCED", DB2YesNo.Y.name());
-        // DB2 v10 this.trusted = JDBCUtils.safeGetBoolean(dbResult, "TRUSTED", DB2YesNo.Y.name());
-        this.checkExistingData = JDBCUtils.safeGetString(dbResult, "CHECKEXISTINGDATA");
+        this.trusted = JDBCUtils.safeGetBoolean(dbResult, "TRUSTED", DB2YesNo.Y.name());
+        this.checkExistingData = CommonUtils.valueOf(DB2ConstraintCheckData.class,
+            JDBCUtils.safeGetString(dbResult, "CHECKEXISTINGDATA"));
         this.enableQueryOpt = JDBCUtils.safeGetBoolean(dbResult, "ENABLEQUERYOPT", DB2YesNo.Y.name());
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
@@ -146,7 +149,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     }
 
     @Property(viewable = false, editable = false)
-    public String getCheckExistingData()
+    public DB2ConstraintCheckData getCheckExistingData()
     {
         return checkExistingData;
     }

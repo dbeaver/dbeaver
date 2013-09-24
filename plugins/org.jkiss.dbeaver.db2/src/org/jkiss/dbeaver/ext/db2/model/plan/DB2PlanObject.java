@@ -27,7 +27,7 @@ import java.sql.Timestamp;
 
 /**
  * DB2 EXPLAIN_OBJECT table
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2PlanObject extends DB2PlanNode {
@@ -75,8 +75,6 @@ public class DB2PlanObject extends DB2PlanNode {
     private Long activeBlocks;
     private Integer numDataPart;
     private String nullKeys;
-
-    // TODO DF: and many many more
 
     // ------------
     // Constructors
