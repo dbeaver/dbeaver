@@ -18,7 +18,6 @@ Manage explain/ddl generation table creation
     Create them and store the schema for explain tables in preferences..
  
 Improvements:
-  - by default, the DB2 timestamps display format should be with 6 microseconds : 2013-09-12-18.05.00.000000
   - Enhance SQL Content assist + Search
     - Add Tablespaces, indexes, columns, foreign keys...
   - Propagate and use monitors everywhere
@@ -30,9 +29,7 @@ Improvements:
     - Hierachies..
   
 Serge to check?
-  - check DB2TopSQL.getText() on how to display CLobs
-  - in "session/aplication" view, we don't have any SQL text to display. Could we hide the corresponding  panel section?
-  - looked for icon sessions.png used by myslq and orcle, didn't find it
+  - looked for icon sessions.png used by myslq and oracle, didn't find it
   - missing PK columns indicator/icon in columns lists (Unique, foreign)
   - Enhance EXPLAIN facility with a graphic view of nodes -> Later
   
@@ -56,6 +53,12 @@ Missing Menu Actions
     - call sysproc.admin_cmd("backup...");
     - current locks
     - Server OS INFO
+
+Missing objects in Federation:
+- Wrapper Options
+- Server options
+- User Mappings
+- Function mappings
 
 Missing relationships (All nice to have):
    - Tablespace -> Bufferpool link on BPName (On id)
