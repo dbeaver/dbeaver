@@ -29,11 +29,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
  * DB2 source declaration editor
  */
 public class DB2SourceDeclarationEditor extends SQLEditorNested<DB2SourceObject> {
-    @Override
-    protected String getCompileCommandId()
-    {
-        return DB2Constants.CMD_COMPILE;
-    }
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
