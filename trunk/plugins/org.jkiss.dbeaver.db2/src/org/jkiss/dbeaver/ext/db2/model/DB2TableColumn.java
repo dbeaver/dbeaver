@@ -85,6 +85,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
 
         setName(name);
         setMaxLength(50L);
+        setOrdinalPosition(-1);
         this.dataType = tableBase.getDataSource().getDataTypeCache().getCachedObject("VARCHAR");
         this.dataTypeSchema = dataType.getSchema();
         setTypeName(dataType.getFullQualifiedName());
