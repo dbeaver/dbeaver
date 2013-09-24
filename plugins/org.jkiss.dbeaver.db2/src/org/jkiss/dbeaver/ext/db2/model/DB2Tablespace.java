@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TablesaceContainerCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TablespaceContainerCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceType;
@@ -43,7 +43,7 @@ import java.util.Collection;
  */
 public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DBPRefreshableObject {
 
-    private final DB2TablesaceContainerCache containerCache = new DB2TablesaceContainerCache();
+    private final DB2TablespaceContainerCache containerCache = new DB2TablespaceContainerCache();
 
     private String name;
     private String owner;

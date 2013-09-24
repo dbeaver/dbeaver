@@ -18,20 +18,31 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.fed;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 
 /**
  * DB2 Federated Wrapper
  * 
  * @author Denis Forveille
  */
-public class DB2Wrapper extends DB2GlobalObject {
+public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject {
+
+    private static final String C_OP = "SELECT * FROM SYSCAT.WRAPOPTIONS WHERE WRAPNAME = ? ORDER BY OPTION WITH UR";
+
+    private final DBSObjectCache<DB2Wrapper, DB2WrapperOption> optionsCache;
 
     private String name;
     private DB2WrapperType type;
@@ -52,6 +63,25 @@ public class DB2Wrapper extends DB2GlobalObject {
         this.version = JDBCUtils.safeGetInteger(dbResult, "WRAPVERSION");
         this.library = JDBCUtils.safeGetString(dbResult, "LIBRARY");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        optionsCache = new JDBCObjectSimpleCache<DB2Wrapper, DB2WrapperOption>(DB2WrapperOption.class, C_OP, name);
+    }
+
+    @Override
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    {
+        optionsCache.clearCache();
+        return true;
+    }
+
+    // -----------------
+    // Associations
+    // -----------------
+
+    @Association
+    public Collection<DB2WrapperOption> getOptions(DBRProgressMonitor monitor) throws DBException
+    {
+        return optionsCache.getObjects(monitor, this);
     }
 
     // -----------------
