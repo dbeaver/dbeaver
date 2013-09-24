@@ -51,9 +51,6 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
     private Timestamp alterTime;
     private String remarks;
 
-    // TODO DF: Add other attributes
-    // TODO DF: Add dependencies
-
     // -----------------------
     // Constructors
     // -----------------------
@@ -68,10 +65,9 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
-        packageDepCache =
-            new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class,
-                "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR",
-                schema.getName(), getName());
+        packageDepCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class,
+            "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR", schema.getName(),
+            getName());
     }
 
     // -----------------

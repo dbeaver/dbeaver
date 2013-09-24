@@ -30,7 +30,7 @@ import java.util.List;
 
 /**
  * DB2 EXPLAIN_OPERATOR table
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2PlanOperator extends DB2PlanNode {
@@ -69,16 +69,12 @@ public class DB2PlanOperator extends DB2PlanNode {
 
     private Double estimatedCardinality = -1d;
 
-    // TODO DF: and many many more
-
     // ------------
     // Constructors
     // ------------
 
-    public DB2PlanOperator(JDBCExecutionContext context,
-                           JDBCResultSet dbResult,
-                           DB2PlanStatement db2Statement,
-                           String planTableSchema) throws SQLException
+    public DB2PlanOperator(JDBCExecutionContext context, JDBCResultSet dbResult, DB2PlanStatement db2Statement,
+        String planTableSchema) throws SQLException
     {
 
         this.db2Statement = db2Statement;
@@ -160,7 +156,8 @@ public class DB2PlanOperator extends DB2PlanNode {
     {
 
         listArguments = new ArrayList<DB2PlanOperatorArgument>();
-        JDBCPreparedStatement sqlStmt = context.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT"));
+        JDBCPreparedStatement sqlStmt = context.prepareStatement(String
+            .format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT"));
         try {
             setQueryParameters(sqlStmt);
             JDBCResultSet res = sqlStmt.executeQuery();

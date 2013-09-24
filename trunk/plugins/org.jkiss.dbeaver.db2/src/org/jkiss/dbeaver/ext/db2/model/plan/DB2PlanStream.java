@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
  * DB2 EXPLAIN_STREAM table
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2PlanStream {
@@ -42,8 +42,6 @@ public class DB2PlanStream {
     private String objectName;
 
     private Double streamCount;
-
-    // TODO DF: and many many more
 
     // ------------
     // Constructors

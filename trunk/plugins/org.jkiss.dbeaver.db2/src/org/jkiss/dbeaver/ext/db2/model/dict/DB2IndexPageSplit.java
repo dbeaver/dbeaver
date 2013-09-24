@@ -19,34 +19,27 @@
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 /**
- * DB2 Type of Constraints
+ * DB2 Indexes page split
  * 
  * @author Denis Forveille
  */
-public enum DB2ConstraintType implements DBPNamedObject {
-    F("F (Foreign key)", DBSEntityConstraintType.FOREIGN_KEY),
+public enum DB2IndexPageSplit implements DBPNamedObject {
+    H("H (High)"),
 
-    I("I (Functional dependency)", DBSEntityConstraintType.ASSOCIATION),
+    L("L (Low)"),
 
-    K("K (Check)", DBSEntityConstraintType.CHECK),
-
-    P("P (Primary key)", DBSEntityConstraintType.PRIMARY_KEY),
-
-    U("U (Unique)", DBSEntityConstraintType.UNIQUE_KEY);
+    S("S (Symmetric)");
 
     private String name;
-    private DBSEntityConstraintType type;
 
-    // -----------
+    // -----------------
     // Constructor
-    // -----------
-    private DB2ConstraintType(String name, DBSEntityConstraintType type)
+    // -----------------
+    private DB2IndexPageSplit(String name)
     {
         this.name = name;
-        this.type = type;
     }
 
     // -----------------------
@@ -58,14 +51,6 @@ public enum DB2ConstraintType implements DBPNamedObject {
         return name;
     }
 
-    // -----------
-    // Helpers
-    // -----------
-    public static DBSEntityConstraintType getConstraintType(String code)
-    {
-        return DB2ConstraintType.valueOf(code).getType();
-    }
-
     // ----------------
     // Standard Getters
     // ----------------
@@ -73,11 +58,6 @@ public enum DB2ConstraintType implements DBPNamedObject {
     public String getName()
     {
         return name;
-    }
-
-    public DBSEntityConstraintType getType()
-    {
-        return type;
     }
 
 }
