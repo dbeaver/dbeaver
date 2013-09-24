@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
  * DB2 EXPLAIN_PREDICATE table
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2PlanOperatorPredicate implements DBPNamedObject {
@@ -37,8 +37,6 @@ public class DB2PlanOperatorPredicate implements DBPNamedObject {
     private String predicateText;
 
     private String displayName;
-
-    // TODO DF: and many many more
 
     // ------------
     // Constructors

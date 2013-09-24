@@ -137,7 +137,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     @Override
     public DB2SourceType getSourceType()
     {
-        return DB2SourceType.PROCEDURE; // TODO DF: no real correspondance
+        return DB2SourceType.PROCEDURE; // TODO DF: no exact correspondance
     }
 
     @Override

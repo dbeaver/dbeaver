@@ -79,8 +79,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     private String constraintText;
     private String remarks;
 
-    // TODO DF: add missing attributes
-
     // -----------------------
     // Constructors
     // -----------------------
@@ -166,6 +164,11 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return db2Schema.getName() + "." + name;
     }
 
+    public int getEquivalentSqlType()
+    {
+        return typeDesc.sqlType;
+    }
+
     // -----------------
     // TODO DF: What to do with those methods? read data from JDBC metadata?
     // -----------------
@@ -189,11 +192,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     {
         // TODO Auto-generated method stub
         return 0;
-    }
-
-    public int getEquivalentSqlType()
-    {
-        return typeDesc.sqlType;
     }
 
     // -----------------

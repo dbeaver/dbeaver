@@ -103,15 +103,15 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     }
 
     @Override
-    public Class<?>[] getChildTypes()
-    {
-        return CHILD_TYPES;
-    }
-
-    @Override
     public void renameObject(DBECommandContext commandContext, DB2Table object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    public Class<?>[] getChildTypes()
+    {
+        return CHILD_TYPES;
     }
 
     // -------

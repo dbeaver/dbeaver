@@ -65,8 +65,6 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
     private String text;
     private String remarks;
 
-    // TODO DF: add other attributes
-
     // -----------------------
     // Constructors
     // -----------------------

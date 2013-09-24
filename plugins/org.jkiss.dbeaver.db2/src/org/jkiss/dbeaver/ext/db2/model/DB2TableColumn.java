@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.edit.DB2ColumnDataTypeListProvider;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -133,7 +134,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         return dataTypeSchema;
     }
 
-    @Property(viewable = true, editable = true, order = 21)
+    @Property(viewable = true, editable = true, order = 21, listProvider = DB2ColumnDataTypeListProvider.class)
     public DBSDataType getType()
     {
         return dataType;
