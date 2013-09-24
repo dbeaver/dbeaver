@@ -85,16 +85,18 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private static final String C_GR = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'G' ORDER BY AUTHID WITH UR";
 
     private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
-    private static final String PLAN_TABLE_MSG = "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
+    private static final String PLAN_TABLE_MIS = "EXPLAIN tables not found. Query can't be explained";
+    private static final String PLAN_TABLE_MSG =
+        "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
 
     private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Schema>(
         DB2Schema.class, C_SCHEMA);
     private final DBSObjectCache<DB2DataSource, DB2DataType> dataTypeCache = new JDBCObjectSimpleCache<DB2DataSource, DB2DataType>(
         DB2DataType.class, C_DT);
-    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(
-        DB2Bufferpool.class, C_BP);
-    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(
-        DB2Tablespace.class, C_TS);
+    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(DB2Bufferpool.class, C_BP);
+    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(DB2Tablespace.class, C_TS);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
         DB2Role.class, C_RL);
     private final DBSObjectCache<DB2DataSource, DB2User> userCache = new JDBCObjectSimpleCache<DB2DataSource, DB2User>(
@@ -102,8 +104,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private final DBSObjectCache<DB2DataSource, DB2Group> groupCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Group>(
         DB2Group.class, C_GR);
 
-    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache = new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(
-        DB2RemoteServer.class, C_SV);
+    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(DB2RemoteServer.class, C_SV);
     private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Wrapper>(
         DB2Wrapper.class, C_WR);
 
@@ -348,6 +350,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DBCPlan planQueryExecution(DBCExecutionContext context, String query) throws DBCException
     {
         String ptSchemaname = getPlanTableSchemaName(context);
+        if (ptSchemaname == null) {
+            throw new DBCException(PLAN_TABLE_MIS);
+        }
         DB2PlanAnalyser plan = new DB2PlanAnalyser(query, ptSchemaname);
         plan.explain((JDBCExecutionContext) context);
         return plan;
