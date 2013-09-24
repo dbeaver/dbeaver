@@ -100,8 +100,8 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         this.scale = JDBCUtils.safeGetInteger(dbResult, "SCALE");
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
-        // DB2 v10 this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
-        // DB2 v10 this.constraintText = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TEXT");
+        this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
+        this.constraintText = JDBCUtils.safeGetString(dbResult, "CONSTRAINT_TEXT");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
         // Store associated DB2Schema
@@ -127,7 +127,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                 LOG.debug(name + " DBPDataKind set to source type : " + tempTypeDesc.dataKind);
             } else {
                 LOG.warn("No predefined type found neither from source. Set its DBPDataKind to UNKNOWN/OTHER");
-                tempTypeDesc = new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER);
+                tempTypeDesc = new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, null, null, null);
             }
         }
         this.typeDesc = tempTypeDesc;
@@ -169,29 +169,34 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return typeDesc.sqlType;
     }
 
-    // -----------------
-    // TODO DF: What to do with those methods? read data from JDBC metadata?
-    // -----------------
-
     @Override
     public int getPrecision()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        if (typeDesc.precision != null) {
+            return typeDesc.precision;
+        } else {
+            return 0;
+        }
     }
 
     @Override
     public int getMinScale()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        if (typeDesc.minScale != null) {
+            return typeDesc.minScale;
+        } else {
+            return 0;
+        }
     }
 
     @Override
     public int getMaxScale()
     {
-        // TODO Auto-generated method stub
-        return 0;
+        if (typeDesc.maxScale != null) {
+            return typeDesc.maxScale;
+        } else {
+            return 0;
+        }
     }
 
     // -----------------
@@ -323,43 +328,49 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     // --------------
     private static final class TypeDesc {
         private final DBPDataKind dataKind;
-        private final int sqlType;
+        private final Integer sqlType;
+        private final Integer precision;
+        private final Integer minScale;
+        private final Integer maxScale;
 
-        private TypeDesc(DBPDataKind dataKind, int sqlType)
+        private TypeDesc(DBPDataKind dataKind, Integer sqlType, Integer precision, Integer minScale, Integer maxScale)
         {
             this.dataKind = dataKind;
             this.sqlType = sqlType;
+            this.precision = precision;
+            this.minScale = minScale;
+            this.maxScale = maxScale;
         }
     }
 
     static {
-        PREDEFINED_TYPES.put("ARRAY", new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY));
-        PREDEFINED_TYPES.put("BIGINT", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT));
-        PREDEFINED_TYPES.put("BINARY", new TypeDesc(DBPDataKind.BINARY, Types.BINARY));
-        PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBPDataKind.LOB, Types.BLOB));
-        PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN));
-        PREDEFINED_TYPES.put("CHARACTER", new TypeDesc(DBPDataKind.STRING, Types.CHAR));
-        PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.LOB, Types.CLOB));
-        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER));
-        PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.DATE));
-        PREDEFINED_TYPES.put("DBCLOB", new TypeDesc(DBPDataKind.LOB, Types.CLOB));
-        PREDEFINED_TYPES.put("DECFLOAT", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL));
-        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL));
-        PREDEFINED_TYPES.put("DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE));
-        PREDEFINED_TYPES.put("GRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.CHAR));
-        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER));
-        PREDEFINED_TYPES.put("LONG VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.LONGVARCHAR));
-        PREDEFINED_TYPES.put("LONG VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.LONGVARCHAR));
-        PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, Types.REAL));
-        PREDEFINED_TYPES.put("REFERENCE", new TypeDesc(DBPDataKind.REFERENCE, Types.REF));
-        PREDEFINED_TYPES.put("ROW", new TypeDesc(DBPDataKind.STRUCT, Types.ROWID));
-        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT));
-        PREDEFINED_TYPES.put("TIME", new TypeDesc(DBPDataKind.DATETIME, Types.TIME));
-        PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP));
-        PREDEFINED_TYPES.put("VARBINARY", new TypeDesc(DBPDataKind.BINARY, Types.VARBINARY));
-        PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR));
-        PREDEFINED_TYPES.put("VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR));
-        PREDEFINED_TYPES.put("XML", new TypeDesc(DBPDataKind.LOB, Types.SQLXML));
+        PREDEFINED_TYPES.put("ARRAY", new TypeDesc(DBPDataKind.ARRAY, Types.ARRAY, null, null, null));
+        PREDEFINED_TYPES.put("BIGINT", new TypeDesc(DBPDataKind.NUMERIC, Types.BIGINT, 20, 0, 0));
+        PREDEFINED_TYPES.put("BINARY", new TypeDesc(DBPDataKind.BINARY, Types.BINARY, 254, null, null));
+        PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBPDataKind.LOB, Types.BLOB, 2147483647, null, null));
+        PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, null, null, null));
+        PREDEFINED_TYPES.put("CHARACTER", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 254, null, null));
+        PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.LOB, Types.CLOB, 2147483647, null, null));
+        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, Types.OTHER, null, null, null));
+        PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.DATE, 10, null, null));
+        PREDEFINED_TYPES.put("DBCLOB", new TypeDesc(DBPDataKind.LOB, Types.CLOB, 1073741823, null, null));
+        PREDEFINED_TYPES.put("DECFLOAT", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 34, 0, 0));
+        PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 31, 0, 31));
+        PREDEFINED_TYPES.put("DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 53, 0, 0));
+        PREDEFINED_TYPES.put("GRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 127, null, null));
+        PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBPDataKind.NUMERIC, Types.INTEGER, 10, 0, 0));
+        PREDEFINED_TYPES.put("LONG VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.LONGVARCHAR, 32700, null, null));
+        PREDEFINED_TYPES.put("LONG VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.LONGVARCHAR, 16350, null, null));
+        PREDEFINED_TYPES.put("REAL", new TypeDesc(DBPDataKind.NUMERIC, Types.REAL, 24, 0, 0));
+        PREDEFINED_TYPES.put("REFERENCE", new TypeDesc(DBPDataKind.REFERENCE, Types.REF, null, null, null));
+        PREDEFINED_TYPES.put("ROW", new TypeDesc(DBPDataKind.STRUCT, Types.ROWID, null, null, null));
+        PREDEFINED_TYPES.put("SMALLINT", new TypeDesc(DBPDataKind.NUMERIC, Types.SMALLINT, 5, 0, 0));
+        PREDEFINED_TYPES.put("TIME", new TypeDesc(DBPDataKind.DATETIME, Types.TIME, 8, 0, 0));
+        PREDEFINED_TYPES.put("TIMESTAMP", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 32, 0, 12));
+        PREDEFINED_TYPES.put("VARBINARY", new TypeDesc(DBPDataKind.BINARY, Types.VARBINARY, 32762, null, null));
+        PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 4000, null, null));
+        PREDEFINED_TYPES.put("VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 16336, null, null));
+        PREDEFINED_TYPES.put("XML", new TypeDesc(DBPDataKind.LOB, Types.SQLXML, null, null, null));
     }
 
 }

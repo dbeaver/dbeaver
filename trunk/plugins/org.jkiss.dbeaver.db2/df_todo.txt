@@ -27,6 +27,8 @@ Improvements:
     - MQT
     - Temporary Tables
     - Hierachies..
+  - DB2DataType
+    - handle super types correctly
   
 Serge to check?
   - looked for icon sessions.png used by myslq and oracle, didn't find it

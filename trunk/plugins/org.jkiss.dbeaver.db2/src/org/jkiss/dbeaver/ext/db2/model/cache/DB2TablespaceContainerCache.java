@@ -34,7 +34,7 @@ import java.sql.SQLException;
  *
  * @author Denis Forveille
  */
-public class DB2TablesaceContainerCache extends JDBCObjectCache<DB2Tablespace, DB2TablespaceContainer> {
+public class DB2TablespaceContainerCache extends JDBCObjectCache<DB2Tablespace, DB2TablespaceContainer> {
 
     private static final String SQL = "SELECT T.* FROM TABLE(SNAP_GET_CONTAINER('',-1)) AS T WHERE T.TBSP_ID= ? order by T.CONTAINER_ID WITH UR";
 

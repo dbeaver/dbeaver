@@ -21,18 +21,25 @@ package org.jkiss.dbeaver.ext.db2.model.fed;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2RemoteServerOptionCache;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.ResultSet;
+import java.util.Collection;
 
 /**
  * DB2 Federated Remote Server
  * 
  * @author Denis Forveille
  */
-public class DB2RemoteServer extends DB2GlobalObject {
+public class DB2RemoteServer extends DB2GlobalObject implements DBPRefreshableObject {
+
+    private final DB2RemoteServerOptionCache optionsCache = new DB2RemoteServerOptionCache();
 
     private String name;
     private DB2Wrapper db2Wrapper;
@@ -57,6 +64,23 @@ public class DB2RemoteServer extends DB2GlobalObject {
         if (db2WrapperName != null) {
             this.db2Wrapper = getDataSource().getWrapper(VoidProgressMonitor.INSTANCE, db2WrapperName);
         }
+    }
+
+    @Override
+    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    {
+        optionsCache.clearCache();
+        return true;
+    }
+
+    // -----------------
+    // Associations
+    // -----------------
+
+    @Association
+    public Collection<DB2RemoteServerOption> getOptions(DBRProgressMonitor monitor) throws DBException
+    {
+        return optionsCache.getObjects(monitor, this);
     }
 
     // -----------------
