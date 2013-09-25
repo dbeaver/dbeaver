@@ -49,11 +49,15 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     private static final Log LOG = LogFactory.getLog(DB2DataType.class);
 
+    private static final String SYSTEM_SCHEMA = "SYSIBM";
+
     private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>(32); // See init below
 
     private DBSObject parentNode; // see below
 
     private DB2Schema db2Schema;
+
+    private String fullyQualifiedName;
 
     private TypeDesc typeDesc;
 
@@ -116,6 +120,13 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
             }
         }
 
+        // DF: not sure of that. Maybe for system DataTypes, we should set db2Schema to null instead..
+        if (db2Schema.getName().equals(SYSTEM_SCHEMA)) {
+            fullyQualifiedName = name;
+        } else {
+            fullyQualifiedName = db2Schema.getName() + "." + name;
+        }
+
         // Determine DBSKind and javax.sql.Types
         // TODO DF: not 100% accurate...
         TypeDesc tempTypeDesc;
@@ -144,6 +155,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
                 parentNode = ((DB2DataSource) parent).getContainer();
             }
         }
+
     }
 
     @Override
@@ -161,7 +173,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     @Override
     public String getFullQualifiedName()
     {
-        return db2Schema.getName() + "." + name;
+        return fullyQualifiedName;
     }
 
     public int getEquivalentSqlType()

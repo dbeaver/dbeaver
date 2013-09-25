@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 Table Column Manager
@@ -41,6 +41,9 @@ import java.util.List;
  * @author Denis Forveille
  */
 public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn, DB2TableBase> {
+
+    private static final String SQL_ALTER = "ALTER TABLE %s ALTER COLUMN %s ";
+    private static final String SQL_COMMENT = "COMMENT ON COLUMN %s.%s IS '%s'";
 
     @Override
     public DBSObjectCache<? extends DBSObject, DB2TableColumn> getObjectsCache(DB2TableColumn object)
@@ -53,10 +56,7 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     public StringBuilder getNestedDeclaration(DB2TableBase owner, DBECommandComposite<DB2TableColumn, PropertyHandler> command)
     {
         StringBuilder decl = super.getNestedDeclaration(owner, command);
-        final DB2TableColumn column = command.getObject();
-        // if (!CommonUtils.isEmpty(column.getComment())) {
-        //            decl.append(" COMMENT '").append(column.getComment()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
-        // }
+
         return decl;
     }
 
@@ -79,19 +79,60 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        final DB2TableColumn column = command.getObject();
+        DB2TableColumn column = command.getObject();
+        String comment = (String) command.getProperty("comment");
+
         List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
-        boolean hasComment = command.getProperty("comment") != null;
-        if (!hasComment || command.getProperties().size() > 1) {
-            actions.add(new AbstractDatabasePersistAction(
-                "Modify column", "ALTER TABLE " + column.getTable().getFullQualifiedName() + //$NON-NLS-1$
-                    " MODIFY " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$
+
+        String sqlAlterColumn = String.format(SQL_ALTER, column.getTable().getFullQualifiedName(), computeDeltaSQL(command));
+
+        IDatabasePersistAction action = new AbstractDatabasePersistAction("Alter Column", sqlAlterColumn);
+        actions.add(action);
+
+        if (comment != null) {
+            String sqlCommentColumn = String.format(SQL_COMMENT, column.getTable().getFullQualifiedName(), column.getName(),
+                comment);
+            action = new AbstractDatabasePersistAction("Comment on Column", sqlCommentColumn);
+            actions.add(action);
         }
-        if (hasComment) {
-            actions.add(new AbstractDatabasePersistAction("Comment column", "COMMENT ON COLUMN "
-                + column.getTable().getFullQualifiedName() + "." + DBUtils.getQuotedIdentifier(column) + " IS '"
-                + column.getComment() + "'"));
-        }
+
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
+    }
+
+    private String computeDeltaSQL(ObjectChangeCommand command)
+    {
+
+        if (command.getProperties().isEmpty()) {
+            return "";
+        }
+
+        if (log.isDebugEnabled()) {
+            for (Map.Entry<Object, Object> entry : command.getProperties().entrySet()) {
+                log.debug(entry.getKey() + "=" + entry.getValue());
+            }
+        }
+
+        DB2TableColumn column = command.getObject();
+        DB2TableBase db2Table = column.getTable();
+
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(column.getName());
+
+        Boolean required = (Boolean) command.getProperty("required");
+        if (required != null) {
+            if (required) {
+                sb.append(" SET NOT NULL");
+            } else {
+                sb.append(" DROP NOT NULL");
+            }
+        }
+        String type = (String) command.getProperty("type");
+        sb.append(" SET DATA TYPE ");
+        sb.append(type);
+
+        sb.append(";\t");
+        sb.append("CALL SYSPROC.ADMIN_CMD('REORG TABLE " + db2Table.getFullQualifiedName() + "')");
+
+        return sb.toString();
     }
 }

@@ -28,7 +28,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Database and Instance parameters
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Parameter implements DBSObject {
@@ -53,7 +53,7 @@ public class DB2Parameter implements DBSObject {
         this.value = JDBCUtils.safeGetString(dbResult, "VALUE");
         this.flags = JDBCUtils.safeGetString(dbResult, "VALUE_FLAGS");
         this.defferedValue = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE");
-        this.defferedValueFlags = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE_FLAGS ");
+        // DB2 v10.1 this.defferedValueFlags = JDBCUtils.safeGetString(dbResult, "DEFERRED_VALUE_FLAGS ");
         this.dataType = JDBCUtils.safeGetString(dbResult, "DATATYPE");
     }
 
