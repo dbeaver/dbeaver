@@ -135,7 +135,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         return dataTypeSchema;
     }
 
-    @Property(viewable = true, editable = true, order = 21, listProvider = DB2ColumnDataTypeListProvider.class)
+    @Property(viewable = true, editable = true, updatable = true, order = 21, listProvider = DB2ColumnDataTypeListProvider.class)
     public DBSDataType getType()
     {
         return dataType;
@@ -153,7 +153,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         return super.isRequired();
     }
 
-    @Property(viewable = true, editable = true)
+    @Property(viewable = true, editable = true, updatable = true)
     public String getComment()
     {
         return remarks;
