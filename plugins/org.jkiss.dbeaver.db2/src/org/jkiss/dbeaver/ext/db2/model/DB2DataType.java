@@ -49,8 +49,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     private static final Log LOG = LogFactory.getLog(DB2DataType.class);
 
-    private static final String SYSTEM_SCHEMA = "SYSIBM";
-
     private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>(32); // See init below
 
     private DBSObject parentNode; // see below
@@ -121,7 +119,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         }
 
         // DF: not sure of that. Maybe for system DataTypes, we should set db2Schema to null instead..
-        if (db2Schema.getName().equals(SYSTEM_SCHEMA)) {
+        if (db2Schema.getName().equals(DB2Constants.SYSTEM_DATATYPE_SCHEMA)) {
             fullyQualifiedName = name;
         } else {
             fullyQualifiedName = db2Schema.getName() + "." + name;

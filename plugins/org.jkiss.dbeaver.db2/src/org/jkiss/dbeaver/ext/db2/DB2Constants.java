@@ -48,6 +48,9 @@ public class DB2Constants {
     public static final String CAT_COMPILER = "Compiler";
     public static final String CAT_CLIENT = "Client";
 
+    // Schema for system datatypes
+    public static final String SYSTEM_DATATYPE_SCHEMA = "SYSIBM";
+
     // ------------------
     // TODO DF Sortout those remaining consts..
     // --------------------------
