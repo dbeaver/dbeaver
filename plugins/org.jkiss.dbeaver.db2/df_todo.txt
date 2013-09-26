@@ -57,9 +57,19 @@ Missing Menu Actions
     - current locks
     - Server OS INFO
 
-Missing objects in Federation:
-- User mappings
-- Function mappings
+Missing metadata:
+- DB2Routines
+  - variables, rowfields
+  - dependencies
+  - options
+- DB2Package
+  - statements
+- DB2Tables
+  - partitions info  
+- DB2Modules  
+- Federated User Mappings (useroptions, surrogateauthids)
+- Federated Function Mappings (routinesfederated, funcmapping)
+- Federated Remote indexes (indexoptions)
 
 Missing relationships (All nice to have):
    - Tablespace -> Bufferpool link on BPName (On id)
