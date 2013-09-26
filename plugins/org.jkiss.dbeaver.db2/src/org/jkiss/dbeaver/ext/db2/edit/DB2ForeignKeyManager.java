@@ -47,31 +47,48 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
 
     private static final String SQL_DROP_FK = "ALTER TABLE %s DROP FOREIGN KEY %s";
 
+    private static final String CONS_FK_NAME = "%s_%s_FK";
+
+    private static final DBSForeignKeyModifyRule[] FK_RULES = { DBSForeignKeyModifyRule.NO_ACTION, DBSForeignKeyModifyRule.CASCADE,
+        DBSForeignKeyModifyRule.RESTRICT, DBSForeignKeyModifyRule.SET_NULL, DBSForeignKeyModifyRule.SET_DEFAULT };
+
+    // -----------------
+    // Business Contract
+    // -----------------
+
     @Override
     public DBSObjectCache<? extends DBSObject, DB2TableForeignKey> getObjectsCache(DB2TableForeignKey object)
     {
         return object.getParentObject().getSchema().getAssociationCache();
     }
 
+    // ------
+    // Create
+    // ------
     @Override
-    protected DB2TableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context,
-        DB2Table db2Table, Object from)
+    public DB2TableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table db2Table,
+        Object from)
     {
-        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(workbenchWindow.getShell(),
-            DB2Messages.edit_db2_foreign_key_manager_dialog_title, db2Table, new DBSForeignKeyModifyRule[] {
-                DBSForeignKeyModifyRule.NO_ACTION, DBSForeignKeyModifyRule.CASCADE, DBSForeignKeyModifyRule.RESTRICT,
-                DBSForeignKeyModifyRule.SET_NULL, DBSForeignKeyModifyRule.SET_DEFAULT });
+        EditForeignKeyDialog editDialog =
+            new EditForeignKeyDialog(workbenchWindow.getShell(), DB2Messages.edit_db2_foreign_key_manager_dialog_title, db2Table,
+                FK_RULES);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
 
-        DB2TableForeignKey foreignKey = new DB2TableForeignKey(db2Table, (DB2TableUniqueKey) editDialog.getUniqueConstraint(),
-            editDialog.getOnDeleteRule());
+        DBSForeignKeyModifyRule deleteRule = editDialog.getOnDeleteRule();
+        DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
+        DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
 
-        String name = DBObjectNameCaseTransformer.transformName(foreignKey, CommonUtils.escapeIdentifier(db2Table.getName()) + "_"
-            + CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK");
+        String tableName = CommonUtils.escapeIdentifier(db2Table.getName());
+        String targetTableName = CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName());
 
-        foreignKey.setName(name);
+        DB2TableForeignKey foreignKey = new DB2TableForeignKey(db2Table, ukConstraint, deleteRule, updateRule);
+
+        String fkBaseName = String.format(CONS_FK_NAME, tableName, targetTableName);
+        String fkName = DBObjectNameCaseTransformer.transformName(foreignKey, fkBaseName);
+
+        foreignKey.setName(fkName);
 
         List<DB2TableKeyColumn> columns = new ArrayList<DB2TableKeyColumn>(editDialog.getColumns().size());
         DB2TableKeyColumn column;
@@ -86,10 +103,14 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
         return foreignKey;
     }
 
+    // ------
+    // Drop
+    // ------
     @Override
-    protected String getDropForeignKeyPattern(DB2TableForeignKey foreignKey)
+    public String getDropForeignKeyPattern(DB2TableForeignKey foreignKey)
     {
-        return SQL_DROP_FK;
+        String tableName = foreignKey.getTable().getFullQualifiedName();
+        return String.format(SQL_DROP_FK, tableName, foreignKey.getName());
     }
 
 }
