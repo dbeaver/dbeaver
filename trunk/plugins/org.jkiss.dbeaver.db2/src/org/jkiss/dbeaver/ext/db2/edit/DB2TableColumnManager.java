@@ -45,10 +45,15 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     private static final String SQL_ALTER = "ALTER TABLE %s ALTER COLUMN %s ";
     private static final String SQL_COMMENT = "COMMENT ON COLUMN %s.%s IS '%s'";
 
+    private static final String CMD_ALTER = "Alter Column";
+    private static final String CMD_COMMENT = "Comment on Column";
+
+    // -----------------
+    // Business Contract
+    // -----------------
     @Override
     public DBSObjectCache<? extends DBSObject, DB2TableColumn> getObjectsCache(DB2TableColumn object)
     {
-
         return object.getParentObject().getContainer().getTableCache().getChildrenCache((DB2Table) object.getParentObject());
     }
 
@@ -59,6 +64,10 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
 
         return decl;
     }
+
+    // ------
+    // Create
+    // ------
 
     @Override
     protected DB2TableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2TableBase parent,
@@ -76,6 +85,9 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
         return column;
     }
 
+    // -----
+    // Alter
+    // -----
     @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
@@ -86,19 +98,22 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
 
         String sqlAlterColumn = String.format(SQL_ALTER, column.getTable().getFullQualifiedName(), computeDeltaSQL(command));
 
-        IDatabasePersistAction action = new AbstractDatabasePersistAction("Alter Column", sqlAlterColumn);
+        IDatabasePersistAction action = new AbstractDatabasePersistAction(CMD_ALTER, sqlAlterColumn);
         actions.add(action);
 
         if (comment != null) {
-            String sqlCommentColumn = String.format(SQL_COMMENT, column.getTable().getFullQualifiedName(), column.getName(),
-                comment);
-            action = new AbstractDatabasePersistAction("Comment on Column", sqlCommentColumn);
+            String sqlCommentColumn =
+                String.format(SQL_COMMENT, column.getTable().getFullQualifiedName(), column.getName(), comment);
+            action = new AbstractDatabasePersistAction(CMD_COMMENT, sqlCommentColumn);
             actions.add(action);
         }
 
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
+    // -------
+    // Helpers
+    // -------
     private String computeDeltaSQL(ObjectChangeCommand command)
     {
 

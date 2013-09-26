@@ -281,7 +281,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         return type;
     }
 
-    @Property(viewable = true, editable = true, category = DB2Constants.CAT_TABLESPACE, listProvider = DB2TableTablespaceListProvider.class)
+    @Property(viewable = true, editable = true, order = 10, category = DB2Constants.CAT_TABLESPACE, listProvider = DB2TableTablespaceListProvider.class)
     public DB2Tablespace getTablespace()
     {
         return tablespace;
@@ -292,16 +292,26 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         this.tablespace = tablespace;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_TABLESPACE)
+    @Property(viewable = false, editable = true, order = 11, category = DB2Constants.CAT_TABLESPACE, listProvider = DB2TableTablespaceListProvider.class)
     public DB2Tablespace getIndexTablespace()
     {
         return indexTablespace;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_TABLESPACE)
+    public void setIndexTablespace(DB2Tablespace indexTablespace)
+    {
+        this.indexTablespace = indexTablespace;
+    }
+
+    @Property(viewable = false, editable = true, order = 12, category = DB2Constants.CAT_TABLESPACE, listProvider = DB2TableTablespaceListProvider.class)
     public DB2Tablespace getLongTablespace()
     {
         return longTablespace;
+    }
+
+    public void setLongTablespace(DB2Tablespace longTablespace)
+    {
+        this.longTablespace = longTablespace;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
