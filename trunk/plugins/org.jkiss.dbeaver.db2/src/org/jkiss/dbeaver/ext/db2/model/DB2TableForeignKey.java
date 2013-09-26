@@ -70,10 +70,13 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         updateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
     }
 
-    public DB2TableForeignKey(DB2Table db2Table, DB2TableUniqueKey referencedKey, DBSForeignKeyModifyRule deleteRule)
+    public DB2TableForeignKey(DB2Table db2Table, DB2TableUniqueKey referencedKey, DBSForeignKeyModifyRule deleteRule,
+        DBSForeignKeyModifyRule updateRule)
     {
         super(db2Table, null, null, DBSEntityConstraintType.FOREIGN_KEY, true);
         this.referencedKey = referencedKey;
+        this.deleteRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule);
+        this.updateRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule);
     }
 
     // -----------------
