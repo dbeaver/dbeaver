@@ -34,24 +34,46 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * DB2 Table Manager
  * 
- * @author Denis Forveille<
+ * @author Denis Forveille
  * 
  */
 public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> implements DBEObjectRenamer<DB2Table> {
+
+    private static final String NEW_TABLE_NAME = "NEW_TABLE";
 
     private static final String SQL_ALTER = "ALTER TABLE ";
     private static final String SQL_RENAME_TABLE = "RENAME TABLE %s TO %s";
     private static final String SQL_COMMENT = "COMMENT ON TABLE %s IS '%s'";
 
+    private static final String CLAUSE_IN_TS = "IN ";
+    private static final String CLAUSE_IN_TS_IX = "INDEX IN ";
+    private static final String CLAUSE_IN_TS_LONG = "LONG IN ";
+
+    private static final String CMD_ALTER = "Alter Table";
+    private static final String CMD_COMMENT = "Comment on Table";
+    private static final String CMD_RENAME = "Rename Table";
+
     private static final Class<?>[] CHILD_TYPES = { DB2TableColumn.class, DB2TableUniqueKey.class, DB2TableForeignKey.class,
         DB2Index.class };
+
+    // -----------------
+    // Business Contract
+    // -----------------
+
+    @Override
+    public Class<?>[] getChildTypes()
+    {
+        return CHILD_TYPES;
+    }
 
     @Override
     public DBSObjectCache<? extends DBSObject, DB2Table> getObjectsCache(DB2Table object)
@@ -59,46 +81,92 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
         return (DB2TableCache) object.getSchema().getTableCache();
     }
 
+    // ------
+    // Create
+    // ------
+
     @Override
     protected DB2Table createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Schema db2Schema,
         Object copyFrom)
     {
-        return new DB2Table(db2Schema, "NEW_TABLE");
+        return new DB2Table(db2Schema, NEW_TABLE_NAME);
     }
+
+    @Override
+    protected void appendTableModifiers(DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl)
+    {
+        String lineSeparator = ContentUtils.getDefaultLineSeparator();
+
+        // Add Tablespaces infos
+        if (db2Table.getTablespace() != null) {
+            ddl.append(lineSeparator);
+            ddl.append(CLAUSE_IN_TS);
+            ddl.append(db2Table.getTablespace().getName());
+        }
+        if (db2Table.getIndexTablespace() != null) {
+            ddl.append(lineSeparator);
+            ddl.append(CLAUSE_IN_TS_IX);
+            ddl.append(db2Table.getIndexTablespace().getName());
+        }
+        if (db2Table.getLongTablespace() != null) {
+            ddl.append(lineSeparator);
+            ddl.append(CLAUSE_IN_TS_LONG);
+            ddl.append(db2Table.getLongTablespace().getName());
+        }
+    }
+
+    @Override
+    protected IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
+    {
+        // Eventually add Comment
+        IDatabasePersistAction commentAction = buildCommentAction((DB2Table) command.getObject());
+        if (commentAction == null) {
+            return super.makeStructObjectCreateActions(command);
+        } else {
+            List<IDatabasePersistAction> actionList =
+                new ArrayList<IDatabasePersistAction>(Arrays.asList(super.makeStructObjectCreateActions(command)));
+            actionList.add(commentAction);
+            return actionList.toArray(new IDatabasePersistAction[actionList.size()]);
+        }
+    }
+
+    // ------
+    // Alter
+    // ------
 
     @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        final DB2Table db2Table = command.getObject();
+        DB2Table db2Table = command.getObject();
 
         List<IDatabasePersistAction> listeActions = new ArrayList<IDatabasePersistAction>(2);
 
         StringBuilder sb = new StringBuilder(128);
         sb.append(SQL_ALTER);
-        sb.append(db2Table.getFullQualifiedName()).append(" ");
+        sb.append(db2Table.getFullQualifiedName());
+        sb.append(" ");
+
         appendTableModifiers(command.getObject(), command, sb);
 
-        listeActions.add(new AbstractDatabasePersistAction("Alter Table", sb.toString()));
+        listeActions.add(new AbstractDatabasePersistAction(CMD_ALTER, sb.toString()));
 
-        String comment = buildComment(command.getObject());
-        if (comment != null) {
-            listeActions.add(new AbstractDatabasePersistAction("Comment on Table", comment));
+        IDatabasePersistAction commentAction = buildCommentAction(db2Table);
+        if (commentAction != null) {
+            listeActions.add(commentAction);
         }
 
         return listeActions.toArray(new IDatabasePersistAction[listeActions.size()]);
     }
 
-    @Override
-    protected void appendTableModifiers(DB2Table table, NestedObjectCommand tableProps, StringBuilder ddl)
-    {
-    }
-
+    // ------
+    // Rename
+    // ------
     @Override
     protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
         String sql = String.format(SQL_RENAME_TABLE, command.getObject().getName(), command.getNewName());
         IDatabasePersistAction[] actions = new IDatabasePersistAction[1];
-        actions[0] = new AbstractDatabasePersistAction("Rename table", sql); //$NON-NLS-1$
+        actions[0] = new AbstractDatabasePersistAction(CMD_RENAME, sql); //$NON-NLS-1$
         return actions;
     }
 
@@ -108,19 +176,14 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
         processObjectRename(commandContext, object, newName);
     }
 
-    @Override
-    public Class<?>[] getChildTypes()
-    {
-        return CHILD_TYPES;
-    }
-
     // -------
     // Helpers
     // -------
-    private String buildComment(DB2Table db2Table)
+    private IDatabasePersistAction buildCommentAction(DB2Table db2Table)
     {
-        if ((db2Table.getDescription() != null) && (db2Table.getDescription().length() > 0)) {
-            return String.format(SQL_COMMENT, db2Table.getFullQualifiedName(), db2Table.getDescription());
+        if ((db2Table.getDescription() != null) && (db2Table.getDescription().trim().length() > 0)) {
+            String comment = String.format(SQL_COMMENT, db2Table.getFullQualifiedName(), db2Table.getDescription());
+            return new AbstractDatabasePersistAction(CMD_COMMENT, comment);
         } else {
             return null;
         }
