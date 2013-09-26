@@ -58,6 +58,19 @@ public enum DB2DeleteUpdateRule implements DBPNamedObject {
     }
 
     // ----------------
+    // Helper
+    // ----------------
+    public static DB2DeleteUpdateRule getDB2RuleFromDBSRule(DBSForeignKeyModifyRule dbsRule)
+    {
+        for (DB2DeleteUpdateRule db2Rule : DB2DeleteUpdateRule.values()) {
+            if (db2Rule.getRule().equals(dbsRule)) {
+                return db2Rule;
+            }
+        }
+        return null;
+    }
+
+    // ----------------
     // Standard Getters
     // ----------------
 

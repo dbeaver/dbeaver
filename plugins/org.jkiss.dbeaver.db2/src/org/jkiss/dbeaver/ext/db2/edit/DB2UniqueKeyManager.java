@@ -26,12 +26,14 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,19 @@ import java.util.List;
  * @author Denis Forveille
  */
 public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey, DB2Table> {
+
+    private static final String SQL_DROP_PK = "ALTER TABLE %s DROP PRIMARY_KEY ";
+    private static final String SQL_DROP_UK = "ALTER TABLE %s DROP UNIQUE %s";
+
+    private static final String CONS_PK_SUF = "_PK";
+    private static final String CONS_UK_SUF = "_UK";
+
+    private static final DBSEntityConstraintType[] CONS_TYPES = { DBSEntityConstraintType.PRIMARY_KEY,
+        DBSEntityConstraintType.UNIQUE_KEY };
+
+    // -----------------
+    // Business Contract
+    // -----------------
 
     @Override
     public DBSObjectCache<? extends DBSObject, DB2TableUniqueKey> getObjectsCache(DB2TableUniqueKey object)
@@ -54,18 +69,29 @@ public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey
     // ------
 
     @Override
-    protected DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context,
-        DB2Table db2Table, Object from)
+    public DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table db2Table,
+        Object from)
     {
         EditConstraintDialog editDialog =
             new EditConstraintDialog(workbenchWindow.getShell(), DB2Messages.edit_db2_constraint_manager_dialog_title, db2Table,
-                new DBSEntityConstraintType[] { DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY });
+                CONS_TYPES);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
 
-        String name = db2Table.getName() + "_PK";
-        DB2TableUniqueKey constraint = new DB2TableUniqueKey(db2Table, name, editDialog.getConstraintType());
+        String suffix;
+        DBSEntityConstraintType type = editDialog.getConstraintType();
+        if (type.equals(DBSEntityConstraintType.PRIMARY_KEY)) {
+            suffix = CONS_PK_SUF;
+        } else {
+            suffix = CONS_UK_SUF;
+        }
+
+        DB2TableUniqueKey constraint = new DB2TableUniqueKey(db2Table, editDialog.getConstraintType());
+
+        String constraintName =
+            DBObjectNameCaseTransformer.transformName(constraint, CommonUtils.escapeIdentifier(db2Table.getName()) + suffix);
+        constraint.setName(constraintName);
 
         List<DB2TableKeyColumn> columns = new ArrayList<DB2TableKeyColumn>(editDialog.getSelectedColumns().size());
         DB2TableKeyColumn column;
@@ -84,15 +110,13 @@ public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey
     // ------
 
     @Override
-    protected String getDropConstraintPattern(DB2TableUniqueKey constraint)
+    public String getDropConstraintPattern(DB2TableUniqueKey constraint)
     {
-        String clause;
-        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-            clause = "PRIMARY KEY"; //$NON-NLS-1$
+        String tablename = constraint.getTable().getFullQualifiedName();
+        if (constraint.getConstraintType().equals(DBSEntityConstraintType.PRIMARY_KEY)) {
+            return String.format(SQL_DROP_PK, tablename);
         } else {
-            clause = "KEY"; //$NON-NLS-1$
+            return String.format(SQL_DROP_UK, tablename, constraint.getName());
         }
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
-
 }

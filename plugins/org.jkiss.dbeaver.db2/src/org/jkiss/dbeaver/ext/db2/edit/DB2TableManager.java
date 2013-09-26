@@ -88,7 +88,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     // ------
 
     @Override
-    protected DB2Table createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Schema db2Schema,
+    public DB2Table createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Schema db2Schema,
         Object copyFrom)
     {
         return new DB2Table(db2Schema, NEW_TABLE_NAME);
@@ -96,7 +96,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
 
     @Override
     @SuppressWarnings("rawtypes")
-    protected void appendTableModifiers(DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl)
+    public void appendTableModifiers(DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl)
     {
 
         // Add Tablespaces infos
@@ -118,7 +118,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     }
 
     @Override
-    protected IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
+    public IDatabasePersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
     {
         // Eventually add Comment
         IDatabasePersistAction commentAction = buildCommentAction((DB2Table) command.getObject());
@@ -137,7 +137,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     // ------
 
     @Override
-    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    public IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         DB2Table db2Table = command.getObject();
 
@@ -164,7 +164,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     // Rename
     // ------
     @Override
-    protected IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    public IDatabasePersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
         String sql = String.format(SQL_RENAME_TABLE, command.getObject().getName(), command.getNewName());
         IDatabasePersistAction[] actions = new IDatabasePersistAction[1];
