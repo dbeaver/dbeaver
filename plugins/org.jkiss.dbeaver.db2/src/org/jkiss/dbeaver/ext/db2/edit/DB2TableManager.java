@@ -62,6 +62,8 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     private static final String CMD_COMMENT = "Comment on Table";
     private static final String CMD_RENAME = "Rename Table";
 
+    private static final String lineSeparator = ContentUtils.getDefaultLineSeparator();
+
     private static final Class<?>[] CHILD_TYPES = { DB2TableColumn.class, DB2TableUniqueKey.class, DB2TableForeignKey.class,
         DB2Index.class };
 
@@ -93,9 +95,9 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     }
 
     @Override
+    @SuppressWarnings("rawtypes")
     protected void appendTableModifiers(DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl)
     {
-        String lineSeparator = ContentUtils.getDefaultLineSeparator();
 
         // Add Tablespaces infos
         if (db2Table.getTablespace() != null) {
@@ -139,7 +141,7 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     {
         DB2Table db2Table = command.getObject();
 
-        List<IDatabasePersistAction> listeActions = new ArrayList<IDatabasePersistAction>(2);
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
 
         StringBuilder sb = new StringBuilder(128);
         sb.append(SQL_ALTER);
@@ -148,14 +150,14 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
 
         appendTableModifiers(command.getObject(), command, sb);
 
-        listeActions.add(new AbstractDatabasePersistAction(CMD_ALTER, sb.toString()));
+        actions.add(new AbstractDatabasePersistAction(CMD_ALTER, sb.toString()));
 
         IDatabasePersistAction commentAction = buildCommentAction(db2Table);
         if (commentAction != null) {
-            listeActions.add(commentAction);
+            actions.add(commentAction);
         }
 
-        return listeActions.toArray(new IDatabasePersistAction[listeActions.size()]);
+        return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
 
     // ------
@@ -182,8 +184,8 @@ public class DB2TableManager extends JDBCTableManager<DB2Table, DB2Schema> imple
     private IDatabasePersistAction buildCommentAction(DB2Table db2Table)
     {
         if ((db2Table.getDescription() != null) && (db2Table.getDescription().trim().length() > 0)) {
-            String comment = String.format(SQL_COMMENT, db2Table.getFullQualifiedName(), db2Table.getDescription());
-            return new AbstractDatabasePersistAction(CMD_COMMENT, comment);
+            String commentSQL = String.format(SQL_COMMENT, db2Table.getFullQualifiedName(), db2Table.getDescription());
+            return new AbstractDatabasePersistAction(CMD_COMMENT, commentSQL);
         } else {
             return null;
         }
