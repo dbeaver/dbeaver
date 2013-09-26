@@ -101,6 +101,18 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         return DBUtils.getFullQualifiedName(getDataSource(), getTable().getContainer(), getTable(), this);
     }
 
+    @Override
+    public DBSForeignKeyModifyRule getUpdateRule()
+    {
+        return updateRule.getRule();
+    }
+
+    @Override
+    public DBSForeignKeyModifyRule getDeleteRule()
+    {
+        return deleteRule.getRule();
+    }
+
     // -----------------
     // Columns
     // -----------------
@@ -132,18 +144,26 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         return referencedKey;
     }
 
-    @Override
-    @Property(viewable = true, editable = false)
-    public DBSForeignKeyModifyRule getUpdateRule()
+    @Property(viewable = true, editable = true, updatable = true)
+    public DB2DeleteUpdateRule getDB2UpdateRule()
     {
-        return updateRule.getRule();
+        return updateRule;
     }
 
-    @Override
-    @Property(viewable = true, editable = false)
-    public DBSForeignKeyModifyRule getDeleteRule()
+    public void setDeleteRule(DB2DeleteUpdateRule deleteRule)
     {
-        return deleteRule.getRule();
+        this.deleteRule = deleteRule;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true)
+    public DB2DeleteUpdateRule getDB2DeleteRule()
+    {
+        return deleteRule;
+    }
+
+    public void setUpdateRule(DB2DeleteUpdateRule updateRule)
+    {
+        this.updateRule = updateRule;
     }
 
 }
