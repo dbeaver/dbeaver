@@ -24,12 +24,12 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.edit.struct.JDBCTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +44,17 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
 
     private static final String SQL_ALTER = "ALTER TABLE %s ALTER COLUMN %s ";
     private static final String SQL_COMMENT = "COMMENT ON COLUMN %s.%s IS '%s'";
+    private static final String SQL_REORG = "CALL SYSPROC.ADMIN_CMD('REORG TABLE %s')";
+
+    private static final String CLAUSE_SET_TYPE = " SET DATA TYPE ";
+    private static final String CLAUSE_SET_NULL = " SET NOT NULL";
+    private static final String CLAUSE_DROP_NULL = " DROP NOT NULL";
 
     private static final String CMD_ALTER = "Alter Column";
     private static final String CMD_COMMENT = "Comment on Column";
+    private static final String CMD_REORG = "Reorg table";
+
+    private static final String lineSeparator = ContentUtils.getDefaultLineSeparator();
 
     // -----------------
     // Business Contract
@@ -57,14 +65,6 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
         return object.getParentObject().getContainer().getTableCache().getChildrenCache((DB2Table) object.getParentObject());
     }
 
-    @Override
-    public StringBuilder getNestedDeclaration(DB2TableBase owner, DBECommandComposite<DB2TableColumn, PropertyHandler> command)
-    {
-        StringBuilder decl = super.getNestedDeclaration(owner, command);
-
-        return decl;
-    }
-
     // ------
     // Create
     // ------
@@ -73,15 +73,8 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     protected DB2TableColumn createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2TableBase parent,
         Object copyFrom)
     {
-        //        DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar2"); //$NON-NLS-1$
-
-        final DB2TableColumn column = new DB2TableColumn(parent, "abcd");
+        DB2TableColumn column = new DB2TableColumn(parent);
         column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
-        // column.setType((DB2DataType) columnType);
-        //        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
-        // column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-        // column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
-        // column.setOrdinalPosition(-1);
         return column;
     }
 
@@ -91,22 +84,21 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
     @Override
     protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        DB2TableColumn column = command.getObject();
-        String comment = (String) command.getProperty("comment");
+        DB2TableColumn db2Column = command.getObject();
 
-        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(2);
+        List<IDatabasePersistAction> actions = new ArrayList<IDatabasePersistAction>(3);
 
-        String sqlAlterColumn = String.format(SQL_ALTER, column.getTable().getFullQualifiedName(), computeDeltaSQL(command));
+        String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullQualifiedName(), computeDeltaSQL(command));
+        actions.add(new AbstractDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
 
-        IDatabasePersistAction action = new AbstractDatabasePersistAction(CMD_ALTER, sqlAlterColumn);
-        actions.add(action);
-
-        if (comment != null) {
-            String sqlCommentColumn =
-                String.format(SQL_COMMENT, column.getTable().getFullQualifiedName(), column.getName(), comment);
-            action = new AbstractDatabasePersistAction(CMD_COMMENT, sqlCommentColumn);
-            actions.add(action);
+        // Comment
+        IDatabasePersistAction commentAction = buildCommentAction(db2Column);
+        if (commentAction != null) {
+            actions.add(commentAction);
         }
+
+        // Be Safe, Add a reorg action
+        actions.add(buildReorgAction(db2Column));
 
         return actions.toArray(new IDatabasePersistAction[actions.size()]);
     }
@@ -128,26 +120,47 @@ public class DB2TableColumnManager extends JDBCTableColumnManager<DB2TableColumn
         }
 
         DB2TableColumn column = command.getObject();
-        DB2TableBase db2Table = column.getTable();
 
         StringBuilder sb = new StringBuilder(128);
         sb.append(column.getName());
 
         Boolean required = (Boolean) command.getProperty("required");
         if (required != null) {
+            sb.append(lineSeparator);
             if (required) {
-                sb.append(" SET NOT NULL");
+                sb.append(CLAUSE_SET_NULL);
             } else {
-                sb.append(" DROP NOT NULL");
+                sb.append(CLAUSE_DROP_NULL);
             }
         }
-        String type = (String) command.getProperty("type");
-        sb.append(" SET DATA TYPE ");
-        sb.append(type);
 
-        sb.append(";\t");
-        sb.append("CALL SYSPROC.ADMIN_CMD('REORG TABLE " + db2Table.getFullQualifiedName() + "')");
+        String type = (String) command.getProperty("type");
+        if (type != null) {
+            sb.append(lineSeparator);
+            sb.append(CLAUSE_SET_TYPE);
+            sb.append(type);
+        }
 
         return sb.toString();
+    }
+
+    private IDatabasePersistAction buildCommentAction(DB2TableColumn db2Column)
+    {
+        if ((db2Column.getDescription() != null) && (db2Column.getDescription().trim().length() > 0)) {
+            String tableName = db2Column.getTable().getFullQualifiedName();
+            String columnName = db2Column.getName();
+            String comment = db2Column.getDescription();
+            String commentSQL = String.format(SQL_COMMENT, tableName, columnName, comment);
+            return new AbstractDatabasePersistAction(CMD_COMMENT, commentSQL);
+        } else {
+            return null;
+        }
+    }
+
+    private IDatabasePersistAction buildReorgAction(DB2TableColumn db2Column)
+    {
+        String tableName = db2Column.getTable().getFullQualifiedName();
+        String reorgSQL = String.format(SQL_REORG, tableName);
+        return new AbstractDatabasePersistAction(CMD_REORG, reorgSQL);
     }
 }

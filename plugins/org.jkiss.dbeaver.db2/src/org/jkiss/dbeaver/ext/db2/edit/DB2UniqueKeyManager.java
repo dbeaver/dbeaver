@@ -49,13 +49,17 @@ public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey
         return object.getParentObject().getSchema().getConstraintCache();
     }
 
+    // ------
+    // Create
+    // ------
+
     @Override
     protected DB2TableUniqueKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context,
         DB2Table db2Table, Object from)
     {
-        EditConstraintDialog editDialog = new EditConstraintDialog(workbenchWindow.getShell(),
-            DB2Messages.edit_db2_constraint_manager_dialog_title, db2Table, new DBSEntityConstraintType[] {
-                DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY });
+        EditConstraintDialog editDialog =
+            new EditConstraintDialog(workbenchWindow.getShell(), DB2Messages.edit_db2_constraint_manager_dialog_title, db2Table,
+                new DBSEntityConstraintType[] { DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY });
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -74,6 +78,10 @@ public class DB2UniqueKeyManager extends JDBCConstraintManager<DB2TableUniqueKey
 
         return constraint;
     }
+
+    // ------
+    // DROP
+    // ------
 
     @Override
     protected String getDropConstraintPattern(DB2TableUniqueKey constraint)
