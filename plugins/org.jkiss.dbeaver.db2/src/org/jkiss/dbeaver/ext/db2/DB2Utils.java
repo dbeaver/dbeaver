@@ -18,17 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
-import java.sql.Clob;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
+import org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -37,6 +35,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.sql.Clob;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DB2 Utils
@@ -52,8 +55,7 @@ public class DB2Utils {
     // DB2LOOK
     private static final String CALL_DB2LK_GEN = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
     private static final String CALL_DB2LK_CLEAN = "CALL SYSPROC.DB2LK_CLEAN_TABLE(?)";
-    private static final String SEL_DB2LK =
-        "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO_V WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
+    private static final String SEL_DB2LK = "SELECT SQL_STMT FROM SYSTOOLS.DB2LOOK_INFO_V WHERE OP_TOKEN = ? ORDER BY OP_SEQUENCE WITH UR";
     private static final String DB2LK_COMMAND = "-e -td %s -t %s";
 
     // EXPLAIN
@@ -65,9 +67,6 @@ public class DB2Utils {
     private static final String CALL_ADS = "CALL SYSPROC.ADMIN_DROP_SCHEMA(?,NULL,?,?)";
     private static final String SEL_DB_PARAMS = "SELECT * FROM SYSIBMADM.DBCFG ORDER BY NAME  WITH UR";
     private static final String SEL_DBM_PARAMS = "SELECT * FROM SYSIBMADM.DBMCFG WITH UR";
-
-    private static final String SEL_TOP_DYN_SQL =
-        "SELECT * FROM SYSIBMADM.TOP_DYNAMIC_SQL ORDER BY NUM_EXECUTIONS DESC FETCH FIRST 20 ROWS ONLY WITH UR";
 
     // APPLICATIONS
     private static final String SEL_APP = "SELECT * FROM SYSIBMADM.APPLICATIONS WITH UR";
@@ -348,6 +347,67 @@ public class DB2Utils {
             dbStat.close();
         }
         return listDBMParameters;
+    }
+
+    // -----------------------
+    // Static MetaData Helpers
+    // -----------------------
+
+    /**
+     * Lookup a DB2Tablespace by its Id
+     * 
+     * @param monitor
+     * @param db2DataSource
+     * @param tablespaceId
+     * @return DB2Tablespace
+     * @throws DBException
+     */
+    public static DB2Tablespace findTablespaceById(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Integer tablespaceId)
+        throws DBException
+    {
+        if (db2DataSource == null) {
+            return null;
+        }
+        for (DB2Tablespace db2Tablespace : db2DataSource.getTablespaces(monitor)) {
+            if (db2Tablespace.getTbspaceId() == tablespaceId) {
+                return db2Tablespace;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Lookup a DB2Bufferpool by its Id
+     * 
+     * 
+     * @param monitor
+     * @param db2DataSource
+     * @param bufferpoolId
+     * @return
+     * @throws DBException
+     */
+    public static DB2Bufferpool findBufferpoolById(DBRProgressMonitor monitor, DB2DataSource db2DataSource, Integer bufferpoolId)
+        throws DBException
+    {
+        if (db2DataSource == null) {
+            return null;
+        }
+        for (DB2Bufferpool db2Bufferpool : db2DataSource.getBufferpools(monitor)) {
+            if (db2Bufferpool.getId() == bufferpoolId) {
+                return db2Bufferpool;
+            }
+        }
+        return null;
+    }
+
+    public static DB2Table findTableBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String tableName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getTable(monitor, tableName);
     }
 
     private DB2Utils()

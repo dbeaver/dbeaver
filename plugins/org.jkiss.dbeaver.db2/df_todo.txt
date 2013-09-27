@@ -72,7 +72,6 @@ Missing metadata:
 - Federated Remote indexes (indexoptions)
 
 Missing relationships (All nice to have):
-   - Tablespace -> Bufferpool link on BPName (On id)
    - Tables     -> referenced by triggers (that could be in a different schema...)
    - Tables     -> referenced by aliases (that could be in a different schema...)
    - Tables     -> referenced by indexes  (that could be in a different schema...)

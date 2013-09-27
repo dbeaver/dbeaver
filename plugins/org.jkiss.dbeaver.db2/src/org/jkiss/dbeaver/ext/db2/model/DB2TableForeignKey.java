@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -56,14 +57,14 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
     // Constructor
     // -----------------
 
-    public DB2TableForeignKey(DBRProgressMonitor monitor, DB2Table table, ResultSet dbResult) throws DBException
+    public DB2TableForeignKey(DBRProgressMonitor monitor, DB2Table db2Table, ResultSet dbResult) throws DBException
     {
-        super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.FOREIGN_KEY, true);
+        super(db2Table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.FOREIGN_KEY, true);
 
         String refSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "REFTABSCHEMA");
         String refTableName = JDBCUtils.safeGetString(dbResult, "REFTABNAME");
         String constName = JDBCUtils.safeGetString(dbResult, "REFKEYNAME");
-        refTable = DB2Table.findTable(monitor, table.getSchema(), refSchemaName, refTableName);
+        refTable = DB2Utils.findTableBySchemaNameAndName(monitor, db2Table.getDataSource(), refSchemaName, refTableName);
         referencedKey = refTable.getConstraint(monitor, constName);
 
         db2DeleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));

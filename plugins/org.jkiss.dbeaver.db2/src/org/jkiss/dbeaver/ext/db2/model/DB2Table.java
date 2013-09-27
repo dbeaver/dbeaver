@@ -33,7 +33,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -55,8 +57,11 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
     private static final Log log = LogFactory.getLog(DB2Table.class);
 
+    private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS  WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
+
     private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
     private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
+    private DBSObjectCache<DB2Table, DB2TablePartition> partitionCache;
 
     private DB2TableStatus status;
     private DB2TableType type;
@@ -105,6 +110,9 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         if (longTablespaceName != null) {
             this.longTablespace = getDataSource().getTablespace(monitor, longTablespaceName);
         }
+
+        this.partitionCache = new JDBCObjectSimpleCache<DB2Table, DB2TablePartition>(DB2TablePartition.class, C_PT,
+            schema.getName(), getName());
 
     }
 
@@ -196,6 +204,12 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException
     {
         return tableTriggerCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<DB2TablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException
+    {
+        return partitionCache.getObjects(monitor, this);
     }
 
     @Override
@@ -347,34 +361,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     public Long getOverFLow()
     {
         return overFLow;
-    }
-
-    // --------------
-    // Static Helpers
-    // --------------
-    public static DB2Table findTable(DBRProgressMonitor monitor, DB2Schema schema, String ownerName, String tableName)
-        throws DBException
-    {
-
-        if (schema == null) {
-            log.debug("Referenced schema '" + ownerName + "' not found");
-            return null;
-        }
-
-        DB2Table table = schema.getTableCache().getObject(monitor, schema, tableName);
-        if (table == null) {
-            log.debug("Table '" + tableName + "' not found in schema '" + ownerName + "'");
-        }
-        return table;
-    }
-
-    public static DB2TableColumn findTableColumn(DBRProgressMonitor monitor, DB2Table parent, String columnName) throws DBException
-    {
-        DB2TableColumn tableColumn = parent.getAttribute(monitor, columnName);
-        if (tableColumn == null) {
-            log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "'");
-        }
-        return tableColumn;
     }
 
 }

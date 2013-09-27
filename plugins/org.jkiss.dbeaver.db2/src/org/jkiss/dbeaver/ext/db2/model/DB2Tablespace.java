@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TablespaceContainerCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -67,15 +69,15 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     private Integer effectivePrefetchSize;
     private String remarks;
 
-    private Integer bufferPoolId;
+    private DB2Bufferpool bufferpool;
 
     // -----------------------
     // Constructors
     // -----------------------
 
-    public DB2Tablespace(DB2DataSource dataSource, ResultSet dbResult)
+    public DB2Tablespace(DB2DataSource db2DataSource, ResultSet dbResult) throws DBException
     {
-        super(dataSource, dbResult != null);
+        super(db2DataSource, dbResult != null);
         this.name = JDBCUtils.safeGetString(dbResult, "TBSPACE");
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = DB2OwnerType.valueOf(JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
@@ -91,13 +93,16 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
         this.writeTransferRate = JDBCUtils.safeGetDouble(dbResult, "WRITETRANSFERRATE");
         this.pageSize = JDBCUtils.safeGetInteger(dbResult, "PAGESIZE");
         this.dbpgName = JDBCUtils.safeGetString(dbResult, "DBPGNAME");
-        this.bufferPoolId = JDBCUtils.safeGetInteger(dbResult, "BUFFERPOOLID");
         this.dropRecovery = JDBCUtils.safeGetBoolean(dbResult, "DROP_RECOVERY", DB2YesNo.Y.name());
         this.dataTag = JDBCUtils.safeGetInteger(dbResult, "DATATAG");
         this.sgName = JDBCUtils.safeGetString(dbResult, "SGNAME");
         this.sgId = JDBCUtils.safeGetInteger(dbResult, "SGID");
         this.effectivePrefetchSize = JDBCUtils.safeGetInteger(dbResult, "EFFECTIVEPREFETCHSIZE");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        Integer bufferpoolId = JDBCUtils.safeGetInteger(dbResult, "BUFFERPOOLID");
+        bufferpool = DB2Utils.findBufferpoolById(VoidProgressMonitor.INSTANCE, db2DataSource, bufferpoolId);
+
     }
 
     @Override
@@ -125,9 +130,9 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     }
 
     @Property(viewable = true, editable = false, order = 3)
-    public Integer getBufferPoolId()
+    public DB2Bufferpool getBufferPool()
     {
-        return bufferPoolId;
+        return bufferpool;
     }
 
     @Property(viewable = true, editable = false, order = 4)
