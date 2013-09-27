@@ -33,7 +33,16 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLWarning;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -275,6 +284,46 @@ public class JDBCUtils {
         }
     }
 
+    public static Date safeGetDate(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getDate(columnName);
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return null;
+        }
+    }
+
+    public static Date safeGetDate(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getDate(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return null;
+        }
+    }
+
+    public static Time safeGetTime(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getTime(columnName);
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return null;
+        }
+    }
+
+    public static Time safeGetTime(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getTime(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return null;
+        }
+    }
+
     public static Object safeGetObject(ResultSet dbResult, String columnName)
     {
         try {
@@ -325,7 +374,7 @@ public class JDBCUtils {
             ResultSetMetaData md = dbResult.getMetaData();
             int count = md.getColumnCount();
             for (int i = 1; i <= count; i++) {
-                System.out.print(md.getColumnName(i) + " [" + md.getColumnTypeName(i)+ "]\t");
+                System.out.print(md.getColumnName(i) + " [" + md.getColumnTypeName(i) + "]\t");
             }
             System.out.println();
         } catch (SQLException e) {
@@ -360,8 +409,7 @@ public class JDBCUtils {
         }
     }
 
-    public static void scrollResultSet(ResultSet dbResult, long offset)
-        throws SQLException
+    public static void scrollResultSet(ResultSet dbResult, long offset) throws SQLException
     {
         // Scroll to first row
         boolean scrolled = false;
@@ -396,11 +444,8 @@ public class JDBCUtils {
                 // Skip trash [Excel driver]
                 continue;
             }
-            log.warn(
-                "SQL Warning (DataSource: " + context.getDataSource().getContainer().getName() +
-                    "; Code: " + warning.getErrorCode() +
-                    "; State: " + warning.getSQLState() + "): " +
-                    warning.getLocalizedMessage());
+            log.warn("SQL Warning (DataSource: " + context.getDataSource().getContainer().getName() + "; Code: "
+                + warning.getErrorCode() + "; State: " + warning.getSQLState() + "): " + warning.getLocalizedMessage());
         }
     }
 
@@ -409,22 +454,26 @@ public class JDBCUtils {
         return query == null || query.length() <= maxLength ? query : query.substring(0, maxLength);
     }
 
-/*
-    public static boolean isDriverODBC(DBCExecutionContext context)
-    {
-        return context.getDataSource().getContainer().getDriver().getDriverClassName().contains("Odbc");
-    }
-*/
+    /*
+     * public static boolean isDriverODBC(DBCExecutionContext context) { return
+     * context.getDataSource().getContainer().getDriver().getDriverClassName().contains("Odbc"); }
+     */
 
     public static DBSForeignKeyModifyRule getCascadeFromNum(int num)
     {
         switch (num) {
-            case DatabaseMetaData.importedKeyNoAction: return DBSForeignKeyModifyRule.NO_ACTION;
-            case DatabaseMetaData.importedKeyCascade: return DBSForeignKeyModifyRule.CASCADE;
-            case DatabaseMetaData.importedKeySetNull: return DBSForeignKeyModifyRule.SET_NULL;
-            case DatabaseMetaData.importedKeySetDefault: return DBSForeignKeyModifyRule.SET_DEFAULT;
-            case DatabaseMetaData.importedKeyRestrict: return DBSForeignKeyModifyRule.RESTRICT;
-            default: return DBSForeignKeyModifyRule.UNKNOWN;
+        case DatabaseMetaData.importedKeyNoAction:
+            return DBSForeignKeyModifyRule.NO_ACTION;
+        case DatabaseMetaData.importedKeyCascade:
+            return DBSForeignKeyModifyRule.CASCADE;
+        case DatabaseMetaData.importedKeySetNull:
+            return DBSForeignKeyModifyRule.SET_NULL;
+        case DatabaseMetaData.importedKeySetDefault:
+            return DBSForeignKeyModifyRule.SET_DEFAULT;
+        case DatabaseMetaData.importedKeyRestrict:
+            return DBSForeignKeyModifyRule.RESTRICT;
+        default:
+            return DBSForeignKeyModifyRule.UNKNOWN;
         }
     }
 
@@ -448,7 +497,7 @@ public class JDBCUtils {
         }
     }
 
-    public static String queryString(JDBCExecutionContext context, String sql, Object ... args) throws SQLException
+    public static String queryString(JDBCExecutionContext context, String sql, Object... args) throws SQLException
     {
         final JDBCPreparedStatement dbStat = context.prepareStatement(sql);
         try {
@@ -498,7 +547,8 @@ public class JDBCUtils {
             firstClause = SQLUtils.appendFirstClause(sql, firstClause);
             sql.append("(");
             for (int i = 0, includeSize = include.size(); i < includeSize; i++) {
-                if (i > 0) sql.append(" OR ");
+                if (i > 0)
+                    sql.append(" OR ");
                 sql.append(columnAlias);
                 SQLUtils.appendLikeCondition(sql, include.get(i), false);
             }
@@ -509,7 +559,8 @@ public class JDBCUtils {
             SQLUtils.appendFirstClause(sql, firstClause);
             sql.append("NOT (");
             for (int i = 0, excludeSize = exclude.size(); i < excludeSize; i++) {
-                if (i > 0) sql.append(" OR ");
+                if (i > 0)
+                    sql.append(" OR ");
                 sql.append(columnAlias);
                 SQLUtils.appendLikeCondition(sql, exclude.get(i), false);
             }
@@ -517,7 +568,8 @@ public class JDBCUtils {
         }
     }
 
-    public static void setFilterParameters(JDBCPreparedStatement statement, int paramIndex, DBSObjectFilter filter) throws SQLException
+    public static void setFilterParameters(JDBCPreparedStatement statement, int paramIndex, DBSObjectFilter filter)
+        throws SQLException
     {
         if (filter.isEmpty()) {
             return;
@@ -535,7 +587,7 @@ public class JDBCUtils {
         if (e instanceof InvocationTargetException) {
             Throwable targetException = ((InvocationTargetException) e).getTargetException();
             if (targetException instanceof SQLException) {
-                throw (SQLException)targetException;
+                throw (SQLException) targetException;
             } else {
                 throw new SQLException(targetException);
             }
@@ -555,16 +607,23 @@ public class JDBCUtils {
 
     /**
      * Invoke JDBC method from Java 1.7 API
-     * @param object object
-     * @param methodName method name
-     * @param resultType result type or null
-     * @param paramTypes parameter type array or null
-     * @param paramValues parameter valeu array or null
+     * 
+     * @param object
+     *            object
+     * @param methodName
+     *            method name
+     * @param resultType
+     *            result type or null
+     * @param paramTypes
+     *            parameter type array or null
+     * @param paramValues
+     *            parameter valeu array or null
      * @return result or null
-     * @throws SQLException on error. Throws SQLFeatureNotSupportedException if specified method is not implemented
+     * @throws SQLException
+     *             on error. Throws SQLFeatureNotSupportedException if specified method is not implemented
      */
-    public static <T> T callMethod17(Object object, String methodName, Class<T> resultType, Class[] paramTypes, Object ... paramValues)
-        throws SQLException
+    public static <T> T callMethod17(Object object, String methodName, Class<T> resultType, Class[] paramTypes,
+        Object... paramValues) throws SQLException
     {
         try {
             Object result = object.getClass().getMethod(methodName, paramTypes).invoke(object, paramValues);
@@ -575,7 +634,7 @@ public class JDBCUtils {
             }
         } catch (InvocationTargetException e) {
             if (e.getTargetException() instanceof SQLException) {
-                throw (SQLException)e.getTargetException();
+                throw (SQLException) e.getTargetException();
             } else {
                 throw new SQLException(e.getTargetException());
             }
