@@ -19,7 +19,11 @@
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.*;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -32,7 +36,7 @@ import java.util.List;
 
 /**
  * Cache for DB2 Table Foreign Keys
- *
+ * 
  * @author Denis Forveille
  */
 public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableForeignKey, DB2TableKeyColumn> {
@@ -80,7 +84,8 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable)
+        throws SQLException
     {
 
         String sql;
@@ -98,24 +103,19 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
     }
 
     @Override
-    protected DB2TableForeignKey fetchObject(JDBCExecutionContext context,
-                                             DB2Schema db2Schema,
-                                             DB2Table db2Table,
-                                             String constName,
-                                             ResultSet dbResult) throws SQLException, DBException
+    protected DB2TableForeignKey fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table db2Table,
+        String constName, ResultSet dbResult) throws SQLException, DBException
     {
         return new DB2TableForeignKey(context.getProgressMonitor(), db2Table, dbResult);
     }
 
     @Override
-    protected DB2TableKeyColumn fetchObjectRow(JDBCExecutionContext context,
-                                               DB2Table db2Table,
-                                               DB2TableForeignKey object,
-                                               ResultSet dbResult) throws SQLException, DBException
+    protected DB2TableKeyColumn fetchObjectRow(JDBCExecutionContext context, DB2Table db2Table, DB2TableForeignKey object,
+        ResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
-        DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
+        DB2TableColumn tableColumn = db2Table.getAttribute(context.getProgressMonitor(), colName);
         if (tableColumn == null) {
             log.debug("DB2TableForeignKeyCache : Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName()
                 + "' ??");
