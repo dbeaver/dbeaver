@@ -59,6 +59,10 @@ import java.util.Collection;
 public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject {
     private static final Log LOG = LogFactory.getLog(DB2Schema.class);
 
+    private static final String C_SEQ = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR";
+    private static final String C_PKG = "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR";
+    private static final String C_DTT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR";
+
     // DB2Schema's children
     private final DB2TableCache tableCache = new DB2TableCache();
     private final DB2ViewCache viewCache = new DB2ViewCache();
@@ -96,15 +100,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         super(dataSource, true);
         this.name = name;
 
-        this.sequenceCache =
-            new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class,
-                "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR", name);
-        this.packageCache =
-            new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class,
-                "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR", name);
-        this.udtCache =
-            new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class,
-                "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR", name);
+        this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class, C_SEQ, name);
+        this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class, C_PKG, name);
+        this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class, C_DTT, name);
     }
 
     public DB2Schema(DB2DataSource dataSource, ResultSet dbResult)

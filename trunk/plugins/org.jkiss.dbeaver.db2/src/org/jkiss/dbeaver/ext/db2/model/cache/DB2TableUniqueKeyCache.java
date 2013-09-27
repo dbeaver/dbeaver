@@ -19,7 +19,11 @@
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.*;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ConstraintType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -34,7 +38,7 @@ import java.util.List;
 
 /**
  * Cache for DB2 Table Unique Keys
- *
+ * 
  * @author Denis Forveille
  */
 public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, DB2Table, DB2TableUniqueKey, DB2TableKeyColumn> {
@@ -84,7 +88,8 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable)
+        throws SQLException
     {
         String sql;
         if (forTable != null) {
@@ -101,11 +106,8 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
     }
 
     @Override
-    protected DB2TableUniqueKey fetchObject(JDBCExecutionContext context,
-                                            DB2Schema db2Schema,
-                                            DB2Table db2Table,
-                                            String indexName,
-                                            ResultSet dbResult) throws SQLException, DBException
+    protected DB2TableUniqueKey fetchObject(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table db2Table, String indexName,
+        ResultSet dbResult) throws SQLException, DBException
     {
 
         DBSEntityConstraintType type = DB2ConstraintType.getConstraintType(JDBCUtils.safeGetString(dbResult, "TYPE"));
@@ -113,14 +115,12 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
     }
 
     @Override
-    protected DB2TableKeyColumn fetchObjectRow(JDBCExecutionContext context,
-                                               DB2Table db2Table,
-                                               DB2TableUniqueKey object,
-                                               ResultSet dbResult) throws SQLException, DBException
+    protected DB2TableKeyColumn fetchObjectRow(JDBCExecutionContext context, DB2Table db2Table, DB2TableUniqueKey object,
+        ResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
-        DB2TableColumn tableColumn = DB2Table.findTableColumn(context.getProgressMonitor(), db2Table, colName);
+        DB2TableColumn tableColumn = db2Table.getAttribute(context.getProgressMonitor(), colName);
         if (tableColumn == null) {
             log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName() + "' ??");
             return null;
