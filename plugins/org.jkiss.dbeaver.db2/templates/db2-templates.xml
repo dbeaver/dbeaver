@@ -27,8 +27,41 @@
               name="curtimestamp" 
               context="sql_db2" 
               autoinsert="true" 
-              description="select current timestamp">
+              description="values (current timestamp)">
        values (current timestamp);
+    </template>
+
+    <template id="org.jkiss.dbeaver.templates.cmdreorg" 
+              name="cmdreorg" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="reorg table">
+       call sysproc.cmd('reorg table ${table}');
+    </template>
+
+    <template id="org.jkiss.dbeaver.templates.cmdrunstats" 
+              name="cmdrunstats" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="runstats on table">
+       call sysproc.cmd('runstats on table ${table} with distribution and detailed indexes all');
+    </template>
+
+    <template id="org.jkiss.dbeaver.templates.cmdAdminDropSchema" 
+              name="cmdAdminDropSchema" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="Admin Drop Schema"
+              >
+       call sysproc.admin_drop_schema('${schema}',null,,'&lt;error schema&gt;',','&lt;error table&gt;');
+    </template>
+    
+    <template id="org.jkiss.dbeaver.templates.cmdAdminCopySchema" 
+              name="cmdAdminCopySchema" 
+              context="sql_db2" 
+              autoinsert="true" 
+              description="Admin Copy Schema">
+       call sysproc.admin_copy_schema('${schema}','&lt;target schema&gt;','COPY', NULL, '&lt;source ts1, source ts2&gt;','&lt;target ts1, target ts2&gt;','&lt;error schema&gt;',','&lt;error table&gt;');
     </template>
 
 </templates>
