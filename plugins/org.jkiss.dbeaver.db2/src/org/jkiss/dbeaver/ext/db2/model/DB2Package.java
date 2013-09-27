@@ -42,7 +42,11 @@ import java.util.Collection;
  */
 public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject {
 
+    private static final String C_DEP = "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
+    private static final String C_STM = "SELECT * FROM SYSCAT.STATEMENTS WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY STMTNO WITH UR";
+
     private final DBSObjectCache<DB2Package, DB2PackageDep> packageDepCache;
+    private final DBSObjectCache<DB2Package, DB2PackageStatement> packageStatementsCache;
 
     private Boolean valid;
     private String owner;
@@ -65,9 +69,11 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
-        packageDepCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class,
-            "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR", schema.getName(),
+
+        packageDepCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class, C_DEP, schema.getName(),
             getName());
+        packageStatementsCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageStatement>(DB2PackageStatement.class, C_STM,
+            schema.getName(), getName());
     }
 
     // -----------------
@@ -78,6 +84,12 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
     public Collection<DB2PackageDep> getPackageDeps(DBRProgressMonitor monitor) throws DBException
     {
         return packageDepCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<DB2PackageStatement> getStatements(DBRProgressMonitor monitor) throws DBException
+    {
+        return packageStatementsCache.getObjects(monitor, this);
     }
 
     @Override
