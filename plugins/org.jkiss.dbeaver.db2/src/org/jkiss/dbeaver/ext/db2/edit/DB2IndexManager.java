@@ -48,6 +48,20 @@ import java.util.List;
  */
 public class DB2IndexManager extends JDBCIndexManager<DB2Index, DB2Table> {
 
+    private static final String CONS_IX_NAME = "%s_%s_IDX";
+
+    private static List<DBSIndexType> IX_TYPES;
+
+    static {
+        IX_TYPES = new ArrayList<DBSIndexType>(DB2IndexType.values().length);
+        for (DB2IndexType db2IndexType : DB2IndexType.values()) {
+            if (db2IndexType.isValidForCreation()) {
+                IX_TYPES.add(db2IndexType.getDBSIndexType());
+            }
+        }
+
+    }
+
     @Override
     public DBSObjectCache<? extends DBSObject, DB2Index> getObjectsCache(DB2Index object)
     {
@@ -58,29 +72,19 @@ public class DB2IndexManager extends JDBCIndexManager<DB2Index, DB2Table> {
     protected DB2Index createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table db2Table,
         Object from)
     {
-        // DF: Could be done only once...
-        List<DBSIndexType> indexTypes = new ArrayList<DBSIndexType>(DB2IndexType.values().length);
-        for (DB2IndexType db2IndexType : DB2IndexType.values()) {
-            if (db2IndexType.isValidForCreation()) {
-                indexTypes.add(db2IndexType.getDBSIndexType());
-            }
-        }
-
         EditIndexDialog editDialog = new EditIndexDialog(workbenchWindow.getShell(),
-            DB2Messages.edit_db2_index_manager_dialog_title, db2Table, indexTypes);
+            DB2Messages.edit_db2_index_manager_dialog_title, db2Table, IX_TYPES);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
 
-        StringBuilder idxName = new StringBuilder(64);
-        idxName.append(CommonUtils.escapeIdentifier(db2Table.getName()));
-        idxName.append("_");
-        idxName.append(CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName()));
-        idxName.append("_IDX");
+        String tableName = CommonUtils.escapeIdentifier(db2Table.getName());
+        String colName = CommonUtils.escapeIdentifier(editDialog.getSelectedColumns().iterator().next().getName());
 
-        String name = DBObjectNameCaseTransformer.transformName((DBPDataSource) db2Table.getDataSource(), idxName.toString());
+        String indexBaseName = String.format(CONS_IX_NAME, tableName, colName);
+        String indexName = DBObjectNameCaseTransformer.transformName((DBPDataSource) db2Table.getDataSource(), indexBaseName);
 
-        DB2Index index = new DB2Index(db2Table.getSchema(), db2Table, name, editDialog.getIndexType());
+        DB2Index index = new DB2Index(db2Table, indexName, editDialog.getIndexType());
 
         int colIndex = 1;
         for (DBSEntityAttribute tableColumn : editDialog.getSelectedColumns()) {

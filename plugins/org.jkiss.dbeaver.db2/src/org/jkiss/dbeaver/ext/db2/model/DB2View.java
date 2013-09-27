@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.actions.DB2ObjectPersistAction;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewDepCache;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewCheck;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -43,7 +45,7 @@ import java.util.Collection;
 
 /**
  * DB2 View
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2View extends DB2TableBase implements DB2SourceObject {
@@ -52,6 +54,8 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
 
     private DB2ViewStatus status;
     private String text;
+    private DB2ViewCheck viewCheck;
+    private Boolean readOnly;
 
     // -----------------
     // Constructors
@@ -65,6 +69,8 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
 
         this.status = CommonUtils.valueOf(DB2ViewStatus.class, JDBCUtils.safeGetString(dbResult, "VALID"));
         this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
+        this.viewCheck = CommonUtils.valueOf(DB2ViewCheck.class, JDBCUtils.safeGetString(dbResult, "VIEWCHECK"));
+        this.readOnly = JDBCUtils.safeGetBoolean(dbResult, "READONLY", DB2YesNo.Y.name());
     }
 
     @Override
@@ -97,8 +103,8 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     // @Override
     public IDatabasePersistAction[] getCompileActions()
     {
-        return new IDatabasePersistAction[]{new DB2ObjectPersistAction(DB2ObjectType.VIEW, "Compile view", "ALTER VIEW "
-            + getFullQualifiedName() + " COMPILE")};
+        return new IDatabasePersistAction[] { new DB2ObjectPersistAction(DB2ObjectType.VIEW, "Compile view", "ALTER VIEW "
+            + getFullQualifiedName() + " COMPILE") };
     }
 
     @Override
@@ -176,6 +182,18 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
     public DB2ViewStatus getStatus()
     {
         return status;
+    }
+
+    @Property(viewable = true, editable = false, order = 3)
+    public Boolean getReadOnly()
+    {
+        return readOnly;
+    }
+
+    @Property(viewable = true, editable = false, order = 4)
+    public DB2ViewCheck getViewCheck()
+    {
+        return viewCheck;
     }
 
 }
