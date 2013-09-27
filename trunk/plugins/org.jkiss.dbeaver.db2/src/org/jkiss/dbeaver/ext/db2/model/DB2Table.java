@@ -209,7 +209,12 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     @Association
     public Collection<DB2TablePartition> getPartitions(DBRProgressMonitor monitor) throws DBException
     {
-        return partitionCache.getObjects(monitor, this);
+        // TODO DF: beurk: Consequences of "Integrated cache" that can not be created in class def= NPE with managers
+        if (partitionCache == null) {
+            return null;
+        } else {
+            return partitionCache.getObjects(monitor, this);
+        }
     }
 
     @Override
