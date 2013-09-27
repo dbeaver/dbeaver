@@ -256,13 +256,6 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         return super.getName();
     }
 
-    @Override
-    @Property(viewable = true, editable = false, order = 2)
-    public DB2Schema getSchema()
-    {
-        return super.getContainer();
-    }
-
     @Property(viewable = true, editable = false, order = 3, category = DB2Constants.CAT_STATS)
     public Long getCard()
     {

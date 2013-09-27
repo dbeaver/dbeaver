@@ -178,19 +178,19 @@ public class DB2View extends DB2TableBase implements DB2SourceObject {
         return super.getName();
     }
 
-    @Property(viewable = true, editable = false, order = 2)
+    @Property(viewable = true, editable = false, order = 20)
     public DB2ViewStatus getStatus()
     {
         return status;
     }
 
-    @Property(viewable = true, editable = false, order = 3)
+    @Property(viewable = true, editable = false, order = 21)
     public Boolean getReadOnly()
     {
         return readOnly;
     }
 
-    @Property(viewable = true, editable = false, order = 4)
+    @Property(viewable = true, editable = false, order = 22)
     public DB2ViewCheck getViewCheck()
     {
         return viewCheck;
