@@ -45,8 +45,8 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
 
     private DB2Table refTable;
 
-    private DB2DeleteUpdateRule deleteRule;
-    private DB2DeleteUpdateRule updateRule;
+    private DB2DeleteUpdateRule db2DeleteRule;
+    private DB2DeleteUpdateRule db2UpdateRule;
 
     private List<DB2TableKeyColumn> columns;
 
@@ -66,8 +66,8 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         refTable = DB2Table.findTable(monitor, table.getSchema(), refSchemaName, refTableName);
         referencedKey = refTable.getConstraint(monitor, constName);
 
-        deleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));
-        updateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
+        db2DeleteRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "DELETERULE"));
+        db2UpdateRule = CommonUtils.valueOf(DB2DeleteUpdateRule.class, JDBCUtils.safeGetString(dbResult, "UPDATERULE"));
     }
 
     public DB2TableForeignKey(DB2Table db2Table, DB2TableUniqueKey referencedKey, DBSForeignKeyModifyRule deleteRule,
@@ -75,8 +75,8 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
     {
         super(db2Table, null, null, DBSEntityConstraintType.FOREIGN_KEY, true);
         this.referencedKey = referencedKey;
-        this.deleteRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule);
-        this.updateRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule);
+        this.db2DeleteRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(deleteRule);
+        this.db2UpdateRule = DB2DeleteUpdateRule.getDB2RuleFromDBSRule(updateRule);
     }
 
     // -----------------
@@ -104,13 +104,13 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
     @Override
     public DBSForeignKeyModifyRule getUpdateRule()
     {
-        return updateRule.getRule();
+        return db2UpdateRule.getRule();
     }
 
     @Override
     public DBSForeignKeyModifyRule getDeleteRule()
     {
-        return deleteRule.getRule();
+        return db2DeleteRule.getRule();
     }
 
     // -----------------
@@ -144,26 +144,26 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         return referencedKey;
     }
 
-    @Property(viewable = true, editable = true, updatable = true)
-    public DB2DeleteUpdateRule getDB2UpdateRule()
+    @Property(viewable = true, editable = true)
+    public DB2DeleteUpdateRule getDb2DeleteRule()
     {
-        return updateRule;
+        return db2DeleteRule;
     }
 
-    public void setDeleteRule(DB2DeleteUpdateRule deleteRule)
+    public void setDb2DeleteRule(DB2DeleteUpdateRule db2DeleteRule)
     {
-        this.deleteRule = deleteRule;
+        this.db2DeleteRule = db2DeleteRule;
     }
 
-    @Property(viewable = true, editable = true, updatable = true)
-    public DB2DeleteUpdateRule getDB2DeleteRule()
+    @Property(viewable = true, editable = true)
+    public DB2DeleteUpdateRule getDb2UpdateRule()
     {
-        return deleteRule;
+        return db2UpdateRule;
     }
 
-    public void setUpdateRule(DB2DeleteUpdateRule updateRule)
+    public void setDb2UpdateRule(DB2DeleteUpdateRule db2UpdateRule)
     {
-        this.updateRule = updateRule;
+        this.db2UpdateRule = db2UpdateRule;
     }
 
 }
