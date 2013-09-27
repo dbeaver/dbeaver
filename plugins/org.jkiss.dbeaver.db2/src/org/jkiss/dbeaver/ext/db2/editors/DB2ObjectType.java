@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
@@ -67,6 +68,20 @@ public enum DB2ObjectType implements DBSObjectType {
             throws DBException
         {
             return schema.getCheckCache().getObject(monitor, schema, objectName);
+        }
+    }),
+
+    COLUMN(DBIcon.TREE_COLUMN.getImage(), DB2TableColumn.class, new ObjectFinder() {
+        @Override
+        public DB2TableColumn findObject(DBRProgressMonitor monitor, DB2Table db2Table, String objectName) throws DBException
+        {
+            return db2Table.getAttribute(monitor, objectName);
+        }
+
+        @Override
+        public DB2TableColumn findObject(DBRProgressMonitor monitor, DB2View db2View, String objectName) throws DBException
+        {
+            return db2View.getAttribute(monitor, objectName);
         }
     }),
 
@@ -210,6 +225,24 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }
 
+    public DBSObject findObject(DBRProgressMonitor monitor, DB2Table db2Table, String objectName) throws DBException
+    {
+        if (finder != null) {
+            return finder.findObject(monitor, db2Table, objectName);
+        } else {
+            return null;
+        }
+    }
+
+    public DBSObject findObject(DBRProgressMonitor monitor, DB2View db2View, String objectName) throws DBException
+    {
+        if (finder != null) {
+            return finder.findObject(monitor, db2View, objectName);
+        } else {
+            return null;
+        }
+    }
+
     // ----------------
     // Standard Getters
     // ----------------
@@ -236,8 +269,22 @@ public enum DB2ObjectType implements DBSObjectType {
     // Helpers
     // ----------------
 
-    private static interface ObjectFinder {
-        DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException;
+    private static class ObjectFinder {
+        DBSObject findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return null;
+        }
+
+        DBSObject findObject(DBRProgressMonitor monitor, DB2Table db2Table, String objectName) throws DBException
+        {
+            return null;
+        }
+
+        DBSObject findObject(DBRProgressMonitor monitor, DB2View db2View, String objectName) throws DBException
+        {
+            return null;
+        }
+
     }
 
     public static DB2ObjectType getByType(String typeName)
