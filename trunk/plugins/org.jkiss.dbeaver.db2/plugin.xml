@@ -176,6 +176,9 @@
                                 <folder type="org.jkiss.dbeaver.ext.db2.model.DB2PackageDep" label="%tree.packagedeps.node.name" icon="#dependencies" description="Package Dependencies" navigable="false">
                                    <items label="%tree.packagedep.node.name" path="packagedep" property="packageDeps" icon="#packagedep"/>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2PackageStatement" label="%tree.statements.node.name" icon="#statements" description="Package Statements" navigable="false">
+                                   <items label="%tree.statement.node.name" path="statement" property="statements" icon="#statement"/>
+                                </folder>
                              </items>
                           </folder>
                        </folder>
