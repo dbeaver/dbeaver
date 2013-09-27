@@ -20,7 +20,7 @@ Manage explain/ddl generation table creation
  
 Improvements:
   - Enhance SQL Content assist + Search
-    - Add Tablespaces, indexes, columns, foreign keys...
+    - Add Tablespaces, indexes, foreign keys...
   - Propagate and use monitors everywhere
   - Lazy loading
   - Split DB2Tables into distinct sub types:
