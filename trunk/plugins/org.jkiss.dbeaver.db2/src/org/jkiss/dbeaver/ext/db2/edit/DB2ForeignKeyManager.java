@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.dbeaver.ext.IDatabasePersistAction;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
@@ -46,6 +47,7 @@ import java.util.List;
 public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignKey, DB2Table> {
 
     private static final String SQL_DROP_FK = "ALTER TABLE %s DROP FOREIGN KEY %s";
+    private static final String SQL_ALTER = "ALTER TABLE %s ALTER FOREIGN KEY %s";
 
     private static final String CONS_FK_NAME = "%s_%s_FK";
 
@@ -69,9 +71,8 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
     public DB2TableForeignKey createDatabaseObject(IWorkbenchWindow workbenchWindow, DBECommandContext context, DB2Table db2Table,
         Object from)
     {
-        EditForeignKeyDialog editDialog =
-            new EditForeignKeyDialog(workbenchWindow.getShell(), DB2Messages.edit_db2_foreign_key_manager_dialog_title, db2Table,
-                FK_RULES);
+        EditForeignKeyDialog editDialog = new EditForeignKeyDialog(workbenchWindow.getShell(),
+            DB2Messages.edit_db2_foreign_key_manager_dialog_title, db2Table, FK_RULES);
         if (editDialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -101,6 +102,18 @@ public class DB2ForeignKeyManager extends JDBCForeignKeyManager<DB2TableForeignK
         foreignKey.setColumns(columns);
 
         return foreignKey;
+    }
+
+    // ------
+    // Alter
+    // ------
+
+    @Override
+    protected IDatabasePersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    {
+        // DF: Throw exception for now
+        // Will have to implement it for alter FK query optimisation + TRUST
+        throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
     // ------

@@ -70,7 +70,6 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         sb.append("  FROM SYSCAT.TABLES");
         sb.append(" WHERE TABSCHEMA = ?");
         sb.append("   AND TABNAME LIKE ?");
-        sb.append("   AND TYPE IN ('A','G','N','S','T','U','V','W')"); // DF : Temp
         sb.append(" WITH UR");
         SQL_TAB = sb.toString();
 
@@ -79,7 +78,6 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         sb.append("SELECT TABSCHEMA,TABNAME,TYPE");
         sb.append("  FROM SYSCAT.TABLES");
         sb.append(" WHERE TABNAME LIKE ?");
-        sb.append("   AND TYPE IN ('A','G','N','S','T','U','V','W')");// DF : Temp
         sb.append(" WITH UR");
 
         SQL_ALL = sb.toString();
@@ -155,9 +153,10 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         } else {
             sql = SQL_ALL;
         }
-        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
 
         int n = 1;
+
+        JDBCPreparedStatement dbStat = context.prepareStatement(sql);
         try {
             if (schema != null) {
                 dbStat.setString(n++, schema.getName());

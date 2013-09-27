@@ -19,8 +19,10 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.edit.DB2ColumnDataTypeListProvider;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ColumnHiddenState;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnCompression;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -30,6 +32,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 
@@ -43,7 +46,22 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     private DB2DataType dataType;
     private DB2Schema dataTypeSchema;
     private String remarks;
-    private boolean hidden;
+    private Boolean hidden;
+    private Boolean identity;
+    private Boolean lobCompact;
+    private Boolean generated;
+    private String generatedText;
+    private DB2TableColumnCompression compress;
+    private Boolean rowBegin;
+    private Boolean rowEnd;
+    private String collationSchema;
+    private String collationNane;
+
+    private Long colcard;
+    private String high2key;
+    private String low2key;
+    private Integer avgLength;
+    private Long nbNulls;
 
     // -----------------
     // Constructors
@@ -61,6 +79,21 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         setScale(JDBCUtils.safeGetInteger(dbResult, "SCALE"));
 
         this.hidden = DB2ColumnHiddenState.isHidden(JDBCUtils.safeGetString(dbResult, "HIDDEN"));
+        this.identity = JDBCUtils.safeGetBoolean(dbResult, "IDENTITY", DB2YesNo.Y.name());
+        this.lobCompact = JDBCUtils.safeGetBoolean(dbResult, "COMPACT", DB2YesNo.Y.name());
+        this.generated = JDBCUtils.safeGetBoolean(dbResult, "GENERATED", DB2YesNo.Y.name());
+        this.generatedText = JDBCUtils.safeGetString(dbResult, "TEXT");
+        this.compress = CommonUtils.valueOf(DB2TableColumnCompression.class, JDBCUtils.safeGetString(dbResult, "COMPRESS"));
+        this.rowBegin = JDBCUtils.safeGetBoolean(dbResult, "ROWBEGIN", DB2YesNo.Y.name());
+        this.rowEnd = JDBCUtils.safeGetBoolean(dbResult, "ROWEND", DB2YesNo.Y.name());
+        this.collationSchema = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA");
+        this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
+        this.colcard = JDBCUtils.safeGetLong(dbResult, "COLCARD");
+        this.high2key = JDBCUtils.safeGetString(dbResult, "HIGH2KEY");
+        this.low2key = JDBCUtils.safeGetString(dbResult, "LOW2KEY");
+        this.avgLength = JDBCUtils.safeGetInteger(dbResult, "AVGCOLLEN");
+        this.nbNulls = JDBCUtils.safeGetLong(dbResult, "NUMNULLS");
+
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
         // Set DataTypes data
@@ -146,14 +179,21 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true)
+    @Property(viewable = true, order = 32, editable = true, updatable = true)
     public boolean isRequired()
     {
         return super.isRequired();
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true)
+    @Property(viewable = true, order = 41)
+    public int getPrecision()
+    {
+        return super.getPrecision();
+    }
+
+    @Override
+    @Property(viewable = true, order = 71, editable = true, updatable = true)
     public String getDescription()
     {
         return remarks;
@@ -164,11 +204,88 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.remarks = remarks;
     }
 
-    @Override
-    @Property(viewable = true, order = 41)
-    public int getPrecision()
+    @Property(viewable = true, order = 133)
+    public Boolean getIdentity()
     {
-        return super.getPrecision();
+        return identity;
+    }
+
+    @Property(viewable = false, order = 134)
+    public Boolean getLobCompact()
+    {
+        return lobCompact;
+    }
+
+    @Property(viewable = true, order = 135)
+    public Boolean getGenerated()
+    {
+        return generated;
+    }
+
+    @Property(viewable = false, order = 36)
+    public String getGeneratedText()
+    {
+        return generatedText;
+    }
+
+    @Property(viewable = false, order = 137)
+    public DB2TableColumnCompression getCompress()
+    {
+        return compress;
+    }
+
+    @Property(viewable = false, order = 138)
+    public Boolean getRowBegin()
+    {
+        return rowBegin;
+    }
+
+    @Property(viewable = false, order = 139)
+    public Boolean getRowEnd()
+    {
+        return rowEnd;
+    }
+
+    @Property(viewable = true, order = 150, category = DB2Constants.CAT_STATS)
+    public Long getColcard()
+    {
+        return colcard;
+    }
+
+    @Property(viewable = false, order = 151, category = DB2Constants.CAT_STATS)
+    public Long getNbNulls()
+    {
+        return nbNulls;
+    }
+
+    @Property(viewable = false, order = 152, category = DB2Constants.CAT_STATS)
+    public Integer getAvgLength()
+    {
+        return avgLength;
+    }
+
+    @Property(viewable = false, order = 153, category = DB2Constants.CAT_STATS)
+    public String getLow2key()
+    {
+        return low2key;
+    }
+
+    @Property(viewable = false, order = 154, category = DB2Constants.CAT_STATS)
+    public String getHigh2key()
+    {
+        return high2key;
+    }
+
+    @Property(viewable = false, order = 180, category = DB2Constants.CAT_COLLATION)
+    public String getCollationSchema()
+    {
+        return collationSchema;
+    }
+
+    @Property(viewable = false, order = 181, category = DB2Constants.CAT_COLLATION)
+    public String getCollationNane()
+    {
+        return collationNane;
     }
 
 }

@@ -110,9 +110,9 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         this.indexType = db2IndexType.getDBSIndexType();
     }
 
-    public DB2Index(DB2Schema schema, DB2Table db2Table, String name, DBSIndexType indexType)
+    public DB2Index(DB2Table db2Table, String indexName, DBSIndexType indexType)
     {
-        super(schema, db2Table, name, indexType, false);
+        super(db2Table.getSchema(), db2Table, indexName, indexType, false);
     }
 
     // -----------------
