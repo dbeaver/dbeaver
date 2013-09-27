@@ -73,12 +73,6 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     }
 
     @Override
-    public DB2Schema getSchema()
-    {
-        return super.getContainer();
-    }
-
-    @Override
     public String getFullQualifiedName()
     {
         return getContainer().getName() + "." + this.getName();
@@ -122,6 +116,13 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     public String getName()
     {
         return super.getName();
+    }
+
+    @Override
+    @Property(viewable = true, editable = false, order = 2)
+    public DB2Schema getSchema()
+    {
+        return super.getContainer();
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
