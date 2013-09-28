@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2AuthIDType;
 
 import java.sql.ResultSet;
 

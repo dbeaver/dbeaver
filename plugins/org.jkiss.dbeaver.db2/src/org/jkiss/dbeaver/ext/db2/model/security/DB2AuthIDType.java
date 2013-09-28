@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.model.dict;
+package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
