@@ -61,6 +61,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
     private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
         DB2ObjectType.NICKNAME, };
+
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
         DB2ObjectType.NICKNAME, };
 
@@ -105,6 +106,8 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     public Collection<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
         DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, int maxResults) throws DBException
     {
+
+        LOG.debug(objectNameMask);
 
         List<DB2ObjectType> db2ObjectTypes = new ArrayList<DB2ObjectType>(objectTypes.length);
         for (DBSObjectType dbsObjectType : objectTypes) {
