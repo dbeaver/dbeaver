@@ -38,7 +38,7 @@ import java.util.Collection;
  */
 public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DBPRefreshableObject {
 
-    private final static DB2UserAuthCache userAuthCache = new DB2UserAuthCache();
+    private final DB2UserAuthCache userAuthCache = new DB2UserAuthCache();
 
     private String name;
 
