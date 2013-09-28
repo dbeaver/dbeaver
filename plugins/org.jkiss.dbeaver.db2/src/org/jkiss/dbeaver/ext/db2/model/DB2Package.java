@@ -43,7 +43,7 @@ import java.util.Collection;
 public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject {
 
     private static final String C_DEP = "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
-    private static final String C_STM = "SELECT * FROM SYSCAT.STATEMENTS WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY STMTNO WITH UR";
+    private static final String C_STM = "SELECT * FROM SYSCAT.STATEMENTS WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY SECTNO WITH UR";
 
     private final DBSObjectCache<DB2Package, DB2PackageDep> packageDepCache;
     private final DBSObjectCache<DB2Package, DB2PackageStatement> packageStatementsCache;
