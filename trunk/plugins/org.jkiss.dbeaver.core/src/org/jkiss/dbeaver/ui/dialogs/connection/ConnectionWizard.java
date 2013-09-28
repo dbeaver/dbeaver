@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.emf.common.util.CommonUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -29,6 +30,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -36,8 +39,12 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
 /**
  * Abstract connection wizard
@@ -78,64 +85,28 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         saveSettings();
         final DBPConnectionInfo connectionInfo = getPageSettings().getConnectionInfo();
 
-        DBRRunnableWithProgress op = new DBRRunnableWithProgress()
-        {
-            @Override
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException
-            {
-                monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 3);
-                Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
-
-                DriverDescriptor driver = getSelectedDriver();
-                DBPDataSourceProvider provider;
-                try {
-                    provider = driver.getDataSourceProvider();
-                }
-                catch (DBException ex) {
-                    throw new InvocationTargetException(ex);
-                }
-                DataSourceDescriptor container = new DataSourceDescriptor(dataSourceRegistry, "test", driver, connectionInfo);
-                try {
-                    container.setName(connectionInfo.getUrl());
-                    monitor.worked(1);
-                    container.connect(monitor, false);
-                    monitor.worked(1);
-                    DBPDataSource dataSource = container.getDataSource();
-                    if (dataSource == null) {
-                        throw new InvocationTargetException(
-                            new DBException("Internal error: null datasource returned from provider " + provider));
-                    } else {
-                        monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
-                        try {
-                            monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
-                            container.disconnect(monitor, false);
-                        } catch (DBException e) {
-                            // ignore it
-                            log.error(e);
-                        } finally {
-                            monitor.done();
-                        }
-                    }
-                    monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
-                }
-                catch (DBException ex) {
-                    throw new InvocationTargetException(ex);
-                }
-                finally {
-                    container.dispose();
-                }
-            }
-        };
+        ConnectionTester op = new ConnectionTester(connectionInfo);
 
         try {
             long startTime = System.currentTimeMillis();
             RuntimeUtils.run(getContainer(), true, true, op);
             long connectTime = (System.currentTimeMillis() - startTime);
+            String message = "";
+            if (!CommonUtils.isEmpty(op.productName)) {
+                message += "Server: " + op.productName + " " + op.productVersion + "\n";
+            }
+            if (!CommonUtils.isEmpty(op.driverName)) {
+                message += "Driver: " + op.driverName + " " + op.driverVersion + "\n";
+            }
+            if (!CommonUtils.isEmpty(message)) {
+                message += "\n";
+            }
+            message += NLS.bind(CoreMessages.dialog_connection_wizard_start_connection_monitor_connected, connectTime);
+
             MessageDialog.openInformation(
-                getShell(),
-                CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
-                NLS.bind(CoreMessages.dialog_connection_wizard_start_connection_monitor_connected, connectTime));
+            getShell(),
+            CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
+            message);
         }
         catch (InterruptedException ex) {
             UIUtils.showErrorDialog(
@@ -160,5 +131,79 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
     public boolean isNew()
     {
         return getDataSourceDescriptor() == null;
+    }
+
+    private class ConnectionTester implements DBRRunnableWithProgress {
+        String productName;
+        String productVersion;
+        String driverName;
+        String driverVersion;
+        private final DBPConnectionInfo connectionInfo;
+
+        public ConnectionTester(DBPConnectionInfo connectionInfo)
+        {
+            this.connectionInfo = connectionInfo;
+            productName = null;
+            productVersion = null;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor)
+            throws InvocationTargetException, InterruptedException
+        {
+            monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 3);
+            Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
+
+            DriverDescriptor driver = getSelectedDriver();
+            DBPDataSourceProvider provider;
+            try {
+                provider = driver.getDataSourceProvider();
+            }
+            catch (DBException ex) {
+                throw new InvocationTargetException(ex);
+            }
+            DataSourceDescriptor container = new DataSourceDescriptor(dataSourceRegistry, "test", driver, connectionInfo);
+            try {
+                container.setName(connectionInfo.getUrl());
+                monitor.worked(1);
+                container.connect(monitor, false, false);
+                monitor.worked(1);
+                DBPDataSource dataSource = container.getDataSource();
+                if (dataSource == null) {
+                    throw new InvocationTargetException(
+                        new DBException("Internal error: null datasource returned from provider " + provider));
+                } else {
+                    monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
+                    if (dataSource instanceof JDBCDataSource) {
+                        try {
+                            Connection connection = ((JDBCDataSource) dataSource).getConnection().getConnection();
+                            DatabaseMetaData metaData = connection.getMetaData();
+                            productName = metaData.getDatabaseProductName();
+                            productVersion = metaData.getDatabaseProductVersion();
+                            driverName = metaData.getDriverName();
+                            driverVersion = metaData.getDriverVersion();
+                        } catch (Exception e) {
+                            log.error("Can't obtain connection metadata", e);
+                        }
+                    }
+                    try {
+                        monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
+                        container.disconnect(monitor, false);
+                    } catch (DBException e) {
+                        // ignore it
+                        log.error(e);
+                    } finally {
+                        monitor.done();
+                    }
+                }
+                monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
+            }
+            catch (DBException ex) {
+                throw new InvocationTargetException(ex);
+            }
+            finally {
+                container.dispose();
+            }
+        }
     }
 }
