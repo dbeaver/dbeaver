@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2AuthIDType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;

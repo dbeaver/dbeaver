@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
-import org.jkiss.dbeaver.ext.db2.model.dict.DB2GrantorGranteeType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
