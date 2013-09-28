@@ -62,6 +62,7 @@ Missing metadata:
   - variables, rowfields
   - dependencies
   - options
+- XML Schemas  
 - DB2Modules  
 - Federated User Mappings (useroptions, surrogateauthids)
 - Federated Function Mappings (routinesfederated, funcmapping)
