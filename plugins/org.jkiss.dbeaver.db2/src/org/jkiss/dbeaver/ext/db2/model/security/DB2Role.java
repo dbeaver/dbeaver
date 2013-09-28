@@ -38,10 +38,12 @@ import java.util.Collection;
 
 /**
  * DB2 Role
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Role extends DB2GlobalObject implements DBPSaveableObject, DBARole, DBPRefreshableObject {
+
+    private static final String C_RL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE ROLENAME=? ORDER BY GRANTOR,GRANTEE WITH UR";
 
     private final DBSObjectCache<DB2Role, DB2RoleAuth> roleAuthCache;
 
@@ -66,9 +68,7 @@ public class DB2Role extends DB2GlobalObject implements DBPSaveableObject, DBARo
         // DB2 v10 this.auditPolicyId = JDBCUtils.safeGetInteger(resultSet, "AUDITPOLICYID");
         // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
         this.remarks = JDBCUtils.safeGetString(resultSet, "REMARKS");
-        this.roleAuthCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleAuth>(
-            DB2RoleAuth.class, "SELECT * FROM SYSCAT.ROLEAUTH WHERE ROLENAME=? ORDER BY GRANTOR,GRANTEE WITH UR",
-            name);
+        this.roleAuthCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleAuth>(DB2RoleAuth.class, C_RL, name);
     }
 
     // -----------------
