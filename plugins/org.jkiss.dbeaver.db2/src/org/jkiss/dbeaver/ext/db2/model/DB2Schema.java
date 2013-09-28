@@ -237,7 +237,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
     public DB2View getView(DBRProgressMonitor monitor, String name) throws DBException
     {
-        return tableCache.getObject(monitor, this, name, DB2View.class);
+        return viewCache.getObject(monitor, this, name, DB2View.class);
     }
 
     @Association
