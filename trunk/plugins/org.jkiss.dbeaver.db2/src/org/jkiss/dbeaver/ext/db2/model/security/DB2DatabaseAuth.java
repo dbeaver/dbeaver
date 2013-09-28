@@ -66,16 +66,15 @@ public class DB2DatabaseAuth extends DB2GlobalObject implements DBPSaveableObjec
     // Constructors
     // -----------------------
 
-    @SuppressWarnings("incomplete-switch")
     public DB2DatabaseAuth(DB2DataSource dataSource, ResultSet resultSet) throws DBException
     {
         super(dataSource, true);
 
-        this.granteeType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTEETYPE"));
         this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
         this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
 
         String granteeName = JDBCUtils.safeGetString(resultSet, "GRANTEE");
+        this.granteeType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTEETYPE"));
         switch (granteeType) {
         case U:
             this.grantee = dataSource.getUser(VoidProgressMonitor.INSTANCE, granteeName);
@@ -85,6 +84,8 @@ public class DB2DatabaseAuth extends DB2GlobalObject implements DBPSaveableObjec
             break;
         case R:
             this.grantee = dataSource.getRole(VoidProgressMonitor.INSTANCE, granteeName);
+            break;
+        default:
             break;
         }
 

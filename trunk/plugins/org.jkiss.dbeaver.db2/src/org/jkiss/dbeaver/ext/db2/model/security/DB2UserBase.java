@@ -23,9 +23,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.access.DBAUser;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,12 +33,13 @@ import java.util.Collection;
 
 /**
  * DB2 Super class for Users and Groups
- *
+ * 
  * @author Denis Forveille
  */
 public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DBPRefreshableObject {
 
-    private final DBSObjectCache<DB2UserBase, DB2UserAuth> userAuthCache;
+    private final static DB2UserAuthCache userAuthCache = new DB2UserAuthCache();
+
     private String name;
 
     // -----------------------
@@ -50,11 +49,6 @@ public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DB
     {
         super(dataSource, true);
         this.name = JDBCUtils.safeGetString(resultSet, "AUTHID");
-        this.userAuthCache = new JDBCObjectSimpleCache<DB2UserBase, DB2UserAuth>(
-            DB2UserAuth.class,
-            "SELECT * FROM SYSIBMADM.PRIVILEGES WHERE AUTHID = ? AND AUTHIDTYPE = ? ORDER BY OBJECTSCHEMA,OBJECTNAME WITH UR",
-            getName(),
-            getType().name());
     }
 
     // -----------------
