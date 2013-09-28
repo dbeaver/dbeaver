@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
+import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
@@ -148,6 +149,8 @@ public enum DB2ObjectType implements DBSObjectType {
             return schema.getTableCache().getObject(monitor, schema, objectName);
         }
     }),
+
+    TABLESPACE(DBIcon.TREE_TABLESPACE.getImage(), DB2Tablespace.class, null),
 
     TRIGGER(DBIcon.TREE_TABLE.getImage(), DB2Trigger.class, new ObjectFinder() {
         @Override

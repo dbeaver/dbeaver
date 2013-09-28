@@ -21,24 +21,24 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Kind of Authid
+ * DB2 Authorisation Held Value
  * 
  * @author Denis Forveille
  */
-public enum DB2AuthIDType implements DBPNamedObject {
+public enum DB2AuthHeldType implements DBPNamedObject {
 
-    U("U (User)"),
+    Y("Y (Held)"),
 
-    G("G (Group)"),
+    N("N (Not Held)"),
 
-    R("R (Role)");
+    G("G (Held and grantable)");
 
     private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2AuthIDType(String name)
+    private DB2AuthHeldType(String name)
     {
         this.name = name;
     }
