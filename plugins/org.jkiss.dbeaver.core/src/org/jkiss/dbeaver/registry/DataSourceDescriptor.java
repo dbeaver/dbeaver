@@ -575,10 +575,10 @@ public class DataSourceDescriptor
     public void connect(DBRProgressMonitor monitor)
         throws DBException
     {
-        connect(monitor, true);
+        connect(monitor, true, true);
     }
 
-    public void connect(DBRProgressMonitor monitor, boolean reflect)
+    public void connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
         throws DBException
     {
         if (this.isConnected()) {
@@ -607,42 +607,44 @@ public class DataSourceDescriptor
 
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
 
-            dataSource.initialize(monitor);
-            // Change connection properties
+            if (initialize) {
+                dataSource.initialize(monitor);
+                // Change connection properties
 
-            DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Set session defaults ...");
-            try {
-                DBCTransactionManager txnManager = context.getTransactionManager();
-                boolean autoCommit = txnManager.isAutoCommit();
-                AbstractPreferenceStore store = getPreferenceStore();
-                boolean newAutoCommit;
-                if (!store.contains(PrefConstants.DEFAULT_AUTO_COMMIT)) {
-                    newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
-                } else {
-                    newAutoCommit = store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
-                }
-                if (autoCommit != newAutoCommit) {
-                    // Change auto-commit state
-                    txnManager.setAutoCommit(newAutoCommit);
-                }
-                if (store.contains(PrefConstants.DEFAULT_ISOLATION)) {
-                    int isolationCode = store.getInt(PrefConstants.DEFAULT_ISOLATION);
-                    Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
-                    if (!CommonUtils.isEmpty(supportedLevels)) {
-                        for (DBPTransactionIsolation level : supportedLevels) {
-                            if (level.getCode() == isolationCode) {
-                                txnManager.setTransactionIsolation(level);
-                                break;
+                DBCExecutionContext context = dataSource.openContext(monitor, DBCExecutionPurpose.META, "Set session defaults ...");
+                try {
+                    DBCTransactionManager txnManager = context.getTransactionManager();
+                    boolean autoCommit = txnManager.isAutoCommit();
+                    AbstractPreferenceStore store = getPreferenceStore();
+                    boolean newAutoCommit;
+                    if (!store.contains(PrefConstants.DEFAULT_AUTO_COMMIT)) {
+                        newAutoCommit = connectionInfo.getConnectionType().isAutocommit();
+                    } else {
+                        newAutoCommit = store.getBoolean(PrefConstants.DEFAULT_AUTO_COMMIT);
+                    }
+                    if (autoCommit != newAutoCommit) {
+                        // Change auto-commit state
+                        txnManager.setAutoCommit(newAutoCommit);
+                    }
+                    if (store.contains(PrefConstants.DEFAULT_ISOLATION)) {
+                        int isolationCode = store.getInt(PrefConstants.DEFAULT_ISOLATION);
+                        Collection<DBPTransactionIsolation> supportedLevels = dataSource.getInfo().getSupportedTransactionsIsolation();
+                        if (!CommonUtils.isEmpty(supportedLevels)) {
+                            for (DBPTransactionIsolation level : supportedLevels) {
+                                if (level.getCode() == isolationCode) {
+                                    txnManager.setTransactionIsolation(level);
+                                    break;
+                                }
                             }
                         }
                     }
                 }
-            }
-            catch (DBCException e) {
-                log.error("Can't set session transactions state", e);
-            }
-            finally {
-                context.close();
+                catch (DBCException e) {
+                    log.error("Can't set session transactions state", e);
+                }
+                finally {
+                    context.close();
+                }
             }
 
             connectFailed = false;
@@ -851,7 +853,7 @@ public class DataSourceDescriptor
                 return false;
             }
         }
-        connect(monitor, reflect);
+        connect(monitor, true, reflect);
 
         return true;
     }

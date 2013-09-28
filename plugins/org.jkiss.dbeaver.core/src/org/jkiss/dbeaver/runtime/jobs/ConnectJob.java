@@ -63,7 +63,7 @@ public class ConnectJob extends EventProcessorJob
             processEvents(DBPConnectionEventType.BEFORE_CONNECT);
 
             try {
-                container.connect(monitor, reflect);
+                container.connect(monitor, true, reflect);
             } finally {
                 if (connectThread != null) {
                     connectThread.setName(oldName);
