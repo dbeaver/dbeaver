@@ -158,10 +158,10 @@
                             </items>
                         </folder>
                        <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.appobjects.node.name" icon="#appobjects" description="Application Objects">
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="#data_types" description="User Defined Types">
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="icon/udt.gif" description="User Defined Types">
                              <items label="%tree.type.node.name" path="UDT" property="UDTs" icon="#data_type" />
                           </folder>
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="#procedures" description="Functions">
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icon/udf.gif" description="Functions">
                              <items label="%tree.function.node.name" path="UDF" property="UDFs" icon="#procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="false" inline="false"/>
                              </items>
@@ -189,9 +189,9 @@
                         <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
                     </folder>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.federation.node.name" icon="#storage" description="Federation">
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper" label="%tree.wrappers.node.name" icon="#bufferpools" description="Wrappers">
-                        <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="#wrapper" >
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.federation.node.name" icon="#federation" description="Federation">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper" label="%tree.wrappers.node.name" icon="#folder_wrapper" description="Wrappers">
+                        <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="icon/wrapper.gif" >
                            <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2WrapperOption" label="%tree.options.node.name" icon="#options" description="Wrapper Options">
                                 <items label="%tree.option.node.name" path="option" property="options" icon="#option"/>
                            </folder>
@@ -245,12 +245,12 @@
                         </items>
                     </folder> 
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Group" label="%tree.groups.node.name" icon="#folder_role" description="Groups">
-                        <items label="%tree.group.node.name" path="group" property="groups" icon="#group">
+                        <items label="%tree.group.node.name" path="group" property="groups" icon="icons/group.gif">
                            <items label="%tree.groupauths.node.name" path="groupauth" property="userAuths" icon="#groupauth"/>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
-                        <items label="%tree.role.node.name" path="role" property="roles" icon="#role">
+                        <items label="%tree.role.node.name" path="role" property="roles" icon="icons/role.gif">
                            <items label="%tree.roleauths.node.name" path="roleauth" property="roleAuths" icon="#roleauth"/>
                         </items>
                     </folder>
