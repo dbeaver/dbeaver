@@ -157,6 +157,9 @@
                                <items label="%tree.triggerdeps.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>
                             </items>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema" label="%tree.xmlschemas.node.name" icon="#xmlschemas" description="XML Schemas">
+                           <items label="%tree.xmlschema.node.name" path="xmlschema" property="XMLSchemas" icon="#xmlschema" />
+                       </folder>
                        <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.appobjects.node.name" icon="#appobjects" description="Application Objects">
                           <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="icon/udt.gif" description="User Defined Types">
                              <items label="%tree.type.node.name" path="UDT" property="UDTs" icon="#data_type" />

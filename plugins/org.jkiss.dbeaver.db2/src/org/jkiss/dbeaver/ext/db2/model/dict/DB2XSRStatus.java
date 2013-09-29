@@ -16,29 +16,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.model.security;
+package org.jkiss.dbeaver.ext.db2.model.dict;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Authorisation Held Value
+ * DB2 Status of DB2 XML schema repository object
  * 
  * @author Denis Forveille
  */
-public enum DB2AuthHeldType implements DBPNamedObject {
+public enum DB2XSRStatus implements DBPNamedObject {
+    C("C (Complete)"),
 
-    Y("Y"),
+    I("I (Incomplete)"),
 
-    N("N"),
+    R("R (Replace)"),
 
-    G("G (Y + grantable)");
+    T("T (Temporary)");
 
     private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2AuthHeldType(String name)
+    private DB2XSRStatus(String name)
     {
         this.name = name;
     }
@@ -55,9 +56,14 @@ public enum DB2AuthHeldType implements DBPNamedObject {
     // ----------------
     // Standard Getters
     // ----------------
+
+    // ----------------
+    // Standard Getters
+    // ----------------
     @Override
     public String getName()
     {
         return name;
     }
+
 }
