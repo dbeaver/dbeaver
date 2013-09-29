@@ -76,7 +76,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
         return roleCache.getObjects(monitor, this);
     }
 
-    // DF: all of those could probably cached also...
+    // DF: all of those could probably be cached and factorised
 
     @Association
     public Collection<DB2AuthTable> getTablesAuths(DBRProgressMonitor monitor) throws DBException
