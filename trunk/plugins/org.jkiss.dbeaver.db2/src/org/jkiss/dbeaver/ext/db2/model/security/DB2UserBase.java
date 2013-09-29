@@ -142,6 +142,32 @@ public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DB
         return listTablespacesAuths;
     }
 
+    @Association
+    public Collection<DB2UserAuthSchema> getSchemasAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<DB2UserAuthSchema> listSchemasAuths = new ArrayList<DB2UserAuthSchema>();
+        for (DB2UserAuthBase db2UserAuth : userAuthCache.getObjects(monitor, this)) {
+            if (db2UserAuth instanceof DB2UserAuthSchema) {
+                listSchemasAuths.add((DB2UserAuthSchema) db2UserAuth);
+            }
+
+        }
+        return listSchemasAuths;
+    }
+
+    @Association
+    public Collection<DB2UserAuthPackage> getPackagesAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<DB2UserAuthPackage> listPackagesAuths = new ArrayList<DB2UserAuthPackage>();
+        for (DB2UserAuthBase db2UserAuth : userAuthCache.getObjects(monitor, this)) {
+            if (db2UserAuth instanceof DB2UserAuthPackage) {
+                listPackagesAuths.add((DB2UserAuthPackage) db2UserAuth);
+            }
+
+        }
+        return listPackagesAuths;
+    }
+
     // -----------------
     // Properties
     // -----------------
