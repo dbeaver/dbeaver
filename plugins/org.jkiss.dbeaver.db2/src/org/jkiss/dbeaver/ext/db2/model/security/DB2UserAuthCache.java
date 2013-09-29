@@ -195,7 +195,7 @@ public final class DB2UserAuthCache extends JDBCObjectCache<DB2UserBase, DB2User
             return new DB2UserAuthTablespace(monitor, db2UserBase, db2Tablespace, resultSet);
 
         default:
-            throw new DBException("Structura problem. " + objectType + " autorisation not implemented");
+            throw new DBException("Structural problem. " + objectType + " autorisation not implemented");
         }
 
     }
