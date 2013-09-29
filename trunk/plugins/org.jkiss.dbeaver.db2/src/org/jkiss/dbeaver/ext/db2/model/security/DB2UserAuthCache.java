@@ -19,11 +19,20 @@
 package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
+import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,7 +42,7 @@ import java.sql.SQLException;
  * 
  * @author Denis Forveille
  */
-public final class DB2UserAuthCache extends JDBCObjectCache<DB2UserBase, DB2UserAuth> {
+public final class DB2UserAuthCache extends JDBCObjectCache<DB2UserBase, DB2UserAuthBase> {
 
     private static String SQL;
 
@@ -107,10 +116,44 @@ public final class DB2UserAuthCache extends JDBCObjectCache<DB2UserBase, DB2User
     }
 
     @Override
-    protected DB2UserAuth fetchObject(JDBCExecutionContext context, DB2UserBase db2UserBase, ResultSet resultSet)
+    protected DB2UserAuthBase fetchObject(JDBCExecutionContext context, DB2UserBase db2UserBase, ResultSet resultSet)
         throws SQLException, DBException
     {
-        return new DB2UserAuth(context.getProgressMonitor(), db2UserBase, resultSet);
-    }
+        DB2DataSource db2DataSource = db2UserBase.getDataSource();
+        DBRProgressMonitor monitor = context.getProgressMonitor();
 
+        String objectSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA");
+        String objectName = JDBCUtils.safeGetString(resultSet, "OBJ_NAME");
+
+        DB2ObjectType objectType = CommonUtils.valueOf(DB2ObjectType.class, JDBCUtils.safeGetString(resultSet, "OBJ_TYPE"));
+
+        switch (objectType) {
+        case TABLE:
+            // May be Table or View..
+            DB2TableBase db2TableBase = DB2Utils.findTableBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            if (db2TableBase == null) {
+                db2TableBase = DB2Utils.findViewBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+                return new DB2UserAuthView(monitor, db2UserBase, db2TableBase, resultSet);
+            } else {
+                return new DB2UserAuthTable(monitor, db2UserBase, db2TableBase, resultSet);
+            }
+
+        case INDEX:
+            DB2Index db2Index = DB2Utils.findIndexBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            return new DB2UserAuthIndex(monitor, db2UserBase, db2Index, resultSet);
+
+        case SEQUENCE:
+            DB2Sequence db2Sequence = DB2Utils
+                .findSequenceBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            return new DB2UserAuthSequence(monitor, db2UserBase, db2Sequence, resultSet);
+
+        case TABLESPACE:
+            DB2Tablespace db2Tablespace = db2DataSource.getTablespace(monitor, objectName);
+            return new DB2UserAuthTablespace(monitor, db2UserBase, db2Tablespace, resultSet);
+
+        default:
+            throw new DBException("Structura problem. " + objectType + " autorisation not implemented");
+        }
+
+    }
 }
