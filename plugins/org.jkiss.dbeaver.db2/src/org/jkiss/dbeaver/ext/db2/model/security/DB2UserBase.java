@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -37,9 +36,10 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DBPRefreshableObject {
+public abstract class DB2UserBase extends DB2GlobalObject implements DBPRefreshableObject {
 
     private final DB2UserAuthCache userAuthCache = new DB2UserAuthCache();
+    private final DB2UserBaseRoleCache roleCache = new DB2UserBaseRoleCache();
 
     private String name;
 
@@ -62,6 +62,7 @@ public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DB
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
         userAuthCache.clearCache();
+        roleCache.clearCache();
         return true;
     }
 
@@ -70,9 +71,9 @@ public abstract class DB2UserBase extends DB2GlobalObject implements DBAUser, DB
     // -----------------
 
     @Association
-    public Collection<DB2UserAuthBase> getUserAuths(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2RoleAuth> getRoles(DBRProgressMonitor monitor) throws DBException
     {
-        return userAuthCache.getObjects(monitor, this);
+        return roleCache.getObjects(monitor, this);
     }
 
     // DF: all of those could probably cached also...
