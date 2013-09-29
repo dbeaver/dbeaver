@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -40,7 +41,7 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Role extends DB2UserBase implements DBPSaveableObject, DBARole, DBPRefreshableObject {
+public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, DBPRefreshableObject {
 
     private static final String C_RL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE ROLENAME=? ORDER BY GRANTOR,GRANTEE WITH UR";
 
@@ -59,7 +60,7 @@ public class DB2Role extends DB2UserBase implements DBPSaveableObject, DBARole, 
 
     public DB2Role(DB2DataSource dataSource, ResultSet resultSet)
     {
-        super(dataSource, resultSet);
+        super(VoidProgressMonitor.INSTANCE, dataSource, resultSet);
 
         this.name = JDBCUtils.safeGetString(resultSet, "ROLENAME");
         this.id = JDBCUtils.safeGetInteger(resultSet, "ROLEID");

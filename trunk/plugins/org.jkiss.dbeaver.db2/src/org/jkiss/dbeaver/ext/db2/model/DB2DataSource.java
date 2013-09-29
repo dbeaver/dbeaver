@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2DatabaseAuth;
-import org.jkiss.dbeaver.ext.db2.model.security.DB2GroupUserCache;
+import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
+import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
-import org.jkiss.dbeaver.ext.db2.model.security.DB2UserBase;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -109,8 +109,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Wrapper>(
         DB2Wrapper.class, C_WR);
 
-    private final DB2GroupUserCache groupCache = new DB2GroupUserCache(DB2AuthIDType.G);
-    private final DB2GroupUserCache userCache = new DB2GroupUserCache(DB2AuthIDType.U);
+    private final DB2GranteeCache groupCache = new DB2GranteeCache(DB2AuthIDType.G);
+    private final DB2GranteeCache userCache = new DB2GranteeCache(DB2AuthIDType.U);
 
     private List<DB2Parameter> listDBParameters;
     private List<DB2Parameter> listDBMParameters;
@@ -457,23 +457,23 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Association
-    public Collection<DB2UserBase> getUsers(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2Grantee> getUsers(DBRProgressMonitor monitor) throws DBException
     {
         return userCache.getObjects(monitor, this);
     }
 
-    public DB2UserBase getUser(DBRProgressMonitor monitor, String name) throws DBException
+    public DB2Grantee getUser(DBRProgressMonitor monitor, String name) throws DBException
     {
         return userCache.getObject(monitor, this, name);
     }
 
     @Association
-    public Collection<DB2UserBase> getGroups(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2Grantee> getGroups(DBRProgressMonitor monitor) throws DBException
     {
         return groupCache.getObjects(monitor, this);
     }
 
-    public DB2UserBase getGroup(DBRProgressMonitor monitor, String name) throws DBException
+    public DB2Grantee getGroup(DBRProgressMonitor monitor, String name) throws DBException
     {
         return groupCache.getObject(monitor, this, name);
     }

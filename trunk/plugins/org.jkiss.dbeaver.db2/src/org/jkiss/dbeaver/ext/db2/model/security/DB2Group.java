@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 
@@ -28,15 +29,15 @@ import java.sql.ResultSet;
  * 
  * @author Denis Forveille
  */
-public class DB2Group extends DB2UserBase implements DBAUser {
+public class DB2Group extends DB2Grantee implements DBAUser {
 
     // -----------------------
     // Constructors
     // -----------------------
 
-    public DB2Group(DB2DataSource dataSource, ResultSet resultSet)
+    public DB2Group(DBRProgressMonitor monitor, DB2DataSource dataSource, ResultSet resultSet)
     {
-        super(dataSource, resultSet);
+        super(monitor, dataSource, resultSet);
     }
 
     // -----------------------

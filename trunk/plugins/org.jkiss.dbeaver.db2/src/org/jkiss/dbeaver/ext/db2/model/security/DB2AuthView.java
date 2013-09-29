@@ -18,36 +18,27 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.model.access.DBAUser;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 
 /**
- * DB2 User
+ * DB2 Authorisations on Views
  * 
  * @author Denis Forveille
  */
-public class DB2User extends DB2Grantee implements DBAUser {
+public class DB2AuthView extends DB2AuthTableBase {
 
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2User(DBRProgressMonitor monitor, DB2DataSource dataSource, ResultSet resultSet)
+
+    public DB2AuthView(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2TableBase db2TableBase, ResultSet resultSet)
+        throws DBException
     {
-        super(monitor, dataSource, resultSet);
-
-    }
-
-    // -----------------------
-    // Business Contract
-    // -----------------------
-
-    @Override
-    public DB2AuthIDType getType()
-    {
-        return DB2AuthIDType.U;
+        super(monitor, db2Grantee, db2TableBase, resultSet);
     }
 
 }

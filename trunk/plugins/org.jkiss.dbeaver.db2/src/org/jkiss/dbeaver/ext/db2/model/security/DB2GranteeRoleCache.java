@@ -29,30 +29,30 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cache for DB2 Roles for a given UserBase
+ * Cache for DB2 Roles for a given Grantee
  * 
  * @author Denis Forveille
  */
-public class DB2UserBaseRoleCache extends JDBCObjectCache<DB2UserBase, DB2RoleAuth> {
+public class DB2GranteeRoleCache extends JDBCObjectCache<DB2Grantee, DB2RoleAuth> {
 
     private static final String SQL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE GRANTEETYPE = ? AND GRANTEE = ? ORDER BY ROLENAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2UserBase db2UserBase) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Grantee db2Grantee) throws SQLException
     {
         final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
-        dbStat.setString(1, db2UserBase.getType().name());
-        dbStat.setString(2, db2UserBase.getName());
+        dbStat.setString(1, db2Grantee.getType().name());
+        dbStat.setString(2, db2Grantee.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2RoleAuth fetchObject(JDBCExecutionContext context, DB2UserBase db2UserBase, ResultSet dbResult)
+    protected DB2RoleAuth fetchObject(JDBCExecutionContext context, DB2Grantee db2Grantee, ResultSet dbResult)
         throws SQLException, DBException
     {
         // Lookup for the role in DS Cache
         String db2RoleName = JDBCUtils.safeGetStringTrimmed(dbResult, "ROLENAME");
-        DB2Role db2Role = db2UserBase.getDataSource().getRole(context.getProgressMonitor(), db2RoleName);
+        DB2Role db2Role = db2Grantee.getDataSource().getRole(context.getProgressMonitor(), db2RoleName);
 
         return new DB2RoleAuth(db2Role, dbResult);
     }
