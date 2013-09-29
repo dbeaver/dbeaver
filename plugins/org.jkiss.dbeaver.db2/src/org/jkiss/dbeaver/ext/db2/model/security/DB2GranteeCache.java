@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,7 +34,7 @@ import java.sql.SQLException;
  * 
  * @author Denis Forveille
  */
-public final class DB2GroupUserCache extends JDBCObjectCache<DB2DataSource, DB2UserBase> {
+public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Grantee> {
 
     private static String SQL;
 
@@ -116,7 +117,7 @@ public final class DB2GroupUserCache extends JDBCObjectCache<DB2DataSource, DB2U
         SQL = sb.toString();
     }
 
-    public DB2GroupUserCache(DB2AuthIDType authIdType)
+    public DB2GranteeCache(DB2AuthIDType authIdType)
     {
         this.authIdType = authIdType;
         this.authIdTypeName = authIdType.name();
@@ -141,14 +142,15 @@ public final class DB2GroupUserCache extends JDBCObjectCache<DB2DataSource, DB2U
     }
 
     @Override
-    protected DB2UserBase fetchObject(JDBCExecutionContext context, DB2DataSource db2DataSource, ResultSet resultSet)
+    protected DB2Grantee fetchObject(JDBCExecutionContext context, DB2DataSource db2DataSource, ResultSet resultSet)
         throws SQLException, DBException
     {
+        DBRProgressMonitor monitor = context.getProgressMonitor();
         switch (authIdType) {
         case G:
-            return new DB2Group(db2DataSource, resultSet);
+            return new DB2Group(monitor, db2DataSource, resultSet);
         case U:
-            return new DB2User(db2DataSource, resultSet);
+            return new DB2User(monitor, db2DataSource, resultSet);
         default:
             throw new DBException("Structural problem. " + authIdType + " type not implemented");
         }

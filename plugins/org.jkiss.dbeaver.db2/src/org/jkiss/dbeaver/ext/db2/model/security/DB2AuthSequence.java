@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
+import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,22 +29,24 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 
 /**
- * DB2 User or Group Authorisations on Tablespaces
+ * DB2 Authorisations on Sequences
  * 
  * @author Denis Forveille
  */
-public class DB2UserAuthTablespace extends DB2UserAuthBase {
+public class DB2AuthSequence extends DB2AuthBase {
 
+    private DB2AuthHeldType alter;
     private DB2AuthHeldType usage;
 
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2UserAuthTablespace(DBRProgressMonitor monitor, DB2UserBase userOrGroup, DB2Tablespace db2Tablespace,
-        ResultSet resultSet) throws DBException
+    public DB2AuthSequence(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Sequence db2Sequence, ResultSet resultSet)
+        throws DBException
     {
-        super(monitor, userOrGroup, db2Tablespace, resultSet);
+        super(monitor, db2Grantee, db2Sequence, resultSet);
 
+        this.alter = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "ALTERAUTH"));
         this.usage = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "USAGEAUTH"));
     }
 
@@ -53,14 +54,13 @@ public class DB2UserAuthTablespace extends DB2UserAuthBase {
     // Properties
     // -----------------
 
-    @Override
-    @Property(hidden = true)
-    public DB2Schema getObjectSchema()
+    @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
+    public DB2AuthHeldType getAlter()
     {
-        return super.getObjectSchema();
+        return alter;
     }
 
-    @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 21, category = DB2Constants.CAT_AUTH)
     public DB2AuthHeldType getUsage()
     {
         return usage;

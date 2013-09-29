@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.DB2Package;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,49 +29,56 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 
 /**
- * DB2 User or Group Authorisations on Packages
+ * DB2 Authorisations on Schemas
  * 
  * @author Denis Forveille
  */
-public class DB2UserAuthPackage extends DB2UserAuthBase {
+public class DB2AuthSchema extends DB2AuthBase {
 
-    private DB2AuthHeldType control;
-    private DB2AuthHeldType bind;
-    private DB2AuthHeldType execute;
+    private DB2AuthHeldType alterIn;
+    private DB2AuthHeldType createIn;
+    private DB2AuthHeldType dropIn;
 
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2UserAuthPackage(DBRProgressMonitor monitor, DB2UserBase userOrGroup, DB2Package db2Package, ResultSet resultSet)
+    public DB2AuthSchema(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Schema db2Schema, ResultSet resultSet)
         throws DBException
     {
-        super(monitor, userOrGroup, db2Package, resultSet);
+        super(monitor, db2Grantee, db2Schema, resultSet);
 
-        this.control = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "CONTROLAUTH"));
-        this.bind = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "BINDAUTH"));
-        this.execute = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "EXECUTEAUTH"));
+        this.alterIn = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "ALTERINAUTH"));
+        this.createIn = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "CREATEINAUTH"));
+        this.dropIn = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "DROPINAUTH"));
     }
 
     // -----------------
     // Properties
     // -----------------
 
-    @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
-    public DB2AuthHeldType getControl()
+    @Override
+    @Property(hidden = true)
+    public DB2Schema getObjectSchema()
     {
-        return control;
+        return super.getObjectSchema();
+    }
+
+    @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
+    public DB2AuthHeldType getAlterIn()
+    {
+        return alterIn;
     }
 
     @Property(viewable = true, order = 21, category = DB2Constants.CAT_AUTH)
-    public DB2AuthHeldType getBind()
+    public DB2AuthHeldType getCreateIn()
     {
-        return bind;
+        return createIn;
     }
 
     @Property(viewable = true, order = 22, category = DB2Constants.CAT_AUTH)
-    public DB2AuthHeldType getExecute()
+    public DB2AuthHeldType getDropIn()
     {
-        return execute;
+        return dropIn;
     }
 
 }

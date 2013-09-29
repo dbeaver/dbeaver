@@ -20,7 +20,8 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,33 +30,40 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 
 /**
- * DB2 User or Group Authorisations on Tablespaces
+ * DB2 Authorisations on Tablespaces
  * 
  * @author Denis Forveille
  */
-public class DB2UserAuthIndex extends DB2UserAuthBase {
+public class DB2AuthTablespace extends DB2AuthBase {
 
-    private DB2AuthHeldType control;
+    private DB2AuthHeldType usage;
 
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2UserAuthIndex(DBRProgressMonitor monitor, DB2UserBase userOrGroup, DB2Index db2Index, ResultSet resultSet)
-        throws DBException
+    public DB2AuthTablespace(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Tablespace db2Tablespace,
+        ResultSet resultSet) throws DBException
     {
-        super(monitor, userOrGroup, db2Index, resultSet);
+        super(monitor, db2Grantee, db2Tablespace, resultSet);
 
-        this.control = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "CONTROLAUTH"));
+        this.usage = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "USAGEAUTH"));
     }
 
     // -----------------
     // Properties
     // -----------------
 
-    @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
-    public DB2AuthHeldType getControl()
+    @Override
+    @Property(hidden = true)
+    public DB2Schema getObjectSchema()
     {
-        return control;
+        return super.getObjectSchema();
+    }
+
+    @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
+    public DB2AuthHeldType getUsage()
+    {
+        return usage;
     }
 
 }

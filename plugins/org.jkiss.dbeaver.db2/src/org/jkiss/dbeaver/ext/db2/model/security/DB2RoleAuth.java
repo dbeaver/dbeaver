@@ -34,7 +34,6 @@ import java.sql.ResultSet;
  */
 public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
 
-    private DB2GrantorGranteeType granteeType;
     private String grantor;
     private DB2GrantorGranteeType grantorType;
     private Boolean admin;
@@ -46,7 +45,6 @@ public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
     {
         super(role, JDBCUtils.safeGetString(resultSet, "GRANTEE"), true);
 
-        this.granteeType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTEETYPE"));
         this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
         this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
         this.admin = JDBCUtils.safeGetBoolean(resultSet, "ADMIN", DB2YesNo.Y.name());

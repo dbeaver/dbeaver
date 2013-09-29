@@ -19,26 +19,43 @@
 package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 
 /**
- * DB2 User or Group Authorisations on Tables
+ * DB2 Authorisations on Tablespaces
  * 
  * @author Denis Forveille
  */
-public class DB2UserAuthTable extends DB2UserAuthTableBase {
+public class DB2AuthIndex extends DB2AuthBase {
+
+    private DB2AuthHeldType control;
 
     // -----------------------
     // Constructors
     // -----------------------
-
-    public DB2UserAuthTable(DBRProgressMonitor monitor, DB2UserBase userOrGroup, DB2TableBase db2TableBase, ResultSet resultSet)
+    public DB2AuthIndex(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Index db2Index, ResultSet resultSet)
         throws DBException
     {
-        super(monitor, userOrGroup, db2TableBase, resultSet);
+        super(monitor, db2Grantee, db2Index, resultSet);
+
+        this.control = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "CONTROLAUTH"));
+    }
+
+    // -----------------
+    // Properties
+    // -----------------
+
+    @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
+    public DB2AuthHeldType getControl()
+    {
+        return control;
     }
 
 }

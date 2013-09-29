@@ -25,20 +25,20 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.sql.ResultSet;
 
 /**
- * DB2 User or Group Authorisations on Views
+ * DB2 Authorisations on Tables
  * 
  * @author Denis Forveille
  */
-public class DB2UserAuthView extends DB2UserAuthTableBase {
+public class DB2AuthTable extends DB2AuthTableBase {
 
     // -----------------------
     // Constructors
     // -----------------------
 
-    public DB2UserAuthView(DBRProgressMonitor monitor, DB2UserBase userOrGroup, DB2TableBase db2TableBase, ResultSet resultSet)
+    public DB2AuthTable(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2TableBase db2TableBase, ResultSet resultSet)
         throws DBException
     {
-        super(monitor, userOrGroup, db2TableBase, resultSet);
+        super(monitor, db2Grantee, db2TableBase, resultSet);
     }
 
 }

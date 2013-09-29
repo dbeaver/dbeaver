@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
+import org.jkiss.dbeaver.ext.db2.model.DB2Package;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,25 +29,27 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 
 /**
- * DB2 User or Group Authorisations on Sequences
+ * DB2 Authorisations on Packages
  * 
  * @author Denis Forveille
  */
-public class DB2UserAuthSequence extends DB2UserAuthBase {
+public class DB2AuthPackage extends DB2AuthBase {
 
-    private DB2AuthHeldType alter;
-    private DB2AuthHeldType usage;
+    private DB2AuthHeldType control;
+    private DB2AuthHeldType bind;
+    private DB2AuthHeldType execute;
 
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2UserAuthSequence(DBRProgressMonitor monitor, DB2UserBase userOrGroup, DB2Sequence db2Sequence, ResultSet resultSet)
+    public DB2AuthPackage(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Package db2Package, ResultSet resultSet)
         throws DBException
     {
-        super(monitor, userOrGroup, db2Sequence, resultSet);
+        super(monitor, db2Grantee, db2Package, resultSet);
 
-        this.alter = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "ALTERAUTH"));
-        this.usage = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "USAGEAUTH"));
+        this.control = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "CONTROLAUTH"));
+        this.bind = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "BINDAUTH"));
+        this.execute = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "EXECUTEAUTH"));
     }
 
     // -----------------
@@ -55,15 +57,21 @@ public class DB2UserAuthSequence extends DB2UserAuthBase {
     // -----------------
 
     @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
-    public DB2AuthHeldType getAlter()
+    public DB2AuthHeldType getControl()
     {
-        return alter;
+        return control;
     }
 
     @Property(viewable = true, order = 21, category = DB2Constants.CAT_AUTH)
-    public DB2AuthHeldType getUsage()
+    public DB2AuthHeldType getBind()
     {
-        return usage;
+        return bind;
+    }
+
+    @Property(viewable = true, order = 22, category = DB2Constants.CAT_AUTH)
+    public DB2AuthHeldType getExecute()
+    {
+        return execute;
     }
 
 }
