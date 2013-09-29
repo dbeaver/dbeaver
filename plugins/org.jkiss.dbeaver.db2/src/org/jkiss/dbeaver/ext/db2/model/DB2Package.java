@@ -93,7 +93,7 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
 
     public DB2Package(DB2Schema schema, ResultSet dbResult) throws DBException
     {
-        super(schema, JDBCUtils.safeGetString(dbResult, "PKGNAME"), true);
+        super(schema, JDBCUtils.safeGetStringTrimmed(dbResult, "PKGNAME"), true);
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
