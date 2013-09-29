@@ -241,21 +241,21 @@
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.security.node.name" icon="#security" description="Security management" >
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2User" label="%tree.users.node.name" icon="#folder_user" description="Users">
                         <items label="%tree.user.node.name" path="user" property="users" icon="#user">
-                           <items label="%tree.userauths.node.name" path="userauth" property="userAuths" icon="#userauth"/>
+                           <items label="%tree.userauths.node.name" path="userauth" property="userAuths" icon="#userauth" navigable="false"/>
                         </items>
                     </folder> 
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Group" label="%tree.groups.node.name" icon="#folder_role" description="Groups">
                         <items label="%tree.group.node.name" path="group" property="groups" icon="icons/group.gif">
-                           <items label="%tree.groupauths.node.name" path="groupauth" property="userAuths" icon="#groupauth"/>
+                           <items label="%tree.groupauths.node.name" path="groupauth" property="userAuths" icon="#groupauth" navigable="false"/>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Role" label="%tree.roles.node.name" icon="#folder_role" description="Roles">
                         <items label="%tree.role.node.name" path="role" property="roles" icon="icons/role.gif">
-                           <items label="%tree.roleauths.node.name" path="roleauth" property="roleAuths" icon="#roleauth"/>
+                           <items label="%tree.roleauths.node.name" path="roleauth" property="roleAuths" icon="#roleauth" navigable="false"/>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2DatabaseAuth" label="%tree.databaseauths.node.name" icon="#folder_role" description="Database Authorisations">
-                        <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth" />
+                        <items label="%tree.databaseauth.node.name" path="databaseAuth" property="databaseAuths" icon="#dbauth"  navigable="false"/>
                     </folder>
                 </folder>
             </tree>
