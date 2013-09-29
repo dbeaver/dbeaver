@@ -126,13 +126,15 @@ public enum DB2ObjectType implements DBSObjectType {
         }
     }),
 
-    REFERENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2TableReference.class, new ObjectFinder() {
+    REFERENCE(DBIcon.TREE_REFERENCE.getImage(), DB2TableReference.class, new ObjectFinder() {
         @Override
         public DB2TableReference findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
             return schema.getReferenceCache().getObject(monitor, schema, objectName);
         }
     }),
+
+    SCHEMA(DBIcon.TREE_SCHEMA.getImage(), DB2Schema.class, null),
 
     SEQUENCE(DBIcon.TREE_SEQUENCE.getImage(), DB2Sequence.class, new ObjectFinder() {
         @Override
