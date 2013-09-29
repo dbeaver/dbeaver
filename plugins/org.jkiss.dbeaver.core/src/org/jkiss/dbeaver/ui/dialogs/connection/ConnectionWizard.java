@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.emf.common.util.CommonUtil;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCConnectionHolder;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -44,20 +42,19 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
 
 /**
  * Abstract connection wizard
  */
 
-public abstract class ConnectionWizard extends Wizard implements INewWizard
-{
+public abstract class ConnectionWizard extends Wizard implements INewWizard {
     static final Log log = LogFactory.getLog(ConnectionWizard.class);
 
-    //protected final IProject project;
+    // protected final IProject project;
     protected final DataSourceRegistry dataSourceRegistry;
 
-    protected ConnectionWizard(DataSourceRegistry dataSourceRegistry) {
+    protected ConnectionWizard(DataSourceRegistry dataSourceRegistry)
+    {
         setNeedsProgressMonitor(true);
         this.dataSourceRegistry = dataSourceRegistry;
     }
@@ -66,7 +63,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
     {
         return null;
     }
-    
+
     @Override
     public boolean performFinish()
     {
@@ -103,23 +100,14 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
             }
             message += NLS.bind(CoreMessages.dialog_connection_wizard_start_connection_monitor_connected, connectTime);
 
-            MessageDialog.openInformation(
-            getShell(),
-            CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
-            message);
-        }
-        catch (InterruptedException ex) {
-            UIUtils.showErrorDialog(
-                getShell(),
-                CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
+            MessageDialog.openInformation(getShell(), CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
+                message);
+        } catch (InterruptedException ex) {
+            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
                 CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
-        }
-        catch (InvocationTargetException ex) {
-            UIUtils.showErrorDialog(
-                getShell(),
-                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
-                CoreMessages.dialog_connection_wizard_start_dialog_error_message,
-                ex.getTargetException());
+        } catch (InvocationTargetException ex) {
+            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                CoreMessages.dialog_connection_wizard_start_dialog_error_message, ex.getTargetException());
         }
     }
 
@@ -148,8 +136,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
         }
 
         @Override
-        public void run(DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 3);
             Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
@@ -158,8 +145,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
             DBPDataSourceProvider provider;
             try {
                 provider = driver.getDataSourceProvider();
-            }
-            catch (DBException ex) {
+            } catch (DBException ex) {
                 throw new InvocationTargetException(ex);
             }
             DataSourceDescriptor container = new DataSourceDescriptor(dataSourceRegistry, "test", driver, connectionInfo);
@@ -170,8 +156,8 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                 monitor.worked(1);
                 DBPDataSource dataSource = container.getDataSource();
                 if (dataSource == null) {
-                    throw new InvocationTargetException(
-                        new DBException("Internal error: null datasource returned from provider " + provider));
+                    throw new InvocationTargetException(new DBException("Internal error: null datasource returned from provider "
+                        + provider));
                 } else {
                     monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
                     if (dataSource instanceof JDBCDataSource) {
@@ -197,11 +183,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard
                     }
                 }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
-            }
-            catch (DBException ex) {
+            } catch (DBException ex) {
                 throw new InvocationTargetException(ex);
-            }
-            finally {
+            } finally {
                 container.dispose();
             }
         }
