@@ -41,6 +41,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
+import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
@@ -318,6 +319,26 @@ public class JDBCUtils {
     {
         try {
             return dbResult.getTime(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return null;
+        }
+    }
+
+    public static SQLXML safeGetXML(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getSQLXML(columnName);
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return null;
+        }
+    }
+
+    public static SQLXML safeGetXML(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getSQLXML(columnIndex);
         } catch (SQLException e) {
             debugColumnRead(columnIndex, e);
             return null;
