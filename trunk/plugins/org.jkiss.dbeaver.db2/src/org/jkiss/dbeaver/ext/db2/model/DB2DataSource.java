@@ -128,6 +128,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DB2DataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
     {
         super(monitor, container);
+        getContainer().getPreferenceStore().setValue("db2.explain.plan.schema", "toto");
     }
 
     // -----------------------
