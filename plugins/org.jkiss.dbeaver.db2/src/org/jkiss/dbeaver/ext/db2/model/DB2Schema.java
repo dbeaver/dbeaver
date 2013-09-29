@@ -331,6 +331,11 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return packageCache.getObjects(monitor, this);
     }
 
+    public DB2Package getPackage(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return packageCache.getObject(monitor, this, name);
+    }
+
     @Association
     public Collection<DB2Routine> getProcedures(DBRProgressMonitor monitor) throws DBException
     {
