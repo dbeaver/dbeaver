@@ -62,6 +62,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private static final String C_SEQ = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR";
     private static final String C_PKG = "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR";
     private static final String C_DTT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR";
+    private static final String C_XSR = "SELECT * FROM SYSCAT.XSROBJECTS  WHERE OBJECTSCHEMA = ? ORDER BY OBJECTNAME WITH UR";
 
     // DB2Schema's children
     private final DB2TableCache tableCache = new DB2TableCache();
@@ -72,6 +73,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private final DB2AliasCache aliasCache = new DB2AliasCache();
     private final DBSObjectCache<DB2Schema, DB2Package> packageCache;
     private final DB2NicknameCache nicknameCache = new DB2NicknameCache();
+    private final DBSObjectCache<DB2Schema, DB2XMLSchema> xmlSchemaCache;
 
     private final DB2RoutineCache procedureCache = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
     private final DB2RoutineCache udfCache = new DB2RoutineCache(DBSProcedureType.FUNCTION);
@@ -103,6 +105,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class, C_SEQ, name);
         this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class, C_PKG, name);
         this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class, C_DTT, name);
+        this.xmlSchemaCache = new JDBCObjectSimpleCache<DB2Schema, DB2XMLSchema>(DB2XMLSchema.class, C_XSR, name);
     }
 
     public DB2Schema(DB2DataSource dataSource, ResultSet dbResult)
@@ -151,6 +154,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             viewCache.getObjects(monitor, this);
             monitor.subTask("Cache Check Constraints");
             checkCache.getObjects(monitor, this);
+            monitor.subTask("Cache Sequences");
+            sequenceCache.getObjects(monitor, this);
+            monitor.subTask("Cache XML Schemas");
+            xmlSchemaCache.getObjects(monitor, this);
         }
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
@@ -179,6 +186,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         udtCache.clearCache();
         sequenceCache.clearCache();
         aliasCache.clearCache();
+        xmlSchemaCache.clearCache();
 
         // For those 2, need to refresh dependent cache (cache for tables..?)
         indexCache.clearCache();
@@ -293,6 +301,17 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DB2Sequence getSequence(DBRProgressMonitor monitor, String name) throws DBException
     {
         return sequenceCache.getObject(monitor, this, name);
+    }
+
+    @Association
+    public Collection<DB2XMLSchema> getXMLSchemas(DBRProgressMonitor monitor) throws DBException
+    {
+        return xmlSchemaCache.getObjects(monitor, this);
+    }
+
+    public DB2XMLSchema getXMLSchema(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return xmlSchemaCache.getObject(monitor, this, name);
     }
 
     @Association
@@ -415,6 +434,11 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public DBSObjectCache<DB2Schema, DB2Sequence> getSequenceCache()
     {
         return sequenceCache;
+    }
+
+    public DBSObjectCache<DB2Schema, DB2XMLSchema> getXMLSchemaCache()
+    {
+        return xmlSchemaCache;
     }
 
     public DB2AliasCache getAliasCache()
