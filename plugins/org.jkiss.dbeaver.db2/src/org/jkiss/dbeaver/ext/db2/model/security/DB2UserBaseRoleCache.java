@@ -16,12 +16,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.model.cache;
+package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -32,33 +29,31 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cache for DB2 Indexes for a given Table
+ * Cache for DB2 Roles for a given UserBase
  * 
  * @author Denis Forveille
  */
-public class DB2TableIndexCache extends JDBCObjectCache<DB2Table, DB2Index> {
+public class DB2UserBaseRoleCache extends JDBCObjectCache<DB2UserBase, DB2RoleAuth> {
 
-    private static final String SQL_INDS_TAB = "SELECT * FROM SYSCAT.INDEXES WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY INDNAME WITH UR";
+    private static final String SQL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE GRANTEETYPE = ? AND GRANTEE = ? ORDER BY ROLENAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Table db2Table) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2UserBase db2UserBase) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL_INDS_TAB);
-        dbStat.setString(1, db2Table.getSchema().getName());
-        dbStat.setString(2, db2Table.getName());
+        final JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
+        dbStat.setString(1, db2UserBase.getType().name());
+        dbStat.setString(2, db2UserBase.getName());
         return dbStat;
     }
 
     @Override
-    protected DB2Index fetchObject(JDBCExecutionContext context, DB2Table db2Table, ResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2RoleAuth fetchObject(JDBCExecutionContext context, DB2UserBase db2UserBase, ResultSet dbResult)
+        throws SQLException, DBException
     {
+        // Lookup for the role in DS Cache
+        String db2RoleName = JDBCUtils.safeGetStringTrimmed(dbResult, "ROLENAME");
+        DB2Role db2Role = db2UserBase.getDataSource().getRole(context.getProgressMonitor(), db2RoleName);
 
-        // Lookup for indexes in right cache..
-        String indexSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDSCHEMA");
-        String indexName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME");
-        DB2Schema tableSchema = db2Table.getSchema();
-        DB2Schema indexSchema = db2Table.getDataSource().schemaLookup(context.getProgressMonitor(), tableSchema, indexSchemaName);
-        return indexSchema.getIndex(context.getProgressMonitor(), indexName);
+        return new DB2RoleAuth(db2Role, dbResult);
     }
 }

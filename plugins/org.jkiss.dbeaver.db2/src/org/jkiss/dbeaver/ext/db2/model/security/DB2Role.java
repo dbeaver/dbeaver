@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.access.DBARole;
@@ -41,7 +40,7 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Role extends DB2GlobalObject implements DBPSaveableObject, DBARole, DBPRefreshableObject {
+public class DB2Role extends DB2UserBase implements DBPSaveableObject, DBARole, DBPRefreshableObject {
 
     private static final String C_RL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE ROLENAME=? ORDER BY GRANTOR,GRANTEE WITH UR";
 
@@ -60,7 +59,7 @@ public class DB2Role extends DB2GlobalObject implements DBPSaveableObject, DBARo
 
     public DB2Role(DB2DataSource dataSource, ResultSet resultSet)
     {
-        super(dataSource, true);
+        super(dataSource, resultSet);
 
         this.name = JDBCUtils.safeGetString(resultSet, "ROLENAME");
         this.id = JDBCUtils.safeGetInteger(resultSet, "ROLEID");
@@ -69,6 +68,16 @@ public class DB2Role extends DB2GlobalObject implements DBPSaveableObject, DBARo
         // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
         this.remarks = JDBCUtils.safeGetString(resultSet, "REMARKS");
         this.roleAuthCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleAuth>(DB2RoleAuth.class, C_RL, name);
+    }
+
+    // -----------------------
+    // Business Contract
+    // -----------------------
+
+    @Override
+    public DB2AuthIDType getType()
+    {
+        return DB2AuthIDType.R;
     }
 
     // -----------------

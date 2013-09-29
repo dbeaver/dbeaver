@@ -44,7 +44,6 @@ public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
     // -----------------------
     public DB2RoleAuth(DB2Role role, ResultSet resultSet)
     {
-        // TODO DF: Bad should be GRANTEETYPE+GRANTEE
         super(role, JDBCUtils.safeGetString(resultSet, "GRANTEE"), true);
 
         this.granteeType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTEETYPE"));
@@ -58,31 +57,31 @@ public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
     // -----------------
 
     @Override
-    @Property(viewable = true, editable = false)
+    @Property(hidden = true)
     public String getName()
     {
         return super.getName();
     }
 
-    @Property(viewable = true, editable = false)
-    public DB2GrantorGranteeType getGranteeType()
+    @Property(viewable = true, order = 1)
+    public DB2Role getRole()
     {
-        return granteeType;
+        return parent;
     }
 
-    @Property(viewable = true, editable = false)
-    public String getGrantor()
-    {
-        return grantor;
-    }
-
-    @Property(viewable = true, editable = false)
+    @Property(viewable = true, order = 2)
     public DB2GrantorGranteeType getGrantorType()
     {
         return grantorType;
     }
 
-    @Property(viewable = true, editable = false)
+    @Property(viewable = true, order = 3)
+    public String getGrantor()
+    {
+        return grantor;
+    }
+
+    @Property(viewable = true, order = 4)
     public Boolean getAdmin()
     {
         return admin;

@@ -19,15 +19,16 @@
 package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.model.access.DBAUser;
 
 import java.sql.ResultSet;
 
 /**
  * DB2 User
- *
+ * 
  * @author Denis Forveille
  */
-public class DB2User extends DB2UserBase {
+public class DB2User extends DB2UserBase implements DBAUser {
 
     // -----------------------
     // Constructors
@@ -37,6 +38,10 @@ public class DB2User extends DB2UserBase {
         super(dataSource, resultSet);
 
     }
+
+    // -----------------------
+    // Business Contract
+    // -----------------------
 
     @Override
     public DB2AuthIDType getType()
