@@ -29,11 +29,11 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 
 /**
- * DB2 User or Group Common Authorisations on Tables and Views
+ * DB2 Common Authorisations on Tables and Views
  * 
  * @author Denis Forveille
  */
-public abstract class DB2UserAuthTableBase extends DB2UserAuthBase {
+public abstract class DB2AuthTableBase extends DB2AuthBase {
 
     private DB2AuthHeldType control;
     private DB2AuthHeldType alter;
@@ -47,10 +47,10 @@ public abstract class DB2UserAuthTableBase extends DB2UserAuthBase {
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2UserAuthTableBase(DBRProgressMonitor monitor, DB2UserBase userOrGroup, DB2TableBase db2TableBase, ResultSet resultSet)
+    public DB2AuthTableBase(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2TableBase db2TableBase, ResultSet resultSet)
         throws DBException
     {
-        super(monitor, userOrGroup, db2TableBase, resultSet);
+        super(monitor, db2Grantee, db2TableBase, resultSet);
 
         this.control = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "CONTROLAUTH"));
         this.alter = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "ALTERAUTH"));

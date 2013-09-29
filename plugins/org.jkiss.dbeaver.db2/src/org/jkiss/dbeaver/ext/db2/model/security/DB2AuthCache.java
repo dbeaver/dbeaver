@@ -40,11 +40,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cache for DB2 User/Group/Roles Authorisations
+ * Cache for DB2 Authorisations
  * 
  * @author Denis Forveille
  */
-public final class DB2UserAuthCache extends JDBCObjectCache<DB2UserBase, DB2UserAuthBase> {
+public final class DB2AuthCache extends JDBCObjectCache<DB2Grantee, DB2AuthBase> {
 
     private static String SQL;
 
@@ -129,10 +129,10 @@ public final class DB2UserAuthCache extends JDBCObjectCache<DB2UserBase, DB2User
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2UserBase db2UserBase) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(JDBCExecutionContext context, DB2Grantee db2Grantee) throws SQLException
     {
-        String userType = db2UserBase.getType().name();
-        String userName = db2UserBase.getName();
+        String userType = db2Grantee.getType().name();
+        String userName = db2Grantee.getName();
 
         JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
         dbStat.setString(1, userType);
@@ -151,10 +151,10 @@ public final class DB2UserAuthCache extends JDBCObjectCache<DB2UserBase, DB2User
     }
 
     @Override
-    protected DB2UserAuthBase fetchObject(JDBCExecutionContext context, DB2UserBase db2UserBase, ResultSet resultSet)
+    protected DB2AuthBase fetchObject(JDBCExecutionContext context, DB2Grantee db2Grantee, ResultSet resultSet)
         throws SQLException, DBException
     {
-        DB2DataSource db2DataSource = db2UserBase.getDataSource();
+        DB2DataSource db2DataSource = db2Grantee.getDataSource();
         DBRProgressMonitor monitor = context.getProgressMonitor();
 
         String objectSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA");
@@ -168,31 +168,31 @@ public final class DB2UserAuthCache extends JDBCObjectCache<DB2UserBase, DB2User
             DB2TableBase db2TableBase = DB2Utils.findTableBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
             if (db2TableBase == null) {
                 db2TableBase = DB2Utils.findViewBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-                return new DB2UserAuthView(monitor, db2UserBase, db2TableBase, resultSet);
+                return new DB2AuthView(monitor, db2Grantee, db2TableBase, resultSet);
             } else {
-                return new DB2UserAuthTable(monitor, db2UserBase, db2TableBase, resultSet);
+                return new DB2AuthTable(monitor, db2Grantee, db2TableBase, resultSet);
             }
 
         case INDEX:
             DB2Index db2Index = DB2Utils.findIndexBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-            return new DB2UserAuthIndex(monitor, db2UserBase, db2Index, resultSet);
+            return new DB2AuthIndex(monitor, db2Grantee, db2Index, resultSet);
 
         case SCHEMA:
             DB2Schema db2SChema = db2DataSource.getSchema(monitor, objectName);
-            return new DB2UserAuthSchema(monitor, db2UserBase, db2SChema, resultSet);
+            return new DB2AuthSchema(monitor, db2Grantee, db2SChema, resultSet);
 
         case PACKAGE:
             DB2Package db2Package = DB2Utils.findPackageBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-            return new DB2UserAuthPackage(monitor, db2UserBase, db2Package, resultSet);
+            return new DB2AuthPackage(monitor, db2Grantee, db2Package, resultSet);
 
         case SEQUENCE:
             DB2Sequence db2Sequence = DB2Utils
                 .findSequenceBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
-            return new DB2UserAuthSequence(monitor, db2UserBase, db2Sequence, resultSet);
+            return new DB2AuthSequence(monitor, db2Grantee, db2Sequence, resultSet);
 
         case TABLESPACE:
             DB2Tablespace db2Tablespace = db2DataSource.getTablespace(monitor, objectName);
-            return new DB2UserAuthTablespace(monitor, db2UserBase, db2Tablespace, resultSet);
+            return new DB2AuthTablespace(monitor, db2Grantee, db2Tablespace, resultSet);
 
         default:
             throw new DBException("Structural problem. " + objectType + " autorisation not implemented");

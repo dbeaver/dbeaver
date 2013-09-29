@@ -32,11 +32,11 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 
 /**
- * Base class for DB2 User or Group Authorisations
+ * Base class for DB2 Authorisations
  * 
  * @author Denis Forveille
  */
-public abstract class DB2UserAuthBase extends DB2Object<DB2UserBase> implements DBAPrivilege {
+public abstract class DB2AuthBase extends DB2Object<DB2Grantee> implements DBAPrivilege {
 
     private DBSObject grantor;
     private DB2GrantorGranteeType grantorType;
@@ -48,13 +48,13 @@ public abstract class DB2UserAuthBase extends DB2Object<DB2UserBase> implements 
     // Constructors
     // -----------------------
 
-    public DB2UserAuthBase(DBRProgressMonitor monitor, DB2UserBase userOrGroup, DBSObject object, ResultSet resultSet)
+    public DB2AuthBase(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DBSObject object, ResultSet resultSet)
         throws DBException
     {
-        super(userOrGroup, JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA") + "."
+        super(db2Grantee, JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA") + "."
             + JDBCUtils.safeGetString(resultSet, "OBJ_NAME"), true);
 
-        DB2DataSource db2DataSource = userOrGroup.getDataSource();
+        DB2DataSource db2DataSource = db2Grantee.getDataSource();
         String objectSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA");
         if (objectSchemaName != null) {
             this.objectSchema = db2DataSource.getSchema(monitor, objectSchemaName);
@@ -66,10 +66,10 @@ public abstract class DB2UserAuthBase extends DB2Object<DB2UserBase> implements 
         this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
         switch (grantorType) {
         case U:
-            this.grantor = userOrGroup.getDataSource().getUser(monitor, grantorName);
+            this.grantor = db2Grantee.getDataSource().getUser(monitor, grantorName);
             break;
         case G:
-            this.grantor = userOrGroup.getDataSource().getGroup(monitor, grantorName);
+            this.grantor = db2Grantee.getDataSource().getGroup(monitor, grantorName);
             break;
         default:
             break;
