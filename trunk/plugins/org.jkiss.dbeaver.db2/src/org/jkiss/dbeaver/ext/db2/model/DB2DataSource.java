@@ -31,10 +31,11 @@ import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
+import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2DatabaseAuth;
-import org.jkiss.dbeaver.ext.db2.model.security.DB2Group;
+import org.jkiss.dbeaver.ext.db2.model.security.DB2GroupUserCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
-import org.jkiss.dbeaver.ext.db2.model.security.DB2User;
+import org.jkiss.dbeaver.ext.db2.model.security.DB2UserBase;
 import org.jkiss.dbeaver.model.DBPConnectionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -81,13 +82,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
     private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
     private static final String C_RL = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
-    private static final String C_DA = "SELECT * FROM SYSCAT.DBAUTH  ORDER BY GRANTEETYPE, GRANTEE WITH UR";
+    private static final String C_DA = "SELECT * FROM SYSCAT.DBAUTH ORDER BY GRANTEETYPE, GRANTEE WITH UR";
 
     private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
     private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
-
-    private static final String C_US = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'U' ORDER BY AUTHID WITH UR";
-    private static final String C_GR = "SELECT * FROM SYSIBMADM.AUTHORIZATIONIDS WHERE AUTHIDTYPE = 'G' ORDER BY AUTHID WITH UR";
 
     private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
     private static final String PLAN_TABLE_MIS = "EXPLAIN tables not found. Query can't be explained";
@@ -103,10 +101,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         DB2Tablespace.class, C_TS);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
         DB2Role.class, C_RL);
-    private final DBSObjectCache<DB2DataSource, DB2User> userCache = new JDBCObjectSimpleCache<DB2DataSource, DB2User>(
-        DB2User.class, C_US);
-    private final DBSObjectCache<DB2DataSource, DB2Group> groupCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Group>(
-        DB2Group.class, C_GR);
     private final DBSObjectCache<DB2DataSource, DB2DatabaseAuth> dbauthCache = new JDBCObjectSimpleCache<DB2DataSource, DB2DatabaseAuth>(
         DB2DatabaseAuth.class, C_DA);
 
@@ -114,6 +108,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         DB2RemoteServer.class, C_SV);
     private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Wrapper>(
         DB2Wrapper.class, C_WR);
+
+    private final DB2GroupUserCache groupCache = new DB2GroupUserCache(DB2AuthIDType.G);
+    private final DB2GroupUserCache userCache = new DB2GroupUserCache(DB2AuthIDType.U);
 
     private List<DB2Parameter> listDBParameters;
     private List<DB2Parameter> listDBMParameters;
@@ -460,23 +457,23 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Association
-    public Collection<DB2User> getUsers(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2UserBase> getUsers(DBRProgressMonitor monitor) throws DBException
     {
         return userCache.getObjects(monitor, this);
     }
 
-    public DB2User getUser(DBRProgressMonitor monitor, String name) throws DBException
+    public DB2UserBase getUser(DBRProgressMonitor monitor, String name) throws DBException
     {
         return userCache.getObject(monitor, this, name);
     }
 
     @Association
-    public Collection<DB2Group> getGroups(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2UserBase> getGroups(DBRProgressMonitor monitor) throws DBException
     {
         return groupCache.getObjects(monitor, this);
     }
 
-    public DB2Group getGroup(DBRProgressMonitor monitor, String name) throws DBException
+    public DB2UserBase getGroup(DBRProgressMonitor monitor, String name) throws DBException
     {
         return groupCache.getObject(monitor, this, name);
     }

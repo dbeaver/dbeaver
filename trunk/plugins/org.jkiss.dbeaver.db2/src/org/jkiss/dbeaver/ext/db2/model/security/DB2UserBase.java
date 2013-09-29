@@ -49,7 +49,7 @@ public abstract class DB2UserBase extends DB2GlobalObject implements DBPRefresha
     public DB2UserBase(DB2DataSource dataSource, ResultSet resultSet)
     {
         super(dataSource, true);
-        this.name = JDBCUtils.safeGetString(resultSet, "AUTHID");
+        this.name = JDBCUtils.safeGetString(resultSet, "GRANTEE");
     }
 
     // -----------------
