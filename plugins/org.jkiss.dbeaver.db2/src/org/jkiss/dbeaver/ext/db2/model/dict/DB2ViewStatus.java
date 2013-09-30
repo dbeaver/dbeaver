@@ -28,11 +28,11 @@ import org.jkiss.dbeaver.ui.DBIcon;
  * @author Denis Forveille
  */
 public enum DB2ViewStatus implements DBPNamedObject {
-    Y("Y (Valid)", DBSObjectState.NORMAL),
+    Y("Valid", DBSObjectState.NORMAL),
 
-    N("N (Invalid)", DBSObjectState.INVALID),
+    N("Invalid", DBSObjectState.INVALID),
 
-    X("X (Inoperative)", new DBSObjectState("Inoperative", DBIcon.OVER_ERROR));
+    X("Inoperative", new DBSObjectState("Inoperative", DBIcon.OVER_ERROR));
 
     private String name;
     private DBSObjectState state;

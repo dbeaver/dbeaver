@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TriggerTime implements DBPNamedObject {
-    A("A (After)"),
+    A("After"),
 
-    B("B (Before)"),
+    B("Before"),
 
-    I("I (Instead)");
+    I("Instead");
 
     private String name;
 

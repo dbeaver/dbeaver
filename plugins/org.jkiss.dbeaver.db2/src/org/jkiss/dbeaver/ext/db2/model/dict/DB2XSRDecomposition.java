@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2XSRDecomposition implements DBPNamedObject {
-    N("N (Not enabled)"),
+    N("Not enabled"),
 
-    X("X (Inoperative)"),
+    X("Inoperative"),
 
-    Y("Y (Enabled)");
+    Y("Enabled");
 
     private String name;
 

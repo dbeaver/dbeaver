@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TablespaceType implements DBPNamedObject {
-    D("D (Database Managed)"),
+    D("Database Managed"),
 
-    S("S (System Managed)");
+    S("System Managed");
 
     private String name;
 

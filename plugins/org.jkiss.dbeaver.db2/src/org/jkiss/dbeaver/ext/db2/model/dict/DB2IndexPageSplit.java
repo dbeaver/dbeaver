@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2IndexPageSplit implements DBPNamedObject {
-    H("H (High)"),
+    H("High"),
 
-    L("L (Low)"),
+    L("Low"),
 
-    S("S (Symmetric)");
+    S("Symmetric");
 
     private String name;
 

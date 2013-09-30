@@ -44,8 +44,10 @@ import java.util.Collection;
  */
 public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject {
 
-    private static final String C_DEP = "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
-    private static final String C_STM = "SELECT * FROM SYSCAT.STATEMENTS WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY SECTNO WITH UR";
+    private static final String C_DEP =
+        "SELECT * FROM SYSCAT.PACKAGEDEP WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
+    private static final String C_STM =
+        "SELECT * FROM SYSCAT.STATEMENTS WHERE PKGSCHEMA = ? AND PKGNAME = ? ORDER BY SECTNO WITH UR";
 
     private final DBSObjectCache<DB2Package, DB2PackageDep> packageDepCache;
     private final DBSObjectCache<DB2Package, DB2PackageStatement> packageStatementsCache;
@@ -98,7 +100,7 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
 
-        String defaultSchemaName = JDBCUtils.safeGetString(dbResult, "DEFAULT_SCHEMA");
+        String defaultSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "DEFAULT_SCHEMA");
         this.defaultSchema = getDataSource().getSchema(VoidProgressMonitor.INSTANCE, defaultSchemaName);
 
         this.uniqueId = JDBCUtils.safeGetString(dbResult, "UNIQUE_ID");
@@ -134,10 +136,11 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        packageDepCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class, C_DEP, schema.getName(),
-            getName());
-        packageStatementsCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageStatement>(DB2PackageStatement.class, C_STM,
-            schema.getName(), getName());
+        packageDepCache =
+            new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class, C_DEP, schema.getName(), getName());
+        packageStatementsCache =
+            new JDBCObjectSimpleCache<DB2Package, DB2PackageStatement>(DB2PackageStatement.class, C_STM, schema.getName(),
+                getName());
     }
 
     // -----------------

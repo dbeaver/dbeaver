@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TableColumnCompression implements DBPNamedObject {
-    O("O (Off)"),
+    O("Off"),
 
-    S("S (Compress system default values)");
+    S("Compress system default values");
 
     private String name;
 

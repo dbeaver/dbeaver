@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2IndexColOrder implements DBPNamedObject {
-    A("A (Ascending)", true),
+    A("Ascending", true),
 
-    D("D (Descending)", false),
+    D("Descending", false),
 
-    I("I (Include)", true);
+    I("Include", true);
 
     private String name;
     private Boolean ascending;

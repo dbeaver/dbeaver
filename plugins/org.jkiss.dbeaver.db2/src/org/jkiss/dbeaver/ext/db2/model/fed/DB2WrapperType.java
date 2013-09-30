@@ -4,9 +4,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 
 public enum DB2WrapperType implements DBPNamedObject {
 
-    N("N (Non Relational)"),
+    N("Non Relational"),
 
-    R("R (Relational)");
+    R("Relational");
 
     private String name;
 

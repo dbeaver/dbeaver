@@ -52,7 +52,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         this.db2Index = db2Index;
         this.colSeq = JDBCUtils.safeGetInteger(dbResult, "COLSEQ");
         this.colOrder = DB2IndexColOrder.valueOf(JDBCUtils.safeGetString(dbResult, "COLORDER"));
-        this.collationSchema = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA");
+        this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
         this.collationNane = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
 
         // Look for Table Column

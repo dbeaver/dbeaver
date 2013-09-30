@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2ConstraintCheckData implements DBPNamedObject {
-    D("D (Defer checking)"),
+    D("Defer checking"),
 
-    I("I (Immediately check)"),
+    I("Immediately check"),
 
-    N("N (Never check)");
+    N("Never check");
 
     private String name;
 

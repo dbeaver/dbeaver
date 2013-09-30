@@ -28,11 +28,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2SequencePrecision implements DBPNamedObject {
-    P5("5 (Smallint)", 5, "SMALLINT"),
+    P5("Smallint", 5, "SMALLINT"),
 
-    P10("10 (Integer)", 10, "INTEGER"),
+    P10("Integer", 10, "INTEGER"),
 
-    P19("19 (Bigint)", 19, "BIGINT");
+    P19("Bigint", 19, "BIGINT");
 
     private String name;
     private Integer dataType;
