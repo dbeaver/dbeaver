@@ -43,9 +43,9 @@ import java.util.Collection;
  */
 public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, DBPRefreshableObject {
 
-    private static final String C_RL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE ROLENAME=? ORDER BY GRANTOR,GRANTEE WITH UR";
+    private static final String C_RL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE ROLENAME=? ORDER BY GRANTEETYPE,GRANTEE WITH UR";
 
-    private final DBSObjectCache<DB2Role, DB2RoleAuth> roleAuthCache;
+    private final DBSObjectCache<DB2Role, DB2RoleDep> roleDepCache;
 
     private String name;
     private Integer id;
@@ -68,7 +68,8 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
         // DB2 v10 this.auditPolicyId = JDBCUtils.safeGetInteger(resultSet, "AUDITPOLICYID");
         // DB2 v10 this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
         this.remarks = JDBCUtils.safeGetString(resultSet, "REMARKS");
-        this.roleAuthCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleAuth>(DB2RoleAuth.class, C_RL, name);
+
+        this.roleDepCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleDep>(DB2RoleDep.class, C_RL, name);
     }
 
     // -----------------------
@@ -86,15 +87,15 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
     // -----------------
 
     @Association
-    public Collection<DB2RoleAuth> getRoleAuths(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2RoleDep> getRoleDeps(DBRProgressMonitor monitor) throws DBException
     {
-        return roleAuthCache.getObjects(monitor, this);
+        return roleDepCache.getObjects(monitor, this);
     }
 
     @Override
     public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
     {
-        roleAuthCache.clearCache();
+        roleDepCache.clearCache();
         return true;
     }
 
