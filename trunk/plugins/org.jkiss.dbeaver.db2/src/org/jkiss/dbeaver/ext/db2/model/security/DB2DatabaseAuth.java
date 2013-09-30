@@ -23,11 +23,11 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -37,11 +37,9 @@ import java.sql.ResultSet;
  * 
  * @author Denis Forveille
  */
-public class DB2DatabaseAuth extends DB2GlobalObject implements DBPSaveableObject {
+public class DB2DatabaseAuth extends DB2GlobalObject implements DBAPrivilege {
 
-    private DBSObject grantee;
-    private DB2GrantorGranteeType granteeType;
-    private String grantor;
+    private DBSObject grantor;
     private DB2GrantorGranteeType grantorType;
 
     private Boolean bindAdd;
@@ -66,24 +64,18 @@ public class DB2DatabaseAuth extends DB2GlobalObject implements DBPSaveableObjec
     // Constructors
     // -----------------------
 
-    public DB2DatabaseAuth(DB2DataSource dataSource, ResultSet resultSet) throws DBException
+    public DB2DatabaseAuth(DBRProgressMonitor monitor, DB2DataSource dataSource, ResultSet resultSet) throws DBException
     {
         super(dataSource, true);
 
-        this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
+        String grantorName = JDBCUtils.safeGetString(resultSet, "GRANTOR");
         this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
-
-        String granteeName = JDBCUtils.safeGetString(resultSet, "GRANTEE");
-        this.granteeType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTEETYPE"));
-        switch (granteeType) {
+        switch (grantorType) {
         case U:
-            this.grantee = dataSource.getUser(VoidProgressMonitor.INSTANCE, granteeName);
+            this.grantor = dataSource.getUser(monitor, grantorName);
             break;
         case G:
-            this.grantee = dataSource.getGroup(VoidProgressMonitor.INSTANCE, granteeName);
-            break;
-        case R:
-            this.grantee = dataSource.getRole(VoidProgressMonitor.INSTANCE, granteeName);
+            this.grantor = dataSource.getGroup(monitor, grantorName);
             break;
         default:
             break;
@@ -116,132 +108,121 @@ public class DB2DatabaseAuth extends DB2GlobalObject implements DBPSaveableObjec
     @Property(hidden = true)
     public String getName()
     {
-        return grantee.getName();
+        return "DBAUTH"; // Fake name
     }
 
-    @Property(viewable = true, order = 1)
-    public DBSObject getGrantee()
-    {
-        return grantee;
-    }
-
-    @Property(viewable = true, order = 2)
-    public DB2GrantorGranteeType getGranteeType()
-    {
-        return granteeType;
-    }
-
-    @Property(viewable = true, order = 4)
-    public String getGrantor()
+    @Property(viewable = true, order = 3)
+    public DBSObject getGrantor()
     {
         return grantor;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, order = 4)
     public DB2GrantorGranteeType getGrantorType()
     {
         return grantorType;
     }
 
-    @Property(viewable = true, order = 10, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
     public Boolean getDbAdm()
     {
         return dbAdm;
     }
 
-    @Property(viewable = true, order = 11, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 21, category = DB2Constants.CAT_AUTH)
     public Boolean getBindAdd()
     {
         return bindAdd;
     }
 
-    @Property(viewable = true, order = 12, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 22, category = DB2Constants.CAT_AUTH)
     public Boolean getConnect()
     {
         return connect;
     }
 
-    @Property(viewable = true, order = 13, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 23, category = DB2Constants.CAT_AUTH)
     public Boolean getCreateTab()
     {
         return createTab;
     }
 
-    @Property(viewable = true, order = 14, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 24, category = DB2Constants.CAT_AUTH)
     public Boolean getExternalRoutine()
     {
         return externalRoutine;
     }
 
-    @Property(viewable = true, order = 15, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 25, category = DB2Constants.CAT_AUTH)
     public Boolean getImplicitSchema()
     {
         return implicitSchema;
     }
 
-    @Property(viewable = true, order = 16, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 26, category = DB2Constants.CAT_AUTH)
     public Boolean getLoad()
     {
         return load;
     }
 
-    @Property(viewable = true, order = 17, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 27, category = DB2Constants.CAT_AUTH)
     public Boolean getDataAccess()
     {
         return dataAccess;
     }
 
-    @Property(viewable = true, order = 18, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = true, order = 28, category = DB2Constants.CAT_AUTH)
     public Boolean getAccessControl()
     {
         return accessControl;
     }
 
-    @Property(viewable = false, order = 19, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = false, order = 29, category = DB2Constants.CAT_AUTH)
     public Boolean getNoFence()
     {
         return noFence;
     }
 
-    @Property(viewable = false, order = 20, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = false, order = 30, category = DB2Constants.CAT_AUTH)
     public Boolean getQuiesceConnect()
     {
         return quiesceConnect;
     }
 
-    @Property(viewable = false, order = 21, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = false, order = 31, category = DB2Constants.CAT_AUTH)
     public Boolean getLibraryAdmin()
     {
         return libraryAdmin;
     }
 
-    @Property(viewable = false, order = 22, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = false, order = 32, category = DB2Constants.CAT_AUTH)
     public Boolean getSecurityAdmin()
     {
         return securityAdmin;
     }
 
-    @Property(viewable = false, order = 23, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = false, order = 33, category = DB2Constants.CAT_AUTH)
     public Boolean getSqlAdmin()
     {
         return sqlAdmin;
     }
 
-    @Property(viewable = false, order = 24, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = false, order = 34, category = DB2Constants.CAT_AUTH)
     public Boolean getWorkLoadAdmin()
     {
         return workLoadAdmin;
     }
 
-    @Property(viewable = false, order = 25, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = false, order = 35, category = DB2Constants.CAT_AUTH)
     public Boolean getExplain()
     {
         return explain;
     }
 
-    @Property(viewable = false, order = 26, category = DB2Constants.CAT_AUTH)
+    @Property(viewable = false, order = 36, category = DB2Constants.CAT_AUTH)
     public Boolean getCreateSecure()
     {
         return createSecure;
     }
+
 }

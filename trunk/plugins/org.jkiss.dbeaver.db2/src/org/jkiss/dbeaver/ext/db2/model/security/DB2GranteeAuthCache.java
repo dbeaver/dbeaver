@@ -44,7 +44,7 @@ import java.sql.SQLException;
  * 
  * @author Denis Forveille
  */
-public final class DB2AuthCache extends JDBCObjectCache<DB2Grantee, DB2AuthBase> {
+public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2AuthBase> {
 
     private static String SQL;
 
