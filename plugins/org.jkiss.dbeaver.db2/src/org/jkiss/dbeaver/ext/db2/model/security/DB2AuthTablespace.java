@@ -41,8 +41,8 @@ public class DB2AuthTablespace extends DB2AuthBase {
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2AuthTablespace(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Tablespace db2Tablespace,
-        ResultSet resultSet) throws DBException
+    public DB2AuthTablespace(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DB2Tablespace db2Tablespace, ResultSet resultSet)
+        throws DBException
     {
         super(monitor, db2Grantee, db2Tablespace, resultSet);
 

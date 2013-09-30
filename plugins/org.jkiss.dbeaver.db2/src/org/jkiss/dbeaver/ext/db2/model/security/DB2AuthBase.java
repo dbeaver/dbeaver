@@ -48,8 +48,7 @@ public abstract class DB2AuthBase extends DB2Object<DB2Grantee> implements DBAPr
     // Constructors
     // -----------------------
 
-    public DB2AuthBase(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DBSObject object, ResultSet resultSet)
-        throws DBException
+    public DB2AuthBase(DBRProgressMonitor monitor, DB2Grantee db2Grantee, DBSObject object, ResultSet resultSet) throws DBException
     {
         super(db2Grantee, JDBCUtils.safeGetStringTrimmed(resultSet, "OBJ_SCHEMA") + "."
             + JDBCUtils.safeGetString(resultSet, "OBJ_NAME"), true);
