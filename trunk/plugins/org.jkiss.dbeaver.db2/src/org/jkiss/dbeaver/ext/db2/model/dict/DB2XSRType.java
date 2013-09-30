@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2XSRType implements DBPNamedObject {
-    D("D (DTD)"),
+    D("DTD"),
 
-    E("E (External entity)"),
+    E("External entity"),
 
-    S("S (XML schema)");
+    S("XML schema");
 
     private String name;
 

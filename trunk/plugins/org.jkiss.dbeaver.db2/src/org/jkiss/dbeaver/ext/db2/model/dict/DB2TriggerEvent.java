@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TriggerEvent implements DBPNamedObject {
-    D("D (On Delete)"),
+    D("On Delete"),
 
-    I("I (On Insert)"),
+    I("On Insert"),
 
-    M("M (On Multiple)"),
+    M("On Multiple"),
 
-    U("U (On Update)");
+    U("On Update");
 
     private String name;
 

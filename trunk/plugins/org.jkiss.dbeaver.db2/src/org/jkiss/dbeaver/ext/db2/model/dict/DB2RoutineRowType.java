@@ -27,15 +27,15 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
  * @author Denis Forveille
  */
 public enum DB2RoutineRowType implements DBPNamedObject {
-    B("B (Both input and output parameter )", DBSProcedureParameterType.INOUT),
+    B("Both input and output parameter", DBSProcedureParameterType.INOUT),
 
-    C("C (Result after casting)", DBSProcedureParameterType.RETURN),
+    C("Result after casting", DBSProcedureParameterType.RETURN),
 
-    O("O (Output parameter)", DBSProcedureParameterType.OUT),
+    O("Output parameter", DBSProcedureParameterType.OUT),
 
-    P("P (Input parameter)", DBSProcedureParameterType.IN),
+    P("Input parameter", DBSProcedureParameterType.IN),
 
-    R("F (Result before casting)", DBSProcedureParameterType.RETURN);
+    R("Result before casting", DBSProcedureParameterType.RETURN);
 
     private String name;
     private DBSProcedureParameterType parameterType;

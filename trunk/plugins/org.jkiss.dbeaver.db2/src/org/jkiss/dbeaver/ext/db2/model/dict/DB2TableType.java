@@ -28,25 +28,25 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public enum DB2TableType implements DBPNamedObject {
 
-    A("A (Alias)", DB2ObjectType.ALIAS),
+    A("Alias", DB2ObjectType.ALIAS),
 
-    G("G (Created temporary table)", DB2ObjectType.TABLE),
+    G("Created temporary table", DB2ObjectType.TABLE),
 
-    H("H (Hierarchy table)", DB2ObjectType.TABLE),
+    H("Hierarchy table", DB2ObjectType.TABLE),
 
-    L("L (Detached table)", DB2ObjectType.TABLE),
+    L("Detached table", DB2ObjectType.TABLE),
 
-    N("N (Nickname)", DB2ObjectType.NICKNAME),
+    N("Nickname", DB2ObjectType.NICKNAME),
 
-    S("S (Materialized query table)", DB2ObjectType.TABLE),
+    S("Materialized query table", DB2ObjectType.TABLE),
 
-    T("T (Table (untyped))", DB2ObjectType.TABLE),
+    T("Table (untyped)", DB2ObjectType.TABLE),
 
-    U("U (Inoperative)", DB2ObjectType.TABLE),
+    U("Inoperative", DB2ObjectType.TABLE),
 
-    V("V (View (untyped))", DB2ObjectType.VIEW),
+    V("View (untyped)", DB2ObjectType.VIEW),
 
-    W("W (Typed view)", DB2ObjectType.VIEW);
+    W("Typed view", DB2ObjectType.VIEW);
 
     private String name;
     private DB2ObjectType db2ObjectType;

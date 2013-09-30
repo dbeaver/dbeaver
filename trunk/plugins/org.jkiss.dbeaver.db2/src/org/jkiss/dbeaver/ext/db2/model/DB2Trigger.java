@@ -101,7 +101,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
         this.funcPath = JDBCUtils.safeGetString(dbResult, "FUNC_PATH");
         this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
-        this.collationSchema = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA");
+        this.collationSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "COLLATIONSCHEMA");
         this.collationName = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME");
         this.collationSchemaOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONSCHEMA_ORDERBY");
         this.collationNameOrderBy = JDBCUtils.safeGetString(dbResult, "COLLATIONNAME_ORDERBY");

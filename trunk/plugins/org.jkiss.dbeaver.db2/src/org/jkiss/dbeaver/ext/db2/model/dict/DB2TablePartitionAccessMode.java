@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TablePartitionAccessMode implements DBPNamedObject {
-    D("D (No data movement)"),
+    D("No data movement"),
 
-    F("F (Full access)"),
+    F("Full access"),
 
-    N("M (No access)"),
+    N("No access"),
 
-    R("R (Read-only access)");
+    R("Read-only access");
 
     private String name;
 

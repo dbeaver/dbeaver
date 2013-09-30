@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2XSRStatus implements DBPNamedObject {
-    C("C (Complete)"),
+    C("Complete"),
 
-    I("I (Incomplete)"),
+    I("Incomplete"),
 
-    R("R (Replace)"),
+    R("Replace"),
 
-    T("T (Temporary)");
+    T("Temporary");
 
     private String name;
 

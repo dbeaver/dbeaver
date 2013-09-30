@@ -51,7 +51,7 @@ public class DB2Nickname extends DB2Table {
         super(monitor, db2Schema, dbResult);
 
         this.remoteTableName = JDBCUtils.safeGetString(dbResult, "REMOTE_TABLE");
-        this.remoteSchemaName = JDBCUtils.safeGetString(dbResult, "REMOTE_SCHEMA");
+        this.remoteSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "REMOTE_SCHEMA");
         this.remoteType = CommonUtils.valueOf(DB2NicknameRemoteType.class, JDBCUtils.safeGetString(dbResult, "REMOTE_TYPE"));
         this.cachingAllowed = JDBCUtils.safeGetBoolean(dbResult, "CACHINGALLOWED", DB2YesNo.Y.name());
 

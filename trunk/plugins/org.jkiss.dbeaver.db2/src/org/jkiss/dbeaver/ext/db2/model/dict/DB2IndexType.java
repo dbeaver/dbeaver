@@ -27,25 +27,25 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
  * @author Denis Forveille
  */
 public enum DB2IndexType implements DBPNamedObject {
-    BLOK("BLOK (Block Index)", false),
+    BLOK("Block Index", false),
 
-    CLUS("CLUS (Clustering Index)", true),
+    CLUS("Clustering Index", true),
 
-    DIM("DIM (Dimension Block Index)", false),
+    DIM("Dimension Block Index", false),
 
-    RCT("RCT (Key Sequence Index)", false),
+    RCT("Key Sequence Index", false),
 
-    REG("REG (Regular)", true),
+    REG("Regular", true),
 
-    TEXT("TEXT (Text Index)", false),
+    TEXT("Text Index", false),
 
-    XPTH("XPTH (XML path Index)", false),
+    XPTH("XML path Index", false),
 
-    XRGN("XRGN (XML region Index)", false),
+    XRGN("XML region Index", false),
 
-    XVIL("XVIL (Index over XML column (logical))", false),
+    XVIL("Index over XML column (logical)", false),
 
-    XVIP("XVIP ( Index over XML column (physical))", false);
+    XVIP("Index over XML column (physical)", false);
 
     private String name;
     private DBSIndexType dbsIndexType;

@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TablePartitionStatus implements DBPNamedObject {
-    A("A (Newly Attached)"),
+    A("Newly Attached"),
 
-    D("D (Detached)"),
+    D("Detached"),
 
-    I("I (Detached maintained only during async. index cleanup)"),
+    I("Detached maintained only during async. index cleanup"),
 
-    L("L (Logically detached)");
+    L("Logically Detached");
 
     private String name;
 

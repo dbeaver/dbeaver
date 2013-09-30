@@ -27,15 +27,15 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
  * @author Denis Forveille
  */
 public enum DB2ConstraintType implements DBPNamedObject {
-    F("F (Foreign key)", DBSEntityConstraintType.FOREIGN_KEY),
+    F("Foreign key", DBSEntityConstraintType.FOREIGN_KEY),
 
-    I("I (Functional dependency)", DBSEntityConstraintType.ASSOCIATION),
+    I("Functional dependency", DBSEntityConstraintType.ASSOCIATION),
 
-    K("K (Check)", DBSEntityConstraintType.CHECK),
+    K("Check", DBSEntityConstraintType.CHECK),
 
-    P("P (Primary key)", DBSEntityConstraintType.PRIMARY_KEY),
+    P("Primary key", DBSEntityConstraintType.PRIMARY_KEY),
 
-    U("U (Unique)", DBSEntityConstraintType.UNIQUE_KEY);
+    U("Unique", DBSEntityConstraintType.UNIQUE_KEY);
 
     private String name;
     private DBSEntityConstraintType type;

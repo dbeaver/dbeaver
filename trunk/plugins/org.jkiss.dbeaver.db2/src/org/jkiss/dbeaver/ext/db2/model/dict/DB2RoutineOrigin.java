@@ -26,23 +26,23 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2RoutineOrigin implements DBPNamedObject {
-    B("B (Built-in)"),
+    B("Built-in)"),
 
-    E("E (User-defined, external)"),
+    E("User-defined, external"),
 
-    M("M (Template function)"),
+    M("Template function"),
 
-    F("F (Federated procedure)"),
+    F("Federated procedure"),
 
-    Q("Q (SQL-bodied)"),
+    Q("SQL-bodied"),
 
-    R("R (System-generated SQL-bodied routine)"),
+    R("System-generated SQL-bodied routine"),
 
-    S("S (System-generated)"),
+    S("System-generated"),
 
-    T("T (System-generated transform function (not directly invokable))"),
+    T("System-generated transform function (not directly invokable)"),
 
-    U("U (User-defined, based on a source)");
+    U("User-defined, based on a source");
 
     private String name;
 

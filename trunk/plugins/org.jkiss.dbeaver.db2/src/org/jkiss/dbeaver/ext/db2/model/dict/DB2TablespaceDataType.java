@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TablespaceDataType implements DBPNamedObject {
-    A("A (All types, regular)", true),
+    A("Regular", true),
 
-    L("L (All types, large)", true),
+    L("Large", true),
 
-    T("T (System temporary tables only)", false),
+    T("System temporary tables only", false),
 
-    U("U (Created temporary tables or declared temporary tables only)", false);
+    U("Created temporary tables or declared temporary tables only", false);
 
     private String name;
     private Boolean validForUserTables;

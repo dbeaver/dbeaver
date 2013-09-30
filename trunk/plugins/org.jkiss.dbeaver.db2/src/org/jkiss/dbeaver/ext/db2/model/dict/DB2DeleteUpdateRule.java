@@ -28,13 +28,13 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
  */
 public enum DB2DeleteUpdateRule implements DBPNamedObject {
 
-    A("A (No Action)", DBSForeignKeyModifyRule.NO_ACTION),
+    A("No Action", DBSForeignKeyModifyRule.NO_ACTION),
 
-    C("C (Cascade)", DBSForeignKeyModifyRule.CASCADE),
+    C("Cascade", DBSForeignKeyModifyRule.CASCADE),
 
-    N("F (Set Null)", DBSForeignKeyModifyRule.SET_NULL),
+    N("Set Null", DBSForeignKeyModifyRule.SET_NULL),
 
-    R("R (Restrict)", DBSForeignKeyModifyRule.RESTRICT);
+    R("Restrict", DBSForeignKeyModifyRule.RESTRICT);
 
     private String name;
     private DBSForeignKeyModifyRule rule;

@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2CompressionRowMode implements DBPNamedObject {
-    A("A (Adaptive)"),
+    A("Adaptive"),
 
-    S("S (Static)");
+    S("Static");
 
     private String name;
 
