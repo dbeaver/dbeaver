@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -57,8 +57,8 @@ public class DB2TableIndexCache extends JDBCObjectCache<DB2Table, DB2Index> {
         // Lookup for indexes in right cache..
         String indexSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDSCHEMA");
         String indexName = JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME");
-        DB2Schema tableSchema = db2Table.getSchema();
-        DB2Schema indexSchema = db2Table.getDataSource().schemaLookup(context.getProgressMonitor(), tableSchema, indexSchemaName);
-        return indexSchema.getIndex(context.getProgressMonitor(), indexName);
+
+        return DB2Utils.findIndexBySchemaNameAndName(context.getProgressMonitor(), db2Table.getDataSource(), indexSchemaName,
+            indexName);
     }
 }

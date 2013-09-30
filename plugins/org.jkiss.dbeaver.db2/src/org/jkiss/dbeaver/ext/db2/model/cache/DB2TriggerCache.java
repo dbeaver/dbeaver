@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
@@ -33,7 +34,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Triggers
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
@@ -56,8 +57,8 @@ public class DB2TriggerCache extends JDBCObjectCache<DB2Schema, DB2Trigger> {
         // Look for related table
         String tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
-        DB2Schema tableSchema = db2Schema.getDataSource().schemaLookup(context.getProgressMonitor(), db2Schema, tableSchemaName);
-        DB2Table db2Table = tableSchema.getTable(context.getProgressMonitor(), tableName);
+        DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(context.getProgressMonitor(), db2Schema.getDataSource(),
+            tableSchemaName, tableName);
 
         return new DB2Trigger(context.getProgressMonitor(), db2Schema, db2Table, dbResult);
     }
