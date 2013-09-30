@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2OwnerType implements DBPNamedObject {
-    S("S (System)"),
+    S("System"),
 
-    U("U (User)");
+    U("User");
 
     private String name;
 
