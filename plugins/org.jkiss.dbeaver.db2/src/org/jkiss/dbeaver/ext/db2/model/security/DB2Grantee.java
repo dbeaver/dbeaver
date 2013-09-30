@@ -38,8 +38,9 @@ import java.util.Collection;
  */
 public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshableObject {
 
-    private final DB2AuthCache authCache = new DB2AuthCache();
+    private final DB2GranteeAuthCache authCache = new DB2GranteeAuthCache();
     private final DB2GranteeRoleCache roleCache = new DB2GranteeRoleCache();
+    private final DB2GranteeDatabaseAuthCache databaseAuthCache = new DB2GranteeDatabaseAuthCache();
 
     private String name;
 
@@ -63,6 +64,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     {
         authCache.clearCache();
         roleCache.clearCache();
+        databaseAuthCache.clearCache();
         return true;
     }
 
@@ -74,6 +76,12 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     public Collection<DB2RoleAuth> getRoles(DBRProgressMonitor monitor) throws DBException
     {
         return roleCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<DB2DatabaseAuth> getDatabaseAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        return databaseAuthCache.getObjects(monitor, this);
     }
 
     // DF: all of those could probably be cached and factorised
