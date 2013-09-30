@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2ViewCheck implements DBPNamedObject {
-    C("C (Cascaded check)"),
+    C("Cascaded check"),
 
-    L("L (Local check)"),
+    L("Local check"),
 
-    N("N ( No check)");
+    N("No check");
 
     private String name;
 

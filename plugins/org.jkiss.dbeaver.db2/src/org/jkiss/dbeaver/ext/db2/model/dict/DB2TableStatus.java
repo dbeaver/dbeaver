@@ -28,11 +28,11 @@ import org.jkiss.dbeaver.ui.DBIcon;
  * @author Denis Forveille
  */
 public enum DB2TableStatus implements DBPNamedObject {
-    C("C (Set integrity pending)", new DBSObjectState("Set Integrity Pending", DBIcon.OVER_ERROR)),
+    C("Set integrity pending", new DBSObjectState("Set Integrity Pending", DBIcon.OVER_ERROR)),
 
-    N("N (Normal)", DBSObjectState.NORMAL),
+    N("Normal", DBSObjectState.NORMAL),
 
-    X("X (Inoperative)", new DBSObjectState("Inoperative", DBIcon.OVER_ERROR));
+    X("Inoperative", new DBSObjectState("Inoperative", DBIcon.OVER_ERROR));
 
     private String name;
     private DBSObjectState state;

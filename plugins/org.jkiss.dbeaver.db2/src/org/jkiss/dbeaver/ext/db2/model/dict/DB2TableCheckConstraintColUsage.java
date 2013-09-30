@@ -26,15 +26,15 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TableCheckConstraintColUsage implements DBPNamedObject {
-    D("D (Child in a functional dependency)"),
+    D("Child in a functional dependency"),
 
-    P("P (Parent in a functional dependency)"),
+    P("Parent in a functional dependency"),
 
-    R("R (Object property)"),
+    R("Object property"),
 
-    S("S (Source in a MQT system-generated column )"),
+    S("Source in a MQT system-generated column"),
 
-    T("T (Target in a MQT ystem-generated column)");
+    T("Target in a MQT system-generated column");
 
     private String name;
 

@@ -27,49 +27,49 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2PackageDepType implements DBPNamedObject {
-    A("A (Table alias)", DB2ObjectType.ALIAS),
+    A("Table alias)", DB2ObjectType.ALIAS),
 
-    B("B (Trigger)", DB2ObjectType.TRIGGER),
+    B("Trigger)", DB2ObjectType.TRIGGER),
 
-    D("D (Server)"),
+    D("Server)"),
 
-    F("F (Function)", DB2ObjectType.UDF),
+    F("Function)", DB2ObjectType.UDF),
 
-    G("G (Global temporary table)", DB2ObjectType.TABLE),
+    G("Global temporary table)", DB2ObjectType.TABLE),
 
-    I("I (Index)", DB2ObjectType.INDEX),
+    I("Index)", DB2ObjectType.INDEX),
 
-    M("M (Function Mapping)"),
+    M("Function Mapping"),
 
-    N("N (Nickname)"),
+    N("Nickname"),
 
-    O("O (Privilege dependency on all subtables or subviews in a table or view hierarchy)"),
+    O("Privilege dependency on all subtables or subviews in a table or view hierarchy"),
 
-    P("P (Page Size)"),
+    P("Page Size"),
 
-    Q("Q (Sequence)", DB2ObjectType.SEQUENCE),
+    Q("Sequence", DB2ObjectType.SEQUENCE),
 
-    R("R (UDT)", DB2ObjectType.UDT),
+    R("UDT", DB2ObjectType.UDT),
 
-    S("S (MQT)", DB2ObjectType.TABLE),
+    S("MQT", DB2ObjectType.TABLE),
 
-    T("T (Table)", DB2ObjectType.TABLE),
+    T("Table", DB2ObjectType.TABLE),
 
-    U("U (Typed table)", DB2ObjectType.TABLE),
+    U("Typed table", DB2ObjectType.TABLE),
 
-    V("V (View)", DB2ObjectType.VIEW),
+    V("View", DB2ObjectType.VIEW),
 
-    W("W (Typed view)", DB2ObjectType.VIEW),
+    W("Typed view", DB2ObjectType.VIEW),
 
-    X("X (Index extension)"),
+    X("Index extension"),
 
-    Z("Z (XSR object)"),
+    Z("XSR object"),
 
-    q("q (Sequence alias)", DB2ObjectType.ALIAS),
+    q("Sequence alias", DB2ObjectType.ALIAS),
 
-    u("u (Module alias)", DB2ObjectType.ALIAS),
+    u("Module alias", DB2ObjectType.ALIAS),
 
-    v("v ( Global variable)");
+    v("Global variable");
 
     private String name;
     private DB2ObjectType db2ObjectType;

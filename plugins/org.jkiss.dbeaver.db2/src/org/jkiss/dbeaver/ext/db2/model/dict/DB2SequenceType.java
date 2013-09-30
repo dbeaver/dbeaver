@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2SequenceType implements DBPNamedObject {
-    A("A (Alias)"),
+    A("Alias"),
 
-    I("I (Identity Sequence)"),
+    I("Identity Sequence"),
 
-    S("S (Sequence)");
+    S("Sequence");
 
     private String name;
 

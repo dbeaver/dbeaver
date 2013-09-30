@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TriggerGranularity implements DBPNamedObject {
-    R("R (Row)"),
+    R("Row"),
 
-    S("S (Statement)");
+    S("Statement");
 
     private String name;
 

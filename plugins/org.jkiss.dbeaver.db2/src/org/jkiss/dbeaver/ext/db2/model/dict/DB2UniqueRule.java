@@ -26,11 +26,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2UniqueRule implements DBPNamedObject {
-    D("D (Permits duplicates)", false),
+    D("Permits duplicates", false),
 
-    U("U (Unique)", true),
+    U("Unique", true),
 
-    P("P (Implements primary key)", true);
+    P("Implements primary key", true);
 
     private String name;
     private Boolean unique;

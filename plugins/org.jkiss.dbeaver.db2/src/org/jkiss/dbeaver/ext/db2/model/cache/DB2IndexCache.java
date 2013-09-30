@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -34,13 +35,14 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Indexes at the Schema Level
- *
+ * 
  * @author Denis Forveille
  */
 public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB2IndexColumn> {
 
     private static final String SQL_INDS_ALL = "SELECT * FROM SYSCAT.INDEXES WHERE INDSCHEMA = ? ORDER BY INDNAME WITH UR";
-    private static final String SQL_COLS_IND = "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA = ? AND INDNAME = ? ORDER BY COLSEQ WITH UR";
+    private static final String SQL_COLS_IND =
+        "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA = ? AND INDNAME = ? ORDER BY COLSEQ WITH UR";
 
     public DB2IndexCache()
     {
@@ -63,14 +65,16 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
         // Look for related table
         String tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
-        DB2Schema tableSchema = db2Schema.getDataSource().schemaLookup(context.getProgressMonitor(), db2Schema, tableSchemaName);
-        DB2Table db2Table = tableSchema.getTable(context.getProgressMonitor(), tableName);
+        DB2Table db2Table =
+            DB2Utils.findTableBySchemaNameAndName(context.getProgressMonitor(), db2Schema.getDataSource(), tableSchemaName,
+                tableName);
 
         return new DB2Index(context.getProgressMonitor(), db2Schema, db2Table, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Index forIndex) throws SQLException
+    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Index forIndex)
+        throws SQLException
     {
         JDBCPreparedStatement dbStat = context.prepareStatement(SQL_COLS_IND);
         dbStat.setString(1, forIndex.getContainer().getName());
@@ -79,8 +83,8 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
     }
 
     @Override
-    protected DB2IndexColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2Index db2Index, ResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2IndexColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2Index db2Index, ResultSet dbResult)
+        throws SQLException, DBException
     {
         return new DB2IndexColumn(context.getProgressMonitor(), db2Index, dbResult);
     }

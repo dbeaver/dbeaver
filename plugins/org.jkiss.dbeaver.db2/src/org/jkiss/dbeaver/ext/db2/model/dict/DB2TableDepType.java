@@ -27,35 +27,35 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TableDepType implements DBPNamedObject {
-    A("A (Table alias)", DB2ObjectType.ALIAS),
+    A("Table alias", DB2ObjectType.ALIAS),
 
-    F("F (Function)", DB2ObjectType.UDF),
+    F("Function", DB2ObjectType.UDF),
 
-    I("I (Index)", DB2ObjectType.INDEX),
+    I("Index", DB2ObjectType.INDEX),
 
-    G("G (Global temporary table)", DB2ObjectType.TABLE),
+    G("Global temporary table", DB2ObjectType.TABLE),
 
-    N("N (Nickname)"),
+    N("Nickname"),
 
-    O("O (Privilege dependency on all subtables or subviews in a table or view hierarchy)"),
+    O("Privilege dependency on all subtables or subviews in a table or view hierarchy"),
 
-    R("R (UDT)", DB2ObjectType.UDT),
+    R("UDT", DB2ObjectType.UDT),
 
-    S("S (MQT)", DB2ObjectType.TABLE),
+    S("MQT", DB2ObjectType.TABLE),
 
-    T("T (Table)", DB2ObjectType.TABLE),
+    T("Table", DB2ObjectType.TABLE),
 
-    U("U (Typed table)", DB2ObjectType.TABLE),
+    U("Typed table", DB2ObjectType.TABLE),
 
-    V("V (View)", DB2ObjectType.VIEW),
+    V("View", DB2ObjectType.VIEW),
 
-    W("W (Typed view)", DB2ObjectType.VIEW),
+    W("Typed view", DB2ObjectType.VIEW),
 
-    Z("Z (XSR object)"),
+    Z("XSR object"),
 
-    u("u (Module alias)", DB2ObjectType.ALIAS),
+    u("Module alias", DB2ObjectType.ALIAS),
 
-    v("v ( Global variable)");
+    v("Global variable");
 
     private String name;
     private DB2ObjectType db2ObjectType;

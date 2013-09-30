@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2TableCheckConstraintType implements DBPNamedObject {
-    F("F (Check constraint)"),
+    F("Check constraint"),
 
-    C("C (Functional dependency)"),
+    C("Functional dependency"),
 
-    O("O (Object property)"),
+    O("Object property"),
 
-    S("S (GENERATED ALWAYS column)");
+    S("GENERATED ALWAYS column");
 
     private String name;
 

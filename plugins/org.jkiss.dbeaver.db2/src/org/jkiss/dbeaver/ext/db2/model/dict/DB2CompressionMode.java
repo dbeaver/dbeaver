@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2CompressionMode implements DBPNamedObject {
-    B("B (Value + Row compression)"),
+    B("Value + Row compression"),
 
-    N("N (None)"),
+    N("None"),
 
-    R("R (Row)"),
+    R("Row"),
 
-    V("V (Value Compression)");
+    V("Value Compression");
 
     private String name;
 

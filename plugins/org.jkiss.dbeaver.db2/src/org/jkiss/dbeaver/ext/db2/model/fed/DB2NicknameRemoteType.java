@@ -4,15 +4,15 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 
 public enum DB2NicknameRemoteType implements DBPNamedObject {
 
-    A("A (Alias"),
+    A("Alias"),
 
-    N("N (Nickname)"),
+    N("Nickname"),
 
-    S("S (MQT)"),
+    S("MQT"),
 
-    T("T (Table"),
+    T("Table"),
 
-    V("V (View)");
+    V("View");
 
     private String name;
 

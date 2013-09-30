@@ -26,19 +26,19 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2DataTypeMetaType implements DBPNamedObject {
-    A("A (User-defined array type )"),
+    A("User-defined array type"),
 
-    C("C (User-defined cursor type )"),
+    C("User-defined cursor type"),
 
-    F("F (User-defined row type )"),
+    F("User-defined row type"),
 
-    L("L (User-defined associative array type)"),
+    L("User-defined associative array type"),
 
-    R("R (User-defined structured type)"),
+    R("User-defined structured type"),
 
-    S("S (System predefined type)"),
+    S("System predefined type"),
 
-    T("T (User-defined distinct type)");
+    T("User-defined distinct type");
 
     private String name;
 
