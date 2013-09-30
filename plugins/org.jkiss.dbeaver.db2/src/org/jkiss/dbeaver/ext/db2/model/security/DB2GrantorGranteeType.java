@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2GrantorGranteeType implements DBPNamedObject {
-    S("S (System)"),
+    S("System"),
 
-    G("G (Group)"),
+    G("Group"),
 
-    R("R (Role)"),
+    R("Role"),
 
-    U("U (User)");
+    U("User");
 
     private String name;
 
