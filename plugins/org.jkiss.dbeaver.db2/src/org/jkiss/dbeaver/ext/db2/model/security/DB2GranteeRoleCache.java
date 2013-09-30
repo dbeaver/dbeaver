@@ -47,8 +47,8 @@ public class DB2GranteeRoleCache extends JDBCObjectCache<DB2Grantee, DB2RoleAuth
     }
 
     @Override
-    protected DB2RoleAuth fetchObject(JDBCExecutionContext context, DB2Grantee db2Grantee, ResultSet dbResult)
-        throws SQLException, DBException
+    protected DB2RoleAuth fetchObject(JDBCExecutionContext context, DB2Grantee db2Grantee, ResultSet dbResult) throws SQLException,
+        DBException
     {
         // Lookup for the role in DS Cache
         String db2RoleName = JDBCUtils.safeGetStringTrimmed(dbResult, "ROLENAME");
