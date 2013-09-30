@@ -18,35 +18,51 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 
 /**
- * DB2 Authorisations assigned to Roles
+ * DB2 Role used by Users and Groups
  * 
  * @author Denis Forveille
  */
-public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
+public class DB2RoleDep extends DB2Object<DB2Role> implements DBAPrivilege {
 
-    private String grantor;
-    private DB2GrantorGranteeType grantorType;
+    DB2GrantorGranteeType granteeType;
+    private DB2Grantee grantee;
     private Boolean admin;
 
     // -----------------------
     // Constructors
     // -----------------------
-    public DB2RoleAuth(DB2Role role, ResultSet resultSet)
+    public DB2RoleDep(DB2Role role, ResultSet resultSet) throws DBException
     {
         super(role, JDBCUtils.safeGetString(resultSet, "GRANTEE"), true);
 
-        this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
-        this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
+        this.granteeType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTEETYPE"));
+        String granteeName = JDBCUtils.safeGetString(resultSet, "GRANTEE");
+        switch (granteeType) {
+        case U:
+            this.grantee = getDataSource().getUser(VoidProgressMonitor.INSTANCE, granteeName);
+            break;
+        case G:
+            this.grantee = getDataSource().getGroup(VoidProgressMonitor.INSTANCE, granteeName);
+            break;
+        case R:
+            this.grantee = getDataSource().getRole(VoidProgressMonitor.INSTANCE, granteeName);
+            break;
+
+        default:
+            break;
+        }
         this.admin = JDBCUtils.safeGetBoolean(resultSet, "ADMIN", DB2YesNo.Y.name());
     }
 
@@ -62,24 +78,18 @@ public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
     }
 
     @Property(viewable = true, order = 1)
-    public DB2Role getRole()
+    public DB2Grantee getGrantee()
     {
-        return parent;
+        return grantee;
     }
 
     @Property(viewable = true, order = 2)
-    public DB2GrantorGranteeType getGrantorType()
+    public DB2GrantorGranteeType getGranteeType()
     {
-        return grantorType;
+        return granteeType;
     }
 
     @Property(viewable = true, order = 3)
-    public String getGrantor()
-    {
-        return grantor;
-    }
-
-    @Property(viewable = true, order = 4)
     public Boolean getAdmin()
     {
         return admin;
