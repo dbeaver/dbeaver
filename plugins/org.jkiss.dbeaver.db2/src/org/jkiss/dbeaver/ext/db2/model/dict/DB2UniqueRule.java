@@ -30,7 +30,7 @@ public enum DB2UniqueRule implements DBPNamedObject {
 
     U("Unique", true),
 
-    P("Implements primary key", true);
+    P("Primary key", true);
 
     private String name;
     private Boolean unique;
