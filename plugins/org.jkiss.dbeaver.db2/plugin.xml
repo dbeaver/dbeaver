@@ -207,12 +207,12 @@
                            </folder>
                         </items>
                     </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping" label="%tree.usermappings.node.name" icon="#usermappings" description="User Mappings">
+                        <items label="%tree.usermapping.node.name" path="usermapping" property="userMappings" icon="#user" />
+                    </folder>
 <!--                    
                     <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2FedSP" label="%tree.fedsp.node.name" icon="#procedures" description="Federated Stored Procs">
                         <items label="%tree.fedSP.node.name" path="fedsp" property="fedSPs" icon="#procedure" />
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping" label="%tree.usermappings.node.name" icon="#usermappings" description="User Mappings">
-                        <items label="%tree.usermapping.node.name" path="usermapping" property="usermappings" icon="#wrapper" />
                     </folder>
 -->                    
                 </folder>
