@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
+import org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
@@ -84,6 +85,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
     private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
+    private static final String C_UM =
+        "SELECT * FROM SYSCAT.USEROPTIONS WHERE OPTION = 'REMOTE_AUTHID' ORDER BY SERVERNAME,AUTHID WITH UR";
 
     private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
     private static final String PLAN_TABLE_MIS = "EXPLAIN tables not found. Query can't be explained";
@@ -105,6 +108,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(DB2RemoteServer.class, C_SV);
     private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Wrapper>(
         DB2Wrapper.class, C_WR);
+    private final DBSObjectCache<DB2DataSource, DB2UserMapping> userMappingCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2UserMapping>(DB2UserMapping.class, C_UM);
 
     private final DB2GranteeCache groupCache = new DB2GranteeCache(DB2AuthIDType.G);
     private final DB2GranteeCache userCache = new DB2GranteeCache(DB2AuthIDType.U);
@@ -201,6 +206,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         this.remoteServerCache.clearCache();
         this.wrapperCache.clearCache();
+        this.userMappingCache.clearCache();
 
         this.listDBMParameters = null;
         this.listDBParameters = null;
@@ -439,6 +445,17 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DB2Wrapper getWrapper(DBRProgressMonitor monitor, String name) throws DBException
     {
         return wrapperCache.getObject(monitor, this, name);
+    }
+
+    @Association
+    public Collection<DB2UserMapping> getUserMappings(DBRProgressMonitor monitor) throws DBException
+    {
+        return userMappingCache.getObjects(monitor, this);
+    }
+
+    public DB2UserMapping getUserMapping(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return userMappingCache.getObject(monitor, this, name);
     }
 
     @Association

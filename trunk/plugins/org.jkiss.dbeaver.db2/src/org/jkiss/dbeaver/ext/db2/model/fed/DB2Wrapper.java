@@ -89,31 +89,31 @@ public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject 
     // -----------------
 
     @Override
-    @Property(viewable = true, editable = false, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
     }
 
-    @Property(viewable = true, editable = false, order = 2)
+    @Property(viewable = true, order = 2)
     public DB2WrapperType getType()
     {
         return type;
     }
 
-    @Property(viewable = true, editable = false, order = 3)
+    @Property(viewable = true, order = 3)
     public Integer getVersion()
     {
         return version;
     }
 
-    @Property(viewable = true, editable = false, order = 4)
+    @Property(viewable = true, order = 4)
     public String getLibrary()
     {
         return library;
     }
 
-    @Property(viewable = true, editable = false, order = 5)
+    @Property(viewable = true, order = 5)
     public String getRemarks()
     {
         return remarks;
