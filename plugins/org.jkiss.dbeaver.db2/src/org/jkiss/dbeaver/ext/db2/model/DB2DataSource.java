@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
 import org.jkiss.dbeaver.ext.db2.model.plan.DB2PlanAnalyser;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
-import org.jkiss.dbeaver.ext.db2.model.security.DB2DatabaseAuth;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
@@ -82,30 +81,28 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
     private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
     private static final String C_RL = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
-    private static final String C_DA = "SELECT * FROM SYSCAT.DBAUTH ORDER BY GRANTEETYPE, GRANTEE WITH UR";
 
     private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
     private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
 
     private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
     private static final String PLAN_TABLE_MIS = "EXPLAIN tables not found. Query can't be explained";
-    private static final String PLAN_TABLE_MSG = "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
+    private static final String PLAN_TABLE_MSG =
+        "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
 
     private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Schema>(
         DB2Schema.class, C_SCHEMA);
     private final DBSObjectCache<DB2DataSource, DB2DataType> dataTypeCache = new JDBCObjectSimpleCache<DB2DataSource, DB2DataType>(
         DB2DataType.class, C_DT);
-    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(
-        DB2Bufferpool.class, C_BP);
-    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(
-        DB2Tablespace.class, C_TS);
+    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(DB2Bufferpool.class, C_BP);
+    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(DB2Tablespace.class, C_TS);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
         DB2Role.class, C_RL);
-    private final DBSObjectCache<DB2DataSource, DB2DatabaseAuth> dbauthCache = new JDBCObjectSimpleCache<DB2DataSource, DB2DatabaseAuth>(
-        DB2DatabaseAuth.class, C_DA);
 
-    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache = new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(
-        DB2RemoteServer.class, C_SV);
+    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache =
+        new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(DB2RemoteServer.class, C_SV);
     private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Wrapper>(
         DB2Wrapper.class, C_WR);
 
@@ -196,7 +193,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         this.userCache.clearCache();
         this.groupCache.clearCache();
         this.roleCache.clearCache();
-        this.dbauthCache.clearCache();
 
         this.tablespaceCache.clearCache();
         this.bufferpoolCache.clearCache();
@@ -487,17 +483,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DB2Role getRole(DBRProgressMonitor monitor, String name) throws DBException
     {
         return roleCache.getObject(monitor, this, name);
-    }
-
-    @Association
-    public Collection<DB2DatabaseAuth> getDatabaseAuths(DBRProgressMonitor monitor) throws DBException
-    {
-        return dbauthCache.getObjects(monitor, this);
-    }
-
-    public DB2DatabaseAuth getDatabaseAuth(DBRProgressMonitor monitor, String name) throws DBException
-    {
-        return dbauthCache.getObject(monitor, this, name);
     }
 
     // -------------
