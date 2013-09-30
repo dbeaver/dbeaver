@@ -30,8 +30,6 @@ Improvements:
     - Hierachies..
   - DB2DataType
     - handle super types correctly
-  - User/Group/Role:
-    - have one tab per autorisation type (table,sequence, schema, tablespaces..)
   
 Serge to check?
   - looked for icon sessions.png used by myslq and oracle, didn't find it
@@ -67,7 +65,6 @@ Missing metadata:
 - XML Schemas  
   - add dependencies
 - DB2Modules  
-- Federated User Mappings (useroptions, surrogateauthids)
 - Federated Function Mappings (routinesfederated, funcmapping)
 - Federated Remote indexes (indexoptions)
 
