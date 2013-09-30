@@ -31,7 +31,7 @@ public enum DB2AuthHeldType implements DBPNamedObject {
 
     N("N"),
 
-    G("G (Y + grantable)");
+    G("Y + Grantable");
 
     private String name;
 

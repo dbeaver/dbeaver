@@ -109,6 +109,12 @@ public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Gra
         sb.append("  FROM SYSCAT.XSROBJECTAUTH");
         sb.append(" WHERE GRANTEETYPE = ?");// 11
 
+        sb.append(" UNION ");
+
+        sb.append("SELECT DISTINCT GRANTEE");
+        sb.append("  FROM SYSCAT.DBAUTH");
+        sb.append(" WHERE GRANTEETYPE = ?");// 12
+
         sb.append(" ORDER BY GRANTEE");
         sb.append(" WITH UR");
 
@@ -136,6 +142,7 @@ public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Gra
         dbStat.setString(9, authIdTypeName);
         dbStat.setString(10, authIdTypeName);
         dbStat.setString(11, authIdTypeName);
+        dbStat.setString(12, authIdTypeName);
         return dbStat;
     }
 
