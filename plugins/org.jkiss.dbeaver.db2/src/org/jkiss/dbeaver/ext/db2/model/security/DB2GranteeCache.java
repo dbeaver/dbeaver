@@ -41,8 +41,6 @@ public final class DB2GranteeCache extends JDBCObjectCache<DB2DataSource, DB2Gra
     private DB2AuthIDType authIdType;
     private String authIdTypeName;
 
-    // TODO DF: Add missing auth: modules, functions, columns etc..
-
     static {
 
         StringBuilder sb = new StringBuilder(1536);
