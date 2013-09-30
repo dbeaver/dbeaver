@@ -27,11 +27,11 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  */
 public enum DB2AuthIDType implements DBPNamedObject {
 
-    U("U (User)"),
+    U("User"),
 
-    G("G (Group)"),
+    G("Group"),
 
-    R("R (Role)");
+    R("Role");
 
     private String name;
 
