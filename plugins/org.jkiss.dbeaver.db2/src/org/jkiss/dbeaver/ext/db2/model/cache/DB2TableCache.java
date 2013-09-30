@@ -33,19 +33,21 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Tables
- *
+ * 
  * @author Denis Forveille
  */
 public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB2TableColumn> {
 
-    private static final String SQL_TABS = "SELECT * FROM SYSCAT.TABLES WHERE TABSCHEMA = ? AND TYPE IN ('H','L','T','U') ORDER BY TABNAME WITH UR";
-    private static final String SQL_COLS_TAB = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY COLNO WITH UR";
+    private static final String SQL_TABS =
+        "SELECT * FROM SYSCAT.TABLES WHERE TABSCHEMA = ? AND TYPE IN ('H','L','T','U','G','S') ORDER BY TABNAME WITH UR";
+    private static final String SQL_COLS_TAB =
+        "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY COLNO WITH UR";
     private static final String SQL_COLS_ALL = "SELECT * FROM SYSCAT.COLUMNS WHERE TABSCHEMA = ? ORDER BY TABNAME, COLNO WITH UR";
 
     public DB2TableCache()
     {
         super("TABNAME");
-        setListOrderComparator(DBUtils.<DB2Table>nameComparator());
+        setListOrderComparator(DBUtils.<DB2Table> nameComparator());
     }
 
     @Override
@@ -64,7 +66,8 @@ public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable) throws SQLException
+    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table forTable)
+        throws SQLException
     {
 
         String sql;
@@ -82,8 +85,8 @@ public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB
     }
 
     @Override
-    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table db2Table, ResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2Table db2Table, ResultSet dbResult)
+        throws SQLException, DBException
     {
         return new DB2TableColumn(context.getProgressMonitor(), db2Table, dbResult);
     }
