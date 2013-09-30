@@ -85,31 +85,29 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
     private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
-    private static final String C_UM =
-        "SELECT * FROM SYSCAT.USEROPTIONS WHERE OPTION = 'REMOTE_AUTHID' ORDER BY SERVERNAME,AUTHID WITH UR";
+    private static final String C_UM = "SELECT * FROM SYSCAT.USEROPTIONS WHERE OPTION = 'REMOTE_AUTHID' ORDER BY SERVERNAME,AUTHID WITH UR";
 
     private static final String PLAN_TABLE_TIT = "PLAN_TABLE missing";
     private static final String PLAN_TABLE_MIS = "EXPLAIN tables not found. Query can't be explained";
-    private static final String PLAN_TABLE_MSG =
-        "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
+    private static final String PLAN_TABLE_MSG = "Tables for EXPLAIN not found in current schema nor in SYSTOOLS. Do you want DBeaver to create new EXPLAIN tables?";
 
     private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Schema>(
         DB2Schema.class, C_SCHEMA);
     private final DBSObjectCache<DB2DataSource, DB2DataType> dataTypeCache = new JDBCObjectSimpleCache<DB2DataSource, DB2DataType>(
         DB2DataType.class, C_DT);
-    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache =
-        new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(DB2Bufferpool.class, C_BP);
-    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache =
-        new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(DB2Tablespace.class, C_TS);
+    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Bufferpool>(
+        DB2Bufferpool.class, C_BP);
+    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Tablespace>(
+        DB2Tablespace.class, C_TS);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
         DB2Role.class, C_RL);
 
-    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache =
-        new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(DB2RemoteServer.class, C_SV);
+    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache = new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(
+        DB2RemoteServer.class, C_SV);
     private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Wrapper>(
         DB2Wrapper.class, C_WR);
-    private final DBSObjectCache<DB2DataSource, DB2UserMapping> userMappingCache =
-        new JDBCObjectSimpleCache<DB2DataSource, DB2UserMapping>(DB2UserMapping.class, C_UM);
+    private final DBSObjectCache<DB2DataSource, DB2UserMapping> userMappingCache = new JDBCObjectSimpleCache<DB2DataSource, DB2UserMapping>(
+        DB2UserMapping.class, C_UM);
 
     private final DB2GranteeCache groupCache = new DB2GranteeCache(DB2AuthIDType.G);
     private final DB2GranteeCache userCache = new DB2GranteeCache(DB2AuthIDType.U);
@@ -315,39 +313,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         if (this.activeSchemaName != null) {
             DBUtils.fireObjectSelect(object, true);
         }
-    }
-
-    // -------
-    // Helpers
-    // -------
-
-    /**
-     * @param monitor
-     * @param parentSchema
-     * @param objectSchemaName
-     * @return
-     * @throws DBException
-     */
-    public DB2Schema schemaLookup(DBRProgressMonitor monitor, DB2Schema parentSchema, String objectSchemaName) throws DBException
-    {
-        LOG.debug("schemaLookup");
-
-        // Quick bypass: If it's the same name (99% of the time), return the parentSchema
-        if (parentSchema.getName().equals(objectSchemaName)) {
-            return parentSchema;
-        }
-
-        // Lookup fo the schema that correspond to the name
-        DB2Schema objectSchema = getSchema(monitor, objectSchemaName);
-        if (objectSchema == null) {
-            String msg = "Schema  '" + objectSchemaName + "' not found in database ??? Impossible";
-            LOG.error(msg);
-            throw new DBException(msg);
-
-        }
-        LOG.debug("objectSchemaName : " + objectSchemaName + " was different from parentSchema : " + parentSchema.getName());
-
-        return objectSchema;
     }
 
     // --------------

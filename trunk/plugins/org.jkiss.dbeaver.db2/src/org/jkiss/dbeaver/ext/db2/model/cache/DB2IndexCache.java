@@ -41,8 +41,7 @@ import java.sql.SQLException;
 public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB2IndexColumn> {
 
     private static final String SQL_INDS_ALL = "SELECT * FROM SYSCAT.INDEXES WHERE INDSCHEMA = ? ORDER BY INDNAME WITH UR";
-    private static final String SQL_COLS_IND =
-        "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA = ? AND INDNAME = ? ORDER BY COLSEQ WITH UR";
+    private static final String SQL_COLS_IND = "SELECT * FROM SYSCAT.INDEXCOLUSE WHERE INDSCHEMA = ? AND INDNAME = ? ORDER BY COLSEQ WITH UR";
 
     public DB2IndexCache()
     {
@@ -62,12 +61,15 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
         DBException
     {
 
-        // Look for related table
-        String tableSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
-        String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
-        DB2Table db2Table =
-            DB2Utils.findTableBySchemaNameAndName(context.getProgressMonitor(), db2Schema.getDataSource(), tableSchemaName,
-                tableName);
+        // Look for related table...or nickname
+        String tableOrNicknameSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
+        String tableOrNicknameName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
+        DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(context.getProgressMonitor(), db2Schema.getDataSource(),
+            tableOrNicknameSchemaName, tableOrNicknameName);
+        if (db2Table == null) {
+            db2Table = DB2Utils.findNicknameBySchemaNameAndName(context.getProgressMonitor(), db2Schema.getDataSource(),
+                tableOrNicknameSchemaName, tableOrNicknameName);
+        }
 
         return new DB2Index(context.getProgressMonitor(), db2Schema, db2Table, dbResult);
     }
