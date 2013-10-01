@@ -199,7 +199,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     }
 
     @Override
-    @Property(viewable = true, order = 71, editable = true, updatable = true)
+    @Property(viewable = false, order = 71, editable = true, updatable = true)
     public String getDescription()
     {
         return remarks;
@@ -252,7 +252,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         return rowEnd;
     }
 
-    @Property(viewable = true, order = 150, category = DB2Constants.CAT_STATS)
+    @Property(viewable = false, order = 150, category = DB2Constants.CAT_STATS)
     public Long getColcard()
     {
         return colcard;

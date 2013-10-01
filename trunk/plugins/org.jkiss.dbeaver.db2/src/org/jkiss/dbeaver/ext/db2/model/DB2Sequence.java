@@ -123,7 +123,13 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         return super.getSchema();
     }
 
-    @Property(viewable = true, editable = false, order = 3)
+    @Property(viewable = true, editable = false, order = 4)
+    public DB2SequenceType getSeqType()
+    {
+        return seqType;
+    }
+
+    @Property(viewable = true, editable = false, order = 5)
     public Long getNextCacheFirstValue()
     {
         return nextCacheFirstValue;
@@ -134,7 +140,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.nextCacheFirstValue = nextCacheFirstValue;
     }
 
-    @Property(viewable = false, editable = true, updatable = true, order = 4)
+    @Property(viewable = false, editable = true, updatable = true, order = 6)
     public Long getMinValue()
     {
         return minValue;
@@ -145,7 +151,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.minValue = minValue;
     }
 
-    @Property(viewable = false, editable = true, updatable = true, order = 5)
+    @Property(viewable = false, editable = true, updatable = true, order = 6)
     public Long getMaxValue()
     {
         return maxValue;
@@ -156,7 +162,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.maxValue = maxValue;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 6)
+    @Property(viewable = true, editable = true, updatable = true, order = 7)
     public Long getStart()
     {
         return start;
@@ -167,7 +173,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.start = start;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 7)
+    @Property(viewable = true, editable = true, updatable = true, order = 8)
     public Long getIncrement()
     {
         return increment;
@@ -178,7 +184,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.increment = increment;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 8)
+    @Property(viewable = true, editable = true, updatable = true, order = 9)
     public Integer getCache()
     {
         return cache;
@@ -189,7 +195,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.cache = cache;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 9)
+    @Property(viewable = true, editable = true, updatable = true, order = 10)
     public Boolean getCycle()
     {
         return cycle;
@@ -200,7 +206,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.cycle = cycle;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 10)
+    @Property(viewable = true, editable = true, updatable = true, order = 11)
     public Boolean getOrder()
     {
         return order;
@@ -211,7 +217,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         this.order = order;
     }
 
-    @Property(viewable = true, editable = true, order = 11)
+    @Property(viewable = true, editable = true, order = 12)
     public DB2SequencePrecision getPrecision()
     {
         return precision;
@@ -238,12 +244,6 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
     public Integer getSeqId()
     {
         return seqId;
-    }
-
-    @Property(viewable = false, editable = false)
-    public DB2SequenceType getSeqType()
-    {
-        return seqType;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_BASEBJECT)
