@@ -177,6 +177,19 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
         return listPackagesAuths;
     }
 
+    @Association
+    public Collection<DB2AuthModule> getModulesAuths(DBRProgressMonitor monitor) throws DBException
+    {
+        Collection<DB2AuthModule> listModulesAuths = new ArrayList<DB2AuthModule>();
+        for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
+            if (db2Auth instanceof DB2AuthModule) {
+                listModulesAuths.add((DB2AuthModule) db2Auth);
+            }
+
+        }
+        return listModulesAuths;
+    }
+
     // -----------------
     // Properties
     // -----------------
