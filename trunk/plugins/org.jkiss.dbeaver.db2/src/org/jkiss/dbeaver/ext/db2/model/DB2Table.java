@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableRefreshMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2StatefulObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -118,13 +119,12 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         this.dataCapture = JDBCUtils.safeGetString(dbResult, "DATACAPTURE");
         this.constChecked = JDBCUtils.safeGetString(dbResult, "CONST_CHECKED");
         this.partitionMode = CommonUtils.valueOf(DB2TablePartitionMode.class, JDBCUtils.safeGetString(dbResult, "PARTITION_MODE"));
-        this.append = JDBCUtils.safeGetBoolean(dbResult, "APPEND_MODE");
+        this.append = JDBCUtils.safeGetBoolean(dbResult, "APPEND_MODE", DB2YesNo.Y.name());
         this.refreshTime = JDBCUtils.safeGetTimestamp(dbResult, "REFRESH_TIME");
-        this.lockSize = CommonUtils.valueOf(DB2TableLockSize.class, JDBCUtils.safeGetString(dbResult, "LOCKSIZE"));
         this.volatileMode = JDBCUtils.safeGetString(dbResult, "VOLATILE");
         this.compression = CommonUtils.valueOf(DB2TableCompressionMode.class, JDBCUtils.safeGetString(dbResult, "COMPRESSION"));
         this.accessMode = CommonUtils.valueOf(DB2TableAccessMode.class, JDBCUtils.safeGetString(dbResult, "ACCESS_MODE"));
-        this.mdcClustered = JDBCUtils.safeGetBoolean(dbResult, "CLUSTERED");
+        this.mdcClustered = JDBCUtils.safeGetBoolean(dbResult, "CLUSTERED", DB2YesNo.Y.name());
         this.dropRule = CommonUtils.valueOf(DB2TableDropRule.class, JDBCUtils.safeGetString(dbResult, "DROPRULE"));
 
         this.card = JDBCUtils.safeGetLongNullable(dbResult, "CARD");
@@ -135,6 +135,10 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         String refreshModeString = JDBCUtils.safeGetString(dbResult, "REFRESH");
         if (CommonUtils.isNotEmpty(refreshModeString)) {
             this.refreshMode = CommonUtils.valueOf(DB2TableRefreshMode.class, refreshModeString);
+        }
+        String lockSizeString = JDBCUtils.safeGetString(dbResult, "LOCKSIZE");
+        if (CommonUtils.isNotEmpty(lockSizeString)) {
+            this.lockSize = CommonUtils.valueOf(DB2TableLockSize.class, lockSizeString);
         }
 
         String tablespaceName = JDBCUtils.safeGetString(dbResult, "TBSPACE");
