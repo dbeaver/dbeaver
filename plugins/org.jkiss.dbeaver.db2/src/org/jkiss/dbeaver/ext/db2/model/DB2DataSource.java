@@ -82,6 +82,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
     private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
     private static final String C_RL = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
+    private static final String C_VR = "SELECT * FROM SYSCAT.VARIABLES WHERE VARMODULENAME IS NULL ORDER BY VARNAME WITH UR";
 
     private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
     private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
@@ -101,6 +102,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         DB2Tablespace.class, C_TS);
     private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Role>(
         DB2Role.class, C_RL);
+    private final DBSObjectCache<DB2DataSource, DB2Variable> variableCache = new JDBCObjectSimpleCache<DB2DataSource, DB2Variable>(
+        DB2Variable.class, C_VR);
 
     private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache = new JDBCObjectSimpleCache<DB2DataSource, DB2RemoteServer>(
         DB2RemoteServer.class, C_SV);
@@ -196,6 +199,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         this.userCache.clearCache();
         this.groupCache.clearCache();
         this.roleCache.clearCache();
+        this.variableCache.clearCache();
 
         this.tablespaceCache.clearCache();
         this.bufferpoolCache.clearCache();
@@ -467,6 +471,17 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         return roleCache.getObject(monitor, this, name);
     }
 
+    @Association
+    public Collection<DB2Variable> getVariables(DBRProgressMonitor monitor) throws DBException
+    {
+        return variableCache.getObjects(monitor, this);
+    }
+
+    public DB2Variable getVariable(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return variableCache.getObject(monitor, this, name);
+    }
+
     // -------------
     // Dynamic Data
     // -------------
@@ -498,6 +513,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DBSObjectCache<DB2DataSource, DB2Tablespace> getTablespaceCache()
     {
         return tablespaceCache;
+    }
+
+    public DBSObjectCache<DB2DataSource, DB2Variable> getVariableCache()
+    {
+        return variableCache;
     }
 
 }

@@ -16,26 +16,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.model.module;
+package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.DB2Object;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
+import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 
 /**
- * DB2 Module Variable
+ * DB2 Variable (Global or Module)
  * 
  * @author Denis Forveille
  */
-public class DB2ModuleVariable extends DB2Object<DB2Module> {
+public class DB2Variable extends DB2Object<DBSObject> {
+
+    private DB2Schema db2Schema;
 
     private Integer id;
     private String owner;
@@ -51,10 +55,10 @@ public class DB2ModuleVariable extends DB2Object<DB2Module> {
     // Constructors
     // -----------------------
 
-    public DB2ModuleVariable(DB2Module db2Module, ResultSet dbResult) throws DBException
+    public DB2Variable(DBSObject owner, ResultSet dbResult) throws DBException
     {
 
-        super(db2Module, JDBCUtils.safeGetString(dbResult, "VARNAME"), true);
+        super(owner, JDBCUtils.safeGetString(dbResult, "VARNAME"), true);
 
         this.id = JDBCUtils.safeGetInteger(dbResult, "VARID");
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
@@ -64,6 +68,13 @@ public class DB2ModuleVariable extends DB2Object<DB2Module> {
         this.valid = JDBCUtils.safeGetBoolean(dbResult, "VALID", DB2YesNo.Y.name());
         this.published = JDBCUtils.safeGetBoolean(dbResult, "PUBLISHED", DB2YesNo.Y.name());
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
+
+        if (owner instanceof DB2Module) {
+            db2Schema = ((DB2Module) owner).getSchema();
+        } else {
+            String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "VARSCHEMA");
+            this.db2Schema = ((DB2DataSource) owner).getSchema(VoidProgressMonitor.INSTANCE, schemaName);
+        }
     }
 
     @Override
@@ -84,42 +95,48 @@ public class DB2ModuleVariable extends DB2Object<DB2Module> {
     }
 
     @Property(viewable = true, order = 2)
+    public DB2Schema getSchema()
+    {
+        return db2Schema;
+    }
+
+    @Property(viewable = true, order = 3)
     public Integer getId()
     {
         return id;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, order = 4)
     public String getOwner()
     {
         return owner;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, order = 5)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
     }
 
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, order = 6)
     public Boolean getValid()
     {
         return valid;
     }
 
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, order = 7)
     public Boolean getPublished()
     {
         return published;
     }
 
-    @Property(viewable = false, order = 7, category = DB2Constants.CAT_DATETIME)
+    @Property(viewable = false, order = 8, category = DB2Constants.CAT_DATETIME)
     public Timestamp getCreateTime()
     {
         return createTime;
     }
 
-    @Property(viewable = false, order = 8, category = DB2Constants.CAT_DATETIME)
+    @Property(viewable = false, order = 9, category = DB2Constants.CAT_DATETIME)
     public Timestamp getLastRegenTime()
     {
         return lastRegenTime;
