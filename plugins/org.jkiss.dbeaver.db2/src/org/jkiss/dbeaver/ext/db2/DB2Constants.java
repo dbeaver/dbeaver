@@ -37,17 +37,18 @@ public class DB2Constants {
     public static final String PROP_TRACE_LEVEL = DBConstants.INTERNAL_PROP_PREFIX + "trace.level";
 
     // Display Categories
+    public static final String CAT_AUDIT = "Audit";
+    public static final String CAT_AUTH = "Authorities";
+    public static final String CAT_BASEBJECT = "Base Object";
+    public static final String CAT_CLIENT = "Client";
+    public static final String CAT_CODE = "Code";
+    public static final String CAT_COLLATION = "Collation";
+    public static final String CAT_COMPILER = "Compiler";
     public static final String CAT_DATETIME = "Date & Time";
     public static final String CAT_OWNER = "Owner";
+    public static final String CAT_PERFORMANCE = "Performance";
     public static final String CAT_STATS = "Statistics";
     public static final String CAT_TABLESPACE = "Tablespace";
-    public static final String CAT_AUDIT = "Audit";
-    public static final String CAT_PERFORMANCE = "Performance";
-    public static final String CAT_COLLATION = "Collation";
-    public static final String CAT_BASEBJECT = "Base Object";
-    public static final String CAT_COMPILER = "Compiler";
-    public static final String CAT_CLIENT = "Client";
-    public static final String CAT_AUTH = "Authorities";
 
     // Schema for system datatypes
     public static final String SYSTEM_DATATYPE_SCHEMA = "SYSIBM";
