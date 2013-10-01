@@ -21,18 +21,18 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Compression Mode
+ * DB2 Table Access Mode
  * 
  * @author Denis Forveille
  */
-public enum DB2CompressionMode implements DBPNamedObject {
-    B("Value + Row compression"),
+public enum DB2TableAccessMode implements DBPNamedObject {
+    D("No data movement"),
 
-    N("None"),
+    F("Full access"),
 
-    R("Row"),
+    N("No access"),
 
-    V("Value Compression");
+    R(" Read-only access");
 
     private String name;
 
@@ -40,7 +40,7 @@ public enum DB2CompressionMode implements DBPNamedObject {
     // Constructor
     // -----------
 
-    private DB2CompressionMode(String name)
+    private DB2TableAccessMode(String name)
     {
         this.name = name;
     }

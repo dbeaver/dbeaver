@@ -26,6 +26,12 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.edit.DB2TableTablespaceListProvider;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableAccessMode;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCompressionMode;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableDropRule;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableLockSize;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionMode;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableRefreshMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2StatefulObject;
@@ -57,7 +63,8 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
     private static final Log log = LogFactory.getLog(DB2Table.class);
 
-    private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS  WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
+    private static final String C_PT =
+        "SELECT * FROM SYSCAT.DATAPARTITIONS  WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
 
     private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
     private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
@@ -72,6 +79,19 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     private DB2Tablespace tablespace;
     private DB2Tablespace indexTablespace;
     private DB2Tablespace longTablespace;
+
+    private String dataCapture;
+    private String constChecked;
+    private DB2TablePartitionMode partitionMode;
+    private Boolean append;
+    private DB2TableRefreshMode refreshMode;
+    private Timestamp refreshTime;
+    private DB2TableLockSize lockSize;
+    private String volatileMode;
+    private DB2TableCompressionMode compression;
+    private DB2TableAccessMode accessMode;
+    private Boolean mdcClustered;
+    private DB2TableDropRule dropRule;
 
     private Timestamp statsTime;
     private Long card;
@@ -95,10 +115,27 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
         this.statsTime = JDBCUtils.safeGetTimestamp(dbResult, "STATS_TIME");
 
+        this.dataCapture = JDBCUtils.safeGetString(dbResult, "DATACAPTURE");
+        this.constChecked = JDBCUtils.safeGetString(dbResult, "CONST_CHECKED");
+        this.partitionMode = CommonUtils.valueOf(DB2TablePartitionMode.class, JDBCUtils.safeGetString(dbResult, "PARTITION_MODE"));
+        this.append = JDBCUtils.safeGetBoolean(dbResult, "APPEND_MODE");
+        this.refreshTime = JDBCUtils.safeGetTimestamp(dbResult, "REFRESH_TIME");
+        this.lockSize = CommonUtils.valueOf(DB2TableLockSize.class, JDBCUtils.safeGetString(dbResult, "LOCKSIZE"));
+        this.volatileMode = JDBCUtils.safeGetString(dbResult, "VOLATILE");
+        this.compression = CommonUtils.valueOf(DB2TableCompressionMode.class, JDBCUtils.safeGetString(dbResult, "COMPRESSION"));
+        this.accessMode = CommonUtils.valueOf(DB2TableAccessMode.class, JDBCUtils.safeGetString(dbResult, "ACCESS_MODE"));
+        this.mdcClustered = JDBCUtils.safeGetBoolean(dbResult, "CLUSTERED");
+        this.dropRule = CommonUtils.valueOf(DB2TableDropRule.class, JDBCUtils.safeGetString(dbResult, "DROPRULE"));
+
         this.card = JDBCUtils.safeGetLongNullable(dbResult, "CARD");
         this.nPages = JDBCUtils.safeGetLongNullable(dbResult, "NPAGES");
         this.fPages = JDBCUtils.safeGetLongNullable(dbResult, "FPAGES");
         this.overFLow = JDBCUtils.safeGetLongNullable(dbResult, "OVERFLOW");
+
+        String refreshModeString = JDBCUtils.safeGetString(dbResult, "REFRESH");
+        if (CommonUtils.isNotEmpty(refreshModeString)) {
+            this.refreshMode = CommonUtils.valueOf(DB2TableRefreshMode.class, refreshModeString);
+        }
 
         String tablespaceName = JDBCUtils.safeGetString(dbResult, "TBSPACE");
         this.tablespace = getDataSource().getTablespace(monitor, tablespaceName);
@@ -111,8 +148,8 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
             this.longTablespace = getDataSource().getTablespace(monitor, longTablespaceName);
         }
 
-        this.partitionCache = new JDBCObjectSimpleCache<DB2Table, DB2TablePartition>(DB2TablePartition.class, C_PT,
-            schema.getName(), getName());
+        this.partitionCache =
+            new JDBCObjectSimpleCache<DB2Table, DB2TablePartition>(DB2TablePartition.class, C_PT, schema.getName(), getName());
 
     }
 
@@ -367,6 +404,78 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     public Long getOverFLow()
     {
         return overFLow;
+    }
+
+    @Property(viewable = false, editable = false, order = 100)
+    public Boolean getAppend()
+    {
+        return append;
+    }
+
+    @Property(viewable = false, editable = false, order = 101)
+    public String getVolatileMode()
+    {
+        return volatileMode;
+    }
+
+    @Property(viewable = false, editable = false, order = 102)
+    public DB2TableRefreshMode getRefreshMode()
+    {
+        return refreshMode;
+    }
+
+    @Property(viewable = false, editable = false, order = 103)
+    public Timestamp getRefreshTime()
+    {
+        return refreshTime;
+    }
+
+    @Property(viewable = false, editable = false, order = 104)
+    public DB2TableLockSize getLockSize()
+    {
+        return lockSize;
+    }
+
+    @Property(viewable = false, editable = false, order = 105)
+    public DB2TableCompressionMode getCompression()
+    {
+        return compression;
+    }
+
+    @Property(viewable = false, editable = false, order = 106)
+    public DB2TableAccessMode getAccessMode()
+    {
+        return accessMode;
+    }
+
+    @Property(viewable = false, editable = false, order = 107)
+    public Boolean getMdcClustered()
+    {
+        return mdcClustered;
+    }
+
+    @Property(viewable = false, editable = false, order = 108)
+    public DB2TableDropRule getDropRule()
+    {
+        return dropRule;
+    }
+
+    @Property(viewable = false, editable = false, order = 109)
+    public String getDataCapture()
+    {
+        return dataCapture;
+    }
+
+    @Property(viewable = false, editable = false, order = 110)
+    public DB2TablePartitionMode getPartitionMode()
+    {
+        return partitionMode;
+    }
+
+    @Property(viewable = false, editable = false, order = 111)
+    public String getConstChecked()
+    {
+        return constChecked;
     }
 
 }
