@@ -180,31 +180,31 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     // -----------------------
 
     @Override
-    @Property(viewable = true, editable = false, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return super.getName();
     }
 
-    @Property(viewable = true, editable = false, order = 2)
+    @Property(viewable = true, order = 2)
     public DB2Schema getSchema()
     {
         return db2Schema;
     }
 
-    @Property(viewable = true, editable = false, order = 3)
+    @Property(viewable = true, order = 3)
     public String getRoutineName()
     {
         return routineName;
     }
 
-    @Property(viewable = true, editable = false, order = 5)
+    @Property(viewable = true, order = 5)
     public DB2RoutineLanguage getLanguage()
     {
         return language;
     }
 
-    @Property(viewable = true, editable = false, order = 6)
+    @Property(viewable = true, order = 6)
     public Integer getRoutineId()
     {
         return routineId;
@@ -216,25 +216,25 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
         return dialect;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
+    @Property(viewable = false, category = DB2Constants.CAT_DATETIME)
     public Timestamp getCreateTime()
     {
         return createTime;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_DATETIME)
+    @Property(viewable = false, category = DB2Constants.CAT_DATETIME)
     public Timestamp getAlterTime()
     {
         return alterTime;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+    @Property(viewable = false, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
         return owner;
     }
 
-    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
+    @Property(viewable = false, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;

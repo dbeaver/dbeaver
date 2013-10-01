@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableReference;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
+import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
@@ -221,6 +222,23 @@ public enum DB2ObjectType implements DBSObjectType {
         public DB2View findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
             return schema.getViewCache().getObject(monitor, schema, objectName, DB2View.class);
+        }
+    }),
+
+    VARIABLE(DBIcon.TREE_ATTRIBUTE.getImage(), DB2Variable.class, new ObjectFinder() {
+        @Override
+        public DB2Variable findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            DB2Variable variable;
+            DB2DataSource db2DataSource = schema.getDataSource();
+            String[] tokens = objectName.split(SPLIT_DOT);
+            if (tokens.length == 1) {
+                variable = db2DataSource.getVariableCache().getObject(monitor, db2DataSource, tokens[0]);
+            } else {
+                DB2Module module = schema.getModuleCache().getObject(monitor, schema, tokens[0]);
+                variable = module.getVariableCache().getObject(monitor, module, tokens[1]);
+            }
+            return variable;
         }
     });
 
