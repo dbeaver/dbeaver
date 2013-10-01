@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2DataType;
 import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2SchemaObject;
+import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -55,7 +56,7 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
     private final DBSObjectCache<DB2Module, DB2Routine> functionCache;
     private final DBSObjectCache<DB2Module, DB2Routine> procedureCache;
     private final DBSObjectCache<DB2Module, DB2DataType> typeCache;
-    private final DBSObjectCache<DB2Module, DB2ModuleVariable> variableCache;
+    private final DBSObjectCache<DB2Module, DB2Variable> variableCache;
 
     private Integer moduleId;
     private String owner;
@@ -86,7 +87,7 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
         this.functionCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_FCT, schema.getName(), name);
         this.procedureCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_PRC, schema.getName(), name);
         this.typeCache = new JDBCObjectSimpleCache<DB2Module, DB2DataType>(DB2DataType.class, C_TYP, schema.getName(), name);
-        this.variableCache = new JDBCObjectSimpleCache<DB2Module, DB2ModuleVariable>(DB2ModuleVariable.class, C_VAR,
+        this.variableCache = new JDBCObjectSimpleCache<DB2Module, DB2Variable>(DB2Variable.class, C_VAR,
             schema.getName(), name);
 
     }
@@ -131,7 +132,7 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
     }
 
     @Association
-    public Collection<DB2ModuleVariable> getVariables(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2Variable> getVariables(DBRProgressMonitor monitor) throws DBException
     {
         return variableCache.getObjects(monitor, this);
     }
@@ -219,7 +220,7 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
         return typeCache;
     }
 
-    public DBSObjectCache<DB2Module, DB2ModuleVariable> getVariableCache()
+    public DBSObjectCache<DB2Module, DB2Variable> getVariableCache()
     {
         return variableCache;
     }

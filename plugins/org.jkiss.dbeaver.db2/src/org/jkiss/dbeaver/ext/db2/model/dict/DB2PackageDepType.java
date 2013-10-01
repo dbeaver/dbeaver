@@ -73,7 +73,7 @@ public enum DB2PackageDepType implements DBPNamedObject {
 
     u("Module alias", DB2ObjectType.ALIAS),
 
-    v("Global variable"),
+    v("Global variable", DB2ObjectType.VARIABLE),
 
     ZZ_4("Application-period temporal table"),
 
