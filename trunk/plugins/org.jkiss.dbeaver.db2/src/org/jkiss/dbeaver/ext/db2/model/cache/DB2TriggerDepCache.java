@@ -31,7 +31,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for dependencies on DB2 Triggers
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TriggerDepCache extends JDBCObjectCache<DB2Trigger, DB2TriggerDep> {
@@ -48,8 +48,8 @@ public class DB2TriggerDepCache extends JDBCObjectCache<DB2Trigger, DB2TriggerDe
     }
 
     @Override
-    protected DB2TriggerDep fetchObject(JDBCExecutionContext context, DB2Trigger db2Trigger, ResultSet resultSet) throws SQLException,
-        DBException
+    protected DB2TriggerDep fetchObject(JDBCExecutionContext context, DB2Trigger db2Trigger, ResultSet resultSet)
+        throws SQLException, DBException
     {
         return new DB2TriggerDep(context.getProgressMonitor(), db2Trigger, resultSet);
     }

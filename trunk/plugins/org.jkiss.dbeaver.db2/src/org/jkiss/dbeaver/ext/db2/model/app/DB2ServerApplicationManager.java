@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  * DB2 Application Manager
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2ServerApplication> {
@@ -51,7 +51,8 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
     }
 
     @Override
-    public Collection<DB2ServerApplication> getSessions(DBCExecutionContext context, Map<String, Object> options) throws DBException
+    public Collection<DB2ServerApplication> getSessions(DBCExecutionContext context, Map<String, Object> options)
+        throws DBException
     {
         try {
             return DB2Utils.readApplications(context.getProgressMonitor(), (JDBCExecutionContext) context);
@@ -61,7 +62,8 @@ public class DB2ServerApplicationManager implements DBAServerSessionManager<DB2S
     }
 
     @Override
-    public void alterSession(DBCExecutionContext context, DB2ServerApplication session, Map<String, Object> options) throws DBException
+    public void alterSession(DBCExecutionContext context, DB2ServerApplication session, Map<String, Object> options)
+        throws DBException
     {
         try {
             DB2Utils.forceApplication(context.getProgressMonitor(), dataSource, session.getAgentId());

@@ -33,7 +33,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Views
- *
+ * 
  * @author Denis Forveille
  */
 public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> {
@@ -45,7 +45,7 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     public DB2ViewCache()
     {
         super("VIEWNAME");
-        setListOrderComparator(DBUtils.<DB2View>nameComparator());
+        setListOrderComparator(DBUtils.<DB2View> nameComparator());
     }
 
     @Override
@@ -64,7 +64,8 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2View forView) throws SQLException
+    protected JDBCStatement prepareChildrenStatement(JDBCExecutionContext context, DB2Schema db2Schema, DB2View forView)
+        throws SQLException
     {
 
         String sql;
@@ -82,8 +83,8 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2View db2View, ResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2TableColumn fetchChild(JDBCExecutionContext context, DB2Schema db2Schema, DB2View db2View, ResultSet dbResult)
+        throws SQLException, DBException
     {
         return new DB2TableColumn(context.getProgressMonitor(), db2View, dbResult);
     }

@@ -53,8 +53,8 @@ public class DB2RoutineParmsCache extends JDBCObjectCache<DB2Routine, DB2Routine
     }
 
     @Override
-    protected DB2RoutineParm fetchObject(JDBCExecutionContext context, DB2Routine db2Routine, ResultSet resultSet) throws SQLException,
-        DBException
+    protected DB2RoutineParm fetchObject(JDBCExecutionContext context, DB2Routine db2Routine, ResultSet resultSet)
+        throws SQLException, DBException
     {
         return new DB2RoutineParm(context.getProgressMonitor(), db2Routine, resultSet);
     }

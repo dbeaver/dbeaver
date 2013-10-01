@@ -33,7 +33,7 @@ import java.util.Iterator;
 
 /**
  * Cache for DB2 Schemas
- *
+ * 
  * @author Denis Forveille
  */
 public final class DB2SchemaCache extends JDBCObjectCache<DB2DataSource, DB2Schema> {
@@ -52,8 +52,8 @@ public final class DB2SchemaCache extends JDBCObjectCache<DB2DataSource, DB2Sche
     }
 
     @Override
-    protected DB2Schema fetchObject(JDBCExecutionContext context, DB2DataSource db2DataSource, ResultSet resultSet) throws SQLException,
-        DBException
+    protected DB2Schema fetchObject(JDBCExecutionContext context, DB2DataSource db2DataSource, ResultSet resultSet)
+        throws SQLException, DBException
     {
         return new DB2Schema(db2DataSource, resultSet);
     }
@@ -70,6 +70,6 @@ public final class DB2SchemaCache extends JDBCObjectCache<DB2DataSource, DB2Sche
 
     private void init()
     {
-        setListOrderComparator(DBUtils.<DB2Schema>nameComparator());
+        setListOrderComparator(DBUtils.<DB2Schema> nameComparator());
     }
 }
