@@ -260,10 +260,11 @@
                            <items label="%tree.tablesauths.node.name" path="tablesauth" property="tablesAuths" icon="#userauth" navigable="false"/>
                            <items label="%tree.viewsauths.node.name" path="viewsauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
+                           <items label="%tree.modulesauths.node.name" path="modulesauth" property="modulesAuths" icon="#modulesauth" navigable="false"/>
+                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
+                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
                            <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
                            <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
-                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
-                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2Group" label="%tree.groups.node.name" icon="#folder_role" description="Groups">
@@ -273,10 +274,11 @@
                            <items label="%tree.tablesauths.node.name" path="tablesauth" property="tablesAuths" icon="#userauth" navigable="false"/>
                            <items label="%tree.viewsauths.node.name" path="viewsauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
+                           <items label="%tree.modulesauths.node.name" path="modulesauth" property="modulesAuths" icon="#modulesauth" navigable="false"/>
+                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
+                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
                            <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
                            <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
-                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
-                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
                         </items>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.model.security.DB2User" label="%tree.users.node.name" icon="#folder_user" description="Users">
@@ -286,10 +288,11 @@
                            <items label="%tree.tablesauths.node.name" path="tablesauth" property="tablesAuths" icon="#userauth" navigable="false"/>
                            <items label="%tree.viewsauths.node.name" path="viewsauth" property="viewsAuths" icon="#viewauth" navigable="false"/>
                            <items label="%tree.indexesauths.node.name" path="indexauth" property="indexesAuths" icon="#indexesauth" navigable="false"/>
+                           <items label="%tree.modulesauths.node.name" path="modulesauth" property="modulesAuths" icon="#modulesauth" navigable="false"/>
+                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
+                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
                            <items label="%tree.sequencesauths.node.name" path="sequenceauth" property="sequencesAuths" icon="#sequencesauth" navigable="false"/>
                            <items label="%tree.tablespacesauths.node.name" path="tablespaceauth" property="tablespacesAuths" icon="#tablespacesauth" navigable="false"/>
-                           <items label="%tree.schemasauths.node.name" path="schemaauth" property="schemasAuths" icon="#schemasauth" navigable="false"/>
-                           <items label="%tree.packagesauths.node.name" path="packageauth" property="packagesAuths" icon="#packagesauth" navigable="false"/>
                         </items>
                     </folder> 
                 </folder>

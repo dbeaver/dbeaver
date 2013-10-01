@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
+import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
@@ -454,6 +455,16 @@ public class DB2Utils {
             return null;
         }
         return db2Schema.getView(monitor, db2ViewName);
+    }
+
+    public static DB2Module findModuleBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2ModuleName) throws DBException
+    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getModule(monitor, db2ModuleName);
     }
 
     public static DB2Package findPackageBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,

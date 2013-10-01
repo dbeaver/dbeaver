@@ -21,9 +21,11 @@ package org.jkiss.dbeaver.ext.db2.model.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2Package;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -55,6 +57,17 @@ public class DB2AuthPackage extends DB2AuthBase {
     // -----------------
     // Properties
     // -----------------
+    @Property(viewable = true, order = 1)
+    public DB2Schema getObjectSchema()
+    {
+        return super.getObjectSchema();
+    }
+
+    @Property(viewable = true, order = 2)
+    public DBSObject getObject()
+    {
+        return super.getObject();
+    }
 
     @Property(viewable = true, order = 20, category = DB2Constants.CAT_AUTH)
     public DB2AuthHeldType getControl()

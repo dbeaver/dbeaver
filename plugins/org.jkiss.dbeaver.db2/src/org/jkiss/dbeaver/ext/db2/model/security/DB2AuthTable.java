@@ -19,8 +19,11 @@
 package org.jkiss.dbeaver.ext.db2.model.security;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 
@@ -41,4 +44,19 @@ public class DB2AuthTable extends DB2AuthTableBase {
         super(monitor, db2Grantee, db2TableBase, resultSet);
     }
 
+    // -----------------
+    // Properties
+    // -----------------
+
+    @Property(viewable = true, order = 1)
+    public DB2Schema getObjectSchema()
+    {
+        return super.getObjectSchema();
+    }
+
+    @Property(viewable = true, order = 2)
+    public DBSObject getObject()
+    {
+        return super.getObject();
+    }
 }

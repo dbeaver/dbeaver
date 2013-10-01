@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -55,6 +56,11 @@ public class DB2AuthSchema extends DB2AuthBase {
     // -----------------
     // Properties
     // -----------------
+    @Property(viewable = true, order = 2)
+    public DBSObject getObject()
+    {
+        return super.getObject();
+    }
 
     @Override
     @Property(hidden = true)
