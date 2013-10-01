@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DataTypeMetaType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
+import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -64,8 +65,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     private String owner;
     private DB2OwnerType ownerType;
 
-    private String moduleName;
-
     private String sourceSchema;
     private String sourceModuleName;
     private String sourceName;
@@ -93,7 +92,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
-        this.moduleName = JDBCUtils.safeGetString(dbResult, "TYPEMODULENAME");
         this.sourceSchema = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCESCHEMA");
         this.sourceModuleName = JDBCUtils.safeGetStringTrimmed(dbResult, "SOURCEMODULENAME");
         this.sourceName = JDBCUtils.safeGetString(dbResult, "SOURCENAME");
@@ -110,11 +108,15 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         if (owner instanceof DB2Schema) {
             this.db2Schema = (DB2Schema) owner;
         } else {
-            String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
-            try {
-                this.db2Schema = ((DB2DataSource) owner).getSchema(VoidProgressMonitor.INSTANCE, schemaName);
-            } catch (DBException e) {
-                LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??");
+            if (owner instanceof DB2Module) {
+                this.db2Schema = ((DB2Module) owner).getSchema();
+            } else {
+                String schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TYPESCHEMA");
+                try {
+                    this.db2Schema = ((DB2DataSource) owner).getSchema(VoidProgressMonitor.INSTANCE, schemaName);
+                } catch (DBException e) {
+                    LOG.error("Impossible! Schema '" + schemaName + "' for dataType '" + name + "' not found??");
+                }
             }
         }
 
@@ -146,7 +148,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         // nothing is displayed and the following message appears in the logs :
         // !MESSAGE Can't find tree node for object <database name> (org.jkiss.dbeaver.ext.db2.model.DB2DataSource)
         // With this code (copied from OracleDataType), it works.
-        if (parent instanceof DB2Schema) {
+        if ((parent instanceof DB2Schema) || (parent instanceof DB2Module)) {
             parentNode = parent;
         } else {
             if (parent instanceof DB2DataSource) {
@@ -224,12 +226,6 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     public DB2Schema getSchema()
     {
         return db2Schema;
-    }
-
-    @Property(viewable = true, editable = false, order = 3)
-    public String getModuleName()
-    {
-        return moduleName;
     }
 
     @Override
