@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -31,18 +32,47 @@ import java.util.List;
  */
 public interface DBCAttributeMetaData extends DBSAttributeBase
 {
+    /**
+     * Attribute ordinal index
+     * @return index (starts from zero)
+     */
     int getIndex();
 
+    /**
+     * Attribute label in result set
+     * @return label
+     */
     String getLabel();
 
+    /**
+     * Owner entity name
+     * @return entity name
+     */
     String getEntityName();
 
+    /**
+     * Owner catalog name
+     * @return catalog name (may be null)
+     */
     String getCatalogName();
 
+    /**
+     * Owner schema name
+     * @return schema name  (may be null)
+     */
     String getSchemaName();
 
+    /**
+     * Read-only flag
+     * @return read-only attribute state
+     */
     boolean isReadOnly();
 
+    /**
+     * Pseudo attribute information. Null for non-pseudo attributes
+     * @return pseudo attribute information or null
+     */
+    DBDPseudoAttribute getPseudoAttribute();
 
     /**
      * Column metadata

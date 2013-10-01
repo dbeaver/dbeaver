@@ -86,7 +86,14 @@ public class ObjectPropertyTester extends PropertyTester
             if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
                 return false;
             }
-            if (objectType == null || !hasObjectManager(objectType, DBEObjectMaker.class)) {
+            if (objectType == null) {
+                return false;
+            }
+            DBEObjectMaker objectMaker = getObjectManager(objectType, DBEObjectMaker.class);
+            if (objectMaker == null) {
+                return false;
+            }
+            if ((objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_CREATE_UNSUPPORTED) != 0) {
                 return false;
             }
             if (property.equals(PROP_CAN_CREATE)) {
@@ -114,11 +121,12 @@ public class ObjectPropertyTester extends PropertyTester
             }
             if (node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper)node).getObject();
-                return
-                    object != null &&
-                    !isReadOnly(object) &&
-                    node.getParentNode() instanceof DBNContainer &&
-                    hasObjectManager(object.getClass(), DBEObjectMaker.class);
+                if (object == null  || isReadOnly(object) || !(node.getParentNode() instanceof DBNContainer)) {
+                    return false;
+                }
+                DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
+                return objectMaker != null &&
+                    (objectMaker.getMakerOptions() & DBEObjectMaker.FEATURE_DELETE_UNSUPPORTED) == 0;
             } else if (node instanceof DBNResource) {
                 if ((((DBNResource)node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
                     return true;
@@ -134,7 +142,7 @@ public class ObjectPropertyTester extends PropertyTester
                     !isReadOnly(object) &&
                     node.getParentNode() instanceof DBNContainer &&
                     object != null &&
-                    hasObjectManager(object.getClass(), DBEObjectRenamer.class);
+                    getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
             }
         } else if (property.equals(PROP_CAN_FILTER)) {
             if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
@@ -161,9 +169,9 @@ public class ObjectPropertyTester extends PropertyTester
         return dataSource == null || dataSource.getContainer().isConnectionReadOnly();
     }
 
-    private static boolean hasObjectManager(Class objectType, Class<? extends DBEObjectManager> managerType)
+    private static <T extends DBEObjectManager> T getObjectManager(Class objectType, Class<T> managerType)
     {
-        return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(objectType, managerType) != null;
+        return DBeaverCore.getInstance().getEditorsRegistry().getObjectManager(objectType, managerType);
     }
 
     public static void firePropertyChange(String propName)

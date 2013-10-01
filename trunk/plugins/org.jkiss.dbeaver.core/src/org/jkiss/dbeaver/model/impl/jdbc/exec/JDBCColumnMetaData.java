@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -66,6 +67,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     private JDBCTableMetaData tableMetaData;
     private DBSEntityAttribute tableColumn;
     private final DBPDataKind dataKind;
+    private DBDPseudoAttribute pseudoAttribute;
 
     protected JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int index)
         throws SQLException
@@ -292,6 +294,17 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, IObjectImagePro
     public boolean isReadOnly()
     {
         return readOnly;
+    }
+
+    @Override
+    public DBDPseudoAttribute getPseudoAttribute()
+    {
+        return pseudoAttribute;
+    }
+
+    public void setPseudoAttribute(DBDPseudoAttribute pseudoAttribute)
+    {
+        this.pseudoAttribute = pseudoAttribute;
     }
 
     @Override

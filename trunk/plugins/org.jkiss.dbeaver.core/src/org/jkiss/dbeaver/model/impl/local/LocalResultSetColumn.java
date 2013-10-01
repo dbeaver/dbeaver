@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.model.impl.local;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -82,6 +83,12 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     public boolean isReadOnly()
     {
         return true;
+    }
+
+    @Override
+    public DBDPseudoAttribute getPseudoAttribute()
+    {
+        return null;
     }
 
     @Override

@@ -20,6 +20,8 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
@@ -87,6 +89,13 @@ public class OracleConstants {
     public static final String COL_TABLE_NAME = "TABLE_NAME";
     public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
+
+    public static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
+        DBDPseudoAttributeType.ROWID,
+        "ROWID",
+        "ROWID",
+        "rowid",
+        "Unique row identifier");
 
     public static final String[] ADVANCED_KEYWORDS = {
         "PACKAGE",
