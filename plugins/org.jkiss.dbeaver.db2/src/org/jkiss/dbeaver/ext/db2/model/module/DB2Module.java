@@ -171,13 +171,13 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
         return type;
     }
 
-    @Property(viewable = false, order = 13)
+    @Property(viewable = false, order = 13, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
         return owner;
     }
 
-    @Property(viewable = false, order = 14)
+    @Property(viewable = false, order = 14, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;

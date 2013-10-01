@@ -83,13 +83,13 @@ public class DB2ModuleCondition extends DB2Object<DB2Module> {
         return id;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, order = 3, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
         return owner;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, order = 4, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
