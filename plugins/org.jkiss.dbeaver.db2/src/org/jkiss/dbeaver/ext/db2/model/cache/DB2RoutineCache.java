@@ -32,13 +32,13 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Procedures
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2RoutineCache extends JDBCObjectCache<DB2Schema, DB2Routine> {
 
-    private static final String SQL_P = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINETYPE= 'P' AND ROUTINESCHEMA = ? ORDER BY ROUTINENAME WITH UR";
-    private static final String SQL_F = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINETYPE= 'F' AND ROUTINESCHEMA = ? ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_P = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'P' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
+    private static final String SQL_F = "SELECT * FROM SYSCAT.ROUTINES WHERE ROUTINESCHEMA = ? AND ROUTINETYPE= 'F' AND ROUTINEMODULENAME IS NULL ORDER BY ROUTINENAME WITH UR";
 
     private String sql;
 

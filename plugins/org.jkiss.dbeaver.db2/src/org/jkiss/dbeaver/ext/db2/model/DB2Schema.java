@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
+import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -61,8 +62,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
     private static final String C_SEQ = "SELECT * FROM SYSCAT.SEQUENCES WHERE SEQSCHEMA = ? AND SEQTYPE <> 'A' ORDER BY SEQNAME WITH UR";
     private static final String C_PKG = "SELECT * FROM SYSCAT.PACKAGES WHERE PKGSCHEMA = ? ORDER BY PKGNAME WITH UR";
-    private static final String C_DTT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE <> 'S' AND TYPESCHEMA = ? ORDER BY TYPENAME WITH UR";
-    private static final String C_XSR = "SELECT * FROM SYSCAT.XSROBJECTS  WHERE OBJECTSCHEMA = ? ORDER BY OBJECTNAME WITH UR";
+    private static final String C_DTT = "SELECT * FROM SYSCAT.DATATYPES WHERE TYPESCHEMA = ? AND METATYPE <> 'S' AND  TYPEMODULENAME IS NULL ORDER BY TYPENAME WITH UR";
+    private static final String C_XSR = "SELECT * FROM SYSCAT.XSROBJECTS WHERE OBJECTSCHEMA = ? ORDER BY OBJECTNAME WITH UR";
+    private static final String C_MOD = "SELECT * FROM SYSCAT.MODULES WHERE MODULESCHEMA = ? AND MODULETYPE <> 'A'  ORDER BY MODULENAME WITH UR";
 
     // DB2Schema's children
     private final DB2TableCache tableCache = new DB2TableCache();
@@ -78,6 +80,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     private final DB2RoutineCache procedureCache = new DB2RoutineCache(DBSProcedureType.PROCEDURE);
     private final DB2RoutineCache udfCache = new DB2RoutineCache(DBSProcedureType.FUNCTION);
     private final DBSObjectCache<DB2Schema, DB2DataType> udtCache;
+    private final DBSObjectCache<DB2Schema, DB2Module> moduleCache;
 
     // DB2Table's children
     private final DB2TableUniqueKeyCache constraintCache = new DB2TableUniqueKeyCache(tableCache);
@@ -106,6 +109,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class, C_PKG, name);
         this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class, C_DTT, name);
         this.xmlSchemaCache = new JDBCObjectSimpleCache<DB2Schema, DB2XMLSchema>(DB2XMLSchema.class, C_XSR, name);
+        this.moduleCache = new JDBCObjectSimpleCache<DB2Schema, DB2Module>(DB2Module.class, C_MOD, name);
     }
 
     public DB2Schema(DB2DataSource dataSource, ResultSet dbResult)
@@ -158,6 +162,8 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             sequenceCache.getObjects(monitor, this);
             monitor.subTask("Cache XML Schemas");
             xmlSchemaCache.getObjects(monitor, this);
+            monitor.subTask("Cache Modules");
+            moduleCache.getObjects(monitor, this);
         }
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
@@ -187,6 +193,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         sequenceCache.clearCache();
         aliasCache.clearCache();
         xmlSchemaCache.clearCache();
+        moduleCache.clearCache();
 
         // For those 2, need to refresh dependent cache (cache for tables..?)
         indexCache.clearCache();
@@ -346,6 +353,17 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public Collection<DB2Routine> getUDFs(DBRProgressMonitor monitor) throws DBException
     {
         return udfCache.getObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<DB2Module> getModules(DBRProgressMonitor monitor) throws DBException
+    {
+        return moduleCache.getObjects(monitor, this);
+    }
+
+    public DB2Module getModule(DBRProgressMonitor monitor, String name) throws DBException
+    {
+        return moduleCache.getObject(monitor, this, name);
     }
 
     // -----------------
