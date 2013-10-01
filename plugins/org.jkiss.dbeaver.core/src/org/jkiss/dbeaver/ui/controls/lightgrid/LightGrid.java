@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.renderers.*;
 import org.jkiss.dbeaver.ui.controls.lightgrid.scroll.IGridScrollBar;
@@ -499,10 +500,14 @@ public abstract class LightGrid extends Canvas {
 
             // Add columns
             int columnCount = contentProvider.getColumnCount();
-            for (int i = 0; i < columnCount; i++) {
+            for (Integer i = 0; i < columnCount; i++) {
                 GridColumn column = new GridColumn(this, SWT.NONE);
-                column.setText(getColumnLabelProvider().getText(i));
-                column.setImage(getColumnLabelProvider().getImage(i));
+                ILabelProvider labelProvider = getColumnLabelProvider();
+                column.setText(labelProvider.getText(i));
+                column.setImage(labelProvider.getImage(i));
+                if (labelProvider instanceof ITooltipProvider) {
+                    column.setHeaderTooltip(((ITooltipProvider) labelProvider).getTooltip(i));
+                }
                 contentProvider.updateColumn(column);
             }
 

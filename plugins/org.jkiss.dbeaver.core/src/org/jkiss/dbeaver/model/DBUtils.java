@@ -479,16 +479,17 @@ public final class DBUtils {
                 // We got table name and column name
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
-                DBDRowIdentifier rowIdentifier = locatorMap.get(meta.getEntity().getEntity(monitor));
+                DBSEntity ownerEntity = meta.getEntity().getEntity(monitor);
+                DBDRowIdentifier rowIdentifier = locatorMap.get(ownerEntity);
                 if (rowIdentifier == null) {
                     DBCEntityIdentifier entityIdentifier = meta.getEntity().getBestIdentifier(monitor);
                     if (entityIdentifier == null) {
                         continue;
                     }
                     rowIdentifier = new DBDRowIdentifier(
-                        meta.getEntity().getEntity(monitor),
+                        ownerEntity,
                         entityIdentifier);
-                    locatorMap.put(meta.getEntity().getEntity(monitor), rowIdentifier);
+                    locatorMap.put(ownerEntity, rowIdentifier);
                 }
                 column.initValueLocator(tableColumn, rowIdentifier);
             }
@@ -933,6 +934,17 @@ public final class DBUtils {
                 getQuotedIdentifier(dataSource, reference.getName());
         } else {
             return object.getName();
+        }
+    }
+
+    public static String getFullTypeName(DBSTypedObject typedObject)
+    {
+        String typeName = typedObject.getTypeName();
+        switch (typedObject.getDataKind()) {
+            case STRING:
+            case LOB:
+                return typeName + "(" + typedObject.getMaxLength() + ")";
+            default: return typeName;
         }
     }
 

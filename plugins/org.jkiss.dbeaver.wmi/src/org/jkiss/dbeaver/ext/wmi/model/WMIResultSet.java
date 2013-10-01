@@ -22,6 +22,7 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -308,6 +309,12 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         public boolean isReadOnly()
         {
             return false;
+        }
+
+        @Override
+        public DBDPseudoAttribute getPseudoAttribute()
+        {
+            return null;
         }
 
         @Override

@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.IDataSourceProvider;
+import org.jkiss.dbeaver.ext.ui.ITooltipProvider;
 import org.jkiss.dbeaver.ext.ui.IObjectImageProvider;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -2618,7 +2619,7 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
         }
     }
 
-    private class ColumnLabelProvider extends LabelProvider implements IFontProvider {
+    private class ColumnLabelProvider extends LabelProvider implements IFontProvider, ITooltipProvider {
         @Override
         public Image getImage(Object element)
         {
@@ -2664,6 +2665,20 @@ public class ResultSetViewer extends Viewer implements IDataSourceProvider, ISpr
                 if (model.getDataFilter().getConstraint(model.getVisibleColumn(colNumber)).hasFilter()) {
                     return boldFont;
                 }
+            }
+            return null;
+        }
+
+        @Override
+        public String getTooltip(Object element)
+        {
+            int colNumber = ((Number)element).intValue();
+            if (gridMode == GridMode.GRID) {
+                DBDAttributeBinding metaColumn = model.getVisibleColumn(colNumber);
+                DBCAttributeMetaData attribute = metaColumn.getMetaAttribute();
+                String name = metaColumn.getAttributeName();
+                String typeName = DBUtils.getFullTypeName(metaColumn.getMetaAttribute());
+                return name + ": " + typeName;
             }
             return null;
         }
