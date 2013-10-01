@@ -57,6 +57,9 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     private String collationSchema;
     private String collationNane;
 
+    private Integer keySeq;
+    private Integer partKeySeq;
+
     private Long colcard;
     private String high2key;
     private String low2key;
@@ -93,6 +96,8 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.low2key = JDBCUtils.safeGetString(dbResult, "LOW2KEY");
         this.avgLength = JDBCUtils.safeGetInteger(dbResult, "AVGCOLLEN");
         this.nbNulls = JDBCUtils.safeGetLong(dbResult, "NUMNULLS");
+        this.keySeq = JDBCUtils.safeGetInteger(dbResult, "KEYSEQ");
+        this.partKeySeq = JDBCUtils.safeGetInteger(dbResult, "PARTKEYSEQ");
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
@@ -184,22 +189,40 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.dataType = dataType;
     }
 
+    @Property(viewable = true, order = 40)
+    public Boolean getIdentity()
+    {
+        return identity;
+    }
+
+    @Property(viewable = true, order = 41)
+    public Boolean getGenerated()
+    {
+        return generated;
+    }
+
+    @Property(viewable = false, order = 42)
+    public String getGeneratedText()
+    {
+        return generatedText;
+    }
+
     @Override
-    @Property(viewable = true, order = 32, editable = true, updatable = true)
+    @Property(viewable = true, order = 43, editable = true, updatable = true)
     public boolean isRequired()
     {
         return super.isRequired();
     }
 
     @Override
-    @Property(viewable = true, order = 41)
+    @Property(viewable = true, order = 44)
     public int getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = false, order = 71, editable = true, updatable = true)
+    @Property(viewable = false, order = 999, editable = true, updatable = true)
     public String getDescription()
     {
         return remarks;
@@ -210,28 +233,22 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         this.remarks = remarks;
     }
 
-    @Property(viewable = true, order = 133)
-    public Boolean getIdentity()
-    {
-        return identity;
-    }
-
     @Property(viewable = false, order = 134)
     public Boolean getLobCompact()
     {
         return lobCompact;
     }
 
-    @Property(viewable = true, order = 135)
-    public Boolean getGenerated()
+    @Property(viewable = false, order = 120)
+    public Integer getKeySeq()
     {
-        return generated;
+        return keySeq;
     }
 
-    @Property(viewable = false, order = 36)
-    public String getGeneratedText()
+    @Property(viewable = false, order = 121)
+    public Integer getPartKeySeq()
     {
-        return generatedText;
+        return partKeySeq;
     }
 
     @Property(viewable = false, order = 137)
