@@ -509,4 +509,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return checkCache;
     }
 
+    public DBSObjectCache<DB2Schema, DB2Module> getModuleCache()
+    {
+        return moduleCache;
+    }
+
 }

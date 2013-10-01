@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
+import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
@@ -91,6 +92,15 @@ public enum DB2ObjectType implements DBSObjectType {
         public DB2TableForeignKey findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
             return schema.getAssociationCache().getObject(monitor, schema, objectName);
+        }
+    }),
+
+    MODULE(DBIcon.TREE_PACKAGE.getImage(), DB2Module.class, new ObjectFinder() {
+
+        @Override
+        public DB2Module findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getModuleCache().getObject(monitor, schema, objectName);
         }
     }),
 
@@ -166,7 +176,21 @@ public enum DB2ObjectType implements DBSObjectType {
         @Override
         public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
-            return schema.getUdfCache().getObject(monitor, schema, objectName);
+            DB2Routine routine;
+            String[] tokens = objectName.split(SPLIT_DOT);
+            if (tokens.length == 1) {
+                routine = schema.getUdfCache().getObject(monitor, schema, tokens[0]);
+                if (routine == null) {
+                    routine = schema.getProcedureCache().getObject(monitor, schema, tokens[0]);
+                }
+            } else {
+                DB2Module module = schema.getModuleCache().getObject(monitor, schema, tokens[0]);
+                routine = module.getFunctionCache().getObject(monitor, module, tokens[1]);
+                if (routine == null) {
+                    routine = module.getProcedureCache().getObject(monitor, module, tokens[1]);
+                }
+            }
+            return routine;
         }
     }),
 
@@ -174,7 +198,13 @@ public enum DB2ObjectType implements DBSObjectType {
         @Override
         public DB2DataType findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
-            return schema.getUdtCache().getObject(monitor, schema, objectName);
+            String[] tokens = objectName.split(SPLIT_DOT);
+            if (tokens.length == 1) {
+                return schema.getUdtCache().getObject(monitor, schema, tokens[0]);
+            } else {
+                DB2Module module = schema.getModuleCache().getObject(monitor, schema, tokens[0]);
+                return module.getTypeCache().getObject(monitor, module, tokens[1]);
+            }
         }
     }),
 
@@ -195,6 +225,7 @@ public enum DB2ObjectType implements DBSObjectType {
     });
 
     private final static Log LOG = LogFactory.getLog(DB2ObjectType.class);
+    private final static String SPLIT_DOT = "\\.";
 
     private final Image image;
     private final Class<? extends DBSObject> typeClass;
