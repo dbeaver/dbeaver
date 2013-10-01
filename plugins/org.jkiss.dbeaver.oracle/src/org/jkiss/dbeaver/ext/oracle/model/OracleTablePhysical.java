@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -39,7 +41,7 @@ import java.util.Collection;
 /**
  * Oracle physical table
  */
-public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>
+public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>, DBDPseudoAttributeContainer
 {
 
     //private boolean valid;
@@ -195,6 +197,14 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TABLE);
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException
+    {
+        return new DBDPseudoAttribute[] {
+            OracleConstants.PSEUDO_ATTR_ROWID
+        };
     }
 
     private static class PartitionCache extends JDBCStructCache<OracleTablePhysical, OracleTablePartition, OracleTablePartition> {

@@ -54,7 +54,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     private List<JDBCTableIdentifier> identifiers;
     private DBSEntity table;
 
-    public JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSEntity table, String catalogName, String schemaName, String tableName, String alias)
+    JDBCTableMetaData(JDBCResultSetMetaData resultSetMetaData, DBSEntity table, String catalogName, String schemaName, String tableName, String alias)
     {
         this.resultSetMetaData = resultSetMetaData;
         this.catalogName = catalogName;
@@ -96,16 +96,6 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
             }
         }
         return table;
-    }
-
-    public String getCatalogName()
-    {
-        return catalogName;
-    }
-
-    public String getSchemaName()
-    {
-        return schemaName;
     }
 
     @Override

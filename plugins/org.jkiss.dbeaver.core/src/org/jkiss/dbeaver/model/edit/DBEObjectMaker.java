@@ -34,6 +34,9 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
     public static final long FEATURE_CREATE_FROM_PASTE = 2;
     public static final long FEATURE_EDITOR_ON_CREATE = 4;
 
+    public static final long FEATURE_CREATE_UNSUPPORTED  = 8;
+    public static final long FEATURE_DELETE_UNSUPPORTED  = 16;
+
     long getMakerOptions();
 
     /**
