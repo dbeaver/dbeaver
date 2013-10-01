@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
+import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -122,6 +123,17 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append(" WHERE GRANTEETYPE = ?");// 11
         sb.append("   AND GRANTEE = ?");// 12
 
+        sb.append(" UNION ALL ");
+
+        sb.append("SELECT GRANTOR,GRANTORTYPE");
+        sb.append("     , '").append(DB2ObjectType.MODULE.name()).append("' AS OBJ_TYPE");
+        sb.append("     , MODULESCHEMA AS OBJ_SCHEMA, MODULENAME AS OBJ_NAME");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, EXECUTEAUTH");
+        sb.append("  FROM SYSCAT.MODULEAUTH");
+        sb.append(" WHERE GRANTEETYPE = ?");// 13
+        sb.append("   AND GRANTEE = ?");// 14
+
         sb.append(" ORDER BY OBJ_SCHEMA, OBJ_NAME, OBJ_TYPE");
         sb.append(" WITH UR");
 
@@ -147,6 +159,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         dbStat.setString(10, userName);
         dbStat.setString(11, userType);
         dbStat.setString(12, userName);
+        dbStat.setString(13, userType);
+        dbStat.setString(14, userName);
         return dbStat;
     }
 
@@ -176,6 +190,10 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         case INDEX:
             DB2Index db2Index = DB2Utils.findIndexBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
             return new DB2AuthIndex(monitor, db2Grantee, db2Index, resultSet);
+
+        case MODULE:
+            DB2Module db2Module = DB2Utils.findModuleBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            return new DB2AuthModule(monitor, db2Grantee, db2Module, resultSet);
 
         case SCHEMA:
             DB2Schema db2SChema = db2DataSource.getSchema(monitor, objectName);
