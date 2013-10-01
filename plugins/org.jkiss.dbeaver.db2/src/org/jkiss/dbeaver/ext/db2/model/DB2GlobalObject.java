@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * Abstract DB2 schema object
- *
+ * 
  * @author Denis Forveille
  */
 public abstract class DB2GlobalObject implements DBSObject, DBPSaveableObject {

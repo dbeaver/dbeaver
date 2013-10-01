@@ -64,8 +64,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
 
     private static final Log log = LogFactory.getLog(DB2Table.class);
 
-    private static final String C_PT =
-        "SELECT * FROM SYSCAT.DATAPARTITIONS  WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
+    private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS  WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
 
     private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
     private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
@@ -152,8 +151,8 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
             this.longTablespace = getDataSource().getTablespace(monitor, longTablespaceName);
         }
 
-        this.partitionCache =
-            new JDBCObjectSimpleCache<DB2Table, DB2TablePartition>(DB2TablePartition.class, C_PT, schema.getName(), getName());
+        this.partitionCache = new JDBCObjectSimpleCache<DB2Table, DB2TablePartition>(DB2TablePartition.class, C_PT,
+            schema.getName(), getName());
 
     }
 

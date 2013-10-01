@@ -87,8 +87,7 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
         this.functionCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_FCT, schema.getName(), name);
         this.procedureCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_PRC, schema.getName(), name);
         this.typeCache = new JDBCObjectSimpleCache<DB2Module, DB2DataType>(DB2DataType.class, C_TYP, schema.getName(), name);
-        this.variableCache = new JDBCObjectSimpleCache<DB2Module, DB2Variable>(DB2Variable.class, C_VAR,
-            schema.getName(), name);
+        this.variableCache = new JDBCObjectSimpleCache<DB2Module, DB2Variable>(DB2Variable.class, C_VAR, schema.getName(), name);
 
     }
 

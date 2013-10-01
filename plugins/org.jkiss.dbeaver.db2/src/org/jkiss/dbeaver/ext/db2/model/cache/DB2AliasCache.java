@@ -31,7 +31,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Aliases
- *
+ * 
  * @author Denis Forveille
  */
 public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {

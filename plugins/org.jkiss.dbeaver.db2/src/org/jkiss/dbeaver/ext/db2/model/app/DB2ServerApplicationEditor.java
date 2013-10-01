@@ -41,7 +41,7 @@ import java.util.Map;
 
 /**
  * DB2 Application Editor
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> {
@@ -98,11 +98,8 @@ public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDataba
         {
             final DBAServerSession session = applicationViewer.getSelectedSession();
             final String action = DB2Messages.editors_db2_application_editor_action_force;
-            if (UIUtils.confirmAction(
-                getSite().getShell(),
-                "Confirm force application",
-                NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action, action.toLowerCase(), session)))
-            {
+            if (UIUtils.confirmAction(getSite().getShell(), "Confirm force application",
+                NLS.bind(DB2Messages.editors_db2_application_editor_confirm_action, action.toLowerCase(), session))) {
                 Map<String, Object> options = new HashMap<String, Object>();
                 applicationViewer.alterSession(session, options);
             }
