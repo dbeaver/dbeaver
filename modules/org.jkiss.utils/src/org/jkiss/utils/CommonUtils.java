@@ -20,83 +20,84 @@
 package org.jkiss.utils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 
 /**
  * Common utils
  */
 public class CommonUtils {
 
-	public static boolean isJavaIdentifier(CharSequence str)
-	{
-		for (int i = 0; i < str.length(); i++) {
-			if (!Character.isJavaIdentifierPart(str.charAt(i))) {
-				return false;
-			}
-		}
-		return true;
-	}
+    public static boolean isJavaIdentifier(CharSequence str)
+    {
+        for (int i = 0; i < str.length(); i++) {
+            if (!Character.isJavaIdentifierPart(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-	public static String escapeJavaString(String str) {
-		if (str.indexOf('"') == -1 && str.indexOf('\n') == -1) {
-			return str;
-		}
-		StringBuilder res = new StringBuilder(str.length() + 5);
-		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			switch (c) {
-				case '"':
-					res.append("\\\"");
-					break;
-				case '\n':
-					res.append("\\n");
-					break;
-				case '\r':
-					break;
-				default:
-					res.append(c);
-					break;
-			}
-		}
-		return res.toString();
-	}
+    public static String escapeJavaString(String str)
+    {
+        if (str.indexOf('"') == -1 && str.indexOf('\n') == -1) {
+            return str;
+        }
+        StringBuilder res = new StringBuilder(str.length() + 5);
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            switch (c) {
+            case '"':
+                res.append("\\\"");
+                break;
+            case '\n':
+                res.append("\\n");
+                break;
+            case '\r':
+                break;
+            default:
+                res.append(c);
+                break;
+            }
+        }
+        return res.toString();
+    }
 
-	public static String escapeIdentifier(String str) {
-		if (str == null) {
-			return null;
-		}
-		StringBuilder res = new StringBuilder(str.length());
-		for (int i = 0; i < str.length(); i++) {
-			char c = str.charAt(i);
-			if (Character.isJavaIdentifierPart(c)) {
-				res.append(c);
-			} else {
-                if (res.length() == 0 || res.charAt(res.length() - 1) != '_') {
-				    res.append('_');
-                }
-			}
-		}
-		return res.toString();
-	}
-
-    public static String escapeFileName(String str) {
+    public static String escapeIdentifier(String str)
+    {
         if (str == null) {
             return null;
         }
         StringBuilder res = new StringBuilder(str.length());
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
-            if (Character.isISOControl(c)
-                || c == '\\'
-                || c == '/'
-                || c == '<'
-                || c == '>'
-                || c == '|'
-                || c == '"'
-                || c == ':'
-                || c == '*'
-                || c == '?')
-            {
+            if (Character.isJavaIdentifierPart(c)) {
+                res.append(c);
+            } else {
+                if (res.length() == 0 || res.charAt(res.length() - 1) != '_') {
+                    res.append('_');
+                }
+            }
+        }
+        return res.toString();
+    }
+
+    public static String escapeFileName(String str)
+    {
+        if (str == null) {
+            return null;
+        }
+        StringBuilder res = new StringBuilder(str.length());
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isISOControl(c) || c == '\\' || c == '/' || c == '<' || c == '>' || c == '|' || c == '"' || c == ':'
+                || c == '*' || c == '?') {
                 res.append('_');
             } else {
                 res.append(c);
@@ -121,29 +122,40 @@ public class CommonUtils {
         return str;
     }
 
-	public static String capitalizeWord(String str) {
-		if (isEmpty(str) || Character.isUpperCase(str.charAt(0))) {
-			return str;
-		}
-		return Character.toUpperCase(str.charAt(0)) + str.substring(1);
-	}
+    public static String capitalizeWord(String str)
+    {
+        if (isEmpty(str) || Character.isUpperCase(str.charAt(0))) {
+            return str;
+        }
+        return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+    }
 
-	public static boolean isEmpty(CharSequence value)
-	{
-		return value == null || value.length() == 0;
-	}
+    public static boolean isEmpty(CharSequence value)
+    {
+        return value == null || value.length() == 0;
+    }
 
-	public static boolean isEmpty(Object[] arr)
-	{
-		return arr == null || arr.length == 0;
-	}
+    public static boolean isEmpty(String value)
+    {
+        return value == null || value.trim().length() == 0;
+    }
 
-	public static boolean isEmpty(Collection<?> value)
-	{
-		return value == null || value.isEmpty();
-	}
+    public static boolean isNotEmpty(String value)
+    {
+        return !isEmpty(value);
+    }
 
-    public static boolean isEmpty(Map<?,?> value)
+    public static boolean isEmpty(Object[] arr)
+    {
+        return arr == null || arr.length == 0;
+    }
+
+    public static boolean isEmpty(Collection<?> value)
+    {
+        return value == null || value.isEmpty();
+    }
+
+    public static boolean isEmpty(Map<?, ?> value)
     {
         return value == null || value.isEmpty();
     }
@@ -173,10 +185,10 @@ public class CommonUtils {
         }
     }
 
-	public static String getString(String value)
-	{
-		return value == null ? "" : value;
-	}
+    public static String getString(String value)
+    {
+        return value == null ? "" : value;
+    }
 
     public static boolean getBoolean(String value)
     {
@@ -200,86 +212,99 @@ public class CommonUtils {
     }
 
     public static Throwable getRootCause(Throwable ex)
-	{
-		Throwable rootCause = ex;
-		for (; ;) {
-			if (rootCause.getCause() != null) {
-				rootCause = rootCause.getCause();
-			} else if (rootCause instanceof InvocationTargetException && ((InvocationTargetException) rootCause).getTargetException() != null) {
-				rootCause = ((InvocationTargetException) rootCause).getTargetException();
-			} else {
-				break;
-			}
-		}
-		return rootCause;
-	}
+    {
+        Throwable rootCause = ex;
+        for (;;) {
+            if (rootCause.getCause() != null) {
+                rootCause = rootCause.getCause();
+            } else if (rootCause instanceof InvocationTargetException
+                && ((InvocationTargetException) rootCause).getTargetException() != null) {
+                rootCause = ((InvocationTargetException) rootCause).getTargetException();
+            } else {
+                break;
+            }
+        }
+        return rootCause;
+    }
 
     public static boolean isEmpty(short[] array)
-	{
-		return array == null || array.length == 0;
-	}
+    {
+        return array == null || array.length == 0;
+    }
 
-	public static boolean contains(short[] array, short value)
-	{
-		if (isEmpty(array)) return false;
+    public static boolean contains(short[] array, short value)
+    {
+        if (isEmpty(array))
+            return false;
         for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
-            if (array[i] == value) return true;
+            if (array[i] == value)
+                return true;
         }
-		return false;
-	}
+        return false;
+    }
 
     public static boolean contains(char[] array, char value)
     {
-        if (array == null || array.length == 0) return false;
+        if (array == null || array.length == 0)
+            return false;
         for (int i = 0, arrayLength = array.length; i < arrayLength; i++) {
-            if (array[i] == value) return true;
+            if (array[i] == value)
+                return true;
         }
         return false;
     }
 
     public static boolean isEmpty(int[] array)
-	{
-		return array == null || array.length == 0;
-	}
-
-	public static boolean contains(int[] array, int value)
-	{
-		if (isEmpty(array)) return false;
-		for (int v : array) {
-			if (v == value) return true;
-		}
-		return false;
-	}
-
-	public static boolean isEmpty(long[] array)
-	{
-		return array == null || array.length == 0;
-	}
-
-	public static boolean contains(long[] array, long value)
-	{
-		if (isEmpty(array)) return false;
-		for (long v : array) {
-			if (v == value) return true;
-		}
-		return false;
-	}
-
-    public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE value)
     {
-        if (isEmpty(array)) return false;
-        for (OBJECT_TYPE v : array) {
-            if (equalObjects(value, v)) return true;
+        return array == null || array.length == 0;
+    }
+
+    public static boolean contains(int[] array, int value)
+    {
+        if (isEmpty(array))
+            return false;
+        for (int v : array) {
+            if (v == value)
+                return true;
         }
         return false;
     }
 
-    public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE ... values)
+    public static boolean isEmpty(long[] array)
     {
-        if (isEmpty(array)) return false;
+        return array == null || array.length == 0;
+    }
+
+    public static boolean contains(long[] array, long value)
+    {
+        if (isEmpty(array))
+            return false;
+        for (long v : array) {
+            if (v == value)
+                return true;
+        }
+        return false;
+    }
+
+    public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE value)
+    {
+        if (isEmpty(array))
+            return false;
+        for (OBJECT_TYPE v : array) {
+            if (equalObjects(value, v))
+                return true;
+        }
+        return false;
+    }
+
+    public static <OBJECT_TYPE> boolean contains(OBJECT_TYPE[] array, OBJECT_TYPE... values)
+    {
+        if (isEmpty(array))
+            return false;
         for (OBJECT_TYPE v : array) {
             for (OBJECT_TYPE v2 : values) {
-                if (equalObjects(v, v2)) return true;
+                if (equalObjects(v, v2))
+                    return true;
             }
         }
         return false;
@@ -293,22 +318,22 @@ public class CommonUtils {
     }
 
     public static boolean equalObjects(Object o1, Object o2)
-	{
-		if (o1 == o2) {
-			return true;
-		}
-		if (o1 == null || o2 == null) {
-			return false;
-		}
-		return o1.equals(o2);
-	}
+    {
+        if (o1 == o2) {
+            return true;
+        }
+        if (o1 == null || o2 == null) {
+            return false;
+        }
+        return o1.equals(o2);
+    }
 
     public static String toString(Object object)
     {
         if (object == null) {
             return "";
         } else if (object instanceof String) {
-            return (String)object;
+            return (String) object;
         } else {
             return object.toString();
         }
@@ -324,7 +349,7 @@ public class CommonUtils {
         if (object == null) {
             return def;
         } else if (object instanceof Number) {
-            return ((Number)object).intValue();
+            return ((Number) object).intValue();
         } else {
             try {
                 return Integer.parseInt(toString(object));
@@ -360,7 +385,7 @@ public class CommonUtils {
         if (object == null) {
             return 0;
         } else if (object instanceof Number) {
-            return ((Number)object).longValue();
+            return ((Number) object).longValue();
         } else {
             try {
                 return Long.parseLong(toString(object));
@@ -399,7 +424,8 @@ public class CommonUtils {
         StringBuilder buffer = new StringBuilder(length * 2 + 2);
         buffer.append("0x");
         for (int i = offset; i < offset + length && i < bytes.length; i++) {
-            if (bytes[i] < 16) buffer.append('0');
+            if (bytes[i] < 16)
+                buffer.append('0');
             buffer.append(Integer.toHexString(bytes[i]));
         }
         return buffer.toString().toUpperCase();
@@ -465,14 +491,15 @@ public class CommonUtils {
             name = name.replace(' ', '_');
         }
         try {
-            return (T)Enum.valueOf(type, name);
+            return (T) Enum.valueOf(type, name);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public static <T> Collection<T> safeArray(T[] array) {
+    public static <T> Collection<T> safeArray(T[] array)
+    {
         if (array == null) {
             return Collections.emptyList();
         } else {
@@ -483,7 +510,7 @@ public class CommonUtils {
     public static <T> T getItem(Collection<T> collection, int index)
     {
         if (collection instanceof List) {
-            return ((List<T>)collection).get(index);
+            return ((List<T>) collection).get(index);
         } else {
             Iterator<T> iter = collection.iterator();
             for (int i = 0; i < index; i++) {
