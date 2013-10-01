@@ -211,19 +211,19 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         return tablespaceId;
     }
 
-    @Property(viewable = true, order = 20, editable = false)
+    @Property(viewable = false, order = 20, editable = false)
     public Integer getPctFree()
     {
         return pctFree;
     }
 
-    @Property(viewable = true, order = 21, editable = false)
+    @Property(viewable = false, order = 21, editable = false)
     public Integer getMinPctUsed()
     {
         return minPctUsed;
     }
 
-    @Property(viewable = true, order = 22, editable = false)
+    @Property(viewable = false, order = 22, editable = false)
     public Boolean getReverseScans()
     {
         return reverseScans;
@@ -260,7 +260,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         return statsTime;
     }
 
-    @Property(viewable = false, editable = false, order = 31, category = DB2Constants.CAT_STATS)
+    @Property(viewable = true, editable = false, order = 31, category = DB2Constants.CAT_STATS)
     public Long getFullKeycard()
     {
         return fullKeycard;
