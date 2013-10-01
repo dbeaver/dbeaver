@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * DB2 Table Constraint Column
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TableKeyColumn extends AbstractTableConstraintColumn {

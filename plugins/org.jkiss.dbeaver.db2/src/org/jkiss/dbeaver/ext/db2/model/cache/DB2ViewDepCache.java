@@ -31,7 +31,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for dependencies for DB2 Views
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2ViewDepCache extends JDBCObjectCache<DB2View, DB2ViewDep> {

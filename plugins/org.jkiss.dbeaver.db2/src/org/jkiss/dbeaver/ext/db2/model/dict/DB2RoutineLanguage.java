@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 /**
  * DB2 Routine Language
- *
+ * 
  * @author Denis Forveille
  */
 public enum DB2RoutineLanguage {

@@ -31,7 +31,7 @@ import java.sql.SQLException;
 
 /**
  * Cache for DB2 Tablespaces Containers
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TablespaceContainerCache extends JDBCObjectCache<DB2Tablespace, DB2TablespaceContainer> {
@@ -47,8 +47,8 @@ public class DB2TablespaceContainerCache extends JDBCObjectCache<DB2Tablespace, 
     }
 
     @Override
-    protected DB2TablespaceContainer fetchObject(JDBCExecutionContext context, DB2Tablespace ts, ResultSet resultSet) throws SQLException,
-        DBException
+    protected DB2TablespaceContainer fetchObject(JDBCExecutionContext context, DB2Tablespace ts, ResultSet resultSet)
+        throws SQLException, DBException
     {
         return new DB2TablespaceContainer(ts, resultSet);
     }

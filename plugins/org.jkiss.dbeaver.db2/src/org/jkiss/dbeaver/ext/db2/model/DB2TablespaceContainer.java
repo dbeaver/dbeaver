@@ -25,7 +25,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Tablespace Container
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2TablespaceContainer extends DB2Object<DB2Tablespace> {

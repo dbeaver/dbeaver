@@ -25,7 +25,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Bufferpool
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Bufferpool extends DB2GlobalObject {
