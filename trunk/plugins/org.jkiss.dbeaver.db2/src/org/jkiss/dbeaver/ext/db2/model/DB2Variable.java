@@ -106,13 +106,13 @@ public class DB2Variable extends DB2Object<DBSObject> {
         return id;
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, order = 4, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
         return owner;
     }
 
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, order = 5, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;

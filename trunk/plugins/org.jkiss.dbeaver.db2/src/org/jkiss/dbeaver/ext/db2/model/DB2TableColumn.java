@@ -166,13 +166,13 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     // -----------------
     // Properties
     // -----------------
-    @Property(viewable = true, editable = false, order = 19)
+    @Property(viewable = true, editable = false, order = 19, category = DB2Constants.CAT_OWNER)
     public DB2TableBase getOwner()
     {
         return getTable();
     }
 
-    @Property(viewable = true, editable = false, order = 20)
+    @Property(viewable = true, editable = false, order = 20, category = DB2Constants.CAT_OWNER)
     public DB2Schema getTypeSchema()
     {
         return dataTypeSchema;
