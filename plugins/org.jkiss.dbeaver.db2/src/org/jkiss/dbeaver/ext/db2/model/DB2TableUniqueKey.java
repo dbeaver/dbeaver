@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ConstraintCheckData;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
@@ -134,13 +135,13 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
         return remarks;
     }
 
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
     public String getOwner()
     {
         return owner;
     }
 
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
