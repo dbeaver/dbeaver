@@ -30,7 +30,7 @@ import java.sql.ResultSet;
 
 /**
  * DB2 Alias. Can be on DB2Table, DB2Sequence or DB2Module
- *
+ * 
  * @author Denis Forveille
  */
 public class DB2Alias extends DB2SchemaObject {
@@ -51,17 +51,17 @@ public class DB2Alias extends DB2SchemaObject {
 
         DB2Schema targetSchema = getDataSource().getSchema(monitor, baseSchemaName);
         switch (type) {
-            case TABLE:
-                this.targetObject = targetSchema.getTable(monitor, baseObjectName);
-                break;
+        case TABLE:
+            this.targetObject = targetSchema.getTable(monitor, baseObjectName);
+            break;
 
-            case SEQUENCE:
-                this.targetObject = targetSchema.getSequence(monitor, baseObjectName);
-                break;
+        case MODULE:
+            this.targetObject = targetSchema.getModule(monitor, baseObjectName);
+            break;
 
-            default:
-                // DF Ignore ALIASES on MODULES for now
-                break;
+        case SEQUENCE:
+            this.targetObject = targetSchema.getSequence(monitor, baseObjectName);
+            break;
         }
     }
 

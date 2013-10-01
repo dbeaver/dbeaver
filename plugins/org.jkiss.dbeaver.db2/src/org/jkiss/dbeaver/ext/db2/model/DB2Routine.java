@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineParmsCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineLanguage;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineOrigin;
+import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.source.DB2SourceType;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -47,14 +49,14 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2SourceObject, DBPRefreshableObject {
+public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB2SourceObject, DBPRefreshableObject {
 
     private final DB2RoutineParmsCache parmsCache = new DB2RoutineParmsCache();
 
-    private String moduleName;
+    private DB2Schema db2Schema;
+
     private String routineName;
     private Integer routineId;
-    private Integer routineModuleId;
     private DB2RoutineOrigin origin;
     private DB2RoutineLanguage language;
     private String dialect;
@@ -69,14 +71,12 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
     // Constructors
     // -----------------------
 
-    public DB2Routine(DB2Schema schema, ResultSet dbResult)
+    public DB2Routine(DBSObject owner, ResultSet dbResult)
     {
-        super(schema, JDBCUtils.safeGetString(dbResult, "SPECIFICNAME"), true);
+        super(owner, JDBCUtils.safeGetString(dbResult, "SPECIFICNAME"), true);
 
-        this.moduleName = JDBCUtils.safeGetString(dbResult, "ROUTINEMODULENAME");
         this.routineName = JDBCUtils.safeGetString(dbResult, "ROUTINENAME");
         this.routineId = JDBCUtils.safeGetInteger(dbResult, "ROUTINEID");
-        this.routineModuleId = JDBCUtils.safeGetInteger(dbResult, "ROUTINEMODULEID");
         this.origin = CommonUtils.valueOf(DB2RoutineOrigin.class, JDBCUtils.safeGetString(dbResult, "ORIGIN"));
         this.language = CommonUtils.valueOf(DB2RoutineLanguage.class, JDBCUtils.safeGetStringTrimmed(dbResult, "LANGUAGE"));
         this.dialect = JDBCUtils.safeGetString(dbResult, "DIALECT");
@@ -87,12 +87,12 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
         this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-    }
+        if (owner instanceof DB2Schema) {
+            db2Schema = (DB2Schema) owner;
+        } else {
+            db2Schema = ((DB2Module) owner).getSchema();
+        }
 
-    @Override
-    public DBSObjectContainer getContainer()
-    {
-        return getParentObject();
     }
 
     @Override
@@ -125,6 +125,18 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
     public DBSProcedureType getProcedureType()
     {
         return DBSProcedureType.PROCEDURE;
+    }
+
+    @Override
+    public String getFullQualifiedName()
+    {
+        return name; // TODO DF: to be reviewed
+    }
+
+    @Override
+    public DBSObjectContainer getContainer()
+    {
+        return null; // TODO DF
     }
 
     // -----------------
@@ -177,19 +189,13 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
     @Property(viewable = true, editable = false, order = 2)
     public DB2Schema getSchema()
     {
-        return parent;
+        return db2Schema;
     }
 
     @Property(viewable = true, editable = false, order = 3)
     public String getRoutineName()
     {
         return routineName;
-    }
-
-    @Property(viewable = true, editable = false, order = 4)
-    public String getModuleName()
-    {
-        return moduleName;
     }
 
     @Property(viewable = true, editable = false, order = 5)
@@ -232,12 +238,6 @@ public class DB2Routine extends DB2SchemaObject implements DBSProcedure, DB2Sour
     public DB2OwnerType getOwnerType()
     {
         return ownerType;
-    }
-
-    @Property(viewable = false, editable = false)
-    public Integer getRoutineModuleId()
-    {
-        return routineModuleId;
     }
 
     @Property(viewable = false, editable = false)

@@ -64,7 +64,6 @@ Missing metadata:
   - options
 - XML Schemas  
   - add dependencies
-- DB2Modules  
 - Federated Function Mappings (routinesfederated, funcmapping)
 - Federated Remote indexes (indexoptions)
 

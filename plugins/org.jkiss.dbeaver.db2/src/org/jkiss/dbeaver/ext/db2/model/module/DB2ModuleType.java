@@ -16,28 +16,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package org.jkiss.dbeaver.ext.db2.model.dict;
+package org.jkiss.dbeaver.ext.db2.model.module;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Type of DB2 XML schema repository object
+ * DB2 Type of modules
  * 
  * @author Denis Forveille
  */
-public enum DB2XSRType implements DBPNamedObject {
-    D("DTD"),
+public enum DB2ModuleType implements DBPNamedObject {
+    A("Alias"),
 
-    E("External entity"),
+    M("Module"),
 
-    S("XML schema");
+    P("PL/SQL");
 
     private String name;
 
     // -----------------
     // Constructor
     // -----------------
-    private DB2XSRType(String name)
+    private DB2ModuleType(String name)
     {
         this.name = name;
     }
