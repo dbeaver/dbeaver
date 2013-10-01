@@ -196,4 +196,32 @@ public class DB2Module extends DB2SchemaObject implements DBPRefreshableObject {
         return remarks;
     }
 
+    // -------------------------
+    // Standards Getters
+    // -------------------------
+    public DBSObjectCache<DB2Module, DB2ModuleCondition> getConditionCache()
+    {
+        return conditionCache;
+    }
+
+    public DBSObjectCache<DB2Module, DB2Routine> getFunctionCache()
+    {
+        return functionCache;
+    }
+
+    public DBSObjectCache<DB2Module, DB2Routine> getProcedureCache()
+    {
+        return procedureCache;
+    }
+
+    public DBSObjectCache<DB2Module, DB2DataType> getTypeCache()
+    {
+        return typeCache;
+    }
+
+    public DBSObjectCache<DB2Module, DB2ModuleVariable> getVariableCache()
+    {
+        return variableCache;
+    }
+
 }

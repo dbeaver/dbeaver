@@ -38,6 +38,7 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
 
     private DB2PackageDepType packageDepType;
     private DB2Schema depSchema;
+    private String depModuleName;
     private String depModuleId;
     private String tabAuth;
     private String binder;
@@ -53,9 +54,9 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
         // TODO DF: Bad should be BTYPE+BSCHEMA+BNAME
         super(db2Package, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
 
+        this.depModuleName = JDBCUtils.safeGetString(resultSet, "BMODULENAME");
         this.depModuleId = JDBCUtils.safeGetString(resultSet, "BMODULEID");
         this.tabAuth = JDBCUtils.safeGetString(resultSet, "TABAUTH");
-        this.packageDepType = CommonUtils.valueOf(DB2PackageDepType.class, JDBCUtils.safeGetString(resultSet, "BTYPE"));
         this.binder = JDBCUtils.safeGetString(resultSet, "BINDER");
         this.binderType = JDBCUtils.safeGetString(resultSet, "BINDERTYPE");
         this.varAuth = JDBCUtils.safeGetString(resultSet, "VARAUTH");
@@ -64,9 +65,18 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
 
         String depSchemaName = JDBCUtils.safeGetStringTrimmed(resultSet, "BSCHEMA");
 
-        DB2ObjectType db2ObjectType = packageDepType.getDb2ObjectType();
-        if (db2ObjectType != null) {
-            depSchema = getDataSource().getSchemaCache().getCachedObject(depSchemaName);
+        // Some dependencies are just numbers, not valid in a enum...
+        String depType = JDBCUtils.safeGetString(resultSet, "BTYPE");
+        this.packageDepType = CommonUtils.valueOf(DB2PackageDepType.class, depType);
+        if (packageDepType == null) {
+            this.packageDepType = CommonUtils.valueOf(DB2PackageDepType.class, DB2PackageDepType.FAKE_PREFIX + depType);
+        }
+
+        if (this.packageDepType != null) {
+            DB2ObjectType db2ObjectType = packageDepType.getDb2ObjectType();
+            if (db2ObjectType != null) {
+                depSchema = getDataSource().getSchemaCache().getCachedObject(depSchemaName);
+            }
         }
     }
 
@@ -99,7 +109,12 @@ public class DB2PackageDep extends DB2Object<DB2Package> {
         if (packageDepType == null || packageDepType.getDb2ObjectType() == null) {
             return null;
         }
-        return packageDepType.getDb2ObjectType().findObject(monitor, depSchema, getName());
+        // Some dependncies are in Modules...Contantenate modulename and name
+        String name = getName();
+        if (depModuleName != null) {
+            name = depModuleName + "." + name;
+        }
+        return packageDepType.getDb2ObjectType().findObject(monitor, depSchema, name);
     }
 
     @Property(viewable = true, editable = false, order = 5)

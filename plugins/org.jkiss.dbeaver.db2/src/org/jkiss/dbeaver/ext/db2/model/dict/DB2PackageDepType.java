@@ -27,17 +27,17 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
  * @author Denis Forveille
  */
 public enum DB2PackageDepType implements DBPNamedObject {
-    A("Table alias)", DB2ObjectType.ALIAS),
+    A("Table alias", DB2ObjectType.ALIAS),
 
-    B("Trigger)", DB2ObjectType.TRIGGER),
+    B("Trigger", DB2ObjectType.TRIGGER),
 
-    D("Server)"),
+    D("Server"),
 
-    F("Function)", DB2ObjectType.UDF),
+    F("Routine", DB2ObjectType.UDF),
 
-    G("Global temporary table)", DB2ObjectType.TABLE),
+    G("Global temporary table", DB2ObjectType.TABLE),
 
-    I("Index)", DB2ObjectType.INDEX),
+    I("Index", DB2ObjectType.INDEX),
 
     M("Function Mapping"),
 
@@ -65,11 +65,21 @@ public enum DB2PackageDepType implements DBPNamedObject {
 
     Z("XSR object"),
 
+    m("Module", DB2ObjectType.MODULE),
+
+    n("Database Partiton Group"),
+
     q("Sequence alias", DB2ObjectType.ALIAS),
 
     u("Module alias", DB2ObjectType.ALIAS),
 
-    v("Global variable");
+    v("Global variable"),
+
+    ZZ_4("Application-period temporal table"),
+
+    ZZ_5("Application-period temporal table");
+
+    public static final String FAKE_PREFIX = "ZZ_";
 
     private String name;
     private DB2ObjectType db2ObjectType;
