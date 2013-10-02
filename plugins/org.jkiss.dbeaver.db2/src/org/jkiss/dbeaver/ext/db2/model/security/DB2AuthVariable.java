@@ -49,7 +49,7 @@ public class DB2AuthVariable extends DB2AuthBase {
         super(monitor, db2Grantee, db2Variable, resultSet);
 
         this.read = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "USAGEAUTH"));
-        this.write = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "WRITEAUTH"));
+        this.write = CommonUtils.valueOf(DB2AuthHeldType.class, JDBCUtils.safeGetString(resultSet, "ALTERINAUTH"));
     }
 
     // -----------------
