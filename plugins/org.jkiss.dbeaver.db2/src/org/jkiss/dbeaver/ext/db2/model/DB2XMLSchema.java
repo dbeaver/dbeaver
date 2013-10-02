@@ -68,7 +68,7 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
         this.targetNameSpace = JDBCUtils.safeGetString(dbResult, "TARGETNAMESPACE");
         this.schemaLocation = JDBCUtils.safeGetString(dbResult, "SCHEMALOCATION");
         this.objectType = CommonUtils.valueOf(DB2XSRType.class, JDBCUtils.safeGetString(dbResult, "OBJECTTYPE"));
-        this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
+        this.owner = JDBCUtils.safeGetStringTrimmed(dbResult, "OWNER");
         this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
@@ -145,7 +145,7 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
     }
 
     @Property(viewable = false, order = 13)
-    public String getObjectInfoxString()
+    public String getObjectInfoString()
     {
         return objectInfoString;
     }
