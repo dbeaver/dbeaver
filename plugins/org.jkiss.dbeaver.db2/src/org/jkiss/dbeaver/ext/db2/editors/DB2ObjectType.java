@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
+import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -133,7 +134,16 @@ public enum DB2ObjectType implements DBSObjectType {
         @Override
         public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
-            return schema.getProcedureCache().getObject(monitor, schema, objectName);
+            // Procedure may be global or from a Module
+            DB2Routine procedure;
+            String[] tokens = objectName.split(SPLIT_DOT);
+            if (tokens.length == 1) {
+                procedure = schema.getProcedureCache().getObject(monitor, schema, tokens[0]);
+            } else {
+                DB2Module module = schema.getModuleCache().getObject(monitor, schema, tokens[0]);
+                procedure = module.getProcedureCache().getObject(monitor, module, tokens[1]);
+            }
+            return procedure;
         }
     }),
 
@@ -142,6 +152,31 @@ public enum DB2ObjectType implements DBSObjectType {
         public DB2TableReference findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
             return schema.getReferenceCache().getObject(monitor, schema, objectName);
+        }
+    }),
+
+    ROUTINE(DBIcon.TREE_PROCEDURE.getImage(), DB2Routine.class, new ObjectFinder() {
+        @Override
+        public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            // Routines may be an UDF, a Method or a Procedure
+            // Routines may be global or from a Module
+
+            DB2Routine routine;
+            String[] tokens = objectName.split(SPLIT_DOT);
+            if (tokens.length == 1) {
+                routine = schema.getUdfCache().getObject(monitor, schema, tokens[0]);
+                if (routine == null) {
+                    routine = schema.getProcedureCache().getObject(monitor, schema, tokens[0]);
+                }
+            } else {
+                DB2Module module = schema.getModuleCache().getObject(monitor, schema, tokens[0]);
+                routine = module.getFunctionCache().getObject(monitor, module, tokens[1]);
+                if (routine == null) {
+                    routine = module.getProcedureCache().getObject(monitor, module, tokens[1]);
+                }
+            }
+            return routine;
         }
     }),
 
@@ -177,21 +212,16 @@ public enum DB2ObjectType implements DBSObjectType {
         @Override
         public DB2Routine findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
-            DB2Routine routine;
+            // Function may be global or from a Module
+            DB2Routine udf;
             String[] tokens = objectName.split(SPLIT_DOT);
             if (tokens.length == 1) {
-                routine = schema.getUdfCache().getObject(monitor, schema, tokens[0]);
-                if (routine == null) {
-                    routine = schema.getProcedureCache().getObject(monitor, schema, tokens[0]);
-                }
+                udf = schema.getUdfCache().getObject(monitor, schema, tokens[0]);
             } else {
                 DB2Module module = schema.getModuleCache().getObject(monitor, schema, tokens[0]);
-                routine = module.getFunctionCache().getObject(monitor, module, tokens[1]);
-                if (routine == null) {
-                    routine = module.getProcedureCache().getObject(monitor, module, tokens[1]);
-                }
+                udf = module.getFunctionCache().getObject(monitor, module, tokens[1]);
             }
-            return routine;
+            return udf;
         }
     }),
 
@@ -199,6 +229,7 @@ public enum DB2ObjectType implements DBSObjectType {
         @Override
         public DB2DataType findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
+            // Type may be global or from a Module
             String[] tokens = objectName.split(SPLIT_DOT);
             if (tokens.length == 1) {
                 return schema.getUdtCache().getObject(monitor, schema, tokens[0]);
@@ -229,6 +260,7 @@ public enum DB2ObjectType implements DBSObjectType {
         @Override
         public DB2Variable findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
         {
+            // Variable may be global or from a Module
             DB2Variable variable;
             DB2DataSource db2DataSource = schema.getDataSource();
             String[] tokens = objectName.split(SPLIT_DOT);
@@ -239,6 +271,14 @@ public enum DB2ObjectType implements DBSObjectType {
                 variable = module.getVariableCache().getObject(monitor, module, tokens[1]);
             }
             return variable;
+        }
+    }),
+
+    XML_SCHEMA(DBIcon.TREE_DATA_TYPE.getImage(), DB2XMLSchema.class, new ObjectFinder() {
+        @Override
+        public DB2XMLSchema findObject(DBRProgressMonitor monitor, DB2Schema schema, String objectName) throws DBException
+        {
+            return schema.getXmlSchemaCache().getObject(monitor, schema, objectName);
         }
     });
 

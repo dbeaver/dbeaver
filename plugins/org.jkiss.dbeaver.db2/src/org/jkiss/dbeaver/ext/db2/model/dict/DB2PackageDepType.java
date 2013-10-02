@@ -33,15 +33,15 @@ public enum DB2PackageDepType implements DBPNamedObject {
 
     D("Server"),
 
-    F("Routine", DB2ObjectType.UDF),
+    F("Routine", DB2ObjectType.ROUTINE),
 
     G("Global temporary table", DB2ObjectType.TABLE),
 
     I("Index", DB2ObjectType.INDEX),
 
-    M("Function Mapping"),
+    M("Function Mapping", DB2ObjectType.UDF),
 
-    N("Nickname"),
+    N("Nickname", DB2ObjectType.NICKNAME),
 
     O("Privilege dependency on all subtables or subviews in a table or view hierarchy"),
 
@@ -63,7 +63,7 @@ public enum DB2PackageDepType implements DBPNamedObject {
 
     X("Index extension"),
 
-    Z("XSR object"),
+    Z("XSR object", DB2ObjectType.XML_SCHEMA),
 
     m("Module", DB2ObjectType.MODULE),
 
