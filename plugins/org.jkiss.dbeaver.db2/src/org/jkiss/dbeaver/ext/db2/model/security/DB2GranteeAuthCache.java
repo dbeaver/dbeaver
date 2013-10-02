@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
+import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
@@ -178,6 +179,18 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append(" WHERE GRANTEETYPE = ?");// 19
         sb.append("   AND GRANTEE = ?");// 20
 
+        sb.append(" UNION ALL ");
+
+        // OBJECTID as string in OBJ_NAME
+        sb.append("SELECT GRANTOR,GRANTORTYPE");
+        sb.append("     , '").append(DB2ObjectType.XML_SCHEMA.name()).append("' AS OBJ_TYPE");
+        sb.append("     , NULL AS OBJ_SCHEMA, CAST(OBJECTID AS VARCHAR(32)) AS OBJ_NAME");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , USAGEAUTH, NULL , NULL, NULL, NULL, NULL");
+        sb.append("  FROM SYSCAT.XSROBJECTAUTH ");
+        sb.append(" WHERE GRANTEETYPE = ?");// 21
+        sb.append("   AND GRANTEE = ?");// 22
+
         sb.append(" ORDER BY OBJ_SCHEMA, OBJ_NAME, OBJ_TYPE");
         sb.append(" WITH UR");
 
@@ -191,26 +204,10 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         String userName = db2Grantee.getName();
 
         JDBCPreparedStatement dbStat = context.prepareStatement(SQL);
-        dbStat.setString(1, userType);
-        dbStat.setString(2, userName);
-        dbStat.setString(3, userType);
-        dbStat.setString(4, userName);
-        dbStat.setString(5, userType);
-        dbStat.setString(6, userName);
-        dbStat.setString(7, userType);
-        dbStat.setString(8, userName);
-        dbStat.setString(9, userType);
-        dbStat.setString(10, userName);
-        dbStat.setString(11, userType);
-        dbStat.setString(12, userName);
-        dbStat.setString(13, userType);
-        dbStat.setString(14, userName);
-        dbStat.setString(15, userType);
-        dbStat.setString(16, userName);
-        dbStat.setString(17, userType);
-        dbStat.setString(18, userName);
-        dbStat.setString(19, userType);
-        dbStat.setString(20, userName);
+        for (int i = 1; i < 22;) {
+            dbStat.setString(i++, userType);
+            dbStat.setString(i++, userName);
+        }
         return dbStat;
     }
 
@@ -288,6 +285,11 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         case VARIABLE:
             DB2Variable db2Variable = db2DataSource.getVariable(monitor, objectName);
             return new DB2AuthVariable(monitor, db2Grantee, db2Variable, resultSet);
+
+        case XML_SCHEMA:
+            Long xmlSchemaId = Long.valueOf(objectName);
+            DB2XMLSchema db2XmlSchema = DB2Utils.findXMLSchemaByById(monitor, db2DataSource, xmlSchemaId);
+            return new DB2AuthXMLSchema(monitor, db2Grantee, db2XmlSchema, resultSet);
 
         default:
             throw new DBException("Programming error: " + objectType
