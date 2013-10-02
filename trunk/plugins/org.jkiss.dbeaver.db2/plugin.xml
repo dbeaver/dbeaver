@@ -196,14 +196,6 @@
                        </folder>
                     </items>
                 </folder>
-                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="#data_types" description="Types">
-                        <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
-                    </folder>
-                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Variable" label="%tree.variables.node.name" icon="#data_types" description="Global Variables">
-                        <items label="%tree.variable.node.name" path="variable" property="variables" icon="#variable"/>
-                    </folder>
-                </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.federation.node.name" icon="#federation" description="Federation">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper" label="%tree.wrappers.node.name" icon="#folder_wrapper" description="Wrappers">
                         <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="icon/wrapper.gif" >
@@ -227,6 +219,14 @@
                         <items label="%tree.fedSP.node.name" path="fedsp" property="fedSPs" icon="#procedure" />
                     </folder>
 -->                    
+                </folder>
+                <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.global_metadata.node.name" icon="#logical" description="Global metadata objects">
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.types.node.name" icon="#data_types" description="Types">
+                        <items label="%tree.data_type.node.name" path="type" property="dataTypes" icon="#data_type"/>
+                    </folder>
+                    <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Variable" label="%tree.variables.node.name" icon="#data_types" description="Global Variables">
+                        <items label="%tree.variable.node.name" path="variable" property="variables" icon="#variable"/>
+                    </folder>
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.storage.node.name" icon="#storage" description="Storage management">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool" label="%tree.bufferpools.node.name" icon="#bufferpools" description="Bufferpools">

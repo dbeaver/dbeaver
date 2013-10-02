@@ -524,4 +524,9 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         return moduleCache;
     }
 
+    public DBSObjectCache<DB2Schema, DB2XMLSchema> getXmlSchemaCache()
+    {
+        return xmlSchemaCache;
+    }
+
 }

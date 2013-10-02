@@ -31,9 +31,9 @@ public enum DB2TriggerDepType implements DBPNamedObject {
 
     B("Trigger", DB2ObjectType.TRIGGER),
 
-    C("Column"),
+    C("Column", DB2ObjectType.COLUMN),
 
-    F("Function", DB2ObjectType.UDF),
+    F("Routine", DB2ObjectType.ROUTINE),
 
     G("Global temporary table", DB2ObjectType.TABLE),
 
@@ -43,15 +43,15 @@ public enum DB2TriggerDepType implements DBPNamedObject {
 
     L("Detached table", DB2ObjectType.TABLE),
 
-    N("Nickname"),
+    N("Nickname", DB2ObjectType.NICKNAME),
 
     O("Privilege dependency on all subtables or subviews in a table or view hierarchy"),
 
-    Q("Sequence", DB2ObjectType.TABLE),
+    Q("Sequence", DB2ObjectType.SEQUENCE),
 
     R("UDT", DB2ObjectType.UDT),
 
-    S("MQT", DB2ObjectType.SEQUENCE),
+    S("MQT", DB2ObjectType.TABLE),
 
     T("Table", DB2ObjectType.TABLE),
 
@@ -63,13 +63,13 @@ public enum DB2TriggerDepType implements DBPNamedObject {
 
     X("Index extension"),
 
-    Z("XSR object"),
+    Z("XSR object", DB2ObjectType.XML_SCHEMA),
 
     q("Sequence alias", DB2ObjectType.ALIAS),
 
     u("Module alias", DB2ObjectType.ALIAS),
 
-    v("Global variable");
+    v("Global variable", DB2ObjectType.VARIABLE);
 
     private String name;
     private DB2ObjectType db2ObjectType;
