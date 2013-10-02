@@ -533,7 +533,7 @@ public class DB2Utils {
         // We have to iterate all Schemas...
         for (DB2Schema db2Schema : db2DataSource.getSchemas(monitor)) {
             for (DB2XMLSchema db2XMLSchema : db2Schema.getXMLSchemas(monitor)) {
-                if (db2XMLSchema.getId() == xmlSchemaId) {
+                if (db2XMLSchema.getId().equals(xmlSchemaId)) {
                     return db2XMLSchema;
                 }
             }

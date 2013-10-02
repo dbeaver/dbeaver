@@ -68,8 +68,9 @@ public class DB2DatabaseAuth extends DB2GlobalObject implements DBAPrivilege {
     {
         super(dataSource, true);
 
-        String grantorName = JDBCUtils.safeGetString(resultSet, "GRANTOR");
-        this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
+        String grantorName = JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTOR");
+        this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class,
+            JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTORTYPE"));
         switch (grantorType) {
         case U:
             this.grantor = dataSource.getUser(monitor, grantorName);

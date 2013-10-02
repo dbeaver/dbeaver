@@ -43,10 +43,11 @@ public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
     // -----------------------
     public DB2RoleAuth(DB2Role role, ResultSet resultSet)
     {
-        super(role, JDBCUtils.safeGetString(resultSet, "GRANTEE"), true);
+        super(role, JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTEE"), true);
 
-        this.grantor = JDBCUtils.safeGetString(resultSet, "GRANTOR");
-        this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class, JDBCUtils.safeGetString(resultSet, "GRANTORTYPE"));
+        this.grantor = JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTOR");
+        this.grantorType = CommonUtils.valueOf(DB2GrantorGranteeType.class,
+            JDBCUtils.safeGetStringTrimmed(resultSet, "GRANTORTYPE"));
         this.admin = JDBCUtils.safeGetBoolean(resultSet, "ADMIN", DB2YesNo.Y.name());
     }
 
