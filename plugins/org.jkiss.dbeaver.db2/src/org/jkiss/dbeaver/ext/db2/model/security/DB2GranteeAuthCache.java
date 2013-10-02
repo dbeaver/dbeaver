@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
+import org.jkiss.dbeaver.ext.db2.model.DB2Variable;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -49,7 +50,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
 
     private static String SQL;
 
-    // TODO DF: Add missing auth: modules, functions, columns etc..
+    // TODO DF: Add missing auth: functions, columns etc..
 
     static {
 
@@ -134,6 +135,19 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append(" WHERE GRANTEETYPE = ?");// 13
         sb.append("   AND GRANTEE = ?");// 14
 
+        sb.append(" UNION ALL ");
+
+        // READAUTH in USAGEAUTH
+        // WRITEAUTH in ALTERINAUTH
+        sb.append("SELECT GRANTOR,GRANTORTYPE");
+        sb.append("     , '").append(DB2ObjectType.VARIABLE.name()).append("' AS OBJ_TYPE");
+        sb.append("     , VARSCHEMA AS OBJ_SCHEMA, VARNAME AS OBJ_NAME");
+        sb.append("     , NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL");
+        sb.append("     , READAUTH AS USAGEAUTH, WRITEAUTH AS ALTERINAUTH, NULL, NULL, NULL, NULL");
+        sb.append("  FROM SYSCAT.VARIABLEAUTH");
+        sb.append(" WHERE GRANTEETYPE = ?");// 15
+        sb.append("   AND GRANTEE = ?");// 16
+
         sb.append(" ORDER BY OBJ_SCHEMA, OBJ_NAME, OBJ_TYPE");
         sb.append(" WITH UR");
 
@@ -161,6 +175,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         dbStat.setString(12, userName);
         dbStat.setString(13, userType);
         dbStat.setString(14, userName);
+        dbStat.setString(15, userType);
+        dbStat.setString(16, userName);
         return dbStat;
     }
 
@@ -196,8 +212,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
             return new DB2AuthModule(monitor, db2Grantee, db2Module, resultSet);
 
         case SCHEMA:
-            DB2Schema db2SChema = db2DataSource.getSchema(monitor, objectName);
-            return new DB2AuthSchema(monitor, db2Grantee, db2SChema, resultSet);
+            DB2Schema db2Schema = db2DataSource.getSchema(monitor, objectName);
+            return new DB2AuthSchema(monitor, db2Grantee, db2Schema, resultSet);
 
         case PACKAGE:
             DB2Package db2Package = DB2Utils.findPackageBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
@@ -211,6 +227,10 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         case TABLESPACE:
             DB2Tablespace db2Tablespace = db2DataSource.getTablespace(monitor, objectName);
             return new DB2AuthTablespace(monitor, db2Grantee, db2Tablespace, resultSet);
+
+        case VARIABLE:
+            DB2Variable db2Variable = db2DataSource.getVariable(monitor, objectName);
+            return new DB2AuthVariable(monitor, db2Grantee, db2Variable, resultSet);
 
         default:
             throw new DBException("Structural problem. " + objectType + " autorisation not implemented");
