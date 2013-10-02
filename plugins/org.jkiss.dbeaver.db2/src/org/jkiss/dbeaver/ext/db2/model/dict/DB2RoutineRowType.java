@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 
 /**
- * DB2 Routine Rowtype
+ * DB2 Routine Row Type
  * 
  * @author Denis Forveille
  */

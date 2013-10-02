@@ -2,6 +2,11 @@ package org.jkiss.dbeaver.ext.db2.model.fed;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
+/**
+ * DB2 Federated Nickname Remote Type
+ * 
+ * @author Denis Forveille
+ */
 public enum DB2NicknameRemoteType implements DBPNamedObject {
 
     A("Alias"),

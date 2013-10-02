@@ -32,7 +32,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cache for DB2 Sequences
+ * Cache for DB2 Triggers for a given Table
  * 
  * @author Denis Forveille
  */

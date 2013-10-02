@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.module;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Type of modules
+ * DB2 Type of Module
  * 
  * @author Denis Forveille
  */

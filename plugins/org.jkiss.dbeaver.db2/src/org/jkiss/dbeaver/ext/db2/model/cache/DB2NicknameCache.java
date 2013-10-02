@@ -32,7 +32,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Cache for DB2 Tables
+ * Cache for DB2 Nicknames
  * 
  * @author Denis Forveille
  */

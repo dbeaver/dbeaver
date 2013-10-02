@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Compression Mode
+ * DB2 Table Compression Mode
  * 
  * @author Denis Forveille
  */
