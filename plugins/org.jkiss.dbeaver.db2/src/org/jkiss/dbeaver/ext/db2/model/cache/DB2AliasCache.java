@@ -47,22 +47,27 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         sb.append("   FROM SYSCAT.TABLES");
         sb.append("  WHERE TABSCHEMA = ?"); // 1
         sb.append("    AND TYPE = 'A'");
+
         sb.append(" UNION ALL");
+
         sb.append(" SELECT 'SEQUENCE' as TYPE ");
         sb.append("       , SEQNAME AS NAME");
         sb.append("       , BASE_SEQSCHEMA AS BASE_SCHEMA");
         sb.append("       , BASE_SEQNAME AS BASE_NAME");
-        sb.append("   FROM SYSCAT.SEQUENCES ");
+        sb.append("   FROM SYSCAT.SEQUENCES");
         sb.append("  WHERE SEQSCHEMA = ?"); // 2
         sb.append("    AND SEQTYPE = 'A'");
+
         sb.append(" UNION ALL");
+
         sb.append(" SELECT 'MODULE' as TYPE ");
         sb.append("       , MODULENAME AS NAME");
         sb.append("       , BASE_MODULESCHEMA AS BASE_SCHEMA");
         sb.append("       , BASE_MODULENAME AS BASE_NAME");
-        sb.append("   FROM SYSCAT.MODULES  ");
+        sb.append("   FROM SYSCAT.MODULES");
         sb.append("  WHERE MODULESCHEMA = ?"); // 3
         sb.append("    AND MODULETYPE = 'A'");
+
         sb.append(" ORDER BY NAME");
         sb.append("        , TYPE");
         sb.append(" WITH UR");
