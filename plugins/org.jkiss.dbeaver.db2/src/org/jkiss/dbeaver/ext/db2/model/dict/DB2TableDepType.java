@@ -29,13 +29,13 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 public enum DB2TableDepType implements DBPNamedObject {
     A("Table alias", DB2ObjectType.ALIAS),
 
-    F("Function", DB2ObjectType.UDF),
+    F("Routine", DB2ObjectType.ROUTINE),
 
     I("Index", DB2ObjectType.INDEX),
 
     G("Global temporary table", DB2ObjectType.TABLE),
 
-    N("Nickname"),
+    N("Nickname", DB2ObjectType.NICKNAME),
 
     O("Privilege dependency on all subtables or subviews in a table or view hierarchy"),
 
@@ -51,11 +51,11 @@ public enum DB2TableDepType implements DBPNamedObject {
 
     W("Typed view", DB2ObjectType.VIEW),
 
-    Z("XSR object"),
+    Z("XSR object", DB2ObjectType.XML_SCHEMA),
 
     u("Module alias", DB2ObjectType.ALIAS),
 
-    v("Global variable");
+    v("Global variable", DB2ObjectType.VARIABLE);
 
     private String name;
     private DB2ObjectType db2ObjectType;
